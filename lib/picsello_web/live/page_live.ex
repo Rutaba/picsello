@@ -1,4 +1,5 @@
 defmodule PicselloWeb.PageLive do
+  @moduledoc false
   use PicselloWeb, :live_view
 
   @impl true
