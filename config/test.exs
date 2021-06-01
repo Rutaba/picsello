@@ -16,7 +16,15 @@ config :picsello, Picsello.Repo,
 # you can enable the server option below.
 config :picsello, PicselloWeb.Endpoint,
   http: [port: 4002],
-  server: false
+  server: true
+
+config :picsello, :sql_sandbox, true
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :wallaby,
+  chromedriver: [headless: System.get_env("HEADLESS", "true") == "true"],
+  driver: Wallaby.Chrome,
+  otp_app: :picsello,
+  screenshot_on_failure: true
