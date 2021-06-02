@@ -14,6 +14,10 @@ defmodule PicselloWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/health_check" do
+    forward "/", PicselloWeb.Plugs.HealthCheck
+  end
+
   scope "/", PicselloWeb do
     pipe_through :browser
 
