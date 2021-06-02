@@ -3,9 +3,9 @@ defmodule Picsello.SignInTest do
   use Wallaby.Feature
   import Wallaby.Query
 
-  feature "users views welcome page", %{session: session} do
+  feature "user views sign up button", %{session: session} do
     session
     |> visit("/")
-    |> assert_has(css(".phx-hero", text: "Welcome"))
+    |> assert_has(css("button", text: "Sign Up"))
   end
 end
