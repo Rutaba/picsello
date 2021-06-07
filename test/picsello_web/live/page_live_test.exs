@@ -5,7 +5,7 @@ defmodule PicselloWeb.PageLiveTest do
 
   test "disconnected and connected render", %{conn: conn} do
     {:ok, page_live, disconnected_html} = live(conn, "/")
-    assert disconnected_html =~ "Welcome to Picsello!"
-    assert render(page_live) =~ "Welcome to Picsello!"
+    assert disconnected_html =~ "Sign Up"
+    assert render(page_live) =~ "Sign Up"
   end
 end

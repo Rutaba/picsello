@@ -9,7 +9,12 @@ module.exports = {
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'primary-blue': '#00ADC9',
+        'primary-blue-dark': '#0094B0',
+      }
+    },
   },
   variants: {
     extend: {},
