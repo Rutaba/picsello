@@ -1,4 +1,4 @@
-defmodule PicselloWeb.ErrorHelpers do
+defmodule PicselloWeb.FormHelpers do
   @moduledoc """
   Conveniences for translating and building error messages.
   """
@@ -15,6 +15,38 @@ defmodule PicselloWeb.ErrorHelpers do
         phx_feedback_for: input_name(form, field)
       )
     end)
+  end
+
+  @doc """
+  Generates a labeled input tag with inlined errors.
+  """
+  def input(form, field, opts \\ []) do
+    type = Phoenix.HTML.Form.input_type(form, field)
+
+    has_error = form.errors[field]
+
+    wrapper_classes =
+      Keyword.get_values(opts, :wrapper_class) ++
+        ["flex", "flex-col"] ++ if has_error, do: ["error"], else: []
+
+    inputs_classes = Keyword.get_values(opts, :input_class) ++ ["text-input"]
+
+    wrapper_opts = [class: Enum.join(wrapper_classes, " ")]
+
+    input_opts =
+      [class: Enum.join(inputs_classes, " ")] ++
+        Keyword.drop(opts, [:wrapper_class, :input_class])
+
+    label_text = Keyword.get(opts, :label) || humanize(field)
+
+    content_tag :div, wrapper_opts do
+      [
+        label form, field, class: "input-label" do
+          [label_text, " ", error_tag(form, field)]
+        end,
+        apply(Phoenix.HTML.Form, type, [form, field, input_opts])
+      ]
+    end
   end
 
   @doc """

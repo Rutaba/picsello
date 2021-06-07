@@ -87,7 +87,7 @@ defmodule PicselloWeb do
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 
-      import PicselloWeb.ErrorHelpers
+      import PicselloWeb.FormHelpers
       import PicselloWeb.Gettext
       alias PicselloWeb.Router.Helpers, as: Routes
     end

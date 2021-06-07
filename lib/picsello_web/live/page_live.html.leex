@@ -5,5 +5,5 @@
     <span class="border-b-2 border-green-500">monetize</span>
   </h1>
   <p class="text-2xl font-thin">your professional photography business</p>
-  <button class="btn-primary m-8 w-52">Sign Up</button>
+  <%= link "Sign Up", to: Routes.user_registration_path(@socket, :new), class: "inline-block btn-primary m-8 w-52" %>
 </div>

@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .text-input {
+    @apply
+      focus:outline-none
+      focus:border-primary-blue
+      border
+      rounded-lg
+      p-3
+    ;
+  }
+  .input-label {
+    @apply
+      text-sm
+      font-semibold
+      p-1
+    ;
+  }
+}

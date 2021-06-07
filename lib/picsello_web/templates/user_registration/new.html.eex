@@ -1,26 +1,19 @@
-<h1>Register</h1>
+<div class="p-8">
+  <h1 class="title">Sign Up</h1>
 
-<%= form_for @changeset, Routes.user_registration_path(@conn, :create), fn f -> %>
-  <%= if @changeset.action do %>
-    <div class="alert alert-danger">
-      <p>Oops, something went wrong! Please check the errors below.</p>
+  <%= form_for @changeset, Routes.user_registration_path(@conn, :create), fn f -> %>
+    <%= if @changeset.action do %>
+      <div class="alert alert-danger">
+        <p>Oops, something went wrong! Please check the errors below.</p>
+      </div>
+    <% end %>
+
+    <%= input f, :email, placeholder: "foo@example.com", required: true, wrapper_class: "mt-4" %>
+    <%= input f, :password, required: true, wrapper_class: "mt-4" %>
+
+    <div class="text-center mt-5">
+      <%= link "Cancel", to: Routes.page_path(@conn, :index), class: "btn-secondary inline-block w-32 mx-1" %>
+      <%= submit "Save", class: "btn-primary w-32 mx-1" %>
     </div>
   <% end %>
-
-  <%= label f, :email %>
-  <%= email_input f, :email, required: true %>
-  <%= error_tag f, :email %>
-
-  <%= label f, :password %>
-  <%= password_input f, :password, required: true %>
-  <%= error_tag f, :password %>
-
-  <div>
-    <%= submit "Register" %>
-  </div>
-<% end %>
-
-<p>
-  <%= link "Log in", to: Routes.user_session_path(@conn, :new) %> |
-  <%= link "Forgot your password?", to: Routes.user_reset_password_path(@conn, :new) %>
-</p>
+</div>

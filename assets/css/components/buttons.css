@@ -4,6 +4,39 @@
 
 @layer components {
   .btn-primary {
-    @apply py-3 px-4 bg-primary-blue text-white font-medium rounded-lg shadow-lg hover:bg-primary-blue-dark focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-75;
+    @apply
+      py-3
+      px-4
+      bg-primary-blue
+      text-white
+      font-medium
+      rounded-lg
+      shadow-lg
+      border
+      border-primary-blue
+      hover:bg-primary-blue-dark
+      focus:outline-none
+      focus:ring-2
+      focus:ring-primary-blue
+      focus:ring-opacity-75
+     ;
+  }
+  .btn-secondary {
+    @apply
+      py-3
+      px-4
+      bg-white
+      text-primary-blue
+      font-medium
+      rounded-lg
+      shadow-lg
+      border
+      border-primary-blue
+      hover:bg-gray-200
+      focus:outline-none
+      focus:ring-2
+      focus:ring-primary-blue
+      focus:ring-opacity-75
+    ;
   }
 }
