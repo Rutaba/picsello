@@ -13,6 +13,9 @@ defmodule Picsello.SignInTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
+    |> fill_in(text_field("First Name"), with: "Mary")
+    |> fill_in(text_field("Last Name"), with: "Jane")
+    |> fill_in(text_field("Photography Business Name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
     |> click(button("Save"))
@@ -24,6 +27,9 @@ defmodule Picsello.SignInTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
+    |> fill_in(text_field("First Name"), with: "Mary")
+    |> fill_in(text_field("Last Name"), with: "Jane")
+    |> fill_in(text_field("Photography Business Name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "123")
     |> click(button("Save"))

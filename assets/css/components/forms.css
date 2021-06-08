@@ -16,7 +16,7 @@
     @apply
       text-sm
       font-semibold
-      p-1
+      py-1
     ;
   }
 }
