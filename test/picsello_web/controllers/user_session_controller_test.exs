@@ -16,7 +16,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
 
     test "redirects if already logged in", %{conn: conn, user: user} do
       conn = conn |> log_in_user(user) |> get(Routes.user_session_path(conn, :new))
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == "/home"
     end
   end
 
@@ -28,7 +28,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == "/home"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user} do
@@ -42,7 +42,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_picsello_web_user_remember_me"]
-      assert redirected_to(conn) =~ "/"
+      assert redirected_to(conn) =~ "/home"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user} do

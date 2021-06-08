@@ -1,5 +1,5 @@
-defmodule Picsello.SignInTest do
-  use ExUnit.Case, async: true
+defmodule Picsello.SignUpTest do
+  use ExUnit.Case, async: false
   use Wallaby.Feature
   import Wallaby.Query
 
@@ -19,8 +19,9 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
     |> click(button("Save"))
+    |> assert_has(css("h1", text: "Hello Mary!"))
 
-    assert current_path(session) == "/"
+    assert current_path(session) == "/home"
   end
 
   feature "user sees validation error when signing up", %{session: session} do
