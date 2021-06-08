@@ -32,6 +32,7 @@ setup: ## Setup the App.
 
 server: setup
 server: ## Start the App server.
+	rm -rf assets/node_modules/.cache
 	mix phx.server
 
 test: ## Run the test suite.
