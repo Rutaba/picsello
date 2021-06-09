@@ -12,11 +12,23 @@
       p-3
     ;
   }
+  .text-input-invalid {
+    @apply
+      border-invalid-red
+      bg-invalid-bg-red
+      focus:border-invalid-red
+    ;
+  }
   .input-label {
     @apply
       text-sm
       font-semibold
       py-1
+    ;
+  }
+  .input-label-invalid {
+    @apply
+      text-invalid-red
     ;
   }
 }

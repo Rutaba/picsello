@@ -25,11 +25,13 @@ defmodule PicselloWeb.FormHelpers do
 
     has_error = form.errors[field]
 
-    wrapper_classes =
-      Keyword.get_values(opts, :wrapper_class) ++
-        ["flex", "flex-col"] ++ if has_error, do: ["error"], else: []
+    wrapper_classes = Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]
 
-    inputs_classes = Keyword.get_values(opts, :input_class) ++ ["text-input"]
+    inputs_classes =
+      Keyword.get_values(opts, :input_class) ++
+        ["text-input"] ++ if has_error, do: ["text-input-invalid"], else: []
+
+    label_classes = ["input-label"] ++ if has_error, do: ["input-label-invalid"], else: []
 
     wrapper_opts = [class: Enum.join(wrapper_classes, " ")]
 
@@ -41,7 +43,7 @@ defmodule PicselloWeb.FormHelpers do
 
     content_tag :div, wrapper_opts do
       [
-        label form, field, class: "input-label" do
+        label form, field, class: Enum.join(label_classes, " ") do
           [label_text, " ", error_tag(form, field)]
         end,
         apply(Phoenix.HTML.Form, type, [form, field, input_opts])

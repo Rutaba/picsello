@@ -9,9 +9,9 @@
     <% end %>
 
     <%= input f, :first_name, label: "First Name", placeholder: "Jane", required: true, wrapper_class: "mt-4" %>
-    <%= input f, :last_name,  label: "Last Name", placeholder: "Doe", required: true, wrapper_class: "mt-4" %>
+    <%= input f, :last_name,  label: "Last Name", placeholder: "Smith", required: true, wrapper_class: "mt-4" %>
     <%= input f, :business_name, label: "Photography Business Name", placeholder: "Jane Takes Pictures LLC", required: true, wrapper_class: "mt-4" %>
-    <%= input f, :email, placeholder: "foo@example.com", required: true, wrapper_class: "mt-4" %>
+    <%= input f, :email, placeholder: "jane@example.com", required: true, wrapper_class: "mt-4" %>
     <%= input f, :password, required: true, wrapper_class: "mt-4" %>
 
     <div class="text-center mt-5">
