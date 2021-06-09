@@ -6,7 +6,7 @@
   .text-input {
     @apply
       focus:outline-none
-      focus:border-primary-blue
+      focus:border-blue-primary
       border
       rounded-lg
       p-3
@@ -14,9 +14,9 @@
   }
   .text-input-invalid:not(.phx-no-feedback) {
     @apply
-      border-invalid-red
-      bg-invalid-bg-red
-      focus:border-invalid-red
+      border-red-invalid
+      bg-red-invalid-bg
+      focus:border-red-invalid
     ;
   }
   .input-label {
@@ -28,7 +28,7 @@
   }
   .input-label-invalid:not(.phx-no-feedback) {
     @apply
-      text-invalid-red
+      text-red-invalid
     ;
   }
   .invalid-feedback.phx-no-feedback {

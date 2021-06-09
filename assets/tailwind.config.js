@@ -11,11 +11,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'primary-blue': '#00ADC9',
-        'primary-blue-dark': '#0094B0',
-        'invalid-red': '#CB0000',
-        'invalid-bg-red': '#FFF2F2',
-        'disabled-gray': '#AAA'
+        'blue-primary': '#00ADC9',
+        'blue-dark-primary': '#0094B0',
+        'red-invalid': '#CB0000',
+        'red-invalid-bg': '#FFF2F2',
+        'gray-disabled': '#AAA'
       }
     },
   },
