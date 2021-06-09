@@ -35,15 +35,22 @@ defmodule PicselloWeb.FormHelpers do
 
     wrapper_opts = [class: Enum.join(wrapper_classes, " ")]
 
+    phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
+
+    label_opts = [phx_feedback_for, class: Enum.join(label_classes, " ")]
+
     input_opts =
-      [class: Enum.join(inputs_classes, " ")] ++
+      [
+        phx_feedback_for,
+        class: Enum.join(inputs_classes, " ")
+      ] ++
         Keyword.drop(opts, [:wrapper_class, :input_class])
 
     label_text = Keyword.get(opts, :label) || humanize(field)
 
     content_tag :div, wrapper_opts do
       [
-        label form, field, class: Enum.join(label_classes, " ") do
+        label form, field, label_opts do
           [label_text, " ", error_tag(form, field)]
         end,
         apply(Phoenix.HTML.Form, type, [form, field, input_opts])

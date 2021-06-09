@@ -12,7 +12,7 @@
       p-3
     ;
   }
-  .text-input-invalid {
+  .text-input-invalid:not(.phx-no-feedback) {
     @apply
       border-invalid-red
       bg-invalid-bg-red
@@ -26,9 +26,12 @@
       py-1
     ;
   }
-  .input-label-invalid {
+  .input-label-invalid:not(.phx-no-feedback) {
     @apply
       text-invalid-red
     ;
+  }
+  .invalid-feedback.phx-no-feedback {
+    display: none;
   }
 }

@@ -19,6 +19,8 @@
       focus:ring-2
       focus:ring-primary-blue
       focus:ring-opacity-75
+      disabled:bg-disabled-gray
+      disabled:border-disabled-gray
      ;
   }
   .btn-secondary {

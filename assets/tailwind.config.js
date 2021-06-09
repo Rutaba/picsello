@@ -15,6 +15,7 @@ module.exports = {
         'primary-blue-dark': '#0094B0',
         'invalid-red': '#CB0000',
         'invalid-bg-red': '#FFF2F2',
+        'disabled-gray': '#AAA'
       }
     },
   },
