@@ -15,7 +15,7 @@ defmodule PicselloWeb.UserRegisterLive do
     changeset =
       %User{}
       |> Accounts.change_user_registration(params)
-      |> Map.put(:action, :insert)
+      |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -25,8 +25,8 @@ defmodule PicselloWeb.UserRegisterLive do
     changeset =
       %User{}
       |> Accounts.change_user_registration(user_params)
-      |> Map.put(:action, :insert)
+      |> Map.put(:action, :validate)
 
-    {:noreply, assign(socket, trigger_submit: changeset.valid?)}
+    {:noreply, assign(socket, changeset: changeset, trigger_submit: changeset.valid?)}
   end
 end

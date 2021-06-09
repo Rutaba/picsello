@@ -13,11 +13,12 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> fill_in(text_field("First Name"), with: "Mary")
-    |> fill_in(text_field("Last Name"), with: "Jane")
-    |> fill_in(text_field("Photography Business Name"), with: "Jane")
+    |> fill_in(text_field("First name"), with: "Mary")
+    |> fill_in(text_field("Last name"), with: "Jane")
+    |> fill_in(text_field("Photography business name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
+    |> assert_has(css("button:not(:disabled)[type='submit']", text: "Save"))
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Hello Mary!"))
 
@@ -28,13 +29,13 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> fill_in(text_field("First Name"), with: "Mary")
-    |> fill_in(text_field("Last Name"), with: "Jane")
-    |> fill_in(text_field("Photography Business Name"), with: "Jane")
+    |> fill_in(text_field("First name"), with: "Mary")
+    |> fill_in(text_field("Last name"), with: "Jane")
+    |> fill_in(text_field("Photography business name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "123")
-    |> click(button("Save"))
     |> assert_has(css("label", text: "Password should be at least 12 character(s)"))
+    |> assert_has(css("button:disabled[type='submit']", text: "Save"))
 
     assert current_path(session) == "/users/register"
   end
