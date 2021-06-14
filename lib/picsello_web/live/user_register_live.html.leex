@@ -14,5 +14,10 @@
       <%= link "Cancel", to: Routes.page_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
       <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>
+
+    <p class="text-center mt-20">
+      Already have an account?
+      <%= link "Log In", to: Routes.user_session_path(@socket, :new), class: "font-semibold underline text-blue-primary" %>
+    </p>
   </form>
 </div>
