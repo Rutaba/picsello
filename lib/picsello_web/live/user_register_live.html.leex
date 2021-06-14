@@ -8,23 +8,7 @@
     <%= labeled_input f, :business_name, label: "Photography business name", phx_debounce: "500", placeholder: "Jane Takes Pictures LLC", wrapper_class: "mt-4" %>
     <%= labeled_input f, :email, placeholder: "jane@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
 
-    <div class='mt-4 flex flex-col'>
-      <%= label_for f, :password %>
-      <div class='relative'>
-        <% password_input_type = if @hide_password, do: :password, else: :text %>
-        <%= input f, :password, type: password_input_type, value: input_value(f, :password), phx_debounce: "500", wrapper_class: "mt-4", class: "w-full pr-16" %>
-
-        <a href='#' phx-click="toggle-password" class="absolute overflow-hidden right-2 top-0 bottom-0 flex flex-row justify-center items-center text-xs text-gray-400">
-          <%= if @hide_password do %>
-            show
-            <%= icon_tag(@socket, "eye", class: "w-4 ml-1 fill-current") %>
-          <% else %>
-            hide
-            <%= icon_tag(@socket, "closed-eye", class: "w-4 ml-1 fill-current") %>
-          <% end %>
-        </a>
-      </div>
-    </div>
+    <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>
 
     <div class="text-center mt-5">
       <%= link "Cancel", to: Routes.page_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>

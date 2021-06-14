@@ -42,9 +42,6 @@ defmodule PicselloWeb.FormHelpers do
     apply(Phoenix.HTML.Form, type, [form, field, input_opts])
   end
 
-  @doc """
-  Generates an input tag with error state.
-  """
   def label_for(form, field, opts \\ []) do
     has_error = form.errors[field]
     label_classes = ["input-label"] ++ if has_error, do: ["input-label-invalid"], else: []
@@ -57,9 +54,6 @@ defmodule PicselloWeb.FormHelpers do
     end
   end
 
-  @doc """
-  Generates a labeled input tag with inlined errors.
-  """
   def labeled_input(form, field, opts \\ []) do
     wrapper_classes = Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]
 
