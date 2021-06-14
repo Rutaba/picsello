@@ -21,12 +21,6 @@ defmodule PicselloWeb.Router do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
 
-  scope "/", PicselloWeb do
-    pipe_through :browser
-
-    live "/", PageLive, :index
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", PicselloWeb do
   #   pipe_through :api
@@ -53,6 +47,7 @@ defmodule PicselloWeb.Router do
   scope "/", PicselloWeb do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
+    live "/", PageLive, :index
     get "/users/register", UserRegistrationController, :new
     post "/users/register", UserRegistrationController, :create
     get "/users/log_in", UserSessionController, :new
