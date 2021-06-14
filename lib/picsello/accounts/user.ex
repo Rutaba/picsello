@@ -41,6 +41,12 @@ defmodule Picsello.Accounts.User do
     |> validate_password(opts)
   end
 
+  def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
+    user
+    |> cast(attrs, [:email, :password])
+    |> validate_required([:email, :password])
+  end
+
   defp validate_email(changeset) do
     changeset
     |> validate_required([:email])
