@@ -2,6 +2,7 @@
   <h1 class="title">Sign Up</h1>
   <%= f = form_for @changeset, Routes.user_registration_path(@socket, :create), phx_change: :validate, phx_submit: :save, phx_trigger_action: @trigger_submit %>
 
+    <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
     <%= input f, :first_name, placeholder: "Jane", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= input f, :last_name, placeholder: "Smith", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= input f, :business_name, label: "Photography business name", phx_debounce: "500", placeholder: "Jane Takes Pictures LLC", wrapper_class: "mt-4" %>

@@ -11,6 +11,10 @@ defmodule PicselloWeb.UserRegisterLive do
   end
 
   @impl true
+  def handle_event("validate", %{"user" => %{"trigger_submit" => "true"}}, socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("validate", %{"user" => params}, socket) do
     changeset =
       %User{}
