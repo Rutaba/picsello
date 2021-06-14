@@ -39,4 +39,16 @@ defmodule Picsello.SignUpTest do
 
     assert current_path(session) == "/users/register"
   end
+
+  feature "user toggles password visibility", %{session: session} do
+    session
+    |> visit("/")
+    |> click(css("a", text: "Sign Up"))
+    |> fill_in(text_field("Password"), with: "123")
+    |> assert_has(css("#user_password[type='password']"))
+    |> click(css("a", text: "show"))
+    |> assert_has(css("#user_password[type='text']"))
+    |> click(css("a", text: "hide"))
+    |> assert_has(css("#user_password[type='password']"))
+  end
 end

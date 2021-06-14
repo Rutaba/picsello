@@ -7,7 +7,7 @@ defmodule PicselloWeb.UserRegisterLive do
   @impl true
   def mount(_params, _session, socket) do
     changeset = Accounts.change_user_registration(%User{})
-    {:ok, assign(socket, changeset: changeset, trigger_submit: false)}
+    {:ok, assign(socket, changeset: changeset, trigger_submit: false, hide_password: true)}
   end
 
   @impl true
@@ -15,6 +15,7 @@ defmodule PicselloWeb.UserRegisterLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("validate", %{"user" => params}, socket) do
     changeset =
       %User{}
@@ -32,5 +33,10 @@ defmodule PicselloWeb.UserRegisterLive do
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, changeset: changeset, trigger_submit: changeset.valid?)}
+  end
+
+  @impl true
+  def handle_event("toggle-password", %{}, socket) do
+    {:noreply, assign(socket, hide_password: !socket.assigns.hide_password)}
   end
 end
