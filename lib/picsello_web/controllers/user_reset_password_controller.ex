@@ -9,23 +9,6 @@ defmodule PicselloWeb.UserResetPasswordController do
     render(conn, "new.html")
   end
 
-  def create(conn, %{"user" => %{"email" => email}}) do
-    if user = Accounts.get_user_by_email(email) do
-      Accounts.deliver_user_reset_password_instructions(
-        user,
-        &Routes.user_reset_password_url(conn, :edit, &1)
-      )
-    end
-
-    # Regardless of the outcome, show an impartial success/error message.
-    conn
-    |> put_flash(
-      :info,
-      "If your email is in our system, you will receive instructions to reset your password shortly."
-    )
-    |> redirect(to: "/")
-  end
-
   def edit(conn, _params) do
     render(conn, "edit.html", changeset: Accounts.change_user_password(conn.assigns.user))
   end

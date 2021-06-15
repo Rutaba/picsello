@@ -44,14 +44,26 @@ defmodule Picsello.Accounts.User do
   def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
     user
     |> cast(attrs, [:email, :password])
-    |> validate_required([:email, :password])
+    |> validate_email_format()
+    |> validate_required([:password])
   end
 
-  defp validate_email(changeset) do
+  def reset_password_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
+    user
+    |> cast(attrs, [:email])
+    |> validate_email_format()
+  end
+
+  defp validate_email_format(changeset) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
+  end
+
+  defp validate_email(changeset) do
+    changeset
+    |> validate_email_format()
     |> unsafe_validate_unique(:email, Picsello.Repo)
     |> unique_constraint(:email)
   end

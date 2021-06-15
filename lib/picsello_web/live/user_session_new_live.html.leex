@@ -10,8 +10,12 @@
 
   <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :log_in_password %>
 
+  <div class="text-center mt-4">
+    <%= link "Forgot Password", to: Routes.user_reset_password_path(@socket, :new), class: "text-sm underline text-blue-primary" %>
+  </div>
+
   <div class="text-center mt-5">
-     <%= submit "Log In", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Logging in..." %>
+     <%= submit "Log In", class: "btn-primary w-36 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Logging in..." %>
   </div>
 </form>
 </div>

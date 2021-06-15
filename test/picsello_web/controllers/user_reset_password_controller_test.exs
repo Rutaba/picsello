@@ -2,7 +2,6 @@ defmodule PicselloWeb.UserResetPasswordControllerTest do
   use PicselloWeb.ConnCase, async: true
 
   alias Picsello.Accounts
-  alias Picsello.Repo
   import Picsello.AccountsFixtures
 
   setup do
@@ -13,32 +12,7 @@ defmodule PicselloWeb.UserResetPasswordControllerTest do
     test "renders the reset password page", %{conn: conn} do
       conn = get(conn, Routes.user_reset_password_path(conn, :new))
       response = html_response(conn, 200)
-      assert response =~ "<h1>Forgot your password?</h1>"
-    end
-  end
-
-  describe "POST /users/reset_password" do
-    @tag :capture_log
-    test "sends a new reset password token", %{conn: conn, user: user} do
-      conn =
-        post(conn, Routes.user_reset_password_path(conn, :create), %{
-          "user" => %{"email" => user.email}
-        })
-
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :info) =~ "If your email is in our system"
-      assert Repo.get_by!(Accounts.UserToken, user_id: user.id).context == "reset_password"
-    end
-
-    test "does not send reset password token if email is invalid", %{conn: conn} do
-      conn =
-        post(conn, Routes.user_reset_password_path(conn, :create), %{
-          "user" => %{"email" => "unknown@example.com"}
-        })
-
-      assert redirected_to(conn) == "/"
-      assert get_flash(conn, :info) =~ "If your email is in our system"
-      assert Repo.all(Accounts.UserToken) == []
+      assert response =~ "<h1 class=\"title\">Forgot your password?</h1>"
     end
   end
 
