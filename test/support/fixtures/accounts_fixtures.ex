@@ -30,8 +30,13 @@ defmodule Picsello.AccountsFixtures do
   end
 
   def extract_user_token(fun) do
-    {:ok, captured} = fun.(&"[TOKEN]#{&1}[TOKEN]")
-    [_, token, _] = String.split(captured.body, "[TOKEN]")
-    token
+    {:ok, email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
+
+    case email do
+      %{private: %{send_grid_template: %{substitutions: %{"%url%" => url}}}} -> url
+      %{text_body: body} -> body
+    end
+    |> String.split("[TOKEN]")
+    |> Enum.at(1)
   end
 end

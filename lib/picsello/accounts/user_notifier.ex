@@ -1,15 +1,15 @@
 defmodule Picsello.Accounts.UserNotifier do
   @moduledoc false
-  # For simplicity, this module simply logs messages to the terminal.
-  # You should replace it by a proper email or notification tool, such as:
-  #
-  #   * Swoosh - https://hexdocs.pm/swoosh
-  #   * Bamboo - https://hexdocs.pm/bamboo
-  #
+  import Bamboo.Email
+  import Bamboo.SendGridHelper
+  alias Picsello.Mailer
+
   defp deliver(to, body) do
-    require Logger
-    Logger.debug(body)
-    {:ok, %{to: to, body: body}}
+    new_email()
+    |> from("noreply@picsello.com")
+    |> to(to)
+    |> text_body(body)
+    |> Mailer.deliver_later()
   end
 
   @doc """
@@ -36,20 +36,13 @@ defmodule Picsello.Accounts.UserNotifier do
   Deliver instructions to reset a user password.
   """
   def deliver_reset_password_instructions(user, url) do
-    deliver(user.email, """
-
-    ==============================
-
-    Hi #{user.email},
-
-    You can reset your password by visiting the URL below:
-
-    #{url}
-
-    If you didn't request this change, please ignore this.
-
-    ==============================
-    """)
+    new_email()
+    |> from("noreply@picsello.com")
+    |> to(user.email)
+    |> with_template(Application.get_env(:picsello, Picsello.Mailer)[:password_reset_template])
+    |> substitute("%name%", user.first_name)
+    |> substitute("%url%", url)
+    |> Mailer.deliver_later()
   end
 
   @doc """

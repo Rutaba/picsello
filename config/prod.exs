@@ -53,3 +53,11 @@ config :logger, level: :info
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
 # import_config "prod.secret.exs"
+
+config :picsello, Picsello.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key: System.get_env("SENDGRID_API_KEY"),
+  password_reset_template: System.get_env("SENDGRID_PASSWORD_RESET_TEMPLATE"),
+  hackney_opts: [
+    recv_timeout: :timer.minutes(1)
+  ]
