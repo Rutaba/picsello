@@ -5,3 +5,15 @@
 @import "./components/buttons.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
+
+@layer components {
+  .alert {
+    @apply rounded-lg p-3 m-4 cursor-pointer
+  }
+  .alert-error {
+    @apply bg-red-invalid-bg text-red-invalid
+  }
+  .alert-info {
+    @apply bg-blue-light-primary text-blue-primary
+  }
+}
