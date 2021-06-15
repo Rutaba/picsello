@@ -8,6 +8,12 @@ defmodule PicselloWeb.PasswordFieldComponent do
   end
 
   @impl true
+  def preload([assigns]) do
+    defaults = %{label: "Password"}
+    [Map.merge(defaults, assigns)]
+  end
+
+  @impl true
   def handle_event("toggle-password", %{}, socket) do
     {:noreply, assign(socket, hide_password: !socket.assigns.hide_password)}
   end
