@@ -159,4 +159,8 @@ defmodule Picsello.Accounts.User do
       add_error(changeset, :current_password, "is not valid")
     end
   end
+
+  def initials(%__MODULE__{first_name: first_name, last_name: last_name}) do
+    [first_name, last_name] |> Enum.map(&String.first(&1)) |> Enum.join() |> String.upcase()
+  end
 end

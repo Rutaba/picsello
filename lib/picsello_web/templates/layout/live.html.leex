@@ -1,4 +1,16 @@
 <main role="main">
+  <header class="border border-b-1 p-4 flex flex-row" >
+    <div class="flex-1">
+    </div>
+    <div class="flex-1">
+      <h2 class="text-center font-semibold text-2xl">Picsello</h2>
+    </div>
+    <div class="flex-1 flex flex-row justify-end">
+      <%= if @current_user do %>
+        <div class="rounded-full h-9 w-9 bg-black text-white justify-center items-center flex flex-col" ><%= Picsello.Accounts.User.initials @current_user %></div>
+      <% end %>
+    </div>
+  </header>
   <%= [{:error, "alert-error"}, {:info, "alert-info"}] |> Enum.map(fn {key, class} -> %>
     <% flash = live_flash(@flash, key) %>
     <%= if flash do %>
