@@ -32,7 +32,7 @@ defmodule Picsello.SignUpTest do
     |> fill_in(text_field("Photography business name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "123")
-    |> assert_has(css("label", text: "Password should be at least 12 character(s)"))
+    |> assert_has(css("label", text: "Password should be at least 12 characters"))
     |> assert_has(css("button:disabled[type='submit']", text: "Save"))
 
     assert current_path(session) == "/users/register"
