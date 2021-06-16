@@ -20,6 +20,7 @@
       focus:ring-opacity-75
       disabled:bg-gray-disabled
       disabled:border-gray-disabled
+      disabled:cursor-not-allowed
      ;
   }
   .btn-secondary {
