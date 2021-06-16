@@ -1,8 +1,8 @@
 <main role="main">
-  <%= [:error, :info] |> Enum.map(fn key -> %>
+  <%= [{:error, "alert-error"}, {:info, "alert-info"}] |> Enum.map(fn {key, class} -> %>
     <% flash = get_flash(@conn, key) %>
     <%= if flash do %>
-      <p class="alert alert-<%= key %>" role="alert"><%= flash %></p>
+      <p class="alert <%= class %>" role="alert"><%= flash %></p>
     <% end %>
   <% end) %>
   <%= @inner_content %>
