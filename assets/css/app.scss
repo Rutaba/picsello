@@ -6,6 +6,10 @@
 @import "./components/forms.css";
 @import "./components/typography.css";
 
+html {
+  @apply text-black
+}
+
 @layer components {
   .alert {
     @apply rounded-lg p-3 m-4 cursor-pointer

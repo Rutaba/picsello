@@ -12,7 +12,7 @@
 
     <div class="text-center mt-5">
       <%= link "Cancel", to: Routes.page_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
-      <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+      <%= submit "Next", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>
 
     <p class="text-center mt-20">

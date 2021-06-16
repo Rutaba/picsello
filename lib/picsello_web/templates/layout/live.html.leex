@@ -3,7 +3,9 @@
     <div class="flex-1">
     </div>
     <div class="flex-1">
-      <a href="/"><h2 class="text-center font-semibold text-black text-2xl font-logo-sans">Picsello</h2></a>
+      <%= live_redirect to: if @current_user, do: "/home", else: "/" do %>
+        <h2 class="text-center font-semibold text-2xl font-logo-sans">Picsello</h2>
+      <% end %>
     </div>
     <div class="flex-1 flex flex-row justify-end">
       <%= if @current_user do %>
