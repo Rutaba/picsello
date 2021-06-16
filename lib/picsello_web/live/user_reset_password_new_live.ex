@@ -5,10 +5,13 @@ defmodule PicselloWeb.UserResetPasswordNewLive do
   alias Picsello.{Accounts, Accounts.User}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     changeset = User.reset_password_changeset()
 
-    {:ok, assign(socket, changeset: changeset, trigger_submit: false)}
+    socket
+    |> assign_defaults(session)
+    |> assign(changeset: changeset, trigger_submit: false)
+    |> ok()
   end
 
   @impl true
@@ -49,6 +52,4 @@ defmodule PicselloWeb.UserResetPasswordNewLive do
         |> noreply()
     end
   end
-
-  defp noreply(socket), do: {:noreply, socket}
 end

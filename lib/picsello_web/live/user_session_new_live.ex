@@ -5,10 +5,13 @@ defmodule PicselloWeb.UserSessionNewLive do
   alias Picsello.{Accounts, Accounts.User}
 
   @impl true
-  def mount(_params, _session, socket) do
-    changeset = User.new_session_changeset(%User{}, %{})
+  def mount(_params, session, socket) do
+    changeset = User.new_session_changeset()
 
-    {:ok, assign(socket, changeset: changeset, error_message: nil, trigger_submit: false)}
+    socket
+    |> assign_defaults(session)
+    |> assign(changeset: changeset, error_message: nil, trigger_submit: false)
+    |> ok()
   end
 
   @impl true

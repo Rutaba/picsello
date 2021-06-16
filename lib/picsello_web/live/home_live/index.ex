@@ -4,8 +4,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def mount(_params, session, socket) do
-    user_token = Map.get(session, "user_token")
-    user = Picsello.Accounts.get_user_by_session_token(user_token)
-    {:ok, assign(socket, :user, user)}
+    socket |> assign_defaults(session) |> ok()
   end
 end

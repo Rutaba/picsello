@@ -47,6 +47,7 @@ defmodule PicselloWeb do
       use Phoenix.LiveView,
         layout: {PicselloWeb.LayoutView, "live.html"}
 
+      import PicselloWeb.LiveHelpers
       unquote(view_helpers())
     end
   end

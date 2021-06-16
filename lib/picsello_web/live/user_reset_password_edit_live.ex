@@ -5,7 +5,7 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
   alias Picsello.{Accounts, Accounts.User}
 
   @impl true
-  def mount(%{"token" => token}, _session, socket) do
+  def mount(%{"token" => token}, session, socket) do
     user = Accounts.get_user_by_reset_password_token(token)
 
     if user do
@@ -17,6 +17,7 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
       |> put_flash(:error, "Reset password link is invalid or it has expired.")
       |> push_redirect(to: Routes.user_reset_password_path(socket, :new))
     end
+    |> assign_defaults(session)
     |> ok()
   end
 
@@ -39,7 +40,4 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
     |> push_redirect(to: Routes.user_session_path(socket, :new))
     |> noreply()
   end
-
-  defp noreply(socket), do: {:noreply, socket}
-  defp ok(socket), do: {:ok, socket}
 end

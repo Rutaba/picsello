@@ -5,9 +5,13 @@ defmodule PicselloWeb.UserRegisterLive do
   alias Picsello.{Accounts, Accounts.User}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     changeset = Accounts.change_user_registration(%User{})
-    {:ok, assign(socket, changeset: changeset, trigger_submit: false)}
+
+    socket
+    |> assign_defaults(session)
+    |> assign(changeset: changeset, trigger_submit: false)
+    |> ok()
   end
 
   @impl true

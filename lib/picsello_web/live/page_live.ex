@@ -3,7 +3,7 @@ defmodule PicselloWeb.PageLive do
   use PicselloWeb, :live_view
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def mount(_params, session, socket) do
+    socket |> assign_defaults(session) |> ok()
   end
 end
