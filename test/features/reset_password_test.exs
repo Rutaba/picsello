@@ -33,10 +33,7 @@ defmodule Picsello.ResetPasswordTest do
     assert current_path(session) == "/users/log_in"
 
     session
-    |> fill_in(text_field("Email"), with: user.email)
-    |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Log In"))
+    |> sign_in(user, "ThisIsAStrongP@ssw0rd")
     |> assert_has(css("h1", text: "Hello #{user.first_name}"))
   end
 

@@ -12,6 +12,27 @@ defmodule Picsello.FeatureCase do
       def wait_for_enabled_submit_button(session) do
         session |> assert_has(css("button:not(:disabled)[type='submit']"))
       end
+
+      def sign_in(
+            session,
+            %{email: email},
+            password \\ Picsello.AccountsFixtures.valid_user_password()
+          ) do
+        session
+        |> maybe_visit_log_in()
+        |> fill_in(text_field("Email"), with: email)
+        |> fill_in(text_field("Password"), with: password)
+        |> wait_for_enabled_submit_button()
+        |> click(button("Log In"))
+      end
+
+      def maybe_visit_log_in(session) do
+        if current_path(session) == "/users/log_in" do
+          session
+        else
+          session |> visit("/users/log_in")
+        end
+      end
     end
   end
 end
