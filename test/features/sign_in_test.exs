@@ -1,7 +1,5 @@
 defmodule Picsello.SignInTest do
-  use ExUnit.Case, async: false
-  use Wallaby.Feature
-  import Wallaby.Query
+  use Picsello.FeatureCase
   import Picsello.AccountsFixtures
 
   feature "user views log in button", %{session: session} do
@@ -19,7 +17,7 @@ defmodule Picsello.SignInTest do
     |> click(css("a", text: "Log In"))
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
-    |> assert_has(css("button:not(:disabled)[type='submit']", text: "Log In"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
     |> assert_has(css("p.text-red-invalid", text: "Invalid email or password"))
   end
@@ -32,7 +30,7 @@ defmodule Picsello.SignInTest do
     |> click(css("a", text: "Log In"))
     |> fill_in(text_field("Email"), with: user.email)
     |> fill_in(text_field("Password"), with: valid_user_password())
-    |> assert_has(css("button:not(:disabled)[type='submit']", text: "Log In"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
     |> assert_has(css("h1", text: "Hello #{user.first_name}"))
 

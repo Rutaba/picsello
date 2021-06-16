@@ -1,8 +1,6 @@
 defmodule Picsello.ResetPasswordTest do
-  use ExUnit.Case, async: false
-  use Wallaby.Feature
+  use Picsello.FeatureCase
   use Bamboo.Test, shared: true
-  import Wallaby.Query
   import Picsello.AccountsFixtures
 
   feature "user receives new reset password token", %{session: session} do
@@ -15,7 +13,7 @@ defmodule Picsello.ResetPasswordTest do
     |> fill_in(text_field("Email"), with: "invalid")
     |> assert_has(css("label", text: "Email must have the @ sign and no spaces"))
     |> fill_in(text_field("Email"), with: user.email)
-    |> assert_has(css("button:not(:disabled)[type='submit']"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Reset Password"))
     |> assert_has(css(".alert.alert-info", text: "If your email is in our system"))
 
@@ -30,7 +28,7 @@ defmodule Picsello.ResetPasswordTest do
     |> assert_has(css("label", text: "New password can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("New password"), with: "ThisIsAStrongP@ssw0rd")
-    |> assert_has(css("button:not(:disabled)[type='submit']"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Reset Password"))
     |> assert_has(css(".alert.alert-info", text: "Password reset successfully."))
 
@@ -39,7 +37,7 @@ defmodule Picsello.ResetPasswordTest do
     session
     |> fill_in(text_field("Email"), with: user.email)
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
-    |> assert_has(css("button:not(:disabled)[type='submit']"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
     |> assert_has(css("h1", text: "Hello #{user.first_name}"))
   end

@@ -1,7 +1,5 @@
 defmodule Picsello.SignUpTest do
-  use ExUnit.Case, async: false
-  use Wallaby.Feature
-  import Wallaby.Query
+  use Picsello.FeatureCase
 
   feature "user views sign up button", %{session: session} do
     session
@@ -18,7 +16,7 @@ defmodule Picsello.SignUpTest do
     |> fill_in(text_field("Photography business name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
-    |> assert_has(css("button:not(:disabled)[type='submit']", text: "Save"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Hello Mary!"))
 
