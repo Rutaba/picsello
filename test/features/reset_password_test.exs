@@ -47,7 +47,7 @@ defmodule Picsello.ResetPasswordTest do
       css(".alert.alert-error", text: "Reset password link is invalid or it has expired.")
     )
 
-    assert current_path(session) == "/"
+    assert current_path(session) == "/users/reset_password"
   end
 
   @tag capture_log: true

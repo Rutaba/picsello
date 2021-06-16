@@ -15,7 +15,7 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
     else
       socket
       |> put_flash(:error, "Reset password link is invalid or it has expired.")
-      |> push_redirect(to: "/")
+      |> push_redirect(to: Routes.user_reset_password_path(socket, :new))
     end
     |> ok()
   end
