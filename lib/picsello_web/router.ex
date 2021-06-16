@@ -54,11 +54,12 @@ defmodule PicselloWeb.Router do
     live "/", PageLive, :index
     get "/users/register", UserRegistrationController, :new
     post "/users/register", UserRegistrationController, :create
-    get "/users/log_in", UserSessionController, :new
+    live "/users/log_in", UserSessionNewLive, :new, as: :user_session
     post "/users/log_in", UserSessionController, :create
-    get "/users/reset_password", UserResetPasswordController, :new
-    get "/users/reset_password/:token", UserResetPasswordController, :edit
-    put "/users/reset_password/:token", UserResetPasswordController, :update
+    live "/users/reset_password", UserResetPasswordNewLive, :new, as: :user_reset_password
+
+    live "/users/reset_password/:token", UserResetPasswordEditLive, :edit,
+      as: :user_reset_password
   end
 
   scope "/", PicselloWeb do

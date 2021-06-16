@@ -4,10 +4,6 @@ defmodule PicselloWeb.UserSessionController do
   alias Picsello.Accounts
   alias PicselloWeb.UserAuth
 
-  def new(conn, _params) do
-    render(conn, "new.html", error_message: nil)
-  end
-
   def create(conn, %{"user" => user_params}) do
     %{"email" => email, "password" => password} = user_params
 
