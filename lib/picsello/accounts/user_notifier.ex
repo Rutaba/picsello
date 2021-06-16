@@ -3,6 +3,7 @@ defmodule Picsello.Accounts.UserNotifier do
   import Bamboo.Email
   import Bamboo.SendGridHelper
   alias Picsello.Mailer
+  require Logger
 
   defp deliver(to, body) do
     new_email()
@@ -43,6 +44,11 @@ defmodule Picsello.Accounts.UserNotifier do
     |> substitute("%name%", user.first_name)
     |> substitute("%url%", url)
     |> Mailer.deliver_later()
+  rescue
+    exception ->
+      error = Exception.format(:error, exception, __STACKTRACE__)
+      Logger.error(error)
+      {:error, exception}
   end
 
   @doc """
