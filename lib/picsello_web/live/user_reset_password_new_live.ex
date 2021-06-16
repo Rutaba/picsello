@@ -23,20 +23,31 @@ defmodule PicselloWeb.UserResetPasswordNewLive do
 
   @impl true
   def handle_event("submit", %{"user" => user_params}, socket) do
-    if user = Accounts.get_user_by_email(user_params["email"]) do
-      Accounts.deliver_user_reset_password_instructions(
-        user,
-        &Routes.user_reset_password_url(socket, :edit, &1)
-      )
-    end
+    result =
+      if user = Accounts.get_user_by_email(user_params["email"]) do
+        Accounts.deliver_user_reset_password_instructions(
+          user,
+          &Routes.user_reset_password_url(socket, :edit, &1)
+        )
+      else
+        {:ok, :user_not_found}
+      end
 
-    socket
-    |> put_flash(
-      :info,
-      "If your email is in our system, you will receive instructions to reset your password shortly."
-    )
-    |> redirect(to: "/")
-    |> noreply()
+    case result do
+      {:ok, _} ->
+        socket
+        |> put_flash(
+          :info,
+          "If your email is in our system, you will receive instructions to reset your password shortly."
+        )
+        |> redirect(to: "/")
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Unexpected error. Please try again.")
+        |> noreply()
+    end
   end
 
   defp noreply(socket), do: {:noreply, socket}
