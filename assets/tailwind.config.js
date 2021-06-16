@@ -1,3 +1,5 @@
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 module.exports = {
   mode: 'jit',
   purge: [
@@ -17,7 +19,11 @@ module.exports = {
         'red-invalid': '#CB0000',
         'red-invalid-bg': '#FFF2F2',
         'gray-disabled': '#AAA'
-      }
+      },
+      fontFamily: {
+        sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
+        'logo-sans': defaultTheme.fontFamily.sans,
+      },
     },
   },
   variants: {

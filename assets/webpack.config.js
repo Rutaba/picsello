@@ -42,6 +42,19 @@ module.exports = (env, options) => {
             'postcss-loader',
             'sass-loader',
           ],
+        },
+        {
+          test: /\.(eot|woff|woff2|ttf)$/,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: '[name].[ext]',
+                path: path.resolve(__dirname, '../priv/static/js'),
+                publicPath: '/js/',
+              },
+            },
+          ],
         }
       ]
     },
