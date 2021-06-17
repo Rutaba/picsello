@@ -5,7 +5,12 @@
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
     <%= labeled_input f, :first_name, placeholder: "Jane", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_input f, :last_name, placeholder: "Smith", phx_debounce: "500", wrapper_class: "mt-4" %>
-    <%= labeled_input f, :business_name, label: "Photography business name", phx_debounce: "500", placeholder: "Jane Takes Pictures LLC", wrapper_class: "mt-4" %>
+
+
+    <%= inputs_for f, :organization, fn o -> %>
+      <%= labeled_input o, :name, label: "Photography business name", phx_debounce: "500", placeholder: "Jane Takes Pictures LLC", wrapper_class: "mt-4" %>
+    <% end %>
+
     <%= labeled_input f, :email, placeholder: "jane@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
 
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>

@@ -16,7 +16,7 @@ defmodule Picsello.AccountsFixtures do
       password: valid_user_password(),
       first_name: valid_first_name(),
       last_name: valid_first_name(),
-      business_name: valid_business_name()
+      organization: valid_organization_attributes()
     })
   end
 
@@ -27,6 +27,12 @@ defmodule Picsello.AccountsFixtures do
       |> Picsello.Accounts.register_user()
 
     user
+  end
+
+  def valid_organization_attributes do
+    %{
+      name: valid_business_name()
+    }
   end
 
   def extract_user_token(fun) do
