@@ -25,29 +25,28 @@ defmodule PicselloWeb.FormHelpers do
   def input(form, field, opts \\ []) do
     type = Phoenix.HTML.Form.input_type(form, field)
 
-    has_error = form.errors[field]
-
-    inputs_classes =
-      Keyword.get_values(opts, :class) ++
-        ["text-input"] ++ if has_error, do: ["text-input-invalid"], else: []
-
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
 
     input_opts =
       [
         phx_feedback_for,
-        class: Enum.join(inputs_classes, " ")
+        class:
+          classes(["text-input", Keyword.get_values(opts, :class)], %{
+            "text-input-invalid" => form.errors[field]
+          })
       ] ++ Keyword.drop(opts, [:class])
 
     apply(Phoenix.HTML.Form, type, [form, field, input_opts])
   end
 
   def label_for(form, field, opts \\ []) do
-    has_error = form.errors[field]
-    label_classes = ["input-label"] ++ if has_error, do: ["input-label-invalid"], else: []
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
     label_text = Keyword.get(opts, :label) || humanize(field)
-    label_opts = [phx_feedback_for, class: Enum.join(label_classes, " ")]
+
+    label_opts = [
+      phx_feedback_for,
+      class: classes("input-label", %{"input-label-invalid" => form.errors[field]})
+    ]
 
     label form, field, label_opts do
       [label_text, " ", error_tag(form, field)]
@@ -55,19 +54,16 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def labeled_input(form, field, opts \\ []) do
-    wrapper_classes = Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]
-
-    wrapper_opts = [class: Enum.join(wrapper_classes, " ")]
-
     label_opts = [label: Keyword.get(opts, :label)]
 
     input_opts =
       [
-        class: Keyword.get(opts, :input_class)
+        class: opts |> Keyword.get(:input_class) |> classes()
       ] ++
         Keyword.drop(opts, [:wrapper_class, :input_class, :label])
 
-    content_tag :div, wrapper_opts do
+    content_tag :div,
+      class: classes([Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"]) do
       [
         label_for(form, field, label_opts),
         input(form, field, input_opts)
@@ -76,32 +72,25 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def labeled_select(form, field, options, opts \\ []) do
-    wrapper_classes = Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]
-
-    wrapper_opts = [class: Enum.join(wrapper_classes, " ")]
-
     label_opts = [label: Keyword.get(opts, :label)]
 
     value = input_value(form, field)
-
-    has_error = form.errors[field]
-
-    select_classes =
-      Keyword.get_values(opts, :class) ++
-        ["select"] ++
-        if(has_error, do: ["select-invalid"], else: []) ++
-        if !value || value == "", do: ["select-prompt"], else: [""]
 
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
 
     select_opts =
       [
         phx_feedback_for,
-        class: Enum.join(select_classes, " ")
+        class:
+          classes(["select" | Keyword.get_values(opts, :class)], %{
+            "select-invalid" => form.errors[field],
+            "select-prompt" => !value || value == ""
+          })
       ] ++
         Keyword.drop(opts, [:wrapper_class, :select_class, :label])
 
-    content_tag :div, wrapper_opts do
+    content_tag :div,
+      class: classes([Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"]) do
       [
         label_for(form, field, label_opts),
         select(form, field, options, select_opts)
@@ -138,8 +127,27 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def icon_tag(conn, name, opts \\ []) do
-    content_tag(:svg, opts) do
+    content_tag(:svg, class: classes(Keyword.get(opts, :class))) do
       tag(:use, "xlink:href": Routes.static_path(conn, "/images/icons.svg#" <> name))
     end
+  end
+
+  defp classes(constants), do: classes(constants, %{})
+
+  defp classes(nil, optionals), do: classes([], optionals)
+
+  defp classes("" <> constant, optionals) do
+    classes([constant], optionals)
+  end
+
+  defp classes(constants, optionals) do
+    [
+      constants,
+      optionals
+      |> Enum.filter(&elem(&1, 1))
+      |> Enum.map(&elem(&1, 0))
+    ]
+    |> Enum.concat()
+    |> Enum.join(" ")
   end
 end
