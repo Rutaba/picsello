@@ -8,6 +8,7 @@ defmodule Picsello.FeatureCase do
       use ExUnit.Case, async: false
       use Wallaby.Feature
       import Wallaby.Query
+      alias Picsello.AccountsFixtures
 
       def wait_for_enabled_submit_button(session) do
         session |> assert_has(css("button:not(:disabled)[type='submit']"))
@@ -16,7 +17,7 @@ defmodule Picsello.FeatureCase do
       def sign_in(
             session,
             %{email: email},
-            password \\ Picsello.AccountsFixtures.valid_user_password()
+            password \\ AccountsFixtures.valid_user_password()
           ) do
         session
         |> maybe_visit_log_in()
@@ -32,6 +33,13 @@ defmodule Picsello.FeatureCase do
         else
           session |> visit("/users/log_in")
         end
+      end
+
+      def authenticated(%{session: session}) do
+        user = AccountsFixtures.user_fixture()
+        sign_in(session, user)
+
+        [session: session, user: user]
       end
     end
   end
