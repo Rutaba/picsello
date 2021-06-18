@@ -56,7 +56,7 @@ defmodule Picsello.Accounts.User do
     |> validate_email_format()
   end
 
-  defp validate_email_format(changeset) do
+  def validate_email_format(changeset) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")

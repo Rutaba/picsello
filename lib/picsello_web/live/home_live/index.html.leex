@@ -1,8 +1,8 @@
 <div class="p-8">
   <h1 class="text-center text-3xl font-bold">Hello <%=@current_user.first_name %>!</h1>
   <h2 class="text-center text-gray-500 mt-2">Let's get started today.</h2>
-  <a class="btn-secondary text-center text-3xl mt-6 mx-auto p-6 block max-w-sm flex flex-row justify-center" href="#">
+  <%= live_redirect to: Routes.job_path(@socket, :new), class: "btn-secondary text-center text-3xl mt-6 mx-auto p-6 block max-w-sm flex flex-row justify-center" do%>
     <%= icon_tag(@socket, "sparkles", class: "w-10 h-10 fill-current mr-4") %>
     Create a Job
-  </a>
+  <% end %>
 </div>

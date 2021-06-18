@@ -70,6 +70,7 @@ defmodule PicselloWeb.Router do
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
 
     live "/home", HomeLive.Index, :index
+    live "/jobs/new", JobLive.New, :new, as: :job
   end
 
   scope "/", PicselloWeb do
