@@ -23,7 +23,6 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
-        'logo-sans': defaultTheme.fontFamily.sans,
       },
     },
   },

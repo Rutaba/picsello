@@ -104,9 +104,7 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def icon_tag(conn, name, opts \\ []) do
-    classes = Keyword.get(opts, :class, "")
-
-    content_tag(:svg, class: classes) do
+    content_tag(:svg, opts) do
       tag(:use, "xlink:href": Routes.static_path(conn, "/images/icons.svg#" <> name))
     end
   end
