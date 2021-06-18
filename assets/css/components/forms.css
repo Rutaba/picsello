@@ -5,9 +5,13 @@
 @layer components {
   .text-input {
     @apply
+      form-input
+      placeholder-gray-400
+      focus:ring-0
       focus:outline-none
       focus:border-blue-primary
       border
+      border-gray-200
       rounded-lg
       p-3
     ;
@@ -29,6 +33,28 @@
   .input-label-invalid:not(.phx-no-feedback) {
     @apply
       text-red-invalid
+    ;
+  }
+  .select {
+    @apply
+      form-select
+      focus:ring-0
+      focus:outline-none
+      focus:border-blue-primary
+      border
+      border-gray-200
+      rounded-lg
+      p-3
+  }
+  .select-prompt {
+    @apply
+      text-gray-400
+  }
+  .select-invalid:not(.phx-no-feedback) {
+    @apply
+      border-red-invalid
+      bg-red-invalid-bg
+      focus:border-red-invalid
     ;
   }
   .invalid-feedback.phx-no-feedback {

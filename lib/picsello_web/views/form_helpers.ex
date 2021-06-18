@@ -75,6 +75,40 @@ defmodule PicselloWeb.FormHelpers do
     end
   end
 
+  def labeled_select(form, field, options, opts \\ []) do
+    wrapper_classes = Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]
+
+    wrapper_opts = [class: Enum.join(wrapper_classes, " ")]
+
+    label_opts = [label: Keyword.get(opts, :label)]
+
+    value = input_value(form, field)
+
+    has_error = form.errors[field]
+
+    select_classes =
+      Keyword.get_values(opts, :class) ++
+        ["select"] ++
+        if(has_error, do: ["select-invalid"], else: []) ++
+        if !value || value == "", do: ["select-prompt"], else: [""]
+
+    phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
+
+    select_opts =
+      [
+        phx_feedback_for,
+        class: Enum.join(select_classes, " ")
+      ] ++
+        Keyword.drop(opts, [:wrapper_class, :select_class, :label])
+
+    content_tag :div, wrapper_opts do
+      [
+        label_for(form, field, label_opts),
+        select(form, field, options, select_opts)
+      ]
+    end
+  end
+
   @doc """
   Translates an error message using gettext.
   """
