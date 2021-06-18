@@ -39,7 +39,7 @@ defmodule Picsello.AccountsFixtures do
     {:ok, email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
 
     case email do
-      %{private: %{send_grid_template: %{substitutions: %{"%url%" => url}}}} -> url
+      %{private: %{send_grid_template: %{dynamic_template_data: %{"url" => url}}}} -> url
       %{text_body: body} -> body
     end
     |> String.split("[TOKEN]")

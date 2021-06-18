@@ -41,8 +41,8 @@ defmodule Picsello.Accounts.UserNotifier do
     |> from("noreply@picsello.com")
     |> to(user.email)
     |> with_template(Application.get_env(:picsello, Picsello.Mailer)[:password_reset_template])
-    |> substitute("%name%", user.first_name)
-    |> substitute("%url%", url)
+    |> add_dynamic_field("name", user.first_name)
+    |> add_dynamic_field("url", url)
     |> Mailer.deliver_later()
   rescue
     exception ->
