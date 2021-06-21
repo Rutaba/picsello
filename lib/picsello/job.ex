@@ -4,11 +4,12 @@ defmodule Picsello.Job do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Client, Repo}
+  alias Picsello.{Client, Repo, Package}
 
   schema "jobs" do
     field :type, :string
     belongs_to(:client, Client)
+    belongs_to(:package, Package)
 
     timestamps()
   end
@@ -17,10 +18,18 @@ defmodule Picsello.Job do
 
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
-    |> cast(attrs, [:type])
+    |> cast(attrs, [:type, :client_id])
     |> cast_assoc(:client, with: &Client.create_changeset/2)
-    |> validate_required([:type, :client])
+    |> validate_required([:type])
     |> validate_inclusion(:type, @types)
+    |> assoc_constraint(:client)
+  end
+
+  def add_package_changeset(job \\ %__MODULE__{}, attrs) do
+    job
+    |> cast(attrs, [:package_id])
+    |> validate_required([:package_id])
+    |> assoc_constraint(:package)
   end
 
   def name(%__MODULE__{type: type} = job) do

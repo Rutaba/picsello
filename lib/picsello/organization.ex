@@ -10,7 +10,7 @@ defmodule Picsello.Organization do
   end
 
   @doc false
-  def registration_changeset(organization, attrs) do
+  def registration_changeset(organization \\ %__MODULE__{}, attrs) do
     organization
     |> cast(attrs, [:name])
     |> validate_required([:name])
