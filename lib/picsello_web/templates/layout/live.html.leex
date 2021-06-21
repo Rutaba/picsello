@@ -2,9 +2,9 @@
   <header class="border border-b-1 p-4 flex flex-row" >
     <div class="flex-1">
     </div>
-    <div class="flex-1 flex items-center">
-      <%= live_redirect to: (if @current_user, do: "/home", else: "/"), class: "block flex justify-center" do %>
-        <%= icon_tag(@socket, "logo", class: "h-5") %>
+    <div class="flex-1 flex flex-col justify-center items-center">
+      <%= live_redirect to: (if @current_user, do: "/home", else: "/") do %>
+        <%= icon_tag(@socket, "logo", class: "h-5 w-20") %>
       <% end %>
     </div>
     <div class="flex-1 flex flex-row justify-end">
