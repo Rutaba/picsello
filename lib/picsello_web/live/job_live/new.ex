@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.New do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.Job
+  alias Picsello.{Job, Repo}
 
   @impl true
   def mount(_params, session, socket) do
@@ -18,20 +18,34 @@ defmodule PicselloWeb.JobLive.New do
   end
 
   @impl true
-  def handle_event("save", _params, socket) do
-    socket |> noreply()
+  def handle_event("save", %{"job" => params}, socket) do
+    socket = socket |> assign_changeset(:create, params)
+    changeset = build_changeset(socket, params)
+
+    case changeset |> Repo.insert() do
+      {:ok, %Job{id: job_id}} ->
+        socket |> push_redirect(to: Routes.job_package_path(socket, :new, job_id)) |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset) |> noreply()
+    end
+  end
+
+  defp build_changeset(
+         %{assigns: %{current_user: current_user}},
+         params
+       ) do
+    params
+    |> put_in(["client", "organization_id"], current_user.organization_id)
+    |> Job.create_changeset()
   end
 
   defp assign_changeset(
-         %{assigns: %{current_user: current_user}} = socket,
+         socket,
          action \\ nil,
          params \\ %{"client" => %{}}
        ) do
-    changeset =
-      params
-      |> put_in(["client", "organization_id"], current_user.organization_id)
-      |> Job.create_changeset()
-      |> Map.put(:action, action)
+    changeset = build_changeset(socket, params) |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end
