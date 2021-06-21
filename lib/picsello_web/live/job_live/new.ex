@@ -19,7 +19,6 @@ defmodule PicselloWeb.JobLive.New do
 
   @impl true
   def handle_event("save", %{"job" => params}, socket) do
-    socket = socket |> assign_changeset(:create, params)
     changeset = build_changeset(socket, params)
 
     case changeset |> Repo.insert() do
