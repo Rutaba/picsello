@@ -41,6 +41,7 @@ defmodule Picsello.MixProject do
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
+      {:money, "~> 1.8"},
       {:phoenix, "~> 1.5.9"},
       {:phoenix_ecto, "~> 4.1"},
       {:phoenix_html, "~> 2.11"},

@@ -5,7 +5,7 @@ defmodule Picsello.Package do
   schema "packages" do
     field :description, :string
     field :name, :string
-    field :price, :integer
+    field :price, Money.Ecto.Amount.Type
     field :shoot_count, :integer
     belongs_to(:organization, Picsello.Organization)
 
@@ -17,6 +17,13 @@ defmodule Picsello.Package do
     package
     |> cast(attrs, [:price, :name, :description, :shoot_count, :organization_id])
     |> validate_required([:price, :name, :description, :shoot_count, :organization_id])
-    |> validate_number(:price, greater_than_or_equal_to: 0)
+    |> validate_money(:price)
+  end
+
+  defp validate_money(changeset, field) do
+    validate_change(changeset, field, fn
+      _, %Money{amount: amount} when amount >= 0 -> []
+      _, _ -> [{field, "must be greater than or equal to 0"}]
+    end)
   end
 end
