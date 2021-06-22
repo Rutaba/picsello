@@ -7,7 +7,7 @@ defmodule Picsello.Job do
   alias Picsello.{Client, Repo, Package}
 
   schema "jobs" do
-    field :type, :string
+    field(:type, :string)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
 

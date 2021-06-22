@@ -1,3 +1,18 @@
 <div class="p-8">
   <h1 class="title"><%= Job.name @job %></h1>
+
+  <dl>
+    <dt class="text-xs font-semibold mt-4">Client:</dt>
+    <dd><%= @job.client.name %></dd>
+    <dt class="text-xs font-semibold mt-4">Client email:</dt>
+    <dd><%= @job.client.email %></dd>
+    <dt class="text-xs font-semibold mt-4">Type of job:</dt>
+    <dd><%= humanize(@job.type) %></dd>
+    <dt class="text-xs font-semibold mt-4">Job price:</dt>
+    <dd><%= @job.package.price %></dd>
+    <dt class="text-xs font-semibold mt-4">Package:</dt>
+    <dd><%= @job.package.name %></dd>
+    <dt class="text-xs font-semibold mt-4">Package description:</dt>
+    <dd><%= @job.package.description %></dd>
+  </dl>
 </div>

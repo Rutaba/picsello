@@ -6,10 +6,13 @@ defmodule Picsello.CreateJobTest do
   setup :authenticated
 
   feature "user creates job", %{session: session} do
+    client_email = "taylor@example.com"
+    client_name = "Elizabeth Taylor"
+
     session
     |> click(link("Create a Job"))
-    |> fill_in(text_field("Client name"), with: "Elizabeth Taylor")
-    |> fill_in(text_field("Client email"), with: "taylor@example.com")
+    |> fill_in(text_field("Client name"), with: client_name)
+    |> fill_in(text_field("Client email"), with: client_email)
     |> click(option("Wedding"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
@@ -17,11 +20,17 @@ defmodule Picsello.CreateJobTest do
     |> assert_has(css("h1", text: "Add Package"))
     |> fill_in(text_field("Package name"), with: "Wedding Deluxe")
     |> fill_in(text_field("Package description"), with: "My greatest wedding package")
-    |> fill_in(text_field("Package price"), with: "1234")
+    |> fill_in(text_field("Package price"), with: "1234.50")
     |> click(css("option", text: "2"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
+    |> assert_has(definition("Client", text: client_name))
+    |> assert_has(definition("Client email", text: client_email))
+    |> assert_has(definition("Type of job", text: "Wedding"))
+    |> assert_has(definition("Job price", text: "$1,234.50"))
+    |> assert_has(definition("Package", text: "Wedding Deluxe"))
+    |> assert_has(definition("Package description", text: "My greatest wedding package"))
   end
 
   feature "user sees validation errors when creating job", %{session: session} do
@@ -135,5 +144,9 @@ defmodule Picsello.CreateJobTest do
     |> visit("/jobs/#{job.id}/packages/new")
 
     assert current_path(session) == "/jobs/#{job.id}"
+  end
+
+  defp definition(term, opts) do
+    xpath("//dt[contains(./text(), '#{term}')]/following-sibling::dd[1]", opts)
   end
 end
