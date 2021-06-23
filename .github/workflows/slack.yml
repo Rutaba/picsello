@@ -14,15 +14,15 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_MESSAGE: ':rocket: [build passed](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})'
+        SLACK_COLOR: green
+        SLACK_MESSAGE: ':rocket: [build passed](${{github.event.workflow_run.html_url}})'
   on-failure:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
-    - name: log available stuffs
-      run: echo '${{toJSON(github.event.workflow_run)}}'
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_MESSAGE: ':skull: [build failed](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})'
+        SLACK_COLOR: red
+        SLACK_MESSAGE: ':skull: [build failed](${{github.event.workflow_run.html_url}})'
