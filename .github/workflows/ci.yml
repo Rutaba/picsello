@@ -60,6 +60,10 @@ jobs:
       run: mix dialyzer
     - name: Run tests
       run: mix test --trace --cover
-
-
-
+    - name: Archive screenshots
+      if: ${{failure()}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: screenshots
+        path: |
+          screenshots/*.png
