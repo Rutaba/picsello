@@ -40,7 +40,7 @@ test: setup
 	mix format
 	MIX_ENV=test mix credo
 	mix dialyzer
-	mix test --trace --cover
+	mix test
 
 test-watch: ## Run tests in watch mode
 	git ls-files | entr mix test $(FILE)
