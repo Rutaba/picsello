@@ -33,7 +33,6 @@ defmodule Picsello.SignInTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
     |> assert_has(css("h1", text: "Hello #{user.first_name}"))
-
-    assert current_path(session) == "/home"
+    |> assert_path("/home")
   end
 end

@@ -161,8 +161,7 @@ defmodule Picsello.CreateJobTest do
 
     session
     |> visit("/jobs/#{job.id}")
-
-    assert current_path(session) == "/jobs/#{job.id}/packages/new"
+    |> assert_path("/jobs/#{job.id}/packages/new")
   end
 
   feature "user is redirected to job show page when job is already associated to package", %{
@@ -194,7 +193,6 @@ defmodule Picsello.CreateJobTest do
 
     session
     |> visit("/jobs/#{job.id}/packages/new")
-
-    assert current_path(session) == "/jobs/#{job.id}"
+    |> assert_path("/jobs/#{job.id}")
   end
 end

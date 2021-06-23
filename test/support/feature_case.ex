@@ -50,6 +50,16 @@ defmodule Picsello.FeatureCase do
         assert value == actual
         session
       end
+
+      def assert_path(session, path) do
+        retry(fn ->
+          if path == current_path(session), do: {:ok, nil}, else: {:error, nil}
+        end)
+
+        assert path == current_path(session)
+
+        session
+      end
     end
   end
 end

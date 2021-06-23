@@ -19,8 +19,7 @@ defmodule Picsello.SignUpTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_has(css("h1", text: "Hello Mary!"))
-
-    assert current_path(session) == "/home"
+    |> assert_path("/home")
   end
 
   feature "user sees validation error when signing up", %{session: session} do
@@ -34,8 +33,7 @@ defmodule Picsello.SignUpTest do
     |> fill_in(text_field("Password"), with: "123")
     |> assert_has(css("label", text: "Password should be at least 12 characters"))
     |> assert_has(css("button:disabled[type='submit']", text: "Next"))
-
-    assert current_path(session) == "/users/register"
+    |> assert_path("/users/register")
   end
 
   feature "user toggles password visibility", %{session: session} do

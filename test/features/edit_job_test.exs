@@ -53,14 +53,4 @@ defmodule Picsello.EditJobTest do
     |> assert_has(definition("Package", text: "My Greatest Package"))
     |> assert_has(definition("Package description", text: "indescribably great."))
   end
-
-  defp assert_path(session, path) do
-    retry(fn ->
-      if path == current_path(session), do: {:ok, nil}, else: {:error, nil}
-    end)
-
-    assert path == current_path(session)
-
-    session
-  end
 end
