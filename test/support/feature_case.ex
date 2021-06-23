@@ -5,7 +5,6 @@ defmodule Picsello.FeatureCase do
 
   using do
     quote do
-      use ExUnit.Case, async: false
       use Wallaby.Feature
       import Wallaby.Query
       alias Picsello.AccountsFixtures

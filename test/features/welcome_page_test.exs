@@ -1,5 +1,5 @@
 defmodule Picsello.WelcomePageTest do
-  use Picsello.FeatureCase
+  use Picsello.FeatureCase, async: true
   import Picsello.AccountsFixtures
 
   feature "user logs in", %{session: session} do

@@ -1,5 +1,5 @@
 defmodule Picsello.SignInTest do
-  use Picsello.FeatureCase
+  use Picsello.FeatureCase, async: true
   import Picsello.AccountsFixtures
 
   feature "user views log in button", %{session: session} do

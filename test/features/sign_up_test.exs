@@ -1,5 +1,5 @@
 defmodule Picsello.SignUpTest do
-  use Picsello.FeatureCase
+  use Picsello.FeatureCase, async: true
 
   feature "user views sign up button", %{session: session} do
     session

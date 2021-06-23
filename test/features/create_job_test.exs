@@ -1,5 +1,5 @@
 defmodule Picsello.CreateJobTest do
-  use Picsello.FeatureCase
+  use Picsello.FeatureCase, async: true
 
   alias Picsello.{Client, Repo}
 
