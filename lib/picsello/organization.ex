@@ -5,6 +5,7 @@ defmodule Picsello.Organization do
 
   schema "organizations" do
     field :name, :string
+    has_many(:package_templates, Picsello.Package, where: [package_template_id: nil])
 
     timestamps()
   end

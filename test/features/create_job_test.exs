@@ -18,6 +18,9 @@ defmodule Picsello.CreateJobTest do
     |> click(button("Save"))
     |> assert_has(css("h2", text: "Elizabeth Taylor Wedding"))
     |> assert_has(css("h1", text: "Add Package"))
+    |> assert_has(
+      css("select[name='package[package_template_id]'] option:checked", text: "+ New Package")
+    )
     |> fill_in(text_field("Package name"), with: "Wedding Deluxe")
     |> fill_in(text_field("Package description"), with: "My greatest wedding package")
     |> fill_in(text_field("Package price"), with: "1234.50")
@@ -91,6 +94,55 @@ defmodule Picsello.CreateJobTest do
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
+  feature "user selects previous package as template to job creation", %{
+    session: session,
+    user: user
+  } do
+    client =
+      Client.create_changeset(%{
+        email: "taylor@example.com",
+        name: "Elizabeth Taylor",
+        organization_id: user.organization_id
+      })
+      |> Repo.insert!()
+
+    Package.create_changeset(%{
+      price: 100,
+      name: "My Package Template",
+      description: "My custom description",
+      shoot_count: 2,
+      organization_id: user.organization_id
+    })
+    |> Repo.insert!()
+
+    job =
+      Job.create_changeset(%{client_id: client.id, type: "wedding"})
+      |> Repo.insert!()
+
+    session
+    |> visit("/jobs/#{job.id}/packages/new")
+    |> assert_has(
+      css("select[name='package[package_template_id]'] option:checked",
+        text: "Select below"
+      )
+    )
+    |> click(option("My Package Template"))
+    |> assert_value(text_field("Package name"), "My Package Template")
+    |> assert_value(text_field("Package description"), "My custom description")
+    |> assert_value(text_field("Package price"), "$1.00")
+    |> assert_value(select("Number of shoots for job"), "2")
+    |> fill_in(text_field("Package name"), with: "My job package")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
+    |> assert_has(definition("Client", text: "Elizabeth Taylor"))
+    |> assert_has(definition("Client email", text: "taylor@example.com"))
+    |> assert_has(definition("Type of job", text: "Wedding"))
+    |> assert_has(definition("Job price", text: "$1.00"))
+    |> assert_has(definition("Package", text: "My job package"))
+    |> assert_has(definition("Package description", text: "My custom description"))
+  end
+
   feature "user is redirected to new package page when job is not associated to package", %{
     session: session,
     user: user
@@ -148,5 +200,11 @@ defmodule Picsello.CreateJobTest do
 
   defp definition(term, opts) do
     xpath("//dt[contains(./text(), '#{term}')]/following-sibling::dd[1]", opts)
+  end
+
+  defp assert_value(session, query, value) do
+    actual = session |> find(query) |> Element.value()
+    assert value == actual
+    session
   end
 end

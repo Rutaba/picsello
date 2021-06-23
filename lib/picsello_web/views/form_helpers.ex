@@ -71,12 +71,10 @@ defmodule PicselloWeb.FormHelpers do
     end
   end
 
-  def labeled_select(form, field, options, opts \\ []) do
-    label_opts = [label: Keyword.get(opts, :label)]
+  def select_field(form, field, options, opts \\ []) do
+    phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
 
     value = input_value(form, field)
-
-    phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
 
     select_opts =
       [
@@ -87,13 +85,25 @@ defmodule PicselloWeb.FormHelpers do
             "select-prompt" => !value || value == ""
           })
       ] ++
+        Keyword.drop(opts, [:class])
+
+    Phoenix.HTML.Form.select(form, field, options, select_opts)
+  end
+
+  def labeled_select(form, field, options, opts \\ []) do
+    label_opts = [label: Keyword.get(opts, :label)]
+
+    select_opts =
+      [
+        class: opts |> Keyword.get(:select_class) |> classes()
+      ] ++
         Keyword.drop(opts, [:wrapper_class, :select_class, :label])
 
     content_tag :div,
       class: classes([Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"]) do
       [
         label_for(form, field, label_opts),
-        select(form, field, options, select_opts)
+        select_field(form, field, options, select_opts)
       ]
     end
   end

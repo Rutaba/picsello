@@ -1,4 +1,5 @@
 defmodule Picsello.Package do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -8,6 +9,7 @@ defmodule Picsello.Package do
     field :price, Money.Ecto.Amount.Type
     field :shoot_count, :integer
     belongs_to(:organization, Picsello.Organization)
+    belongs_to(:package_template, __MODULE__)
 
     timestamps()
   end

@@ -3,7 +3,9 @@
   <h1 class="title">Add Package to Job</h1>
 
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save %>
-    <div class="mt-8 flex flex-col"><select class="select"><option>+ New Package</option></select></div>
+    <div class="mt-8 flex flex-col">
+      <%= select_field f, :package_template_id, [{"+ New Package", "new"}] ++ Enum.map(@package_templates, &{&1.name, &1.id}), prompt: if Enum.empty?(@package_templates), do: nil, else: "Select below" %>
+    </div>
 
     <%= labeled_input f, :name, label: "Package name", placeholder: "Deluxe wedding", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_input f, :description, label: "Package description", placeholder: "The most deluxe of weddings", phx_debounce: "500", wrapper_class: "mt-4" %>
@@ -12,7 +14,7 @@
 
     <div class="text-center mt-5">
       <%= live_redirect "Cancel", to: Routes.home_index_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
-      <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+      <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: input_value(f, :package_template_id) == "" || !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>
   </form>
 </div>
