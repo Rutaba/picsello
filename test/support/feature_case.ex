@@ -40,6 +40,16 @@ defmodule Picsello.FeatureCase do
 
         [session: session, user: user]
       end
+
+      def definition(term, opts) do
+        xpath("//dt[contains(./text(), '#{term}')]/following-sibling::dd[1]", opts)
+      end
+
+      def assert_value(session, query, value) do
+        actual = session |> find(query) |> Wallaby.Element.value()
+        assert value == actual
+        session
+      end
     end
   end
 end

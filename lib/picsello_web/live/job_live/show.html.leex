@@ -1,5 +1,11 @@
 <div class="p-8">
-  <h1 class="title"><%= Job.name @job %></h1>
+  <div class="flex flex-row justify-between items-center">
+    <h1 class="title text-black"><%= Job.name @job %></h1>
+
+    <%= live_redirect to: Routes.job_path(@socket, :edit, @job.id), title: "Edit Job" do%>
+      <%= icon_tag(@socket, "pencil", class: "btn-icon") %>
+    <% end %>
+  </div>
 
   <dl>
     <dt class="text-xs font-semibold mt-4">Client:</dt>

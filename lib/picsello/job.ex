@@ -25,6 +25,15 @@ defmodule Picsello.Job do
     |> assoc_constraint(:client)
   end
 
+  def update_changeset(job, attrs \\ %{}) do
+    job
+    |> cast(attrs, [:type])
+    |> cast_assoc(:package, with: &Package.update_changeset/2)
+    |> validate_required([:type])
+    |> validate_inclusion(:type, @types)
+    |> assoc_constraint(:package)
+  end
+
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do
     job
     |> cast(attrs, [:package_id])

@@ -197,14 +197,4 @@ defmodule Picsello.CreateJobTest do
 
     assert current_path(session) == "/jobs/#{job.id}"
   end
-
-  defp definition(term, opts) do
-    xpath("//dt[contains(./text(), '#{term}')]/following-sibling::dd[1]", opts)
-  end
-
-  defp assert_value(session, query, value) do
-    actual = session |> find(query) |> Element.value()
-    assert value == actual
-    session
-  end
 end

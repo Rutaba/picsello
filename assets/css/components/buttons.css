@@ -39,4 +39,7 @@
       focus:ring-opacity-75
     ;
   }
+  .btn-icon {
+    @apply w-6 h-6 rounded-full bg-blue-primary text-white fill-current hover:bg-blue-dark-primary;
+  }
 }

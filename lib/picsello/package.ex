@@ -22,6 +22,13 @@ defmodule Picsello.Package do
     |> validate_money(:price)
   end
 
+  def update_changeset(package, attrs) do
+    package
+    |> cast(attrs, [:price, :name, :description])
+    |> validate_required([:price, :name, :description])
+    |> validate_money(:price)
+  end
+
   defp validate_money(changeset, field) do
     validate_change(changeset, field, fn
       _, %Money{amount: amount} when amount >= 0 -> []
