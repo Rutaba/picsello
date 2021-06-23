@@ -58,8 +58,18 @@ jobs:
       run: MIX_ENV=test mix credo
     - name: Run Dialyzer
       run: mix dialyzer
+    - uses: actions/cache@v2
+      id: cache-node-modules
+      with:
+        path: assets/node_modules
+        key: ${{ runner.os }}-npm-${{ hashFiles('assets/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-
+    - name: install node modules
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      run: npm install --prefix assets
     - name: Build js
-      run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
+      run: npm run deploy --prefix assets && mix phx.digest
     - name: Run tests
       run: mix test --trace --cover
     - name: Archive screenshots
