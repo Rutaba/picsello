@@ -22,6 +22,7 @@
       disabled:cursor-not-allowed
      ;
   }
+
   .btn-secondary {
     @apply
       py-3
@@ -39,7 +40,12 @@
       focus:ring-opacity-75
     ;
   }
+
   .btn-icon {
     @apply w-6 h-6 rounded-full bg-blue-primary text-white fill-current hover:bg-blue-dark-primary;
+  }
+
+  .link {
+    @apply underline text-blue-primary hover:text-blue-dark-primary;
   }
 }
