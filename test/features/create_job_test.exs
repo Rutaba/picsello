@@ -34,6 +34,7 @@ defmodule Picsello.CreateJobTest do
     |> assert_has(definition("Job price", text: "$1,234.50"))
     |> assert_has(definition("Package", text: "Wedding Deluxe"))
     |> assert_has(definition("Package description", text: "My greatest wedding package"))
+    |> assert_has(link('Add shoot details', count: 2))
   end
 
   feature "user sees validation errors when creating job", %{session: session} do
