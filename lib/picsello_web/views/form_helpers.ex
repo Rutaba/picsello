@@ -25,6 +25,14 @@ defmodule PicselloWeb.FormHelpers do
   def input(form, field, opts \\ []) do
     type = Phoenix.HTML.Form.input_type(form, field)
 
+    {type, opts} =
+      if type == :datetime_select do
+        value = input_value(form, field) |> format_datetime()
+        {:datetime_local_input, opts |> Keyword.put(:value, value)}
+      else
+        {type, opts}
+      end
+
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
 
     input_opts =
@@ -38,6 +46,16 @@ defmodule PicselloWeb.FormHelpers do
 
     apply(Phoenix.HTML.Form, type, [form, field, input_opts])
   end
+
+  defp format_datetime(%DateTime{} = value), do: Calendar.strftime(value, "%Y-%m-%dT%H:%M")
+  defp format_datetime(""), do: nil
+
+  defp format_datetime(value) when is_binary(value) do
+    {:ok, value, _} = (value <> ":00Z") |> DateTime.from_iso8601()
+    format_datetime(value)
+  end
+
+  defp format_datetime(_), do: nil
 
   def label_for(form, field, opts \\ []) do
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
