@@ -42,6 +42,17 @@ defmodule PicselloWeb do
     end
   end
 
+  def component_template do
+    quote do
+      use Phoenix.View,
+        root: "lib/picsello_web/live",
+        namespace: PicselloWeb
+
+      import PicselloWeb.{LiveViewHelpers, LiveHelpers}
+      unquote(view_helpers())
+    end
+  end
+
   def live_view do
     quote do
       use Phoenix.LiveView,
@@ -56,6 +67,15 @@ defmodule PicselloWeb do
     quote do
       use Phoenix.LiveComponent
       import PicselloWeb.LiveHelpers
+
+      defmodule View do
+        @moduledoc "dummy view lets components render templates"
+        use PicselloWeb, :component_template
+      end
+
+      def render_template(name, assigns) do
+        Phoenix.View.render(__MODULE__.View, name, assigns)
+      end
 
       unquote(view_helpers())
     end
