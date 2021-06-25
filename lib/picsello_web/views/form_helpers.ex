@@ -63,7 +63,10 @@ defmodule PicselloWeb.FormHelpers do
 
     label_opts = [
       phx_feedback_for,
-      class: classes("input-label", %{"input-label-invalid" => form.errors[field]})
+      class:
+        classes(["input-label" | Keyword.get_values(opts, :class)], %{
+          "input-label-invalid" => form.errors[field]
+        })
     ]
 
     label form, field, label_opts do
