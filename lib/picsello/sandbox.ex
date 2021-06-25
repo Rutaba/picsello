@@ -20,10 +20,16 @@ defmodule Picsello.Sandbox do
     end
   end
 
-  def allow(repo, owner_pid, child_pid) do
+  def allow(repo, owner_pid, child_pid) when is_pid(owner_pid) and is_pid(child_pid) do
     PidMap.assign(owner_pid, child_pid)
     # Delegate to the Ecto sandbox
     Ecto.Adapters.SQL.Sandbox.allow(repo, owner_pid, child_pid)
+  end
+
+  def allow(metadata, child_pid) when is_binary(metadata) and is_pid(child_pid) do
+    with %{owner: owner_pid, repo: [repo]} <- Phoenix.Ecto.SQL.Sandbox.decode_metadata(metadata) do
+      allow(repo, owner_pid, child_pid)
+    end
   end
 
   defmodule BambooAdapter do
