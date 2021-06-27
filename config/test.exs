@@ -21,8 +21,6 @@ config :picsello, PicselloWeb.Endpoint,
   http: [port: 4002],
   server: true
 
-config :picsello, :sql_sandbox, true
-
 # Print only warnings and errors during test
 config :logger, level: :warn
 
@@ -35,3 +33,5 @@ config :wallaby,
 config :picsello, Picsello.Mailer, adapter: Bamboo.TestAdapter
 
 config :bamboo, :refute_timeout, 10
+
+config :picsello, sandbox: Picsello.Sandbox

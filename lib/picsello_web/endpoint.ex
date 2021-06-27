@@ -1,8 +1,8 @@
 defmodule PicselloWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :picsello
 
-  if Application.get_env(:picsello, :sql_sandbox) do
-    plug Phoenix.Ecto.SQL.Sandbox
+  with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox) do
+    plug Phoenix.Ecto.SQL.Sandbox, sandbox: sandbox
   end
 
   # The session will be stored in the cookie and signed,
