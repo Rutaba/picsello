@@ -30,7 +30,7 @@ config :wallaby,
   otp_app: :picsello,
   screenshot_on_failure: true
 
-config :picsello, Picsello.Mailer, adapter: Bamboo.TestAdapter
+config :picsello, Picsello.Mailer, adapter: Picsello.Sandbox.BambooAdapter
 
 config :bamboo, :refute_timeout, 10
 
