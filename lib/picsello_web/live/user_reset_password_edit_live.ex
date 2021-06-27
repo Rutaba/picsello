@@ -6,18 +6,17 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
 
   @impl true
   def mount(%{"token" => token}, session, socket) do
-    user = Accounts.get_user_by_reset_password_token(token)
+    case socket
+         |> assign_defaults(session)
+         |> assign_user(token) do
+      %{assigns: %{user: user}} = socket when user != nil ->
+        socket |> assign(changeset: Accounts.change_user_password(user))
 
-    if user do
-      socket
-      |> assign(:user, user)
-      |> assign(:changeset, Accounts.change_user_password(user))
-    else
-      socket
-      |> put_flash(:error, "Reset password link is invalid or it has expired.")
-      |> push_redirect(to: Routes.user_reset_password_path(socket, :new))
+      socket ->
+        socket
+        |> put_flash(:error, "Reset password link is invalid or it has expired.")
+        |> push_redirect(to: Routes.user_reset_password_path(socket, :new))
     end
-    |> assign_defaults(session)
     |> ok()
   end
 
@@ -39,5 +38,9 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
     |> put_flash(:info, "Password reset successfully.")
     |> push_redirect(to: Routes.user_session_path(socket, :new))
     |> noreply()
+  end
+
+  defp assign_user(socket, token) do
+    socket |> assign(user: Accounts.get_user_by_reset_password_token(token))
   end
 end
