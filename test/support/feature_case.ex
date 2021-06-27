@@ -2,6 +2,7 @@ defmodule Picsello.FeatureCase do
   @moduledoc false
 
   defmodule FeatureHelpers do
+    @moduledoc "available in all FeatureCase tests"
     alias Picsello.AccountsFixtures
     import Wallaby.{Browser, Query}
     import ExUnit.Assertions

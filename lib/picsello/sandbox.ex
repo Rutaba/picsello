@@ -1,5 +1,8 @@
 defmodule Picsello.Sandbox do
+  @moduledoc "custom async sandbox"
+
   defmodule PidMap do
+    @moduledoc "track the test pid <-> socket pid associations"
     use Agent
 
     def start() do
@@ -24,6 +27,7 @@ defmodule Picsello.Sandbox do
   end
 
   defmodule BambooAdapter do
+    @moduledoc "send email to the test pid"
     def deliver(email, _config) do
       to_pid = Picsello.Sandbox.PidMap.owner_pid(self())
 
