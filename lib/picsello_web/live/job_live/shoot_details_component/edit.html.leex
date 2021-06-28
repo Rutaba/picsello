@@ -9,8 +9,8 @@
   <%= labeled_select f, :duration_minutes, for(duration <- Picsello.Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot duration", prompt: "Select below", wrapper_class: "mt-4" %>
   <div class="input-label mt-4">Shoot location</div>
   <%= for location <- Picsello.Shoot.locations() do %>
-    <label class="block">
-      <%= radio_button f, :location, location, class: "mr-2 mb-4" %>
+    <label class="flex items-center mb-2">
+      <%= radio_button f, :location, location, class: "mr-2 form-radio text-blue-primary focus:ring-1 focus:ring-blue-primary" %>
       <%= dyn_gettext location %>
     </label>
   <% end %>
