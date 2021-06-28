@@ -24,11 +24,8 @@
 
   <h2 class="section-title mt-4">Shoot details</h2>
 
-  <%= 1..@job.package.shoot_count |> Enum.map(fn shoot_number -> %>
-    <div class="bg-gray-100 rounded-2xl p-6 mt-4 flex flex-col items-center">
-      <div>Shoot <%= shoot_number %></div>
-      <a href="#" class="link">Add shoot details</a>
-    </div>
-  <% end) %>
+  <%= for {shoot_number, shoot} <- Job.padded_shoots(@job) do %>
+    <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id, shoot: shoot %>
+  <% end %>
 
 </div>

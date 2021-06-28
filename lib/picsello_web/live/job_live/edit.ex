@@ -20,9 +20,7 @@ defmodule PicselloWeb.JobLive.Edit do
 
   @impl true
   def handle_event("save", %{"job" => params}, socket) do
-    changeset = build_changeset(socket, params)
-
-    case changeset |> Repo.update() do
+    case socket |> build_changeset(params) |> Repo.update() do
       {:ok, %Job{id: job_id}} ->
         socket
         |> put_flash(:info, "Job updated successfully.")

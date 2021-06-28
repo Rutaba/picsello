@@ -1,0 +1,26 @@
+msgid "studio"
+msgstr ""
+
+msgid "on_location"
+msgstr ""
+
+msgid "home"
+msgstr ""
+
+msgid "duration-15"
+msgstr ""
+
+msgid "duration-30"
+msgstr ""
+
+msgid "duration-45"
+msgstr ""
+
+msgid "duration-60"
+msgstr ""
+
+msgid "duration-90"
+msgstr ""
+
+msgid "duration-120"
+msgstr ""

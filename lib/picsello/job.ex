@@ -4,12 +4,13 @@ defmodule Picsello.Job do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Client, Repo, Package}
+  alias Picsello.{Client, Package, Shoot, Repo}
 
   schema "jobs" do
     field(:type, :string)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
+    has_many(:shoots, Shoot)
 
     timestamps()
   end
@@ -52,5 +53,14 @@ defmodule Picsello.Job do
       on: client.id == job.client_id,
       where: client.organization_id == ^organization_id
     )
+  end
+
+  def padded_shoots(%__MODULE__{} = job) do
+    job =
+      job
+      |> Repo.preload([:package, shoots: Shoot |> order_by(asc: :starts_at)])
+
+    for shoot_number <- 1..job.package.shoot_count,
+        do: {shoot_number, job.shoots |> Enum.at(shoot_number - 1)}
   end
 end

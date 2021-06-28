@@ -13,7 +13,11 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   defp assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
-    job = current_user |> Job.for_user() |> Repo.get!(job_id) |> Repo.preload([:client, :package])
+    job =
+      current_user
+      |> Job.for_user()
+      |> Repo.get!(job_id)
+      |> Repo.preload([:client, :package, :shoots])
 
     socket |> assign(:job, job)
   end

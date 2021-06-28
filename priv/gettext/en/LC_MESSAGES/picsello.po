@@ -1,0 +1,26 @@
+msgid "studio"
+msgstr "In Studio"
+
+msgid "on_location"
+msgstr "On Location"
+
+msgid "home"
+msgstr "In Client's Home"
+
+msgid "duration-15"
+msgstr "15 mins"
+
+msgid "duration-30"
+msgstr "30 mins"
+
+msgid "duration-45"
+msgstr "45 mins"
+
+msgid "duration-60"
+msgstr "1 hr"
+
+msgid "duration-90"
+msgstr "1.5 hrs"
+
+msgid "duration-120"
+msgstr "2 hrs"

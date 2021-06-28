@@ -21,4 +21,8 @@ defmodule PicselloWeb.Gettext do
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
   use Gettext, otp_app: :picsello
+
+  def dyn_gettext(domain \\ "picsello", value) do
+    Gettext.dgettext(__MODULE__, domain, value)
+  end
 end

@@ -1,0 +1,23 @@
+<div class="bg-gray-100 rounded-2xl mt-4 p-4 flex flex-col">
+  <a href="#" class="self-end" phx-click="toggle" phx-target="<%= @myself %>">
+    <%= icon_tag(@socket, "close", class: "btn-icon") %>
+  </a>
+
+  <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
+  <%= labeled_input f, :name, label: "Shoot name", placeholder: "Engagement Shoot" %>
+  <%= labeled_input f, :starts_at, label: "Shoot date", min: Date.utc_today(), wrapper_class: "mt-4" %>
+  <%= labeled_select f, :duration_minutes, for(duration <- Picsello.Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot duration", prompt: "Select below", wrapper_class: "mt-4" %>
+  <div class="input-label mt-4">Shoot location</div>
+  <%= for location <- Picsello.Shoot.locations() do %>
+    <label class="block">
+      <%= radio_button f, :location, location, class: "mr-2 mb-4" %>
+      <%= dyn_gettext location %>
+    </label>
+  <% end %>
+  <%= labeled_input f, :notes, label: "Shoot notes", placeholder: "type notes here" %>
+  <div class="text-center mt-5">
+    <a href="#" phx-click="toggle" phx-target="<%= @myself %>" class="btn-secondary inline-block w-32 mx-1">Cancel</a>
+    <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+  </div>
+  </form>
+</div>
