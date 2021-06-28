@@ -14,7 +14,7 @@
       <%= dyn_gettext location %>
     </label>
   <% end %>
-  <%= labeled_input f, :notes, label: "Shoot notes", placeholder: "type notes here" %>
+  <%= labeled_input f, :notes, type: :textarea, label: "Shoot notes", placeholder: "type notes here" %>
   <div class="text-center mt-5">
     <a href="#" phx-click="toggle" phx-target="<%= @myself %>" class="btn-secondary inline-block w-32 mx-1">Cancel</a>
     <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>

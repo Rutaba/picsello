@@ -14,7 +14,7 @@
     <dd><%= dyn_gettext @shoot.location %></dd>
     <%= if @shoot.notes do %>
       <dt class="text-xs mt-2">Notes</dt>
-      <dd><%= @shoot.notes %></dd>
+      <dd class="whitespace-pre-line"><%= @shoot.notes %></dd>
     <% end %>
   </dl>
 
