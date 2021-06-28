@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  MSG_MINIMAL: ref,commit
+  SLACK_USERNAME: Picsello CI
+  SLACK_ICON_EMOJI: ':camera:'
+  SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
+
 jobs:
   build:
 
@@ -72,6 +79,7 @@ jobs:
       run: npm run deploy --prefix assets && mix phx.digest
     - name: Run tests
       run: mix test --trace --cover
+
     - name: Archive screenshots
       if: ${{failure()}}
       uses: actions/upload-artifact@v2
@@ -79,3 +87,16 @@ jobs:
         name: screenshots
         path: |
           screenshots/*.png
+    - name: Notify slack of success
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_TITLE: ':rocket: build passed :rocket:'
+    - name: Notify slack of failure
+      if: ${{failure()}}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_TITLE: ':skull: build failed :skull:'
+    - name: deploy to staging
+      run: curl ${{ secrets.RENDER_TRIGGER_DEPLOY }}
