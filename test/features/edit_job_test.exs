@@ -1,7 +1,7 @@
 defmodule Picsello.EditJobTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.{Client, Repo, Job, Package}
+  alias Picsello.{Client, Repo, Job, Package, Shoot}
 
   setup :authenticated
 
@@ -29,14 +29,12 @@ defmodule Picsello.EditJobTest do
       |> Job.add_package_changeset(%{package_id: package.id})
       |> Repo.insert!()
 
-    session
-    |> visit("/jobs/#{job.id}")
-
     [job: job, session: session]
   end
 
   feature "user edits a job", %{session: session, job: job} do
     session
+    |> visit("/jobs/#{job.id}")
     |> click(link("Edit Job"))
     |> assert_path("/jobs/#{job.id}/edit")
     |> assert_has(link("Cancel Edit Job"))
@@ -60,8 +58,9 @@ defmodule Picsello.EditJobTest do
     |> assert_has(definition("Package description", text: "indescribably great."))
   end
 
-  feature "user adds shoot details and updates it", %{session: session} do
+  feature "user adds shoot details and updates it", %{session: session, job: job} do
     session
+    |> visit("/jobs/#{job.id}")
     |> click(link("Add shoot details", count: 2, at: 1))
     |> fill_in(text_field("Shoot name"), with: " ")
     |> assert_has(css("label", text: "Shoot name can't be blank"))
@@ -93,5 +92,25 @@ defmodule Picsello.EditJobTest do
     |> assert_has(definition("Shoot Date/Time", text: "May 5, 2040 - 12:00pm - 2 hrs"))
     |> assert_has(definition("Shoot Location", text: "In Studio"))
     |> assert_has(definition("Notes", text: "new notes"))
+  end
+
+  feature "user deletes shoot", %{session: session, job: job} do
+    Shoot.create_changeset(%{
+      duration_minutes: 15,
+      location: "home",
+      name: "chute",
+      job_id: job.id,
+      starts_at: DateTime.utc_now()
+    })
+    |> Repo.insert!()
+
+    session
+    |> visit("/jobs/#{job.id}")
+    |> assert_has(link("Add shoot details", count: 1))
+    |> click(link("Edit shoot details"))
+    |> click(link("Delete shoot"))
+    |> assert_has(link("Add shoot details", count: 2))
+
+    assert Repo.aggregate(Shoot, :count) == 0
   end
 end
