@@ -11,7 +11,7 @@
       <%= labeled_input o, :name, label: "Photography business name", phx_debounce: "500", placeholder: "Jane Takes Pictures LLC", wrapper_class: "mt-4" %>
     <% end %>
 
-    <%= labeled_input f, :email, placeholder: "jane@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
+    <%= labeled_input f, :email, type: :email_input, placeholder: "jane@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
 
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>
 

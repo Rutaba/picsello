@@ -12,7 +12,7 @@
     <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of job", prompt: "Select below", wrapper_class: "mt-4" %>
 
     <%= inputs_for f, :package, fn package_form -> %>
-      <%= labeled_input package_form, :price, type: :text, label: "Job price", phx_debounce: "500", wrapper_class: "mt-4" %>
+      <%= labeled_input package_form, :price, label: "Job price", phx_debounce: "500", wrapper_class: "mt-4" %>
       <%= labeled_input package_form, :name, label: "Package", phx_debounce: "500", wrapper_class: "mt-4" %>
       <%= labeled_input package_form, :description, label: "Package description", phx_debounce: "500", wrapper_class: "mt-4" %>
     <% end %>

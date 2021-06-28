@@ -9,7 +9,7 @@
 
     <%= labeled_input f, :name, label: "Package name", placeholder: "Deluxe wedding", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_input f, :description, label: "Package description", placeholder: "The most deluxe of weddings", phx_debounce: "500", wrapper_class: "mt-4" %>
-    <%= labeled_input f, :price, type: :text, label: "Package price", placeholder: "$1000", phx_debounce: "500", wrapper_class: "mt-4" %>
+    <%= labeled_input f, :price, label: "Package price", placeholder: "$1000", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_select f, :shoot_count, Enum.to_list(1..5), label: "Number of shoots for job", phx_debounce: "500", wrapper_class: "mt-4" %>
 
     <div class="text-center mt-5">
