@@ -54,13 +54,4 @@ defmodule Picsello.Job do
       where: client.organization_id == ^organization_id
     )
   end
-
-  def padded_shoots(%__MODULE__{} = job) do
-    job =
-      job
-      |> Repo.preload([:package, shoots: Shoot |> order_by(asc: :starts_at)])
-
-    for shoot_number <- 1..job.package.shoot_count,
-        do: {shoot_number, job.shoots |> Enum.at(shoot_number - 1)}
-  end
 end

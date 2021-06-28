@@ -24,8 +24,8 @@
 
   <h2 class="section-title mt-4">Shoot details</h2>
 
-  <%= for {shoot_number, shoot} <- Job.padded_shoots(@job) do %>
-    <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id, shoot: shoot %>
+  <%= for shoot_number <- 1..@job.package.shoot_count do %>
+    <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id  %>
   <% end %>
 
 </div>

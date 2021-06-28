@@ -4,6 +4,17 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
   alias Picsello.{Shoot, Repo}
 
   @impl true
+  def preload([%{job_id: job_id} | _rest] = list_of_assigns) do
+    shoots = Shoot.for_job(job_id) |> Repo.all()
+
+    list_of_assigns
+    |> Enum.with_index()
+    |> Enum.map(fn {assigns, index} ->
+      Map.put(assigns, :shoot, shoots |> Enum.at(index, nil))
+    end)
+  end
+
+  @impl true
   def mount(socket) do
     socket
     |> assign(open: false)

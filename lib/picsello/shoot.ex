@@ -1,7 +1,7 @@
 defmodule Picsello.Shoot do
   @moduledoc false
   use Ecto.Schema
-  import Ecto.Changeset
+  import Ecto.{Changeset, Query}
 
   @locations ~w[studio on_location home]
   @durations [15, 30, 45, 60, 90, 120]
@@ -34,5 +34,9 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at, :duration_minutes, :name, :location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
+  end
+
+  def for_job(job_id) do
+    __MODULE__ |> where(job_id: ^job_id) |> order_by(asc: :starts_at)
   end
 end
