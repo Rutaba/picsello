@@ -9,7 +9,7 @@
     <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of job", prompt: "Select below", wrapper_class: "mt-4" %>
 
     <div class="text-center mt-5">
-      <%= live_redirect "Cancel", to: Routes.home_index_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
+      <%= live_redirect "Cancel", to: Routes.home_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
       <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>
 

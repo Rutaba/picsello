@@ -6,36 +6,39 @@ defmodule PicselloWeb.UserRegisterLive do
 
   @impl true
   def mount(_params, session, socket) do
-    changeset = Accounts.change_user_registration(%User{})
-
     socket
     |> assign_defaults(session)
-    |> assign(changeset: changeset, trigger_submit: false)
+    |> assign_changeset()
+    |> assign_trigger_submit()
     |> ok()
   end
 
   @impl true
   def handle_event("validate", %{"user" => %{"trigger_submit" => "true"}}, socket) do
-    {:noreply, socket}
+    socket |> noreply()
   end
 
   @impl true
   def handle_event("validate", %{"user" => params}, socket) do
-    changeset =
-      %User{}
-      |> Accounts.change_user_registration(params)
-      |> Map.put(:action, :validate)
-
-    {:noreply, assign(socket, changeset: changeset)}
+    socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
   def handle_event("save", %{"user" => user_params}, socket) do
-    changeset =
-      %User{}
-      |> Accounts.change_user_registration(user_params)
-      |> Map.put(:action, :validate)
+    socket
+    |> assign_changeset(user_params, :validate)
+    |> assign_trigger_submit()
+    |> noreply()
+  end
 
-    {:noreply, assign(socket, changeset: changeset, trigger_submit: changeset.valid?)}
+  defp assign_trigger_submit(%{assigns: %{changeset: changeset}} = socket) do
+    socket |> assign(trigger_submit: changeset.valid?)
+  end
+
+  defp assign_changeset(socket, params \\ %{}, action \\ nil) do
+    socket
+    |> assign(
+      changeset: Accounts.change_user_registration(%User{}, params) |> Map.put(:action, action)
+    )
   end
 end

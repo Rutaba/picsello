@@ -13,7 +13,7 @@
     <%= labeled_select f, :shoot_count, Enum.to_list(1..5), label: "Number of shoots for job", phx_debounce: "500", wrapper_class: "mt-4" %>
 
     <div class="text-center mt-5">
-      <%= live_redirect "Cancel", to: Routes.home_index_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
+      <%= live_redirect "Cancel", to: Routes.home_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
       <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: input_value(f, :package_template_id) == "" || !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>
   </form>

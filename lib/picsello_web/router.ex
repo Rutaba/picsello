@@ -69,11 +69,11 @@ defmodule PicselloWeb.Router do
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
 
-    live "/home", HomeLive.Index, :index
-    live "/jobs/new", JobLive.New, :new, as: :job
-    live "/jobs/:id", JobLive.Show, :show, as: :job
-    live "/jobs/:id/edit", JobLive.Edit, :edit, as: :job
+    live "/home", HomeLive.Index, :index, as: :home
     live "/jobs/:job_id/packages/new", PackageLive.New, :new, as: :job_package
+    live "/jobs/new", JobLive.New, :new, as: :job
+    live "/jobs/:id/edit", JobLive.Edit, :edit, as: :job
+    live "/jobs/:id", JobLive.Show, :show, as: :job
   end
 
   scope "/", PicselloWeb do
