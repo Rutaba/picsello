@@ -1,8 +1,14 @@
-<div class="p-8">
-  <h1 class="text-center text-3xl font-bold">Hello <%=@current_user.first_name %>!</h1>
-  <h2 class="text-center text-gray-500 mt-2">Let's get started today.</h2>
-  <%= live_redirect to: Routes.job_path(@socket, :new), class: "btn-secondary text-center text-3xl mt-6 mx-auto p-6 block max-w-sm flex flex-row justify-center" do%>
-    <%= icon_tag(@socket, "sparkles", class: "w-10 h-10 fill-current mr-4") %>
-    Create a Job
-  <% end %>
+<div class="flex flex-col items-center p-8">
+  <h1 class="text-3xl font-bold text-center">Hello <%=@current_user.first_name %>!</h1>
+  <h2 class="mt-2 mb-10 text-center text-gray-500">Let's get started today.</h2>
+  <div class="flex flex-col items-center p-8 rounded-lg bg-blue-primary bg-opacity-10">
+    <h2 class="font-bold text-blue-primary">Work Hub</h2>
+    <div class="mt-6 border-t-2 border-white">
+      <%= live_redirect to: Routes.job_path(@socket, :new), class: "btn-primary text-center text-lg mt-6 block flex flex-row justify-center py-1" do%>
+        <%= icon_tag(@socket, "sparkles", class: "w-10 h-10 fill-current flex-1 mx-2") %>
+        <div class="flex items-center mb-1 flex-2">Create a Lead</div>
+        <div class="flex-1 mx-2"></div>
+      <% end %>
+    </div>
+  </div>
 </div>

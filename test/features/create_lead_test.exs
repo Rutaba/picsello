@@ -1,16 +1,16 @@
-defmodule Picsello.CreateJobTest do
+defmodule Picsello.CreateLeadTest do
   use Picsello.FeatureCase, async: true
 
   alias Picsello.{Client, Repo, Job, Package}
 
   setup :authenticated
 
-  feature "user creates job", %{session: session} do
+  feature "user creates lead", %{session: session} do
     client_email = "taylor@example.com"
     client_name = "Elizabeth Taylor"
 
     session
-    |> click(link("Create a Job"))
+    |> click(link("Create a Lead"))
     |> fill_in(text_field("Client name"), with: client_name)
     |> fill_in(text_field("Client email"), with: client_email)
     |> click(option("Wedding"))
@@ -39,7 +39,7 @@ defmodule Picsello.CreateJobTest do
 
   feature "user sees validation errors when creating job", %{session: session} do
     session
-    |> click(link("Create a Job"))
+    |> click(link("Create a Lead"))
     |> fill_in(text_field("Client name"), with: " ")
     |> fill_in(text_field("Client email"), with: " ")
     |> click(option("Wedding"))
@@ -64,7 +64,7 @@ defmodule Picsello.CreateJobTest do
     |> Repo.insert!()
 
     session
-    |> click(link("Create a Job"))
+    |> click(link("Create a Lead"))
     |> fill_in(text_field("Client email"), with: email)
     |> assert_has(css("label", text: "email has already been taken"))
     |> assert_has(css("button:disabled[type='submit']"))
