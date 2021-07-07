@@ -1,12 +1,12 @@
 <div class="p-8">
-  <h1 class="title">Create a Job</h1>
+  <h1 class="title">Create a Lead</h1>
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save %>
     <%= inputs_for f, :client, fn client_form -> %>
       <%= labeled_input client_form, :name, label: "Client name", placeholder: "Elizabeth Taylor", phx_debounce: "500", wrapper_class: "mt-4" %>
       <%= labeled_input client_form, :email, label: "Client email", placeholder: "elizabeth@taylor.com", phx_debounce: "500", wrapper_class: "mt-4" %>
     <% end %>
 
-    <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of job", prompt: "Select below", wrapper_class: "mt-4" %>
+    <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of photography", prompt: "Select below", wrapper_class: "mt-4" %>
 
     <div class="text-center mt-5">
       <%= live_redirect "Cancel", to: Routes.home_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>

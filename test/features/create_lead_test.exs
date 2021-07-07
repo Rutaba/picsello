@@ -32,7 +32,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(option("Select below"))
     |> assert_has(css("label", text: "Client name can't be blank"))
     |> assert_has(css("label", text: "Client email can't be blank"))
-    |> assert_has(css("label", text: "Type of job can't be blank"))
+    |> assert_has(css("label", text: "Type of photography can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
