@@ -47,19 +47,25 @@ defmodule Picsello.JobFixtures do
   def client_fixture(%{organization: organization_attrs} = attrs) do
     attrs
     |> Map.drop([:organization])
+    |> Map.put(:organization_id, organization_fixture(organization_attrs).id)
+    |> client_fixture()
+  end
+
+  def client_fixture(%{user: user} = attrs) do
+    attrs
+    |> Map.drop([:user])
+    |> Map.put(:organization_id, user.organization_id)
+    |> client_fixture()
+  end
+
+  def client_fixture(%{} = attrs) do
+    attrs
     |> Enum.into(%{
-      organization_id: organization_fixture(organization_attrs).id,
       email: "client#{System.unique_integer()}@example.com",
       name: "Mary Jane"
     })
     |> Client.create_changeset()
     |> Repo.insert!()
-  end
-
-  def client_fixture(%{} = attrs) do
-    attrs
-    |> Map.put(:organization, %{})
-    |> client_fixture()
   end
 
   def shoot_fixture(attrs \\ %{}) do

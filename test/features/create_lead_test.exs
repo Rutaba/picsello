@@ -42,10 +42,7 @@ defmodule Picsello.CreateLeadTest do
   } do
     email = "taylor@example.com"
 
-    fixture(:client, %{
-      email: email,
-      organization_id: user.organization_id
-    })
+    fixture(:client, %{email: email, user: user})
 
     session
     |> click(link("Create a lead"))
