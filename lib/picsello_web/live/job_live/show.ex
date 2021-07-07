@@ -11,6 +11,9 @@ defmodule PicselloWeb.JobLive.Show do
     |> ok()
   end
 
+  @impl true
+  def handle_info({:updated_job, job}, socket), do: socket |> assign(job: job) |> noreply()
+
   defp assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
     job =
       current_user
