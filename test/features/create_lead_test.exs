@@ -10,7 +10,7 @@ defmodule Picsello.CreateLeadTest do
     client_name = "Elizabeth Taylor"
 
     session
-    |> click(link("Create a Lead"))
+    |> click(link("Create a lead"))
     |> fill_in(text_field("Client name"), with: client_name)
     |> fill_in(text_field("Client email"), with: client_email)
     |> click(option("Wedding"))
@@ -34,12 +34,14 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(definition("Job price", text: "$1,234.50"))
     |> assert_has(definition("Package", text: "Wedding Deluxe"))
     |> assert_has(definition("Package description", text: "My greatest wedding package"))
-    |> assert_has(link('Add shoot details', count: 2))
+    |> assert_has(link("Add shoot details", count: 2))
+    |> click(link("Picsello"))
+    |> assert_has(link("View current leads"))
   end
 
   feature "user sees validation errors when creating job", %{session: session} do
     session
-    |> click(link("Create a Lead"))
+    |> click(link("Create a lead"))
     |> fill_in(text_field("Client name"), with: " ")
     |> fill_in(text_field("Client email"), with: " ")
     |> click(option("Wedding"))
@@ -64,7 +66,7 @@ defmodule Picsello.CreateLeadTest do
     |> Repo.insert!()
 
     session
-    |> click(link("Create a Lead"))
+    |> click(link("Create a lead"))
     |> fill_in(text_field("Client email"), with: email)
     |> assert_has(css("label", text: "email has already been taken"))
     |> assert_has(css("button:disabled[type='submit']"))

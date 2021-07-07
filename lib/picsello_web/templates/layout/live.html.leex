@@ -3,7 +3,7 @@
     <div class="flex-1">
     </div>
     <div class="flex-1 flex flex-col justify-center items-center">
-      <%= live_redirect to: (if @current_user, do: Routes.home_path(@socket, :index), else: Routes.page_path(@socket, :index)) do %>
+      <%= live_redirect to: (if @current_user, do: Routes.home_path(@socket, :index), else: Routes.page_path(@socket, :index)), title: "Picsello" do %>
         <%= icon_tag(@socket, "logo", class: "h-5 w-20") %>
       <% end %>
     </div>
