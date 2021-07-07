@@ -1,5 +1,11 @@
 defmodule PicselloWeb.JobLive.ShootDetailsComponent do
   @moduledoc false
+
+  defmodule View do
+    use PicselloWeb, :component_template
+    alias Picsello.Shoot
+  end
+
   use PicselloWeb, :live_component
   alias Picsello.{Shoot, Repo}
 

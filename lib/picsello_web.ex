@@ -68,11 +68,6 @@ defmodule PicselloWeb do
       use Phoenix.LiveComponent
       import PicselloWeb.LiveHelpers
 
-      defmodule View do
-        @moduledoc "dummy view lets components render templates"
-        use PicselloWeb, :component_template
-      end
-
       def render_template(name, assigns) do
         Phoenix.View.render(__MODULE__.View, name, assigns)
       end

@@ -6,9 +6,9 @@
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
   <%= labeled_input f, :name, label: "Shoot name", placeholder: "Engagement Shoot" %>
   <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot date", min: Date.utc_today(), wrapper_class: "mt-4" %>
-  <%= labeled_select f, :duration_minutes, for(duration <- Picsello.Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot duration", prompt: "Select below", wrapper_class: "mt-4" %>
+  <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot duration", prompt: "Select below", wrapper_class: "mt-4" %>
   <div class="input-label mt-4">Shoot location</div>
-  <%= for location <- Picsello.Shoot.locations() do %>
+  <%= for location <- Shoot.locations() do %>
     <label class="flex items-center mb-2">
       <%= radio_button f, :location, location, class: "mr-2 form-radio text-blue-primary focus:ring-1 focus:ring-blue-primary" %>
       <%= dyn_gettext location %>
