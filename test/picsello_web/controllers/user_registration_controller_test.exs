@@ -1,8 +1,6 @@
 defmodule PicselloWeb.UserRegistrationControllerTest do
   use PicselloWeb.ConnCase, async: true
 
-  import Picsello.AccountsFixtures
-
   describe "GET /users/register" do
     test "renders registration page", %{conn: conn} do
       conn = get(conn, Routes.user_registration_path(conn, :new))
@@ -11,7 +9,7 @@ defmodule PicselloWeb.UserRegistrationControllerTest do
     end
 
     test "redirects if already logged in", %{conn: conn} do
-      conn = conn |> log_in_user(user_fixture()) |> get(Routes.user_registration_path(conn, :new))
+      conn = conn |> log_in_user(insert(:user)) |> get(Routes.user_registration_path(conn, :new))
       assert redirected_to(conn) == "/home"
     end
   end

@@ -1,12 +1,10 @@
 defmodule Picsello.CreateLeadPackageTest do
   use Picsello.FeatureCase, async: true
 
-  import Picsello.JobFixtures
-
   setup :authenticated
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
-    job = fixture(:job, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+    job = insert(:job, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     session
     |> visit("/jobs/#{job.id}")
@@ -37,7 +35,7 @@ defmodule Picsello.CreateLeadPackageTest do
     session: session,
     user: user
   } do
-    fixture(:package, %{
+    insert(:package, %{
       price: 100,
       name: "My Package Template",
       description: "My custom description",
@@ -46,7 +44,7 @@ defmodule Picsello.CreateLeadPackageTest do
     })
 
     job =
-      fixture(:job, %{
+      insert(:job, %{
         client: %{
           email: "taylor@example.com",
           name: "Elizabeth Taylor"
@@ -82,7 +80,7 @@ defmodule Picsello.CreateLeadPackageTest do
     session: session,
     user: user
   } do
-    job = fixture(:job, %{package: %{}, user: user})
+    job = insert(:job, %{package: %{}, user: user})
 
     session
     |> visit("/jobs/#{job.id}/packages/new")

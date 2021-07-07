@@ -1,6 +1,5 @@
 defmodule Picsello.ResetPasswordTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.AccountsFixtures
 
   feature "user visits invalid reset password link", %{session: session} do
     session
@@ -12,7 +11,7 @@ defmodule Picsello.ResetPasswordTest do
   end
 
   feature "user resets password", %{session: session} do
-    user = user_fixture()
+    user = insert(:user)
 
     session
     |> navigate_to_forgot_password()

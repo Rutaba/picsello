@@ -16,6 +16,7 @@ defmodule PicselloWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+  import Picsello.Factory
 
   using do
     quote do
@@ -23,6 +24,7 @@ defmodule PicselloWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import PicselloWeb.ConnCase
+      import Picsello.Factory
 
       alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -50,7 +52,7 @@ defmodule PicselloWeb.ConnCase do
   test context.
   """
   def register_and_log_in_user(%{conn: conn}) do
-    user = Picsello.AccountsFixtures.user_fixture()
+    user = insert(:user)
     %{conn: log_in_user(conn, user), user: user}
   end
 

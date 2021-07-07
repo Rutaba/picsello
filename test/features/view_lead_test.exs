@@ -1,8 +1,6 @@
 defmodule Picsello.ViewLeadTest do
   use Picsello.FeatureCase, async: true
 
-  import Picsello.JobFixtures
-
   setup :authenticated
 
   setup %{user: user} do
@@ -11,7 +9,7 @@ defmodule Picsello.ViewLeadTest do
         for(
           {client_name, job_type} <- [{"Rick Sanchez", "family"}, {"Morty Smith", "wedding"}],
           do:
-            fixture(:job, %{
+            insert(:job, %{
               user: user,
               type: job_type,
               client: %{name: client_name}

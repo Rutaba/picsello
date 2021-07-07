@@ -1,10 +1,9 @@
 defmodule Picsello.ResetPasswordErrorTest do
   use Picsello.FeatureCase, async: false
-  import Picsello.AccountsFixtures
 
   @tag capture_log: true
   feature "server error on send email", %{session: session} do
-    user = user_fixture()
+    user = insert(:user)
 
     with_env(:picsello, Picsello.Mailer, [adapter: Bamboo.SendGridAdapter], fn ->
       session

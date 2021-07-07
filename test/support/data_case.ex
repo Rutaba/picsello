@@ -21,9 +21,8 @@ defmodule Picsello.DataCase do
       alias Picsello.Repo
 
       import Ecto
-      import Ecto.Changeset
-      import Ecto.Query
-      import Picsello.DataCase
+      import Ecto.{Changeset, Query}
+      import Picsello.{DataCase, Factory}
     end
   end
 

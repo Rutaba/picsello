@@ -1,8 +1,6 @@
 defmodule Picsello.CreateLeadTest do
   use Picsello.FeatureCase, async: true
 
-  import Picsello.JobFixtures
-
   setup :authenticated
 
   feature "user creates lead", %{session: session} do
@@ -49,7 +47,7 @@ defmodule Picsello.CreateLeadTest do
   } do
     email = "taylor@example.com"
 
-    fixture(:client, %{email: email, user: user})
+    insert(:client, %{email: email, user: user})
 
     session
     |> click(link("Create a lead"))

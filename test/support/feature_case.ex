@@ -3,9 +3,9 @@ defmodule Picsello.FeatureCase do
 
   defmodule FeatureHelpers do
     @moduledoc "available in all FeatureCase tests"
-    alias Picsello.AccountsFixtures
     import Wallaby.{Browser, Query}
     import ExUnit.Assertions
+    import Picsello.Factory
 
     def wait_for_enabled_submit_button(session) do
       session |> assert_has(css("button:not(:disabled)[type='submit']"))
@@ -14,7 +14,7 @@ defmodule Picsello.FeatureCase do
     def sign_in(
           session,
           %{email: email},
-          password \\ AccountsFixtures.valid_user_password()
+          password \\ valid_user_password()
         ) do
       session
       |> maybe_visit_log_in()
@@ -33,7 +33,7 @@ defmodule Picsello.FeatureCase do
     end
 
     def authenticated(%{session: session}) do
-      user = AccountsFixtures.user_fixture()
+      user = insert(:user)
       sign_in(session, user)
 
       [session: session, user: user]
@@ -73,7 +73,7 @@ defmodule Picsello.FeatureCase do
     quote do
       use Wallaby.Feature
       import Wallaby.Query
-      import Picsello.FeatureCase.FeatureHelpers
+      import Picsello.{Factory, FeatureCase.FeatureHelpers}
     end
   end
 end

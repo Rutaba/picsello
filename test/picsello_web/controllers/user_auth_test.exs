@@ -3,7 +3,6 @@ defmodule PicselloWeb.UserAuthTest do
 
   alias Picsello.Accounts
   alias PicselloWeb.UserAuth
-  import Picsello.AccountsFixtures
 
   @remember_me_cookie "_picsello_web_user_remember_me"
 
@@ -13,7 +12,7 @@ defmodule PicselloWeb.UserAuthTest do
       |> Map.replace!(:secret_key_base, PicselloWeb.Endpoint.config(:secret_key_base))
       |> init_test_session(%{})
 
-    %{user: user_fixture(), conn: conn}
+    %{user: insert(:user), conn: conn}
   end
 
   describe "log_in_user/3" do

@@ -3,10 +3,9 @@ defmodule PicselloWeb.UserConfirmationControllerTest do
 
   alias Picsello.Accounts
   alias Picsello.Repo
-  import Picsello.AccountsFixtures
 
   setup do
-    %{user: user_fixture()}
+    %{user: insert(:user)}
   end
 
   describe "GET /users/confirm" do

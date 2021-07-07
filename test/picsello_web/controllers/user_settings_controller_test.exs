@@ -2,7 +2,6 @@ defmodule PicselloWeb.UserSettingsControllerTest do
   use PicselloWeb.ConnCase, async: true
 
   alias Picsello.Accounts
-  import Picsello.AccountsFixtures
 
   setup :register_and_log_in_user
 

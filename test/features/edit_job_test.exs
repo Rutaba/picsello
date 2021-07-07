@@ -1,13 +1,11 @@
 defmodule Picsello.EditJobTest do
   use Picsello.FeatureCase, async: true
 
-  import Picsello.JobFixtures
-
   setup :authenticated
 
   setup %{session: session, user: user} do
     job =
-      fixture(:job, %{
+      insert(:job, %{
         user: user,
         type: "wedding",
         notes: "They're getting married!"

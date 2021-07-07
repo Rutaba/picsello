@@ -3,13 +3,11 @@ defmodule Picsello.ManageShootTest do
 
   alias Picsello.{Repo, Shoot}
 
-  import Picsello.JobFixtures
-
   setup :authenticated
 
   setup %{session: session, user: user} do
     job =
-      fixture(:job, %{
+      insert(:job, %{
         user: user,
         type: "wedding",
         notes: "They're getting married!",
@@ -56,7 +54,7 @@ defmodule Picsello.ManageShootTest do
   end
 
   feature "user deletes shoot", %{session: session, job: job} do
-    fixture(:shoot, %{job_id: job.id})
+    insert(:shoot, %{job_id: job.id})
 
     session
     |> visit("/jobs/#{job.id}")

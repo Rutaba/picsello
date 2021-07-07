@@ -1,6 +1,5 @@
 defmodule Picsello.SignInTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.AccountsFixtures
 
   feature "user views log in button", %{session: session} do
     session
@@ -23,7 +22,7 @@ defmodule Picsello.SignInTest do
   end
 
   feature "user logs in", %{session: session} do
-    user = user_fixture()
+    user = insert(:user)
 
     session
     |> visit("/")
