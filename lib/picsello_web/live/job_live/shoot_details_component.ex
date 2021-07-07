@@ -78,18 +78,6 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
     |> noreply()
   end
 
-  @impl true
-  def handle_event("delete", _params, %{assigns: %{shoot: shoot}} = socket) do
-    case Repo.delete(shoot) do
-      {:ok, _} ->
-        send(self(), {:update_shoot_count, :dec})
-        socket |> assign(open: false, shoot: nil) |> assign_changeset() |> noreply()
-
-      {:error, _} ->
-        socket |> put_flash(:error, "Failed to delete shoot. Please try again.") |> noreply()
-    end
-  end
-
   defp upsert(changeset, %{assigns: %{shoot: nil}}), do: Repo.insert(changeset)
   defp upsert(changeset, _socket), do: Repo.update(changeset)
 
@@ -108,8 +96,8 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
 
   defp assign_changeset(
          socket,
-         params \\ %{},
-         action \\ nil
+         params,
+         action
        ) do
     changeset = build_changeset(socket, params) |> Map.put(:action, action)
     assign(socket, changeset: changeset)

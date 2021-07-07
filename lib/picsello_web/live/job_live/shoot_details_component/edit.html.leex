@@ -20,8 +20,4 @@
     <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
   </div>
   </form>
-
-  <%= if @shoot do %>
-    <a href="#" phx-click="delete" phx-target="<%= @myself %>" data-confirm="Are you sure?" class="link text-center m-8">Delete shoot</a>
-  <% end %>
 </div>

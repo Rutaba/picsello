@@ -1,8 +1,6 @@
 defmodule Picsello.ManageShootTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.{Repo, Shoot}
-
   setup :authenticated
 
   setup %{session: session, user: user} do
@@ -51,18 +49,5 @@ defmodule Picsello.ManageShootTest do
     |> assert_has(definition("Shoot Date/Time", text: "May 5, 2040 - 12:00pm - 2 hrs"))
     |> assert_has(definition("Shoot Location", text: "In Studio"))
     |> assert_has(definition("Notes", text: "new notes"))
-  end
-
-  feature "user deletes shoot", %{session: session, job: job} do
-    insert(:shoot, %{job_id: job.id})
-
-    session
-    |> visit("/jobs/#{job.id}")
-    |> assert_has(link("Add shoot details", count: 1))
-    |> click(link("Edit shoot details"))
-    |> click(link("Delete shoot"))
-    |> assert_has(link("Add shoot details", count: 2))
-
-    assert Repo.aggregate(Shoot, :count) == 0
   end
 end
