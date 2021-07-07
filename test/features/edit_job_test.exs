@@ -12,6 +12,7 @@ defmodule Picsello.EditJobTest do
       fixture(:job, %{
         user: user,
         type: "wedding",
+        notes: "They're getting married!",
         package: %{
           name: "My Package Template",
           description: "My custom description",
@@ -30,6 +31,7 @@ defmodule Picsello.EditJobTest do
     |> assert_path("/jobs/#{job.id}/edit")
     |> assert_has(link("Cancel Edit Job"))
     |> assert_value(select("Type of job"), "wedding")
+    |> assert_value(text_field("Lead notes"), "They're getting married!")
     |> assert_value(text_field("Job price"), "$1.00")
     |> assert_value(text_field("Package", at: 0, count: 2), "My Package Template")
     |> assert_value(text_field("Package description"), "My custom description")
@@ -39,6 +41,7 @@ defmodule Picsello.EditJobTest do
     |> fill_in(text_field("Job price"), with: "2.00")
     |> fill_in(text_field("Package", at: 0, count: 2), with: "My Greatest Package")
     |> fill_in(text_field("Package description"), with: "indescribably great.")
+    |> fill_in(text_field("Lead notes"), with: "They're getting hitched!")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_path("/jobs/#{job.id}")
@@ -46,6 +49,7 @@ defmodule Picsello.EditJobTest do
     |> assert_has(definition("Package price", text: "$2.00"))
     |> assert_has(definition("Package name", text: "My Greatest Package"))
     |> assert_has(definition("Package description", text: "indescribably great."))
+    |> assert_has(definition("Lead notes", text: "They're getting hitched!"))
   end
 
   feature "user adds shoot details and updates it", %{session: session, job: job} do

@@ -25,6 +25,11 @@
 
     <dt class="mt-4 text-xs font-semibold">Client email:</dt>
     <dd><%= @job.client.email %></dd>
+
+    <%= if @job.notes do %>
+      <dt class="mt-4 text-xs font-semibold">Lead notes:</dt>
+      <dd class="whitespace-pre-line"><%= @job.notes %></dd>
+    <% end %>
   </dl>
 
   <%= if @job.package do %>

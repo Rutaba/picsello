@@ -8,6 +8,7 @@ defmodule Picsello.Job do
 
   schema "jobs" do
     field(:type, :string)
+    field(:notes, :string)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     has_many(:shoots, Shoot)
@@ -19,7 +20,7 @@ defmodule Picsello.Job do
 
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
-    |> cast(attrs, [:type, :client_id])
+    |> cast(attrs, [:type, :client_id, :notes])
     |> cast_assoc(:client, with: &Client.create_changeset/2)
     |> validate_required([:type])
     |> validate_inclusion(:type, @types)
@@ -28,7 +29,7 @@ defmodule Picsello.Job do
 
   def update_changeset(job, attrs \\ %{}) do
     job
-    |> cast(attrs, [:type])
+    |> cast(attrs, [:type, :notes])
     |> cast_assoc(:package, with: &Package.update_changeset/2)
     |> validate_required([:type])
     |> validate_inclusion(:type, @types)
