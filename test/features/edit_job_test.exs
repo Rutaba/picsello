@@ -1,33 +1,25 @@
 defmodule Picsello.EditJobTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.{Client, Repo, Job, Package, Shoot}
+  alias Picsello.{Repo, Shoot}
+
+  import Picsello.JobFixtures
 
   setup :authenticated
 
   setup %{session: session, user: user} do
-    client =
-      Client.create_changeset(%{
-        email: "taylor@example.com",
-        name: "Elizabeth Taylor",
-        organization_id: user.organization_id
-      })
-      |> Repo.insert!()
+    client = fixture(:client, %{organization_id: user.organization_id})
 
     package =
-      Package.create_changeset(%{
-        price: 100,
+      fixture(:package, %{
         name: "My Package Template",
         description: "My custom description",
         shoot_count: 2,
+        price: 100,
         organization_id: user.organization_id
       })
-      |> Repo.insert!()
 
-    job =
-      Job.create_changeset(%{client_id: client.id, type: "wedding"})
-      |> Job.add_package_changeset(%{package_id: package.id})
-      |> Repo.insert!()
+    job = fixture(:job, %{client_id: client.id, type: "wedding", package_id: package.id})
 
     [job: job, session: session]
   end
@@ -95,14 +87,7 @@ defmodule Picsello.EditJobTest do
   end
 
   feature "user deletes shoot", %{session: session, job: job} do
-    Shoot.create_changeset(%{
-      duration_minutes: 15,
-      location: "home",
-      name: "chute",
-      job_id: job.id,
-      starts_at: DateTime.utc_now()
-    })
-    |> Repo.insert!()
+    fixture(:shoot, %{job_id: job.id})
 
     session
     |> visit("/jobs/#{job.id}")

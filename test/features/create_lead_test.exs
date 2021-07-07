@@ -1,7 +1,7 @@
 defmodule Picsello.CreateLeadTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.{Client, Repo, Job, Package}
+  import Picsello.JobFixtures
 
   setup :authenticated
 
@@ -58,12 +58,10 @@ defmodule Picsello.CreateLeadTest do
   } do
     email = "taylor@example.com"
 
-    Client.create_changeset(%{
+    fixture(:client, %{
       email: email,
-      name: "anything",
       organization_id: user.organization_id
     })
-    |> Repo.insert!()
 
     session
     |> click(link("Create a lead"))
@@ -74,16 +72,12 @@ defmodule Picsello.CreateLeadTest do
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
     client =
-      Client.create_changeset(%{
-        email: "taylor@example.com",
+      fixture(:client, %{
         name: "Elizabeth Taylor",
         organization_id: user.organization_id
       })
-      |> Repo.insert!()
 
-    job =
-      Job.create_changeset(%{client_id: client.id, type: "wedding"})
-      |> Repo.insert!()
+    job = fixture(:job, %{client_id: client.id, type: "wedding"})
 
     session
     |> visit("/jobs/#{job.id}/packages/new")
@@ -102,25 +96,21 @@ defmodule Picsello.CreateLeadTest do
     user: user
   } do
     client =
-      Client.create_changeset(%{
+      fixture(:client, %{
         email: "taylor@example.com",
         name: "Elizabeth Taylor",
         organization_id: user.organization_id
       })
-      |> Repo.insert!()
 
-    Package.create_changeset(%{
+    fixture(:package, %{
       price: 100,
       name: "My Package Template",
       description: "My custom description",
       shoot_count: 2,
       organization_id: user.organization_id
     })
-    |> Repo.insert!()
 
-    job =
-      Job.create_changeset(%{client_id: client.id, type: "wedding"})
-      |> Repo.insert!()
+    job = fixture(:job, %{client_id: client.id, type: "wedding"})
 
     session
     |> visit("/jobs/#{job.id}/packages/new")
@@ -150,17 +140,7 @@ defmodule Picsello.CreateLeadTest do
     session: session,
     user: user
   } do
-    client =
-      Client.create_changeset(%{
-        email: "taylor@example.com",
-        name: "Elizabeth Taylor",
-        organization_id: user.organization_id
-      })
-      |> Repo.insert!()
-
-    job =
-      Job.create_changeset(%{client_id: client.id, type: "wedding"})
-      |> Repo.insert!()
+    job = fixture(:job, %{user: user})
 
     session
     |> visit("/jobs/#{job.id}")
@@ -171,28 +151,7 @@ defmodule Picsello.CreateLeadTest do
     session: session,
     user: user
   } do
-    client =
-      Client.create_changeset(%{
-        email: "taylor@example.com",
-        name: "Elizabeth Taylor",
-        organization_id: user.organization_id
-      })
-      |> Repo.insert!()
-
-    package =
-      Package.create_changeset(%{
-        price: 10,
-        name: "Package name",
-        description: "Package description",
-        shoot_count: 1,
-        organization_id: user.organization_id
-      })
-      |> Repo.insert!()
-
-    job =
-      Job.create_changeset(%{client_id: client.id, type: "wedding"})
-      |> Job.add_package_changeset(%{package_id: package.id})
-      |> Repo.insert!()
+    job = fixture(:job, %{package: %{}, user: user})
 
     session
     |> visit("/jobs/#{job.id}/packages/new")
