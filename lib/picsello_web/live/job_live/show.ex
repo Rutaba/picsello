@@ -12,15 +12,32 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_info({:updated_job, job}, socket), do: socket |> assign(job: job) |> noreply()
+  def handle_info({:update, assigns}, socket),
+    do: socket |> assign(assigns) |> noreply()
+
+  @impl true
+  def handle_info({:update_shoot_count, op}, %{assigns: %{shoot_count: shoot_count}} = socket) do
+    shoot_count =
+      case op do
+        :inc -> shoot_count + 1
+        :dec -> shoot_count - 1
+      end
+
+    socket |> assign(shoot_count: shoot_count) |> noreply()
+  end
 
   defp assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
     job =
       current_user
       |> Job.for_user()
       |> Repo.get!(job_id)
-      |> Repo.preload([:client, :package])
+      |> Repo.preload([:client, :package, :shoots])
 
-    socket |> assign(job: job)
+    socket
+    |> assign(
+      job: job |> Map.drop([:shoots, :package]),
+      package: job.package,
+      shoot_count: job.shoots |> Enum.count()
+    )
   end
 end

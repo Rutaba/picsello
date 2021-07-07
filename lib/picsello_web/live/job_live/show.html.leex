@@ -9,41 +9,16 @@
 
   <%= live_component PicselloWeb.JobLive.JobDetailsComponent, id: @job.id, job: @job %>
 
-  <%= if @job.package do %>
+  <%= live_component PicselloWeb.JobLive.PackageDetailsComponent, id: @job.id, job_id: @job.id, package: @package, shoot_count: @shoot_count %>
 
-    <div class="flex items-center justify-between mt-8">
-      <h2 class="text-xs font-bold uppercase">Package details</h2>
-
-      <hr class="flex-grow mx-2 border-gray-600 border-1">
-
-      <%= live_redirect to: "#" do %>
-        <%= icon_tag(@socket, "pencil", class: "btn-icon") %>
-      <% end %>
-    </div>
-
-    <dl class="ml-1">
-      <dt class="mt-4 text-xs font-semibold">Package name:</dt>
-      <dd><%= @job.package.name %></dd>
-
-      <dt class="mt-4 text-xs font-semibold">Package price:</dt>
-      <dd><%= @job.package.price %></dd>
-
-      <dt class="mt-4 text-xs font-semibold">Package description:</dt>
-      <dd class="whitespace-pre-line"><%= @job.package.description %></dd>
-    </dl>
-
+  <%= if @package do %>
     <div class="flex items-center justify-between my-8">
       <h2 class="text-xs font-bold uppercase">Shoot details</h2>
 
       <hr class="flex-grow ml-2 border-gray-600 border-1">
     </div>
-
-    <%= for shoot_number <- 1..@job.package.shoot_count do %>
+    <%= for shoot_number <- 1..@package.shoot_count do %>
       <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id %>
-    <% end %>
-  <% else %>
-    <%= live_redirect to: Routes.job_package_path(@socket, :new, @job.id), class: "uppercase btn-primary block text-center mt-8" do %>
-      Add a package
     <% end %>
   <% end %>
 </div>
