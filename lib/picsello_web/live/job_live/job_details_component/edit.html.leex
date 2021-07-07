@@ -14,7 +14,7 @@
   <%= labeled_input f, :notes, type: :textarea, label: "Lead notes", placeholder: "notes go here", phx_debounce: "500", wrapper_class: "mt-4" %>
 
   <div class="mt-5 text-center">
-    <a href="#" phx-click="cancel" phx-target="<%= @myself %>" class="inline-block w-32 mx-1 btn-secondary">
+    <a href="#" phx-click="toggle" phx-target="<%= @myself %>" class="inline-block w-32 mx-1 btn-secondary">
       Cancel
     </a>
 

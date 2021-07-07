@@ -2,6 +2,8 @@ defmodule PicselloWeb.JobLive.JobDetailsComponent do
   @moduledoc false
 
   defmodule View do
+    @moduledoc false
+
     use PicselloWeb, :component_template
     alias Picsello.Job
   end
@@ -51,47 +53,6 @@ defmodule PicselloWeb.JobLive.JobDetailsComponent do
         socket |> assign(changeset: changeset) |> noreply()
     end
   end
-
-  # @impl true
-  # def handle_event("validate", %{"shoot" => params}, socket) do
-  #   socket |> assign_changeset(params, :validate) |> noreply()
-  # end
-
-  # @impl true
-  # def handle_event("save", %{"shoot" => params}, socket) do
-  #   socket
-  #   |> assign(
-  #     case socket |> build_changeset(params) |> upsert(socket) do
-  #       {:ok, shoot} ->
-  #         [shoot: shoot, open: false]
-
-  #       {:error, changeset} ->
-  #         [changeset: changeset]
-  #     end
-  #   )
-  #   |> noreply()
-  # end
-
-  # @impl true
-  # def handle_event("delete", _params, %{assigns: %{shoot: shoot}} = socket) do
-  #   case Repo.delete(shoot) do
-  #     {:ok, _} ->
-  #       socket |> assign(open: false, shoot: nil) |> assign_changeset() |> noreply()
-
-  #     {:error, _} ->
-  #       socket |> put_flash(:error, "Failed to delete shoot. Please try again.") |> noreply()
-  #   end
-  # end
-
-  # defp upsert(changeset, %{assigns: %{shoot: nil}}), do: Repo.insert(changeset)
-  # defp upsert(changeset, _socket), do: Repo.update(changeset)
-
-  # defp build_changeset(%{assigns: %{job_id: job_id, shoot: nil}}, params) do
-  #   params
-  #   |> Map.put("job_id", job_id)
-  #   |> Shoot.create_changeset()
-  # end
-  #
 
   defp build_changeset(%{assigns: %{job: job}}, params) do
     job
