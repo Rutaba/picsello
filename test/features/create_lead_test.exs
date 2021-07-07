@@ -16,29 +16,14 @@ defmodule Picsello.CreateLeadTest do
     |> click(option("Wedding"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(css("h2", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(css("h1", text: "Add Package"))
-    |> assert_has(
-      css("select[name='package[package_template_id]'] option:checked", text: "+ New Package")
-    )
-    |> fill_in(text_field("Package name"), with: "Wedding Deluxe")
-    |> fill_in(text_field("Package description"), with: "My greatest wedding package")
-    |> fill_in(text_field("Package price"), with: "1234.50")
-    |> click(css("option", text: "2"))
-    |> wait_for_enabled_submit_button()
-    |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
     |> assert_has(definition("Client", text: client_name))
     |> assert_has(definition("Client email", text: client_email))
-    |> assert_has(definition("Package price", text: "$1,234.50"))
-    |> assert_has(definition("Package name", text: "Wedding Deluxe"))
-    |> assert_has(definition("Package description", text: "My greatest wedding package"))
-    |> assert_has(link("Add shoot details", count: 2))
     |> click(link("Picsello"))
     |> assert_has(link("View current leads"))
   end
 
-  feature "user sees validation errors when creating job", %{session: session} do
+  feature "user sees validation errors when creating lead", %{session: session} do
     session
     |> click(link("Create a lead"))
     |> fill_in(text_field("Client name"), with: " ")

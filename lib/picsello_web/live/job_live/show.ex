@@ -8,7 +8,6 @@ defmodule PicselloWeb.JobLive.Show do
     socket
     |> assign_defaults(session)
     |> assign_job(job_id)
-    |> maybe_redirect()
     |> ok()
   end
 
@@ -19,12 +18,6 @@ defmodule PicselloWeb.JobLive.Show do
       |> Repo.get!(job_id)
       |> Repo.preload([:client, :package])
 
-    socket |> assign(:job, job)
+    socket |> assign(job: job)
   end
-
-  defp maybe_redirect(%{assigns: %{job: %{id: job_id, package_id: nil}}} = socket) do
-    socket |> push_redirect(to: Routes.job_package_path(socket, :new, job_id))
-  end
-
-  defp maybe_redirect(socket), do: socket
 end

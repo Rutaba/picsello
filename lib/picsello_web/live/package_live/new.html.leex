@@ -1,18 +1,34 @@
-<div class="p-8">
-  <h2 class="text-xl font-semibold"><%= Job.name @job %></h2>
-  <h1 class="title">Add Package to Job</h1>
+<div class="px-8 pt-2">
+  <div class="text-xs text-gray-400">
+    <%= live_redirect to: Routes.job_path(@socket, :index) do %>
+      Leads
+    <% end %>
+
+    &gt;
+
+    <%= live_redirect to: Routes.job_path(@socket, :show, @job.id) do %>
+      <%= Job.name @job %>
+    <% end %>
+
+    &gt;
+
+    Add package
+  </div>
+
+  <h2 class="mt-4 text-xl font-semibold"><%= Job.name @job %></h2>
+  <h1 class="mt-2 title">Add package</h1>
 
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save %>
-    <div class="mt-8 flex flex-col">
+    <div class="flex flex-col mt-8">
       <%= select_field f, :package_template_id, [{"+ New Package", "new"}] ++ Enum.map(@package_templates, &{&1.name, &1.id}), prompt: if Enum.empty?(@package_templates), do: nil, else: "Select below" %>
     </div>
 
     <%= labeled_input f, :name, label: "Package name", placeholder: "Deluxe wedding", phx_debounce: "500", wrapper_class: "mt-4" %>
-    <%= labeled_input f, :description, type: :textarea, label: "Package description", placeholder: "The most deluxe of weddings", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_input f, :price, label: "Package price", placeholder: "$1000", phx_debounce: "500", wrapper_class: "mt-4" %>
-    <%= labeled_select f, :shoot_count, Enum.to_list(1..5), label: "Number of shoots for job", phx_debounce: "500", wrapper_class: "mt-4" %>
+    <%= labeled_input f, :description, type: :textarea, label: "Package description", placeholder: "The most deluxe of weddings", phx_debounce: "500", wrapper_class: "mt-4" %>
+    <%= labeled_select f, :shoot_count, Enum.to_list(1..5), label: "Number of shoots for this package", phx_debounce: "500", wrapper_class: "mt-4" %>
 
-    <div class="text-center mt-5">
+    <div class="mt-5 text-center">
       <%= live_redirect "Cancel", to: Routes.home_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
       <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: input_value(f, :package_template_id) == "" || !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>

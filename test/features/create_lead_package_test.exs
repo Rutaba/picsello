@@ -9,8 +9,8 @@ defmodule Picsello.CreateLeadPackageTest do
     job = fixture(:job, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     session
-    |> visit("/jobs/#{job.id}/packages/new")
-    |> assert_has(css("h2", text: "Elizabeth Taylor Wedding"))
+    |> visit("/jobs/#{job.id}")
+    |> click(link("Add a package"))
     |> fill_in(text_field("Package name"), with: " ")
     |> fill_in(text_field("Package description"), with: " ")
     |> fill_in(text_field("Package price"), with: "-1")
@@ -18,6 +18,19 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(css("label", text: "Package description can't be blank"))
     |> assert_has(css("label", text: "Package price must be greater than or equal to 0"))
     |> assert_has(css("button:disabled[type='submit']"))
+    |> assert_has(
+      css("select[name='package[package_template_id]'] option:checked", text: "+ New Package")
+    )
+    |> fill_in(text_field("Package name"), with: "Wedding Deluxe")
+    |> fill_in(text_field("Package description"), with: "My greatest wedding package")
+    |> fill_in(text_field("Package price"), with: "1234.50")
+    |> click(css("option", text: "2"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_has(definition("Package price", text: "$1,234.50"))
+    |> assert_has(definition("Package name", text: "Wedding Deluxe"))
+    |> assert_has(definition("Package description", text: "My greatest wedding package"))
+    |> assert_has(link("Add shoot details", count: 2))
   end
 
   feature "user selects previous package as template to job creation", %{
@@ -53,7 +66,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_value(text_field("Package description"), "My custom description")
     |> assert_value(text_field("Package name"), "My Package Template")
     |> assert_value(text_field("Package price"), "$1.00")
-    |> assert_value(select("Number of shoots for job"), "2")
+    |> assert_value(select("Number of shoots for this package"), "2")
     |> fill_in(text_field("Package name"), with: "My job package")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
@@ -63,17 +76,6 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(definition("Package description", text: "My custom description"))
     |> assert_has(definition("Package name", text: "My job package"))
     |> assert_has(definition("Package price", text: "$1.00"))
-  end
-
-  feature "user is redirected to new package page when job is not associated to package", %{
-    session: session,
-    user: user
-  } do
-    job = fixture(:job, %{user: user})
-
-    session
-    |> visit("/jobs/#{job.id}")
-    |> assert_path("/jobs/#{job.id}/packages/new")
   end
 
   feature "user is redirected to job show page when job is already associated to package", %{
