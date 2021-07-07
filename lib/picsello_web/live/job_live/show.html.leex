@@ -1,31 +1,60 @@
-<div class="p-8">
-  <div class="flex flex-row justify-between items-center">
-    <h1 class="title text-black"><%= Job.name @job %></h1>
+<div class="px-8 pt-2">
+  <div class="text-xs text-gray-400">
+    <%= live_redirect to: Routes.job_path(@socket, :index), title: "All Leads" do%>
+      Leads
+    <% end %>
+    &gt;
+    <%= Job.name @job %>
+  </div>
 
-    <%= live_redirect to: Routes.job_path(@socket, :edit, @job.id), title: "Edit Job" do%>
+  <div class="flex items-center justify-between mt-4">
+    <h2 class="text-xs font-bold uppercase">Lead details</h2>
+
+    <hr class="flex-grow mx-2 border-gray-600 border-1">
+
+    <%= live_redirect to: Routes.job_path(@socket, :edit, @job.id), title: "Edit Lead" do %>
       <%= icon_tag(@socket, "pencil", class: "btn-icon") %>
     <% end %>
   </div>
 
-  <dl>
-    <dt class="text-xs font-semibold mt-4">Client:</dt>
+  <h1 class="mt-4 text-lg font-bold"><%= Job.name @job %></h1>
+
+  <dl class="ml-1">
+    <dt class="mt-8 text-xs font-semibold">Client:</dt>
     <dd><%= @job.client.name %></dd>
-    <dt class="text-xs font-semibold mt-4">Client email:</dt>
+
+    <dt class="mt-4 text-xs font-semibold">Client email:</dt>
     <dd><%= @job.client.email %></dd>
-    <dt class="text-xs font-semibold mt-4">Type of job:</dt>
-    <dd><%= humanize(@job.type) %></dd>
-    <dt class="text-xs font-semibold mt-4">Job price:</dt>
-    <dd><%= @job.package.price %></dd>
-    <dt class="text-xs font-semibold mt-4">Package:</dt>
+  </dl>
+
+  <div class="flex items-center justify-between mt-8">
+    <h2 class="text-xs font-bold uppercase">Package details</h2>
+
+    <hr class="flex-grow mx-2 border-gray-600 border-1">
+
+    <%= live_redirect to: Routes.job_path(@socket, :edit, @job.id) do %>
+      <%= icon_tag(@socket, "pencil", class: "btn-icon") %>
+    <% end %>
+  </div>
+
+  <dl class="ml-1">
+    <dt class="mt-4 text-xs font-semibold">Package name:</dt>
     <dd><%= @job.package.name %></dd>
-    <dt class="text-xs font-semibold mt-4">Package description:</dt>
+
+    <dt class="mt-4 text-xs font-semibold">Package price:</dt>
+    <dd><%= @job.package.price %></dd>
+
+    <dt class="mt-4 text-xs font-semibold">Package description:</dt>
     <dd class="whitespace-pre-line"><%= @job.package.description %></dd>
   </dl>
 
-  <h2 class="section-title mt-4">Shoot details</h2>
+  <div class="flex items-center justify-between my-8">
+    <h2 class="text-xs font-bold uppercase">Shoot details</h2>
+
+    <hr class="flex-grow ml-2 border-gray-600 border-1">
+  </div>
 
   <%= for shoot_number <- 1..@job.package.shoot_count do %>
     <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id  %>
   <% end %>
-
 </div>

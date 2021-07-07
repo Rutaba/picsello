@@ -8,18 +8,17 @@ defmodule Picsello.EditJobTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
-    client = fixture(:client, %{organization_id: user.organization_id})
-
-    package =
-      fixture(:package, %{
-        name: "My Package Template",
-        description: "My custom description",
-        shoot_count: 2,
-        price: 100,
-        organization_id: user.organization_id
+    job =
+      fixture(:job, %{
+        user: user,
+        type: "wedding",
+        package: %{
+          name: "My Package Template",
+          description: "My custom description",
+          shoot_count: 2,
+          price: 100
+        }
       })
-
-    job = fixture(:job, %{client_id: client.id, type: "wedding", package_id: package.id})
 
     [job: job, session: session]
   end
@@ -27,7 +26,7 @@ defmodule Picsello.EditJobTest do
   feature "user edits a job", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("Edit Job"))
+    |> click(link("Edit Lead"))
     |> assert_path("/jobs/#{job.id}/edit")
     |> assert_has(link("Cancel Edit Job"))
     |> assert_value(select("Type of job"), "wedding")
@@ -44,9 +43,8 @@ defmodule Picsello.EditJobTest do
     |> click(button("Save"))
     |> assert_path("/jobs/#{job.id}")
     |> assert_has(css(".alert-info", text: "Job updated successfully."))
-    |> assert_has(definition("Job price", text: "$2.00"))
-    |> assert_has(definition("Type of job", text: "Family"))
-    |> assert_has(definition("Package", text: "My Greatest Package"))
+    |> assert_has(definition("Package price", text: "$2.00"))
+    |> assert_has(definition("Package name", text: "My Greatest Package"))
     |> assert_has(definition("Package description", text: "indescribably great."))
   end
 

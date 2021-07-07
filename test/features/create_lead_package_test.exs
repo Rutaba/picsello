@@ -50,8 +50,8 @@ defmodule Picsello.CreateLeadPackageTest do
       )
     )
     |> click(option("My Package Template"))
-    |> assert_value(text_field("Package name"), "My Package Template")
     |> assert_value(text_field("Package description"), "My custom description")
+    |> assert_value(text_field("Package name"), "My Package Template")
     |> assert_value(text_field("Package price"), "$1.00")
     |> assert_value(select("Number of shoots for job"), "2")
     |> fill_in(text_field("Package name"), with: "My job package")
@@ -60,10 +60,9 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
     |> assert_has(definition("Client", text: "Elizabeth Taylor"))
     |> assert_has(definition("Client email", text: "taylor@example.com"))
-    |> assert_has(definition("Type of job", text: "Wedding"))
-    |> assert_has(definition("Job price", text: "$1.00"))
-    |> assert_has(definition("Package", text: "My job package"))
     |> assert_has(definition("Package description", text: "My custom description"))
+    |> assert_has(definition("Package name", text: "My job package"))
+    |> assert_has(definition("Package price", text: "$1.00"))
   end
 
   feature "user is redirected to new package page when job is not associated to package", %{

@@ -10,13 +10,4 @@
       text-3xl
     ;
   }
-
-  .section-title {
-    @apply text-2xl font-bold flex flex-row items-center;
-  }
-
-  .section-title::after {
-    content: '';
-    @apply h-px bg-black flex-1 ml-4;
-  }
 }

@@ -25,6 +25,9 @@ defmodule Picsello.ViewLeadTest do
     |> visit("/")
     |> click(link("View current leads"))
     |> assert_has(link("Rick Sanchez Family"))
-    |> assert_has(link("Morty Smith Wedding"))
+    |> click(link("Morty Smith Wedding"))
+    |> click(link("Leads"))
+    |> click(link("Rick Sanchez Family"))
+    |> assert_has(css("h1", text: "Rick Sanchez Family"))
   end
 end
