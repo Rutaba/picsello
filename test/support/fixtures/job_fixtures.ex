@@ -20,6 +20,18 @@ defmodule Picsello.JobFixtures do
     attrs
     |> Map.drop([:organization])
     |> Enum.into(%{organization_id: organization_fixture(organization_attrs).id})
+    |> package_fixture()
+  end
+
+  def package_fixture(%{user: user} = attrs) do
+    attrs
+    |> Map.drop([:user])
+    |> Map.put(:organization_id, user.organization_id)
+    |> package_fixture()
+  end
+
+  def package_fixture(%{} = attrs) do
+    attrs
     |> Enum.into(%{
       price: 10,
       name: "Package name",
@@ -28,12 +40,6 @@ defmodule Picsello.JobFixtures do
     })
     |> Package.create_changeset()
     |> Repo.insert!()
-  end
-
-  def package_fixture(%{} = attrs) do
-    attrs
-    |> Map.put(:organization, %{})
-    |> package_fixture()
   end
 
   def client_fixture(attrs \\ %{})
