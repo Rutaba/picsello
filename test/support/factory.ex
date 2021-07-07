@@ -86,16 +86,32 @@ defmodule Picsello.Factory do
   end
 
   def job_factory(attrs) do
+    user_attr = Map.take(attrs, [:user])
+
+    build_package_template = fn ->
+      build(:package, user_attr)
+    end
+
     package =
       case attrs do
-        %{package: package} -> fn -> build(:package, package) end
-        _ -> nil
+        %{package: package} ->
+          fn ->
+            build(
+              :package,
+              package
+              |> Map.put_new_lazy(:package_template, build_package_template)
+              |> Enum.into(user_attr)
+            )
+          end
+
+        _ ->
+          nil
       end
 
     %Job{
       type: "wedding",
       client: fn ->
-        build(:client, attrs |> Map.get(:client, %{}) |> Enum.into(Map.take(attrs, [:user])))
+        build(:client, attrs |> Map.get(:client, %{}) |> Enum.into(user_attr))
       end,
       package: package,
       shoots: fn ->

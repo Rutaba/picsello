@@ -9,7 +9,7 @@
 
   <%= live_component PicselloWeb.JobLive.JobDetailsComponent, id: @job.id, job: @job %>
 
-  <%= live_component PicselloWeb.JobLive.PackageDetailsComponent, id: @job.id, job_id: @job.id, package: @package, shoot_count: @shoot_count %>
+  <%= live_component PicselloWeb.JobLive.PackageDetailsComponent, id: @job.id, job_id: @job.id, package: @package, shoot_count: @shoot_count, current_user: @current_user %>
 
   <%= if @package do %>
     <div class="flex items-center justify-between my-8">

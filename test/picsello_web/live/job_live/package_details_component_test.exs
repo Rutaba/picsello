@@ -8,7 +8,11 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
     def shoot_count_options(shoot_count) do
       {:ok, %{assigns: %{shoot_count_options: shoot_count_options}}} =
         PackageDetailsComponent.update([], %Socket{
-          assigns: %{shoot_count: shoot_count, package: %Package{id: 1}}
+          assigns: %{
+            shoot_count: shoot_count,
+            package: %Package{id: 1},
+            current_user: insert(:user)
+          }
         })
 
       shoot_count_options
