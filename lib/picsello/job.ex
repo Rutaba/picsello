@@ -1,6 +1,6 @@
 defmodule Picsello.Job do
   @moduledoc false
-  @types ~w[wedding family new_born other]
+  @types ~w[wedding family newborn other]
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
