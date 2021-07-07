@@ -26,27 +26,24 @@ defmodule Picsello.Package do
     |> validate_number(:shoot_count, less_than: 6)
   end
 
+  def update_changeset(package, %{"package_template_id" => "new"} = attrs) do
+    attrs =
+      attrs
+      |> Map.drop(["package_template_id"])
+      |> Map.put(
+        "package_template",
+        package
+        |> create_changeset(attrs)
+        |> apply_changes()
+        |> Map.from_struct()
+      )
+
+    package
+    |> Repo.preload(:package_template)
+    |> update_changeset(attrs)
+  end
+
   def update_changeset(package, attrs) do
-    {attrs, package} =
-      case attrs do
-        %{"package_template_id" => "new"} ->
-          attrs = attrs |> Map.drop(["package_template_id"])
-
-          {attrs
-           |> Map.put(
-             "package_template",
-             package
-             |> create_changeset(attrs)
-             |> apply_changes()
-             |> Map.from_struct()
-           ),
-           package
-           |> Repo.preload(:package_template)}
-
-        _ ->
-          {attrs, package}
-      end
-
     package
     |> cast(attrs, [
       :price,

@@ -117,8 +117,7 @@ defmodule PicselloWeb.PackageLive.New do
     |> Package.create_changeset()
   end
 
-  defp assign_initial_changeset(%{assigns: %{package_templates: package_templates}} = socket)
-       when package_templates == [] do
+  defp assign_initial_changeset(%{assigns: %{package_templates: []}} = socket) do
     socket |> assign_changeset(%{"package_template_id" => "new"})
   end
 

@@ -1,8 +1,70 @@
 defmodule PicselloWeb.PackageDetailsComponentTest do
-  use Picsello.DataCase, async: true
+  use PicselloWeb.ConnCase, async: true
+  import Phoenix.ConnTest
+  import Phoenix.LiveViewTest
   alias PicselloWeb.JobLive.PackageDetailsComponent
-  alias Picsello.Package
+  alias Picsello.{Package, Repo}
   alias Phoenix.LiveView.Socket
+
+  @endpoint PicselloWeb.Endpoint
+
+  describe "package_template_id" do
+    setup :register_and_log_in_user
+
+    def click_edit_package(view), do: view |> element("a[title$='package']") |> render_click()
+
+    def choose_new_template_package(view),
+      do:
+        view
+        |> element("form")
+        |> render_change(%{
+          _target: ["package", "package_template_id"],
+          package: %{package_template_id: "new"}
+        })
+
+    setup %{user: user, conn: conn} do
+      job = insert(:job, %{user: user, package: %{}})
+      {:ok, view, _html} = live(conn, "/jobs/#{job.id}")
+
+      click_edit_package(view)
+
+      [view: view, job: job]
+    end
+
+    test "starts with one from package", %{view: view, job: job} do
+      %{package: %{package_template_id: template_id}} = job |> Repo.preload(:package)
+
+      assert has_element?(view, "option[selected][value=#{template_id}]")
+    end
+
+    test "stays new when changed to new", %{view: view} do
+      choose_new_template_package(view)
+
+      assert has_element?(view, "option[selected][value=new]")
+
+      view
+      |> element("form")
+      |> render_change(%{
+        _target: ["package", "name"],
+        package: %{name: "whatever"}
+      })
+
+      assert has_element?(view, "option[selected][value=new]")
+    end
+
+    test "reverts to template id when form is reset", %{view: view, job: job} do
+      %{package: %{package_template_id: template_id}} = job |> Repo.preload(:package)
+
+      choose_new_template_package(view)
+
+      assert has_element?(view, "option[selected][value=new]")
+
+      view |> click_edit_package()
+      view |> click_edit_package()
+
+      assert has_element?(view, "option[selected][value=#{template_id}]")
+    end
+  end
 
   describe "assign :shoot_count_options" do
     def shoot_count_options(shoot_count) do

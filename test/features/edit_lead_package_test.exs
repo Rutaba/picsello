@@ -1,4 +1,4 @@
-defmodule Picsello.EditPackageTest do
+defmodule Picsello.EditLeadPackageTest do
   use Picsello.FeatureCase, async: true
 
   setup :authenticated
@@ -50,7 +50,10 @@ defmodule Picsello.EditPackageTest do
     |> visit("/jobs/#{job.id}")
     |> click(link("Edit package"))
     |> click(css("option", text: "+ New Package"))
+    |> assert_has(css("option", selected: true, text: "+ New Package"))
+    |> fill_in(text_field("Package price"), with: "3.00")
     |> wait_for_enabled_submit_button()
+    |> assert_has(css("option", selected: true, text: "+ New Package"))
     |> click(button("Save"))
     |> click(link("Edit package"))
     |> assert_has(css("option", text: job.package.name))

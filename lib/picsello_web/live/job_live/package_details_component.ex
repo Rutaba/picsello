@@ -13,7 +13,7 @@ defmodule PicselloWeb.JobLive.PackageDetailsComponent do
   @impl true
   def mount(socket) do
     socket
-    |> assign(edit: false)
+    |> assign(edit: false, template_id_value: [])
     |> ok()
   end
 
@@ -36,8 +36,23 @@ defmodule PicselloWeb.JobLive.PackageDetailsComponent do
 
   @impl true
   def handle_event("toggle", %{}, %{assigns: %{edit: edit}} = socket) do
-    socket |> assign(:edit, !edit) |> assign_changeset() |> noreply()
+    socket |> assign(edit: !edit, template_id_value: []) |> assign_changeset() |> noreply()
   end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "package" => %{"package_template_id" => "new"} = package
+        },
+        socket
+      ),
+      do:
+        handle_event(
+          "validate",
+          %{"package" => Map.drop(package, ["package_template_id"])},
+          assign(socket, template_id_value: [value: "new"])
+        )
 
   @impl true
   def handle_event(
@@ -61,13 +76,12 @@ defmodule PicselloWeb.JobLive.PackageDetailsComponent do
           |> Enum.into(package)
       end
 
-    handle_event("validate", params, socket)
+    handle_event("validate", params, assign(socket, template_id_value: []))
   end
 
   @impl true
-  def handle_event("validate", %{"package" => params}, socket) do
-    socket |> assign_changeset(:validate, params) |> noreply()
-  end
+  def handle_event("validate", %{"package" => params}, socket),
+    do: socket |> assign_changeset(:validate, params) |> noreply()
 
   @impl true
   def handle_event("save", %{"package" => params}, socket) do
