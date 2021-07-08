@@ -21,6 +21,17 @@ defmodule PicselloWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :admins_only do
+    plug :admin_basic_auth
+  end
+
+  defp admin_basic_auth(conn, _opts),
+    do:
+      Plug.BasicAuth.basic_auth(conn,
+        username: System.fetch_env!("ADMIN_USERNAME"),
+        password: System.fetch_env!("ADMIN_PASSWORD")
+      )
+
   scope "/health_check" do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
@@ -37,13 +48,13 @@ defmodule PicselloWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
+  import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
-      live_dashboard "/dashboard", metrics: PicselloWeb.Telemetry
-    end
+  scope "/" do
+    pipe_through :browser
+
+    unless Mix.env() in [:dev, :test], do: pipe_through(:admins_only)
+    live_dashboard "/dashboard", metrics: PicselloWeb.Telemetry, ecto_repos: [Picsello.Repo]
   end
 
   ## Authentication routes
