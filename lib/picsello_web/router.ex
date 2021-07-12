@@ -76,9 +76,9 @@ defmodule PicselloWeb.Router do
   scope "/", PicselloWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+    live "/users/settings", Live.User.Settings, :edit
 
     live "/home", HomeLive.Index, :index, as: :home
     live "/jobs/:job_id/packages/new", PackageLive.New, :new, as: :job_package

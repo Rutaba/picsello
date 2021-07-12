@@ -1,15 +1,17 @@
 <main role="main">
-  <header class="border border-b-1 p-4 flex flex-row" >
+  <header class="flex flex-row p-4 border border-b-1" >
     <div class="flex-1">
     </div>
-    <div class="flex-1 flex flex-col justify-center items-center">
-      <%= live_redirect to: (if @current_user, do: Routes.home_path(@socket, :index), else: Routes.page_path(@socket, :index)), title: "Picsello" do %>
+    <div class="flex flex-col items-center justify-center flex-1">
+      <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
         <%= icon_tag(@socket, "logo", class: "h-5 w-20") %>
       <% end %>
     </div>
-    <div class="flex-1 flex flex-row justify-end">
+    <div class="flex flex-row justify-end flex-1">
       <%= if @current_user do %>
-        <div class="rounded-full h-9 w-9 bg-black text-white justify-center items-center flex flex-col" ><%= Picsello.Accounts.User.initials @current_user %></div>
+        <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "User settings" do %>
+          <div class="flex flex-col items-center justify-center text-white bg-black rounded-full h-9 w-9" ><%= User.initials @current_user %></div>
+        <% end %>
       <% end %>
     </div>
   </header>

@@ -27,7 +27,7 @@ defmodule Picsello.ResetPasswordTest do
     assert_receive {:delivered_email, email}
 
     session
-    |> visit(email |> substitutions |> Map.get("url"))
+    |> visit(email |> email_substitutions |> Map.get("url"))
     |> assert_has(css("h1", text: "Reset your password"))
     |> fill_in(text_field("New password"), with: " ")
     |> assert_has(css("label", text: "New password can't be blank"))
@@ -43,9 +43,4 @@ defmodule Picsello.ResetPasswordTest do
     |> sign_in(user, "ThisIsAStrongP@ssw0rd")
     |> assert_has(css("h1", text: "Hello #{user.first_name}"))
   end
-
-  defp substitutions(%Bamboo.Email{
-         private: %{send_grid_template: %{dynamic_template_data: substitutions}}
-       }),
-       do: substitutions
 end

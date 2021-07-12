@@ -70,7 +70,7 @@ defmodule Picsello.Accounts.User do
     |> unique_constraint(:email)
   end
 
-  defp validate_password(changeset, opts) do
+  def validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
     |> validate_length(:password, min: 12, max: 80)
@@ -154,11 +154,11 @@ defmodule Picsello.Accounts.User do
   @doc """
   Validates the current password otherwise adds an error to the changeset.
   """
-  def validate_current_password(changeset, password) do
+  def validate_current_password(changeset, password, field \\ :current_password) do
     if valid_password?(changeset.data, password) do
       changeset
     else
-      add_error(changeset, :current_password, "is not valid")
+      add_error(changeset, field, "is not valid")
     end
   end
 

@@ -1,49 +1,11 @@
 defmodule Picsello.Accounts.UserNotifier do
   @moduledoc false
-  import Bamboo.Email
-  import Bamboo.SendGridHelper
+  import Bamboo.{Email, SendGridHelper}
   alias Picsello.Mailer
   require Logger
 
-  defp deliver(to, body) do
-    new_email()
-    |> from("noreply@picsello.com")
-    |> to(to)
-    |> text_body(body)
-    |> Mailer.deliver_later()
-  end
-
-  @doc """
-  Deliver instructions to confirm account.
-  """
-  def deliver_confirmation_instructions(user, url) do
-    deliver(user.email, """
-
-    ==============================
-
-    Hi #{user.email},
-
-    You can confirm your account by visiting the URL below:
-
-    #{url}
-
-    If you didn't create an account with us, please ignore this.
-
-    ==============================
-    """)
-  end
-
-  @doc """
-  Deliver instructions to reset a user password.
-  """
-  def deliver_reset_password_instructions(user, url) do
-    new_email()
-    |> from("noreply@picsello.com")
-    |> to(user.email)
-    |> with_template(Application.get_env(:picsello, Picsello.Mailer)[:password_reset_template])
-    |> add_dynamic_field("name", user.first_name)
-    |> add_dynamic_field("url", url)
-    |> Mailer.deliver_later()
+  defp deliver_later(email) do
+    email |> Mailer.deliver_later()
   rescue
     exception ->
       error = Exception.format(:error, exception, __STACKTRACE__)
@@ -52,22 +14,41 @@ defmodule Picsello.Accounts.UserNotifier do
   end
 
   @doc """
+  Deliver instructions to confirm account.
+  """
+  def deliver_confirmation_instructions(user, url) do
+    sendgrid_template(:confirmation_instructions_template, name: user.first_name, url: url)
+    |> to(user.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
+  @doc """
+  Deliver instructions to reset a user password.
+  """
+  def deliver_reset_password_instructions(user, url) do
+    sendgrid_template(:password_reset_template, name: user.first_name, url: url)
+    |> to(user.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
+  @doc """
   Deliver instructions to update a user email.
   """
   def deliver_update_email_instructions(user, url) do
-    deliver(user.email, """
+    sendgrid_template(:update_email_template, name: user.first_name, url: url)
+    |> to(user.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
 
-    ==============================
-
-    Hi #{user.email},
-
-    You can change your email by visiting the URL below:
-
-    #{url}
-
-    If you didn't request this change, please ignore this.
-
-    ==============================
-    """)
+  defp sendgrid_template(template_key, dynamic_fields) do
+    dynamic_fields
+    |> Enum.reduce(
+      new_email()
+      |> with_template(Application.get_env(:picsello, Picsello.Mailer)[template_key]),
+      fn {k, v}, e -> add_dynamic_field(e, k, v) end
+    )
   end
 end

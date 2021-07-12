@@ -3,18 +3,13 @@ defmodule PicselloWeb.PasswordFieldComponent do
   use PicselloWeb, :live_component
 
   @impl true
-  def mount(socket) do
-    {:ok, assign(socket, hide_password: true)}
-  end
+  def mount(socket), do: socket |> assign(hide_password: true) |> ok()
 
   @impl true
-  def preload([assigns]) do
-    defaults = %{label: "Password"}
-    [Map.merge(defaults, assigns)]
-  end
+  def update(assigns, socket),
+    do: socket |> assign(assigns |> Enum.into(%{label: "Password", name: :password})) |> ok()
 
   @impl true
-  def handle_event("toggle-password", %{}, socket) do
-    {:noreply, assign(socket, hide_password: !socket.assigns.hide_password)}
-  end
+  def handle_event("toggle-password", %{}, %{assigns: %{hide_password: hide_password}} = socket),
+    do: socket |> assign(hide_password: !hide_password) |> noreply()
 end

@@ -58,6 +58,7 @@ config :picsello, Picsello.Mailer,
   adapter: Bamboo.SendGridAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
   password_reset_template: System.get_env("SENDGRID_PASSWORD_RESET_TEMPLATE"),
+  update_email_template: System.get_env("SENDGRID_UPDATE_EMAIL_TEMPLATE"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]

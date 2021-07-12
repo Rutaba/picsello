@@ -20,6 +20,11 @@ defmodule Picsello.Factory do
     |> Enum.at(1)
   end
 
+  def email_substitutions(%Bamboo.Email{
+        private: %{send_grid_template: %{dynamic_template_data: substitutions}}
+      }),
+      do: substitutions
+
   def user_factory do
     %User{}
     |> User.registration_changeset(valid_user_attributes())
