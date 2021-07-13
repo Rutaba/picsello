@@ -21,6 +21,6 @@ defmodule PicselloWeb.LiveViewHelpers do
       sandbox.allow(metadata, self())
     end
 
-    socket
+    assign(socket, modal: nil)
   end
 end

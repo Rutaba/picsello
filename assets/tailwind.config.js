@@ -24,6 +24,7 @@ module.exports = {
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
       },
+      zIndex: {'-10':'-10'}
     },
   },
   variants: {

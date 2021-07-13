@@ -1,13 +1,13 @@
-defmodule PicselloWeb.JobLive.New do
+defmodule PicselloWeb.JobLive.NewComponent do
   @moduledoc false
-  use PicselloWeb, :live_view
+  use PicselloWeb, :live_component
 
   alias Picsello.{Job, Repo}
 
   @impl true
-  def mount(_params, session, socket) do
+  def update(assigns, socket) do
     socket
-    |> assign_defaults(session)
+    |> assign(assigns)
     |> assign_changeset()
     |> ok()
   end
@@ -29,6 +29,8 @@ defmodule PicselloWeb.JobLive.New do
         socket |> assign(changeset: changeset) |> noreply()
     end
   end
+
+  def title, do: "Create a Lead"
 
   defp build_changeset(
          %{assigns: %{current_user: current_user}},

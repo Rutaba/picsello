@@ -33,4 +33,7 @@
   <svg id="back" viewBox="0 0 10.721 20.194">
     <path d="M6234.237,2152.5l9.422,8.627,9.422-8.627" transform="translate(2162.483 -6233.562) rotate(90)" stroke-width="2" fill="none"/>
   </svg>
+  <svg id="close-modal" viewBox="0 0 20 20">
+    <path d="M1,1L18,18M1,18L18,1" stroke-width="2" stroke-linecap="round"/>
+  </svg>
 </svg>

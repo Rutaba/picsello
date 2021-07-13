@@ -8,6 +8,13 @@ defmodule PicselloWeb.HomeLive.Index do
     socket |> assign_defaults(session) |> assign_job_count() |> ok()
   end
 
+  @impl true
+  def handle_event("create-lead", %{}, socket) do
+    socket
+    |> assign(modal: PicselloWeb.JobLive.NewComponent)
+    |> noreply()
+  end
+
   defp assign_job_count(%{assigns: %{current_user: current_user}} = socket) do
     assign(socket, job_count: current_user |> Job.for_user() |> Repo.aggregate(:count))
   end

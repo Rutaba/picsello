@@ -8,7 +8,7 @@ defmodule Picsello.CreateLeadTest do
     client_name = "Elizabeth Taylor"
 
     session
-    |> click(link("Create a lead"))
+    |> click(button("Create a lead"))
     |> fill_in(text_field("Client name"), with: client_name)
     |> fill_in(text_field("Client email"), with: client_email)
     |> fill_in(text_field("Lead notes"),
@@ -30,7 +30,7 @@ defmodule Picsello.CreateLeadTest do
 
   feature "user sees validation errors when creating lead", %{session: session} do
     session
-    |> click(link("Create a lead"))
+    |> click(button("Create a lead"))
     |> fill_in(text_field("Client name"), with: " ")
     |> fill_in(text_field("Client email"), with: " ")
     |> click(option("Wedding"))
@@ -50,7 +50,7 @@ defmodule Picsello.CreateLeadTest do
     insert(:client, %{email: email, user: user})
 
     session
-    |> click(link("Create a lead"))
+    |> click(button("Create a lead"))
     |> fill_in(text_field("Client email"), with: email)
     |> assert_has(css("label", text: "email has already been taken"))
     |> assert_has(css("button:disabled[type='submit']"))
