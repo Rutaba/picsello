@@ -1,22 +1,33 @@
-<main role="main">
-  <div class="relative">
-    <div class="absolute w-full min-h-screen px-10 bg-white shadow transition-transform
-                ease-in-out duration-500 <%= %{opening: "transform translate-y-full", closing: "transform translate-y-full", closed: "transform hidden"}[@modal.state] %>">
-        <%= if @modal.state != :closed do %>
-          <div class="flex flex-col w-full pt-7">
-            <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current self-end", phx_click: "modal", phx_value_wait_ms: 500, phx_value_action: "close") %>
-          </div>
-          <%= live_component @modal.component, @modal.assigns |> Map.put(:id, @modal.component) do %>
-              <div class="mt-40"></div>
+<%# FIXME: prevent background scroll in iOS. perhaps like this? %>
+<%# https://codepen.io/thuijssoon/pen/prwNjO?editors=0010 %>
+<div role="dialog"
+     style="transition-duration: <%= @modal.transition_ms %>ms"
+     class="w-full min-h-screen bg-white shadow z-20 fixed
+     transition-top ease-in-out <%= %{open: "bottom-0 top-0", opening: "top-full", closing: "top-full", closed: "top-full hidden"}[@modal.state] %>">
+    <%= if @modal.state != :closed do %>
+      <div class="h-full px-10 overflow-auto">
+        <div class="flex flex-col w-full pt-7">
+          <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="self-end w-7">
+            <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
+          </button>
+        </div>
+        <%= live_component @modal.component, @modal.assigns |> Map.put(:id, @modal.component) do %>
+          <div class="mt-40"></div>
 
-              <div id="modal-buttons" class="left-0 right-0 px-10 text-center bg-white py-7 <%= if(@modal.state == :open, do: "fixed bottom-0") %>">
-                <button class="w-32 mx-1 btn-secondary" type="button" phx-click="modal" phx-value-action="close", phx-value-wait-ms="500">Cancel</button>
-                <button class="w-32 mx-1 btn-primary" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">Save</button>
-              </div>
-          <% end %>
+          <div id="modal-buttons" class="left-0 right-0 px-10 text-center bg-white py-7 <%= if(@modal.state == :open, do: "fixed bottom-0") %>">
+            <button class="w-32 mx-1 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
+              Cancel
+            </button>
+
+            <button class="w-32 mx-1 btn-primary" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
+              Save
+            </button>
+          </div>
         <% end %>
-    </div>
-  </div>
+      </div>
+    <% end %>
+</div>
+<main role="main" class="pb-10">
   <header class="flex flex-row p-4 border border-b-1" >
     <div class="flex-1">
     </div>

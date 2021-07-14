@@ -2,7 +2,7 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
   use PicselloWeb.ConnCase, async: true
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
-  alias PicselloWeb.JobLive.PackageDetailsComponent
+  alias PicselloWeb.PackageLive.EditComponent
   alias Picsello.{Package, Repo}
   alias Phoenix.LiveView.Socket
 
@@ -11,7 +11,8 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
   describe "package_template_id" do
     setup :register_and_log_in_user
 
-    def click_edit_package(view), do: view |> element("a[title$='package']") |> render_click()
+    def click_edit_package(view),
+      do: view |> element("button[title$='Edit package']") |> render_click()
 
     def choose_new_template_package(view),
       do:
@@ -55,11 +56,13 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
     test "reverts to template id when form is reset", %{view: view, job: job} do
       %{package: %{package_template_id: template_id}} = job |> Repo.preload(:package)
 
+      assert has_element?(view, "option[selected][value=#{template_id}]")
+
       choose_new_template_package(view)
 
       assert has_element?(view, "option[selected][value=new]")
 
-      view |> click_edit_package()
+      view |> element("button[title='cancel']") |> render_click()
       view |> click_edit_package()
 
       assert has_element?(view, "option[selected][value=#{template_id}]")
@@ -69,7 +72,7 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
   describe "assign :shoot_count_options" do
     def shoot_count_options(shoot_count) do
       {:ok, %{assigns: %{shoot_count_options: shoot_count_options}}} =
-        PackageDetailsComponent.update([], %Socket{
+        EditComponent.update([], %Socket{
           assigns: %{
             shoot_count: shoot_count,
             package: %Package{id: 1},

@@ -25,9 +25,11 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(css("option", text: "2"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(definition("Package price", text: "$1,234.50"))
-    |> assert_has(definition("Package name", text: "Wedding Deluxe"))
-    |> assert_has(definition("Package description", text: "My greatest wedding package"))
+    |> click(button("Edit package"))
+    |> assert_has(option("Wedding Deluxe"))
+    |> assert_value(text_field("Package description"), "My greatest wedding package")
+    |> assert_value(text_field("Package name"), "Wedding Deluxe")
+    |> assert_value(text_field("Package price"), "$1,234.50")
     |> assert_has(link("Add shoot details", count: 2))
   end
 
@@ -69,11 +71,10 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in(text_field("Package name"), with: "My job package")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
+    |> click(button("Edit package"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(definition("Client", text: "Elizabeth Taylor"))
-    |> assert_has(definition("Client email", text: "taylor@example.com"))
-    |> assert_has(definition("Package description", text: "My custom description"))
-    |> assert_has(definition("Package name", text: "My job package"))
-    |> assert_has(definition("Package price", text: "$1.00"))
+    |> assert_value(text_field("Package description"), "My custom description")
+    |> assert_value(text_field("Package name"), "My job package")
+    |> assert_value(text_field("Package price"), "$1.00")
   end
 end

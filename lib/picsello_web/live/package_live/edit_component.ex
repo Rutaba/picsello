@@ -1,41 +1,19 @@
-defmodule PicselloWeb.JobLive.PackageDetailsComponent do
+defmodule PicselloWeb.PackageLive.EditComponent do
   @moduledoc false
 
-  defmodule View do
-    @moduledoc false
-
-    use PicselloWeb, :component_template
-  end
-
   use PicselloWeb, :live_component
-  alias Picsello.{Package, Repo}
+  alias Picsello.{Package, Repo, Job}
 
   @impl true
   def mount(socket) do
     socket
-    |> assign(edit: false, template_id_value: [])
+    |> assign(template_id_value: [])
     |> ok()
   end
 
   @impl true
   def update(assigns, socket) do
     socket |> assign(assigns) |> assign_changeset() |> ok()
-  end
-
-  @impl true
-  def render(assigns) do
-    template =
-      case assigns do
-        %{edit: true} -> "edit"
-        _ -> "show"
-      end
-
-    render_template("#{template}.html", assigns)
-  end
-
-  @impl true
-  def handle_event("toggle", %{}, %{assigns: %{edit: edit}} = socket) do
-    socket |> assign(edit: !edit, template_id_value: []) |> assign_changeset() |> noreply()
   end
 
   @impl true
@@ -87,6 +65,7 @@ defmodule PicselloWeb.JobLive.PackageDetailsComponent do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, package} ->
         send(self(), {:update, package: package})
+        close_modal()
 
         socket
         |> assign(edit: false)

@@ -10,7 +10,12 @@
   <%= live_component PicselloWeb.JobLive.JobDetailsComponent, id: @job.id, job: @job %>
 
   <%= if @package do %>
-    <%= live_component PicselloWeb.JobLive.PackageDetailsComponent, id: @job.id, job_id: @job.id, package: @package, shoot_count: @shoot_count, current_user: @current_user %>
+    <h2 class="mt-4 text-xs font-bold uppercase">Package</h2>
+
+    <button title="Edit package" type="button" phx-click="edit-package" class="flex items-center justify-between w-full px-6 py-5 mt-4 text-left bg-gray-100 rounded-lg">
+      <%= @package.name %>
+      <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+    </button>
 
     <div class="flex items-center justify-between my-8">
       <h2 class="text-xs font-bold uppercase">Shoot details</h2>

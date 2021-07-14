@@ -1,9 +1,12 @@
 defmodule PicselloWeb.Modal do
   @moduledoc "stuff for modals"
 
-  defstruct state: :closed, component: nil, assigns: %{}
+  defstruct state: :closed, component: nil, assigns: %{}, transition_ms: 0
 
-  def new(), do: %__MODULE__{}
+  def new() do
+    transition_ms = if Mix.env() == :test, do: 0, else: 400
+    %__MODULE__{transition_ms: transition_ms}
+  end
 
   def close(%__MODULE__{} = modal), do: %{modal | component: nil, state: :closed}
 
@@ -25,8 +28,8 @@ defmodule PicselloWeb.Modal do
       |> assign(modal: modal |> Modal.open(component, assigns))
     end
 
-    def close_modal(%{assigns: %{modal: modal}} = socket, wait_ms \\ 500) do
-      Process.send_after(self(), {:modal, :close}, wait_ms)
+    def close_modal(%{assigns: %{modal: modal}} = socket) do
+      Process.send_after(self(), {:modal, :close}, modal.transition_ms)
 
       socket |> assign(modal: modal |> Modal.closing())
     end
@@ -35,7 +38,7 @@ defmodule PicselloWeb.Modal do
   defmodule ComponentHelpers do
     @moduledoc "for use in modal live components"
 
-    def close_modal(wait_ms \\ 500), do: send(self(), {:modal, :animate_close, wait_ms})
+    def close_modal, do: send(self(), {:modal, :animate_close})
   end
 
   def live_view_handlers do
@@ -51,12 +54,12 @@ defmodule PicselloWeb.Modal do
           ),
           do:
             socket
-            |> close_modal(params |> Map.get("wait-ms", "500") |> String.to_integer())
+            |> close_modal()
             |> noreply()
 
       @impl true
-      def handle_info({:modal, :animate_close, ms}, %{assigns: %{modal: modal}} = socket),
-        do: socket |> close_modal(ms) |> noreply()
+      def handle_info({:modal, :animate_close}, socket),
+        do: socket |> close_modal() |> noreply()
 
       @impl true
       def handle_info({:modal, :close}, %{assigns: %{modal: modal}} = socket),

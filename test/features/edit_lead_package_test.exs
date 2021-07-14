@@ -22,8 +22,8 @@ defmodule Picsello.EditLeadPackageTest do
   feature "user edits a package", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("Edit package"))
-    |> assert_has(link("Cancel edit package"))
+    |> click(button("Edit package"))
+    |> assert_has(button("Cancel"))
     |> assert_value(
       select("package[package_template_id]"),
       job.package.package_template_id |> inspect
@@ -40,22 +40,23 @@ defmodule Picsello.EditLeadPackageTest do
     |> fill_in(text_field("Package description"), with: "indescribably great.")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(definition("Package price", text: "$2.00"))
-    |> assert_has(definition("Package name", text: "My Greatest Package"))
-    |> assert_has(definition("Package description", text: "indescribably great."))
+    |> click(button("Edit package"))
+    |> assert_value(text_field("Package price"), "$2.00")
+    |> assert_value(text_field("Package name"), "My Greatest Package")
+    |> assert_value(text_field("Package description"), "indescribably great.")
   end
 
   feature "user adds package template", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("Edit package"))
+    |> click(button("Edit package"))
     |> click(css("option", text: "+ New Package"))
     |> assert_has(css("option", selected: true, text: "+ New Package"))
     |> fill_in(text_field("Package price"), with: "3.00")
     |> wait_for_enabled_submit_button()
     |> assert_has(css("option", selected: true, text: "+ New Package"))
     |> click(button("Save"))
-    |> click(link("Edit package"))
+    |> click(button("Edit package"))
     |> assert_has(css("option", text: job.package.name))
   end
 
@@ -64,12 +65,12 @@ defmodule Picsello.EditLeadPackageTest do
 
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("Edit package"))
+    |> click(button("Edit package"))
     |> click(css("option", text: "Other Template"))
     |> assert_value(text_field("Package name"), "Other Template")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> click(link("Edit package"))
+    |> click(button("Edit package"))
     |> assert_value(select("package[package_template_id]"), template.id |> inspect)
   end
 end
