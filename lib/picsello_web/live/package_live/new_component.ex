@@ -56,8 +56,11 @@ defmodule PicselloWeb.PackageLive.NewComponent do
       |> Repo.transaction()
 
     case result do
-      {:ok, _} ->
-        socket |> push_redirect(to: Routes.job_path(socket, :show, job.id)) |> noreply()
+      {:ok, %{package: package}} ->
+        send(self(), {:update, package: package})
+        close_modal()
+
+        socket |> noreply()
 
       {:error, :package_template, changeset, _} ->
         socket |> assign(changeset: changeset) |> noreply()
