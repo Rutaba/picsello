@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LiveViewHelpers do
   @moduledoc false
   import Phoenix.LiveView
+  alias PicselloWeb.Modal
 
   def assign_defaults(socket, %{"user_token" => user_token}) do
     socket
@@ -21,6 +22,6 @@ defmodule PicselloWeb.LiveViewHelpers do
       sandbox.allow(metadata, self())
     end
 
-    assign(socket, modal: nil)
+    assign(socket, modal: Modal.new())
   end
 end

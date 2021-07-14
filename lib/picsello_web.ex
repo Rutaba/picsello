@@ -60,13 +60,7 @@ defmodule PicselloWeb do
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 
-      @impl true
-      def handle_event("modal", %{"action" => "close"}, socket) do
-        socket
-        |> assign(modal: nil)
-        |> noreply()
-      end
-
+      unquote(PicselloWeb.Modal.live_view_handlers())
       unquote(view_helpers())
     end
   end

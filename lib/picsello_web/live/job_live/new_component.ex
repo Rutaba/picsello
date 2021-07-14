@@ -30,8 +30,6 @@ defmodule PicselloWeb.JobLive.NewComponent do
     end
   end
 
-  def title, do: "Create a Lead"
-
   defp build_changeset(
          %{assigns: %{current_user: current_user}},
          params
