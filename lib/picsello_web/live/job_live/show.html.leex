@@ -9,16 +9,21 @@
 
   <%= live_component PicselloWeb.JobLive.JobDetailsComponent, id: @job.id, job: @job %>
 
-  <%= live_component PicselloWeb.JobLive.PackageDetailsComponent, id: @job.id, job_id: @job.id, package: @package, shoot_count: @shoot_count, current_user: @current_user %>
-
   <%= if @package do %>
+    <%= live_component PicselloWeb.JobLive.PackageDetailsComponent, id: @job.id, job_id: @job.id, package: @package, shoot_count: @shoot_count, current_user: @current_user %>
+
     <div class="flex items-center justify-between my-8">
       <h2 class="text-xs font-bold uppercase">Shoot details</h2>
 
       <hr class="flex-grow ml-2 border-gray-600 border-1">
     </div>
+
     <%= for shoot_number <- 1..@package.shoot_count do %>
       <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id %>
     <% end %>
+  <% else %>
+    <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
+      Add a package
+    </button>
   <% end %>
 </div>

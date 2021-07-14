@@ -81,7 +81,6 @@ defmodule PicselloWeb.Router do
     live "/users/settings", Live.User.Settings, :edit
 
     live "/home", HomeLive.Index, :index, as: :home
-    live "/jobs/:job_id/packages/new", PackageLive.New, :new, as: :job_package
     live "/jobs/new", JobLive.New, :new, as: :job
     live "/jobs/:id", JobLive.Show, :show, as: :job
     live "/jobs", JobLive.Index, :index, as: :job

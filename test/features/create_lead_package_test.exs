@@ -8,7 +8,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("Add a package"))
+    |> click(button("Add a package"))
     |> fill_in(text_field("Package name"), with: " ")
     |> fill_in(text_field("Package description"), with: " ")
     |> fill_in(text_field("Package price"), with: "-1")
@@ -54,7 +54,8 @@ defmodule Picsello.CreateLeadPackageTest do
       })
 
     session
-    |> visit("/jobs/#{job.id}/packages/new")
+    |> visit("/jobs/#{job.id}")
+    |> click(button("Add a package"))
     |> assert_has(
       css("select[name='package[package_template_id]'] option:checked",
         text: "Select below"
@@ -74,16 +75,5 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(definition("Package description", text: "My custom description"))
     |> assert_has(definition("Package name", text: "My job package"))
     |> assert_has(definition("Package price", text: "$1.00"))
-  end
-
-  feature "user is redirected to job show page when job is already associated to package", %{
-    session: session,
-    user: user
-  } do
-    job = insert(:job, %{package: %{}, user: user})
-
-    session
-    |> visit("/jobs/#{job.id}/packages/new")
-    |> assert_path("/jobs/#{job.id}")
   end
 end

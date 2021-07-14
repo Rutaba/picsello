@@ -12,6 +12,16 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
+  def handle_event("add-package", %{}, %{assigns: assigns} = socket),
+    do:
+      socket
+      |> open_modal(
+        PicselloWeb.PackageLive.NewComponent,
+        assigns |> Map.take([:current_user, :job])
+      )
+      |> noreply()
+
+  @impl true
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
 

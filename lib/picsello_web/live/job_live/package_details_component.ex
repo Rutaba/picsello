@@ -27,7 +27,6 @@ defmodule PicselloWeb.JobLive.PackageDetailsComponent do
     template =
       case assigns do
         %{edit: true} -> "edit"
-        %{package: nil} -> "new"
         _ -> "show"
       end
 
@@ -102,8 +101,6 @@ defmodule PicselloWeb.JobLive.PackageDetailsComponent do
     package
     |> Package.update_changeset(params)
   end
-
-  defp assign_changeset(%{assigns: %{package: nil}} = socket), do: socket
 
   defp assign_changeset(
          %{assigns: %{shoot_count: shoot_count}} = socket,

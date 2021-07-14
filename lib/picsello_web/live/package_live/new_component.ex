@@ -1,16 +1,13 @@
-defmodule PicselloWeb.PackageLive.New do
+defmodule PicselloWeb.PackageLive.NewComponent do
   @moduledoc false
-  use PicselloWeb, :live_view
 
-  alias Picsello.{Job, Repo, Package}
-
+  use PicselloWeb, :live_component
+  alias Picsello.{Package, Repo, Job}
   @impl true
-  def mount(%{"job_id" => job_id}, session, socket) do
+  def update(assigns, socket) do
     socket
-    |> assign_defaults(session)
-    |> assign_job(job_id)
+    |> assign(assigns)
     |> assign_package_templates()
-    |> maybe_redirect()
     |> assign_initial_changeset()
     |> ok()
   end
@@ -95,12 +92,6 @@ defmodule PicselloWeb.PackageLive.New do
     |> Ecto.Multi.put(:package_template, package_template)
   end
 
-  defp assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
-    job = current_user |> Job.for_user() |> Repo.get!(job_id) |> Repo.preload(:client)
-
-    socket |> assign(:job, job)
-  end
-
   defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
     %{organization: %{package_templates: package_templates}} =
       current_user |> Repo.preload(organization: :package_templates)
@@ -128,11 +119,4 @@ defmodule PicselloWeb.PackageLive.New do
 
     assign(socket, changeset: changeset)
   end
-
-  defp maybe_redirect(%{assigns: %{job: %{id: job_id, package_id: package_id}}} = socket)
-       when package_id != nil do
-    socket |> push_redirect(to: Routes.job_path(socket, :show, job_id))
-  end
-
-  defp maybe_redirect(socket), do: socket
 end
