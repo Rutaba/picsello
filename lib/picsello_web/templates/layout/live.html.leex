@@ -2,10 +2,10 @@
 <%# https://codepen.io/thuijssoon/pen/prwNjO?editors=0010 %>
 <div role="dialog"
      style="transition-duration: <%= @modal.transition_ms %>ms"
-     class="w-full min-h-screen bg-white shadow z-20 fixed
+     class="w-full h-full bg-white shadow z-20 fixed
      transition-top ease-in-out <%= %{open: "bottom-0 top-0", opening: "top-full", closing: "top-full", closed: "top-full hidden"}[@modal.state] %>">
     <%= if @modal.state != :closed do %>
-      <div class="h-full px-10 overflow-auto">
+      <div id="modal" class="h-full px-10 overflow-scroll" phx-hook="Modal" >
         <div class="flex flex-col w-full pt-7">
           <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="self-end w-7">
             <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
