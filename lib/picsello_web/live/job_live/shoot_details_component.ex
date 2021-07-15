@@ -22,6 +22,8 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
     end)
   end
 
+  def preload(list_of_assigns), do: list_of_assigns
+
   @impl true
   def mount(socket) do
     socket
@@ -34,9 +36,7 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
     socket = socket |> assign(assigns)
 
     socket
-    |> assign_new(:changeset, fn ->
-      socket |> build_changeset()
-    end)
+    |> assign(:changeset, socket |> build_changeset())
     |> ok()
   end
 
@@ -66,7 +66,7 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
   def handle_event("save", %{"shoot" => params}, socket) do
     socket
     |> assign(
-      case socket |> build_changeset(params) |> upsert(socket) do
+      case socket |> build_changeset(params) |> Repo.update() do
         {:ok, shoot} ->
           send(self(), {:update_shoot_count, :inc})
           [shoot: shoot, open: false]
@@ -78,16 +78,9 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
     |> noreply()
   end
 
-  defp upsert(changeset, %{assigns: %{shoot: nil}}), do: Repo.insert(changeset)
-  defp upsert(changeset, _socket), do: Repo.update(changeset)
-
   defp build_changeset(socket, params \\ %{})
 
-  defp build_changeset(%{assigns: %{job_id: job_id, shoot: nil}}, params) do
-    params
-    |> Map.put("job_id", job_id)
-    |> Shoot.create_changeset()
-  end
+  defp build_changeset(%{assigns: %{shoot: nil}}, _params), do: nil
 
   defp build_changeset(%{assigns: %{shoot: shoot}}, params) do
     shoot

@@ -12,16 +12,12 @@
   <%= if @package do %>
     <h2 class="mt-4 text-xs font-bold uppercase">Package</h2>
 
-    <button title="Edit package" type="button" phx-click="edit-package" class="flex items-center justify-between w-full px-6 py-5 mt-4 text-left bg-gray-100 rounded-lg">
+    <button title="Edit package" type="button" phx-click="edit-package" class="flex items-center justify-between w-full px-6 py-5 mt-2 text-left bg-gray-100 rounded-lg">
       <%= @package.name %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
 
-    <div class="flex items-center justify-between my-8">
-      <h2 class="text-xs font-bold uppercase">Shoot details</h2>
-
-      <hr class="flex-grow ml-2 border-gray-600 border-1">
-    </div>
+    <h2 class="pt-4 mb-2 text-xs font-bold uppercase">Shoots</h2>
 
     <%= for shoot_number <- 1..@package.shoot_count do %>
       <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id %>

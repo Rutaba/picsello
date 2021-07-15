@@ -32,6 +32,24 @@ defmodule PicselloWeb.JobLive.Show do
       |> noreply()
 
   @impl true
+  def handle_event(
+        "add-shoot-details",
+        %{"shoot-number" => shoot_number},
+        %{assigns: %{current_user: current_user, job: job}} = socket
+      ),
+      do:
+        socket
+        |> open_modal(
+          PicselloWeb.ShootLive.NewComponent,
+          %{
+            current_user: current_user,
+            job: job,
+            shoot_number: shoot_number |> String.to_integer()
+          }
+        )
+        |> noreply()
+
+  @impl true
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
 

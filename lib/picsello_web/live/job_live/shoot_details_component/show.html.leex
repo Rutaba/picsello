@@ -1,4 +1,4 @@
-<div class="bg-gray-100 rounded-2xl mt-4 p-4 flex flex-col">
+<div class="flex flex-col p-4 my-3 bg-gray-100 rounded-2xl">
   <div class="flex justify-between">
     <h1 class="font-semibold"><%= @shoot.name %></h1>
 
@@ -8,12 +8,12 @@
   </div>
 
   <dl>
-    <dt class="text-xs mt-4">Shoot Date/Time</dt>
+    <dt class="mt-4 text-xs">Shoot Date/Time</dt>
     <dd><%= @shoot.starts_at |> Calendar.strftime("%b %-d, %Y - %-I:%M%P") %> - <%= dyn_gettext "duration-#{@shoot.duration_minutes}" %></dd>
-    <dt class="text-xs mt-2">Shoot Location</dt>
+    <dt class="mt-2 text-xs">Shoot Location</dt>
     <dd><%= dyn_gettext @shoot.location %></dd>
     <%= if @shoot.notes do %>
-      <dt class="text-xs mt-2">Notes</dt>
+      <dt class="mt-2 text-xs">Notes</dt>
       <dd class="whitespace-pre-line"><%= @shoot.notes %></dd>
     <% end %>
   </dl>
