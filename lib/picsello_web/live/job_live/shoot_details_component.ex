@@ -12,8 +12,8 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
   alias Picsello.{Shoot, Repo}
 
   @impl true
-  def preload([%{job_id: job_id} | _rest] = list_of_assigns) do
-    shoots = Shoot.for_job(job_id) |> Repo.all()
+  def preload([%{job: job} | _rest] = list_of_assigns) do
+    shoots = Shoot.for_job(job.id) |> Repo.all()
 
     list_of_assigns
     |> Enum.with_index()
@@ -22,30 +22,14 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
     end)
   end
 
+  @impl true
   def preload(list_of_assigns), do: list_of_assigns
-
-  @impl true
-  def mount(socket) do
-    socket
-    |> assign(open: false)
-    |> ok()
-  end
-
-  @impl true
-  def update(assigns, socket) do
-    socket = socket |> assign(assigns)
-
-    socket
-    |> assign(:changeset, socket |> build_changeset())
-    |> ok()
-  end
 
   @impl true
   def render(assigns) do
     template =
       case assigns do
-        %{open: true} -> "edit"
-        %{open: false, shoot: nil} -> "new"
+        %{shoot: nil} -> "new"
         _ -> "show"
       end
 
@@ -53,46 +37,22 @@ defmodule PicselloWeb.JobLive.ShootDetailsComponent do
   end
 
   @impl true
-  def handle_event("toggle", %{}, %{assigns: %{open: open}} = socket) do
-    socket |> assign(:open, !open) |> noreply()
-  end
-
-  @impl true
-  def handle_event("validate", %{"shoot" => params}, socket) do
-    socket |> assign_changeset(params, :validate) |> noreply()
-  end
-
-  @impl true
-  def handle_event("save", %{"shoot" => params}, socket) do
-    socket
-    |> assign(
-      case socket |> build_changeset(params) |> Repo.update() do
-        {:ok, shoot} ->
-          send(self(), {:update_shoot_count, :inc})
-          [shoot: shoot, open: false]
-
-        {:error, changeset} ->
-          [changeset: changeset]
-      end
+  def handle_event("add-shoot-details", %{}, %{assigns: assigns} = socket) do
+    open_modal(
+      PicselloWeb.ShootLive.NewComponent,
+      assigns |> Map.take([:current_user, :job, :shoot_number])
     )
-    |> noreply()
+
+    socket |> noreply()
   end
 
-  defp build_changeset(socket, params \\ %{})
+  @impl true
+  def handle_event("edit-shoot-details", %{}, %{assigns: assigns} = socket) do
+    open_modal(
+      PicselloWeb.ShootLive.EditComponent,
+      assigns |> Map.take([:current_user, :job, :shoot, :shoot_number])
+    )
 
-  defp build_changeset(%{assigns: %{shoot: nil}}, _params), do: nil
-
-  defp build_changeset(%{assigns: %{shoot: shoot}}, params) do
-    shoot
-    |> Shoot.update_changeset(params)
-  end
-
-  defp assign_changeset(
-         socket,
-         params,
-         action
-       ) do
-    changeset = build_changeset(socket, params) |> Map.put(:action, action)
-    assign(socket, changeset: changeset)
+    socket |> noreply()
   end
 end

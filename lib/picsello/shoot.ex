@@ -28,7 +28,7 @@ defmodule Picsello.Shoot do
     |> validate_inclusion(:duration_minutes, @durations)
   end
 
-  def update_changeset(shoot, attrs) do
+  def update_changeset(%__MODULE__{} = shoot, attrs) do
     shoot
     |> cast(attrs, [:starts_at, :duration_minutes, :name, :location, :notes])
     |> validate_required([:starts_at, :duration_minutes, :name, :location])

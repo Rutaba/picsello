@@ -1,21 +1,4 @@
-<div class="flex flex-col p-4 my-3 bg-gray-100 rounded-2xl">
-  <div class="flex justify-between">
-    <h1 class="font-semibold"><%= @shoot.name %></h1>
-
-    <a href="#" class="self-end" phx-click="toggle" phx-target="<%= @myself %>" title="Edit shoot details">
-      <%= icon_tag(@socket, "pencil", class: "btn-icon") %>
-    </a>
-  </div>
-
-  <dl>
-    <dt class="mt-4 text-xs">Shoot Date/Time</dt>
-    <dd><%= @shoot.starts_at |> Calendar.strftime("%b %-d, %Y - %-I:%M%P") %> - <%= dyn_gettext "duration-#{@shoot.duration_minutes}" %></dd>
-    <dt class="mt-2 text-xs">Shoot Location</dt>
-    <dd><%= dyn_gettext @shoot.location %></dd>
-    <%= if @shoot.notes do %>
-      <dt class="mt-2 text-xs">Notes</dt>
-      <dd class="whitespace-pre-line"><%= @shoot.notes %></dd>
-    <% end %>
-  </dl>
-
-</div>
+<button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-target="<%= @myself %>" class="flex items-center justify-between w-full px-6 py-5 mb-3 text-left bg-gray-100 rounded-lg">
+  <%= @shoot.name %>
+  <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+</button>

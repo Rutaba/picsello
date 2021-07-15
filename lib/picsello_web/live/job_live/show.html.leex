@@ -20,7 +20,7 @@
     <h2 class="pt-4 mb-2 text-xs font-bold uppercase">Shoots</h2>
 
     <%= for shoot_number <- 1..@package.shoot_count do %>
-      <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job_id: @job.id %>
+      <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job: @job, current_user: @current_user %>
     <% end %>
   <% else %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">

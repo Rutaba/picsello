@@ -1,8 +1,8 @@
-defmodule PicselloWeb.ShootLive.NewComponent do
+defmodule PicselloWeb.ShootLive.EditComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Shoot, Job, Repo}
+  alias Picsello.{Shoot, Repo, Job}
 
   @impl true
   def update(assigns, socket) do
@@ -23,7 +23,7 @@ defmodule PicselloWeb.ShootLive.NewComponent do
         %{"shoot" => params},
         %{assigns: %{shoot_number: shoot_number}} = socket
       ) do
-    case socket |> build_changeset(params) |> Repo.insert() do
+    case socket |> build_changeset(params) |> Repo.update() do
       {:ok, shoot} ->
         send(self(), {:update_shoot_count, :inc})
 
@@ -41,10 +41,9 @@ defmodule PicselloWeb.ShootLive.NewComponent do
     end
   end
 
-  defp build_changeset(%{assigns: %{job: %{id: job_id}}}, params) do
-    params
-    |> Map.put("job_id", job_id)
-    |> Shoot.create_changeset()
+  defp build_changeset(%{assigns: %{shoot: shoot}}, params) do
+    shoot
+    |> Shoot.update_changeset(params)
   end
 
   defp assign_changeset(

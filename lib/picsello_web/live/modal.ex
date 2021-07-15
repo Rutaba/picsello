@@ -39,6 +39,9 @@ defmodule PicselloWeb.Modal do
     @moduledoc "for use in modal live components"
 
     def close_modal, do: send(self(), {:modal, :animate_close})
+
+    def open_modal(component, assigns),
+      do: send(self(), {:modal, :animate_open, component, assigns})
   end
 
   def live_view_handlers do
@@ -60,6 +63,10 @@ defmodule PicselloWeb.Modal do
       @impl true
       def handle_info({:modal, :animate_close}, socket),
         do: socket |> close_modal() |> noreply()
+
+      @impl true
+      def handle_info({:modal, :animate_open, component, assigns}, socket),
+        do: socket |> open_modal(component, assigns) |> noreply()
 
       @impl true
       def handle_info({:modal, :close}, %{assigns: %{modal: modal}} = socket),

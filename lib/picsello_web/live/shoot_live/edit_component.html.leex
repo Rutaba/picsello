@@ -1,13 +1,12 @@
-<div class="bg-gray-100 rounded-2xl mt-4 p-4 flex flex-col">
-  <a href="#" class="self-end" phx-click="toggle" phx-target="<%= @myself %>">
-    <%= icon_tag(@socket, "close", class: "btn-icon") %>
-  </a>
+<div class="flex flex-col px-8 pt-2">
+  <h2 class="mt-4 text-xl font-semibold"><%= Job.name @job %></h2>
+  <h1 class="mt-2 title">Edit Shoot</h1>
 
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
   <%= labeled_input f, :name, label: "Shoot name", placeholder: "Engagement Shoot" %>
   <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot date", min: Date.utc_today(), wrapper_class: "mt-4" %>
   <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot duration", prompt: "Select below", wrapper_class: "mt-4" %>
-  <div class="input-label mt-4">Shoot location</div>
+  <div class="mt-4 input-label">Shoot location</div>
   <%= for location <- Shoot.locations() do %>
     <label class="flex items-center mb-2">
       <%= radio_button f, :location, location, class: "mr-2 form-radio text-blue-primary focus:ring-1 focus:ring-blue-primary" %>
@@ -15,9 +14,6 @@
     </label>
   <% end %>
   <%= labeled_input f, :notes, type: :textarea, label: "Shoot notes", placeholder: "type notes here" %>
-  <div class="text-center mt-5">
-    <a href="#" phx-click="toggle" phx-target="<%= @myself %>" class="btn-secondary inline-block w-32 mx-1">Cancel</a>
-    <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
-  </div>
-  </form>
+
+  <%= render_block @inner_block, disabled: !@changeset.valid? %>
 </div>
