@@ -8,9 +8,10 @@ defmodule PicselloWeb.Modal do
     %__MODULE__{transition_ms: transition_ms}
   end
 
-  def close(%__MODULE__{} = modal), do: %{modal | component: nil, state: :closed}
+  def close(%__MODULE__{} = modal), do: %{modal | state: :closed}
 
-  def closing(%__MODULE__{} = modal), do: %{modal | state: :closing}
+  def closing(%__MODULE__{assigns: assigns} = modal, new_assigns),
+    do: %{modal | state: :closing, assigns: Map.merge(assigns, new_assigns)}
 
   def open(%__MODULE__{} = modal, component, assigns),
     do: %{modal | component: component, state: :opening, assigns: assigns}
@@ -28,17 +29,18 @@ defmodule PicselloWeb.Modal do
       |> assign(modal: modal |> Modal.open(component, assigns))
     end
 
-    def close_modal(%{assigns: %{modal: modal}} = socket) do
+    def close_modal(%{assigns: %{modal: modal}} = socket, assigns \\ %{}) do
       Process.send_after(self(), {:modal, :close}, modal.transition_ms)
 
-      socket |> assign(modal: modal |> Modal.closing())
+      socket
+      |> assign(modal: modal |> Modal.closing(assigns))
     end
   end
 
   defmodule ComponentHelpers do
     @moduledoc "for use in modal live components"
 
-    def close_modal, do: send(self(), {:modal, :animate_close})
+    def close_modal(assigns \\ %{}), do: send(self(), {:modal, :animate_close, assigns})
 
     def open_modal(component, assigns),
       do: send(self(), {:modal, :animate_open, component, assigns})
@@ -61,8 +63,8 @@ defmodule PicselloWeb.Modal do
             |> noreply()
 
       @impl true
-      def handle_info({:modal, :animate_close}, socket),
-        do: socket |> close_modal() |> noreply()
+      def handle_info({:modal, :animate_close, assigns}, socket),
+        do: socket |> close_modal(assigns) |> noreply()
 
       @impl true
       def handle_info({:modal, :animate_open, component, assigns}, socket),

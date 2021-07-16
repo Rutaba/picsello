@@ -27,7 +27,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       {:ok, shoot} ->
         send(self(), {:update_shoot_count, :inc})
 
-        close_modal()
+        close_modal(%{shoot: shoot})
 
         send_update(PicselloWeb.JobLive.ShootDetailsComponent,
           id: shoot_number,

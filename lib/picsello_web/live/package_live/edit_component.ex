@@ -65,7 +65,7 @@ defmodule PicselloWeb.PackageLive.EditComponent do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, package} ->
         send(self(), {:update, package: package})
-        close_modal()
+        close_modal(%{package: package})
 
         socket
         |> assign(edit: false)
