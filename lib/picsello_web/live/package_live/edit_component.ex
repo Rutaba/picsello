@@ -12,8 +12,16 @@ defmodule PicselloWeb.PackageLive.EditComponent do
   end
 
   @impl true
-  def update(assigns, socket) do
-    socket |> assign(assigns) |> assign_changeset() |> ok()
+  def update(%{job: %{id: job_id}} = assigns, socket) do
+    socket
+    |> assign(assigns)
+    |> assign_new(:shoot_count, fn ->
+      job_id
+      |> Picsello.Shoot.for_job()
+      |> Repo.aggregate(:count)
+    end)
+    |> assign_changeset()
+    |> ok()
   end
 
   @impl true

@@ -25,8 +25,6 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       ) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, shoot} ->
-        send(self(), {:update_shoot_count, :inc})
-
         close_modal(%{shoot: shoot})
 
         send_update(PicselloWeb.JobLive.ShootDetailsComponent,

@@ -3,14 +3,13 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
   alias PicselloWeb.PackageLive.EditComponent
-  alias Picsello.{Package, Repo}
-  alias Phoenix.LiveView.Socket
+  alias Picsello.Repo
 
   @endpoint PicselloWeb.Endpoint
 
-  describe "package_template_id" do
-    setup :register_and_log_in_user
+  setup :register_and_log_in_user
 
+  describe "package_template_id" do
     def click_edit_package(view),
       do: view |> element("button[title$='Edit package']") |> render_click()
 
@@ -70,28 +69,61 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
   end
 
   describe "assign :shoot_count_options" do
-    def shoot_count_options(shoot_count) do
-      {:ok, %{assigns: %{shoot_count_options: shoot_count_options}}} =
-        EditComponent.update([], %Socket{
-          assigns: %{
-            shoot_count: shoot_count,
-            package: %Package{id: 1},
-            current_user: insert(:user)
-          }
-        })
+    def shoot_count_options(user, shoot_count) do
+      job =
+        insert(:job, package: %{}, shoots: for(i <- 0..shoot_count, i > 0, do: %{}))
+        |> Repo.preload(:package)
 
-      shoot_count_options
+      render_component(EditComponent,
+        id: EditComponent,
+        job: job,
+        package: job.package,
+        current_user: user,
+        inner_block: fn _, _ -> nil end
+      )
+      |> Floki.parse_document!()
+      |> Floki.find("#package_shoot_count option")
+      |> Enum.map(fn option ->
+        %{
+          key: option |> Floki.text() |> String.to_integer(),
+          value: option |> Floki.attribute("value") |> hd |> String.to_integer(),
+          disabled: !(option |> Floki.attribute("disabled") |> Enum.empty?())
+        }
+      end)
     end
 
-    test "1..5 when or or 1 shoots" do
-      for(count <- [0, 1], do: assert([1, 2, 3, 4, 5] = shoot_count_options(count)))
+    test "1..5 when 0 or 1 shoots", %{user: user} do
+      for(
+        count <- [0, 1],
+        do:
+          assert(
+            [
+              %{key: 1, disabled: false},
+              %{key: 2, disabled: false},
+              %{key: 3, disabled: false},
+              %{key: 4, disabled: false},
+              %{key: 5, disabled: false}
+            ] = shoot_count_options(user, count)
+          )
+      )
     end
 
-    test "disables numbers less than shoot count" do
-      assert [[key: 1, value: 1, disabled: true], 2, 3, 4, 5] = shoot_count_options(2)
+    test "disables numbers less than shoot count", %{user: user} do
+      assert [
+               %{key: 1, value: 1, disabled: true},
+               %{disabled: false},
+               %{disabled: false},
+               %{disabled: false},
+               %{disabled: false}
+             ] = shoot_count_options(user, 2)
 
-      assert [[key: 1, value: 1, disabled: true], [key: 2, value: 2, disabled: true], 3, 4, 5] =
-               shoot_count_options(3)
+      assert [
+               %{key: 1, value: 1, disabled: true},
+               %{key: 2, value: 2, disabled: true},
+               %{disabled: false},
+               %{disabled: false},
+               %{disabled: false}
+             ] = shoot_count_options(user, 3)
     end
   end
 end
