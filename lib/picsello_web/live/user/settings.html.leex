@@ -11,7 +11,7 @@
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :current_password, name: :current_password, label: "Current password" %>
 
     <div class="mt-5 text-center">
-      <%= submit "Change email", class: "btn-primary w-36 mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Changing email..." %>
+      <%= submit "Change email", class: "btn-primary mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Changing email..." %>
     </div>
   </form>
 
@@ -25,7 +25,7 @@
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password_to_change, name: :password_to_change, label: "Current password" %>
 
     <div class="mt-5 text-center">
-      <%= submit "Change password", class: "btn-primary w-36 mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
+      <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
     </div>
   </form>
 </div>

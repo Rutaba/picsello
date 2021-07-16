@@ -1,5 +1,5 @@
 <div class="p-8">
-  <h1 class="mt-7 title">Create a lead</h1>
+  <h1 class="title">Create a lead</h1>
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
     <%= inputs_for f, :client, fn client_form -> %>
       <%= labeled_input client_form, :name, label: "Client name", placeholder: "Elizabeth Taylor", phx_debounce: "500", wrapper_class: "mt-4" %>

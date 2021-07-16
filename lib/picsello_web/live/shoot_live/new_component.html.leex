@@ -1,5 +1,5 @@
 <div class="flex flex-col px-8 pt-2">
-  <h2 class="mt-4 text-xl font-semibold"><%= Job.name @job %></h2>
+  <h2 class="text-xl font-semibold"><%= Job.name @job %></h2>
   <h1 class="mt-2 title">Add Shoot</h1>
 
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
