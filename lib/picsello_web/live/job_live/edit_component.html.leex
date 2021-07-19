@@ -1,23 +1,20 @@
-<div class="flex items-center justify-between mt-4">
-  <h2 class="text-xs font-bold uppercase">Lead details</h2>
+<div class="p-8">
+  <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
+  <h1 class="title">Edit Lead Details</h1>
 
-  <hr class="flex-grow mx-2 border-gray-600 border-1">
+  <dl>
+    <dt class="mt-4 input-label">Client name</dt>
+    <dd><%= @job.client.name %></dd>
 
-  <a title="Cancel edit lead" href="#" phx-click="toggle" phx-target="<%= @myself %>">
-    <%= icon_tag(@socket, "close", class: "btn-icon") %>
-  </a>
+    <dt class="mt-4 input-label">Client email</dt>
+    <dd><%= @job.client.email %></dd>
+  </dl>
+
+  <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
+
+    <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of photography", prompt: "Select below", wrapper_class: "mt-4" %>
+    <%= labeled_input f, :notes, type: :textarea, label: "Lead notes", placeholder: "notes go here", phx_debounce: "500", wrapper_class: "mt-4" %>
+
+    <%= render_block @inner_block, disabled: !@changeset.valid? %>
+  </form>
 </div>
-
-<%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
-
-  <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of photography", prompt: "Select below", wrapper_class: "mt-4" %>
-  <%= labeled_input f, :notes, type: :textarea, label: "Lead notes", placeholder: "notes go here", phx_debounce: "500", wrapper_class: "mt-4" %>
-
-  <div class="mt-5 text-center">
-    <a href="#" phx-click="toggle" phx-target="<%= @myself %>" class="inline-block w-32 mx-1 btn-secondary">
-      Cancel
-    </a>
-
-    <%= submit "Save", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
-  </div>
-</form>

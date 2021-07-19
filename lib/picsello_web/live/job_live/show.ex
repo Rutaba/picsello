@@ -32,6 +32,16 @@ defmodule PicselloWeb.JobLive.Show do
       |> noreply()
 
   @impl true
+  def handle_event("edit-job", %{}, %{assigns: assigns} = socket),
+    do:
+      socket
+      |> open_modal(
+        PicselloWeb.JobLive.EditComponent,
+        assigns |> Map.take([:current_user, :package, :job])
+      )
+      |> noreply()
+
+  @impl true
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
 

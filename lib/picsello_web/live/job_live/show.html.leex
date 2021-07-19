@@ -7,17 +7,23 @@
     <%= Job.name @job %>
   </div>
 
-  <%= live_component PicselloWeb.JobLive.JobDetailsComponent, id: @job.id, job: @job %>
+  <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
+
+  <h2 class="mt-5 text-xs font-bold uppercase">Lead Details</h2>
+  <button title="Edit Lead" type="button" phx-click="edit-job" class="flex items-center justify-between w-full px-6 py-5 mt-2 text-left bg-gray-100 rounded-lg">
+    <%= Job.name @job %>
+    <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+  </button>
 
   <%= if @package do %>
-    <h2 class="mt-4 text-xs font-bold uppercase">Package</h2>
+    <h2 class="mt-4 text-xs font-bold uppercase">Package Details</h2>
 
     <button title="Edit package" type="button" phx-click="edit-package" class="flex items-center justify-between w-full px-6 py-5 mt-2 text-left bg-gray-100 rounded-lg">
       <%= @package.name %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
 
-    <h2 class="pt-4 mb-2 text-xs font-bold uppercase">Shoots</h2>
+    <h2 class="pt-4 mb-2 text-xs font-bold uppercase">Shoot Details</h2>
 
     <%= for shoot_number <- 1..@package.shoot_count do %>
       <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job: @job, current_user: @current_user %>

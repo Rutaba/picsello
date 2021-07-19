@@ -17,8 +17,8 @@ defmodule Picsello.EditJobTest do
   feature "user edits a job", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("Edit lead"))
-    |> assert_has(link("Cancel edit lead"))
+    |> click(button("Edit Lead"))
+    |> assert_has(button("Cancel"))
     |> assert_value(select("Type of photography"), "wedding")
     |> assert_value(text_field("Lead notes"), "They're getting married!")
     |> click(option("Other"))
@@ -26,6 +26,7 @@ defmodule Picsello.EditJobTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Other"))
-    |> assert_has(definition("Lead notes", text: "They're getting hitched!"))
+    |> click(button("Edit Lead"))
+    |> assert_value(text_field("Lead notes"), "They're getting hitched!")
   end
 end
