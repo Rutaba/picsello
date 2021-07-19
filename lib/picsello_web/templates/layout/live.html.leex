@@ -12,7 +12,7 @@
         <%= live_component @modal.component, @modal.assigns |> Map.put(:id, @modal.component) do %>
           <div class="mt-40"></div>
 
-          <div id="modal-buttons" class="left-0 right-0 px-10 text-center bg-white py-7 <%= if(@modal.state == :open, do: "fixed bottom-0", else: "hidden") %>">
+          <div id="modal-buttons" class="left-0 right-0 px-10 text-center bg-white py-7 shadow <%= if(@modal.state == :open, do: "fixed bottom-0", else: "hidden") %>">
             <button class="w-32 mx-1 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
               Cancel
             </button>
