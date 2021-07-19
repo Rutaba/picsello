@@ -4,7 +4,7 @@ defmodule PicselloWeb.Modal do
   defstruct state: :closed, component: nil, assigns: %{}, transition_ms: 0
 
   def new() do
-    transition_ms = if Mix.env() == :test, do: 0, else: 400
+    transition_ms = Application.get_env(:picsello, :modal_transition_ms)
     %__MODULE__{transition_ms: transition_ms}
   end
 
