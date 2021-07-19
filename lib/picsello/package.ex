@@ -43,20 +43,29 @@ defmodule Picsello.Package do
     |> update_changeset(attrs)
   end
 
-  def update_changeset(package, attrs) do
-    package
-    |> cast(attrs, [
-      :price,
-      :name,
-      :description,
-      :shoot_count,
-      :package_template_id
-    ])
-    |> cast_assoc(:package_template, with: &create_changeset/2)
-    |> validate_required([:price, :name, :description, :shoot_count])
-    |> validate_money(:price)
-    |> validate_number(:shoot_count, less_than: 6)
-    |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package))
+  def update_changeset(package, attrs, opts \\ []) do
+    validate_shoot_count = opts |> Keyword.get(:validate_shoot_count, true)
+
+    changeset =
+      package
+      |> cast(attrs, [
+        :price,
+        :name,
+        :description,
+        :shoot_count,
+        :package_template_id
+      ])
+      |> cast_assoc(:package_template, with: &create_changeset/2)
+      |> validate_required([:price, :name, :description, :shoot_count])
+      |> validate_money(:price)
+
+    if validate_shoot_count do
+      changeset
+      |> validate_number(:shoot_count, less_than: 6)
+      |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package))
+    else
+      changeset
+    end
   end
 
   defp validate_money(changeset, field) do

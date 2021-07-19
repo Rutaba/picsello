@@ -70,7 +70,7 @@ defmodule PicselloWeb.PackageLive.EditComponent do
 
   @impl true
   def handle_event("save", %{"package" => params}, socket) do
-    case socket |> build_changeset(params) |> Repo.update() do
+    case socket |> build_changeset(params, nil) |> Repo.update() do
       {:ok, package} ->
         send(self(), {:update, package: package})
         close_modal(%{package: package})
@@ -84,7 +84,12 @@ defmodule PicselloWeb.PackageLive.EditComponent do
     end
   end
 
-  defp build_changeset(%{assigns: %{package: package}}, params) do
+  defp build_changeset(%{assigns: %{package: package}}, params, :validate) do
+    package
+    |> Package.update_changeset(params, validate_shoot_count: false)
+  end
+
+  defp build_changeset(%{assigns: %{package: package}}, params, _action) do
     package
     |> Package.update_changeset(params)
   end
@@ -94,14 +99,14 @@ defmodule PicselloWeb.PackageLive.EditComponent do
          action \\ nil,
          params \\ %{}
        ) do
-    changeset = build_changeset(socket, params) |> Map.put(:action, action)
+    changeset = build_changeset(socket, params, action) |> Map.put(:action, action)
 
     socket
-    |> assign_templates()
     |> assign(
       changeset: changeset,
       shoot_count_options: shoot_count_options(shoot_count)
     )
+    |> assign_templates()
   end
 
   defp assign_templates(
