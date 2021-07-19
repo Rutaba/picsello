@@ -28,6 +28,38 @@
     <%= for shoot_number <- 1..@package.shoot_count do %>
       <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job: @job, current_user: @current_user %>
     <% end %>
+
+    <h2 class="mt-4 text-xs font-bold uppercase">Booking Details</h2>
+
+    <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
+
+    <label class="flex mt-4">
+      <input type="checkbox" class="mt-1 checkbox" />
+      <div class="pl-2 text-xs">
+        <h3 class="input-label">Include wedding questionnaire</h3>
+        Name, email, phone, email, list of guests, additional comments
+      </div>
+    </label>
+
+    <label class="flex mt-4">
+      <input type="checkbox" class="mt-1 checkbox" />
+      <div class="pl-2 text-xs">
+        <h3 class="input-label">Standard Payment</h3>
+        You must create Stripe account to send proposals and receive payments. After your Stripe account has been created you will return to this page.
+      </div>
+    </label>
+
+  <button class="w-full mt-8 btn-primary">Create Stripe Account</button>
+
+  <label class="block mt-8 input-label" for="contract_type">Contract type</label>
+  <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
+
+  <hr class="mt-8 border-gray-500"/>
+
+  <p class="mt-8 text-sm font-bold text-center">Compose a message and send your booking proposal for review and approval</p>
+
+  <button class="w-full mt-8 btn-primary" disabled>Compose message</button>
+  <button class="w-full mt-6 btn-primary" disabled>Preview Booking Proposal</button>
   <% else %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
       Add a package

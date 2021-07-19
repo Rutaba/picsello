@@ -60,4 +60,7 @@
   .invalid-feedback.phx-no-feedback {
     display: none;
   }
+  .checkbox {
+    @apply form-checkbox text-blue-primary focus:ring-1 focus:ring-blue-primary
+  }
 }
