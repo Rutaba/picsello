@@ -77,6 +77,8 @@ jobs:
       run: npm install --prefix assets
     - name: Build js
       run: npm run deploy --prefix assets && mix phx.digest
+    - name: Start stripe-mock
+      run: docker run -d -p 12111-12112:12111-12112 stripemock/stripe-mock
     - name: Run tests
       run: mix test --trace --cover
 

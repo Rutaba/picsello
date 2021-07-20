@@ -49,6 +49,7 @@ defmodule Picsello.MixProject do
         {:phoenix_live_view, "~> 0.15.1"},
         {:plug_cowboy, "~> 2.0"},
         {:postgrex, ">= 0.0.0"},
+        {:stripity_stripe, "~> 2.10.0"},
         {:telemetry_metrics, "~> 0.4"},
         {:telemetry_poller, "~> 0.4"}
       ],
@@ -61,6 +62,7 @@ defmodule Picsello.MixProject do
       [
         {:ex_machina, "~> 2.7.0", only: :test},
         {:floki, ">= 0.30.0", only: :test},
+        {:exexec, ">= 0.2.0", only: :test},
         {:wallaby, "~> 0.28.0", runtime: false, only: :test}
       ]
     ]
