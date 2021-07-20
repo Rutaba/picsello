@@ -49,7 +49,7 @@
       </div>
     </label>
 
-  <button class="w-full mt-8 btn-primary">Create Stripe Account</button>
+    <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(:show, @job.id)} %>
 
   <label class="block mt-8 input-label" for="contract_type">Contract type</label>
   <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>

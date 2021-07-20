@@ -77,6 +77,7 @@ defmodule PicselloWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     put "/users/settings", UserSettingsController, :update
+    get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
     live "/users/settings", Live.User.Settings, :edit
 

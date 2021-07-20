@@ -75,4 +75,14 @@ defmodule PicselloWeb.UserSettingsControllerTest do
       assert redirected_to(conn) == Routes.user_session_path(conn, :new)
     end
   end
+
+  describe "GET /users/settings/stripe-refresh" do
+    test "sends us over to stripe", %{conn: conn} do
+      conn = conn |> get(conn |> Routes.user_settings_path(:stripe_refresh))
+
+      host = conn |> redirected_to |> URI.parse() |> Map.get(:host)
+
+      assert String.contains?(host, "stripe")
+    end
+  end
 end

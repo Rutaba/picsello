@@ -59,6 +59,18 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def assert_url_contains(session, url_fragment) do
+      retry(fn ->
+        if session |> current_url |> String.contains?(url_fragment),
+          do: {:ok, nil},
+          else: {:error, nil}
+      end)
+
+      assert session |> current_url |> String.contains?(url_fragment)
+
+      session
+    end
+
     def navigate_to_forgot_password(session) do
       session
       |> visit("/")
