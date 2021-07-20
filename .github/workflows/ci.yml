@@ -12,6 +12,8 @@ env:
   SLACK_USERNAME: Picsello CI
   SLACK_ICON_EMOJI: ':camera:'
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
+  SKIP_STRIPE_MOCK: 'true'
+  SHELL: /usr/bin/bash
 
 jobs:
   build:
