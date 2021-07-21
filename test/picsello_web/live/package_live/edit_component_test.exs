@@ -1,4 +1,4 @@
-defmodule PicselloWeb.PackageDetailsComponentTest do
+defmodule PicselloWeb.PackageLiveEditComponentTest do
   use PicselloWeb.ConnCase, async: true
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
@@ -28,7 +28,7 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
 
       click_edit_package(view)
 
-      [view: view, job: job]
+      [parent_view: view, view: view |> find_live_child("live_modal"), job: job]
     end
 
     test "starts with one from package", %{view: view, job: job} do
@@ -52,7 +52,11 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
       assert has_element?(view, "option[selected][value=new]")
     end
 
-    test "reverts to template id when form is reset", %{view: view, job: job} do
+    test "reverts to template id when form is reset", %{
+      view: view,
+      job: job,
+      parent_view: parent_view
+    } do
       %{package: %{package_template_id: template_id}} = job |> Repo.preload(:package)
 
       assert has_element?(view, "option[selected][value=#{template_id}]")
@@ -62,9 +66,10 @@ defmodule PicselloWeb.PackageDetailsComponentTest do
       assert has_element?(view, "option[selected][value=new]")
 
       view |> element("button[title='cancel']") |> render_click()
-      view |> click_edit_package()
+      parent_view |> click_edit_package()
 
-      assert has_element?(view, "option[selected][value=#{template_id}]")
+      assert view
+             |> has_element?("option[selected][value=#{template_id}]")
     end
   end
 

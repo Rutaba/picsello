@@ -60,7 +60,6 @@ defmodule PicselloWeb do
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 
-      unquote(PicselloWeb.Modal.live_view_handlers())
       unquote(view_helpers())
     end
   end
@@ -68,7 +67,7 @@ defmodule PicselloWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
-      import PicselloWeb.{LiveHelpers, Modal.ComponentHelpers}
+      import PicselloWeb.LiveHelpers
 
       def render_template(name, assigns) do
         Phoenix.View.render(__MODULE__.View, name, assigns)

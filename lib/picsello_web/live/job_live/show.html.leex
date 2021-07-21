@@ -25,8 +25,18 @@
 
     <h2 class="pt-4 mb-2 text-xs font-bold uppercase">Shoot Details</h2>
 
-    <%= for shoot_number <- 1..@package.shoot_count do %>
-      <%= live_component PicselloWeb.JobLive.ShootDetailsComponent, shoot_number: shoot_number, id: shoot_number, job: @job, current_user: @current_user %>
+    <%= for {shoot_number, shoot} <- @shoots do %>
+      <%= if shoot do %>
+        <button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" phx-value-shoot-id="<%= shoot.id %>" class="flex items-center justify-between w-full px-6 py-5 mb-3 text-left bg-gray-100 rounded-lg">
+          <%= shoot.name %>
+          <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+        </button>
+      <% else %>
+        <div class="flex flex-col items-center p-6 mb-3 bg-gray-100 rounded-2xl">
+          <div>Shoot <%= shoot_number %></div>
+          <a href="#" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" class="link">Add shoot details</a>
+        </div>
+      <% end %>
     <% end %>
 
     <h2 class="mt-4 text-xs font-bold uppercase">Booking Details</h2>

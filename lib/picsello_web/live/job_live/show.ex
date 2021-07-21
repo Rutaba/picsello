@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Shoot, Repo}
 
   @impl true
   def mount(%{"id" => job_id}, session, socket) do
@@ -22,14 +22,18 @@ defmodule PicselloWeb.JobLive.Show do
       |> noreply()
 
   @impl true
-  def handle_event("edit-package", %{}, %{assigns: assigns} = socket),
-    do:
-      socket
-      |> open_modal(
-        PicselloWeb.PackageLive.EditComponent,
-        assigns |> Map.take([:current_user, :package, :job])
-      )
-      |> noreply()
+  def handle_event(
+        "edit-package",
+        %{},
+        %{assigns: %{current_user: current_user, job: job, package: %{id: package_id}}} = socket
+      ),
+      do:
+        socket
+        |> open_modal(
+          PicselloWeb.PackageLive.EditComponent,
+          %{current_user: current_user, job: job |> Map.put(:package_id, package_id)}
+        )
+        |> noreply()
 
   @impl true
   def handle_event("edit-job", %{}, %{assigns: assigns} = socket),
@@ -40,6 +44,45 @@ defmodule PicselloWeb.JobLive.Show do
         assigns |> Map.take([:current_user, :package, :job])
       )
       |> noreply()
+
+  @impl true
+  def handle_event(
+        "edit-shoot-details",
+        %{"shoot-number" => shoot_number},
+        %{assigns: %{shoots: shoots} = assigns} = socket
+      ) do
+    shoot_number = shoot_number |> String.to_integer()
+
+    shoot = shoots |> Enum.into(%{}) |> Map.get(shoot_number)
+
+    socket
+    |> open_modal(
+      PicselloWeb.ShootLive.EditComponent,
+      assigns
+      |> Map.take([:current_user, :job])
+      |> Map.merge(%{
+        shoot: shoot,
+        shoot_number: shoot_number
+      })
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
+        %{assigns: %{shoots: shoots}} = socket
+      ) do
+    socket
+    |> assign(
+      shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list()
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:update, %{package: _package} = assigns}, socket),
+    do: socket |> assign(assigns) |> assign_shoots() |> noreply()
 
   @impl true
   def handle_info({:update, assigns}, socket),
@@ -57,5 +100,23 @@ defmodule PicselloWeb.JobLive.Show do
       job: job |> Map.drop([:package]),
       package: job.package
     )
+    |> assign_shoots()
   end
+
+  defp assign_shoots(
+         %{assigns: %{package: %{shoot_count: shoot_count}, job: %{id: job_id}}} = socket
+       ) do
+    shoots = Shoot.for_job(job_id) |> Repo.all()
+
+    socket
+    |> assign(
+      shoots:
+        for(
+          shoot_number <- 1..shoot_count,
+          do: {shoot_number, Enum.at(shoots, shoot_number - 1)}
+        )
+    )
+  end
+
+  defp assign_shoots(socket), do: socket |> assign(shoots: [])
 end

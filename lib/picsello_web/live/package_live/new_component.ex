@@ -57,8 +57,8 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
     case result do
       {:ok, %{package: package}} ->
-        send(self(), {:update, package: package})
-        close_modal(%{package: package})
+        send(self(), {:update, %{package: package}})
+        close_modal(socket)
 
         socket |> noreply()
 

@@ -2,7 +2,6 @@ defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   alias Picsello.{Job, Repo}
-  alias PicselloWeb.Modal
 
   @impl true
   def mount(_params, session, socket) do

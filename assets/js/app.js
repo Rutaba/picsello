@@ -26,6 +26,15 @@ let Hooks = {}
 
 Hooks.Modal = {
   mounted() {
+    this.handleEvent("modal:close", () => {
+      this.el.querySelector("#modal-buttons").classList.add("hidden")
+      this.el.classList.add("top-full")
+    } )
+  }
+}
+
+Hooks.LockBodyScroll = {
+  mounted() {
     document.body.style.overflow = "hidden"
   },
   destroyed() {

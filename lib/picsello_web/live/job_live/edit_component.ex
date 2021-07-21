@@ -23,7 +23,7 @@ defmodule PicselloWeb.JobLive.EditComponent do
       {:ok, job} ->
         send(self(), {:update, job: job})
 
-        close_modal(%{job: job})
+        close_modal(socket)
 
         socket |> noreply()
 

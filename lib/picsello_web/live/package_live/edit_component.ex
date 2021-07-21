@@ -12,13 +12,16 @@ defmodule PicselloWeb.PackageLive.EditComponent do
   end
 
   @impl true
-  def update(%{job: %{id: job_id}} = assigns, socket) do
+  def update(%{job: %{id: job_id, package_id: package_id}} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:shoot_count, fn ->
       job_id
       |> Picsello.Shoot.for_job()
       |> Repo.aggregate(:count)
+    end)
+    |> assign_new(:package, fn ->
+      Repo.get!(Package, package_id)
     end)
     |> assign_changeset()
     |> ok()
@@ -72,11 +75,10 @@ defmodule PicselloWeb.PackageLive.EditComponent do
   def handle_event("save", %{"package" => params}, socket) do
     case socket |> build_changeset(params, nil) |> Repo.update() do
       {:ok, package} ->
-        send(self(), {:update, package: package})
-        close_modal(%{package: package})
+        send(self(), {:update, %{package: package}})
 
         socket
-        |> assign(edit: false)
+        |> close_modal()
         |> noreply()
 
       {:error, changeset} ->
