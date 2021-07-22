@@ -57,12 +57,13 @@ defmodule Picsello.MixProject do
         {:dialyxir, "~> 1.0", only: :dev, runtime: false},
         {:phoenix_live_reload, "~> 1.2", only: :dev},
         {:phx_gen_auth, "~> 0.7", only: :dev, runtime: false},
-        {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
+        {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+        {:mox, "~> 1.0.0", only: [:dev, :test]}
       ],
       [
         {:ex_machina, "~> 2.7.0", only: :test},
-        {:floki, ">= 0.30.0", only: :test},
         {:exexec, ">= 0.2.0", only: :test},
+        {:floki, ">= 0.30.0", only: :test},
         {:wallaby, "~> 0.28.0", runtime: false, only: :test}
       ]
     ]

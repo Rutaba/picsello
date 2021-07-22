@@ -86,6 +86,11 @@ defmodule Picsello.FeatureCase do
       use Wallaby.Feature
       import Wallaby.Query
       import Picsello.{Factory, FeatureCase.FeatureHelpers}
+
+      setup do
+        Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
+        :ok
+      end
     end
   end
 end

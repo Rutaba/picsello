@@ -36,6 +36,7 @@ config :bamboo, :refute_timeout, 10
 config :picsello, Picsello.Mailer, adapter: Picsello.Sandbox.BambooAdapter
 config :picsello, sandbox: Picsello.Sandbox
 config :picsello, :modal_transition_ms, 0
+config :picsello, :payments, Picsello.MockPayments
 
 config :stripity_stripe,
   api_key: "sk_test_thisisaboguskey",

@@ -40,9 +40,14 @@ defmodule PicselloWeb.StripeOnboardingLive do
 
   @impl true
   def handle_info(:load_status, %{assigns: %{current_user: current_user}} = socket) do
-    socket
-    |> assign(:status, Picsello.Payments.status(current_user))
-    |> noreply()
+    case payments().status(current_user) do
+      {:ok, status} ->
+        socket |> assign(status: status) |> noreply()
+
+      error ->
+        Logger.error(error)
+        socket |> put_flash(:error, "Couldn't reach stripe.") |> noreply()
+    end
   end
 
   @impl true
@@ -52,7 +57,7 @@ defmodule PicselloWeb.StripeOnboardingLive do
       ) do
     refresh_url = socket |> Routes.user_settings_url(:stripe_refresh)
 
-    case Picsello.Payments.link(current_user, refresh_url: refresh_url, return_url: return_url) do
+    case payments().link(current_user, refresh_url: refresh_url, return_url: return_url) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
 
@@ -71,4 +76,6 @@ defmodule PicselloWeb.StripeOnboardingLive do
     send(self(), :link_stripe)
     socket |> assign(status: :loading) |> noreply()
   end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end

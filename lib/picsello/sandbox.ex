@@ -23,6 +23,9 @@ defmodule Picsello.Sandbox do
   def allow(repo, owner_pid, child_pid)
       when is_pid(owner_pid) and is_pid(child_pid) do
     PidMap.assign(owner_pid, child_pid)
+
+    Mox.allow(Picsello.MockPayments, owner_pid, child_pid)
+
     # Delegate to the Ecto sandbox
     Ecto.Adapters.SQL.Sandbox.allow(repo, owner_pid, child_pid)
   end

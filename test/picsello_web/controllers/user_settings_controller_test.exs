@@ -5,6 +5,11 @@ defmodule PicselloWeb.UserSettingsControllerTest do
 
   setup :register_and_log_in_user
 
+  setup do
+    Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
+    :ok
+  end
+
   describe "PUT /users/settings (change password form)" do
     test "updates the user password and resets tokens", %{conn: conn, user: user} do
       new_password_conn =

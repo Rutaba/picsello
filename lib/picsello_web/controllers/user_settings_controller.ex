@@ -40,9 +40,11 @@ defmodule PicselloWeb.UserSettingsController do
     refresh_url = conn |> Routes.user_settings_url(:stripe_refresh)
     return_url = conn |> Routes.home_url(:index)
 
-    case Picsello.Payments.link(current_user, refresh_url: refresh_url, return_url: return_url) do
+    case payments().link(current_user, refresh_url: refresh_url, return_url: return_url) do
       {:ok, url} -> conn |> redirect(external: url)
       _ -> conn |> put_flash(:error, "Something went wrong. So sad.") |> redirect(to: return_url)
     end
   end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end

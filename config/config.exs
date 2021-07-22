@@ -27,6 +27,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 config :money, default_currency: :USD
 config :picsello, :modal_transition_ms, 400
+config :picsello, :payments, Picsello.StripePayments
 config :stripity_stripe, api_key: System.get_env("STRIPE_SECRET")
 
 # Import environment specific config. This must remain at the bottom

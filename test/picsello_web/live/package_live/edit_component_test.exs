@@ -9,6 +9,11 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
   setup :register_and_log_in_user
 
+  setup do
+    Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
+    :ok
+  end
+
   describe "package_template_id" do
     def click_edit_package(view),
       do: view |> element("button[title$='Edit package']") |> render_click()
