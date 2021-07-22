@@ -16,29 +16,6 @@ defmodule PicselloWeb.StripeOnboardingLive do
   end
 
   @impl true
-  def render(assigns) do
-    case assigns do
-      %{status: :loading} ->
-        ~L"""
-        <div class="flex items-center justify-center w-full m-2 mt-8 text-xs">
-          <div class="w-3 h-3 mr-2 rounded-full opacity-75 bg-blue-primary animate-ping"></div>
-          Loading...
-        </div>
-        """
-
-      %{status: {:ok, :charges_enabled}} ->
-        ~L""
-
-      _ ->
-        ~L"""
-        <button type="button" phx-click="init-stripe" class="w-full mt-8 btn-primary">
-          Create Stripe Account
-        </button>
-        """
-    end
-  end
-
-  @impl true
   def handle_info(:load_status, %{assigns: %{current_user: current_user}} = socket) do
     case payments().status(current_user) do
       {:ok, status} ->
@@ -74,7 +51,7 @@ defmodule PicselloWeb.StripeOnboardingLive do
         socket
       ) do
     send(self(), :link_stripe)
-    socket |> assign(status: :loading) |> noreply()
+    socket |> assign(status: :linking) |> noreply()
   end
 
   defp payments, do: Application.get_env(:picsello, :payments)
