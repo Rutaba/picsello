@@ -3,17 +3,21 @@ defmodule PicselloWeb.Live.User.Settings do
   use PicselloWeb, :live_view
   alias Picsello.{Accounts, Accounts.User}
 
+  require Logger
+
   @changeset_types %{current_password: :string, email: :string}
 
   @impl true
   def mount(_params, session, socket) do
+    if connected?(socket), do: send(self(), :check_stripe)
     %{assigns: %{current_user: user}} = socket = assign_defaults(socket, session)
 
     socket
     |> assign(
       email_changeset: email_changeset(user),
       password_changeset: password_changeset(user),
-      submit_changed_password: false
+      submit_changed_password: false,
+      show_stripe: false
     )
     |> ok()
   end
@@ -118,4 +122,35 @@ defmodule PicselloWeb.Live.User.Settings do
     )
     |> noreply()
   end
+
+  @impl true
+  def handle_event("open-stripe", _params, %{assigns: %{current_user: current_user}} = socket) do
+    redirect_url = Routes.user_settings_url(socket, :edit)
+
+    case payments().login_link(current_user, redirect_url: redirect_url) do
+      {:ok, url} ->
+        socket |> redirect(external: url) |> noreply()
+
+      error ->
+        Logger.error(error)
+        socket |> put_flash(:error, "Can't open stripe login link.") |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_info(:check_stripe, %{assigns: %{current_user: current_user}} = socket) do
+    case payments().status(current_user) do
+      {:ok, :charges_enabled} ->
+        socket |> assign(show_stripe: true) |> noreply()
+
+      {:ok, _} ->
+        socket |> noreply()
+
+      error ->
+        Logger.error(error)
+        socket |> put_flash(:error, "Couldn't reach stripe.") |> noreply()
+    end
+  end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end

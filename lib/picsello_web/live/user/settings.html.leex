@@ -28,4 +28,15 @@
       <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
     </div>
   </form>
+
+  <%= if @show_stripe do %>
+    <h3 class="mt-4 text-lg font-bold">Stripe</h3>
+    <p>See your current balance, payout history and manage your Stripe account.</p>
+
+    <div class="mt-5 text-center">
+      <button class="btn-primary" phx-click="open-stripe">
+        View Stripe Account
+      </button>
+    </div>
+  <% end %>
 </div>

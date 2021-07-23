@@ -8,6 +8,11 @@ defmodule PicselloWeb.Live.User.SettingsTest do
 
   setup :register_and_log_in_user
 
+  setup do
+    Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
+    :ok
+  end
+
   def sandbox_allow(%{pid: pid} = view) do
     Picsello.Sandbox.allow(Picsello.Repo, self(), pid)
     view

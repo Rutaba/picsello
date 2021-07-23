@@ -31,6 +31,18 @@ defmodule Picsello.StripePayments do
     end
   end
 
+  def login_link(%{stripe_account_id: account_id}, opts) do
+    redirect_url = opts |> Keyword.get(:redirect_url)
+
+    case Stripe.LoginLink.create(
+           account_id,
+           %{redirect_url: redirect_url}
+         ) do
+      {:ok, %{url: url}} -> {:ok, url}
+      error -> error
+    end
+  end
+
   def status(%User{stripe_account_id: nil}), do: {:ok, :none}
 
   def status(%User{stripe_account_id: account_id}) do
