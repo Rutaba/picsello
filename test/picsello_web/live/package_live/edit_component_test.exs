@@ -71,7 +71,15 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
       assert has_element?(view, "option[selected][value=new]")
 
       view |> element("button[title='cancel']") |> render_click()
+
+      Phoenix.PubSub.subscribe(
+        Picsello.PubSub,
+        PicselloWeb.LiveHelpers.modal_topic(%{root_pid: parent_view.pid})
+      )
+
       parent_view |> click_edit_package()
+
+      assert_receive {:modal, :open, _, _}
 
       assert view
              |> has_element?("option[selected][value=#{template_id}]")
