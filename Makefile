@@ -40,6 +40,7 @@ test: setup
 	mix format
 	MIX_ENV=test mix credo
 	mix dialyzer
+	killall chrome | true
 	mix test
 
 test-watch: ## Run tests in watch mode
