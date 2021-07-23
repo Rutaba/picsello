@@ -25,6 +25,7 @@ defmodule Picsello.Sandbox do
     PidMap.assign(owner_pid, child_pid)
 
     Mox.allow(Picsello.MockPayments, owner_pid, child_pid)
+    Mox.allow(Picsello.MockBambooAdapter, owner_pid, child_pid)
 
     # Delegate to the Ecto sandbox
     Ecto.Adapters.SQL.Sandbox.allow(repo, owner_pid, child_pid)
@@ -37,6 +38,8 @@ defmodule Picsello.Sandbox do
   end
 
   defmodule BambooAdapter do
+    @behaviour Bamboo.Adapter
+
     @moduledoc "send email to the test pid"
     def deliver(email, _config) do
       to_pid = Picsello.Sandbox.PidMap.owner_pid(self())
@@ -50,5 +53,6 @@ defmodule Picsello.Sandbox do
 
     defdelegate handle_config(config), to: Bamboo.TestAdapter
     defdelegate clean_assigns(email), to: Bamboo.TestAdapter
+    defdelegate supports_attachments?, to: Bamboo.TestAdapter
   end
 end

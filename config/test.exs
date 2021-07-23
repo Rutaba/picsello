@@ -33,7 +33,7 @@ config :wallaby,
 
 config :bamboo, :refute_timeout, 10
 
-config :picsello, Picsello.Mailer, adapter: Picsello.Sandbox.BambooAdapter
+config :picsello, Picsello.Mailer, adapter: Picsello.MockBambooAdapter
 config :picsello, sandbox: Picsello.Sandbox
 config :picsello, :modal_transition_ms, 0
 config :picsello, :payments, Picsello.MockPayments

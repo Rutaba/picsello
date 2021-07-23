@@ -5,6 +5,7 @@ defmodule PicselloWeb.UserConfirmationControllerTest do
   alias Picsello.Repo
 
   setup do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     %{user: insert(:user)}
   end
 

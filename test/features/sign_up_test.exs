@@ -1,6 +1,11 @@
 defmodule Picsello.SignUpTest do
   use Picsello.FeatureCase, async: true
 
+  setup do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+    :ok
+  end
+
   feature "user views sign up button", %{session: session} do
     session
     |> visit("/")

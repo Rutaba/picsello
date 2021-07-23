@@ -89,6 +89,7 @@ defmodule Picsello.FeatureCase do
 
       setup do
         Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
+        Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
         :ok
       end
     end

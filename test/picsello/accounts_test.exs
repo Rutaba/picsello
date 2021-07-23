@@ -5,6 +5,11 @@ defmodule Picsello.AccountsTest do
   import Picsello.Factory
   alias Picsello.Accounts.{User, UserToken}
 
+  setup do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+    :ok
+  end
+
   describe "get_user_by_email/1" do
     test "does not return the user if the email does not exist" do
       refute Accounts.get_user_by_email("unknown@example.com")
