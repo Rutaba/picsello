@@ -60,6 +60,11 @@ defmodule PicselloWeb do
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 
+      @impl true
+      def handle_info({:modal_pid, pid}, socket) do
+        socket |> assign(modal_pid: pid) |> noreply()
+      end
+
       unquote(view_helpers())
     end
   end

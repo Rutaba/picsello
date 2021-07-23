@@ -1,22 +1,20 @@
 defmodule PicselloWeb.LiveHelpers do
   @moduledoc "used in both views and components"
 
-  def open_modal(socket, component, assigns \\ %{}) do
-    Phoenix.PubSub.broadcast(
-      Picsello.PubSub,
-      modal_topic(socket),
-      {:modal, :open, component, assigns}
-    )
+  def open_modal(%{assigns: %{modal_pid: modal_pid}} = socket, component, assigns) do
+    send(modal_pid, {:modal, :open, component, assigns})
+
+    socket
+  end
+
+  def close_modal(%{assigns: %{modal_pid: modal_pid}} = socket) do
+    send(modal_pid, {:modal, :close})
 
     socket
   end
 
   def close_modal(socket) do
-    Phoenix.PubSub.broadcast(
-      Picsello.PubSub,
-      modal_topic(socket),
-      {:modal, :close}
-    )
+    send(self(), {:modal, :close})
 
     socket
   end

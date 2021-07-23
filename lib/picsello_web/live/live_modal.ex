@@ -17,12 +17,11 @@ defmodule PicselloWeb.LiveModal do
 
   use PicselloWeb, :live_view
 
-  alias Phoenix.PubSub
   alias PicselloWeb.LiveModal.Modal
 
   @impl true
   def mount(_params, session, socket) do
-    PubSub.subscribe(Picsello.PubSub, "modal:#{inspect(socket.root_pid)}")
+    if(connected?(socket), do: send(socket.root_pid, {:modal_pid, self()}))
     socket |> assign_defaults(session) |> assign(modal: Modal.new()) |> ok()
   end
 
