@@ -19,6 +19,7 @@ defmodule PicselloWeb.StripeOnboardingLive do
   def handle_info(:load_status, %{assigns: %{current_user: current_user}} = socket) do
     case payments().status(current_user) do
       {:ok, status} ->
+        if socket.parent_pid, do: send(socket.parent_pid, {:stripe_status, status})
         socket |> assign(status: status) |> noreply()
 
       error ->

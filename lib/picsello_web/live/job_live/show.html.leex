@@ -52,15 +52,18 @@
 
     <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(:show, @job.id)} %>
 
-  <label class="block mt-8 input-label" for="contract_type">Contract type</label>
-  <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
+    <label class="block mt-8 input-label" for="contract_type">Contract type</label>
+    <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
 
-  <hr class="mt-8 border-gray-500"/>
+    <hr class="mt-8 border-gray-500"/>
 
-  <p class="mt-8 text-sm font-bold text-center">Compose a message and send your booking proposal for review and approval</p>
+    <% shoots_completed = @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
+    <% send_proposal_enabled = @stripe_status == :charges_enabled && shoots_completed %>
+    <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= if !send_proposal_enabled, do: "disabled" %>>Send Booking Proposal</button>
+    <%= if !shoots_completed do %>
+      <em class="block pt-2 text-xs text-center">add shoot details first</em>
+    <% end %>
 
-  <button class="w-full mt-8 btn-primary" disabled>Compose message</button>
-  <button class="w-full mt-6 btn-primary" disabled>Preview Booking Proposal</button>
   <% else %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
       Add a package

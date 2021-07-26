@@ -7,6 +7,7 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id}, session, socket) do
     socket
     |> assign_defaults(session)
+    |> assign(:stripe_status, :loading)
     |> assign_job(job_id)
     |> ok()
   end
@@ -69,6 +70,11 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
+  def handle_event("send-proposal", %{}, socket) do
+    socket |> push_redirect(to: Routes.job_path(socket, :index)) |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
         %{assigns: %{shoots: shoots}} = socket
@@ -87,6 +93,10 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
+
+  @impl true
+  def handle_info({:stripe_status, status}, socket),
+    do: socket |> assign(:stripe_status, status) |> noreply()
 
   defp assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
     job =
