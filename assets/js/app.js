@@ -28,7 +28,10 @@ let Hooks = {}
 Hooks.Modal = {
   mounted() {
     this.handleEvent("modal:close", () => {
-      this.el.querySelector("#modal-buttons").classList.add("hidden")
+      const buttons = this.el.querySelector("#modal-buttons")
+      if (buttons) {
+        buttons.classList.add("hidden")
+      }
       this.el.classList.add("top-full")
     } )
   }

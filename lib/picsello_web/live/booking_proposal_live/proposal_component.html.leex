@@ -1,0 +1,65 @@
+<div class="px-8 pb-8">
+  <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
+  <h1 class="title">Proposal</h1>
+
+
+  <dl>
+    <dt class="inline-block pt-4 font-semibold">Proposal #:</dt>
+    <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0")  %></dd>
+
+    <dt class="inline-block font-semibold">Dated:</dt>
+    <dd class="inline"><%= Calendar.strftime(@proposal.inserted_at, "%b %d, %Y") %></dd>
+
+    <dt class="pt-4 font-semibold">From:</dt>
+    <dd><%= @organization.name %></dd>
+    <dt class="inline-block font-semibold">Email:</dt>
+    <dd class="inline"><%= @photographer.email %></dd>
+
+    <hr class="my-4" />
+
+    <dt class="font-semibold">For:</dt>
+    <dd><%= @client.name %></dd>
+    <dt class="inline-block font-semibold">Email:</dt>
+    <dd class="inline"><%= @client.email %></dd>
+
+    <dt class="mt-4 font-semibold">Package:</dt>
+    <dd><%= @package.name %></dd>
+    <dt class="font-semibold">Description:</dt>
+    <dd class="whitespace-pre-line"><%= @package.description %></dd>
+
+    <%= for shoot <- @shoots do %>
+      <dt class="pt-4 font-semibold"><%= shoot.name %></dt>
+      <dd>
+        <ul class="ml-8 list-disc">
+          <li><%= Calendar.strftime(shoot.starts_at, "%b %d, %Y") %></li>
+          <li><%= dyn_gettext("duration-#{shoot.duration_minutes}") %></li>
+          <li>Starting at <%= Calendar.strftime(shoot.starts_at, "%I:%M %P") %></li>
+          <li><%= dyn_gettext(shoot.location) %></li>
+          <%= if shoot.notes do %>
+            <li class="whitespace-pre-line">Notes: <%= shoot.notes %></li>
+          <% end %>
+        </ul>
+      </dd>
+    <% end %>
+  </dl>
+
+  <hr class="my-8" />
+
+  <div class="flex flex-row items-center justify-between text-xl font-bold">
+    <span>Total</span>
+    <span><%= @package.price %></span>
+  </div>
+
+  <div class="mt-8 text-center">
+    <%= if @proposal.accepted_at do %>
+      <button class="w-full btn-primary" disabled>
+        Proposal accepted
+      </button>
+      <em class="block pt-2 text-xs text-center">Accepted: <%= Calendar.strftime(@proposal.accepted_at, "%b %d, %Y") %></em>
+    <% else %>
+      <button class="w-full btn-primary" phx-click="accept-proposal" phx-target="<%= @myself %>">
+        Accept proposal
+      </button>
+    <% end %>
+  </div>
+</div>

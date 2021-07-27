@@ -20,4 +20,8 @@ html {
   .alert-info {
     @apply bg-blue-light-primary text-blue-primary
   }
+  .badge {
+    @apply px-2 py-1 font-bold text-white rounded;
+    font-size: 0.5rem;
+  }
 }

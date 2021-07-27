@@ -19,7 +19,9 @@ module.exports = {
         black: '#231F20',
         'red-invalid': '#CB0000',
         'red-invalid-bg': '#FFF2F2',
-        'gray-disabled': '#AAA'
+        'gray-disabled': '#AAA',
+        'green': '#65D157',
+        'orange': '#FFBA74'
       },
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],

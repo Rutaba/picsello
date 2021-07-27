@@ -13,17 +13,47 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> ok()
   end
 
+  @impl true
+  def handle_event("open-proposal", %{}, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.BookingProposalLive.ProposalComponent,
+      assigns
+      |> Map.take([:job, :client, :shoots, :package, :proposal, :organization, :photographer])
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:update, %{proposal: proposal}}, socket),
+    do: socket |> assign(proposal: proposal) |> noreply()
+
   defp assign_proposal(socket, token) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age) do
       {:ok, proposal_id} ->
         proposal =
           Repo.get!(BookingProposal, proposal_id)
-          |> Repo.preload(job: [package: :organization])
+          |> Repo.preload(job: [:client, :shoots, package: [organization: :user]])
 
-        %{job: %{package: %{organization: organization} = package} = job} = proposal
+        %{
+          job:
+            %{
+              client: client,
+              shoots: shoots,
+              package: %{organization: %{user: photographer} = organization} = package
+            } = job
+        } = proposal
 
         socket
-        |> assign(proposal: proposal, job: job, package: package, organization: organization)
+        |> assign(
+          proposal: proposal,
+          job: job,
+          client: client,
+          shoots: shoots,
+          package: package,
+          organization: organization,
+          photographer: photographer
+        )
 
       {:error, _} ->
         socket
