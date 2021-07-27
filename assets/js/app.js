@@ -20,6 +20,7 @@ import {LiveSocket} from "phoenix_live_view"
 import "@fontsource/be-vietnam/100.css"
 import "@fontsource/be-vietnam/400.css"
 import "@fontsource/be-vietnam/500.css"
+import "@fontsource/be-vietnam/600.css"
 import "@fontsource/be-vietnam/700.css"
 
 let Hooks = {}

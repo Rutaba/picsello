@@ -69,6 +69,22 @@ defmodule PicselloWeb do
     end
   end
 
+  def live_view_client do
+    quote do
+      use Phoenix.LiveView,
+        layout: {PicselloWeb.LayoutView, "live_client.html"}
+
+      import PicselloWeb.{LiveViewHelpers, LiveHelpers}
+
+      @impl true
+      def handle_info({:modal_pid, pid}, socket) do
+        socket |> assign(modal_pid: pid) |> noreply()
+      end
+
+      unquote(view_helpers())
+    end
+  end
+
   def live_component do
     quote do
       use Phoenix.LiveComponent

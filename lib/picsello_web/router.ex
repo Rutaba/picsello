@@ -94,5 +94,6 @@ defmodule PicselloWeb.Router do
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
     get "/users/confirm/:token", UserConfirmationController, :confirm
+    live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
   end
 end

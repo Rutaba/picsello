@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Shoot, Repo}
+  alias Picsello.{Job, Shoot, Repo, BookingProposal, Accounts}
 
   @impl true
   def mount(%{"id" => job_id}, session, socket) do
@@ -70,8 +70,24 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_event("send-proposal", %{}, socket) do
-    socket |> push_redirect(to: Routes.job_path(socket, :index)) |> noreply()
+  def handle_event("send-proposal", %{}, %{assigns: %{job: job}} = socket) do
+    case BookingProposal.create_changeset(%{job_id: job.id}) |> Repo.insert() do
+      {:ok, proposal} ->
+        token = Phoenix.Token.sign(PicselloWeb.Endpoint, "PROPOSAL_ID", proposal.id)
+        url = Routes.booking_proposal_url(socket, :show, token)
+        %{client: client} = job |> Repo.preload(:client)
+        Accounts.UserNotifier.deliver_booking_proposal(client, url)
+
+        socket
+        |> put_flash(:info, "#{Job.name(job)} booking proposal was sent.")
+        |> push_redirect(to: Routes.job_path(socket, :index))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to create booking proposal. Please try again.")
+        |> noreply()
+    end
   end
 
   @impl true

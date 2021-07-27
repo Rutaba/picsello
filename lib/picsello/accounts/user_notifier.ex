@@ -43,6 +43,16 @@ defmodule Picsello.Accounts.UserNotifier do
     |> deliver_later()
   end
 
+  @doc """
+  Deliver booking proposal email.
+  """
+  def deliver_booking_proposal(client, url) do
+    sendgrid_template(:booking_proposal_template, name: client.name, url: url)
+    |> to(client.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
   defp sendgrid_template(template_key, dynamic_fields) do
     dynamic_fields
     |> Enum.reduce(
