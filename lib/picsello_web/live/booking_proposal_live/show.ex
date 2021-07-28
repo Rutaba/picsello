@@ -25,6 +25,17 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   @impl true
+  def handle_event("open-contract", %{}, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.BookingProposalLive.ContractComponent,
+      assigns
+      |> Map.take([:job, :proposal, :organization])
+    )
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:update, %{proposal: proposal}}, socket),
     do: socket |> assign(proposal: proposal) |> noreply()
 

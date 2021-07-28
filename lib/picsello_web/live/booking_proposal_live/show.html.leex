@@ -19,5 +19,15 @@
       <% end %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
+
+    <button title="Proposal" type="button" phx-click="open-contract" class="btn-row mt-6 font-semibold">
+      Contract
+      <%= if @proposal.signed_at do %>
+        <span class="ml-auto mr-2 bg-green badge">DONE</span>
+      <% else %>
+        <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
+      <% end %>
+      <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+    </button>
   </div>
 <% end %>

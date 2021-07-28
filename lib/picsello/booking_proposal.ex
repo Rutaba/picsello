@@ -4,6 +4,8 @@ defmodule Picsello.BookingProposal do
 
   schema "booking_proposals" do
     field :accepted_at, :utc_datetime
+    field :signed_at, :utc_datetime
+    field :signed_legal_name, :string
 
     belongs_to(:job, Picsello.Job)
 
@@ -24,5 +26,14 @@ defmodule Picsello.BookingProposal do
     proposal
     |> cast(attrs, [:accepted_at])
     |> validate_required([:accepted_at])
+  end
+
+  @doc false
+  def sign_changeset(proposal, attrs) do
+    attrs = attrs |> Map.put("signed_at", DateTime.utc_now())
+
+    proposal
+    |> cast(attrs, [:signed_at, :signed_legal_name])
+    |> validate_required([:signed_at, :signed_legal_name])
   end
 end
