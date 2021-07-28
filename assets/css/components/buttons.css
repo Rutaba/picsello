@@ -45,6 +45,10 @@
     @apply w-6 h-6 rounded-full bg-blue-primary text-white fill-current hover:bg-blue-dark-primary;
   }
 
+  .btn-row {
+    @apply flex items-center justify-between w-full px-6 py-5 text-left bg-gray-100 rounded-lg;
+  }
+
   .link {
     @apply underline text-blue-primary hover:text-blue-dark-primary;
   }
