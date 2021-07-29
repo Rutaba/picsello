@@ -7,6 +7,7 @@ defmodule Picsello.Client do
   schema "clients" do
     field :email, :string
     field :name, :string
+    field :stripe_customer_id, :string
     belongs_to(:organization, Organization)
 
     timestamps()
@@ -20,4 +21,7 @@ defmodule Picsello.Client do
     |> unsafe_validate_unique([:email, :organization_id], Repo)
     |> unique_constraint([:email, :organization_id])
   end
+
+  def assign_stripe_customer_changeset(%__MODULE__{} = client, "" <> stripe_customer_id),
+    do: client |> change(stripe_customer_id: stripe_customer_id)
 end

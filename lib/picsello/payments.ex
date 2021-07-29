@@ -9,4 +9,6 @@ defmodule Picsello.Payments do
               {:ok, :none | :processing | :charges_enabled | :details_submitted}
   @callback status(%Picsello.Accounts.User{}) ::
               {:ok, :none | :processing | :charges_enabled | :details_submitted}
+
+  @callback customer_id(%Picsello.Client{}) :: {:ok, binary()}
 end

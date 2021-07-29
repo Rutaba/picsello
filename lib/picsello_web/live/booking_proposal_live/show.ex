@@ -2,6 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view_client
   alias Picsello.{Repo, BookingProposal, Job}
+  require Logger
 
   @max_age 60 * 60 * 24 * 7
 
@@ -36,6 +37,59 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   @impl true
+  def handle_event("redirect-stripe", %{}, socket) do
+    %{
+      assigns: %{
+        package: package,
+        proposal: proposal,
+        job: job,
+        token: token,
+        organization: organization,
+        client: client
+      }
+    } = socket
+
+    redirect_url = Routes.booking_proposal_url(socket, :show, token)
+
+    customer_id = payments().customer_id(client)
+
+    stripe_params = %{
+      client_reference_id: proposal.id,
+      cancel_url: redirect_url,
+      success_url: redirect_url,
+      payment_method_types: ["card"],
+      customer: customer_id,
+      mode: "payment",
+      line_items: [
+        %{
+          price_data: %{
+            currency: "usd",
+            product_data: %{
+              name: "#{Job.name(job)} 50% Deposit"
+            },
+            unit_amount:
+              package.price
+              |> Money.multiply(0.5)
+              |> then(& &1.amount)
+          },
+          quantity: 1
+        }
+      ]
+    }
+
+    case Stripe.Session.create(stripe_params, connect_account: organization.stripe_account_id) do
+      {:ok, session} ->
+        socket
+        |> redirect(external: session.url)
+        |> noreply()
+
+      {:error, error} ->
+        Logger.error(error)
+        socket |> put_flash(:error, "Couldn't redirect to stripe. Please try again") |> noreply()
+    end
+  end
+
+  @impl true
   def handle_info({:update, %{proposal: proposal}}, socket),
     do: socket |> assign(proposal: proposal) |> noreply()
 
@@ -57,6 +111,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
         socket
         |> assign(
+          token: token,
           proposal: proposal,
           job: job,
           client: client,
@@ -72,4 +127,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         |> put_flash(:error, "This proposal is not available anymore")
     end
   end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end

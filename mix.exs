@@ -49,7 +49,8 @@ defmodule Picsello.MixProject do
         {:phoenix_live_view, "~> 0.15.1"},
         {:plug_cowboy, "~> 2.0"},
         {:postgrex, ">= 0.0.0"},
-        {:stripity_stripe, "~> 2.10.0"},
+        {:stripity_stripe,
+         github: "thousandsofthem/stripity_stripe", branch: "extend-session-struct"},
         {:telemetry_metrics, "~> 0.4"},
         {:telemetry_poller, "~> 0.4"}
       ],

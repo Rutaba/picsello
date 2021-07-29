@@ -3,7 +3,7 @@ defmodule Picsello.StripePayments do
 
   @behaviour Picsello.Payments
 
-  alias Picsello.{Repo, Organization, Accounts.User}
+  alias Picsello.{Repo, Organization, Accounts.User, Client}
 
   def link(%User{} = user, opts) do
     %{organization: organization} = user |> Repo.preload(:organization)
@@ -73,4 +73,23 @@ defmodule Picsello.StripePayments do
         e
     end
   end
+
+  def customer_id(%Client{stripe_customer_id: nil} = client) do
+    params = %{name: client.name, email: client.email}
+    %{organization: organization} = client |> Repo.preload(:organization)
+
+    with {:ok, %{id: customer_id}} <-
+           Stripe.Customer.create(params, connect_account: organization.stripe_account_id),
+         {:ok, client} <-
+           client
+           |> Client.assign_stripe_customer_changeset(customer_id)
+           |> Repo.update() do
+      client.stripe_customer_id
+    else
+      {:error, _} = e -> e
+      e -> {:error, e}
+    end
+  end
+
+  def customer_id(%Client{stripe_customer_id: customer_id}), do: customer_id
 end

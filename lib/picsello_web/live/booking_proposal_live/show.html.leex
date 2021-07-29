@@ -1,7 +1,7 @@
 <%= if @proposal do %>
   <h1 class="px-8 py-4 text-2xl font-bold text-white bg-black mt-7"><%= @organization.name %></h1>
 
-  <div class="px-8 pt-4">
+  <div class="px-8 pt-4 max-w-md mx-auto">
     <h2 class="text-xl font-semibold"><%= Job.name @job %> Shoot</h2>
     <h3 class="text-lg">Created: <%= Calendar.strftime(@proposal.inserted_at, "%b %d, %Y") %></h3>
 
@@ -29,5 +29,12 @@
       <% end %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
+
+    <button class="w-full mt-6 btn-primary" phx-click="redirect-stripe" phx-disable-with="Redirecting to Stripe..." <%= unless @proposal.accepted_at && @proposal.signed_at, do: "disabled" %>>
+      Pay 50% deposit
+    </button>
+    <em class="block pt-2 text-xs text-center">
+      <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
+    </em>
   </div>
 <% end %>
