@@ -11,7 +11,6 @@ defmodule Picsello.Accounts.User do
     field :hashed_password, :string
     field :last_name, :string
     field :password, :string, virtual: true
-    field :stripe_account_id, :string
 
     belongs_to(:organization, Picsello.Organization)
 
@@ -135,9 +134,6 @@ defmodule Picsello.Accounts.User do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     change(user, confirmed_at: now)
   end
-
-  def assign_stripe_account_changeset(%__MODULE__{} = user, "" <> stripe_account_id),
-    do: user |> change(stripe_account_id: stripe_account_id)
 
   @doc """
   Verifies the password.

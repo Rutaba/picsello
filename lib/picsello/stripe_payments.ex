@@ -3,20 +3,27 @@ defmodule Picsello.StripePayments do
 
   @behaviour Picsello.Payments
 
-  alias Picsello.{Repo, Accounts.User}
+  alias Picsello.{Repo, Organization, Accounts.User}
 
-  def link(%{stripe_account_id: nil} = user, opts) do
+  def link(%User{} = user, opts) do
+    %{organization: organization} = user |> Repo.preload(:organization)
+    link(organization, opts)
+  end
+
+  def link(%Organization{stripe_account_id: nil} = organization, opts) do
     with {:ok, %{id: account_id}} <- Stripe.Account.create(%{type: "express"}),
-         {:ok, user} <-
-           user |> User.assign_stripe_account_changeset(account_id) |> Repo.update() do
-      link(user, opts)
+         {:ok, organization} <-
+           organization
+           |> Organization.assign_stripe_account_changeset(account_id)
+           |> Repo.update() do
+      link(organization, opts)
     else
       {:error, _} = e -> e
       e -> {:error, e}
     end
   end
 
-  def link(%{stripe_account_id: account_id}, opts) do
+  def link(%Organization{stripe_account_id: account_id}, opts) do
     refresh_url = opts |> Keyword.get(:refresh_url)
     return_url = opts |> Keyword.get(:return_url)
 
@@ -31,7 +38,12 @@ defmodule Picsello.StripePayments do
     end
   end
 
-  def login_link(%{stripe_account_id: account_id}, opts) do
+  def login_link(%User{} = user, opts) do
+    %{organization: organization} = user |> Repo.preload(:organization)
+    login_link(organization, opts)
+  end
+
+  def login_link(%Organization{stripe_account_id: account_id}, opts) do
     redirect_url = opts |> Keyword.get(:redirect_url)
 
     case Stripe.LoginLink.create(
@@ -43,9 +55,14 @@ defmodule Picsello.StripePayments do
     end
   end
 
-  def status(%User{stripe_account_id: nil}), do: {:ok, :none}
+  def status(%User{} = user) do
+    %{organization: organization} = user |> Repo.preload(:organization)
+    status(organization)
+  end
 
-  def status(%User{stripe_account_id: account_id}) do
+  def status(%Organization{stripe_account_id: nil}), do: {:ok, :none}
+
+  def status(%Organization{stripe_account_id: account_id}) do
     case Stripe.Account.retrieve(account_id) do
       {:ok, account} ->
         {:ok,
