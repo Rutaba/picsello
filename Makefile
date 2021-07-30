@@ -48,3 +48,6 @@ test-watch: ## Run tests in watch mode
 
 update-mix: ## Update mix packages.
 	mix deps.update --all
+
+stripe-connect-listen:
+	stripe listen --forward-to localhost:4000/stripe/connect-webhooks

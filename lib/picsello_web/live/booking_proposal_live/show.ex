@@ -54,7 +54,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     customer_id = payments().customer_id(client)
 
     stripe_params = %{
-      client_reference_id: proposal.id,
+      client_reference_id: "proposal_#{proposal.id}",
       cancel_url: redirect_url,
       success_url: redirect_url,
       payment_method_types: ["card"],

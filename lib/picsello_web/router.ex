@@ -36,6 +36,10 @@ defmodule PicselloWeb.Router do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
 
+  scope "/stripe" do
+    post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PicselloWeb do
   #   pipe_through :api

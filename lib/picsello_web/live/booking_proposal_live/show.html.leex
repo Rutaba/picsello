@@ -30,11 +30,18 @@
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
 
-    <button class="w-full mt-6 btn-primary" phx-click="redirect-stripe" phx-disable-with="Redirecting to Stripe..." <%= unless @proposal.accepted_at && @proposal.signed_at, do: "disabled" %>>
-      Pay 50% deposit
-    </button>
-    <em class="block pt-2 text-xs text-center">
-      <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
-    </em>
+    <%= if @proposal.deposit_paid_at do %>
+      <button class="w-full mt-6 btn-primary" disabled>
+        50% deposit paid
+      </button>
+      <em class="block pt-2 text-xs text-center">Paid: <%= Calendar.strftime(@proposal.deposit_paid_at, "%b %d, %Y") %></em>
+    <% else %>
+      <button class="w-full mt-6 btn-primary" phx-click="redirect-stripe" phx-disable-with="Redirecting to Stripe..." <%= unless @proposal.accepted_at && @proposal.signed_at, do: "disabled" %>>
+        Pay 50% deposit
+      </button>
+      <em class="block pt-2 text-xs text-center">
+        <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
+      </em>
+    <% end %>
   </div>
 <% end %>
