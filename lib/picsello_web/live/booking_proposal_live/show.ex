@@ -7,9 +7,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @max_age 60 * 60 * 24 * 7
 
   @impl true
-  def mount(%{"token" => token}, _session, socket) do
+  def mount(%{"token" => token}, session, socket) do
     socket
-    |> assign(:current_user, nil)
+    |> assign_defaults(session)
     |> assign_proposal(token)
     |> ok()
   end
