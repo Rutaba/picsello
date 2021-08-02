@@ -9,8 +9,22 @@
 
   <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
 
+  <%= if @proposal do %>
+    <p class="mt-4 text-blue-primary">Status:</p>
+    <p class="text-blue-primary">
+      - Booking proposal
+      <%= case BookingProposal.status(@proposal) do %>
+        <% :sent -> %> sent <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
+        <% :accepted -> %> accepted <%= Calendar.strftime(@proposal.accepted_at, "%m/%d/%y") %>
+        <% :signed -> %> signed <%= Calendar.strftime(@proposal.signed_at, "%m/%d/%y") %>
+        <% :deposit_paid -> %> deposit paid <%= Calendar.strftime(@proposal.deposit_paid_at, "%m/%d/%y") %>
+        <% status -> %> <%= status %>
+      <% end %>
+    </p>
+  <% end %>
+
   <h2 class="mt-5 text-xs font-bold uppercase">Lead Details</h2>
-  <button title="Edit Lead" type="button" phx-click="edit-job" class="btn-row mt-2">
+  <button title="Edit Lead" type="button" phx-click="edit-job" class="mt-2 btn-row">
     <%= Job.name @job %>
     <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
   </button>
@@ -18,7 +32,7 @@
   <%= if @package do %>
     <h2 class="mt-4 text-xs font-bold uppercase">Package Details</h2>
 
-    <button title="Edit package" type="button" phx-click="edit-package" class="btn-row mt-2">
+    <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
       <%= @package.name %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
@@ -27,7 +41,7 @@
 
     <%= for {shoot_number, shoot} <- @shoots do %>
       <%= if shoot do %>
-        <button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" phx-value-shoot-id="<%= shoot.id %>" class="btn-row mb-3">
+        <button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" phx-value-shoot-id="<%= shoot.id %>" class="mb-3 btn-row">
           <%= shoot.name %>
           <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
         </button>
@@ -41,29 +55,39 @@
 
     <h2 class="mt-4 text-xs font-bold uppercase">Booking Details</h2>
 
-    <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
+    <%= if !@proposal do %>
+      <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
 
-    <label class="flex mt-4">
-      <input type="checkbox" class="mt-1 checkbox" />
-      <div class="pl-2">
-        <h3 class="input-label">Include questionnaire</h3>
-      </div>
-    </label>
+      <label class="flex mt-4">
+        <input type="checkbox" class="mt-1 checkbox" />
+        <div class="pl-2">
+          <h3 class="input-label">Include questionnaire</h3>
+        </div>
+      </label>
 
-    <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(:show, @job.id)} %>
+      <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(:show, @job.id)} %>
 
-    <label class="block mt-8 input-label" for="contract_type">Contract type</label>
-    <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
+      <label class="block mt-8 input-label" for="contract_type">Contract type</label>
+      <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
 
-    <hr class="mt-8 border-gray-500"/>
+      <hr class="mt-8 border-gray-500"/>
 
-    <% shoots_completed = @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
-    <% send_proposal_enabled = @stripe_status == :charges_enabled && shoots_completed %>
-    <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= if !send_proposal_enabled, do: "disabled" %>>Send Booking Proposal</button>
-    <%= if !shoots_completed do %>
-      <em class="block pt-2 text-xs text-center">add shoot details first</em>
+      <% shoots_completed = @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
+      <% send_proposal_enabled = @stripe_status == :charges_enabled && shoots_completed %>
+      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= if !send_proposal_enabled, do: "disabled" %>>Send Booking Proposal</button>
+      <%= if !shoots_completed do %>
+        <em class="block pt-2 text-xs text-center">add shoot details first</em>
+      <% end %>
+    <% else %>
+      <p class="mt-4 text-sm font-bold">
+        The following details were included in the booking proposal sent on <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
+      </p>
+      <ul class="ml-8 list-disc">
+        <li>Proposal</li>
+        <li>Contract (standard)</li>
+      </ul>
+      <button class="w-full mt-6 btn-primary" disabled>Send Booking Proposal</button>
     <% end %>
-
   <% else %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
       Add a package

@@ -2,7 +2,8 @@ defmodule Picsello.BookingProposal do
   @moduledoc false
 
   use Ecto.Schema
-  import Ecto.Changeset
+  import Ecto.{Changeset, Query}
+  alias Picsello.Repo
 
   schema "booking_proposals" do
     field :accepted_at, :utc_datetime
@@ -48,4 +49,13 @@ defmodule Picsello.BookingProposal do
     |> cast(attrs, [:deposit_paid_at])
     |> validate_required([:deposit_paid_at])
   end
+
+  def last_for_job(job_id) do
+    __MODULE__ |> where(job_id: ^job_id) |> order_by(desc: :inserted_at) |> limit(1) |> Repo.one()
+  end
+
+  def status(%__MODULE__{deposit_paid_at: date}) when date != nil, do: :deposit_paid
+  def status(%__MODULE__{signed_at: date}) when date != nil, do: :signed
+  def status(%__MODULE__{accepted_at: date}) when date != nil, do: :accepted
+  def status(%__MODULE__{inserted_at: date}) when date != nil, do: :sent
 end

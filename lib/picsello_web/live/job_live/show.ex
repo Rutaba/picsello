@@ -9,6 +9,7 @@ defmodule PicselloWeb.JobLive.Show do
     |> assign_defaults(session)
     |> assign(:stripe_status, :loading)
     |> assign_job(job_id)
+    |> assign_proposal()
     |> ok()
   end
 
@@ -145,4 +146,9 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   defp assign_shoots(socket), do: socket |> assign(shoots: [])
+
+  defp assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
+    proposal = BookingProposal.last_for_job(job_id)
+    socket |> assign(proposal: proposal)
+  end
 end
