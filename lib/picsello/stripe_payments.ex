@@ -3,7 +3,7 @@ defmodule Picsello.StripePayments do
 
   @behaviour Picsello.Payments
 
-  alias Picsello.{Repo, Organization, Accounts.User, Client}
+  alias Picsello.{Repo, BookingProposal, Organization, Accounts.User, Client}
 
   def link(%User{} = user, opts) do
     %{organization: organization} = user |> Repo.preload(:organization)
@@ -92,4 +92,31 @@ defmodule Picsello.StripePayments do
   end
 
   def customer_id(%Client{stripe_customer_id: customer_id}), do: customer_id
+
+  def checkout_link(%BookingProposal{} = proposal, line_items, opts) do
+    cancel_url = opts |> Keyword.get(:cancel_url)
+    success_url = opts |> Keyword.get(:success_url)
+
+    %{job: %{client: client, organization: organization}} =
+      proposal |> Repo.preload(job: [:organization, :client])
+
+    customer_id = customer_id(client)
+
+    stripe_params = %{
+      client_reference_id: "proposal_#{proposal.id}",
+      cancel_url: cancel_url,
+      success_url: success_url,
+      payment_method_types: ["card"],
+      customer: customer_id,
+      mode: "payment",
+      line_items: line_items
+    }
+
+    case Stripe.Session.create(stripe_params, connect_account: organization.stripe_account_id) do
+      {:ok, %{url: url}} -> {:ok, url}
+      error -> error
+    end
+  end
+
+  defdelegate construct_event(body, stripe_signature, signing_secret), to: Stripe.Webhook
 end

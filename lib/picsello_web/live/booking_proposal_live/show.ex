@@ -43,45 +43,34 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         package: package,
         proposal: proposal,
         job: job,
-        token: token,
-        organization: organization,
-        client: client
+        token: token
       }
     } = socket
 
     redirect_url = Routes.booking_proposal_url(socket, :show, token)
 
-    customer_id = payments().customer_id(client)
-
-    stripe_params = %{
-      client_reference_id: "proposal_#{proposal.id}",
-      cancel_url: redirect_url,
-      success_url: redirect_url,
-      payment_method_types: ["card"],
-      customer: customer_id,
-      mode: "payment",
-      line_items: [
-        %{
-          price_data: %{
-            currency: "usd",
-            product_data: %{
-              name: "#{Job.name(job)} 50% Deposit"
-            },
-            unit_amount:
-              package.price
-              |> Money.multiply(0.5)
-              |> then(& &1.amount)
+    line_items = [
+      %{
+        price_data: %{
+          currency: "usd",
+          product_data: %{
+            name: "#{Job.name(job)} 50% Deposit"
           },
-          quantity: 1
-        }
-      ]
-    }
+          unit_amount:
+            package.price
+            |> Money.multiply(0.5)
+            |> then(& &1.amount)
+        },
+        quantity: 1
+      }
+    ]
 
-    case Stripe.Session.create(stripe_params, connect_account: organization.stripe_account_id) do
-      {:ok, session} ->
-        socket
-        |> redirect(external: session.url)
-        |> noreply()
+    case payments().checkout_link(proposal, line_items,
+           success_url: redirect_url,
+           cancel_url: redirect_url
+         ) do
+      {:ok, url} ->
+        socket |> redirect(external: url) |> noreply()
 
       {:error, error} ->
         Logger.error(error)
