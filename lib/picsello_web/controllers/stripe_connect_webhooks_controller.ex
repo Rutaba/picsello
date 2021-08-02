@@ -22,9 +22,9 @@ defmodule PicselloWeb.StripeConnectWebhooksController do
     |> send_resp(422, error)
   end
 
-  def handle_webhook(%{type: "checkout.session.completed", account: account_id} = stripe_event)
-      when account_id != nil do
+  def handle_webhook(%{type: "checkout.session.completed"} = stripe_event) do
     session = stripe_event.data.object
+
     "proposal_" <> proposal_id = session.client_reference_id
     proposal = Repo.get!(BookingProposal, proposal_id)
 
