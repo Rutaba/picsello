@@ -1,7 +1,7 @@
 <%= if @proposal do %>
   <h1 class="px-8 py-4 text-2xl font-bold text-white bg-black mt-7"><%= @organization.name %></h1>
 
-  <div class="px-8 pt-4 max-w-md mx-auto">
+  <div class="max-w-md px-8 pt-4 mx-auto">
     <h2 class="text-xl font-semibold"><%= Job.name @job %> Shoot</h2>
     <h3 class="text-lg">Created: <%= Calendar.strftime(@proposal.inserted_at, "%b %d, %Y") %></h3>
 
@@ -10,7 +10,7 @@
     </p>
 
 
-    <button title="Proposal" type="button" phx-click="open-proposal" class="btn-row mt-6 font-semibold">
+    <button title="Proposal" type="button" phx-click="open-proposal" class="mt-6 font-semibold btn-row">
       Proposal
       <%= if @proposal.accepted_at do %>
         <span class="ml-auto mr-2 bg-green badge">DONE</span>
@@ -20,7 +20,7 @@
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
 
-    <button title="Proposal" type="button" phx-click="open-contract" class="btn-row mt-6 font-semibold">
+    <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
       Contract
       <%= if @proposal.signed_at do %>
         <span class="ml-auto mr-2 bg-green badge">DONE</span>

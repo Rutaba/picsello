@@ -1,4 +1,4 @@
-<div class="px-8 pb-8 max-w-md mx-auto">
+<div class="max-w-md px-8 pb-8 mx-auto">
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h1 class="title">Proposal</h1>
 
@@ -45,10 +45,10 @@
 
   <hr class="my-8" />
 
-  <div class="flex flex-row items-center justify-between text-xl font-bold">
-    <span>Total</span>
-    <span><%= @package.price %></span>
-  </div>
+  <dl class="flex flex-row items-center justify-between text-xl font-bold">
+    <dt>Total</dt>
+    <dd><%= @package.price %></dd>
+  </dl>
 
   <div class="mt-8 text-center">
     <%= if @proposal.accepted_at do %>
