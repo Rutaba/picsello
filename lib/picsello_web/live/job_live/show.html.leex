@@ -18,7 +18,6 @@
         <% :accepted -> %> accepted <%= Calendar.strftime(@proposal.accepted_at, "%m/%d/%y") %>
         <% :signed -> %> signed <%= Calendar.strftime(@proposal.signed_at, "%m/%d/%y") %>
         <% :deposit_paid -> %> deposit paid <%= Calendar.strftime(@proposal.deposit_paid_at, "%m/%d/%y") %>
-        <% status -> %> <%= status %>
       <% end %>
     </p>
   <% end %>

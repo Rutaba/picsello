@@ -65,6 +65,7 @@ defmodule Picsello.MixProject do
         {:ex_machina, "~> 2.7.0", only: :test},
         {:exexec, ">= 0.2.0", only: :test},
         {:floki, ">= 0.30.0", only: :test},
+        {:httpoison, "~> 1.8.0"},
         {:wallaby, "~> 0.28.0", runtime: false, only: :test}
       ]
     ]
