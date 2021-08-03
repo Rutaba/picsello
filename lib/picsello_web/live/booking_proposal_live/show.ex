@@ -4,7 +4,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   alias Picsello.{Repo, BookingProposal, Job}
   require Logger
 
-  @max_age 60 * 60 * 24 * 7
+  @max_age 60 * 60 * 24 * 365 * 10
 
   @impl true
   def mount(%{"token" => token}, session, socket) do
