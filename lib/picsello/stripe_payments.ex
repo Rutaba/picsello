@@ -97,8 +97,8 @@ defmodule Picsello.StripePayments do
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)
 
-    %{job: %{client: client, organization: organization}} =
-      proposal |> Repo.preload(job: [:organization, :client])
+    %{job: %{client: %{organization: organization} = client}} =
+      proposal |> Repo.preload(job: [client: :organization])
 
     customer_id = customer_id(client)
 
