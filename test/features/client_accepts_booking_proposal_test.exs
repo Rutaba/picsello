@@ -26,7 +26,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     session
     |> visit("/jobs/#{job.id}")
-    |> click(button("Send Booking Proposal"))
+    |> click(button("Send booking proposal"))
 
     assert_receive {:delivered_email, email}
 

@@ -71,10 +71,17 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
+  def handle_event("open-proposal", %{}, %{assigns: %{proposal: proposal}} = socket) do
+    token = proposal_token(proposal)
+    path = Routes.booking_proposal_path(socket, :show, token)
+    socket |> redirect(to: path) |> noreply()
+  end
+
+  @impl true
   def handle_event("send-proposal", %{}, %{assigns: %{job: job}} = socket) do
     case BookingProposal.create_changeset(%{job_id: job.id}) |> Repo.insert() do
       {:ok, proposal} ->
-        token = Phoenix.Token.sign(PicselloWeb.Endpoint, "PROPOSAL_ID", proposal.id)
+        token = proposal_token(proposal)
         url = Routes.booking_proposal_url(socket, :show, token)
         %{client: client} = job |> Repo.preload(:client)
         Accounts.UserNotifier.deliver_booking_proposal(client, url)
@@ -151,4 +158,7 @@ defmodule PicselloWeb.JobLive.Show do
     proposal = BookingProposal.last_for_job(job_id)
     socket |> assign(proposal: proposal)
   end
+
+  defp proposal_token(%BookingProposal{id: id}),
+    do: Phoenix.Token.sign(PicselloWeb.Endpoint, "PROPOSAL_ID", id)
 end

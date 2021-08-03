@@ -73,7 +73,7 @@
 
       <% shoots_completed = @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
       <% send_proposal_enabled = @stripe_status == :charges_enabled && shoots_completed %>
-      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= if !send_proposal_enabled, do: "disabled" %>>Send Booking Proposal</button>
+      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= if !send_proposal_enabled, do: "disabled" %>>Send booking proposal</button>
       <%= if !shoots_completed do %>
         <em class="block pt-2 text-xs text-center">add shoot details first</em>
       <% end %>
@@ -85,7 +85,9 @@
         <li>Proposal</li>
         <li>Contract (standard)</li>
       </ul>
-      <button class="w-full mt-6 btn-primary" disabled>Send Booking Proposal</button>
+      <button class="w-full mt-6 btn-primary" phx-click="open-proposal">View booking proposal</button>
+      <hr class="mt-8 border-gray-500" />
+      <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
     <% end %>
   <% else %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">

@@ -29,7 +29,7 @@ defmodule Picsello.CreateBookingProposalTest do
   feature "user sends booking proposal", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
-    |> assert_has(css("button:disabled", text: "Send Booking Proposal"))
+    |> assert_has(css("button:disabled", text: "Send booking proposal"))
     |> click(link("Add shoot details"))
     |> fill_in(text_field("Shoot name"), with: "chute")
     |> fill_in(text_field("Shoot date"), with: "04052040\t1200P")
@@ -37,8 +37,8 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(css("label", text: "On Location"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(css("button:not(:disabled)", text: "Send Booking Proposal"))
-    |> click(button("Send Booking Proposal"))
+    |> assert_has(css("button:not(:disabled)", text: "Send booking proposal"))
+    |> click(button("Send booking proposal"))
 
     assert_receive {:delivered_email, email}
 
