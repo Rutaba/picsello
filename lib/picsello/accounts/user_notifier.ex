@@ -1,7 +1,7 @@
 defmodule Picsello.Accounts.UserNotifier do
   @moduledoc false
   import Bamboo.{Email, SendGridHelper}
-  alias Picsello.Mailer
+  alias Picsello.{Mailer, Repo}
   require Logger
 
   defp deliver_later(email) do
@@ -47,7 +47,13 @@ defmodule Picsello.Accounts.UserNotifier do
   Deliver booking proposal email.
   """
   def deliver_booking_proposal(client, url) do
-    sendgrid_template(:booking_proposal_template, name: client.name, url: url)
+    %{organization: organization} = client |> Repo.preload(:organization)
+
+    sendgrid_template(:booking_proposal_template,
+      organization: organization.name,
+      client: client.name,
+      url: url
+    )
     |> to(client.email)
     |> from("noreply@picsello.com")
     |> deliver_later()
