@@ -20,8 +20,7 @@ defmodule Picsello.CreateBookingProposalTest do
           description: "My custom description",
           shoot_count: 1,
           price: 100
-        },
-        shoots: [%{}]
+        }
       })
 
     [job: job]
@@ -30,6 +29,15 @@ defmodule Picsello.CreateBookingProposalTest do
   feature "user sends booking proposal", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
+    |> assert_has(css("button:disabled", text: "Send Booking Proposal"))
+    |> click(link("Add shoot details"))
+    |> fill_in(text_field("Shoot name"), with: "chute")
+    |> fill_in(text_field("Shoot date"), with: "04052040\t1200P")
+    |> click(option("1.5 hrs"))
+    |> click(css("label", text: "On Location"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_has(css("button:not(:disabled)", text: "Send Booking Proposal"))
     |> click(button("Send Booking Proposal"))
 
     assert_receive {:delivered_email, email}
