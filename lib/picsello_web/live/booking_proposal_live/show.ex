@@ -37,6 +37,17 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   @impl true
+  def handle_event("open-questionnaire", %{}, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.BookingProposalLive.QuestionnaireComponent,
+      assigns
+      |> Map.take([:job, :proposal, :organization])
+    )
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("redirect-stripe", %{}, socket) do
     %{
       assigns: %{
@@ -82,14 +93,19 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_info({:update, %{proposal: proposal}}, socket),
     do: socket |> assign(proposal: proposal) |> noreply()
 
+  @impl true
+  def handle_info({:update, %{answer: answer}}, socket),
+    do: socket |> assign(answer: answer) |> noreply()
+
   defp assign_proposal(socket, token) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age) do
       {:ok, proposal_id} ->
         proposal =
           Repo.get!(BookingProposal, proposal_id)
-          |> Repo.preload(job: [:client, :shoots, package: [organization: :user]])
+          |> Repo.preload([:answer, job: [:client, :shoots, package: [organization: :user]]])
 
         %{
+          answer: answer,
           job:
             %{
               client: client,
@@ -100,14 +116,15 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
         socket
         |> assign(
-          token: token,
-          proposal: proposal,
-          job: job,
+          answer: answer,
           client: client,
-          shoots: shoots,
-          package: package,
+          job: job,
           organization: organization,
-          photographer: photographer
+          package: package,
+          photographer: photographer,
+          proposal: proposal,
+          shoots: shoots,
+          token: token
         )
 
       {:error, _} ->

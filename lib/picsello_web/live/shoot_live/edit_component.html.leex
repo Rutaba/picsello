@@ -9,7 +9,7 @@
   <div class="mt-4 input-label">Shoot location</div>
   <%= for location <- Shoot.locations() do %>
     <label class="flex items-center mb-2">
-      <%= radio_button f, :location, location, class: "mr-2 form-radio text-blue-primary focus:ring-1 focus:ring-blue-primary" %>
+      <%= radio_button f, :location, location, class: "mr-2 radio" %>
       <%= dyn_gettext location %>
     </label>
   <% end %>

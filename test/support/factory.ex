@@ -5,7 +5,7 @@ defmodule Picsello.Factory do
 
   use ExMachina.Ecto, repo: Picsello.Repo
 
-  alias Picsello.{Client, Job, Organization, Package, Repo, Shoot, Accounts.User}
+  alias Picsello.{Client, Job, Organization, Package, Repo, Shoot, Accounts.User, Questionnaire}
 
   def valid_user_password(), do: "hello world!"
 
@@ -88,6 +88,20 @@ defmodule Picsello.Factory do
       name: "chute",
       starts_at: DateTime.utc_now()
     }
+  end
+
+  def questionnaire_factory(attrs) do
+    %Questionnaire{
+      questions: [
+        %Questionnaire.Question{
+          type: "multiselect",
+          prompt: "Who is the baby's daddy?",
+          options: ["I don't know", "My partner"]
+        }
+      ],
+      job_type: "newborn"
+    }
+    |> merge_attributes(attrs)
   end
 
   def job_factory(attrs) do

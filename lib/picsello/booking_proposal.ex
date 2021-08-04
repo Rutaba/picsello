@@ -3,7 +3,7 @@ defmodule Picsello.BookingProposal do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.Repo
+  alias Picsello.{Repo, Job, Questionnaire.Answer}
 
   schema "booking_proposals" do
     field :accepted_at, :utc_datetime
@@ -11,7 +11,8 @@ defmodule Picsello.BookingProposal do
     field :signed_legal_name, :string
     field :deposit_paid_at, :utc_datetime
 
-    belongs_to(:job, Picsello.Job)
+    belongs_to(:job, Job)
+    has_one(:answer, Answer, foreign_key: :proposal_id)
 
     timestamps()
   end

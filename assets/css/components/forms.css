@@ -63,4 +63,7 @@
   .checkbox {
     @apply form-checkbox text-blue-primary focus:ring-1 focus:ring-blue-primary
   }
+  .radio {
+    @apply form-radio text-blue-primary focus:ring-1 focus:ring-blue-primary
+  }
 }

@@ -75,6 +75,26 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(button("50% deposit paid"))
   end
 
+  feature "client fills out booking proposal questionnaire", %{
+    session: session,
+    url: url
+  } do
+    insert(:questionnaire)
+
+    session
+    |> visit(url)
+    |> click(button("Questionnaire TO-DO"))
+    |> click(checkbox("My partner", checked: false))
+    |> click(button("cancel"))
+    |> click(button("Questionnaire TO-DO"))
+    |> visit(url)
+    |> click(button("Questionnaire TO-DO"))
+    |> click(checkbox("My partner", checked: false))
+    |> click(button("Save"))
+    |> click(button("Questionnaire DONE"))
+    |> assert_has(checkbox("My partner", checked: true))
+  end
+
   defp post(session, path, body, headers) do
     HTTPoison.post(
       PicselloWeb.Endpoint.url() <> path,

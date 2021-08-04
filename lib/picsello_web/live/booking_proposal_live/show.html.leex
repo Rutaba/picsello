@@ -30,6 +30,16 @@
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
 
+    <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
+      Questionnaire
+      <%= if @answer do %>
+        <span class="ml-auto mr-2 bg-green badge">DONE</span>
+      <% else %>
+        <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
+      <% end %>
+      <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+    </button>
+
     <%= if @proposal.deposit_paid_at do %>
       <button class="w-full mt-6 btn-primary" disabled>
         50% deposit paid

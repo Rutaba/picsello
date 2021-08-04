@@ -1,6 +1,5 @@
 defmodule Picsello.Job do
   @moduledoc false
-  @types ~w[wedding family newborn other]
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
@@ -16,14 +15,14 @@ defmodule Picsello.Job do
     timestamps()
   end
 
-  def types(), do: @types
+  def types, do: from(t in "job_types", select: t.name) |> Repo.all()
 
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
     |> cast(attrs, [:type, :client_id, :notes])
     |> cast_assoc(:client, with: &Client.create_changeset/2)
     |> validate_required([:type])
-    |> validate_inclusion(:type, @types)
+    |> foreign_key_constraint(:type)
     |> assoc_constraint(:client)
   end
 
@@ -32,7 +31,7 @@ defmodule Picsello.Job do
     |> cast(attrs, [:type, :notes])
     |> cast_assoc(:package, with: &Package.update_changeset/2)
     |> validate_required([:type])
-    |> validate_inclusion(:type, @types)
+    |> foreign_key_constraint(:type)
     |> assoc_constraint(:package)
   end
 
