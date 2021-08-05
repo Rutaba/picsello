@@ -2,7 +2,7 @@
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h2 class="title">Questionnaire</h2>
 
-  <form action="#" phx-submit="submit" phx-target="<%= @myself %>">
+  <form action="#" phx-submit="submit" phx-change="validate" phx-target="<%= @myself %>">
     <dl>
       <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
           <%= case question.type do %>
@@ -16,7 +16,7 @@
                     <input
                       class="checkbox"
                       type="checkbox"
-                      name="<%= question_index %>[]"
+                      name="answers[<%= question_index %>][]"
                       value="<%= option_index %>"
                       <%= if answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index), do: "checked" %>>
                     <div class="pl-2 input-label" ><%= option %></div>
@@ -34,7 +34,7 @@
                     <input
                       class="radio"
                       type="radio"
-                      name="<%= question_index %>[]"
+                      name="answers[<%= question_index %>][]"
                       value="<%= option_index %>"
                       <%= if answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index), do: "checked" %>>
                     <div class="pl-2 input-label" ><%= option %></div>
@@ -49,14 +49,14 @@
               </dt>
 
               <dd class="pt-4">
-                <textarea phx-debounce="1000" class="w-full text-input" id="<%= question_index %>" name="<%= question_index %>[]"><%= answer %></textarea>
+                <textarea phx-debounce="1000" class="w-full text-input" id="<%= question_index %>" name="answers[<%= question_index %>][]"><%= answer %></textarea>
               </dd>
 
           <% end %>
       <% end %>
     </dl>
 
-    <button type="submit" class="w-full mt-8 btn-primary">
+    <button type="submit" class="w-full mt-8 btn-primary" <%= if(@disable_submit, do: "disabled") %>>
       Save
     </button>
   <form>

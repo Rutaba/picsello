@@ -96,7 +96,13 @@ defmodule Picsello.Factory do
         %Questionnaire.Question{
           type: "multiselect",
           prompt: "Who is the baby's daddy?",
-          options: ["I don't know", "My partner"]
+          options: ["I don't know", "My partner"],
+          optional?: true
+        },
+        %Questionnaire.Question{
+          type: "text",
+          prompt: "why?",
+          optional?: false
         }
       ],
       job_type: "newborn"

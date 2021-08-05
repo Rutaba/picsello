@@ -10,22 +10,25 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
     |> assign(assigns)
     |> assign_questionnaire()
     |> assign_answer()
+    |> assign_validation()
     |> ok()
+  end
+
+  @impl true
+  def handle_event("validate", %{"answers" => params}, %{assigns: %{answer: answer}} = socket) do
+    answer = %{answer | answers: update_answers(answer.answers, params)}
+    socket |> assign_validation(params) |> assign(answer: answer) |> noreply()
   end
 
   @impl true
   def handle_event(
         "submit",
-        params,
+        %{"answers" => params},
         %{assigns: %{answer: answer}} = socket
       ) do
-    answers =
-      params
-      |> Enum.reduce(answer.answers, fn {question_index, answer}, answers ->
-        answers |> List.replace_at(question_index |> String.to_integer(), answer)
-      end)
-
-    case answer |> Answer.changeset(%{answers: answers}) |> Repo.insert() do
+    case answer
+         |> Answer.changeset(%{answers: update_answers(answer.answers, params)})
+         |> Repo.insert() do
       {:ok, answer} ->
         send(self(), {:update, %{answer: answer}})
 
@@ -39,8 +42,40 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
     end
   end
 
+  defp assign_validation(%{assigns: %{questionnaire: questionnaire}} = socket, params) do
+    any_invalid =
+      questionnaire.questions
+      |> Enum.with_index()
+      |> Enum.any?(fn {question, question_index} ->
+        !question.optional? &&
+          Map.get(params, question_index |> Integer.to_string(), [])
+          |> Enum.reject(&(String.trim(&1) == ""))
+          |> Enum.empty?()
+      end)
+
+    socket |> assign(disable_submit: any_invalid)
+  end
+
+  defp assign_validation(%{assigns: %{answer: %{answers: answers}}} = socket) do
+    socket
+    |> assign_validation(
+      for(
+        {answer, index} <- answers |> Enum.with_index(),
+        do: {index |> Integer.to_string(), answer},
+        into: %{}
+      )
+    )
+  end
+
   defp assign_questionnaire(%{assigns: %{job: job}} = socket),
     do: socket |> assign(questionnaire: job |> Questionnaire.for_job() |> Repo.one())
+
+  defp update_answers(answers, params),
+    do:
+      params
+      |> Enum.reduce(answers, fn {question_index, answer}, answers ->
+        answers |> List.replace_at(question_index |> String.to_integer(), answer)
+      end)
 
   defp assign_answer(%{assigns: %{answer: %Answer{}}} = socket), do: socket
 
