@@ -3,7 +3,7 @@ defmodule Picsello.BookingProposal do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Repo, Job, Questionnaire.Answer}
+  alias Picsello.{Repo, Job, Questionnaire, Questionnaire.Answer}
 
   schema "booking_proposals" do
     field :accepted_at, :utc_datetime
@@ -12,6 +12,7 @@ defmodule Picsello.BookingProposal do
     field :deposit_paid_at, :utc_datetime
 
     belongs_to(:job, Job)
+    belongs_to(:questionnaire, Questionnaire)
     has_one(:answer, Answer, foreign_key: :proposal_id)
 
     timestamps()
@@ -20,7 +21,7 @@ defmodule Picsello.BookingProposal do
   @doc false
   def create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:job_id])
+    |> cast(attrs, [:job_id, :questionnaire_id])
     |> validate_required([:job_id])
   end
 

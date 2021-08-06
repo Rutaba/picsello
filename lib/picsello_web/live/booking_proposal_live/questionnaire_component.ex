@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, Job, Questionnaire, Questionnaire.Answer}
+  alias Picsello.{Repo, Job, Questionnaire.Answer}
 
   @impl true
   def update(assigns, socket) do
@@ -67,8 +67,10 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
     )
   end
 
-  defp assign_questionnaire(%{assigns: %{job: job}} = socket),
-    do: socket |> assign(questionnaire: job |> Questionnaire.for_job() |> Repo.one())
+  defp assign_questionnaire(%{assigns: %{proposal: proposal}} = socket) do
+    %{questionnaire: questionnaire} = proposal |> Repo.preload(:questionnaire)
+    socket |> assign(questionnaire: questionnaire)
+  end
 
   defp update_answers(answers, params),
     do:

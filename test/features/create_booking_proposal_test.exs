@@ -11,6 +11,8 @@ defmodule Picsello.CreateBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
+    insert(:questionnaire)
+
     job =
       insert(:job, %{
         user: user,

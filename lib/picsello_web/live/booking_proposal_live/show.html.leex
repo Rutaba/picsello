@@ -30,15 +30,17 @@
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
 
-    <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
-      Questionnaire
-      <%= if @answer do %>
-        <span class="ml-auto mr-2 bg-green badge">DONE</span>
-      <% else %>
-        <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
-      <% end %>
-      <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
-    </button>
+    <%= if @proposal.questionnaire_id do %>
+      <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
+        Questionnaire
+        <%= if @answer do %>
+          <span class="ml-auto mr-2 bg-green badge">DONE</span>
+        <% else %>
+          <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
+        <% end %>
+        <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+      </button>
+    <% end %>
 
     <%= if @proposal.deposit_paid_at do %>
       <button class="w-full mt-6 btn-primary" disabled>
@@ -46,11 +48,12 @@
       </button>
       <em class="block pt-2 text-xs text-center">Paid: <%= Calendar.strftime(@proposal.deposit_paid_at, "%b %d, %Y") %></em>
     <% else %>
-      <button class="w-full mt-6 btn-primary" phx-click="redirect-stripe" phx-disable-with="Redirecting to Stripe..." <%= unless @proposal.accepted_at && @proposal.signed_at, do: "disabled" %>>
+      <% questionnaire_answered = if @proposal.questionnaire_id, do: @answer, else: true %>
+      <button class="w-full mt-6 btn-primary" phx-click="redirect-stripe" phx-disable-with="Redirecting to Stripe..." <%= if !@proposal.accepted_at || !@proposal.signed_at || !questionnaire_answered, do: "disabled" %>>
         Pay 50% deposit
       </button>
       <em class="block pt-2 text-xs text-center">
-        <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
+        <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}, {questionnaire_answered, "answer questionnaire"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
       </em>
     <% end %>
   </div>

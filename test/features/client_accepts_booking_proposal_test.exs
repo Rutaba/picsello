@@ -4,7 +4,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
   setup :authenticated
 
-  setup %{user: user, session: session} do
+  setup %{user: user} do
     Mox.stub(Picsello.MockPayments, :status, fn _ -> {:ok, :charges_enabled} end)
 
     user.organization
@@ -24,16 +24,18 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         shoots: [%{}]
       })
 
+    [job: job]
+  end
+
+  feature "client clicks link in booking proposal email", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
+    |> click(checkbox("Include questionnaire", selected: true))
     |> click(button("Send booking proposal"))
 
     assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
 
-    [job: job, url: email |> email_substitutions |> Map.get("url")]
-  end
-
-  feature "client clicks link in booking proposal email", %{session: session, url: url, job: job} do
     Mox.stub(Picsello.MockPayments, :checkout_link, fn _, _, _ ->
       {:ok, "https://example.com/stripe-checkout"}
     end)
@@ -51,6 +53,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     session
     |> visit(url)
     |> assert_has(css("h2", text: Job.name(job)))
+    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("Proposal TO-DO"))
     |> assert_has(definition("Package:", text: "My Package"))
     |> assert_has(definition("Total", text: "$1.00"))
@@ -61,6 +64,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     )
     |> click(button("Accept proposal"))
     |> assert_has(button("Proposal DONE"))
+    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("Contract TO-DO"))
     |> assert_has(css("h3", text: "Terms and Conditions"))
     |> assert_has(button("Sign", disabled: true))
@@ -68,6 +72,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Sign"))
     |> assert_has(button("Contract DONE"))
+    |> assert_has(css("button:not(:disabled)", text: "Pay 50% deposit"))
     |> click(button("Pay 50% deposit"))
     |> assert_url_contains("stripe-checkout")
     |> post("/stripe/connect-webhooks", "", [{"stripe-signature", "love, stripe"}])
@@ -75,25 +80,37 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(button("50% deposit paid"))
   end
 
-  feature "client fills out booking proposal questionnaire", %{
-    session: session,
-    url: url
-  } do
+  feature "client fills out booking proposal questionnaire", %{session: session, job: job} do
     insert(:questionnaire)
 
     session
+    |> visit("/jobs/#{job.id}")
+    |> click(button("Send booking proposal"))
+
+    assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
+
+    session
     |> visit(url)
+    |> click(button("Proposal TO-DO"))
+    |> click(button("Accept proposal"))
+    |> click(button("Contract TO-DO"))
+    |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Sign"))
     |> click(button("Questionnaire TO-DO"))
     |> click(checkbox("My partner", selected: false))
     |> click(button("cancel"))
     |> click(button("Questionnaire TO-DO"))
     |> visit(url)
+    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("Questionnaire TO-DO"))
     |> click(checkbox("My partner", selected: false))
     |> assert_has(css("button:disabled", text: "Save"))
     |> fill_in(text_field("why?"), with: "it's the best.")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
+    |> assert_has(css("button:not(:disabled)", text: "Pay 50% deposit"))
     |> click(button("Questionnaire DONE"))
     |> assert_has(checkbox("My partner", selected: true))
   end

@@ -1,13 +1,13 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Shoot, Repo, BookingProposal, Accounts}
+  alias Picsello.{Job, Shoot, Repo, BookingProposal, Accounts, Questionnaire}
 
   @impl true
   def mount(%{"id" => job_id}, session, socket) do
     socket
     |> assign_defaults(session)
-    |> assign(:stripe_status, :loading)
+    |> assign(stripe_status: :loading, include_questionnaire: true)
     |> assign_job(job_id)
     |> assign_proposal()
     |> ok()
@@ -78,8 +78,16 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_event("send-proposal", %{}, %{assigns: %{job: job}} = socket) do
-    case BookingProposal.create_changeset(%{job_id: job.id}) |> Repo.insert() do
+  def handle_event(
+        "send-proposal",
+        %{},
+        %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
+      ) do
+    questionnaire_id =
+      if include_questionnaire, do: Questionnaire.for_job(job) |> Repo.one() |> Map.get(:id)
+
+    case BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
+         |> Repo.insert() do
       {:ok, proposal} ->
         token = proposal_token(proposal)
         url = Routes.booking_proposal_url(socket, :show, token)
@@ -96,6 +104,17 @@ defmodule PicselloWeb.JobLive.Show do
         |> put_flash(:error, "Failed to create booking proposal. Please try again.")
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event(
+        "toggle-questionnaire",
+        %{},
+        %{assigns: %{include_questionnaire: include_questionnaire}} = socket
+      ) do
+    socket
+    |> assign(:include_questionnaire, !include_questionnaire)
+    |> noreply()
   end
 
   @impl true
