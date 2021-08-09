@@ -6,11 +6,17 @@
     <fieldset <%= if(@answer.id, do: "disabled") %>>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
+          <dt class="pt-4">
+            <label for="question_<%= question_index %>">
+              <%= question.prompt %>
+            </label>
+            <%= if question.optional do %>
+              <em class="text-xs">(optional)</em>
+            <% end %>
+          </dt>
             <%= case question.type do %>
               <% :multiselect -> %>
                 <input type="hidden" name="answers[<%= question_index %>][]" value="">
-
-                <dt class="pt-4"><%= question.prompt %></dt>
 
                 <dd>
                   <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
@@ -27,9 +33,6 @@
                 </dd>
 
               <% :select -> %>
-
-                <dt class="pt-4"><%= question.prompt %></dt>
-
                 <dd>
                   <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
                     <label class="flex items-center mt-4">
@@ -45,15 +48,9 @@
                 </dd>
 
               <% :text -> %>
-
-                <dt class="pt-4">
-                  <label for="<%= question_index %>"><%= question.prompt %></label>
-                </dt>
-
                 <dd class="pt-4">
-                  <textarea phx-debounce="1000" class="w-full text-input" id="<%= question_index %>" name="answers[<%= question_index %>][]"><%= answer %></textarea>
+                  <textarea phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]"><%= answer %></textarea>
                 </dd>
-
             <% end %>
         <% end %>
       </dl>

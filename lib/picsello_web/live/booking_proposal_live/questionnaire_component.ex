@@ -47,7 +47,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       questionnaire.questions
       |> Enum.with_index()
       |> Enum.any?(fn {question, question_index} ->
-        !question.optional? &&
+        !question.optional &&
           Map.get(params, question_index |> Integer.to_string(), [])
           |> reject_blanks()
           |> Enum.empty?()
