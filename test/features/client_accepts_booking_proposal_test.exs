@@ -84,18 +84,18 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     session
     |> visit(url)
     |> click(button("Questionnaire TO-DO"))
-    |> click(checkbox("My partner", checked: false))
+    |> click(checkbox("My partner", selected: false))
     |> click(button("cancel"))
     |> click(button("Questionnaire TO-DO"))
     |> visit(url)
     |> click(button("Questionnaire TO-DO"))
-    |> click(checkbox("My partner", checked: false))
+    |> click(checkbox("My partner", selected: false))
     |> assert_has(css("button:disabled", text: "Save"))
     |> fill_in(text_field("why?"), with: "it's the best.")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> click(button("Questionnaire DONE"))
-    |> assert_has(checkbox("My partner", checked: true))
+    |> assert_has(checkbox("My partner", selected: true))
   end
 
   defp post(session, path, body, headers) do

@@ -8,6 +8,7 @@
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
             <%= case question.type do %>
               <% :multiselect -> %>
+                <input type="hidden" name="answers[<%= question_index %>][]" value="">
 
                 <dt class="pt-4"><%= question.prompt %></dt>
 
@@ -68,5 +69,5 @@
         Save
       </button>
     <% end %>
-  <form>
+  </form>
 </div>

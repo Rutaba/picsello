@@ -49,7 +49,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       |> Enum.any?(fn {question, question_index} ->
         !question.optional? &&
           Map.get(params, question_index |> Integer.to_string(), [])
-          |> Enum.reject(&(String.trim(&1) == ""))
+          |> reject_blanks()
           |> Enum.empty?()
       end)
 
@@ -74,7 +74,8 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
     do:
       params
       |> Enum.reduce(answers, fn {question_index, answer}, answers ->
-        answers |> List.replace_at(question_index |> String.to_integer(), answer)
+        answers
+        |> List.replace_at(question_index |> String.to_integer(), answer |> reject_blanks())
       end)
 
   defp assign_answer(%{assigns: %{answer: %Answer{}}} = socket), do: socket
@@ -103,4 +104,6 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
     socket
     |> assign(answer: answer)
   end
+
+  defp reject_blanks(list), do: list |> Enum.reject(&(String.trim(&1) == ""))
 end
