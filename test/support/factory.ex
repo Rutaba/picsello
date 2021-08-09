@@ -103,6 +103,32 @@ defmodule Picsello.Factory do
           type: "text",
           prompt: "why?",
           optional: false
+        },
+        %Questionnaire.Question{
+          type: "select",
+          prompt: "Do you agree?",
+          options: ["Of course", "Nope"],
+          optional: true
+        },
+        %Questionnaire.Question{
+          type: "textarea",
+          prompt: "Describe it",
+          optional: false
+        },
+        %Questionnaire.Question{
+          type: "date",
+          prompt: "When",
+          optional: false
+        },
+        %Questionnaire.Question{
+          type: "email",
+          prompt: "Email",
+          optional: false
+        },
+        %Questionnaire.Question{
+          type: "phone",
+          prompt: "Phone",
+          optional: false
         }
       ],
       job_type: "newborn"

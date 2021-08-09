@@ -12,7 +12,11 @@ defmodule Picsello.Questionnaire do
 
     embedded_schema do
       field(:prompt, :string)
-      field(:type, Ecto.Enum, values: [:text, :select, :date, :multiselect, :phone, :email])
+
+      field(:type, Ecto.Enum,
+        values: [:text, :textarea, :select, :date, :multiselect, :phone, :email]
+      )
+
       field(:optional, :boolean)
       field(:options, {:array, :string})
     end

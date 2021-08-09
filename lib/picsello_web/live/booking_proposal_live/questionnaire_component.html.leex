@@ -49,6 +49,26 @@
 
               <% :text -> %>
                 <dd class="pt-4">
+                  <input type="text" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                </dd>
+
+              <% :phone -> %>
+                <dd class="pt-4">
+                  <input type="tel" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                </dd>
+
+              <% :email -> %>
+                <dd class="pt-4">
+                  <input type="email" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                </dd>
+
+              <% :date -> %>
+                <dd class="pt-4">
+                  <input type="date" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                </dd>
+
+              <% :textarea -> %>
+                <dd class="pt-4">
                   <textarea phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]"><%= answer %></textarea>
                 </dd>
             <% end %>
