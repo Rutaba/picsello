@@ -74,8 +74,13 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
       parent_view |> click_edit_package()
 
-      assert view
-             |> has_element?("option[selected][value=#{template_id}]")
+      [selected_value] =
+        view
+        |> render
+        |> Floki.find("select[name*='package_template_id'] option[selected]")
+        |> Floki.attribute("value")
+
+      assert selected_value == Integer.to_string(template_id)
     end
   end
 
