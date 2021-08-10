@@ -7,7 +7,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
 
   @shortdoc "import questionnaires"
   def run(_) do
-    Mix.Task.run("app.start")
+    load_app()
 
     [
       %{
@@ -163,5 +163,11 @@ defmodule Mix.Tasks.ImportQuestionnaires do
     |> Enum.each(fn questionnaire ->
       Questionnaire.changeset(%Questionnaire{}, questionnaire) |> Repo.insert!()
     end)
+  end
+
+  defp load_app do
+    if System.get_env("MIX_ENV") != "prod" do
+      Mix.Task.run("app.start")
+    end
   end
 end
