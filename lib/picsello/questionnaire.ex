@@ -12,6 +12,7 @@ defmodule Picsello.Questionnaire do
 
     embedded_schema do
       field(:prompt, :string)
+      field(:placeholder, :string)
 
       field(:type, Ecto.Enum,
         values: [:text, :textarea, :select, :date, :multiselect, :phone, :email]
@@ -23,7 +24,7 @@ defmodule Picsello.Questionnaire do
 
     def changeset(question, attrs) do
       question
-      |> cast(attrs, [:prompt, :type, :optional, :options])
+      |> cast(attrs, [:prompt, :placeholder, :type, :optional, :options])
     end
   end
 
