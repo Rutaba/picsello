@@ -6,11 +6,13 @@ defmodule Picsello.CreateLeadTest do
   feature "user creates lead", %{session: session} do
     client_email = "taylor@example.com"
     client_name = "Elizabeth Taylor"
+    client_phone = "(210) 111-1234"
 
     session
     |> click(button("Create a lead"))
     |> fill_in(text_field("Client name"), with: client_name)
     |> fill_in(text_field("Client email"), with: client_email)
+    |> fill_in(text_field("Client phone"), with: client_phone)
     |> fill_in(text_field("Lead notes"), with: "things to know about")
     |> click(option("Wedding"))
     |> wait_for_enabled_submit_button()
@@ -19,6 +21,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Edit Lead"))
     |> assert_has(definition("Client", text: client_name))
     |> assert_has(definition("Client email", text: client_email))
+    |> assert_has(definition("Client phone", text: client_phone))
     |> assert_value(text_field("Lead notes"), "things to know about")
     |> click(button("Cancel"))
     |> click(link("Picsello"))
@@ -30,10 +33,12 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Create a lead"))
     |> fill_in(text_field("Client name"), with: " ")
     |> fill_in(text_field("Client email"), with: " ")
+    |> fill_in(text_field("Client phone"), with: "123")
     |> click(option("Wedding"))
     |> click(option("Select below"))
     |> assert_has(css("label", text: "Client name can't be blank"))
     |> assert_has(css("label", text: "Client email can't be blank"))
+    |> assert_has(css("label", text: "Client phone is invalid"))
     |> assert_has(css("label", text: "Type of photography can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
   end

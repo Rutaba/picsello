@@ -9,6 +9,7 @@
   "dependencies": {
     "@fontsource/be-vietnam": "~4.4.5",
     "@tailwindcss/forms": "~0.3.3",
+    "imask": "~6.1.0",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "phoenix_live_view": "file:../deps/phoenix_live_view",

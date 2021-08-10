@@ -4,6 +4,7 @@
     <%= inputs_for f, :client, fn client_form -> %>
       <%= labeled_input client_form, :name, label: "Client name", placeholder: "Elizabeth Taylor", phx_debounce: "500", wrapper_class: "mt-4" %>
       <%= labeled_input client_form, :email, label: "Client email", placeholder: "elizabeth@taylor.com", phx_debounce: "500", wrapper_class: "mt-4" %>
+      <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client phone", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", wrapper_class: "mt-4" %>
     <% end %>
 
     <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of photography", prompt: "Select below", wrapper_class: "mt-4" %>

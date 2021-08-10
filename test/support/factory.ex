@@ -70,6 +70,7 @@ defmodule Picsello.Factory do
     %Client{
       email: sequence(:email, &"client-#{&1}@example.com"),
       name: "Mary Jane",
+      phone: "(904) 555-5555",
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)

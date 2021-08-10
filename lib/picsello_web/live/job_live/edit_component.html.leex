@@ -8,6 +8,9 @@
 
     <dt class="mt-4 input-label">Client email</dt>
     <dd><%= @job.client.email %></dd>
+
+    <dt class="mt-4 input-label">Client phone</dt>
+    <dd><%= @job.client.phone %></dd>
   </dl>
 
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>

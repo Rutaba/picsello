@@ -22,6 +22,7 @@ import "@fontsource/be-vietnam/400.css"
 import "@fontsource/be-vietnam/500.css"
 import "@fontsource/be-vietnam/600.css"
 import "@fontsource/be-vietnam/700.css"
+import IMask from "imask"
 
 let Hooks = {}
 
@@ -43,6 +44,12 @@ Hooks.LockBodyScroll = {
   },
   destroyed() {
     document.body.style.overflow = ""
+  }
+}
+
+Hooks.Phone = {
+  mounted() {
+    IMask(this.el, { mask: '(000) 000-0000'});
   }
 }
 
