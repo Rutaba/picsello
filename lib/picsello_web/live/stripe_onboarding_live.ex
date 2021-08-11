@@ -52,7 +52,7 @@ defmodule PicselloWeb.StripeOnboardingLive do
         socket
       ) do
     send(self(), :link_stripe)
-    socket |> assign(status: :linking) |> noreply()
+    socket |> assign(status: :redirecting) |> noreply()
   end
 
   defp payments, do: Application.get_env(:picsello, :payments)

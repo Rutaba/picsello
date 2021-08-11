@@ -13,15 +13,34 @@
 </label>
 <%= case @status do %>
   <% :loading -> %>
-     <div class="flex items-center justify-center w-full m-2 mt-8 text-xs">
-       <div class="w-3 h-3 mr-2 rounded-full opacity-75 bg-blue-primary animate-ping"></div>
-       Loading...
-     </div>
-  <% :charges_enabled -> %>
- <% status -> %>
-   <button type="button" phx-click="init-stripe" class="w-full mt-8 btn-primary" <%= if status == :linking, do: "disabled" %> >
+    <div class="flex items-center justify-center w-full m-2 mt-8 text-xs">
+      <div class="w-3 h-3 mr-2 rounded-full opacity-75 bg-blue-primary animate-ping"></div>
+      Loading...
+    </div>
+
+  <% :no_account -> %>
+    <button type="button" phx-click="init-stripe" class="w-full mt-8 btn-primary">
       Create Stripe Account
     </button>
+
+  <% :redirecting -> %>
+    <button type="button" class="w-full mt-8 btn-primary" disabled>
+      Redirecting to Stripe
+    </button>
+
+  <% :missing_information -> %>
+    <button phx-click="init-stripe" type="button" class="w-full mt-8 btn-primary">
+      Complete Stripe Account
+    </button>
+    <em class="block pt-2 text-xs text-center">Please provide missing information.</em>
+
+  <% :pending_verification -> %>
+    <button type="button" class="w-full mt-8 btn-primary" disabled>
+      Stripe Account Created
+    </button>
+    <em class="block pt-2 text-xs text-center">Your account has been created. Please wait for Stripe to verify your information.</em>
+
+  <% :charges_enabled -> %>
 <% end %>
 
 

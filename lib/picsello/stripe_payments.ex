@@ -11,7 +11,7 @@ defmodule Picsello.StripePayments do
   end
 
   def link(%Organization{stripe_account_id: nil} = organization, opts) do
-    with {:ok, %{id: account_id}} <- Stripe.Account.create(%{type: "express"}),
+    with {:ok, %{id: account_id}} <- Stripe.Account.create(%{type: "standard"}),
          {:ok, organization} <-
            organization
            |> Organization.assign_stripe_account_changeset(account_id)
@@ -60,19 +60,26 @@ defmodule Picsello.StripePayments do
     status(organization)
   end
 
-  def status(%Organization{stripe_account_id: nil}), do: {:ok, :none}
+  def status(%Organization{stripe_account_id: nil}), do: {:ok, :no_account}
 
   def status(%Organization{stripe_account_id: account_id}) do
     case Stripe.Account.retrieve(account_id) do
       {:ok, account} ->
-        {:ok,
-         [:charges_enabled, :details_submitted]
-         |> Enum.find(:processing, &Map.get(account, &1))}
+        {:ok, account_status(account)}
 
       e ->
         e
     end
   end
+
+  def account_status(%Stripe.Account{charges_enabled: true}), do: :charges_enabled
+
+  def account_status(%Stripe.Account{
+        requirements: %{disabled_reason: "requirements.pending_verification"}
+      }),
+      do: :pending_verification
+
+  def account_status(%Stripe.Account{}), do: :missing_information
 
   def customer_id(%Client{stripe_customer_id: nil} = client) do
     params = %{name: client.name, email: client.email}

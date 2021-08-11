@@ -5,7 +5,7 @@ defmodule PicselloWeb.StripeOnboardingLiveTest do
   describe "when user has no stripe account" do
     test "it renders a button", %{conn: conn} do
       Mox.stub(Picsello.MockPayments, :status, fn _ ->
-        {:ok, :none}
+        {:ok, :no_account}
       end)
 
       {:ok, view, html} =
@@ -27,7 +27,7 @@ defmodule PicselloWeb.StripeOnboardingLiveTest do
   describe "when user clicks the button" do
     test "it disables the button", %{conn: conn} do
       Mox.stub(Picsello.MockPayments, :status, fn _ ->
-        {:ok, :none}
+        {:ok, :no_account}
       end)
 
       Mox.stub(Picsello.MockPayments, :link, fn _, _ ->
@@ -51,7 +51,7 @@ defmodule PicselloWeb.StripeOnboardingLiveTest do
   end
 
   describe "when user has stripe account" do
-    test "it does not render a button", %{conn: conn} do
+    test "it does not render a button when charges are enabled", %{conn: conn} do
       Mox.stub(Picsello.MockPayments, :status, fn _ ->
         {:ok, :charges_enabled}
       end)
@@ -65,6 +65,38 @@ defmodule PicselloWeb.StripeOnboardingLiveTest do
       assert view |> render() |> Floki.text() =~ "50% deposit"
 
       assert [] = view |> render() |> Floki.find("button")
+    end
+
+    test "it renders a message and enabled button when information is missing", %{conn: conn} do
+      Mox.stub(Picsello.MockPayments, :status, fn _ ->
+        {:ok, :missing_information}
+      end)
+
+      {:ok, view, _html} =
+        conn
+        |> live_isolated(PicselloWeb.StripeOnboardingLive,
+          session: %{"return_url" => "https://google.com"}
+        )
+
+      assert [] = view |> render() |> Floki.attribute("button", "disabled")
+      assert view |> render() |> Floki.find("button") |> Floki.text() =~ "Complete Stripe Account"
+      assert view |> render() |> Floki.text() =~ "provide missing information"
+    end
+
+    test "it renders a message and disabled button when awaiting stripe", %{conn: conn} do
+      Mox.stub(Picsello.MockPayments, :status, fn _ ->
+        {:ok, :pending_verification}
+      end)
+
+      {:ok, view, _html} =
+        conn
+        |> live_isolated(PicselloWeb.StripeOnboardingLive,
+          session: %{"return_url" => "https://google.com"}
+        )
+
+      assert [_] = view |> render() |> Floki.attribute("button", "disabled")
+      assert view |> render() |> Floki.find("button") |> Floki.text() =~ "Stripe Account Created"
+      assert view |> render() |> Floki.text() =~ "Please wait for Stripe"
     end
   end
 end
