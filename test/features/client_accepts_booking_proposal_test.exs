@@ -21,6 +21,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           shoot_count: 1,
           price: 100
         },
+        client: %{name: "John"},
         shoots: [%{}]
       })
 
@@ -78,6 +79,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> post("/stripe/connect-webhooks", "", [{"stripe-signature", "love, stripe"}])
     |> visit(url)
     |> assert_has(button("50% deposit paid"))
+
+    assert_receive {:delivered_email, email}
+
+    assert %{"url" => url, "job" => "John Newborn", "client" => "John"} =
+             email |> email_substitutions()
+
+    assert String.ends_with?(url, "/jobs")
   end
 
   feature "client fills out booking proposal questionnaire", %{session: session, job: job} do

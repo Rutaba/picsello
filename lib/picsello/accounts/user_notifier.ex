@@ -1,7 +1,7 @@
 defmodule Picsello.Accounts.UserNotifier do
   @moduledoc false
   import Bamboo.{Email, SendGridHelper}
-  alias Picsello.{Mailer, Repo}
+  alias Picsello.{Mailer, Repo, Job}
   require Logger
 
   defp deliver_later(email) do
@@ -55,6 +55,23 @@ defmodule Picsello.Accounts.UserNotifier do
       url: url
     )
     |> to(client.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
+  @doc """
+  Deliver lead converted to job email.
+  """
+  def deliver_lead_converted_to_job(proposal, url) do
+    %{job: %{client: client, package: %{organization: %{user: user}}} = job} =
+      proposal |> Repo.preload(job: [:client, package: [organization: :user]])
+
+    sendgrid_template(:lead_to_job_template,
+      job: Job.name(job),
+      client: client.name,
+      url: url
+    )
+    |> to(user.email)
     |> from("noreply@picsello.com")
     |> deliver_later()
   end
