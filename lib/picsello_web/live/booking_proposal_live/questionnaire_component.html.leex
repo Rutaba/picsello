@@ -54,7 +54,7 @@
 
               <% :phone -> %>
                 <dd class="pt-4">
-                  <input type="tel" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                  <input type="tel" phx-hook="Phone" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
                 </dd>
 
               <% :email -> %>
