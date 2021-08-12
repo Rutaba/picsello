@@ -89,6 +89,7 @@ defmodule PicselloWeb.Router do
     live "/jobs/new", JobLive.New, :new, as: :job
     live "/jobs/:id", JobLive.Show, :show, as: :job
     live "/jobs", JobLive.Index, :index, as: :job
+    live "/leads", LeadLive.Index, :index, as: :lead
   end
 
   scope "/", PicselloWeb do

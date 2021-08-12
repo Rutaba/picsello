@@ -53,8 +53,19 @@ defmodule Picsello.BookingProposal do
   end
 
   def last_for_job(job_id) do
-    __MODULE__ |> where(job_id: ^job_id) |> order_by(desc: :inserted_at) |> limit(1) |> Repo.one()
+    job_id |> for_job() |> order_by(desc: :inserted_at) |> limit(1) |> Repo.one()
   end
+
+  def for_job(job_id) do
+    __MODULE__ |> where(job_id: ^job_id)
+  end
+
+  def deposit_paid(query \\ __MODULE__) do
+    query |> where([p], not is_nil(p.deposit_paid_at))
+  end
+
+  def deposit_paid?(%__MODULE__{deposit_paid_at: nil}), do: false
+  def deposit_paid?(%__MODULE__{}), do: true
 
   def status(%__MODULE__{deposit_paid_at: date}) when date != nil, do: :deposit_paid
   def status(%__MODULE__{signed_at: date}) when date != nil, do: :signed

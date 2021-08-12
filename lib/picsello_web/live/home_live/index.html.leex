@@ -8,6 +8,12 @@
     <div class="mt-4 border-t-2 border-white">
       <%= if @job_count > 0 do %>
         <%= live_redirect to: Routes.job_path(@socket, :index), class: "btn-secondary text-lg mt-8 py-3 flex justify-center px-6" do %>
+          View jobs
+        <% end %>
+      <% end %>
+
+      <%= if @lead_count > 0 do %>
+        <%= live_redirect to: Routes.lead_path(@socket, :index), class: "btn-secondary text-lg mt-8 py-3 flex justify-center px-6" do %>
           View current leads
         <% end %>
       <% end %>

@@ -1,7 +1,13 @@
 <div class="px-8 pt-2">
   <div class="text-xs text-gray-400">
-    <%= live_redirect to: Routes.job_path(@socket, :index) do %>
-      Leads
+    <%= if Job.lead?(@job) do %>
+      <%= live_redirect to: Routes.lead_path(@socket, :index) do %>
+        Leads
+      <% end %>
+    <% else %>
+      <%= live_redirect to: Routes.job_path(@socket, :index) do %>
+        Jobs
+      <% end %>
     <% end %>
     &gt;
     <%= Job.name @job %>

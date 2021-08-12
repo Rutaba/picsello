@@ -3,7 +3,7 @@ defmodule Picsello.Job do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Client, Package, Shoot, Repo}
+  alias Picsello.{Client, Package, Shoot, BookingProposal, Repo}
 
   schema "jobs" do
     field(:type, :string)
@@ -11,6 +11,7 @@ defmodule Picsello.Job do
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     has_many(:shoots, Shoot)
+    has_many(:booking_proposals, BookingProposal)
 
     timestamps()
   end
@@ -54,4 +55,26 @@ defmodule Picsello.Job do
       where: client.organization_id == ^organization_id
     )
   end
+
+  def lead?(%__MODULE__{} = job) do
+    job
+    |> Repo.preload(:booking_proposals)
+    |> Map.get(:booking_proposals)
+    |> Enum.all?(&(not BookingProposal.deposit_paid?(&1)))
+  end
+
+  def leads(query \\ __MODULE__) do
+    query
+    |> from(as: :jobs)
+    |> where(not exists(paid_proposal_sub()))
+  end
+
+  def not_leads(query \\ __MODULE__) do
+    query
+    |> from(as: :jobs)
+    |> where(exists(paid_proposal_sub()))
+  end
+
+  defp paid_proposal_sub(),
+    do: BookingProposal.deposit_paid() |> where([p], p.job_id == parent_as(:jobs).id)
 end

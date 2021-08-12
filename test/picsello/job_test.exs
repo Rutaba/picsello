@@ -32,4 +32,29 @@ defmodule Picsello.JobTest do
       refute changeset.changes[:client].errors |> Enum.empty?()
     end
   end
+
+  describe "lead?" do
+    test "true when there are no paid deposits on this jobs proposals" do
+      job = insert(:job)
+
+      assert Job.lead?(job)
+
+      assert 1 = Job.leads() |> Repo.aggregate(:count)
+      assert 0 = Job.not_leads() |> Repo.aggregate(:count)
+
+      insert(:proposal, %{job: job, deposit_paid_at: nil})
+
+      assert Job.lead?(job)
+
+      assert 1 = Job.leads() |> Repo.aggregate(:count)
+      assert 0 = Job.not_leads() |> Repo.aggregate(:count)
+
+      insert(:proposal, %{job: job, deposit_paid_at: DateTime.utc_now()})
+
+      refute Job.lead?(job)
+
+      assert 0 = Job.leads() |> Repo.aggregate(:count)
+      assert 1 = Job.not_leads() |> Repo.aggregate(:count)
+    end
+  end
 end

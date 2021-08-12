@@ -18,7 +18,7 @@ defmodule Picsello.ViewLeadTest do
     ]
   end
 
-  feature "user views job list", %{session: session} do
+  feature "user views lead list", %{session: session} do
     session
     |> visit("/")
     |> click(link("View current leads"))

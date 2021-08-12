@@ -32,11 +32,14 @@ defmodule Picsello.FeatureCase do
       end
     end
 
-    def authenticated(%{session: session}) do
-      user = insert(:user)
+    def authenticated(%{session: session, user: user}) do
       sign_in(session, user)
 
       [session: session, user: user]
+    end
+
+    def authenticated(%{session: session}) do
+      authenticated(%{session: session, user: insert(:user)})
     end
 
     def definition(term, opts) do

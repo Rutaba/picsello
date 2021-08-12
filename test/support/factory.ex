@@ -5,7 +5,17 @@ defmodule Picsello.Factory do
 
   use ExMachina.Ecto, repo: Picsello.Repo
 
-  alias Picsello.{Client, Job, Organization, Package, Repo, Shoot, Accounts.User, Questionnaire}
+  alias Picsello.{
+    BookingProposal,
+    Client,
+    Job,
+    Organization,
+    Package,
+    Repo,
+    Shoot,
+    Accounts.User,
+    Questionnaire
+  }
 
   def valid_user_password(), do: "hello world!"
 
@@ -135,6 +145,10 @@ defmodule Picsello.Factory do
       job_type: "newborn"
     }
     |> merge_attributes(attrs)
+  end
+
+  def proposal_factory(attrs) do
+    %BookingProposal{} |> merge_attributes(attrs)
   end
 
   def job_factory(attrs) do

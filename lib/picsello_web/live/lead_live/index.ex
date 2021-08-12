@@ -1,4 +1,4 @@
-defmodule PicselloWeb.JobLive.Index do
+defmodule PicselloWeb.LeadLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
@@ -10,17 +10,17 @@ defmodule PicselloWeb.JobLive.Index do
   def mount(_params, session, socket) do
     socket
     |> assign_defaults(session)
-    |> assign_jobs()
+    |> assign_leads()
     |> ok()
   end
 
-  defp assign_jobs(%{assigns: %{current_user: current_user}} = socket) do
+  defp assign_leads(%{assigns: %{current_user: current_user}} = socket) do
     socket
     |> assign(
-      jobs:
+      leads:
         current_user
         |> Job.for_user()
-        |> Job.not_leads()
+        |> Job.leads()
         |> Query.preload(:client)
         |> Query.order_by(desc: :updated_at)
         |> Repo.all()
