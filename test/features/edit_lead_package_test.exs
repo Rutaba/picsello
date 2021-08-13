@@ -21,7 +21,7 @@ defmodule Picsello.EditLeadPackageTest do
 
   feature "user edits a package", %{session: session, job: job} do
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Edit package"))
     |> assert_has(button("Cancel"))
     |> assert_value(
@@ -48,7 +48,7 @@ defmodule Picsello.EditLeadPackageTest do
 
   feature "user adds package template", %{session: session, job: job} do
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Edit package"))
     |> click(css("option", text: "+ New Package"))
     |> assert_has(css("option", selected: true, text: "+ New Package"))
@@ -64,7 +64,7 @@ defmodule Picsello.EditLeadPackageTest do
     template = insert(:package, %{user: user, name: "Other Template"})
 
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Edit package"))
     |> click(css("option", text: "Other Template"))
     |> assert_value(text_field("Package name"), "Other Template")

@@ -1,13 +1,7 @@
 <div class="px-8 pt-2">
   <div class="text-xs text-gray-400">
-    <%= if Job.lead?(@job) do %>
-      <%= live_redirect to: Routes.lead_path(@socket, :index) do %>
-        Leads
-      <% end %>
-    <% else %>
-      <%= live_redirect to: Routes.job_path(@socket, :index) do %>
-        Jobs
-      <% end %>
+    <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
+      <%= action_name(@live_action, :plural) %>
     <% end %>
     &gt;
     <%= Job.name @job %>
@@ -15,7 +9,7 @@
 
   <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
 
-  <%= if @proposal do %>
+  <%= if @proposal && @live_action == :leads do %>
     <p class="mt-4 text-blue-primary">Status:</p>
     <p class="text-blue-primary">
       - Booking proposal
@@ -28,8 +22,8 @@
     </p>
   <% end %>
 
-  <h2 class="mt-5 text-xs font-bold uppercase">Lead Details</h2>
-  <button title="Edit Lead" type="button" phx-click="edit-job" class="mt-2 btn-row">
+  <h2 class="mt-5 text-xs font-bold uppercase"><%= action_name(@live_action) %> Details</h2>
+  <button title="Edit <%= action_name(@live_action) %>" type="button" phx-click="edit-job" class="mt-2 btn-row">
     <%= Job.name @job %>
     <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
   </button>
@@ -70,7 +64,7 @@
         </div>
       </label>
 
-      <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(:show, @job.id)} %>
+      <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(@live_action, @job.id)} %>
 
       <label class="block mt-8 input-label" for="contract_type">Contract type</label>
       <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
@@ -87,7 +81,7 @@
       <p class="mt-4 text-sm font-bold">
         The following details were included in the booking proposal sent on <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
       </p>
-      <ul class="ml-8 list-disc">
+      <ul class="pt-4 ml-8 list-disc">
         <li>Proposal</li>
         <li>Contract (standard)</li>
         <%= if @proposal.questionnaire_id do %>
@@ -95,12 +89,21 @@
         <% end %>
       </ul>
       <button class="w-full mt-6 btn-primary" phx-click="open-proposal">View booking proposal</button>
-      <hr class="mt-8 border-gray-500" />
-      <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
+      <%= if @live_action == :leads do %>
+        <hr class="mt-8 border-gray-500" >
+        <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
+      <% end %>
     <% end %>
   <% else %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
       Add a package
     </button>
   <% end %>
+
+  <%= if @live_action == :jobs do %>
+    <hr class="mt-6 border-gray-500" >
+    <p class="mt-6 text-sm font-semibold">If any updates are made after client has signed, an amendment will need to be reviewed and accepted by them.</p>
+    <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
+  <% end %>
+
 </div>

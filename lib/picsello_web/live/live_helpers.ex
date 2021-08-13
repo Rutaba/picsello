@@ -1,8 +1,15 @@
 defmodule PicselloWeb.LiveHelpers do
   @moduledoc "used in both views and components"
 
-  def open_modal(%{assigns: %{modal_pid: modal_pid}} = socket, component, assigns) do
-    send(modal_pid, {:modal, :open, component, assigns})
+  def open_modal(
+        %{assigns: %{modal_pid: modal_pid} = parent_assigns} = socket,
+        component,
+        assigns
+      ) do
+    send(
+      modal_pid,
+      {:modal, :open, component, assigns |> Map.merge(Map.take(parent_assigns, [:live_action]))}
+    )
 
     socket
   end

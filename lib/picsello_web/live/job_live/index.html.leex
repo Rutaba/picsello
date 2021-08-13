@@ -3,12 +3,14 @@
     <%= live_redirect to: Routes.home_path(@socket, :index), title: "back", class: "flex-1 flex flex-row justify-start items-center" do %>
       <%= icon_tag(@socket, "back", class: "w-6 h-6 stroke-current text-gray-500 -ml-1") %>
     <% end %>
-    <h1 class="flex-1 mb-1 text-center title">Jobs</h1>
+    <h1 class="flex-1 mb-1 text-center title">
+      <%= action_name(@live_action, :plural) %>
+    </h1>
     <div class="flex-1"></div>
   </header>
   <%= for job <- @jobs do %>
     <div class="px-8 py-4 mb-2.5 font-bold rounded-lg bg-blue-primary bg-opacity-10">
-      <%= live_redirect to: Routes.job_path(@socket, :show, job.id), class: "link" do %>
+      <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "link" do %>
         <%= job |> Job.name() %>
       <% end %>
     </div>

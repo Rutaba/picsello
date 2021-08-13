@@ -15,12 +15,13 @@ defmodule Picsello.JobIndexTest do
 
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
-    |> click(link("View jobs"))
-    |> assert_has(link(Job.name(job)))
-    |> refute_has(link(Job.name(lead)))
-    |> click(link("back"))
     |> click(link("View current leads"))
     |> assert_has(link(Job.name(lead)))
     |> refute_has(link(Job.name(job)))
+    |> click(link("back"))
+    |> click(link("View jobs"))
+    |> refute_has(link(Job.name(lead)))
+    |> click(link(Job.name(job)))
+    |> assert_has(link("Jobs"))
   end
 end

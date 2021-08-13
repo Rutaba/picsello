@@ -30,7 +30,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
   feature "client clicks link in booking proposal email", %{session: session, job: job} do
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(checkbox("Include questionnaire", selected: true))
     |> click(button("Send booking proposal"))
 
@@ -92,7 +92,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     insert(:questionnaire)
 
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Send booking proposal"))
 
     assert_receive {:delivered_email, email}

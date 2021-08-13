@@ -14,13 +14,18 @@ defmodule PicselloWeb.JobLive.Index do
     |> ok()
   end
 
-  defp assign_jobs(%{assigns: %{current_user: current_user}} = socket) do
+  defp assign_jobs(%{assigns: %{current_user: current_user, live_action: action}} = socket) do
     socket
     |> assign(
       jobs:
         current_user
         |> Job.for_user()
-        |> Job.not_leads()
+        |> then(fn query ->
+          case action do
+            :leads -> query |> Job.leads()
+            :jobs -> query |> Job.not_leads()
+          end
+        end)
         |> Query.preload(:client)
         |> Query.order_by(desc: :updated_at)
         |> Repo.all()

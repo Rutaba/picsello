@@ -30,7 +30,7 @@ defmodule Picsello.CreateBookingProposalTest do
 
   feature "user sends booking proposal", %{session: session, job: job} do
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> assert_has(css("button:disabled", text: "Send booking proposal"))
     |> click(link("Add shoot details"))
     |> fill_in(text_field("Shoot name"), with: "chute")
@@ -59,9 +59,9 @@ defmodule Picsello.CreateBookingProposalTest do
              Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 1000)
 
     session
-    |> assert_path("/jobs")
+    |> assert_path("/leads")
     |> assert_has(css(".alert", text: "booking proposal was sent"))
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> assert_has(css("p", text: "Booking proposal sent"))
   end
 end

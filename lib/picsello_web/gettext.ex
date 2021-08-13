@@ -25,4 +25,14 @@ defmodule PicselloWeb.Gettext do
   def dyn_gettext(domain \\ "picsello", value) do
     Gettext.dgettext(__MODULE__, domain, value)
   end
+
+  def action_name(action, inflection \\ :singular) do
+    case {action, inflection} do
+      {:jobs, :singular} -> "Job"
+      {:jobs, :plural} -> "Jobs"
+      {:leads, :singular} -> "Lead"
+      {:leads, :plural} -> "Leads"
+      _ -> action |> Atom.to_string() |> dyn_gettext()
+    end
+  end
 end

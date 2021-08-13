@@ -96,7 +96,7 @@ defmodule PicselloWeb.JobLive.Show do
 
         socket
         |> put_flash(:info, "#{Job.name(job)} booking proposal was sent.")
-        |> push_redirect(to: Routes.job_path(socket, :index))
+        |> push_redirect(to: Routes.job_path(socket, :leads))
         |> noreply()
 
       {:error, _} ->
@@ -141,10 +141,16 @@ defmodule PicselloWeb.JobLive.Show do
   def handle_info({:stripe_status, status}, socket),
     do: socket |> assign(:stripe_status, status) |> noreply()
 
-  defp assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
+  defp assign_job(%{assigns: %{current_user: current_user, live_action: action}} = socket, job_id) do
     job =
       current_user
       |> Job.for_user()
+      |> then(fn query ->
+        case action do
+          :jobs -> query |> Job.not_leads()
+          :leads -> query |> Job.leads()
+        end
+      end)
       |> Repo.get!(job_id)
       |> Repo.preload([:client, :package])
 

@@ -14,9 +14,9 @@ defmodule Picsello.EditJobTest do
     [job: job, session: session]
   end
 
-  feature "user edits a job", %{session: session, job: job} do
+  feature "user edits a lead", %{session: session, job: job} do
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Edit Lead"))
     |> assert_has(button("Cancel"))
     |> assert_value(select("Type of photography"), "wedding")

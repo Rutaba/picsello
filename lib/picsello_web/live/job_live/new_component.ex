@@ -23,7 +23,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
 
     case changeset |> Repo.insert() do
       {:ok, %Job{id: job_id}} ->
-        socket |> push_redirect(to: Routes.job_path(socket, :show, job_id)) |> noreply()
+        socket |> push_redirect(to: Routes.job_path(socket, :leads, job_id)) |> noreply()
 
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()

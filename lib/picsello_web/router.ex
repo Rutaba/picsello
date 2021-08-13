@@ -86,10 +86,11 @@ defmodule PicselloWeb.Router do
     live "/users/settings", Live.User.Settings, :edit
 
     live "/home", HomeLive.Index, :index, as: :home
-    live "/jobs/new", JobLive.New, :new, as: :job
-    live "/jobs/:id", JobLive.Show, :show, as: :job
-    live "/jobs", JobLive.Index, :index, as: :job
-    live "/leads", LeadLive.Index, :index, as: :lead
+    live "/leads/new", JobLive.New, :new, as: :job
+    live "/leads/:id", JobLive.Show, :leads, as: :job
+    live "/leads", JobLive.Index, :leads, as: :job
+    live "/jobs/:id", JobLive.Show, :jobs, as: :job
+    live "/jobs", JobLive.Index, :jobs, as: :job
   end
 
   scope "/", PicselloWeb do

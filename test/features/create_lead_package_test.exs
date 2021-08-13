@@ -7,7 +7,7 @@ defmodule Picsello.CreateLeadPackageTest do
     job = insert(:job, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Add a package"))
     |> fill_in(text_field("Package name"), with: " ")
     |> fill_in(text_field("Package description"), with: " ")
@@ -58,7 +58,7 @@ defmodule Picsello.CreateLeadPackageTest do
       })
 
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Add a package"))
     |> assert_has(
       css("select[name='package[package_template_id]'] option:checked",

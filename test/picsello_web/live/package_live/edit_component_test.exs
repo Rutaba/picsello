@@ -29,7 +29,7 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
     setup %{user: user, conn: conn} do
       job = insert(:job, %{user: user, package: %{}})
-      {:ok, view, _html} = live(conn, "/jobs/#{job.id}")
+      {:ok, view, _html} = live(conn, "/leads/#{job.id}")
 
       click_edit_package(view)
 

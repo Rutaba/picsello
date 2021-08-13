@@ -7,7 +7,7 @@ defmodule Picsello.ConfigureStripeTest do
     job = insert(:job, %{package: %{}, user: user})
 
     session
-    |> visit("/jobs/#{job.id}")
+    |> visit("/leads/#{job.id}")
     |> click(button("Create Stripe Account"))
     |> assert_url_contains("stripe.me")
   end
