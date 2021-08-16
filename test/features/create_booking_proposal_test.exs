@@ -63,5 +63,28 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_has(css(".alert", text: "booking proposal was sent"))
     |> visit("/leads/#{job.id}")
     |> assert_has(css("p", text: "Booking proposal sent"))
+    |> visit("/leads/#{job.id}")
+    |> click(button("View booking proposal"))
+    |> click(button("Proposal"))
+    |> assert_disabled(button("Accept proposal"))
+    |> click(button("cancel"))
+    |> click(button("Contract"))
+    |> assert_disabled(text_field("Type your full legal name"))
+    |> assert_disabled(button("Sign"))
+    |> click(button("cancel"))
+    |> click(button("Questionnaire"))
+    |> all(css("input, textarea, select"))
+    |> Enum.reduce(session, fn el, session -> assert_disabled(session, el) end)
   end
+
+  def assert_disabled(session, %Element{} = el) do
+    disabled = session |> all(css("*:disabled"))
+
+    assert Enum.member?(disabled, el)
+
+    session
+  end
+
+  def assert_disabled(session, %Query{} = query),
+    do: assert_disabled(session, session |> find(query))
 end

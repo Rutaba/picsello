@@ -3,7 +3,7 @@
   <h2 class="title">Questionnaire</h2>
 
   <form action="#" phx-submit="submit" phx-change="validate" phx-target="<%= @myself %>">
-    <fieldset <%= if(@answer.id, do: "disabled") %>>
+    <fieldset <%= if(@answer.id || @read_only, do: "disabled") %>>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
           <dt class="pt-4">

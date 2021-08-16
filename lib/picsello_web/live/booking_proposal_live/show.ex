@@ -14,35 +14,41 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> ok()
   end
 
+  defp modal_assigns(
+         %{assigns: %{photographer: photographer, current_user: current_user} = assigns},
+         extra \\ []
+       ) do
+    assigns
+    |> Map.take([:job, :proposal, :organization] ++ extra)
+    |> Map.put(:read_only, photographer == current_user)
+  end
+
   @impl true
-  def handle_event("open-proposal", %{}, %{assigns: assigns} = socket) do
+  def handle_event("open-proposal", %{}, socket) do
     socket
     |> open_modal(
       PicselloWeb.BookingProposalLive.ProposalComponent,
-      assigns
-      |> Map.take([:job, :client, :shoots, :package, :proposal, :organization, :photographer])
+      modal_assigns(socket, [:client, :shoots, :package, :photographer])
     )
     |> noreply()
   end
 
   @impl true
-  def handle_event("open-contract", %{}, %{assigns: assigns} = socket) do
+  def handle_event("open-contract", %{}, socket) do
     socket
     |> open_modal(
       PicselloWeb.BookingProposalLive.ContractComponent,
-      assigns
-      |> Map.take([:job, :proposal, :organization])
+      modal_assigns(socket)
     )
     |> noreply()
   end
 
   @impl true
-  def handle_event("open-questionnaire", %{}, %{assigns: assigns} = socket) do
+  def handle_event("open-questionnaire", %{}, socket) do
     socket
     |> open_modal(
       PicselloWeb.BookingProposalLive.QuestionnaireComponent,
-      assigns
-      |> Map.take([:job, :proposal, :organization])
+      modal_assigns(socket)
     )
     |> noreply()
   end

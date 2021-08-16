@@ -15,7 +15,8 @@ defmodule PicselloWeb.Live.User.Settings do
     |> assign(
       email_changeset: email_changeset(user),
       password_changeset: password_changeset(user),
-      submit_changed_password: false
+      submit_changed_password: false,
+      sign_out: false
     )
     |> ok()
   end
@@ -118,6 +119,13 @@ defmodule PicselloWeb.Live.User.Settings do
       password_changeset: changeset,
       submit_changed_password: changeset.valid?
     )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("sign_out", _params, socket) do
+    socket
+    |> assign(sign_out: true)
     |> noreply()
   end
 end

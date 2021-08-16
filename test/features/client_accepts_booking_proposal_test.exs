@@ -28,11 +28,20 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     [job: job]
   end
 
+  defp sign_out(session) do
+    session |> find(link("User settings"))
+
+    session
+    |> click(link("User settings"))
+    |> click(button("Sign out"))
+  end
+
   feature "client clicks link in booking proposal email", %{session: session, job: job} do
     session
     |> visit("/leads/#{job.id}")
     |> click(checkbox("Include questionnaire", selected: true))
     |> click(button("Send booking proposal"))
+    |> sign_out()
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
@@ -94,6 +103,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     session
     |> visit("/leads/#{job.id}")
     |> click(button("Send booking proposal"))
+    |> sign_out()
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")

@@ -1,4 +1,5 @@
-<div class="px-8 pb-8 max-w-md mx-auto">
+<fieldset <%= if @read_only, do: "disabled" %>>
+<div class="max-w-md px-8 pb-8 mx-auto">
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h2 class="title">Contract</h2>
 
@@ -58,7 +59,7 @@
       <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :submit, phx_target: @myself %>
           <%= labeled_input f, :signed_legal_name, label: "Type your full legal name", phx_debounce: "500", wrapper_class: "mt-4" %>
 
-          <p class="text-xs mt-8 mb-2">
+          <p class="mt-8 mb-2 text-xs">
             By typing your full legal name and clicking the submit button, you agree to sign this legally binding contract.
           </p>
           <%= submit "Sign", class: "w-full btn-primary", disabled: !@changeset.valid?, phx_disable_with: "Signing contract..." %>
@@ -66,3 +67,4 @@
     <% end %>
   </div>
 </div>
+</fieldset>

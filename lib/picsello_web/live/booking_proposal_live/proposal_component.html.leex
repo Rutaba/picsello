@@ -1,7 +1,7 @@
+<fieldset <%= if @read_only, do: "disabled" %>>
 <div class="max-w-md px-8 pb-8 mx-auto">
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h1 class="title">Proposal</h1>
-
 
   <dl>
     <dt class="inline-block pt-4 font-semibold">Proposal #:</dt>
@@ -63,3 +63,4 @@
     <% end %>
   </div>
 </div>
+</fieldset>

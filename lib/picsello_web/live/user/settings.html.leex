@@ -28,4 +28,11 @@
       <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
     </div>
   </form>
+
+
+  <%= form_for :sign_out, Routes.user_session_path(@socket, :delete), method: :delete, phx_trigger_action: @sign_out, phx_submit: :sign_out %>
+    <div class="mt-5 text-center">
+       <%= submit "Sign out", class: "btn-primary" %>
+    </div>
+  </form>
 </div>
