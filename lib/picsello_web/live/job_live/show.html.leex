@@ -54,7 +54,7 @@
 
     <h2 class="mt-4 text-xs font-bold uppercase">Booking Details</h2>
 
-    <%= if !@proposal do %>
+    <%= unless @proposal do %>
       <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
 
       <label class="flex mt-4">
@@ -73,8 +73,8 @@
 
       <% shoots_completed = @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
       <% send_proposal_enabled = @stripe_status == :charges_enabled && shoots_completed %>
-      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= if !send_proposal_enabled, do: "disabled" %>>Send booking proposal</button>
-      <%= if !shoots_completed do %>
+      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= unless send_proposal_enabled, do: "disabled" %>>Send booking proposal</button>
+      <%= unless shoots_completed do %>
         <em class="block pt-2 text-xs text-center">add shoot details first</em>
       <% end %>
     <% else %>
@@ -103,7 +103,7 @@
   <%= if @live_action == :jobs do %>
     <hr class="mt-6 border-gray-500" >
     <p class="mt-6 text-sm font-semibold">If any updates are made after client has signed, an amendment will need to be reviewed and accepted by them.</p>
-    <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
+    <button class="w-full mt-6 btn-primary" disabled>Send booking update</button>
   <% end %>
 
 </div>
