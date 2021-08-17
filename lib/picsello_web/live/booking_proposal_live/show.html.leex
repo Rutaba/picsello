@@ -53,7 +53,7 @@
         class="w-full mt-6 btn-primary"
         phx-click="redirect-stripe"
         phx-disable-with="Redirecting to Stripe..."
-        <%= unless (@proposal.accepted_at && @proposal.signed_at && questionnaire_answered), do: "disabled" %>
+        <%= unless (@proposal.accepted_at && @proposal.signed_at && questionnaire_answered && !@read_only), do: "disabled" %>
       >
         Pay 50% deposit
       </button>
