@@ -7,21 +7,16 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @max_age 60 * 60 * 24 * 365 * 10
 
   @impl true
-  def mount(%{"token" => token}, session, socket) do
+  def mount(%{"token" => token} = params, session, socket) do
     socket
     |> assign_defaults(session)
     |> assign_proposal(token)
+    |> then(&maybe_confetti(Map.has_key?(params, "success")).(&1))
     |> ok()
   end
 
-  defp modal_assigns(
-         %{assigns: %{photographer: photographer, current_user: current_user} = assigns},
-         extra \\ []
-       ) do
-    assigns
-    |> Map.take([:job, :proposal, :organization] ++ extra)
-    |> Map.put(:read_only, photographer == current_user)
-  end
+  @impl true
+  def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("open-proposal", %{}, socket) do
@@ -59,12 +54,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       assigns: %{
         package: package,
         proposal: proposal,
-        job: job,
-        token: token
+        job: job
       }
     } = socket
-
-    redirect_url = Routes.booking_proposal_url(socket, :show, token)
 
     line_items = [
       %{
@@ -83,8 +75,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     ]
 
     case payments().checkout_link(proposal, line_items,
-           success_url: redirect_url,
-           cancel_url: redirect_url
+           success_url: stripe_redirect(socket, :url, success: true),
+           cancel_url: stripe_redirect(socket, :url)
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
@@ -102,6 +94,15 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @impl true
   def handle_info({:update, %{answer: answer}}, socket),
     do: socket |> assign(answer: answer) |> noreply()
+
+  @impl true
+  def handle_info(:confetti, socket) do
+    socket
+    |> open_modal(PicselloWeb.BookingProposalLive.ConfettiComponent, %{show_x: false})
+    # clear the success param
+    |> push_patch(to: stripe_redirect(socket, :path), replace: true)
+    |> noreply()
+  end
 
   defp assign_proposal(socket, token) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age) do
@@ -141,4 +142,24 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   defp payments, do: Application.get_env(:picsello, :payments)
+
+  defp stripe_redirect(%{assigns: %{token: token}} = socket, suffix, params \\ []),
+    do: apply(Routes, :"booking_proposal_#{suffix}", [socket, :show, token, params])
+
+  defp maybe_confetti(has_success_param),
+    do: fn %{assigns: %{proposal: proposal}} = socket ->
+      if connected?(socket) && BookingProposal.deposit_paid?(proposal) && has_success_param,
+        do: send(self(), :confetti)
+
+      socket
+    end
+
+  defp modal_assigns(
+         %{assigns: %{photographer: photographer, current_user: current_user} = assigns},
+         extra \\ []
+       ) do
+    assigns
+    |> Map.take([:job, :proposal, :organization] ++ extra)
+    |> Map.put(:read_only, photographer == current_user)
+  end
 end

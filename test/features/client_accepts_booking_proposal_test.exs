@@ -46,7 +46,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
 
-    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, _, _ ->
+    test_pid = self()
+
+    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, _, return_urls ->
+      send(test_pid, {:success_url, Keyword.get(return_urls, :success_url)})
+
       {:ok, "https://example.com/stripe-checkout"}
     end)
 
@@ -86,15 +90,26 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(button("Pay 50% deposit"))
     |> assert_url_contains("stripe-checkout")
     |> post("/stripe/connect-webhooks", "", [{"stripe-signature", "love, stripe"}])
-    |> visit(url)
-    |> assert_has(button("50% deposit paid"))
 
     assert_receive {:delivered_email, email}
 
-    assert %{"url" => url, "job" => "John Newborn", "client" => "John"} =
+    assert %{"url" => email_link, "job" => "John Newborn", "client" => "John"} =
              email |> email_substitutions()
 
-    assert String.ends_with?(url, "/jobs")
+    assert String.ends_with?(email_link, "/jobs")
+
+    assert_receive {:success_url, stripe_success_url}
+
+    session
+    |> visit(stripe_success_url)
+    |> assert_has(css("h1", text: "Thank you"))
+    |> click(button("Whoo hoo!"))
+    |> assert_has(button("50% deposit paid"))
+    # reload and the message is not displayed again
+    |> visit(stripe_success_url)
+    |> assert_has(css("h1", text: "Thank you"))
+    |> visit(session |> current_url())
+    |> assert_has(button("50% deposit paid"))
   end
 
   feature "client fills out booking proposal questionnaire", %{session: session, job: job} do
