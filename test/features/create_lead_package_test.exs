@@ -33,6 +33,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_value(text_field("Package price"), "$1,234.50")
     |> click(button("Cancel"))
     |> assert_has(link("Add shoot details", count: 2))
+    |> assert_has(link("Finish shoot details", count: 1))
   end
 
   feature "user selects previous package as template to job creation", %{
