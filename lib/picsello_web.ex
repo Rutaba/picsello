@@ -60,12 +60,8 @@ defmodule PicselloWeb do
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 
-      @impl true
-      def handle_info({:modal_pid, pid}, socket) do
-        socket |> assign(modal_pid: pid) |> noreply()
-      end
-
       unquote(view_helpers())
+      unquote(modal_helpers())
     end
   end
 
@@ -76,12 +72,8 @@ defmodule PicselloWeb do
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 
-      @impl true
-      def handle_info({:modal_pid, pid}, socket) do
-        socket |> assign(modal_pid: pid) |> noreply()
-      end
-
       unquote(view_helpers())
+      unquote(modal_helpers())
     end
   end
 
@@ -129,6 +121,26 @@ defmodule PicselloWeb do
       import PicselloWeb.FormHelpers
       import PicselloWeb.Gettext
       alias PicselloWeb.Router.Helpers, as: Routes
+    end
+  end
+
+  defp modal_helpers do
+    quote do
+      @impl true
+      def handle_info(
+            {:modal_pid, pid},
+            %{assigns: %{queued_modal: {component, assigns}}} = socket
+          ) do
+        socket
+        |> assign(modal_pid: pid, queued_modal: nil)
+        |> open_modal(component, assigns)
+        |> noreply()
+      end
+
+      @impl true
+      def handle_info({:modal_pid, pid}, socket) do
+        socket |> assign(modal_pid: pid) |> noreply()
+      end
     end
   end
 
