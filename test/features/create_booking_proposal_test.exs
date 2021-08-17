@@ -1,6 +1,6 @@
 defmodule Picsello.CreateBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{BookingProposal, Repo, Organization}
+  alias Picsello.{Questionnaire.Answer, BookingProposal, Repo, Organization}
 
   setup :authenticated
 
@@ -53,7 +53,7 @@ defmodule Picsello.CreateBookingProposalTest do
 
     assert "/proposals/" <> token = path
 
-    last_proposal_id = BookingProposal.last_for_job(job.id).id
+    %{id: last_proposal_id} = proposal = BookingProposal.last_for_job(job.id)
 
     assert {:ok, ^last_proposal_id} =
              Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 1000)
@@ -75,7 +75,36 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(button("Questionnaire"))
     |> all(css("input, textarea, select"))
     |> Enum.reduce(session, fn el, session -> assert_disabled(session, el) end)
+
+    # payment is disabled for photograper even if client completed other steps
+    [:accept, :sign, :questionnaire]
+    |> Enum.reduce(proposal, &complete_proposal(&2, &1))
+
+    session
+    |> visit(current_path(session))
+    |> assert_has(button("Proposal", text: "DONE"))
+    |> assert_has(button("Contract", text: "DONE"))
+    |> assert_has(button("Questionnaire", text: "DONE"))
+    |> assert_disabled(button("Pay 50% deposit"))
   end
+
+  defp complete_proposal(proposal, :accept),
+    do: proposal |> BookingProposal.accept_changeset() |> Repo.update!()
+
+  defp complete_proposal(proposal, :sign),
+    do:
+      proposal
+      |> BookingProposal.sign_changeset(%{"signed_legal_name" => "Elizabeth"})
+      |> Repo.update!()
+
+  defp complete_proposal(%{id: id, questionnaire_id: questionnaire_id}, :questionnaire),
+    do:
+      Answer.changeset(%Answer{}, %{
+        proposal_id: id,
+        questionnaire_id: questionnaire_id,
+        answers: []
+      })
+      |> Repo.insert!()
 
   def assert_disabled(session, %Element{} = el) do
     disabled = session |> all(css("*:disabled"))

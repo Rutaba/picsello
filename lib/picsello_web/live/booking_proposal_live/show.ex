@@ -104,7 +104,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> noreply()
   end
 
-  defp assign_proposal(socket, token) do
+  defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age) do
       {:ok, proposal_id} ->
         proposal =
@@ -130,6 +130,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
           package: package,
           photographer: photographer,
           proposal: proposal,
+          read_only: photographer == current_user,
           shoots: shoots,
           token: token
         )
@@ -154,12 +155,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
     end
 
-  defp modal_assigns(
-         %{assigns: %{photographer: photographer, current_user: current_user} = assigns},
-         extra \\ []
-       ) do
-    assigns
-    |> Map.take([:job, :proposal, :organization] ++ extra)
-    |> Map.put(:read_only, photographer == current_user)
-  end
+  defp modal_assigns(%{assigns: assigns}, extra \\ []),
+    do:
+      assigns
+      |> Map.take([:job, :proposal, :organization, :read_only] ++ extra)
 end
