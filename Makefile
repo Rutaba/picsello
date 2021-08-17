@@ -50,4 +50,4 @@ update-mix: ## Update mix packages.
 	mix deps.update --all
 
 stripe-connect-listen:
-	stripe listen --forward-to localhost:4000/stripe/connect-webhooks
+	stripe listen --log-level=debug --forward-to localhost:4000/stripe/connect-webhooks --latest
