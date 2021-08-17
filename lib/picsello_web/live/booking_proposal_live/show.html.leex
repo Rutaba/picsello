@@ -49,7 +49,12 @@
       <em class="block pt-2 text-xs text-center">Paid: <%= Calendar.strftime(@proposal.deposit_paid_at, "%b %d, %Y") %></em>
     <% else %>
       <% questionnaire_answered = if @proposal.questionnaire_id, do: @answer, else: true %>
-      <button class="w-full mt-6 btn-primary" phx-click="redirect-stripe" phx-disable-with="Redirecting to Stripe..." <%= if !@proposal.accepted_at || !@proposal.signed_at || !questionnaire_answered, do: "disabled" %>>
+      <button
+        class="w-full mt-6 btn-primary"
+        phx-click="redirect-stripe"
+        phx-disable-with="Redirecting to Stripe..."
+        <%= unless (@proposal.accepted_at && @proposal.signed_at && questionnaire_answered), do: "disabled" %>
+      >
         Pay 50% deposit
       </button>
       <em class="block pt-2 text-xs text-center">

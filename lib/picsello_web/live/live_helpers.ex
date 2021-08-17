@@ -13,7 +13,9 @@ defmodule PicselloWeb.LiveHelpers do
       when is_pid(modal_pid) do
     send(
       modal_pid,
-      {:modal, :open, component, assigns |> Map.merge(Map.take(parent_assigns, [:live_action]))}
+      {:modal, :open, component,
+       assigns
+       |> Map.merge(Map.take(parent_assigns, [:live_action]))}
     )
 
     socket
