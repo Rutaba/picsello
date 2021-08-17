@@ -22,7 +22,8 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def mount(_params, session, socket) do
     if(connected?(socket), do: send(socket.root_pid, {:modal_pid, self()}))
-    socket |> assign_defaults(session) |> assign(modal: Modal.new()) |> ok()
+
+    socket |> assign_defaults(session) |> assign(modal: Modal.new(), show_x: true) |> ok()
   end
 
   @impl true
@@ -43,7 +44,10 @@ defmodule PicselloWeb.LiveModal do
     Process.send_after(self(), {:modal, :open}, 50)
 
     socket
-    |> assign(modal: modal |> Modal.open(component, assigns))
+    |> assign(
+      modal: modal |> Modal.open(component, assigns |> Map.drop([:show_x])),
+      show_x: Map.get(assigns, :show_x, true)
+    )
     |> noreply()
   end
 
@@ -63,11 +67,13 @@ defmodule PicselloWeb.LiveModal do
       <div role="dialog" id="modal-wraper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms" class="w-full h-full bg-white shadow z-20 fixed transition-top ease-in-out <%= %{open: "bottom-0 top-0", opening: "top-full", closed: "top-full hidden"}[@modal.state] %>">
         <%= if @modal.state != :closed do %>
           <div id="modal" class="h-full overflow-scroll" phx-hook="LockBodyScroll">
-            <div class="flex flex-col w-full pt-7">
-              <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="self-end mr-4 w-7">
-                <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
-              </button>
-            </div>
+            <%= if @show_x do %>
+              <div class="flex flex-col w-full pt-7">
+                <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="self-end mr-4 w-7">
+                  <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
+                </button>
+              </div>
+            <% end %>
             <%= live_component @modal.component, @modal.assigns |> Map.put(:id, @modal.component) do %>
               <div class="mt-40"></div>
 
