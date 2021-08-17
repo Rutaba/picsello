@@ -2,7 +2,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo, Organization}
 
-  setup :authenticated
+  setup %{sessions: [photographer_session | _]} do
+    user = insert(:user)
+    photographer_session |> sign_in(user)
+    [user: user]
+  end
 
   setup %{user: user} do
     Mox.stub(Picsello.MockPayments, :status, fn _ -> {:ok, :charges_enabled} end)
@@ -28,20 +32,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     [job: job]
   end
 
-  defp sign_out(session) do
-    session |> find(link("User settings"))
-
-    session
-    |> click(link("User settings"))
-    |> click(button("Sign out"))
-  end
-
-  feature "client clicks link in booking proposal email", %{session: session, job: job} do
-    session
+  @sessions 2
+  feature "client clicks link in booking proposal email", %{
+    sessions: [photographer_session, client_session],
+    job: job
+  } do
+    photographer_session
     |> visit("/leads/#{job.id}")
     |> click(checkbox("Include questionnaire", selected: true))
     |> click(button("Send booking proposal"))
-    |> sign_out()
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
@@ -64,7 +63,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
        }}
     end)
 
-    session
+    client_session
     |> visit(url)
     |> assert_has(css("h2", text: Job.name(job)))
     |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
@@ -100,7 +99,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     assert_receive {:success_url, stripe_success_url}
 
-    session
+    client_session
     |> visit(stripe_success_url)
     |> assert_has(css("h1", text: "Thank you"))
     |> click(button("Whoo hoo!"))
@@ -108,22 +107,25 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     # reload and the message is not displayed again
     |> visit(stripe_success_url)
     |> assert_has(css("h1", text: "Thank you"))
-    |> visit(session |> current_url())
+    |> visit(client_session |> current_url())
     |> assert_has(button("50% deposit paid"))
   end
 
-  feature "client fills out booking proposal questionnaire", %{session: session, job: job} do
+  @sessions 2
+  feature "client fills out booking proposal questionnaire", %{
+    sessions: [photographer_session, client_session],
+    job: job
+  } do
     insert(:questionnaire)
 
-    session
+    photographer_session
     |> visit("/leads/#{job.id}")
     |> click(button("Send booking proposal"))
-    |> sign_out()
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
 
-    session
+    client_session
     |> visit(url)
     |> click(button("Proposal TO-DO"))
     |> click(button("Accept proposal"))
