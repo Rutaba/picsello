@@ -1,4 +1,4 @@
-defmodule PicselloWeb.JobLive.EditComponent do
+defmodule PicselloWeb.LeadLive.EditComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component

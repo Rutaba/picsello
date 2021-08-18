@@ -5,7 +5,7 @@ defmodule Picsello.JobIndexTest do
   setup do
     user = insert(:user)
     lead = insert(:job, %{user: user, type: "wedding"})
-    job = insert(:job, %{user: user, type: "family"})
+    job = insert(:job, %{user: user, type: "family", package: %{}})
     insert(:proposal, %{job: job, deposit_paid_at: DateTime.utc_now()})
 
     [user: user, job: job, lead: lead]

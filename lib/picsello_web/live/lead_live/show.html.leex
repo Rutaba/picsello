@@ -1,0 +1,116 @@
+<div class="px-8 pt-2">
+  <div class="text-xs text-gray-400">
+    <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
+      <%= action_name(@live_action, :plural) %>
+    <% end %>
+    &gt;
+    <%= Job.name @job %>
+  </div>
+
+  <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
+
+  <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
+
+  <%= cond do %>
+    <%= @proposal -> %>
+      <p class="mt-4 text-blue-primary">Status:</p>
+      <p class="text-blue-primary">
+        - Booking proposal
+        <%= case BookingProposal.status(@proposal) do %>
+          <% :sent -> %> sent <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
+          <% :accepted -> %> accepted <%= Calendar.strftime(@proposal.accepted_at, "%m/%d/%y") %>
+          <% :signed -> %> signed <%= Calendar.strftime(@proposal.signed_at, "%m/%d/%y") %>
+          <% :deposit_paid -> %> deposit paid <%= Calendar.strftime(@proposal.deposit_paid_at, "%m/%d/%y") %>
+        <% end %>
+      </p>
+
+    <% @package -> %>
+      <p class="mt-4">
+        You haven't sent a proposal yet.
+        <br>
+        <%= if shoots_completed do %>
+          <a class="link" href="#booking-details">Finish booking details</a>
+        <% else %>
+          <a class="link" href="#shoot-details">Finish shoot details</a>
+        <% end %>
+      </p>
+
+    <% true -> %>
+  <% end %>
+
+  <h2 class="mt-5 text-xs font-bold uppercase"><%= action_name(@live_action) %> Details</h2>
+  <button title="Edit <%= action_name(@live_action) %>" type="button" phx-click="edit-job" class="mt-2 btn-row">
+    <%= Job.name @job %>
+    <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+  </button>
+
+  <%= cond do %>
+    <%= @package -> %>
+    <h2 class="mt-4 text-xs font-bold uppercase">Package Details</h2>
+
+    <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
+      <%= @package.name %>
+      <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+    </button>
+
+    <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>
+
+    <%= for {shoot_number, shoot} <- @shoots do %>
+      <%= if shoot do %>
+        <button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" phx-value-shoot-id="<%= shoot.id %>" class="mb-3 btn-row">
+          <%= shoot.name %>
+          <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+        </button>
+      <% else %>
+        <div class="flex flex-col items-center p-6 mb-3 bg-gray-100 rounded-2xl">
+          <div>Shoot <%= shoot_number %></div>
+          <a href="#" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" class="link">Add shoot details</a>
+        </div>
+      <% end %>
+    <% end %>
+
+    <h2 class="mt-4 text-xs font-bold uppercase" id="booking-details">Booking Details</h2>
+
+    <%= cond do %>
+      <%= @proposal -> %>
+        <p class="mt-4 text-sm font-bold">
+          The following details were included in the booking proposal sent on <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
+        </p>
+        <ul class="pt-4 ml-8 list-disc">
+          <li>Proposal</li>
+          <li>Contract (standard)</li>
+          <%= if @proposal.questionnaire_id do %>
+            <li>Questionaire</li>
+          <% end %>
+        </ul>
+        <button class="w-full mt-6 btn-primary" phx-click="open-proposal">View booking proposal</button>
+        <hr class="mt-8 border-gray-500" >
+        <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
+      <% is_nil(@proposal) -> %>
+        <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
+
+        <label class="flex mt-4">
+          <input type="checkbox" class="mt-1 checkbox" phx-click="toggle-questionnaire" <%= if @include_questionnaire, do: "checked" %> />
+          <div class="pl-2">
+            <h3 class="input-label">Include questionnaire</h3>
+          </div>
+        </label>
+
+        <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(@live_action, @job.id)} %>
+
+        <label class="block mt-8 input-label" for="contract_type">Contract type</label>
+        <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
+
+        <hr class="mt-8 border-gray-500"/>
+
+        <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= unless @stripe_status == :charges_enabled && shoots_completed, do: "disabled" %>>Send booking proposal</button>
+        <%= unless shoots_completed do %>
+          <em class="block pt-2 text-xs text-center">add shoot details first</em>
+        <% end %>
+    <% end %>
+  <% is_nil(@package) -> %>
+    <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
+      Add a package
+    </button>
+  <% end %>
+</div>
