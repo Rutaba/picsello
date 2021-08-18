@@ -2,6 +2,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view_client
   alias Picsello.{Repo, BookingProposal, Job}
+
+  alias PicselloWeb.BookingProposalLive.{
+    ProposalComponent,
+    QuestionnaireComponent,
+    ContractComponent,
+    ConfettiComponent
+  }
+
   require Logger
 
   @max_age 60 * 60 * 24 * 365 * 10
@@ -22,7 +30,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event("open-proposal", %{}, socket) do
     socket
     |> open_modal(
-      PicselloWeb.BookingProposalLive.ProposalComponent,
+      ProposalComponent,
       modal_assigns(socket, [:client, :shoots, :package, :photographer])
     )
     |> noreply()
@@ -32,7 +40,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event("open-contract", %{}, socket) do
     socket
     |> open_modal(
-      PicselloWeb.BookingProposalLive.ContractComponent,
+      ContractComponent,
       modal_assigns(socket)
     )
     |> noreply()
@@ -42,7 +50,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event("open-questionnaire", %{}, socket) do
     socket
     |> open_modal(
-      PicselloWeb.BookingProposalLive.QuestionnaireComponent,
+      QuestionnaireComponent,
       modal_assigns(socket)
     )
     |> noreply()
@@ -98,7 +106,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @impl true
   def handle_info(:confetti, socket) do
     socket
-    |> open_modal(PicselloWeb.BookingProposalLive.ConfettiComponent, %{show_x: false})
+    |> ConfettiComponent.open_modal()
     # clear the success param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()

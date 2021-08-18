@@ -129,18 +129,20 @@ defmodule PicselloWeb do
       @impl true
       def handle_info(
             {:modal_pid, pid},
-            %{assigns: %{queued_modal: {component, assigns}}} = socket
-          ) do
-        socket
-        |> assign(modal_pid: pid, queued_modal: nil)
-        |> open_modal(component, assigns)
-        |> noreply()
-      end
+            %{assigns: %{queued_modal: {component, config}}} = socket
+          ),
+          do:
+            socket
+            |> assign(modal_pid: pid, queued_modal: nil)
+            |> open_modal(component, config)
+            |> noreply()
 
       @impl true
-      def handle_info({:modal_pid, pid}, socket) do
-        socket |> assign(modal_pid: pid) |> noreply()
-      end
+      def handle_info({:modal_pid, pid}, socket),
+        do:
+          socket
+          |> assign(modal_pid: pid)
+          |> noreply()
     end
   end
 

@@ -3,11 +3,17 @@ defmodule PicselloWeb.BookingProposalLive.ConfettiComponent do
 
   use PicselloWeb, :live_component
 
-  @impl true
-  def update(assigns, socket) do
-    socket
-    |> assign(assigns)
-    |> ok()
+  defmodule WhooHooButton do
+    @moduledoc "custom close button"
+    use PicselloWeb, :live_component
+
+    def render(assigns) do
+      ~L"""
+        <button class="w-full btn-primary" type="button" phx-click="modal" phx-value-action="close">
+          Whoo hoo!
+        </button>
+      """
+    end
   end
 
   @impl true
@@ -17,15 +23,21 @@ defmodule PicselloWeb.BookingProposalLive.ConfettiComponent do
       <%= icon_tag(@socket, "confetti", class: "h-16") %>
       <h1 class="text-3xl font-semibold">Thank you! Your session is now booked.</h1>
       <p class="pt-4">We are so excited to be working with you, thank you for your business. See you soon.</p>
-      <div class="flex justify-center pt-12">
-        <button phx-click="accept" phx-target="<%= @myself %>" class="w-full btn-primary">
-           Whoo hoo!
-        </button>
-      </div>
+
+      <%= render_block @inner_block %>
     </div>
     """
   end
 
   @impl true
   def handle_event("accept", %{}, socket), do: socket |> close_modal() |> noreply()
+
+  def open_modal(socket) do
+    socket
+    |> open_modal(__MODULE__, %{
+      show_x: false,
+      assigns: %{},
+      buttons: [WhooHooButton]
+    })
+  end
 end
