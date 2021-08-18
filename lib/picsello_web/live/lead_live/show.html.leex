@@ -1,13 +1,5 @@
 <div class="px-8 pt-2">
-  <div class="text-xs text-gray-400">
-    <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
-      <%= action_name(@live_action, :plural) %>
-    <% end %>
-    &gt;
-    <%= Job.name @job %>
-  </div>
-
-  <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
+  <%= live_component PicselloWeb.JobLive.Shared.Components.Header, job: @job, live_action: @live_action %>
 
   <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
 
@@ -38,11 +30,7 @@
     <% true -> %>
   <% end %>
 
-  <h2 class="mt-5 text-xs font-bold uppercase"><%= action_name(@live_action) %> Details</h2>
-  <button title="Edit <%= action_name(@live_action) %>" type="button" phx-click="edit-job" class="mt-2 btn-row">
-    <%= Job.name @job %>
-    <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
-  </button>
+  <%= live_component PicselloWeb.JobLive.Shared.Components.Details, job: @job, live_action: @live_action %>
 
   <%= cond do %>
     <%= @package -> %>
@@ -54,37 +42,13 @@
     </button>
 
     <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>
-
-    <%= for {shoot_number, shoot} <- @shoots do %>
-      <%= if shoot do %>
-        <button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" phx-value-shoot-id="<%= shoot.id %>" class="mb-3 btn-row">
-          <%= shoot.name %>
-          <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
-        </button>
-      <% else %>
-        <div class="flex flex-col items-center p-6 mb-3 bg-gray-100 rounded-2xl">
-          <div>Shoot <%= shoot_number %></div>
-          <a href="#" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" class="link">Add shoot details</a>
-        </div>
-      <% end %>
-    <% end %>
+    <%= live_component PicselloWeb.JobLive.Shared.Components.ShootDetails, shoots: @shoots %>
 
     <h2 class="mt-4 text-xs font-bold uppercase" id="booking-details">Booking Details</h2>
 
     <%= cond do %>
       <%= @proposal -> %>
-        <p class="mt-4 text-sm font-bold">
-          The following details were included in the booking proposal sent on <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
-        </p>
-        <ul class="pt-4 ml-8 list-disc">
-          <li>Proposal</li>
-          <li>Contract (standard)</li>
-          <%= if @proposal.questionnaire_id do %>
-            <li>Questionaire</li>
-          <% end %>
-        </ul>
-        <button class="w-full mt-6 btn-primary" phx-click="open-proposal">View booking proposal</button>
-        <hr class="mt-8 border-gray-500" >
+        <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal %>
         <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
       <% is_nil(@proposal) -> %>
         <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
