@@ -1,6 +1,6 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 <main role="main" class="pb-10">
-  <header class="flex flex-row p-4 border border-b-1" >
+  <header class="flex flex-row px-6 pb-2 border pt-9 border-b-1" >
     <div class="flex-1">
     </div>
     <div class="flex flex-col items-center justify-center flex-1">
@@ -11,7 +11,7 @@
     <div class="flex flex-row justify-end flex-1">
       <%= if @current_user do %>
         <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "User settings" do %>
-          <div class="flex flex-col items-center justify-center text-white bg-black rounded-full h-9 w-9" ><%= User.initials @current_user %></div>
+          <div class="flex flex-col items-center justify-center text-sm text-black bg-gray-100 rounded-full w-7 h-7 pb-full" ><%= User.initials @current_user %></div>
         <% end %>
       <% end %>
     </div>
