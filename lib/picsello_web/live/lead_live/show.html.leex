@@ -1,4 +1,4 @@
-<div class="px-8 pt-2">
+<div class="px-6 pt-2 pb-8 bg-gray-100">
   <%= live_component PicselloWeb.JobLive.Shared.Components.Header, job: @job, live_action: @live_action %>
 
   <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
@@ -17,7 +17,7 @@
       </p>
 
     <% @package -> %>
-      <p class="mt-4">
+      <p class="mt-1">
         You haven't sent a proposal yet.
         <br>
         <%= if shoots_completed do %>
@@ -29,7 +29,9 @@
 
     <% true -> %>
   <% end %>
+</div>
 
+<div class="px-6">
   <%= live_component PicselloWeb.JobLive.Shared.Components.Details, job: @job, live_action: @live_action %>
 
   <%= cond do %>

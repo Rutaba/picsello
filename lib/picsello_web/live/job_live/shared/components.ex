@@ -11,11 +11,13 @@ defmodule PicselloWeb.JobLive.Shared.Components do
           <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
             <%= action_name(@live_action, :plural) %>
           <% end %>
-          &gt;
-          <%= Job.name @job %>
+          <%= icon_tag(@socket, "forth", class: "inline-block stroke-current h-2 w-2") %>
+          <span class="font-semibold"><%= Job.name @job %></span>
         </div>
 
-        <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
+        <hr class="mt-1 border-gray-200"/>
+
+        <h1 class="mt-5 text-2xl font-bold"><%= Job.name @job %></h1>
       """
     end
   end
