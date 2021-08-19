@@ -18,7 +18,7 @@ defmodule Picsello.ManageShootTest do
   feature "user adds shoot details and updates it", %{session: session, job: job} do
     session
     |> visit("/leads/#{job.id}")
-    |> click(link("Add shoot details", count: 2, at: 1))
+    |> click(button("Add shoot details", count: 2, at: 1))
     |> fill_in(text_field("Shoot name"), with: " ")
     |> assert_has(css("label", text: "Shoot name can't be blank"))
     |> fill_in(text_field("Shoot name"), with: "chute")

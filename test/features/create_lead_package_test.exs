@@ -25,14 +25,14 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(css("option", text: "2"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(link("Add shoot details", count: 2))
+    |> assert_has(button("Add shoot details", count: 2))
     |> click(button("Edit package"))
     |> assert_has(option("Wedding Deluxe"))
     |> assert_value(text_field("Package description"), "My greatest wedding package")
     |> assert_value(text_field("Package name"), "Wedding Deluxe")
     |> assert_value(text_field("Package price"), "$1,234.50")
     |> click(button("Cancel"))
-    |> assert_has(link("Add shoot details", count: 2))
+    |> assert_has(button("Add shoot details", count: 2))
     |> assert_has(link("Finish shoot details", count: 1))
   end
 

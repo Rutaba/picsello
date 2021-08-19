@@ -29,10 +29,14 @@ defmodule PicselloWeb.JobLive.Shared.Components do
 
     def render(assigns) do
       ~L"""
-        <h2 class="mt-5 text-xs font-bold uppercase"><%= action_name(@live_action) %> Details</h2>
-        <button title="Edit <%= action_name(@live_action) %>" type="button" phx-click="edit-job" class="mt-2 btn-row">
+        <h2 class="mt-6 text-xs font-semibold tracking-widest text-gray-400 uppercase"><%= action_name(@live_action) %> Details</h2>
+        <button
+          title="Edit <%= action_name(@live_action) %>"
+          type="button"
+          phx-click="edit-job"
+          class="mt-2 btn-row">
           <%= Job.name @job %>
-          <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+          <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
         </button>
       """
     end
@@ -44,18 +48,30 @@ defmodule PicselloWeb.JobLive.Shared.Components do
 
     def render(assigns) do
       ~L"""
-
         <%= for {shoot_number, shoot} <- @shoots do %>
           <%= if shoot do %>
-            <button title="Edit shoot" type="button" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" phx-value-shoot-id="<%= shoot.id %>" class="mb-3 btn-row">
+            <button
+              class="mt-3 btn-row"
+              phx-click="edit-shoot-details"
+              phx-value-shoot-id="<%= shoot.id %>"
+              phx-value-shoot-number="<%= shoot_number %>"
+              title="Edit shoot"
+              type="button"
+            >
               <%= shoot.name %>
-              <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
             </button>
           <% else %>
-            <div class="flex flex-col items-center p-6 mb-3 bg-gray-100 rounded-2xl">
-              <div>Shoot <%= shoot_number %></div>
-              <a href="#" phx-click="edit-shoot-details" phx-value-shoot-number="<%= shoot_number %>" class="link">Add shoot details</a>
-            </div>
+            <button
+              class="mt-3 btn-row"
+              phx-click="edit-shoot-details"
+              phx-value-shoot-number="<%= shoot_number %>"
+              title="Add shoot details"
+              type="button"
+            >
+              Shoot <%= shoot_number %> (add details)
+              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+            </button>
           <% end %>
         <% end %>
       """

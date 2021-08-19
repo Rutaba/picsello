@@ -32,7 +32,7 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> visit("/leads/#{job.id}")
     |> assert_has(css("button:disabled", text: "Send booking proposal"))
-    |> click(link("Add shoot details"))
+    |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot name"), with: "chute")
     |> fill_in(text_field("Shoot date"), with: "04052040\t1200P")
     |> click(option("1.5 hrs"))

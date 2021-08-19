@@ -39,7 +39,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   } do
     photographer_session
     |> visit("/leads/#{job.id}")
-    |> click(checkbox("Include questionnaire", selected: true))
+    |> click(checkbox("Questionnaire included", selected: true))
     |> click(button("Send booking proposal"))
 
     assert_receive {:delivered_email, email}

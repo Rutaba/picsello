@@ -1,4 +1,6 @@
-const defaultTheme = require('tailwindcss/defaultTheme')
+const defaultTheme = require('tailwindcss/defaultTheme');
+const plugin = require('tailwindcss/plugin');
+const svgToDataUri = require('mini-svg-data-uri');
 
 module.exports = {
   mode: 'jit',
@@ -36,5 +38,18 @@ module.exports = {
     require("@tailwindcss/forms")({
       strategy: 'class',
     }),
+    plugin(({addBase}) => {
+      addBase({
+        '.form-checkbox:checked':
+        {
+          backgroundSize: '65% 65%',
+          backgroundImage: `url("${svgToDataUri(
+`<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 8.22222L6.15789 14L15 1" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+          )}")`,
+        }
+      })
+    })
   ],
 }

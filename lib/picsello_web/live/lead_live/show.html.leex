@@ -31,49 +31,48 @@
   <% end %>
 </div>
 
-<div class="px-6">
+<div class="px-6 pb-8">
   <%= live_component PicselloWeb.JobLive.Shared.Components.Details, job: @job, live_action: @live_action %>
 
   <%= cond do %>
     <%= @package -> %>
-    <h2 class="mt-4 text-xs font-bold uppercase">Package Details</h2>
+    <h2 class="mt-6 text-xs font-semibold tracking-widest text-gray-400 uppercase">Package Details</h2>
 
     <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
       <%= @package.name %>
-      <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+      <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
     </button>
 
-    <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>
+    <h2 class="mt-6 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
     <%= live_component PicselloWeb.JobLive.Shared.Components.ShootDetails, shoots: @shoots %>
+</div>
 
-    <h2 class="mt-4 text-xs font-bold uppercase" id="booking-details">Booking Details</h2>
+<div class="px-6 pt-2 pb-8 bg-gray-100">
+  <h2 class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Booking Details</h2>
+  <%= cond do %>
+    <%= @proposal -> %>
+      <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal %>
+      <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
+    <% is_nil(@proposal) -> %>
+      <p class="mt-4 text-sm">Add additional details to be included with the booking proposal.</p>
 
-    <%= cond do %>
-      <%= @proposal -> %>
-        <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal %>
-        <button class="w-full mt-6 btn-primary" disabled>Send booking proposal</button>
-      <% is_nil(@proposal) -> %>
-        <p class="mt-4 text-sm font-bold">Add additional details to be included with the booking proposal</p>
+      <label class="flex mt-4">
+        <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" <%= if @include_questionnaire, do: "checked" %> />
+        <div class="pl-3">
+          <h3 class="input-label">Questionnaire included</h3>
+        </div>
+      </label>
 
-        <label class="flex mt-4">
-          <input type="checkbox" class="mt-1 checkbox" phx-click="toggle-questionnaire" <%= if @include_questionnaire, do: "checked" %> />
-          <div class="pl-2">
-            <h3 class="input-label">Include questionnaire</h3>
-          </div>
-        </label>
+      <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(@live_action, @job.id)} %>
 
-        <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(@live_action, @job.id)} %>
+      <label class="block mt-8 input-label" for="contract_type">Contract type</label>
+      <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
 
-        <label class="block mt-8 input-label" for="contract_type">Contract type</label>
-        <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
-
-        <hr class="mt-8 border-gray-500"/>
-
-        <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= unless @stripe_status == :charges_enabled && shoots_completed, do: "disabled" %>>Send booking proposal</button>
-        <%= unless shoots_completed do %>
-          <em class="block pt-2 text-xs text-center">add shoot details first</em>
-        <% end %>
-    <% end %>
+      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= unless @stripe_status == :charges_enabled && shoots_completed, do: "disabled" %>>Send booking proposal</button>
+      <%= unless shoots_completed do %>
+        <em class="block pt-2 text-xs text-center">add shoot details first</em>
+      <% end %>
+  <% end %>
   <% is_nil(@package) -> %>
     <button type="button" phx-click="add-package" class="w-full mt-8 text-center uppercase btn-primary">
       Add a package
