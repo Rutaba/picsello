@@ -5,9 +5,65 @@
 @import "./components/buttons.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
+@import "quill/dist/quill.core.css";
+@import "quill/dist/quill.snow.css";
 
 html {
-  @apply text-black bg-white
+  @apply text-black bg-white;
+}
+
+.ql-snow {
+  &.ql-toolbar button:hover {
+    @apply text-blue-dark-primary bg-blue-primary/10;
+
+    .ql-stroke {
+      @apply stroke-current;
+    }
+
+    .ql-fill {
+      @apply fill-current;
+    }
+  }
+
+  &.ql-toolbar button.ql-active {
+    @apply text-blue-dark-primary bg-blue-dark-primary/20;
+
+    .ql-stroke {
+      @apply stroke-current;
+    }
+
+    .ql-fill {
+      @apply fill-current;
+    }
+  }
+
+  .ql-stroke {
+    @apply stroke-current;
+  }
+
+  .ql-fill {
+    @apply fill-current;
+  }
+
+  a {
+    @apply text-blue-primary;
+  }
+
+  &.ql-container {
+    @apply border-gray-200 rounded-b-lg;
+  }
+
+  &.ql-toolbar {
+    @apply border-gray-200 rounded-t-lg;
+  }
+
+  .ql-tooltip {
+    @apply border-gray-200 rounded-lg;
+
+    &.ql-editing input[type=text]{
+      @apply text-input;
+    }
+  }
 }
 
 @layer components {
@@ -24,4 +80,5 @@ html {
     @apply px-2 py-1 font-bold text-white rounded;
     font-size: 0.5rem;
   }
+
 }

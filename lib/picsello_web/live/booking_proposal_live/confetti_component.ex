@@ -37,7 +37,7 @@ defmodule PicselloWeb.BookingProposalLive.ConfettiComponent do
     |> open_modal(__MODULE__, %{
       show_x: false,
       assigns: %{},
-      buttons: [WhooHooButton]
+      footer: WhooHooButton
     })
   end
 end

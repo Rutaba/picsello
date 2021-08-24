@@ -40,7 +40,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{job.id}")
     |> click(checkbox("Questionnaire included", selected: true))
-    |> click(button("Send booking proposal"))
+    |> click(button("Finish booking proposal"))
+    |> click(button("Send email"))
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
@@ -120,7 +121,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{job.id}")
-    |> click(button("Send booking proposal"))
+    |> click(button("Finish booking proposal"))
+    |> click(button("Send email"))
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")

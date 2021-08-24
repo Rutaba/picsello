@@ -116,7 +116,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age) do
       {:ok, proposal_id} ->
         proposal =
-          Repo.get!(BookingProposal, proposal_id)
+          BookingProposal
+          |> Repo.get!(proposal_id)
           |> Repo.preload([:answer, job: [:client, :shoots, package: [organization: :user]]])
 
         %{

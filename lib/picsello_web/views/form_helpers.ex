@@ -77,13 +77,13 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def labeled_input(form, field, opts \\ []) do
-    label_opts = [label: Keyword.get(opts, :label)]
+    label_opts = [label: Keyword.get(opts, :label), class: Keyword.get(opts, :label_class)]
 
     input_opts =
       [
         class: opts |> Keyword.get(:input_class) |> classes()
       ] ++
-        Keyword.drop(opts, [:wrapper_class, :input_class, :label])
+        Keyword.drop(opts, [:wrapper_class, :input_class, :label_class, :label])
 
     content_tag :div,
       class: classes([Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"]) do

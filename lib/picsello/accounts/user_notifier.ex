@@ -46,15 +46,19 @@ defmodule Picsello.Accounts.UserNotifier do
   @doc """
   Deliver booking proposal email.
   """
-  def deliver_booking_proposal(client, url) do
+  def deliver_booking_proposal(client, url, message) do
     %{organization: organization} = client |> Repo.preload(:organization)
 
     sendgrid_template(:booking_proposal_template,
       organization: organization.name,
       client: client.name,
-      url: url
+      url: url,
+      subject: message.subject,
+      body_html: message.body_html,
+      body_text: message.body_text
     )
     |> to(client.email)
+    |> cc(message.cc_email)
     |> from("noreply@picsello.com")
     |> deliver_later()
   end

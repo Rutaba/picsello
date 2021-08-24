@@ -23,6 +23,7 @@ import "@fontsource/be-vietnam/500.css"
 import "@fontsource/be-vietnam/600.css"
 import "@fontsource/be-vietnam/700.css"
 import IMask from "imask"
+import Quill from "quill"
 
 let Hooks = {}
 
@@ -50,6 +51,37 @@ Hooks.LockBodyScroll = {
 Hooks.Phone = {
   mounted() {
     IMask(this.el, { mask: '(000) 000-0000'});
+  }
+}
+
+Hooks.Quill = {
+  mounted() {
+    const editorEl = this.el.querySelector("#editor")
+    const textInput = this.el.querySelector("input[name*=text]")
+    const htmlInput = this.el.querySelector("input[name*=html]")
+    const quill = new Quill(editorEl, {
+      modules: { toolbar: '#toolbar' },
+      placeholder: 'Compose message...',
+      theme: 'snow'
+    });
+    quill.on("text-change", () => {
+      htmlInput.value = quill.root.innerHTML;
+      textInput.value = quill.getText();
+      textInput.dispatchEvent(new Event("input", {bubbles: true}))
+    })
+    quill.root.innerHTML = htmlInput.value
+  }
+}
+
+Hooks.ClearInput = {
+  mounted() {
+    const { inputName } = this.el.dataset;
+    const input = this.el.parentElement.querySelector(`input[name*=${inputName}]`)
+
+    this.el.addEventListener("click", () => {
+      input.value = null;
+      input.dispatchEvent(new Event("input", {bubbles: true}));
+    });
   }
 }
 

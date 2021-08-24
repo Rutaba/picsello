@@ -43,12 +43,12 @@
       <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
     </button>
 
-    <h2 class="mt-6 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
+    <h2 id="shoot-details" class="mt-6 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
     <%= live_component PicselloWeb.JobLive.Shared.Components.ShootDetails, shoots: @shoots %>
 </div>
 
 <div class="px-6 pt-2 pb-8 bg-gray-100">
-  <h2 class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Booking Details</h2>
+  <h2 id="booking-details" class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Booking Details</h2>
   <%= cond do %>
     <%= @proposal -> %>
       <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal %>
@@ -68,7 +68,7 @@
       <label class="block mt-8 input-label" for="contract_type">Contract type</label>
       <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>
 
-      <button class="w-full mt-6 btn-primary" phx-click="send-proposal" <%= unless @stripe_status == :charges_enabled && shoots_completed, do: "disabled" %>>Send booking proposal</button>
+      <button title="finish proposal" class="w-full mt-6 btn-primary" phx-click="finish-proposal" <%= unless @stripe_status == :charges_enabled && shoots_completed, do: "disabled" %>>Finish booking proposal</button>
       <%= unless shoots_completed do %>
         <em class="block pt-2 text-xs text-center">add shoot details first</em>
       <% end %>

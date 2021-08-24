@@ -25,32 +25,11 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_event(
-        "send-proposal",
+        "finish-proposal",
         %{},
-        %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
-      ) do
-    questionnaire_id =
-      if include_questionnaire, do: Questionnaire.for_job(job) |> Repo.one() |> Map.get(:id)
-
-    case BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
-         |> Repo.insert() do
-      {:ok, proposal} ->
-        token = proposal_token(proposal)
-        url = Routes.booking_proposal_url(socket, :show, token)
-        %{client: client} = job |> Repo.preload(:client)
-        UserNotifier.deliver_booking_proposal(client, url)
-
         socket
-        |> put_flash(:info, "#{Job.name(job)} booking proposal was sent.")
-        |> push_redirect(to: Routes.job_path(socket, :leads))
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Failed to create booking proposal. Please try again.")
-        |> noreply()
-    end
-  end
+      ),
+      do: socket |> PicselloWeb.LeadLive.ProposalMessageComponent.open_modal() |> noreply()
 
   @impl true
   def handle_event(
@@ -70,6 +49,34 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def handle_info({:stripe_status, status}, socket),
     do: socket |> assign(:stripe_status, status) |> noreply()
+
+  @impl true
+  def handle_info(
+        {:message_composed, message},
+        %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
+      ) do
+    questionnaire_id =
+      if include_questionnaire, do: Questionnaire.for_job(job) |> Repo.one() |> Map.get(:id)
+
+    case BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
+         |> Repo.insert() do
+      {:ok, proposal} ->
+        token = proposal_token(proposal)
+        url = Routes.booking_proposal_url(socket, :show, token)
+        %{client: client} = job |> Repo.preload(:client)
+        UserNotifier.deliver_booking_proposal(client, url, message)
+
+        socket
+        |> put_flash(:info, "#{Job.name(job)} booking proposal was sent.")
+        |> push_redirect(to: Routes.job_path(socket, :leads))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to create booking proposal. Please try again.")
+        |> noreply()
+    end
+  end
 
   @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared

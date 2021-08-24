@@ -1,28 +1,21 @@
 defmodule PicselloWeb.LiveModal do
   @moduledoc false
 
-  defmodule CancelButton do
-    @moduledoc "default cancel button"
+  defmodule FooterComponent do
+    @moduledoc "default footer"
     use PicselloWeb, :live_component
 
     def render(assigns) do
       ~L"""
-        <button class="w-32 mx-1 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
-          Cancel
-        </button>
-      """
-    end
-  end
-
-  defmodule SaveButton do
-    @moduledoc "default submit button"
-    use PicselloWeb, :live_component
-
-    def render(assigns) do
-      ~L"""
+      <div class="text-center">
         <button class="w-32 mx-1 btn-primary" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
-          Save
-        </button>
+            Save
+          </button>
+
+          <button class="w-32 mx-1 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
+            Cancel
+          </button>
+        </div>
       """
     end
   end
@@ -30,14 +23,14 @@ defmodule PicselloWeb.LiveModal do
   defmodule Modal do
     @moduledoc "stuff for modals"
 
-    @default_buttons [CancelButton, SaveButton]
+    @default_footer FooterComponent
 
     defstruct state: :closed,
               component: nil,
               assigns: %{},
               transition_ms: 0,
               show_x: true,
-              buttons: @default_buttons
+              footer: @default_footer
 
     def new() do
       transition_ms = Application.get_env(:picsello, :modal_transition_ms)
@@ -51,7 +44,7 @@ defmodule PicselloWeb.LiveModal do
           state: :opening,
           assigns: config |> Map.get(:assigns, %{}),
           show_x: config |> Map.get(:show_x, true),
-          buttons: config |> Map.get(:buttons, @default_buttons)
+          footer: config |> Map.get(:footer, @default_footer)
       }
   end
 
@@ -114,10 +107,8 @@ defmodule PicselloWeb.LiveModal do
             <%= live_component @modal.component, @modal.assigns |> Map.put(:id, @modal.component) do %>
               <div class="mt-40"></div>
 
-              <div id="modal-buttons" class="left-0 right-0 px-10 text-center bg-white py-7 shadow <%= if(@modal.state == :open, do: "fixed bottom-0", else: "hidden") %>">
-                <%= for button <- @modal.buttons do %>
-                  <%= live_component button, assigns %>
-                <% end %>
+              <div id="modal-buttons" class="left-0 right-0 px-10 bg-white py-7 shadow <%= if(@modal.state == :open, do: "fixed bottom-0", else: "hidden") %>">
+                <%= live_component @modal.footer, assigns %>
               </div>
             <% end %>
           </div>
