@@ -27,6 +27,7 @@ defmodule PicselloWeb.LiveModal do
 
     defstruct state: :closed,
               component: nil,
+              after_close: false,
               assigns: %{},
               transition_ms: 0,
               show_x: true,
@@ -44,6 +45,7 @@ defmodule PicselloWeb.LiveModal do
           state: :opening,
           assigns: config |> Map.get(:assigns, %{}),
           show_x: config |> Map.get(:show_x, true),
+          after_close: config |> Map.get(:after_close, false),
           footer: config |> Map.get(:footer, @default_footer)
       }
   end
@@ -79,6 +81,24 @@ defmodule PicselloWeb.LiveModal do
     socket
     |> assign(modal: modal |> Modal.open(component, config))
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:modal, :closed},
+        %{assigns: %{modal: %{after_close: true} = modal}} = socket
+      ) do
+    Process.send_after(self(), {:modal, :after_close}, 50)
+    socket |> assign(modal: %{modal | state: :closed}) |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:modal, :after_close},
+        %{assigns: %{modal: %{component: component}}} = socket
+      ) do
+    send(socket.parent_pid, {:modal, component, :after_close})
+    socket |> noreply()
   end
 
   @impl true

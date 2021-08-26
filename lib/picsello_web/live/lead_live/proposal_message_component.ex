@@ -119,6 +119,7 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
       %{
         assigns: assigns |> Map.take([:current_user, :job]),
         show_x: false,
+        after_close: true,
         footer: FooterComponent
       }
     )

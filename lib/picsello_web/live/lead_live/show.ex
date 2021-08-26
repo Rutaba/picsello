@@ -67,14 +67,26 @@ defmodule PicselloWeb.LeadLive.Show do
         UserNotifier.deliver_booking_proposal(client, url, message)
 
         socket
-        |> put_flash(:info, "#{Job.name(job)} booking proposal was sent.")
-        |> push_redirect(to: Routes.job_path(socket, :leads))
+        |> assign_proposal()
         |> noreply()
 
       {:error, _} ->
         socket
         |> put_flash(:error, "Failed to create booking proposal. Please try again.")
         |> noreply()
+    end
+  end
+
+  def handle_info(
+        {:modal, PicselloWeb.LeadLive.ProposalMessageComponent, :after_close},
+        %{assigns: %{proposal: proposal}} = socket
+      ) do
+    if proposal do
+      socket
+      |> PicselloWeb.LeadLive.ProposalMessageSentComponent.open_modal()
+      |> noreply()
+    else
+      socket |> noreply()
     end
   end
 

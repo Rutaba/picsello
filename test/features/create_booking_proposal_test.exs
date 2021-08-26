@@ -42,6 +42,8 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_has(css("button:not(:disabled)", text: "Finish booking proposal"))
     |> click(button("Finish booking proposal"))
     |> click(button("Send email"))
+    |> assert_has(css("h1", text: "Email sent"))
+    |> click(button("Close"))
 
     assert_receive {:delivered_email, email}
 
@@ -60,11 +62,7 @@ defmodule Picsello.CreateBookingProposalTest do
              Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 1000)
 
     session
-    |> assert_path("/leads")
-    |> assert_has(css(".alert", text: "booking proposal was sent"))
-    |> visit("/leads/#{job.id}")
     |> assert_has(css("p", text: "Booking proposal sent"))
-    |> visit("/leads/#{job.id}")
     |> click(button("View booking proposal"))
     |> click(button("Proposal"))
     |> assert_disabled(button("Accept proposal"))
