@@ -3,7 +3,7 @@ defmodule Picsello.Questionnaire do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Questionaire.Question, Job}
+  alias Picsello.{Job}
 
   defmodule Question do
     @moduledoc false

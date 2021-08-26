@@ -14,7 +14,8 @@ defmodule Picsello.Factory do
     Repo,
     Shoot,
     Accounts.User,
-    Questionnaire
+    Questionnaire,
+    Questionnaire.Answer
   }
 
   def valid_user_password(), do: "hello world!"
@@ -143,6 +144,13 @@ defmodule Picsello.Factory do
         }
       ],
       job_type: "newborn"
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def answer_factory(attrs) do
+    %Answer{
+      answers: [["answer1"]]
     }
     |> merge_attributes(attrs)
   end

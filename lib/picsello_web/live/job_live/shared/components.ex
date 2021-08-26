@@ -91,7 +91,7 @@ defmodule PicselloWeb.JobLive.Shared.Components do
           <li>Proposal</li>
           <li>Contract (standard)</li>
           <%= if @proposal.questionnaire_id do %>
-            <li>Questionaire</li>
+            <li>Questionnaire</li>
           <% end %>
         </ul>
         <button class="w-full mt-6 btn-primary" phx-click="open-proposal">View booking proposal</button>

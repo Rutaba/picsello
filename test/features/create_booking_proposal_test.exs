@@ -62,7 +62,7 @@ defmodule Picsello.CreateBookingProposalTest do
              Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 1000)
 
     session
-    |> assert_has(css("p", text: "Booking proposal sent"))
+    |> assert_has(xpath("//div[text() = 'Proposal sent']"))
     |> click(button("View booking proposal"))
     |> click(button("Proposal"))
     |> assert_disabled(button("Accept proposal"))

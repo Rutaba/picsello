@@ -5,16 +5,8 @@
 
   <%= cond do %>
     <%= @proposal -> %>
-      <p class="mt-4 text-blue-primary">Status:</p>
-      <p class="text-blue-primary">
-        - Booking proposal
-        <%= case BookingProposal.status(@proposal) do %>
-          <% :sent -> %> sent <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
-          <% :accepted -> %> accepted <%= Calendar.strftime(@proposal.accepted_at, "%m/%d/%y") %>
-          <% :signed -> %> signed <%= Calendar.strftime(@proposal.signed_at, "%m/%d/%y") %>
-          <% :deposit_paid -> %> deposit paid <%= Calendar.strftime(@proposal.deposit_paid_at, "%m/%d/%y") %>
-        <% end %>
-      </p>
+      <h2 class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status</h2>
+      <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, proposal: @proposal %>
 
     <% @package -> %>
       <p class="mt-1">
