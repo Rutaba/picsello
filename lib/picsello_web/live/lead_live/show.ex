@@ -33,6 +33,14 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_event(
+        "manage",
+        %{},
+        socket
+      ),
+      do: socket |> PicselloWeb.LeadLive.ManageLeadComponent.open_modal() |> noreply()
+
+  @impl true
+  def handle_event(
         "toggle-questionnaire",
         %{},
         %{assigns: %{include_questionnaire: include_questionnaire}} = socket

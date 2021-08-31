@@ -36,6 +36,9 @@
   <svg id="forth" viewBox="0 0 10 20">
     <path d="M1,1l8,9l-8,9" stroke-width="2" fill="none"/>
   </svg>
+  <svg id="down" viewBox="0 0 20 10">
+    <path d="M1,1l9,8l9,-8" stroke-width="2" fill="none"/>
+  </svg>
   <svg id="close-modal" viewBox="0 0 20 20">
     <path d="M1,1L18,18M1,18L18,1" stroke-width="2" stroke-linecap="round"/>
   </svg>

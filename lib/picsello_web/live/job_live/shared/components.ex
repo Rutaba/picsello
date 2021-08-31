@@ -16,8 +16,6 @@ defmodule PicselloWeb.JobLive.Shared.Components do
         </div>
 
         <hr class="mt-1 border-gray-200"/>
-
-        <h1 class="mt-5 text-2xl font-bold"><%= Job.name @job %></h1>
       """
     end
   end

@@ -1,11 +1,5 @@
 <div class="px-8 pt-2">
-  <div class="text-xs text-gray-400">
-    <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
-      <%= action_name(@live_action, :plural) %>
-    <% end %>
-    &gt;
-    <%= Job.name @job %>
-  </div>
+  <%= live_component PicselloWeb.JobLive.Shared.Components.Header, job: @job, live_action: @live_action %>
 
   <h1 class="text-2xl font-bold mt-7"><%= Job.name @job %></h1>
 
@@ -28,5 +22,4 @@
   <hr class="mt-6 border-gray-500" >
   <p class="mt-6 text-sm font-semibold">If any updates are made after client has signed, an amendment will need to be reviewed and accepted by them.</p>
   <button class="w-full mt-6 btn-primary" disabled>Send booking update</button>
-
 </div>

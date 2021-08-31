@@ -1,6 +1,15 @@
 <div class="px-6 pt-2 pb-8 bg-gray-100">
   <%= live_component PicselloWeb.JobLive.Shared.Components.Header, job: @job, live_action: @live_action %>
 
+
+  <div class="flex items-center justify-between my-5">
+    <h1 class="text-2xl font-bold"><%= Job.name @job %></h1>
+    <button phx-click="manage" class="flex items-center px-2 py-1 text-xs font-normal bg-white border-white rounded btn-secondary">
+      Manage
+      <%= icon_tag(@socket, "down", class: "ml-2 stroke-current h-2 w-2") %>
+    </button>
+  </div>
+
   <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
 
   <%= cond do %>
