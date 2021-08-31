@@ -28,6 +28,10 @@ module.exports = {
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
       },
+      spacing: {
+        '90vw': '90vw',
+        '5vw': '5vw'
+      },
       zIndex: {'-10':'-10'}
     },
   },

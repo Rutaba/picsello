@@ -1,4 +1,4 @@
-<div class="p-8">
+<div class="modal">
   <h1 class="title">Create a lead</h1>
   <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
     <%= inputs_for f, :client, fn client_form -> %>
@@ -9,6 +9,6 @@
 
     <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of photography", prompt: "Select below", wrapper_class: "mt-4" %>
     <%= labeled_input f, :notes, type: :textarea, label: "Lead notes", placeholder: "notes go here", phx_debounce: "500", wrapper_class: "mt-4" %>
-    <%= render_block @inner_block, disabled: !@changeset.valid? %>
+    <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: !@changeset.valid? %>
   </form>
 </div>

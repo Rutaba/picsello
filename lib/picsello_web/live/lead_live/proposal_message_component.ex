@@ -3,25 +3,6 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Job, Repo}
 
-  defmodule FooterComponent do
-    @moduledoc "default footer"
-    use PicselloWeb, :live_component
-
-    def render(assigns) do
-      ~L"""
-        <div class="text-center">
-          <button class="w-full mb-4 btn-primary" type="submit"  <%= if @disabled, do: "disabled" %> phx-disable-with="Sending email...">
-            Send email
-          </button>
-
-          <button class="w-full btn-secondary" type="button" phx-click="modal" phx-value-action="close">
-            Close
-          </button>
-        </div>
-      """
-    end
-  end
-
   def update(%{job: job} = assigns, socket) do
     socket
     |> assign(assigns)
@@ -39,8 +20,8 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
 
   def render(assigns) do
     ~L"""
-    <div class="px-8 pb-8">
-      <h1 class="mt-6 text-xs font-semibold tracking-widest text-gray-400 uppercase">Compose Email</h1>
+    <div class="modal">
+      <h1 class="mt-2 text-xs font-semibold tracking-widest text-gray-400 uppercase">Compose Email</h1>
 
       <label class="block mt-4 input-label">
         Select email template
@@ -85,7 +66,17 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
           <%= hidden_input f, :body_text, phx_debounce: "500" %>
           <%= hidden_input f, :body_html, phx_debounce: "500" %>
         </div>
-        <%= render_block @inner_block, disabled: !@changeset.valid? %>
+        <%= live_component PicselloWeb.LiveModal.FooterComponent do %>
+          <div class="text-center">
+            <button class="w-full mb-4 btn-primary" type="submit" <%= unless @changeset.valid?, do: "disabled" %> phx-disable-with="Sending email...">
+              Send email
+            </button>
+
+            <button class="w-full btn-secondary" type="button" phx-click="modal" phx-value-action="close">
+              Close
+            </button>
+          </div>
+        <% end %>
       </form>
     </div>
     """
@@ -118,9 +109,7 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
       __MODULE__,
       %{
         assigns: assigns |> Map.take([:current_user, :job]),
-        show_x: false,
-        after_close: true,
-        footer: FooterComponent
+        after_close: true
       }
     )
   end

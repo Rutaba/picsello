@@ -1,5 +1,8 @@
 <fieldset <%= if @read_only, do: "disabled" %>>
-<div class="max-w-md px-8 pb-8 mx-auto">
+<div class="relative max-w-md modal">
+  <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
+    <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
+  </button>
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h1 class="title">Proposal</h1>
 
@@ -50,7 +53,7 @@
     <dd><%= @package.price %></dd>
   </dl>
 
-  <div class="mt-8 text-center">
+  <%= live_component PicselloWeb.LiveModal.FooterComponent do %>
     <%= if @proposal.accepted_at do %>
       <button class="w-full btn-primary" disabled>
         Proposal accepted
@@ -61,6 +64,6 @@
         Accept proposal
       </button>
     <% end %>
-  </div>
+  <% end %>
 </div>
 </fieldset>

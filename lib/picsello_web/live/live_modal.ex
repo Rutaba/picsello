@@ -5,17 +5,30 @@ defmodule PicselloWeb.LiveModal do
     @moduledoc "default footer"
     use PicselloWeb, :live_component
 
+    def update(assigns, socket) do
+      socket |> assign(assigns |> Enum.into(%{inner_block: nil, disabled: false})) |> ok()
+    end
+
     def render(assigns) do
       ~L"""
-      <div class="text-center">
-        <button class="w-32 mx-1 btn-primary" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
-            Save
-          </button>
+      <div class="pt-40"></div>
 
-          <button class="w-32 mx-1 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
-            Cancel
-          </button>
+      <div id="modal-buttons" class="sticky bottom-0">
+        <div class="py-8 text-center bg-white">
+
+          <%= if @inner_block do %>
+            <%= render_block @inner_block %>
+          <% else %>
+            <button class="w-32 mx-1 btn-primary" title="save" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
+              Save
+            </button>
+
+            <button class="w-32 mx-1 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+              Cancel
+            </button>
+          <% end %>
         </div>
+      </div>
       """
     end
   end
@@ -23,15 +36,11 @@ defmodule PicselloWeb.LiveModal do
   defmodule Modal do
     @moduledoc "stuff for modals"
 
-    @default_footer FooterComponent
-
     defstruct state: :closed,
               component: nil,
               after_close: false,
               assigns: %{},
-              transition_ms: 0,
-              show_x: true,
-              footer: @default_footer
+              transition_ms: 0
 
     def new() do
       transition_ms = Application.get_env(:picsello, :modal_transition_ms)
@@ -44,9 +53,7 @@ defmodule PicselloWeb.LiveModal do
         | component: component,
           state: :opening,
           assigns: config |> Map.get(:assigns, %{}),
-          show_x: config |> Map.get(:show_x, true),
-          after_close: config |> Map.get(:after_close, false),
-          footer: config |> Map.get(:footer, @default_footer)
+          after_close: config |> Map.get(:after_close, false)
       }
   end
 
@@ -58,7 +65,7 @@ defmodule PicselloWeb.LiveModal do
   def mount(_params, session, socket) do
     if(connected?(socket), do: send(socket.root_pid, {:modal_pid, self()}))
 
-    socket |> assign_defaults(session) |> assign(modal: Modal.new(), show_x: true) |> ok()
+    socket |> assign_defaults(session) |> assign(modal: Modal.new()) |> ok()
   end
 
   @impl true
@@ -114,23 +121,14 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def render(assigns) do
     ~L"""
-      <div role="dialog" id="modal-wraper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms" class="w-full h-full bg-white shadow z-20 fixed transition-top ease-in-out <%= %{open: "bottom-0 top-0", opening: "top-full", closed: "top-full hidden"}[@modal.state] %>">
+    <div role="dialog" id="modal-wraper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms"
+         class="w-full h-full bg-black/20 shadow z-20 fixed transition-opacity ease-in-out
+                <%= %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state] %>">
         <%= if @modal.state != :closed do %>
-          <div id="modal" class="h-full overflow-scroll" phx-hook="LockBodyScroll">
-            <%= if @modal.show_x do %>
-              <div class="flex flex-col w-full pt-7">
-                <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="self-end mr-4 w-7">
-                  <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
-                </button>
-              </div>
-            <% end %>
-            <%= live_component @modal.component, @modal.assigns |> Map.put(:id, @modal.component) do %>
-              <div class="mt-40"></div>
-
-              <div id="modal-buttons" class="left-0 right-0 px-10 bg-white py-7 shadow <%= if(@modal.state == :open, do: "fixed bottom-0", else: "hidden") %>">
-                <%= live_component @modal.footer, assigns %>
-              </div>
-            <% end %>
+          <div id="modal" class="flex flex-col items-center h-full overflow-auto" phx-hook="LockBodyScroll">
+            <div class="relative mt-auto sm:mb-auto">
+              <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
+            </div>
           </div>
         <% end %>
       </div>

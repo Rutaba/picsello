@@ -1,4 +1,8 @@
-<div class="max-w-md px-8 pb-8 mx-auto">
+<div class="max-w-md modal relative">
+  <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
+    <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
+  </button>
+
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h2 class="title">Questionnaire</h2>
 
@@ -76,15 +80,17 @@
       </dl>
     </fieldset>
 
-    <%= if @answer.id do %>
-      <button type="submit" class="w-full mt-8 btn-primary" disabled>
-        Questionnaire answered
-      </button>
-      <em class="block pt-2 text-xs text-center">Answered: <%= Calendar.strftime(@answer.inserted_at, "%b %d, %Y") %></em>
-    <% else %>
-      <button type="submit" class="w-full mt-8 btn-primary" <%= if(@disable_submit, do: "disabled") %>>
-        Save
-      </button>
+    <%= live_component PicselloWeb.LiveModal.FooterComponent do %>
+      <%= if @answer.id do %>
+        <button type="submit" class="w-full mt-8 btn-primary" disabled>
+          Questionnaire answered
+        </button>
+        <em class="block pt-2 text-xs text-center">Answered: <%= Calendar.strftime(@answer.inserted_at, "%b %d, %Y") %></em>
+      <% else %>
+        <button type="submit" class="w-full mt-8 btn-primary" <%= if(@disable_submit, do: "disabled") %>>
+          Save
+        </button>
+      <% end %>
     <% end %>
   </form>
 </div>

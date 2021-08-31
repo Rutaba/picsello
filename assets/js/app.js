@@ -29,13 +29,27 @@ let Hooks = {}
 
 Hooks.Modal = {
   mounted() {
-    this.handleEvent("modal:close", () => {
-      const buttons = this.el.querySelector("#modal-buttons")
-      if (buttons) {
-        buttons.classList.add("hidden")
+    this.el.addEventListener('click', e => {
+      if(e.target.id === "modal") {
+        this.pushEvent("modal", {action: "close"})
       }
-      this.el.classList.add("top-full")
+    })
+
+    this.keydownListener = e => {
+      if(e.key === "Escape") {
+        this.pushEvent("modal", {action: "close"})
+      }
+    }
+
+    document.addEventListener('keydown', this.keydownListener)
+
+    this.handleEvent("modal:close", () => {
+      this.el.classList.add("opacity-0")
     } )
+  },
+
+  destroyed() {
+    document.removeEventListener('keydown', this.keydownListener)
   }
 }
 

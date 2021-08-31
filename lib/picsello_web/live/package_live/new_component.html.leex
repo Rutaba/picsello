@@ -1,4 +1,4 @@
-<div class="px-8 pt-2">
+<div class="modal">
   <h2 class="text-xl font-semibold"><%= Job.name @job %></h2>
   <h1 class="mt-2 title">Add package</h1>
 
@@ -12,6 +12,6 @@
     <%= labeled_input f, :description, type: :textarea, label: "Package description", placeholder: "The most deluxe of weddings", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_select f, :shoot_count, Enum.to_list(1..5), label: "Number of shoots for this package", phx_debounce: "500", wrapper_class: "mt-4" %>
 
-    <%= render_block @inner_block, disabled: input_value(f, :package_template_id) == "" || !@changeset.valid? %>
+    <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: input_value(f, :package_template_id) == "" || !@changeset.valid?  %>
   </form>
 </div>
