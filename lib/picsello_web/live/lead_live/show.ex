@@ -64,7 +64,7 @@ defmodule PicselloWeb.LeadLive.Show do
         %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
       ) do
     questionnaire_id =
-      if include_questionnaire, do: Questionnaire.for_job(job) |> Repo.one() |> Map.get(:id)
+      if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
 
     case BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
          |> Repo.insert() do

@@ -157,6 +157,28 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(checkbox("My partner", selected: true))
   end
 
+  @sessions 2
+  feature "client accesses proposal for archived job", %{
+    sessions: [photographer_session, client_session],
+    job: job
+  } do
+    insert(:questionnaire)
+
+    photographer_session
+    |> visit("/leads/#{job.id}")
+    |> click(button("Finish booking proposal"))
+    |> click(button("Send email"))
+
+    assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
+
+    job |> Job.archive_changeset() |> Repo.update!()
+
+    client_session
+    |> visit(url)
+    |> assert_has(css(".alert-error", text: "not available"))
+  end
+
   defp post(session, path, body, headers) do
     HTTPoison.post(
       PicselloWeb.Endpoint.url() <> path,

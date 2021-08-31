@@ -113,38 +113,37 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age) do
-      {:ok, proposal_id} ->
-        proposal =
-          BookingProposal
-          |> Repo.get!(proposal_id)
-          |> Repo.preload([:answer, job: [:client, :shoots, package: [organization: :user]]])
+    with {:ok, proposal_id} <-
+           Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age),
+         %{job: %{archived_at: nil}} = proposal <-
+           BookingProposal
+           |> Repo.get!(proposal_id)
+           |> Repo.preload([:answer, job: [:client, :shoots, package: [organization: :user]]]) do
+      %{
+        answer: answer,
+        job:
+          %{
+            client: client,
+            shoots: shoots,
+            package: %{organization: %{user: photographer} = organization} = package
+          } = job
+      } = proposal
 
-        %{
-          answer: answer,
-          job:
-            %{
-              client: client,
-              shoots: shoots,
-              package: %{organization: %{user: photographer} = organization} = package
-            } = job
-        } = proposal
-
-        socket
-        |> assign(
-          answer: answer,
-          client: client,
-          job: job,
-          organization: organization,
-          package: package,
-          photographer: photographer,
-          proposal: proposal,
-          read_only: photographer == current_user,
-          shoots: shoots,
-          token: token
-        )
-
-      {:error, _} ->
+      socket
+      |> assign(
+        answer: answer,
+        client: client,
+        job: job,
+        organization: organization,
+        package: package,
+        photographer: photographer,
+        proposal: proposal,
+        read_only: photographer == current_user,
+        shoots: shoots,
+        token: token
+      )
+    else
+      _ ->
         socket
         |> assign(proposal: nil)
         |> put_flash(:error, "This proposal is not available anymore")
@@ -158,8 +157,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp maybe_confetti(has_success_param),
     do: fn %{assigns: %{proposal: proposal}} = socket ->
-      if connected?(socket) && BookingProposal.deposit_paid?(proposal) && has_success_param,
-        do: send(self(), :confetti)
+      if connected?(socket) && proposal && BookingProposal.deposit_paid?(proposal) &&
+           has_success_param,
+         do: send(self(), :confetti)
 
       socket
     end
