@@ -5,6 +5,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def open_modal(socket, component, assigns \\ %{})
 
+  # main process, modal pid is assigned
   def open_modal(
         %{assigns: %{modal_pid: modal_pid} = parent_assigns} = socket,
         component,
@@ -25,7 +26,7 @@ defmodule PicselloWeb.LiveHelpers do
     socket
   end
 
-  # raw assigns map, not config
+  # called with raw assigns map
   def open_modal(
         %{assigns: %{modal_pid: modal_pid}} = socket,
         component,
@@ -34,7 +35,15 @@ defmodule PicselloWeb.LiveHelpers do
       when is_pid(modal_pid),
       do: socket |> open_modal(component, %{assigns: assigns})
 
-  # before modal pid is assigned
+  # modal process
+  def open_modal(
+        %{view: PicselloWeb.LiveModal} = socket,
+        component,
+        config
+      ),
+      do: socket |> assign(modal_pid: self()) |> open_modal(component, config)
+
+  # main process, before modal pid is assigned
   def open_modal(
         socket,
         component,
@@ -44,12 +53,14 @@ defmodule PicselloWeb.LiveHelpers do
     |> assign(queued_modal: {component, config})
   end
 
+  # close from main process
   def close_modal(%{assigns: %{modal_pid: modal_pid}} = socket) do
     send(modal_pid, {:modal, :close})
 
     socket
   end
 
+  # close from within modal process
   def close_modal(socket) do
     send(self(), {:modal, :close})
 
