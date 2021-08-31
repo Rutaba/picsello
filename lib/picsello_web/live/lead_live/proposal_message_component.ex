@@ -97,7 +97,7 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     if changeset.valid? do
       message = Ecto.Changeset.apply_changes(changeset)
       send(socket.parent_pid, {:message_composed, message})
-      socket |> close_modal() |> noreply()
+      socket |> noreply()
     else
       socket |> noreply()
     end
@@ -108,8 +108,7 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     |> open_modal(
       __MODULE__,
       %{
-        assigns: assigns |> Map.take([:current_user, :job]),
-        after_close: true
+        assigns: assigns |> Map.take([:current_user, :job])
       }
     )
   end
