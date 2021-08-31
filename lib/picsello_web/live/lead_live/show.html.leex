@@ -12,13 +12,8 @@
 
   <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
 
-  <%= cond do %>
-    <%= @proposal -> %>
-      <h2 class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status</h2>
-      <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, proposal: @proposal %>
-
-    <% @package -> %>
-      <p class="mt-1">
+  <%= if @package && !@proposal do %>
+      <p class="mt-4">
         You haven't sent a proposal yet.
         <br>
         <%= if shoots_completed do %>
@@ -27,9 +22,11 @@
           <a class="link" href="#shoot-details">Finish shoot details</a>
         <% end %>
       </p>
-
-    <% true -> %>
   <% end %>
+
+  <h2 class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status</h2>
+  <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, proposal: @proposal, job: @job %>
+
 </div>
 
 <div class="px-6 pb-8">

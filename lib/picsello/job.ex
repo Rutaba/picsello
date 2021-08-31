@@ -8,6 +8,7 @@ defmodule Picsello.Job do
   schema "jobs" do
     field(:type, :string)
     field(:notes, :string)
+    field(:archived_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     has_many(:shoots, Shoot)
@@ -34,6 +35,14 @@ defmodule Picsello.Job do
     |> validate_required([:type])
     |> foreign_key_constraint(:type)
     |> assoc_constraint(:package)
+  end
+
+  def archive_changeset(job) do
+    attrs = %{archived_at: DateTime.utc_now()}
+
+    job
+    |> cast(attrs, [:archived_at])
+    |> validate_required([:archived_at])
   end
 
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do

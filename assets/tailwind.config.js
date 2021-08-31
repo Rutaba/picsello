@@ -23,7 +23,8 @@ module.exports = {
         'red-invalid-bg': '#FFF2F2',
         'gray-disabled': '#AAA',
         'green': '#65D157',
-        'orange': '#FFBA74'
+        'orange': '#FFBA74',
+        'orange-warning': '#E1662F'
       },
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],

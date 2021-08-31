@@ -87,6 +87,24 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_info(:archive, %{assigns: %{job: job}} = socket) do
+    case job |> Job.archive_changeset() |> Repo.update() do
+      {:ok, job} ->
+        socket
+        |> assign_job(job.id)
+        |> close_modal()
+        |> put_flash(:info, "Lead archived")
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Failed to archive lead. Please try again.")
+        |> noreply()
+    end
+  end
+
+  @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 
   defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared

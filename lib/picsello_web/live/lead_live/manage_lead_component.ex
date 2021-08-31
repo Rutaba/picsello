@@ -10,7 +10,7 @@ defmodule PicselloWeb.LeadLive.ManageLeadComponent do
     <div class="max-w-md modal">
       <h2 class="text-xs font-semibold tracking-widest text-gray-400 uppercase">Manage <%= Job.name(@job) %></h2>
       <button class="mt-4 btn-row"
-        title="Archive lead"
+        title="Send a follow up email"
         type="button"
       >
         Send a follow up email
@@ -19,6 +19,8 @@ defmodule PicselloWeb.LeadLive.ManageLeadComponent do
       <button class="mt-4 btn-row"
         title="Archive lead"
         type="button"
+        phx-click="archive"
+        phx-target="<%= @myself %>"
       >
         Archive lead
         <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
@@ -29,6 +31,17 @@ defmodule PicselloWeb.LeadLive.ManageLeadComponent do
     </div>
     """
   end
+
+  @impl true
+  def handle_event(
+        "archive",
+        %{},
+        socket
+      ),
+      do:
+        socket
+        |> PicselloWeb.LeadLive.ArchiveLeadComponent.open_modal()
+        |> noreply()
 
   def open_modal(%{assigns: assigns} = socket) do
     socket

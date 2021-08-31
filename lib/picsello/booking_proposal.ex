@@ -77,4 +77,5 @@ defmodule Picsello.BookingProposal do
   def status(%__MODULE__{signed_at: date}) when date != nil, do: :signed
   def status(%__MODULE__{accepted_at: date}) when date != nil, do: :accepted
   def status(%__MODULE__{inserted_at: date}) when date != nil, do: :sent
+  def status(nil), do: :not_sent
 end
