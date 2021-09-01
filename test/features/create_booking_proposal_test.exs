@@ -41,11 +41,18 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(button("Save"))
     |> assert_has(css("button:not(:disabled)", text: "Finish booking proposal"))
     |> click(button("Finish booking proposal"))
+    |> fill_in(text_field("Subject line"), with: "")
+    |> assert_has(css("label", text: "Subject line can't be blank"))
+    |> assert_has(css("button:disabled[type='submit']"))
+    |> fill_in(text_field("Subject"), with: "Proposal from me")
+    |> wait_for_enabled_submit_button()
     |> click(button("Send email"))
     |> assert_has(css("h1", text: "Email sent"))
     |> click(button("Close"))
 
     assert_receive {:delivered_email, email}
+
+    assert "Proposal from me" = email |> email_substitutions |> Map.get("subject")
 
     path =
       email

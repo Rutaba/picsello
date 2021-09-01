@@ -1,13 +1,17 @@
-defmodule Picsello.Message do
+defmodule Picsello.ProposalMessage do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Picsello.BookingProposal
 
-  embedded_schema do
+  schema "proposal_messages" do
+    belongs_to :proposal, BookingProposal
     field(:subject, :string)
     field(:cc_email, :string)
     field(:body_text, :string)
     field(:body_html, :string)
+
+    timestamps()
   end
 
   def create_changeset(attrs) do

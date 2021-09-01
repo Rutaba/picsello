@@ -12,7 +12,9 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
 
       subject = "Booking proposal from #{organization.name}"
       body = "Hello #{client.name}.\r\n\r\nYou have a booking proposal from #{organization.name}."
-      %{subject: subject, body_text: body, body_html: body} |> Picsello.Message.create_changeset()
+
+      %{subject: subject, body_text: body, body_html: body}
+      |> Picsello.ProposalMessage.create_changeset()
     end)
     |> assign_new(:show_cc, fn -> false end)
     |> ok()
@@ -86,17 +88,16 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     socket |> assign(:show_cc, !show_cc) |> noreply()
   end
 
-  def handle_event("validate", %{"message" => params}, socket) do
+  def handle_event("validate", %{"proposal_message" => params}, socket) do
     socket |> assign_changeset(:validate, params) |> noreply()
   end
 
-  def handle_event("save", %{"message" => params}, socket) do
+  def handle_event("save", %{"proposal_message" => params}, socket) do
     socket = socket |> assign_changeset(:validate, params)
     %{assigns: %{changeset: changeset}} = socket
 
     if changeset.valid? do
-      message = Ecto.Changeset.apply_changes(changeset)
-      send(socket.parent_pid, {:message_composed, message})
+      send(socket.parent_pid, {:message_composed, changeset |> Map.put(:action, nil)})
       socket |> noreply()
     else
       socket |> noreply()
@@ -120,7 +121,7 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
          action,
          params
        ) do
-    changeset = params |> Picsello.Message.create_changeset() |> Map.put(:action, action)
+    changeset = params |> Picsello.ProposalMessage.create_changeset() |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end

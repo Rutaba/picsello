@@ -60,15 +60,25 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info(
-        {:message_composed, message},
+        {:message_composed, message_changeset},
         %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
       ) do
     questionnaire_id =
       if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
 
-    case BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
-         |> Repo.insert() do
-      {:ok, proposal} ->
+    result =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(
+        :proposal,
+        BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
+      )
+      |> Ecto.Multi.insert(:message, fn changes ->
+        message_changeset |> Ecto.Changeset.put_change(:proposal_id, changes.proposal.id)
+      end)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{proposal: proposal, message: message}} ->
         token = proposal_token(proposal)
         url = Routes.booking_proposal_url(socket, :show, token)
         %{client: client} = job |> Repo.preload(:client)
