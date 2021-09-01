@@ -41,6 +41,7 @@ test: setup
 	MIX_ENV=test mix credo
 	mix dialyzer
 	killall chrome | true
+	rm -f screenshots/*.png
 	mix test
 
 test-watch: ## Run tests in watch mode
