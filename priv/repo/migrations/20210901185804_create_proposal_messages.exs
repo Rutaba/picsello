@@ -7,7 +7,8 @@ defmodule Picsello.Repo.Migrations.CreateProposalMessages do
       add(:cc_email, :text)
       add(:subject, :text, null: false)
       add(:body_text, :text, null: false)
-      add(:body_html, :text, null: false)
+      add(:body_html, :text)
+      add(:scheduled, :boolean, null: false, default: false)
 
       timestamps()
     end

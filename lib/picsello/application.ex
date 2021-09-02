@@ -14,7 +14,8 @@ defmodule Picsello.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Picsello.PubSub},
       # Start the Endpoint (http/https)
-      PicselloWeb.Endpoint
+      PicselloWeb.Endpoint,
+      {Picsello.ProposalReminderScheduler, []}
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
     ]

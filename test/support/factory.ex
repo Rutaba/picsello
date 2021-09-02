@@ -11,6 +11,7 @@ defmodule Picsello.Factory do
     Job,
     Organization,
     Package,
+    ProposalMessage,
     Repo,
     Shoot,
     Accounts.User,
@@ -156,7 +157,19 @@ defmodule Picsello.Factory do
   end
 
   def proposal_factory(attrs) do
-    %BookingProposal{} |> merge_attributes(attrs)
+    %BookingProposal{job: fn -> build(:job) end}
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def proposal_message_factory(attrs) do
+    %ProposalMessage{
+      subject: "here is what i propose",
+      body_text: "lets take some pictures!",
+      body_html: "lets take <i>some</i> <b>pictures!</b>"
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
   end
 
   def job_factory(attrs) do

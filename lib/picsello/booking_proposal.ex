@@ -15,7 +15,7 @@ defmodule Picsello.BookingProposal do
     belongs_to(:questionnaire, Questionnaire)
     has_one(:answer, Answer, foreign_key: :proposal_id)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
@@ -73,6 +73,10 @@ defmodule Picsello.BookingProposal do
 
   def deposit_paid(query \\ __MODULE__) do
     query |> where([p], not is_nil(p.deposit_paid_at))
+  end
+
+  def deposit_not_paid(query \\ __MODULE__) do
+    query |> where([p], is_nil(p.deposit_paid_at))
   end
 
   def deposit_paid?(%__MODULE__{deposit_paid_at: nil}), do: false

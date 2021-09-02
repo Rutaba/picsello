@@ -10,14 +10,15 @@ defmodule Picsello.ProposalMessage do
     field(:cc_email, :string)
     field(:body_text, :string)
     field(:body_html, :string)
+    field(:scheduled, :boolean)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   def create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:subject, :body_text, :body_html, :cc_email])
-    |> validate_required([:subject, :body_text, :body_html])
+    |> validate_required([:subject, :body_text])
     |> validate_email_format(:cc_email)
   end
 
