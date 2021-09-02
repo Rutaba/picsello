@@ -31,7 +31,7 @@ defmodule PicselloWeb.StripeConnectWebhooksController do
     proposal |> BookingProposal.deposit_paid_changeset() |> Repo.update!()
 
     url = Routes.job_url(conn, :jobs)
-    Picsello.Accounts.UserNotifier.deliver_lead_converted_to_job(proposal, url)
+    Picsello.Notifiers.UserNotifier.deliver_lead_converted_to_job(proposal, url)
   end
 
   def handle_webhook(_stripe_event, _conn), do: {:ok, "success"}

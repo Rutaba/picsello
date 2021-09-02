@@ -4,8 +4,7 @@ defmodule Picsello.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias Picsello.Repo
-  alias Picsello.Accounts.{User, UserToken, UserNotifier}
+  alias Picsello.{Repo, Accounts.User, Accounts.UserToken, Notifiers.UserNotifier}
 
   ## Database getters
 

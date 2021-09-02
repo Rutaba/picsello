@@ -1,7 +1,7 @@
 defmodule PicselloWeb.LeadLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, BookingProposal, Accounts.UserNotifier, Questionnaire}
+  alias Picsello.{Job, Repo, BookingProposal, Notifiers.ClientNotifier, Questionnaire}
 
   @impl true
   def mount(%{"id" => job_id}, session, socket) do
@@ -82,7 +82,7 @@ defmodule PicselloWeb.LeadLive.Show do
         token = proposal_token(proposal)
         url = Routes.booking_proposal_url(socket, :show, token)
         %{client: client} = job |> Repo.preload(:client)
-        UserNotifier.deliver_booking_proposal(client, url, message)
+        ClientNotifier.deliver_booking_proposal(message, client.email, url)
 
         socket
         |> assign_proposal()
