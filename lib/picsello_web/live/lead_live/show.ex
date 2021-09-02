@@ -52,7 +52,6 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
-  defdelegate proposal_token(proposal), to: PicselloWeb.JobLive.Shared
 
   @impl true
   def handle_info({:stripe_status, status}, socket),
@@ -79,10 +78,8 @@ defmodule PicselloWeb.LeadLive.Show do
 
     case result do
       {:ok, %{proposal: proposal, message: message}} ->
-        token = proposal_token(proposal)
-        url = Routes.booking_proposal_url(socket, :show, token)
         %{client: client} = job |> Repo.preload(:client)
-        ClientNotifier.deliver_booking_proposal(message, client.email, url)
+        ClientNotifier.deliver_booking_proposal(message, client.email)
 
         socket
         |> assign_proposal()

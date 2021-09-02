@@ -52,6 +52,17 @@ defmodule Picsello.BookingProposal do
     |> validate_required([:deposit_paid_at])
   end
 
+  @doc "here since used from both emails and views"
+  def url(proposal_id), do: build_url(proposal_id, :booking_proposal_url)
+
+  def path(proposal_id), do: build_url(proposal_id, :booking_proposal_path)
+
+  defp build_url(proposal_id, helper) do
+    conn = PicselloWeb.Endpoint
+    token = Phoenix.Token.sign(conn, "PROPOSAL_ID", proposal_id)
+    apply(PicselloWeb.Router.Helpers, helper, [conn, :show, token])
+  end
+
   def last_for_job(job_id) do
     job_id |> for_job() |> order_by(desc: :inserted_at) |> limit(1) |> Repo.one()
   end

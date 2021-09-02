@@ -3,7 +3,6 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
   alias Picsello.{Job, Shoot, Repo, BookingProposal}
-  alias PicselloWeb.Router.Helpers, as: Routes
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
@@ -52,11 +51,12 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("open-proposal", %{}, %{assigns: %{proposal: proposal}} = socket) do
-    token = proposal_token(proposal)
-    path = Routes.booking_proposal_path(socket, :show, token)
-    socket |> redirect(to: path) |> noreply()
-  end
+  def handle_event(
+        "open-proposal",
+        %{},
+        %{assigns: %{proposal: %{id: proposal_id}}} = socket
+      ),
+      do: socket |> redirect(to: BookingProposal.path(proposal_id)) |> noreply()
 
   def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
@@ -74,9 +74,6 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
-
-  def proposal_token(%BookingProposal{id: id}),
-    do: Phoenix.Token.sign(PicselloWeb.Endpoint, "PROPOSAL_ID", id)
 
   def assign_job(%{assigns: %{current_user: current_user, live_action: action}} = socket, job_id) do
     job =

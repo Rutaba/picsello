@@ -5,9 +5,9 @@ defmodule Picsello.Notifiers.ClientNotifier do
   @doc """
   Deliver booking proposal email.
   """
-  def deliver_booking_proposal(message, to_email, url) do
+  def deliver_booking_proposal(message, to_email) do
     sendgrid_template(:booking_proposal_template,
-      url: url,
+      url: Picsello.BookingProposal.url(message.proposal_id),
       subject: message.subject,
       body_html: message.body_html,
       body_text: message.body_text
