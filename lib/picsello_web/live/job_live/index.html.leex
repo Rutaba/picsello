@@ -1,18 +1,40 @@
-<div class="p-8">
-  <header class="flex flex-row py-2 mb-4">
-    <%= live_redirect to: Routes.home_path(@socket, :index), title: "back", class: "flex-1 flex flex-row justify-start items-center" do %>
-      <%= icon_tag(@socket, "back", class: "w-6 h-6 stroke-current text-gray-500 -ml-1") %>
-    <% end %>
-    <h1 class="flex-1 mb-1 text-center title">
-      <%= action_name(@live_action, :plural) %>
+  <header class="bg-blue-light-primary">
+    <h1 class="p-6 text-3xl font-semibold center-container">
+      Your <%= action_name(@live_action, :plural) %>
     </h1>
-    <div class="flex-1"></div>
   </header>
+  <ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
   <%= for job <- @jobs do %>
-    <div class="px-8 py-4 mb-2.5 font-bold rounded-lg bg-blue-primary bg-opacity-10">
-      <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "link" do %>
-        <%= job |> Job.name() %>
+    <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
+      <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block", title: Job.name(job) do %>
+        <span class="px-2 py-.5 text-xs font-semibold rounded bg-blue-light-primary text-blue-primary">Active</span>
+
+        <div class="flex items-center justify-between text-xl font-semibold">
+          <%= job |> Job.name() %>
+          <%= icon_tag(@socket, "forth", class: "w-4 h-4 stroke-current text-black") %>
+        </div>
+
+        <%= case card_date(job) do %>
+          <% nil -> %>
+          <% date -> %> <span class="font-semibold text-blue-primary"> On <%= date %> </span>
+        <% end %>
+
+        <hr class="my-3 border-top">
+
+        <div class="flex justify-between">
+          <%= if job.package do %>
+            <div class="text-gray-400">
+              <span class="font-semibold"><%= job.package.name %></span>
+              —
+              <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
+            </div>
+            <span class="font-semibold"><%= job.package.price |> Money.to_string(fractional_unit: false) %></span>
+          <% else %>
+            <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
+          <% end %>
+        </div>
+
       <% end %>
-    </div>
+    </li>
   <% end %>
-</div>
+  </ul>

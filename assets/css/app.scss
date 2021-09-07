@@ -66,6 +66,10 @@ html {
   }
 }
 
+.center-container {
+  @apply xl:container xl:mx-auto;
+}
+
 .modal {
   @apply p-8 bg-white rounded-t-lg w-90vw mt-5vw sm:rounded-b-lg sm:mb-5vw;
 }
