@@ -11,6 +11,7 @@ defmodule Picsello.Accounts.User do
     field :hashed_password, :string
     field :last_name, :string
     field :password, :string, virtual: true
+    field :time_zone, :string
 
     belongs_to(:organization, Picsello.Organization)
 
@@ -36,7 +37,7 @@ defmodule Picsello.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :first_name, :last_name, :password])
+    |> cast(attrs, [:email, :first_name, :last_name, :password, :time_zone])
     |> cast_assoc(:organization, with: &Picsello.Organization.registration_changeset/2)
     |> validate_required([:first_name, :last_name, :organization])
     |> validate_email()

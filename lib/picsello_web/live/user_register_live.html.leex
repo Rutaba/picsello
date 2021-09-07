@@ -3,6 +3,7 @@
   <%= f = form_for @changeset, Routes.user_registration_path(@socket, :create), phx_change: :validate, phx_submit: :save, phx_trigger_action: @trigger_submit %>
 
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
+    <%= hidden_input f, :time_zone, id: "time_zone_input", phx_hook: "TimeZoneInput", phx_update: "ignore" %>
     <%= labeled_input f, :first_name, placeholder: "Jane", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= labeled_input f, :last_name, placeholder: "Smith", phx_debounce: "500", wrapper_class: "mt-4" %>
 
@@ -15,12 +16,12 @@
 
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>
 
-    <div class="text-center mt-5">
+    <div class="mt-5 text-center">
       <%= link "Cancel", to: Routes.page_path(@socket, :index), class: "btn-secondary inline-block w-32 mx-1" %>
       <%= submit "Next", class: "btn-primary w-32 mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
     </div>
 
-    <p class="text-center mt-20">
+    <p class="mt-20 text-center">
       Already have an account?
       <%= link "Log In", to: Routes.user_session_path(@socket, :new), class: "font-semibold link" %>
     </p>

@@ -52,7 +52,8 @@ defmodule Picsello.MixProject do
         {:stripity_stripe,
          github: "thousandsofthem/stripity_stripe", branch: "extend-session-struct"},
         {:telemetry_metrics, "~> 0.4"},
-        {:telemetry_poller, "~> 0.4"}
+        {:telemetry_poller, "~> 0.4"},
+        {:tz, "~> 0.20"}
       ],
       [
         {:dialyxir, "~> 1.0", only: :dev, runtime: false},
