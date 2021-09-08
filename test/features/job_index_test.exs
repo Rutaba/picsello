@@ -25,6 +25,17 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(link("Jobs"))
   end
 
+  feature "leads show status", %{session: session, lead: created_lead, user: user} do
+    archived_lead = insert(:job, user: user, type: "family", archived_at: DateTime.utc_now())
+
+    refute Job.name(archived_lead) == Job.name(created_lead)
+
+    session
+    |> click(link("View current leads"))
+    |> assert_has(link(Job.name(archived_lead), text: "Archived"))
+    |> assert_has(link(Job.name(created_lead), text: "Created"))
+  end
+
   feature "elapsed shoot dates are hidden", %{session: session, job: future_job, user: user} do
     elapsed_job = insert(:job, type: "wedding", user: user)
     insert(:proposal, %{job: elapsed_job, deposit_paid_at: DateTime.utc_now()})
