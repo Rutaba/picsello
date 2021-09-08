@@ -77,12 +77,13 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Repo.transaction()
 
     case result do
-      {:ok, %{proposal: proposal, message: message}} ->
-        %{client: client} = job |> Repo.preload(:client)
+      {:ok, %{message: message}} ->
+        %{client: client} = job = job |> Repo.preload([:client, :job_status], force: true)
         ClientNotifier.deliver_booking_proposal(message, client.email)
 
         socket
         |> assign_proposal()
+        |> assign(:job, job)
         |> PicselloWeb.LeadLive.ProposalMessageSentComponent.open_modal()
         |> noreply()
 

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.LeadLive.LeadStatusComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, BookingProposal}
+  alias Picsello.{Repo}
 
   @impl true
   def update(assigns, socket) do
@@ -33,40 +33,32 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
     """
   end
 
-  defp assign_status(socket, %{proposal: proposal, job: job, current_user: current_user}) do
-    proposal = proposal |> Repo.preload(:answer)
-    status = BookingProposal.status(proposal)
+  defp assign_status(socket, %{job: job, current_user: current_user}) do
+    %{job_status: job_status} = job |> Repo.preload(:job_status)
 
-    {current_status, next_status, date} = current_statuses(status, proposal, job)
-    month = strftime(current_user.time_zone, date, "%b")
-    day = strftime(current_user.time_zone, date, "%d")
+    {current_status, next_status} = current_statuses(job_status.current_status)
+    month = strftime(current_user.time_zone, job_status.changed_at, "%b")
+    day = strftime(current_user.time_zone, job_status.changed_at, "%d")
 
     socket
     |> assign(current_status: current_status, next_status: next_status, month: month, day: day)
   end
 
-  defp current_statuses(_proposal_status, _proposal, %{archived_at: archived_at})
-       when not is_nil(archived_at),
-       do: {"Lead archived", nil, archived_at}
+  defp current_statuses(:archived), do: {"Lead archived", nil}
 
-  defp current_statuses(:sent, proposal, _),
-    do: {"Proposal sent", "Awaiting acceptance", proposal.inserted_at}
+  defp current_statuses(:sent), do: {"Proposal sent", "Awaiting acceptance"}
 
-  defp current_statuses(:not_sent, _proposal, job),
-    do: {"Lead created", nil, job.inserted_at}
+  defp current_statuses(:not_sent), do: {"Lead created", nil}
 
-  defp current_statuses(:accepted, proposal, _),
-    do: {"Proposal accepted", "Awaiting contract", proposal.accepted_at}
+  defp current_statuses(:accepted), do: {"Proposal accepted", "Awaiting contract"}
 
-  defp current_statuses(:signed, %{questionnaire_id: nil} = proposal, _),
-    do: {"Proposal signed", "Pending payment", proposal.signed_at}
+  defp current_statuses(:signed_without_questionnaire),
+    do: {"Proposal signed", "Pending payment"}
 
-  defp current_statuses(:signed, proposal, _),
-    do: {"Proposal signed", "Awaiting questionnaire", proposal.signed_at}
+  defp current_statuses(:signed_with_questionnaire),
+    do: {"Proposal signed", "Awaiting questionnaire"}
 
-  defp current_statuses(:answered, proposal, _),
-    do: {"Questionnaire answered", "Pending payment", proposal.answer.inserted_at}
+  defp current_statuses(:answered), do: {"Questionnaire answered", "Pending payment"}
 
-  defp current_statuses(:deposit_paid, proposal, _),
-    do: {"Payment paid", "Job created", proposal.deposit_paid_at}
+  defp current_statuses(:deposit_paid), do: {"Payment paid", "Job created"}
 end

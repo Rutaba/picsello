@@ -1,6 +1,6 @@
 defmodule Picsello.JobTest do
   use Picsello.DataCase, async: true
-  alias Picsello.{Job, Repo}
+  alias Picsello.{BookingProposal, Job, Repo}
 
   describe "create_changeset" do
     test "works with client_id" do
@@ -42,14 +42,14 @@ defmodule Picsello.JobTest do
       assert 1 = Job.leads() |> Repo.aggregate(:count)
       assert 0 = Job.not_leads() |> Repo.aggregate(:count)
 
-      insert(:proposal, %{job: job, deposit_paid_at: nil})
+      proposal = insert(:proposal, %{job: job, deposit_paid_at: nil})
 
       assert Job.lead?(job)
 
       assert 1 = Job.leads() |> Repo.aggregate(:count)
       assert 0 = Job.not_leads() |> Repo.aggregate(:count)
 
-      insert(:proposal, %{job: job, deposit_paid_at: DateTime.utc_now()})
+      proposal |> BookingProposal.deposit_paid_changeset() |> Repo.update!()
 
       refute Job.lead?(job)
 

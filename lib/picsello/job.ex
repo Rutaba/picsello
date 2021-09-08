@@ -3,7 +3,7 @@ defmodule Picsello.Job do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Client, Package, Shoot, BookingProposal, Repo}
+  alias Picsello.{Client, JobStatus, Package, Shoot, BookingProposal, Repo}
 
   schema "jobs" do
     field(:type, :string)
@@ -11,8 +11,9 @@ defmodule Picsello.Job do
     field(:archived_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
+    has_one(:job_status, JobStatus)
     has_many(:shoots, Shoot)
-    has_many(:booking_proposals, BookingProposal)
+    has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
 
     timestamps(type: :utc_datetime)
   end
@@ -66,24 +67,18 @@ defmodule Picsello.Job do
   end
 
   def lead?(%__MODULE__{} = job) do
-    job
-    |> Repo.preload(:booking_proposals)
-    |> Map.get(:booking_proposals)
-    |> Enum.all?(&(not BookingProposal.deposit_paid?(&1)))
+    %{job_status: %{is_lead: is_lead}} =
+      job
+      |> Repo.preload(:job_status)
+
+    is_lead
   end
 
   def leads(query \\ __MODULE__) do
-    query
-    |> from(as: :jobs)
-    |> where(not exists(paid_proposal_sub()))
+    from(job in query, join: status in assoc(job, :job_status), where: status.is_lead)
   end
 
   def not_leads(query \\ __MODULE__) do
-    query
-    |> from(as: :jobs)
-    |> where(exists(paid_proposal_sub()))
+    from(job in query, join: status in assoc(job, :job_status), where: not status.is_lead)
   end
-
-  defp paid_proposal_sub(),
-    do: BookingProposal.deposit_paid() |> where([p], p.job_id == parent_as(:jobs).id)
 end

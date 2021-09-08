@@ -81,16 +81,4 @@ defmodule Picsello.BookingProposal do
 
   def deposit_paid?(%__MODULE__{deposit_paid_at: nil}), do: false
   def deposit_paid?(%__MODULE__{}), do: true
-
-  def status(%__MODULE__{deposit_paid_at: date}) when date != nil, do: :deposit_paid
-
-  def status(%__MODULE__{answer: %Ecto.Association.NotLoaded{}} = proposal),
-    do: proposal |> Repo.preload(:answer) |> status()
-
-  def status(%__MODULE__{answer: answer}) when answer != nil, do: :answered
-
-  def status(%__MODULE__{signed_at: date}) when date != nil, do: :signed
-  def status(%__MODULE__{accepted_at: date}) when date != nil, do: :accepted
-  def status(%__MODULE__{inserted_at: date}) when date != nil, do: :sent
-  def status(nil), do: :not_sent
 end

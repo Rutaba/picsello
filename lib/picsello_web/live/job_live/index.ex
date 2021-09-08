@@ -26,7 +26,7 @@ defmodule PicselloWeb.JobLive.Index do
             :jobs -> query |> Job.not_leads()
           end
         end)
-        |> Query.preload([:client, :package, :shoots])
+        |> Query.preload([:client, :package, :shoots, :booking_proposals])
         |> Query.order_by(desc: :updated_at)
         |> Repo.all()
     )
