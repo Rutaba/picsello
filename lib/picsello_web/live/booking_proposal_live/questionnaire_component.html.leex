@@ -85,7 +85,7 @@
         <button type="submit" class="w-full mt-8 btn-primary" disabled>
           Questionnaire answered
         </button>
-        <em class="block pt-2 text-xs text-center">Answered: <%= Calendar.strftime(@answer.inserted_at, "%b %d, %Y") %></em>
+        <em class="block pt-2 text-xs text-center">Answered: <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></em>
       <% else %>
         <button type="submit" class="w-full mt-8 btn-primary" <%= if(@disable_submit, do: "disabled") %>>
           Save

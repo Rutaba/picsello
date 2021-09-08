@@ -17,7 +17,7 @@
 
   <h2 class="mt-4 text-xs font-bold uppercase" id="booking-details">Booking Details</h2>
 
-  <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal %>
+  <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal, current_user: @current_user %>
 
   <hr class="mt-6 border-gray-500" >
   <p class="mt-6 text-sm font-semibold">If any updates are made after client has signed, an amendment will need to be reviewed and accepted by them.</p>

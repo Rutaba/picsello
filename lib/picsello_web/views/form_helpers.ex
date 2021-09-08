@@ -28,7 +28,12 @@ defmodule PicselloWeb.FormHelpers do
     opts =
       case type do
         :datetime_local_input ->
-          value = input_value(form, field) |> format_datetime()
+          time_zone = opts |> Keyword.get(:time_zone, "UTC")
+
+          value =
+            input_value(form, field)
+            |> format_datetime(time_zone)
+
           opts |> Keyword.put(:value, value)
 
         _ ->
@@ -49,15 +54,17 @@ defmodule PicselloWeb.FormHelpers do
     apply(Phoenix.HTML.Form, type, [form, field, input_opts])
   end
 
-  defp format_datetime(%DateTime{} = value), do: Calendar.strftime(value, "%Y-%m-%dT%H:%M")
-  defp format_datetime(""), do: nil
+  defp format_datetime(%DateTime{} = value, zone),
+    do: value |> DateTime.shift_zone!(zone) |> Calendar.strftime("%Y-%m-%dT%H:%M")
 
-  defp format_datetime(value) when is_binary(value) do
+  defp format_datetime("", _zone), do: nil
+
+  defp format_datetime("" <> value, zone) do
     {:ok, value, _} = (value <> ":00Z") |> DateTime.from_iso8601()
-    format_datetime(value)
+    format_datetime(value, zone)
   end
 
-  defp format_datetime(_), do: nil
+  defp format_datetime(_, _), do: nil
 
   def label_for(form, field, opts \\ []) do
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}

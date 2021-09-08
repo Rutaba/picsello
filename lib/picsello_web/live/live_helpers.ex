@@ -67,6 +67,12 @@ defmodule PicselloWeb.LiveHelpers do
     socket
   end
 
+  def strftime("" <> time_zone, time, format) do
+    time
+    |> DateTime.shift_zone!(time_zone)
+    |> Calendar.strftime(format)
+  end
+
   def ok(socket), do: {:ok, socket}
   def noreply(socket), do: {:noreply, socket}
 end

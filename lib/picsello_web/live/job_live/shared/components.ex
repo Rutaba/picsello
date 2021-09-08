@@ -83,7 +83,7 @@ defmodule PicselloWeb.JobLive.Shared.Components do
     def render(assigns) do
       ~L"""
         <p class="mt-4 text-sm font-bold">
-          The following details were included in the booking proposal sent on <%= Calendar.strftime(@proposal.inserted_at, "%m/%d/%y") %>
+          The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%m/%d/%y") %>
         </p>
         <ul class="pt-4 ml-8 list-disc">
           <li>Proposal</li>

@@ -31,7 +31,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     socket
     |> open_modal(
       ProposalComponent,
-      modal_assigns(socket, [:client, :shoots, :package, :photographer])
+      modal_assigns(socket, [:client, :shoots, :package])
     )
     |> noreply()
   end
@@ -167,5 +167,5 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   defp modal_assigns(%{assigns: assigns}, extra \\ []),
     do:
       assigns
-      |> Map.take([:job, :proposal, :organization, :read_only] ++ extra)
+      |> Map.take([:job, :photographer, :proposal, :organization, :read_only] ++ extra)
 end

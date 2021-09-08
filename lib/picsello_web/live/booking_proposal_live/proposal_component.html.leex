@@ -11,7 +11,7 @@
     <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0")  %></dd>
 
     <dt class="inline-block font-semibold">Dated:</dt>
-    <dd class="inline"><%= Calendar.strftime(@proposal.inserted_at, "%b %d, %Y") %></dd>
+    <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
 
     <dt class="pt-4 font-semibold">From:</dt>
     <dd><%= @organization.name %></dd>
@@ -34,9 +34,9 @@
       <dt class="pt-4 font-semibold"><%= shoot.name %></dt>
       <dd>
         <ul class="ml-8 list-disc">
-          <li><%= Calendar.strftime(shoot.starts_at, "%b %d, %Y") %></li>
+          <li><%= strftime(@photographer.time_zone, shoot.starts_at, "%b %d, %Y") %></li>
           <li><%= dyn_gettext("duration-#{shoot.duration_minutes}") %></li>
-          <li>Starting at <%= Calendar.strftime(shoot.starts_at, "%I:%M %P") %></li>
+          <li>Starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%I:%M %P") %></li>
           <li><%= dyn_gettext(shoot.location) %></li>
           <%= if shoot.notes do %>
             <li class="whitespace-pre-line">Notes: <%= shoot.notes %></li>
@@ -58,7 +58,7 @@
       <button class="w-full btn-primary" disabled>
         Proposal accepted
       </button>
-      <em class="block pt-2 text-xs text-center">Accepted: <%= Calendar.strftime(@proposal.accepted_at, "%b %d, %Y") %></em>
+      <em class="block pt-2 text-xs text-center">Accepted: <%= strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %></em>
     <% else %>
       <button class="w-full btn-primary" phx-click="accept-proposal" phx-target="<%= @myself %>">
         Accept proposal

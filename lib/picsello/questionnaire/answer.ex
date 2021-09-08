@@ -10,7 +10,7 @@ defmodule Picsello.Questionnaire.Answer do
     belongs_to(:questionnaire, Questionnaire)
     field(:answers, {:array, {:array, :string}})
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

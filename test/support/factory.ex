@@ -51,6 +51,7 @@ defmodule Picsello.Factory do
         password: valid_user_password(),
         first_name: "Mary",
         last_name: "Jane",
+        time_zone: "Etc/GMT",
         organization: fn -> params_for(:organization) end
       })
       |> evaluate_lazy_attributes()

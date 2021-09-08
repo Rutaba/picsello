@@ -14,7 +14,7 @@ defmodule Picsello.Job do
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   def types, do: from(t in "job_types", select: t.name) |> Repo.all()

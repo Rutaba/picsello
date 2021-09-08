@@ -12,7 +12,7 @@
     <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0")  %></dd>
 
     <dt class="inline-block font-semibold">Dated:</dt>
-    <dd class="inline"><%= Calendar.strftime(@proposal.inserted_at, "%b %d, %Y") %></dd>
+    <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
   </dl>
 
   <h3 class="mt-8 font-semibold">Terms and Conditions</h3>
@@ -58,7 +58,7 @@
       <button class="w-full btn-primary" disabled>
         Contract signed
       </button>
-      <em class="block pt-2 text-xs text-center">Signed: <%= Calendar.strftime(@proposal.signed_at, "%b %d, %Y") %></em>
+      <em class="block pt-2 text-xs text-center">Signed: <%= strftime(@photographer.time_zone, @proposal.signed_at, "%b %d, %Y") %></em>
     <% else %>
       <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :submit, phx_target: @myself %>
           <%= labeled_input f, :signed_legal_name, label: "Type your full legal name", phx_debounce: "500", wrapper_class: "mt-4" %>

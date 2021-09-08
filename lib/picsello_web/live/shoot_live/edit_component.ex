@@ -34,9 +34,22 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     end
   end
 
+  defp build_changeset(
+         %{assigns: %{current_user: %{time_zone: time_zone}}} = socket,
+         %{"starts_at" => "" <> starts_at} = params
+       ) do
+    socket
+    |> build_changeset(
+      params
+      |> Map.put(
+        "starts_at",
+        parse_in_zone(starts_at, time_zone)
+      )
+    )
+  end
+
   defp build_changeset(%{assigns: %{shoot: shoot}}, params) when shoot != nil do
-    shoot
-    |> Shoot.update_changeset(params)
+    shoot |> Shoot.update_changeset(params)
   end
 
   defp build_changeset(%{assigns: %{job: %{id: job_id}}}, params) do
@@ -59,5 +72,12 @@ defmodule PicselloWeb.ShootLive.EditComponent do
        ) do
     changeset = build_changeset(socket, params) |> Map.put(:action, action)
     assign(socket, changeset: changeset)
+  end
+
+  defp parse_in_zone("" <> str, zone) do
+    with {:ok, naive_datetime} <- NaiveDateTime.from_iso8601(str <> ":00"),
+         {:ok, datetime} <- DateTime.from_naive(naive_datetime, zone) do
+      datetime
+    end
   end
 end

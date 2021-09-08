@@ -33,13 +33,13 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
     """
   end
 
-  defp assign_status(socket, %{proposal: proposal, job: job}) do
+  defp assign_status(socket, %{proposal: proposal, job: job, current_user: current_user}) do
     proposal = proposal |> Repo.preload(:answer)
     status = BookingProposal.status(proposal)
 
     {current_status, next_status, date} = current_statuses(status, proposal, job)
-    month = Calendar.strftime(date, "%b")
-    day = Calendar.strftime(date, "%d")
+    month = strftime(current_user.time_zone, date, "%b")
+    day = strftime(current_user.time_zone, date, "%d")
 
     socket
     |> assign(current_status: current_status, next_status: next_status, month: month, day: day)
