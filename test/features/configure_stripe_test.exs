@@ -1,5 +1,5 @@
 defmodule Picsello.ConfigureStripeTest do
-  use Picsello.FeatureCase, async: true
+  use Picsello.FeatureCase, async: false
 
   setup :authenticated
 
