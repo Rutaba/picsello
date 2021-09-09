@@ -7,6 +7,7 @@ module.exports = {
   purge: [
     "../**/*.html.eex",
     "../**/*.html.leex",
+    "../**/*.html.heex",
     "../**/views/**/*.ex",
     "../**/live/**/*.ex",
     "./js/**/*.js"

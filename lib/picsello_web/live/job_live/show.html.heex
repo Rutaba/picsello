@@ -1,0 +1,82 @@
+<header class="bg-blue-light-primary">
+  <div class="p-6 pb-2 md:pb-6 center-container">
+    <div class="text-xs text-blue-primary/50">
+      <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
+        <%= action_name(@live_action, :plural) %>
+      <% end %>
+      <%= icon_tag(@socket, "forth", class: "inline-block stroke-current h-2 w-2") %>
+      <span class="font-semibold"><%= Job.name @job %></span>
+    </div>
+
+    <h2 class="text-xs font-bold tracking-widest text-gray-400 uppercase mt-7">active</h2>
+
+    <h1 class="flex items-center justify-between text-3xl font-bold md:justify-start">
+      <%= Job.name @job %>
+      <span class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-primary text-blue-primary">
+        <div class="absolute -top-1.5 left-1.5">&hellip;</div>
+      </span>
+    </h1>
+  </div>
+</header>
+
+<div class="p-6 pt-2 md:pt-6 md:pb-0 grid center-container bg-blue-light-primary gap-5 md:grid-cols-2 md:bg-white">
+  <div class="flex justify-between md:justify-start">
+    <div><span class="font-bold" ><%= @package.name %></span>—<%= @job.type |> Phoenix.Naming.humanize() %></div>
+
+    <span class="font-bold md:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
+  </div>
+
+  <div class="flex flex-col md:flex-row md:justify-end">
+    <span class="mb-3 mr-6 font-bold md:mb-0"><%= @job.client.name %></span>
+
+    <a href={"mailto:#{@job.client.email}"} class="flex text-blue-primary">
+      <div class="flex items-center justify-center mr-3 rounded-full w-7 h-7 bg-blue-primary">
+        <%= icon_tag(@socket, "envelope", class: "stroke-current text-white", width: 12, height: 10) %>
+      </div>
+      <%= @job.client.email %>
+    </a>
+  </div>
+  <hr class="hidden border-gray-200 md:block col-span-2"/>
+</div>
+
+<div class="p-6 center-container">
+  <ul class="grid gap-5 grid-cols-2 md:grid-cols-4">
+    <.overview_card title="Finances" socket={@socket} icon="money-bags" button_text="Send reminder">
+      <dl class="grid grid-cols-2">
+        <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
+        <dd class="font-bold row-start-2" style="color: #429467">$500</dd>
+        <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Owed</dt>
+        <dd class="font-bold row-start-2" style="color: #E1662F">$500</dd>
+      </dl>
+    </.overview_card>
+    <.overview_card title="Inbox" socket={@socket} icon="envelope" button_text="Go to job inbox">
+      You are free as a bird!
+    </.overview_card>
+    <.overview_card title="Orders" socket={@socket} icon="cart" button_text="Learn how">
+      You need to upload photos to allow orders.
+    </.overview_card>
+    <.overview_card title="Gallery" socket={@socket} icon="gallery" button_text="Learn how">
+      Looks like you need to upload photos.
+    </.overview_card>
+  </ul>
+
+  <%= live_component PicselloWeb.JobLive.Shared.Components.Details, job: @job, live_action: @live_action %>
+
+  <h2 class="mt-4 text-xs font-bold uppercase">Package Details</h2>
+
+  <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
+    <%= @package.name %>
+    <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+  </button>
+
+  <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>
+  <%= live_component PicselloWeb.JobLive.Shared.Components.ShootDetails, shoots: @shoots %>
+
+  <h2 class="mt-4 text-xs font-bold uppercase" id="booking-details">Booking Details</h2>
+
+  <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal, current_user: @current_user %>
+
+  <hr class="mt-6 border-gray-500" >
+  <p class="mt-6 text-sm font-semibold">If any updates are made after client has signed, an amendment will need to be reviewed and accepted by them.</p>
+  <button class="w-full mt-6 btn-primary" disabled>Send booking update</button>
+</div>
