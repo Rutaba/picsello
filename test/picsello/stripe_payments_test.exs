@@ -1,6 +1,24 @@
 defmodule Picsello.StripePaymentsTest do
   use Picsello.DataCase, async: true
 
+  defmodule StripeStub do
+    defmodule Account do
+      def create(%{type: "standard"}) do
+        {:ok, %{id: "new-account-id"}}
+      end
+    end
+
+    defmodule AccountLink do
+      def create(%{account: account, type: "account_onboarding"}) do
+        {:ok, %{url: "https://example.com/#{account}"}}
+      end
+    end
+  end
+
+  def link(user_or_organization, opts) do
+    Picsello.StripePayments.link(user_or_organization, opts, StripeStub)
+  end
+
   describe "status" do
     test ":no_account when organization has no stripe account" do
       organization = insert(:organization)
@@ -39,10 +57,25 @@ defmodule Picsello.StripePaymentsTest do
   end
 
   describe "link" do
-    test "returns a link" do
-      {:ok, url} = Picsello.StripePayments.link(insert(:organization), [])
+    test "returns a link when called with a user with no account" do
+      user = insert(:user)
+      assert {:ok, url} = link(user, [])
 
-      assert URI.parse(url).host |> String.contains?("stripe")
+      assert "/new-account-id" = url |> URI.parse() |> Map.get(:path)
+
+      assert %{organization: %{stripe_account_id: "new-account-id"}} =
+               user |> Repo.preload(:organization, force: true)
+    end
+
+    test "returns a link when called with a user with an account" do
+      user =
+        insert(:user,
+          organization: insert(:organization, stripe_account_id: "already-saved-stub-account-id")
+        )
+
+      assert {:ok, url} = link(user, [])
+
+      assert "/already-saved-stub-account-id" = url |> URI.parse() |> Map.get(:path)
     end
   end
 end

@@ -12,7 +12,6 @@ env:
   SLACK_USERNAME: Picsello CI
   SLACK_ICON_EMOJI: ':camera:'
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
-  SKIP_STRIPE_MOCK: 'true'
   SHELL: /usr/bin/bash
 
 jobs:
@@ -69,8 +68,6 @@ jobs:
       run: npm install --prefix assets
     - name: Build js
       run: npm run deploy --prefix assets && mix phx.digest
-    - name: Start stripe-mock
-      run: docker run -d -p 12111-12112:12111-12112 stripemock/stripe-mock
     - name: Run tests
       run: mix test --trace --cover
 

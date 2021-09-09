@@ -6,7 +6,7 @@ defmodule PicselloWeb.UserSettingsControllerTest do
   setup :register_and_log_in_user
 
   setup do
-    Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
+    Picsello.MockPayments |> Mox.stub(:link, fn _, _ -> {:ok, "https://stripe.com"} end)
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     :ok
   end

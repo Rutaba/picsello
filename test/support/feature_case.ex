@@ -69,7 +69,9 @@ defmodule Picsello.FeatureCase do
           else: {:error, nil}
       end)
 
-      assert session |> current_url |> String.contains?(url_fragment)
+      url = session |> current_url()
+
+      assert String.contains?(url, url_fragment), "expected #{url} to contain #{url_fragment}"
 
       session
     end

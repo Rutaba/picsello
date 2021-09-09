@@ -5,29 +5,32 @@ defmodule Picsello.StripePayments do
 
   alias Picsello.{Repo, BookingProposal, Organization, Accounts.User, Client}
 
-  def link(%User{} = user, opts) do
+  def link(user, opts, stripe_module \\ Stripe)
+
+  def link(%User{} = user, opts, stripe_module) do
     %{organization: organization} = user |> Repo.preload(:organization)
-    link(organization, opts)
+    link(organization, opts, stripe_module)
   end
 
-  def link(%Organization{stripe_account_id: nil} = organization, opts) do
-    with {:ok, %{id: account_id}} <- Stripe.Account.create(%{type: "standard"}),
+  def link(%Organization{stripe_account_id: nil} = organization, opts, stripe_module) do
+    with {:ok, %{id: account_id}} <-
+           Module.concat([stripe_module, Account]).create(%{type: "standard"}),
          {:ok, organization} <-
            organization
            |> Organization.assign_stripe_account_changeset(account_id)
            |> Repo.update() do
-      link(organization, opts)
+      link(organization, opts, stripe_module)
     else
       {:error, _} = e -> e
       e -> {:error, e}
     end
   end
 
-  def link(%Organization{stripe_account_id: account_id}, opts) do
+  def link(%Organization{stripe_account_id: account_id}, opts, stripe_module) do
     refresh_url = opts |> Keyword.get(:refresh_url)
     return_url = opts |> Keyword.get(:return_url)
 
-    case Stripe.AccountLink.create(%{
+    case Module.concat([stripe_module, AccountLink]).create(%{
            account: account_id,
            refresh_url: refresh_url,
            return_url: return_url,
