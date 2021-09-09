@@ -31,7 +31,7 @@
 
     <a href={"mailto:#{@job.client.email}"} class="flex text-blue-primary">
       <div class="flex items-center justify-center mr-3 rounded-full w-7 h-7 bg-blue-primary">
-        <%= icon_tag(@socket, "envelope", class: "stroke-current text-white", width: 12, height: 10) %>
+        <.icon name="envelope" class="text-white stroke-current" width="12" height="10" />
       </div>
       <%= @job.client.email %>
     </a>
@@ -41,7 +41,7 @@
 
 <div class="p-6 center-container">
   <ul class="grid gap-5 grid-cols-2 md:grid-cols-4">
-    <.overview_card title="Finances" socket={@socket} icon="money-bags" button_text="Send reminder">
+    <.overview_card title="Finances" icon="money-bags" button_text="Send reminder">
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
         <dd class="font-bold row-start-2" style="color: #429467">$500</dd>
@@ -49,13 +49,13 @@
         <dd class="font-bold row-start-2" style="color: #E1662F">$500</dd>
       </dl>
     </.overview_card>
-    <.overview_card title="Inbox" socket={@socket} icon="envelope" button_text="Go to job inbox">
+    <.overview_card title="Inbox" icon="envelope" button_text="Go to job inbox">
       You are free as a bird!
     </.overview_card>
-    <.overview_card title="Orders" socket={@socket} icon="cart" button_text="Learn how">
+    <.overview_card title="Orders" icon="cart" button_text="Learn how">
       You need to upload photos to allow orders.
     </.overview_card>
-    <.overview_card title="Gallery" socket={@socket} icon="gallery" button_text="Learn how">
+    <.overview_card title="Gallery" icon="gallery" button_text="Learn how">
       Looks like you need to upload photos.
     </.overview_card>
   </ul>

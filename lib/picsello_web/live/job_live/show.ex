@@ -17,7 +17,7 @@ defmodule PicselloWeb.JobLive.Show do
       <li class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
           <div class="mb-6 font-bold">
-            <%= icon_tag(@socket, @icon, class: "stroke-current h-6 w-5 inline mr-2") %>
+            <.icon name={@icon} class= "inline w-5 h-6 mr-2 stroke-current" />
             <%= @title %>
           </div>
 
