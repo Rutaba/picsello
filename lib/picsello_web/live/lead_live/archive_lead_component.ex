@@ -27,6 +27,7 @@ defmodule PicselloWeb.LeadLive.ArchiveLeadComponent do
     |> open_modal(__MODULE__, assigns |> Map.take([:live_action, :job]))
   end
 
+  @impl true
   def handle_event(
         "archive",
         %{},
