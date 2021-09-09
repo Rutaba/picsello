@@ -19,10 +19,10 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(
       css("select[name='package[package_template_id]'] option:checked", text: "+ New Package")
     )
+    |> find(select("Number of shoots for this package"), &click(&1, option("2")))
     |> fill_in(text_field("Package name"), with: "Wedding Deluxe")
     |> fill_in(text_field("Package description"), with: "My greatest wedding package")
     |> fill_in(text_field("Package price"), with: "1234.50")
-    |> click(css("option", text: "2"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(button("Add shoot details", count: 2))
