@@ -32,7 +32,7 @@ defmodule PicselloWeb.JobLive.Index do
     )
   end
 
-  def card_date(%Job{shoots: shoots}) do
+  def card_date(:jobs, %Job{shoots: shoots}) do
     try do
       shoots
       |> Enum.map(& &1.starts_at)
@@ -44,4 +44,6 @@ defmodule PicselloWeb.JobLive.Index do
         nil
     end
   end
+
+  def card_date(:leads, _), do: nil
 end
