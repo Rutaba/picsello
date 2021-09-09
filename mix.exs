@@ -36,38 +36,37 @@ defmodule Picsello.MixProject do
     [
       [
         {:bamboo, "~> 2.2.0"},
-        {:bcrypt_elixir, "~> 2.0"},
-        {:ecto_psql_extras, "~> 0.2"},
-        {:ecto_sql, "~> 3.4"},
-        {:gettext, "~> 0.11"},
-        {:jason, "~> 1.0"},
-        {:money, "~> 1.8"},
-        {:phoenix, "~> 1.5.9"},
-        {:phoenix_ecto, "~> 4.1"},
-        {:phoenix_html, "~> 2.11"},
-        {:phoenix_live_dashboard, "~> 0.4"},
-        {:phoenix_live_view, "~> 0.15.1"},
-        {:plug_cowboy, "~> 2.0"},
+        {:bcrypt_elixir, "~> 2.3"},
+        {:ecto_psql_extras, "~> 0.6.5"},
+        {:ecto_sql, "~> 3.7"},
+        {:gettext, "~> 0.18"},
+        {:jason, "~> 1.2.2"},
+        {:money, "~> 1.9"},
+        {:phoenix, "~> 1.5.12"},
+        {:phoenix_ecto, "~> 4.4.0"},
+        {:phoenix_html, "~> 3.0.3"},
+        {:phoenix_live_dashboard, "~> 0.5.1"},
+        {:phoenix_live_view, "~> 0.16.3"},
+        {:plug_cowboy, "~> 2.5.2"},
         {:postgrex, ">= 0.0.0"},
-        {:stripity_stripe,
-         github: "thousandsofthem/stripity_stripe", branch: "extend-session-struct"},
-        {:telemetry_metrics, "~> 0.4"},
-        {:telemetry_poller, "~> 0.4"},
+        {:stripity_stripe, "~> 2.12.1"},
+        {:telemetry_metrics, "~> 0.6.1"},
+        {:telemetry_poller, "~> 0.5.1"},
         {:tz, "~> 0.20"}
       ],
       [
-        {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-        {:phoenix_live_reload, "~> 1.2", only: :dev},
+        {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
+        {:phoenix_live_reload, "~> 1.3.3", only: :dev},
         {:phx_gen_auth, "~> 0.7", only: :dev, runtime: false},
-        {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+        {:credo, "~> 1.5.6", only: [:dev, :test], runtime: false},
         {:mox, "~> 1.0.0", only: [:dev, :test]}
       ],
       [
         {:ex_machina, "~> 2.7.0", only: :test},
         {:exexec, ">= 0.2.0", only: :test},
-        {:floki, ">= 0.30.0", only: :test},
+        {:floki, "~> 0.31.0", only: :test},
         {:httpoison, "~> 1.8.0"},
-        {:wallaby, "~> 0.28.0", runtime: false, only: :test}
+        {:wallaby, "~> 0.28.1", runtime: false, only: :test}
       ]
     ]
     |> Enum.concat()
