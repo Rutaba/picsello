@@ -1,51 +1,51 @@
-  <header class="bg-blue-light-primary">
-    <h1 class="p-6 text-3xl font-semibold center-container">
-      Your <%= action_name(@live_action, :plural) %>
-    </h1>
-  </header>
-  <ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
-  <%= for job <- @jobs do %>
-    <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
-      <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block", title: Job.name(job) do %>
-        <span class="px-2 py-0.5 text-xs font-semibold rounded <%= if job.job_status.current_status == :archived, do: "bg-gray-200", else: "bg-blue-light-primary text-blue-primary" %>">
-          <%= case {@live_action, job.job_status.current_status} do %>
-            <% {:jobs, :archived} -> %> Archived
-            <% {:jobs, _} -> %> Active
-            <% {:leads, :not_sent} -> %> Created
-            <% {:leads, :sent} -> %> Awaiting Acceptance
-            <% {:leads, :accepted} -> %> Awaiting Contract
-            <% {:leads, :signed_with_questionnaire} -> %> Awaiting Questionnaire
-            <% {:leads, status } when status in([:signed_without_questionnaire, :answered]) -> %> Awaiting Payment
-            <% {_, status } -> %> <%= status |> Phoenix.Naming.humanize() %>
-          <% end %>
-        </span>
-
-        <div class="flex items-center justify-between text-xl font-semibold">
-          <%= job |> Job.name() %>
-          <%= icon_tag(@socket, "forth", class: "w-4 h-4 stroke-current text-black") %>
-        </div>
-
-        <%= case card_date(job) do %>
-          <% nil -> %>
-          <% date -> %> <span class="font-semibold text-blue-primary"> On <%= date %> </span>
+<header class="bg-blue-light-primary">
+  <h1 class="p-6 text-3xl font-semibold center-container">
+    Your <%= action_name(@live_action, :plural) %>
+  </h1>
+</header>
+<ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
+<%= for job <- @jobs do %>
+  <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
+    <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block", title: Job.name(job) do %>
+      <span class="px-2 py-0.5 text-xs font-semibold rounded <%= if job.job_status.current_status == :archived, do: "bg-gray-200", else: "bg-blue-light-primary text-blue-primary" %>">
+        <%= case {@live_action, job.job_status.current_status} do %>
+          <% {:jobs, :archived} -> %> Archived
+          <% {:jobs, _} -> %> Active
+          <% {:leads, :not_sent} -> %> Created
+          <% {:leads, :sent} -> %> Awaiting Acceptance
+          <% {:leads, :accepted} -> %> Awaiting Contract
+          <% {:leads, :signed_with_questionnaire} -> %> Awaiting Questionnaire
+          <% {:leads, status } when status in([:signed_without_questionnaire, :answered]) -> %> Awaiting Payment
+          <% {_, status } -> %> <%= status |> Phoenix.Naming.humanize() %>
         <% end %>
+      </span>
 
-        <hr class="my-3 border-top">
+      <div class="flex items-center justify-between text-xl font-semibold">
+        <%= job |> Job.name() %>
+        <%= icon_tag(@socket, "forth", class: "w-4 h-4 stroke-current text-black") %>
+      </div>
 
-        <div class="flex justify-between">
-          <%= if job.package do %>
-            <div class="text-gray-400">
-              <span class="font-semibold"><%= job.package.name %></span>
-              —
-              <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
-            </div>
-            <span class="font-semibold"><%= job.package.price |> Money.to_string(fractional_unit: false) %></span>
-          <% else %>
-            <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
-          <% end %>
-        </div>
-
+      <%= case card_date(@live_action, job) do %>
+        <% nil -> %>
+        <% date -> %> <span class="font-semibold text-blue-primary"> On <%= date %> </span>
       <% end %>
-    </li>
-  <% end %>
-  </ul>
+
+      <hr class="my-3 border-top">
+
+      <div class="flex justify-between">
+        <%= if job.package do %>
+          <div class="text-gray-400">
+            <span class="font-semibold"><%= job.package.name %></span>
+            —
+            <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
+          </div>
+          <span class="font-semibold"><%= job.package.price |> Money.to_string(fractional_unit: false) %></span>
+        <% else %>
+          <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
+        <% end %>
+      </div>
+
+    <% end %>
+  </li>
+<% end %>
+</ul>
