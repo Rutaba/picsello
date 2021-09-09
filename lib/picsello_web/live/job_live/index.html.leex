@@ -7,7 +7,7 @@
   <%= for job <- @jobs do %>
     <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
       <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block", title: Job.name(job) do %>
-        <span class="px-2 py-.5 text-xs font-semibold rounded bg-blue-light-primary text-blue-primary">
+        <span class="px-2 py-0.5 text-xs font-semibold rounded <%= if job.job_status.current_status == :archived, do: "bg-gray-200", else: "bg-blue-light-primary text-blue-primary" %>">
           <%= case {@live_action, job.job_status.current_status} do %>
             <% {:jobs, :archived} -> %> Archived
             <% {:jobs, _} -> %> Active
