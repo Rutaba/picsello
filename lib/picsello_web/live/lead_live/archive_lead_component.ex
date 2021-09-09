@@ -2,7 +2,6 @@ defmodule PicselloWeb.LeadLive.ArchiveLeadComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Job}
 
   @impl true
   def render(assigns) do
@@ -31,7 +30,7 @@ defmodule PicselloWeb.LeadLive.ArchiveLeadComponent do
   def handle_event(
         "archive",
         %{},
-        %{assigns: %{job: %{id: job_id}, live_action: live_action}} = socket
+        socket
       ) do
     send(socket.parent_pid, :archive)
 
