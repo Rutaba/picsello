@@ -6,23 +6,12 @@
 <ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
 <%= for job <- @jobs do %>
   <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
-    <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block", title: Job.name(job) do %>
-      <span class="px-2 py-0.5 text-xs font-semibold rounded <%= if job.job_status.current_status == :archived, do: "bg-gray-200", else: "bg-blue-light-primary text-blue-primary" %>">
-        <%= case {@live_action, job.job_status.current_status} do %>
-          <% {:jobs, :archived} -> %> Archived
-          <% {:jobs, _} -> %> Active
-          <% {:leads, :not_sent} -> %> Created
-          <% {:leads, :sent} -> %> Awaiting Acceptance
-          <% {:leads, :accepted} -> %> Awaiting Contract
-          <% {:leads, :signed_with_questionnaire} -> %> Awaiting Questionnaire
-          <% {:leads, status } when status in([:signed_without_questionnaire, :answered]) -> %> Awaiting Payment
-          <% {_, status } -> %> <%= status |> Phoenix.Naming.humanize() %>
-        <% end %>
-      </span>
+    <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block group", title: Job.name(job) do %>
+      <.status_badge job_status={job.job_status} />
 
       <div class="flex items-center justify-between text-xl font-semibold">
         <%= job |> Job.name() %>
-        <%= icon_tag(@socket, "forth", class: "w-4 h-4 stroke-current text-black") %>
+        <.icon name="forth" class="w-4 h-4 text-black stroke-current" />
       </div>
 
       <%= case card_date(@live_action, job) do %>

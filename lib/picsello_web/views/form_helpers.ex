@@ -1,8 +1,6 @@
 defmodule PicselloWeb.FormHelpers do
   alias PicselloWeb.Router.Helpers, as: Routes
 
-  use Phoenix.Component
-
   @moduledoc """
   Conveniences for translating and building error messages.
   """
@@ -172,26 +170,6 @@ defmodule PicselloWeb.FormHelpers do
     content_tag(:svg, opts) do
       tag(:use, "xlink:href": Routes.static_path(conn, "/images/icons.svg#" <> name))
     end
-  end
-
-  def icon(%{name: name} = assigns) do
-    assigns =
-      assigns
-      |> Enum.into(%{
-        width: nil,
-        height: nil,
-        class: nil,
-        path:
-          assigns
-          |> Map.get(:socket, PicselloWeb.Endpoint)
-          |> Routes.static_path("/images/icons.svg#" <> name)
-      })
-
-    ~H"""
-    <svg width={@width} height={@height} class={@class}>
-      <use xlink:href={@path} />
-    </svg>
-    """
   end
 
   defp classes(constants), do: classes(constants, %{})

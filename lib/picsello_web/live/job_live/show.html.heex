@@ -10,9 +10,7 @@
 
     <hr class="mt-2 border-white" />
 
-    <h2 class="text-xs font-bold tracking-widest text-gray-400 uppercase mt-7">
-      <%= if @job.job_status.current_status == :archived, do: "archived", else: "active" %>
-    </h2>
+    <.status_badge job_status={@job.job_status} class="inline-block bg-white mt-7" />
 
     <h1 class="flex items-center justify-between text-3xl font-bold lg:justify-start">
       <%= Job.name @job %>
@@ -82,7 +80,7 @@
 
   <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
     <%= @package.name %>
-    <.icon name="forth" class="stroke-current h-6 w-6" />
+    <.icon name="forth" class="w-6 h-6 stroke-current" />
   </button>
 
   <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>
