@@ -1,16 +1,20 @@
 <header class="bg-blue-light-primary">
-  <div class="p-6 pb-2 md:pb-6 center-container">
+  <div class="p-6 pb-2 lg:pb-6 center-container">
     <div class="text-xs text-blue-primary/50">
       <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
         <%= action_name(@live_action, :plural) %>
       <% end %>
-      <%= icon_tag(@socket, "forth", class: "inline-block stroke-current h-2 w-2") %>
+      <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
       <span class="font-semibold"><%= Job.name @job %></span>
     </div>
 
-    <h2 class="text-xs font-bold tracking-widest text-gray-400 uppercase mt-7">active</h2>
+    <hr class="mt-2 border-white" />
 
-    <h1 class="flex items-center justify-between text-3xl font-bold md:justify-start">
+    <h2 class="text-xs font-bold tracking-widest text-gray-400 uppercase mt-7">
+      <%= if @job.job_status.current_status == :archived, do: "archived", else: "active" %>
+    </h2>
+
+    <h1 class="flex items-center justify-between text-3xl font-bold lg:justify-start">
       <%= Job.name @job %>
       <span class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-primary text-blue-primary">
         <div class="absolute -top-1.5 left-1.5">&hellip;</div>
@@ -19,28 +23,40 @@
   </div>
 </header>
 
-<div class="p-6 pt-2 md:pt-6 md:pb-0 grid center-container bg-blue-light-primary gap-5 md:grid-cols-2 md:bg-white">
-  <div class="flex justify-between md:justify-start">
+<div class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-light-primary gap-5 lg:grid-cols-2 lg:bg-white">
+  <div class="flex justify-between lg:justify-start">
     <div><span class="font-bold" ><%= @package.name %></span>—<%= @job.type |> Phoenix.Naming.humanize() %></div>
 
-    <span class="font-bold md:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
+    <span class="font-bold lg:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
   </div>
 
-  <div class="flex flex-col md:flex-row md:justify-end">
-    <span class="mb-3 mr-6 font-bold md:mb-0"><%= @job.client.name %></span>
+  <hr class="border-white lg:hidden lg:col-span-2"/>
 
-    <a href={"mailto:#{@job.client.email}"} class="flex text-blue-primary">
-      <div class="flex items-center justify-center mr-3 rounded-full w-7 h-7 bg-blue-primary">
-        <.icon name="envelope" class="text-white stroke-current" width="12" height="10" />
-      </div>
-      <%= @job.client.email %>
-    </a>
+  <div class="flex flex-col lg:flex-row lg:justify-end">
+    <span class="mb-3 mr-6 font-bold lg:mb-0 whitespace-nowrap"><%= @job.client.name %></span>
+
+    <div class="flex">
+      <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-sm whitespace-nowrap lg:text-blue-primary">
+        <div class="flex items-center justify-center mr-2 rounded-full w-7 h-7 bg-blue-primary">
+          <.icon name="phone" class="text-white stroke-current" width="12" height="10" />
+        </div>
+        <%= @job.client.phone %>
+      </a>
+
+      <a href={"mailto:#{@job.client.email}"} class="flex items-center text-sm lg:text-blue-primary">
+        <div class="flex items-center justify-center mr-2 rounded-full w-7 h-7 bg-blue-primary">
+          <.icon name="envelope" class="text-white stroke-current" width="12" height="10" />
+        </div>
+        <%= @job.client.email %>
+      </a>
+    </div>
   </div>
-  <hr class="hidden border-gray-200 md:block col-span-2"/>
+
+  <hr class="hidden border-gray-200 lg:block col-span-2"/>
 </div>
 
 <div class="p-6 center-container">
-  <ul class="grid gap-5 grid-cols-2 md:grid-cols-4">
+  <ul class="grid gap-5 grid-cols-2 lg:grid-cols-4">
     <.overview_card title="Finances" icon="money-bags" button_text="Send reminder">
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
@@ -66,7 +82,7 @@
 
   <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
     <%= @package.name %>
-    <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
+    <.icon name="forth" class="stroke-current h-6 w-6" />
   </button>
 
   <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>

@@ -178,8 +178,8 @@ defmodule PicselloWeb.FormHelpers do
     assigns =
       assigns
       |> Enum.into(%{
-        width: "auto",
-        height: "auto",
+        width: nil,
+        height: nil,
         class: nil,
         path:
           assigns
