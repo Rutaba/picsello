@@ -32,18 +32,20 @@ defmodule PicselloWeb.JobLive.Index do
     )
   end
 
-  def card_date(:jobs, %Job{shoots: shoots}) do
+  def card_date(:jobs, "" <> time_zone, %Job{shoots: shoots}) do
     try do
-      shoots
-      |> Enum.map(& &1.starts_at)
-      |> Enum.filter(&(DateTime.compare(&1, DateTime.utc_now()) == :gt))
-      |> Enum.min(DateTime)
-      |> Calendar.strftime("%B %d, %Y @ %I:%M %p")
+      date =
+        shoots
+        |> Enum.map(& &1.starts_at)
+        |> Enum.filter(&(DateTime.compare(&1, DateTime.utc_now()) == :gt))
+        |> Enum.min(DateTime)
+
+      strftime(time_zone, date, "%B %d, %Y @ %I:%M %p")
     rescue
       _e in Enum.EmptyError ->
         nil
     end
   end
 
-  def card_date(:leads, _), do: nil
+  def card_date(:leads, _, _), do: nil
 end

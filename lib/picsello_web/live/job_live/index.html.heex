@@ -14,7 +14,7 @@
         <.icon name="forth" class="w-4 h-4 text-black stroke-current" />
       </div>
 
-      <%= case card_date(@live_action, job) do %>
+      <%= case card_date(@live_action, @current_user.time_zone, job) do %>
         <% nil -> %>
         <% date -> %> <span class="font-semibold text-blue-primary"> On <%= date %> </span>
       <% end %>
