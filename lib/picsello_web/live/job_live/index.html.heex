@@ -4,28 +4,32 @@
   </h1>
 </header>
 <%= if Enum.empty? @jobs do %>
-  <div class="p-6 center-container">
-
+  <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
+    <div></div> <%# flex in thirds %>
     <%= case @live_action do %>
       <% :leads -> %>
-        <h1 class="mb-3 text-5xl font-bold mt-7">Oh hey!</h1>
-        <p class="block text-2xl lg:w-1/2">You don't have any leads at the moment.</p>
-        <div class="inline-block">
-          <a title="create lead" href="#" class="fixed flex justify-center py-2 mt-5 text-lg left-6 lg:left-auto lg:bottom-auto lg:right-auto right-6 bottom-6 lg:relative px-7 btn-primary" phx-click="create-lead">
+        <div class"flex flex-col">
+          <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
+          <p class="block text-lg lg:text-2xl lg:w-1/2">You don't have any leads at the moment.</p>
+        </div>
+        <div class="lg:inline-flex">
+          <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary" phx-click="create-lead">
             Create a lead
           </a>
         </div>
       <% :jobs -> %>
-        <h1 class="mb-3 text-5xl font-bold mt-7">Oh hey!</h1>
-        <p class="block text-2xl lg:w-1/2">You don't have any jobs at the moment. You need a lead to accept a proposal before a job is ready.</p>
-        <div class="inline-block">
-          <%= live_redirect to: Routes.job_path(@socket, :leads), class: "fixed flex justify-center py-2 mt-5 text-lg left-6 lg:left-auto lg:bottom-auto lg:right-auto right-6 bottom-6 lg:relative px-7 btn-primary" do %>
+        <div class="flex flex-col">
+          <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
+          <p class="block text-lg lg:text-2xl lg:w-1/2">You don't have any jobs at the moment. You need a lead to accept a proposal before a job is ready.</p>
+        </div>
+        <div class="lg:inline-flex">
+          <%= live_redirect to: Routes.job_path(@socket, :leads), class: "flex justify-center mt-5 text-lg px-7 btn-primary" do %>
             Go to your leads
           <% end %>
         </div>
     <% end %>
   </div>
-<%= else %>
+<% else %>
 <ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
 <%= for job <- @jobs do %>
   <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
