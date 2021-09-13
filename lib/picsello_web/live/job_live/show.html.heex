@@ -22,30 +22,33 @@
 </header>
 
 <div class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-light-primary gap-5 lg:grid-cols-2 lg:bg-white">
-  <div class="flex justify-between lg:justify-start">
-    <div><span class="font-bold" ><%= @package.name %></span>—<%= @job.type |> Phoenix.Naming.humanize() %></div>
+  <div class="flex justify-between min-w-0 lg:justify-start">
+    <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
 
-    <span class="font-bold lg:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
+    <span class="ml-2 font-bold lg:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
   </div>
 
   <hr class="border-white lg:hidden lg:col-span-2"/>
 
-  <div class="flex flex-col lg:flex-row lg:justify-end">
+  <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end">
     <span class="mb-3 mr-6 font-bold lg:mb-0 whitespace-nowrap"><%= @job.client.name %></span>
 
     <div class="flex">
-      <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-sm whitespace-nowrap lg:text-blue-primary">
-        <div class="flex items-center justify-center mr-2 rounded-full w-7 h-7 bg-blue-primary">
+      <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-xs whitespace-nowrap lg:text-blue-primary">
+        <.circle radius="7" class="mr-2">
           <.icon name="phone" class="text-white stroke-current" width="12" height="10" />
-        </div>
+        </.circle>
+
         <%= @job.client.phone %>
       </a>
 
-      <a href={"mailto:#{@job.client.email}"} class="flex items-center text-sm lg:text-blue-primary">
-        <div class="flex items-center justify-center mr-2 rounded-full w-7 h-7 bg-blue-primary">
+      <a href={"mailto:#{@job.client.email}"} class="flex items-center min-w-0 text-xs lg:text-blue-primary">
+        <span class="flex-shrink-0">
+          <.circle radius="7" class="mr-2">
           <.icon name="envelope" class="text-white stroke-current" width="12" height="10" />
-        </div>
-        <%= @job.client.email %>
+          </.circle>
+        </span>
+        <span class="truncate"><%= @job.client.email %></span>
       </a>
     </div>
   </div>
@@ -74,23 +77,40 @@
     </.overview_card>
   </ul>
 
-  <%= live_component PicselloWeb.JobLive.Shared.Components.Details, job: @job, live_action: @live_action %>
+  <h2 class="mt-8 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
 
-  <h2 class="mt-4 text-xs font-bold uppercase">Package Details</h2>
+  <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
+  <%= for {shoot_number, shoot} <- @shoots do %>
+    <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
+      <button type="button" class="w-full p-4 text-left" phx-click="edit-shoot-details" phx-value-shoot-id={shoot.id} phx-value-shoot-number={shoot_number} title="Edit shoot">
+        <div class="flex items-center justify-between text-xl font-semibold">
+          <div>
+            <%= shoot.name %>
+          </div>
 
-  <button title="Edit package" type="button" phx-click="edit-package" class="mt-2 btn-row">
-    <%= @package.name %>
-    <.icon name="forth" class="w-6 h-6 stroke-current" />
-  </button>
+          <.icon name="forth" class="w-4 h-4 text-black stroke-current" />
+        </div>
 
-  <h2 class="pt-4 mb-2 text-xs font-bold uppercase" id="shoot-details">Shoot Details</h2>
-  <%= live_component PicselloWeb.JobLive.Shared.Components.ShootDetails, shoots: @shoots %>
+        <div class="font-semibold text-blue-primary"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
 
-  <h2 class="mt-4 text-xs font-bold uppercase" id="booking-details">Booking Details</h2>
+        <hr class="my-3 border-top">
 
-  <%= live_component PicselloWeb.JobLive.Shared.Components.BookingDetails, proposal: @proposal, current_user: @current_user %>
+        <span class="text-gray-400"><%= dyn_gettext shoot.location %></span>
+      </button>
+    </li>
+  <% end %>
+  </ul>
+</div>
 
-  <hr class="mt-6 border-gray-500" >
-  <p class="mt-6 text-sm font-semibold">If any updates are made after client has signed, an amendment will need to be reviewed and accepted by them.</p>
-  <button class="w-full mt-6 btn-primary" disabled>Send booking update</button>
+<div class="center-container">
+  <h2 class="px-6 mb-3 text-xs font-bold tracking-widest text-gray-400 uppercase" id="booking-details">Booking Details</h2>
+
+  <div class="p-4 m-0 border-0 rounded-lg lg:border lg:mx-6 lg:p-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4 bg-blue-light-primary lg:bg-white">
+    <.details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} />
+    <.details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} />
+    <%= if @proposal.answer do %>
+      <.details_item title="Questionnaire" icon="document" status="Completed" date={@proposal.answer.inserted_at} current_user={@current_user} />
+    <% end %>
+    <.details_item title="Invoice" icon="document" status="Deposit paid" date={@proposal.deposit_paid_at} current_user={@current_user} />
+  </div>
 </div>

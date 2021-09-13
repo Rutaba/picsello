@@ -17,7 +17,7 @@ defmodule PicselloWeb.JobLive.Show do
       <li class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
           <div class="mb-6 font-bold">
-            <.icon name={@icon} class= "inline w-5 h-6 mr-2 stroke-current" />
+            <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
             <%= @title %>
           </div>
 
@@ -28,6 +28,40 @@ defmodule PicselloWeb.JobLive.Show do
           <%= @button_text %>
         </button>
       </li>
+    """
+  end
+
+  def circle(assigns) do
+    radiuses = %{"7" => "w-7 h-7", "8" => "w-8 h-8"}
+
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: nil,
+        radius_class: Map.get(radiuses, assigns.radius)
+      })
+
+    ~H"""
+      <div class={"flex items-center justify-center rounded-full bg-blue-primary #{@radius_class} #{@class}"}>
+        <%= render_block(@inner_block) %>
+      </div>
+    """
+  end
+
+  def details_item(assigns) do
+    ~H"""
+    <div class="flex items-center">
+      <.circle radius="8" class="flex-shrink-0">
+        <.icon name={@icon} width="14" height="14" />
+      </.circle>
+      <div class="ml-2">
+        <div class="flex items-center font-bold">
+          <%= @title %>
+          <.icon name="forth" class="w-3 h-3 ml-2 text-black stroke-current" />
+        </div>
+        <div class="text-xs text-gray-500"><%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span></div>
+      </div>
+    </div>
     """
   end
 

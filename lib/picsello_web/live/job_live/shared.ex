@@ -114,7 +114,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def assign_shoots(socket), do: socket |> assign(shoots: [])
 
   def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
-    proposal = BookingProposal.last_for_job(job_id)
+    proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
     socket |> assign(proposal: proposal)
   end
 end
