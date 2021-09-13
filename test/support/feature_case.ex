@@ -22,6 +22,7 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
       |> click(button("Log In"))
+      |> assert_text("Hello")
     end
 
     def maybe_visit_log_in(session) do

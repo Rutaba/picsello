@@ -1,21 +1,22 @@
 defmodule Picsello.JobIndexTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.Job
+  alias Picsello.{Job, Repo}
 
   setup do
     user = insert(:user)
     lead = insert(:job, user: user, type: "wedding")
     job = insert(:job, user: user, type: "family", package: %{shoot_count: 1})
-    insert(:shoot, job: job)
+    shoot = insert(:shoot, job: job)
 
-    insert(:proposal,
-      job: job,
-      deposit_paid_at: DateTime.utc_now(),
-      accepted_at: DateTime.utc_now(),
-      signed_at: DateTime.utc_now()
-    )
+    proposal =
+      insert(:proposal,
+        job: job,
+        deposit_paid_at: DateTime.utc_now(),
+        accepted_at: DateTime.utc_now(),
+        signed_at: DateTime.utc_now()
+      )
 
-    [user: user, job: job, lead: lead]
+    [user: user, job: job, lead: lead, shoot: shoot, proposal: proposal]
   end
 
   setup :authenticated
@@ -30,6 +31,36 @@ defmodule Picsello.JobIndexTest do
     |> refute_has(link(Job.name(lead)))
     |> click(link(Job.name(job)))
     |> assert_has(link("Jobs"))
+  end
+
+  feature "empty jobs", %{session: session, job: job, proposal: proposal, shoot: shoot} do
+    session
+    |> visit("/jobs")
+    |> refute_has(link("Go to your leads"))
+
+    Repo.delete(proposal)
+    Repo.delete(shoot)
+    Repo.delete(job)
+
+    session
+    |> visit("/jobs")
+    |> assert_text("You don't have any jobs at the moment")
+    |> click(link("Go to your leads"))
+    |> assert_path("/leads")
+  end
+
+  feature "empty leads", %{session: session, lead: lead} do
+    session
+    |> visit("/leads")
+    |> refute_has(link("Create a lead"))
+
+    Repo.delete(lead)
+
+    session
+    |> visit("/leads")
+    |> assert_text("You don't have any leads at the moment")
+    |> click(link("Create a lead"))
+    |> assert_has(css("h1", text: "Create a lead"))
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do

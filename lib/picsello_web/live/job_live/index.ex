@@ -14,6 +14,13 @@ defmodule PicselloWeb.JobLive.Index do
     |> ok()
   end
 
+  @impl true
+  def handle_event("create-lead", %{}, socket),
+    do:
+      socket
+      |> open_modal(PicselloWeb.JobLive.NewComponent, Map.take(socket.assigns, [:current_user]))
+      |> noreply()
+
   defp assign_jobs(%{assigns: %{current_user: current_user, live_action: action}} = socket) do
     socket
     |> assign(
