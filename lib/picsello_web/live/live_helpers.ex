@@ -76,37 +76,37 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def status_badge(%{job_status: %{current_status: status, is_lead: is_lead}} = assigns) do
-    label =
+    colors = %{
+      gray: "bg-gray-200",
+      blue: "bg-blue-light-primary text-blue-primary group-hover:bg-white"
+    }
+
+    {label, color_style} =
       case {is_lead, status} do
-        {false, :archived} ->
-          "Archived"
+        {_, :archived} ->
+          {"Archived", colors.gray}
 
         {false, _} ->
-          "Active"
+          {"Active", colors.blue}
 
         {true, :not_sent} ->
-          "Created"
+          {"Created", colors.blue}
 
         {true, :sent} ->
-          "Awaiting Acceptance"
+          {"Awaiting Acceptance", colors.blue}
 
         {true, :accepted} ->
-          "Awaiting Contract"
+          {"Awaiting Contract", colors.blue}
 
         {true, :signed_with_questionnaire} ->
-          "Awaiting Questionnaire"
+          {"Awaiting Questionnaire", colors.blue}
 
         {true, status} when status in [:signed_without_questionnaire, :answered] ->
-          "Awaiting Payment"
+          {"Awaiting Payment", colors.blue}
 
         {_, status} ->
-          status |> Phoenix.Naming.humanize()
+          {status |> Phoenix.Naming.humanize(), colors.blue}
       end
-
-    color_style =
-      if status == :archived,
-        do: "bg-gray-200",
-        else: "bg-blue-light-primary text-blue-primary group-hover:bg-white"
 
     assigns =
       assigns
