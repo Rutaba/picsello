@@ -5,12 +5,12 @@
 @layer components {
   .btn-primary {
     @apply
-      px-4 py-3 font-medium text-white border rounded-lg bg-blue-primary border-blue-primary hover:bg-blue-dark-primary focus:outline-none focus:ring-2 focus:ring-blue-primary focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed ;
+      px-4 py-3 font-medium text-white bg-black border border-black rounded-lg hover:bg-black/90 focus:outline-none focus:ring-2 focus:ring-black/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed ;
   }
 
   .btn-secondary {
     @apply
-      px-4 py-3 font-medium bg-white border rounded-lg text-blue-primary border-blue-primary hover:bg-blue-light-primary focus:outline-none focus:ring-2 focus:ring-blue-primary focus:ring-opacity-75 ;
+      px-4 py-3 font-medium text-black bg-white border border-black rounded-lg hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-black/70 focus:ring-opacity-75 ;
   }
 
   .btn-icon {
