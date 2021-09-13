@@ -117,4 +117,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared
   defdelegate assign_proposal(socket), to: PicselloWeb.JobLive.Shared
+
+  def next_reminder_on(nil), do: nil
+  defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 end

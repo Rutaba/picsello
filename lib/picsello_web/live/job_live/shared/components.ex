@@ -1,24 +1,5 @@
 defmodule PicselloWeb.JobLive.Shared.Components do
   @moduledoc "markup used for jobs and leads"
-  defmodule Header do
-    @moduledoc false
-    use PicselloWeb, :live_component
-    alias Picsello.Job
-
-    def render(assigns) do
-      ~L"""
-        <div class="text-xs text-gray-400">
-          <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
-            <%= action_name(@live_action, :plural) %>
-          <% end %>
-          <%= icon_tag(@socket, "forth", class: "inline-block stroke-current h-2 w-2") %>
-          <span class="font-semibold"><%= Job.name @job %></span>
-        </div>
-
-        <hr class="mt-1 border-gray-200"/>
-      """
-    end
-  end
 
   defmodule Details do
     @moduledoc false

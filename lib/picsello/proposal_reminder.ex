@@ -13,7 +13,24 @@ defmodule Picsello.ProposalReminder do
   import Ecto.Query
 
   def deliver_all(now \\ DateTime.utc_now()) do
-    from(proposal in BookingProposal,
+    BookingProposal
+    |> next_proposal_info()
+    |> Repo.all()
+    |> Enum.each(&maybe_send_message(now, &1))
+  end
+
+  def next_reminder_on(%BookingProposal{id: proposal_id}) do
+    with {^proposal_id, %{total_sent: total_sent, last_sent_at: last_sent_at}} <-
+           from(proposal in BookingProposal, where: proposal.id == ^proposal_id)
+           |> next_proposal_info()
+           |> Repo.one(),
+         %{days: days} <- reminder_messages() |> Enum.at(total_sent) do
+      add_days(last_sent_at, days)
+    end
+  end
+
+  defp next_proposal_info(query) do
+    from(proposal in query,
       left_join: message in ProposalMessage,
       on: proposal.id == message.proposal_id and message.scheduled,
       group_by: proposal.id,
@@ -25,8 +42,6 @@ defmodule Picsello.ProposalReminder do
            total_sent: count(message.id)
          }}
     )
-    |> Repo.all()
-    |> Enum.each(&maybe_send_message(now, &1))
   end
 
   defp maybe_send_message(
@@ -58,11 +73,13 @@ defmodule Picsello.ProposalReminder do
     end
   end
 
-  defp elapsed?(now, %NaiveDateTime{} = last_sent_at, days),
-    do: elapsed?(now, last_sent_at |> DateTime.from_naive!("Etc/UTC"), days)
-
   defp elapsed?(now, last_sent_at, days),
-    do: DateTime.diff(now, last_sent_at, :millisecond) > :timer.hours(days * 24)
+    do: :lt == last_sent_at |> add_days(days) |> DateTime.compare(now)
+
+  defp add_days(%NaiveDateTime{} = date, days),
+    do: date |> DateTime.from_naive!("Etc/UTC") |> add_days(days)
+
+  defp add_days(date, days), do: date |> DateTime.add(:timer.hours(days * 24), :millisecond)
 
   defp reminder_messages,
     do: [

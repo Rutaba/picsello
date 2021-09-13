@@ -1,8 +1,25 @@
 <div class="px-6 pt-2 pb-8 bg-gray-100">
-  <%= live_component PicselloWeb.JobLive.Shared.Components.Header, job: @job, live_action: @live_action %>
 
+  <div class="text-xs text-gray-400">
+    <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
+      <%= action_name(@live_action, :plural) %>
+    <% end %>
+    <%= icon_tag(@socket, "forth", class: "inline-block stroke-current h-2 w-2") %>
 
-  <div class="flex items-center justify-between my-5">
+    <span class="font-semibold"><%= Job.name @job %></span>
+  </div>
+
+  <hr class="mt-1 border-gray-200 mb-7"/>
+
+  <%= case next_reminder_on(@proposal) do %>
+    <% nil -> %>
+    <% date -> %>
+      <span class="inline-block mb-2 px-2 py-0.5 text-xs font-semibold rounded bg-white text-blue-primary">
+        Email scheduled for <%= strftime(@current_user.time_zone, date, "%B %d, %Y") %>
+      </span>
+  <% end %>
+
+  <div class="flex items-center justify-between mb-5">
     <h1 class="text-2xl font-bold"><%= Job.name @job %></h1>
     <button phx-click="manage" class="flex items-center px-2 py-1 text-xs font-normal bg-white border-white rounded btn-secondary">
       Manage
@@ -26,7 +43,6 @@
 
   <h2 class="mt-4 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status</h2>
   <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, job: @job, current_user: @current_user %>
-
 </div>
 
 <div class="px-6 pb-8">

@@ -28,4 +28,17 @@ defmodule Picsello.ViewLeadTest do
     |> click(link("Rick Sanchez Family"))
     |> assert_has(css("h1", text: "Rick Sanchez Family"))
   end
+
+  feature "photographer sees scheduled reminder email date", %{session: session, jobs: [job | _]} do
+    insert(:proposal, job: job)
+
+    first_reminder_on =
+      DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60) |> Calendar.strftime("%B %d, %Y")
+
+    session
+    |> visit("/")
+    |> click(link("View current leads"))
+    |> click(link("Rick Sanchez Family"))
+    |> assert_text("Email scheduled for #{first_reminder_on}")
+  end
 end
