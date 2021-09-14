@@ -112,7 +112,8 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(css("button:disabled[title='Next page']"))
     |> click(button("Previous page"))
     |> assert_text("Results: 1 – 6 of 7")
-    |> find(select("per-page"), &click(&1, option("12")))
+    |> click(css("#page-dropdown"))
+    |> click(css("label", text: "12"))
     |> assert_text("Results: 1 – 7 of 7")
   end
 end

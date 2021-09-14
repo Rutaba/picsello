@@ -52,6 +52,10 @@
     <path d="M1,1l9,8l9,-8" stroke-width="2" fill="none"/>
   </svg>
 
+  <svg id="up" viewBox="0 0 20 10">
+    <path d="M1,9 l9,-8 l9,8" stroke-width="2" fill="none"/>
+  </svg>
+
   <svg id="close-modal" viewBox="0 0 20 20">
     <path d="M1,1L18,18M1,18L18,1" stroke-width="2" stroke-linecap="round"/>
   </svg>
@@ -123,5 +127,9 @@
     <path d="M4.7998 16.2001H13.6664" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M4.7998 12.3999H16.1998" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M16.1999 8.6001H12.3999" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <svg id="checkmark" viewBox="0 0 16 16" fill="none">
+    <path d="M1 8.22222L6.15789 14L15 1" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 </svg>

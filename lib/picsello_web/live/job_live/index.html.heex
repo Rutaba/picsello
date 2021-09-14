@@ -68,11 +68,7 @@
 
 <div class="flex items-center px-6 pb-6 center-container">
   <form phx-change="page">
-    <select name="per-page" class="px-2 py-1 w-14 select">
-      <%= for(per_page <- [6, 12, 18, 24]) do %>
-        <option selected={@pagination.limit == per_page}><%= per_page %></option>
-      <% end %>
-    </select>
+    <.select name="per-page" value={@pagination.limit} options={[6, 12, 18, 24]} />
   </form>
 
   <div class="flex ml-2 text-xs font-bold text-gray-500">
