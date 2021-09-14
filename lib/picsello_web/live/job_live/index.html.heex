@@ -65,4 +65,28 @@
   </li>
 <% end %>
 </ul>
+
+<div class="flex items-center px-6 pb-6 center-container">
+  <form phx-change="page">
+    <select name="per-page" class="px-2 py-1 w-14 select">
+      <%= for(per_page <- [6, 12, 18, 24]) do %>
+        <option selected={@pagination.limit == per_page}><%= per_page %></option>
+      <% end %>
+    </select>
+  </form>
+
+  <div class="flex ml-2 text-xs font-bold text-gray-500">
+      Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
+  </div>
+
+  <div class="flex items-center ml-auto">
+    <button class="p-4 rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={is_nil(@pagination.before)} phx-value-cursor={@pagination.before}>
+      <.icon name="back" class="w-3 h-3 stroke-current" />
+    </button>
+  <button class="p-4 rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={is_nil(@pagination.after)} phx-value-cursor={@pagination.after}>
+    <.icon name="forth" class="w-3 h-3 stroke-current" />
+  </button>
+  </div>
+</div>
+
 <% end %>

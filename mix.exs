@@ -42,6 +42,7 @@ defmodule Picsello.MixProject do
         {:gettext, "~> 0.18"},
         {:jason, "~> 1.2.2"},
         {:money, "~> 1.9"},
+        {:paginator, "~> 1.0.4"},
         {:phoenix, "~> 1.5.12"},
         {:phoenix_ecto, "~> 4.4.0"},
         {:phoenix_html, "~> 3.0.3"},
