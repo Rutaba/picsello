@@ -29,7 +29,7 @@ import Select from './hooks/select';
 const Modal = {
   mounted() {
     this.el.addEventListener('click', (e) => {
-      if (e.target.id === 'modal') {
+      if (e.target.id === 'modal-wrapper') {
         this.pushEvent('modal', { action: 'close' });
       }
     });

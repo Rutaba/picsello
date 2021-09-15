@@ -13,7 +13,7 @@ defmodule PicselloWeb.LiveModal do
       ~L"""
       <div class="pt-40"></div>
 
-      <div id="modal-buttons" class="sticky bottom-0">
+      <div id="modal-buttons" class="sticky px-8 -m-8 -bottom-8">
         <div class="py-6 text-center bg-white">
 
           <%= if @inner_block do %>
@@ -101,14 +101,12 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def render(assigns) do
     ~L"""
-    <div role="dialog" id="modal-wraper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms"
-         class="w-full h-full bg-black/20 shadow z-20 fixed transition-opacity ease-in-out
+    <div role="dialog" id="modal-wrapper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms"
+         class="flex items-center justify-center w-full h-full bg-black/20 shadow z-20 fixed transition-opacity ease-in-out
                 <%= %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state] %>">
         <%= if @modal.state != :closed do %>
-          <div id="modal" class="flex flex-col items-center h-full overflow-auto" phx-hook="LockBodyScroll">
-            <div class="relative mt-auto sm:mb-auto">
-              <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
-            </div>
+          <div id="modal-container" class="self-end overflow-hidden rounded-t-lg sm:rounded-b-lg sm:self-auto" phx-hook="LockBodyScroll">
+            <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
           </div>
         <% end %>
       </div>

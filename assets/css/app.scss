@@ -71,7 +71,7 @@ html {
 }
 
 .modal {
-  @apply p-8 bg-white rounded-t-lg w-90vw mt-5vw sm:rounded-b-lg sm:mb-5vw;
+  @apply p-8 bg-white w-90vw max-h-90vh overflow-auto;
 }
 
 @layer components {
