@@ -27,32 +27,35 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
-  def handle_event("open-proposal", %{}, socket) do
+  def handle_event(
+        "open-proposal",
+        %{},
+        %{assigns: %{proposal: proposal, read_only: read_only}} = socket
+      ) do
     socket
-    |> open_modal(
-      ProposalComponent,
-      modal_assigns(socket, [:client, :shoots, :package])
-    )
+    |> ProposalComponent.open_modal_from_proposal(proposal, read_only)
     |> noreply()
   end
 
   @impl true
-  def handle_event("open-contract", %{}, socket) do
+  def handle_event(
+        "open-contract",
+        %{},
+        %{assigns: %{proposal: proposal, read_only: read_only}} = socket
+      ) do
     socket
-    |> open_modal(
-      ContractComponent,
-      modal_assigns(socket)
-    )
+    |> ContractComponent.open_modal_from_proposal(proposal, read_only)
     |> noreply()
   end
 
   @impl true
-  def handle_event("open-questionnaire", %{}, socket) do
+  def handle_event(
+        "open-questionnaire",
+        %{},
+        %{assigns: %{proposal: proposal, read_only: read_only}} = socket
+      ) do
     socket
-    |> open_modal(
-      QuestionnaireComponent,
-      modal_assigns(socket)
-    )
+    |> QuestionnaireComponent.open_modal_from_proposal(proposal, read_only)
     |> noreply()
   end
 
@@ -100,8 +103,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     do: socket |> assign(proposal: proposal) |> noreply()
 
   @impl true
-  def handle_info({:update, %{answer: answer}}, socket),
-    do: socket |> assign(answer: answer) |> noreply()
+  def handle_info({:update, %{answer: answer}}, %{assigns: %{proposal: proposal}} = socket),
+    do: socket |> assign(answer: answer, proposal: %{proposal | answer: answer}) |> noreply()
 
   @impl true
   def handle_info(:confetti, socket) do
@@ -123,8 +126,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         answer: answer,
         job:
           %{
-            client: client,
-            shoots: shoots,
             package: %{organization: %{user: photographer} = organization} = package
           } = job
       } = proposal
@@ -132,7 +133,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> assign(
         answer: answer,
-        client: client,
         job: job,
         organization: organization,
         package: package,
@@ -142,7 +142,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
           [organization.name, job.type |> Phoenix.Naming.humanize()]
           |> Enum.join(" - "),
         read_only: photographer == current_user,
-        shoots: shoots,
         token: token
       )
     else
@@ -166,9 +165,4 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
       socket
     end
-
-  defp modal_assigns(%{assigns: assigns}, extra \\ []),
-    do:
-      assigns
-      |> Map.take([:job, :photographer, :proposal, :organization, :read_only] ++ extra)
 end

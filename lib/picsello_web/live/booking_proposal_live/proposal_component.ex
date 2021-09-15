@@ -27,4 +27,29 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
         |> noreply()
     end
   end
+
+  def open_modal_from_proposal(socket, proposal, read_only \\ true) do
+    %{
+      job:
+        %{
+          client: client,
+          shoots: shoots,
+          package: %{organization: %{user: photographer} = organization} = package
+        } = job
+    } =
+      proposal
+      |> Repo.preload(job: [:client, :shoots, package: [organization: :user]])
+
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: read_only,
+      job: job,
+      proposal: proposal,
+      photographer: photographer,
+      organization: organization,
+      client: client,
+      shoots: shoots,
+      package: package
+    })
+  end
 end

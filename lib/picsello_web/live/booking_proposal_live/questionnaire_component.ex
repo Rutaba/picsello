@@ -8,7 +8,6 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_questionnaire()
     |> assign_answer()
     |> assign_validation()
     |> ok()
@@ -67,11 +66,6 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
     )
   end
 
-  defp assign_questionnaire(%{assigns: %{proposal: proposal}} = socket) do
-    %{questionnaire: questionnaire} = proposal |> Repo.preload(:questionnaire)
-    socket |> assign(questionnaire: questionnaire)
-  end
-
   defp update_answers(answers, params),
     do:
       params
@@ -108,4 +102,27 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   end
 
   defp reject_blanks(list), do: list |> Enum.reject(&(String.trim(&1) == ""))
+
+  def open_modal_from_proposal(socket, proposal, read_only \\ true) do
+    %{
+      answer: answer,
+      questionnaire: questionnaire,
+      job:
+        %{
+          package: %{organization: %{user: photographer}}
+        } = job
+    } =
+      proposal
+      |> Repo.preload([:answer, :questionnaire, job: [package: [organization: :user]]])
+
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: read_only,
+      job: job,
+      answer: answer,
+      questionnaire: questionnaire,
+      photographer: photographer,
+      proposal: proposal
+    })
+  end
 end

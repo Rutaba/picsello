@@ -43,4 +43,24 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
     changeset = build_changeset(socket, params) |> Map.put(:action, action)
     assign(socket, changeset: changeset)
   end
+
+  def open_modal_from_proposal(socket, proposal, read_only \\ true) do
+    %{
+      job:
+        %{
+          package: %{organization: %{user: photographer} = organization}
+        } = job
+    } =
+      proposal
+      |> Repo.preload(job: [package: [organization: :user]])
+
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: read_only,
+      job: job,
+      proposal: proposal,
+      photographer: photographer,
+      organization: organization
+    })
+  end
 end

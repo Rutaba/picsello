@@ -49,7 +49,7 @@ defmodule PicselloWeb.JobLive.Show do
 
   def details_item(assigns) do
     ~H"""
-    <div class="flex items-center">
+    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-light-primary" phx-click="open-proposal" phx-value-action={@action} title={@title}>
       <.circle radius="8" class="flex-shrink-0">
         <.icon name={@icon} width="14" height="14" />
       </.circle>
@@ -60,8 +60,41 @@ defmodule PicselloWeb.JobLive.Show do
         </div>
         <div class="text-xs text-gray-500"><%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span></div>
       </div>
-    </div>
+    </a>
     """
+  end
+
+  @impl true
+  def handle_event(
+        "open-proposal",
+        %{"action" => "details"},
+        %{assigns: %{proposal: proposal}} = socket
+      ) do
+    socket
+    |> PicselloWeb.BookingProposalLive.ProposalComponent.open_modal_from_proposal(proposal)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "open-proposal",
+        %{"action" => "contract"},
+        %{assigns: %{proposal: proposal}} = socket
+      ) do
+    socket
+    |> PicselloWeb.BookingProposalLive.ContractComponent.open_modal_from_proposal(proposal)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "open-proposal",
+        %{"action" => "questionnaire"},
+        %{assigns: %{proposal: proposal}} = socket
+      ) do
+    socket
+    |> PicselloWeb.BookingProposalLive.QuestionnaireComponent.open_modal_from_proposal(proposal)
+    |> noreply()
   end
 
   @impl true
