@@ -16,15 +16,17 @@ defmodule PicselloWeb.LeadLive.ManageLeadComponent do
         Send a follow up email
         <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
       </button>
-      <button class="mt-4 btn-row"
-        title="Archive lead"
-        type="button"
-        phx-click="archive"
-        phx-target="<%= @myself %>"
-      >
-        Archive lead
-        <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-      </button>
+      <%= unless @job.archived_at do %>
+        <button class="mt-4 btn-row"
+          title="Archive lead"
+          type="button"
+          phx-click="archive"
+          phx-target="<%= @myself %>"
+        >
+          Archive lead
+          <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+        </button>
+      <% end %>
       <button class="w-full mt-8 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
         Close
       </button>
