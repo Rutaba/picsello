@@ -9,9 +9,9 @@ defmodule PicselloWeb.JobLive.Index do
   defmodule Pagination do
     @moduledoc false
     defstruct first_index: 1,
-              last_index: 6,
+              last_index: 12,
               total_count: 0,
-              limit: 6,
+              limit: 12,
               after: nil,
               before: nil
   end
@@ -122,7 +122,7 @@ defmodule PicselloWeb.JobLive.Index do
           </label>
         <% end %>
       </div>
-      <span class="text-xs"><%= @value %></span>
+      <span class="text-xs font-semibold"><%= @value %></span>
       <.icon name="down" class="w-3 h-3 ml-2 stroke-current text-blue-primary" />
     </div>
     """

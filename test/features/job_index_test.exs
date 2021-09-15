@@ -99,21 +99,21 @@ defmodule Picsello.JobIndexTest do
   end
 
   feature "pagination", %{session: session, user: user} do
-    insert_list(6, :job, user: user)
+    insert_list(12, :job, user: user)
 
     session
     |> visit("/leads")
-    |> assert_text("Results: 1 – 6 of 7")
-    |> assert_has(css("ul li", count: 6))
+    |> assert_text("Results: 1 – 12 of 13")
+    |> assert_has(css("ul li", count: 12))
     |> assert_has(css("button:disabled[title='Previous page']"))
     |> click(button("Next page"))
-    |> assert_text("Results: 7 – 7 of 7")
+    |> assert_text("Results: 13 – 13 of 13")
     |> assert_has(css("ul li", count: 1))
     |> assert_has(css("button:disabled[title='Next page']"))
     |> click(button("Previous page"))
-    |> assert_text("Results: 1 – 6 of 7")
+    |> assert_text("Results: 1 – 12 of 13")
     |> click(css("#page-dropdown"))
-    |> click(css("label", text: "12"))
-    |> assert_text("Results: 1 – 7 of 7")
+    |> click(css("label", text: "24"))
+    |> assert_text("Results: 1 – 13 of 13")
   end
 end
