@@ -14,16 +14,16 @@ defmodule PicselloWeb.LiveModal do
       <div class="pt-40"></div>
 
       <div id="modal-buttons" class="sticky bottom-0">
-        <div class="py-8 text-center bg-white">
+        <div class="py-6 text-center bg-white">
 
           <%= if @inner_block do %>
             <%= render_block @inner_block %>
           <% else %>
-            <button class="w-32 mx-1 btn-primary" title="save" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
+            <button class="w-32 m-1 btn-primary" title="save" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
               Save
             </button>
 
-            <button class="w-32 mx-1 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+            <button class="w-32 m-1 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
               Cancel
             </button>
           <% end %>
