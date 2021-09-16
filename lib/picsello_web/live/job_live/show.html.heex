@@ -105,12 +105,11 @@
 <div class="center-container">
   <h2 class="px-6 mb-3 text-xs font-bold tracking-widest text-gray-400 uppercase" id="booking-details">Booking Details</h2>
 
-  <div class="p-2 m-0 border-0 rounded-lg lg:border lg:mx-6 lg:p-3 grid gap-5 md:grid-cols-2 lg:grid-cols-4 bg-blue-light-primary lg:bg-white">
+  <div class="p-2 m-0 border-0 rounded-lg lg:border lg:mx-6 lg:p-3 grid gap-5 lg:grid-cols-3 bg-blue-light-primary lg:bg-white">
     <.details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
     <.details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
     <%= if @proposal.answer do %>
       <.details_item title="Questionnaire" icon="document" status="Completed" date={@proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
     <% end %>
-    <.details_item title="Invoice" icon="document" status="Deposit paid" date={@proposal.deposit_paid_at} current_user={@current_user} action="deposit" />
   </div>
 </div>

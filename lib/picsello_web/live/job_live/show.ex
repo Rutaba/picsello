@@ -98,9 +98,6 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_event("open-proposal", %{"action" => "deposit"}, socket), do: socket |> noreply()
-
-  @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
