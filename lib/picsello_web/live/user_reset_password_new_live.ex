@@ -10,6 +10,7 @@ defmodule PicselloWeb.UserResetPasswordNewLive do
 
     socket
     |> assign_defaults(session)
+    |> assign(:page_title, "Reset Password")
     |> assign(changeset: changeset, trigger_submit: false)
     |> ok()
   end

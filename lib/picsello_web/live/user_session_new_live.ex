@@ -10,6 +10,7 @@ defmodule PicselloWeb.UserSessionNewLive do
 
     socket
     |> assign_defaults(session)
+    |> assign(:page_title, "Log In")
     |> assign(changeset: changeset, error_message: nil, trigger_submit: false)
     |> ok()
   end

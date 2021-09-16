@@ -8,6 +8,7 @@ defmodule PicselloWeb.UserRegisterLive do
   def mount(_params, session, socket) do
     socket
     |> assign_defaults(session)
+    |> assign(:page_title, "Sign Up")
     |> assign_changeset()
     |> assign_trigger_submit()
     |> ok()

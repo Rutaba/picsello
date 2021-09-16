@@ -138,6 +138,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         package: package,
         photographer: photographer,
         proposal: proposal,
+        page_title:
+          [organization.name, job.type |> Phoenix.Naming.humanize()]
+          |> Enum.join(" - "),
         read_only: photographer == current_user,
         shoots: shoots,
         token: token

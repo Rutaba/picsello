@@ -91,6 +91,7 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> assign(
       job: job |> Map.drop([:package]),
+      page_title: job |> Job.name(),
       package: job.package
     )
     |> assign_shoots()
