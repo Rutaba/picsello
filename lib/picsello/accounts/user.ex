@@ -165,16 +165,15 @@ defmodule Picsello.Accounts.User do
   end
 
   def initials(%__MODULE__{name: name}) do
-    case name |> String.split(~r/\s+/, trim: true) do
-      [first_name | rest] ->
+    case name |> String.split() do
+      [first_name | [_ | _] = rest] ->
         [first_name, rest |> List.last()]
         |> Enum.map(&String.first/1)
         |> Enum.join()
-        |> String.upcase()
 
-      # no non-whitespace characters in name
-      _ ->
-        nil
+      [first_name] ->
+        first_name |> String.slice(0..1)
     end
+    |> String.upcase()
   end
 end
