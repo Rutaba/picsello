@@ -4,9 +4,8 @@ defmodule PicselloWeb.JobLive.Show do
   alias Picsello.Job
 
   @impl true
-  def mount(%{"id" => job_id}, session, socket) do
+  def mount(%{"id" => job_id}, _session, socket) do
     socket
-    |> assign_defaults(session)
     |> assign_job(job_id)
     |> assign_proposal()
     |> ok()

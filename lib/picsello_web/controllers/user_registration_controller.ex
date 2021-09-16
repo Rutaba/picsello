@@ -2,13 +2,7 @@ defmodule PicselloWeb.UserRegistrationController do
   use PicselloWeb, :controller
 
   alias Picsello.Accounts
-  alias Picsello.Accounts.User
   alias PicselloWeb.UserAuth
-
-  def new(conn, _params) do
-    changeset = Accounts.change_user_registration(%User{})
-    render(conn, "new.html", changeset: changeset)
-  end
 
   def create(conn, %{"user" => user_params}) do
     case Accounts.register_user(user_params) do

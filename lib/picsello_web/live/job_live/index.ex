@@ -17,10 +17,10 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def mount(_params, session, socket) do
+  def mount(_params, _session, %{assigns: %{live_action: action}} = socket) do
     socket
-    |> assign_defaults(session)
     |> assign_new(:pagination, fn -> %Pagination{} end)
+    |> assign(:page_title, action |> Phoenix.Naming.humanize())
     |> assign_jobs()
     |> ok()
   end

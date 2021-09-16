@@ -8,15 +8,14 @@ defmodule PicselloWeb.Live.User.Settings do
   @changeset_types %{current_password: :string, email: :string}
 
   @impl true
-  def mount(_params, session, socket) do
-    %{assigns: %{current_user: user}} = socket = assign_defaults(socket, session)
-
+  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
     |> assign(
       email_changeset: email_changeset(user),
       password_changeset: password_changeset(user),
       submit_changed_password: false,
-      sign_out: false
+      sign_out: false,
+      page_title: "Settings"
     )
     |> ok()
   end

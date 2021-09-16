@@ -5,8 +5,11 @@ defmodule PicselloWeb.HomeLive.Index do
   require Ecto.Query
 
   @impl true
-  def mount(_params, session, socket) do
-    socket |> assign_defaults(session) |> assign_counts() |> ok()
+  def mount(_params, _session, socket) do
+    socket
+    |> assign(:page_title, "Work Hub")
+    |> assign_counts()
+    |> ok()
   end
 
   @impl true

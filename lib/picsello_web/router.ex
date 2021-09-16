@@ -67,7 +67,7 @@ defmodule PicselloWeb.Router do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
     live "/", PageLive, :index
-    get "/users/register", UserRegistrationController, :new
+    live "/users/register", UserRegisterLive, :new, as: :user_registration
     post "/users/register", UserRegistrationController, :create
     live "/users/log_in", UserSessionNewLive, :new, as: :user_session
     post "/users/log_in", UserSessionController, :create
@@ -78,18 +78,20 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/", PicselloWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    live_session :default, on_mount: PicselloWeb.LiveAuth do
+      pipe_through [:browser, :require_authenticated_user]
 
-    put "/users/settings", UserSettingsController, :update
-    get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
-    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-    live "/users/settings", Live.User.Settings, :edit
+      put "/users/settings", UserSettingsController, :update
+      get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
+      get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+      live "/users/settings", Live.User.Settings, :edit
 
-    live "/home", HomeLive.Index, :index, as: :home
-    live "/leads/:id", LeadLive.Show, :leads, as: :job
-    live "/leads", JobLive.Index, :leads, as: :job
-    live "/jobs/:id", JobLive.Show, :jobs, as: :job
-    live "/jobs", JobLive.Index, :jobs, as: :job
+      live "/home", HomeLive.Index, :index, as: :home
+      live "/leads/:id", LeadLive.Show, :leads, as: :job
+      live "/leads", JobLive.Index, :leads, as: :job
+      live "/jobs/:id", JobLive.Show, :jobs, as: :job
+      live "/jobs", JobLive.Index, :jobs, as: :job
+    end
   end
 
   scope "/", PicselloWeb do

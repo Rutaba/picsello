@@ -4,9 +4,8 @@ defmodule PicselloWeb.LeadLive.Show do
   alias Picsello.{Job, Repo, BookingProposal, Notifiers.ClientNotifier, Questionnaire}
 
   @impl true
-  def mount(%{"id" => job_id}, session, socket) do
+  def mount(%{"id" => job_id}, _session, socket) do
     socket
-    |> assign_defaults(session)
     |> assign(stripe_status: :loading, include_questionnaire: true)
     |> assign_job(job_id)
     |> assign_proposal()
