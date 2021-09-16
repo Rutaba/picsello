@@ -24,11 +24,12 @@ defmodule Picsello.JobIndexTest do
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
     |> click(link("View current leads"))
+    |> assert_has(css("main > ul > li", count: 1))
     |> assert_has(link(Job.name(lead)))
-    |> refute_has(link(Job.name(job)))
     |> click(link("Picsello"))
     |> click(link("View jobs"))
-    |> refute_has(link(Job.name(lead)))
+    |> assert_has(css("main > ul > li", count: 1))
+    |> assert_has(link(Job.name(job)))
     |> click(link(Job.name(job)))
     |> assert_has(link("Jobs"))
   end
@@ -104,11 +105,11 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/leads")
     |> assert_text("Results: 1 – 12 of 13")
-    |> assert_has(css("ul li", count: 12))
+    |> assert_has(css("main > ul > li", count: 12))
     |> assert_has(css("button:disabled[title='Previous page']"))
     |> click(button("Next page"))
     |> assert_text("Results: 13 – 13 of 13")
-    |> assert_has(css("ul li", count: 1))
+    |> assert_has(css("main > ul > li", count: 1))
     |> assert_has(css("button:disabled[title='Next page']"))
     |> click(button("Previous page"))
     |> assert_text("Results: 1 – 12 of 13")
