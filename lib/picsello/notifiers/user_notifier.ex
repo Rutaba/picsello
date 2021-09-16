@@ -7,7 +7,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   Deliver instructions to confirm account.
   """
   def deliver_confirmation_instructions(user, url) do
-    sendgrid_template(:confirmation_instructions_template, name: user.first_name, url: url)
+    sendgrid_template(:confirmation_instructions_template, name: user.name, url: url)
     |> to(user.email)
     |> from("noreply@picsello.com")
     |> deliver_later()
@@ -17,7 +17,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   Deliver instructions to reset a user password.
   """
   def deliver_reset_password_instructions(user, url) do
-    sendgrid_template(:password_reset_template, name: user.first_name, url: url)
+    sendgrid_template(:password_reset_template, name: user.name, url: url)
     |> to(user.email)
     |> from("noreply@picsello.com")
     |> deliver_later()
@@ -27,7 +27,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   Deliver instructions to update a user email.
   """
   def deliver_update_email_instructions(user, url) do
-    sendgrid_template(:update_email_template, name: user.first_name, url: url)
+    sendgrid_template(:update_email_template, name: user.name, url: url)
     |> to(user.email)
     |> from("noreply@picsello.com")
     |> deliver_later()

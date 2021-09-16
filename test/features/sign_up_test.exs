@@ -16,14 +16,13 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> fill_in(text_field("First name"), with: "Mary")
-    |> fill_in(text_field("Last name"), with: "Jane")
+    |> fill_in(text_field("Name"), with: "Mary Jane")
     |> fill_in(text_field("Photography business name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_has(css("h1", text: "Hello Mary!"))
+    |> assert_has(css("h1", text: "Hello Mary Jane!"))
     |> assert_path("/home")
   end
 
@@ -31,8 +30,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> fill_in(text_field("First name"), with: "Mary")
-    |> fill_in(text_field("Last name"), with: "Jane")
+    |> fill_in(text_field("Name"), with: "Mary Jane")
     |> fill_in(text_field("Photography business name"), with: "Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "123")

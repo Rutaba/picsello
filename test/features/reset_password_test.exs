@@ -41,6 +41,6 @@ defmodule Picsello.ResetPasswordTest do
 
     session
     |> sign_in(user, "ThisIsAStrongP@ssw0rd")
-    |> assert_has(css("h1", text: "Hello #{user.first_name}"))
+    |> assert_has(css("h1", text: "Hello #{user.name}"))
   end
 end

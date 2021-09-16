@@ -7,9 +7,8 @@ defmodule Picsello.Accounts.User do
   schema "users" do
     field :confirmed_at, :naive_datetime
     field :email, :string
-    field :first_name, :string
     field :hashed_password, :string
-    field :last_name, :string
+    field :name, :string
     field :password, :string, virtual: true
     field :time_zone, :string
 
@@ -37,9 +36,9 @@ defmodule Picsello.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :first_name, :last_name, :password, :time_zone])
+    |> cast(attrs, [:email, :name, :password, :time_zone])
     |> cast_assoc(:organization, with: &Picsello.Organization.registration_changeset/2)
-    |> validate_required([:first_name, :last_name, :organization])
+    |> validate_required([:name, :organization])
     |> validate_email()
     |> validate_password(opts)
   end
@@ -163,7 +162,17 @@ defmodule Picsello.Accounts.User do
     end
   end
 
-  def initials(%__MODULE__{first_name: first_name, last_name: last_name}) do
-    [first_name, last_name] |> Enum.map(&String.first(&1)) |> Enum.join() |> String.upcase()
+  def initials(%__MODULE__{name: name}) do
+    case name |> String.split(~r/\s+/, trim: true) do
+      [first_name | rest] ->
+        [first_name, rest |> List.last()]
+        |> Enum.map(&String.first/1)
+        |> Enum.join()
+        |> String.upcase()
+
+      # no non-whitespace characters in name
+      _ ->
+        nil
+    end
   end
 end

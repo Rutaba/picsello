@@ -49,8 +49,7 @@ defmodule Picsello.Factory do
       |> Enum.into(%{
         email: sequence(:email, &"user-#{&1}@example.com"),
         password: valid_user_password(),
-        first_name: "Mary",
-        last_name: "Jane",
+        name: "Mary Jane",
         time_zone: "Etc/GMT",
         organization: fn -> params_for(:organization) end
       })

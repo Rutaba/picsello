@@ -31,7 +31,7 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Password"), with: valid_user_password())
     |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
-    |> assert_has(css("h1", text: "Hello #{user.first_name}"))
+    |> assert_has(css("h1", text: "Hello #{user.name}"))
     |> assert_path("/home")
   end
 end
