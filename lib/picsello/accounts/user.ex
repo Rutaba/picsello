@@ -37,10 +37,12 @@ defmodule Picsello.Accounts.User do
   def registration_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:email, :name, :password, :time_zone])
-    |> cast_assoc(:organization, with: &Picsello.Organization.registration_changeset/2)
-    |> validate_required([:name, :organization])
+    |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
+    |> put_assoc(:organization, %Picsello.Organization{
+      name: "#{attrs |> Map.get("name")}  Photography"
+    })
   end
 
   def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do

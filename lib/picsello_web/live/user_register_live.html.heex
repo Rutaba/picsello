@@ -22,10 +22,6 @@
       <%= labeled_input f, :email, type: :email_input, placeholder: "jack.nimble@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
       <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>
 
-      <%= inputs_for f, :organization, fn o -> %>
-        <%= labeled_input o, :name, label: "Photography business name", phx_debounce: "500", placeholder: "Jane Takes Pictures LLC", wrapper_class: "mt-4" %>
-      <% end %>
-
       <div class="flex flex-col-reverse justify-between mt-5 sm:mt-9 sm:flex-row">
         <p class="mt-5 text-sm text-gray-400 sm:mt-0 sm:pr-6">By signing up you agree to our
           <a href="#" class="border-b border-gray-400">Privacy Policy</a> and
