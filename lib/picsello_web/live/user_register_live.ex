@@ -1,6 +1,6 @@
 defmodule PicselloWeb.UserRegisterLive do
   @moduledoc false
-  use PicselloWeb, :live_view
+  use PicselloWeb, live_view: [layout: "onboarding"]
 
   alias Picsello.{Accounts, Accounts.User}
 

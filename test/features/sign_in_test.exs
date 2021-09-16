@@ -7,7 +7,7 @@ defmodule Picsello.SignInTest do
     |> assert_has(css("a", text: "Log In"))
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> assert_has(css("a", text: "Log In"))
+    |> assert_has(css("a", text: "Login"))
   end
 
   feature "user tries to log in", %{session: session} do
