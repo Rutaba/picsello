@@ -17,7 +17,7 @@ defmodule PicselloWeb do
   and import those modules here.
   """
 
-  def controller do
+  def controller(_) do
     quote do
       use Phoenix.Controller, namespace: PicselloWeb
 
@@ -27,7 +27,7 @@ defmodule PicselloWeb do
     end
   end
 
-  def view do
+  def view(_) do
     quote do
       use Phoenix.View,
         root: "lib/picsello_web/templates",
@@ -42,21 +42,12 @@ defmodule PicselloWeb do
     end
   end
 
-  def component_template do
-    quote do
-      use Phoenix.View,
-        root: "lib/picsello_web/live",
-        namespace: PicselloWeb
+  def live_view(options) do
+    layout = Keyword.get(options, :layout, "live")
 
-      import PicselloWeb.{LiveViewHelpers, LiveHelpers}
-      unquote(view_helpers())
-    end
-  end
-
-  def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {PicselloWeb.LayoutView, "live.html"}
+        layout: {PicselloWeb.LayoutView, "#{unquote(layout)}.html"}
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 
@@ -65,32 +56,16 @@ defmodule PicselloWeb do
     end
   end
 
-  def live_view_client do
-    quote do
-      use Phoenix.LiveView,
-        layout: {PicselloWeb.LayoutView, "live_client.html"}
-
-      import PicselloWeb.{LiveViewHelpers, LiveHelpers}
-
-      unquote(view_helpers())
-      unquote(modal_helpers())
-    end
-  end
-
-  def live_component do
+  def live_component(_) do
     quote do
       use Phoenix.LiveComponent
       import PicselloWeb.LiveHelpers
 
-      def render_template(name, assigns) do
-        Phoenix.View.render(__MODULE__.View, name, assigns)
-      end
-
       unquote(view_helpers())
     end
   end
 
-  def router do
+  def router(_) do
     quote do
       use Phoenix.Router
 
@@ -100,7 +75,7 @@ defmodule PicselloWeb do
     end
   end
 
-  def channel do
+  def channel(_) do
     quote do
       use Phoenix.Channel
       import PicselloWeb.Gettext
@@ -150,6 +125,10 @@ defmodule PicselloWeb do
   When used, dispatch to the appropriate controller/view/etc.
   """
   defmacro __using__(which) when is_atom(which) do
-    apply(__MODULE__, which, [])
+    apply(__MODULE__, which, [[]])
+  end
+
+  defmacro __using__([{which, opts}]) do
+    apply(__MODULE__, which, [opts])
   end
 end

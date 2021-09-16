@@ -1,6 +1,7 @@
 defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
-  use PicselloWeb, :live_view_client
+  use PicselloWeb, live_view: [layout: "live_client"]
+
   alias Picsello.{Repo, BookingProposal, Job}
 
   alias PicselloWeb.BookingProposalLive.{
