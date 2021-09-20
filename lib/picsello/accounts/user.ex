@@ -41,7 +41,7 @@ defmodule Picsello.Accounts.User do
     |> validate_email()
     |> validate_password(opts)
     |> put_assoc(:organization, %Picsello.Organization{
-      name: "#{attrs |> Map.get("name")}  Photography"
+      name: "#{attrs |> Map.get("name")} Photography"
     })
   end
 
