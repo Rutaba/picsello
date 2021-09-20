@@ -37,6 +37,7 @@ config :picsello, Picsello.Mailer, adapter: Picsello.MockBambooAdapter
 config :picsello, sandbox: Picsello.Sandbox
 config :picsello, :modal_transition_ms, 0
 config :picsello, :payments, Picsello.MockPayments
+config :picsello, :mox_allow_all, {Picsello.Mock, :allow_all}
 
 config :stripity_stripe,
   api_key: "sk_test_thisisaboguskey",

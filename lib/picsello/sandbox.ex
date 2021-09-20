@@ -24,8 +24,10 @@ defmodule Picsello.Sandbox do
       when is_pid(owner_pid) and is_pid(child_pid) do
     PidMap.assign(owner_pid, child_pid)
 
-    [Picsello.MockPayments, Picsello.MockBambooAdapter, Picsello.MockAuthStrategy]
-    |> Enum.each(&Mox.allow(&1, owner_pid, child_pid))
+    case Application.get_env(:picsello, :mox_allow_all) do
+      {m, f} -> apply(m, f, [owner_pid, child_pid])
+      _ -> nil
+    end
 
     # Delegate to the Ecto sandbox
     Ecto.Adapters.SQL.Sandbox.allow(repo, owner_pid, child_pid)
