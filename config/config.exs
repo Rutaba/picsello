@@ -30,6 +30,7 @@ config :phoenix, :json_library, Jason
 config :money, default_currency: :USD
 config :picsello, :modal_transition_ms, 400
 config :picsello, :payments, Picsello.StripePayments
+config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
