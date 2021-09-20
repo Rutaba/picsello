@@ -11,6 +11,7 @@ defmodule Picsello.Accounts.User do
     field :name, :string
     field :password, :string, virtual: true
     field :time_zone, :string
+    field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
 
     belongs_to(:organization, Picsello.Organization)
 

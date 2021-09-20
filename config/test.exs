@@ -41,3 +41,5 @@ config :picsello, :payments, Picsello.MockPayments
 config :stripity_stripe,
   api_key: "sk_test_thisisaboguskey",
   api_base_url: "http://localhost:12111/v1/"
+
+config :ueberauth, Ueberauth, providers: [google: {Picsello.MockAuthStrategy, []}]

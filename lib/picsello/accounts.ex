@@ -345,4 +345,29 @@ defmodule Picsello.Accounts do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
+
+  def user_from_auth(
+        %Ueberauth.Auth{provider: provider, info: %Ueberauth.Auth.Info{name: name, email: email}},
+        time_zone
+      ) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        %User{}
+        |> User.registration_changeset(%{
+          email: email,
+          name: name,
+          password: generate_password(),
+          time_zone: time_zone
+        })
+        |> Ecto.Changeset.put_change(:sign_up_auth_provider, provider)
+        |> Repo.insert()
+
+      user ->
+        {:ok, user}
+    end
+  end
+
+  def generate_password(length \\ 20) do
+    :crypto.strong_rand_bytes(length) |> Base.encode64() |> binary_part(0, length)
+  end
 end

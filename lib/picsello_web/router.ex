@@ -77,6 +77,13 @@ defmodule PicselloWeb.Router do
       as: :user_reset_password
   end
 
+  scope "/auth", PicselloWeb do
+    pipe_through :browser
+
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+  end
+
   scope "/", PicselloWeb do
     live_session :default, on_mount: PicselloWeb.LiveAuth do
       pipe_through [:browser, :require_authenticated_user]

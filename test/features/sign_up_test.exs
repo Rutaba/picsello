@@ -55,4 +55,28 @@ defmodule Picsello.SignUpTest do
     |> click(css("a", text: "hide"))
     |> assert_has(css("#user_password[type='password']"))
   end
+
+  feature "user signs up with google", %{session: session} do
+    Picsello.MockAuthStrategy
+    |> Mox.stub(:default_options, fn -> [ignores_csrf_attack: true] end)
+    |> Mox.stub(:handle_cleanup!, & &1)
+    |> Mox.stub(:handle_callback!, & &1)
+    |> Mox.stub(
+      :handle_request!,
+      &Ueberauth.Strategy.Helpers.redirect!(&1, Routes.auth_url(&1, :callback, :google))
+    )
+    |> Mox.stub(:auth, fn _ ->
+      %Ueberauth.Auth{
+        info: %Ueberauth.Auth.Info{name: "brian", email: "brian@example.com"},
+        provider: :google
+      }
+    end)
+
+    session
+    |> visit("/")
+    |> click(link("Sign Up"))
+    |> click(link("Continue with Google"))
+    |> assert_has(css("h1", text: "Hello brian!"))
+    |> assert_path("/home")
+  end
 end

@@ -54,7 +54,8 @@ defmodule Picsello.MixProject do
         {:stripity_stripe, "~> 2.12.1"},
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 0.5.1"},
-        {:tz, "~> 0.20"}
+        {:tz, "~> 0.20"},
+        {:ueberauth_google, "~> 0.10"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
