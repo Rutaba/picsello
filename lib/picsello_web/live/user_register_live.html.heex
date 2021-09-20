@@ -1,4 +1,4 @@
-<div class="flex flex-col items-center justify-center w-screen min-h-screen p-5 bg-blue-onboarding-first">
+<div id="tz-cookie" phx-hook="TZCookie" class="flex flex-col items-center justify-center w-screen min-h-screen p-5 bg-blue-onboarding-first">
   <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
     <div class="flex justify-between">
       <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48" />
@@ -17,7 +17,6 @@
     <.form let={f} for={@changeset} class="mt-11" action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
 
       <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
-      <%= hidden_input f, :time_zone, id: "time_zone_input", phx_hook: "TimeZoneInput", phx_update: "ignore" %>
       <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", wrapper_class: "mt-4", label: "Name" %>
       <%= labeled_input f, :email, type: :email_input, placeholder: "jack.nimble@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
       <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>

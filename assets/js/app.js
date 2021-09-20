@@ -75,10 +75,10 @@ const ClearInput = {
   },
 };
 
-const TimeZoneInput = {
+const TZCookie = {
   mounted() {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
-    this.el.value = timeZone;
+    document.cookie = `time_zone=${timeZone}; path=/`;
   },
 };
 
@@ -89,7 +89,7 @@ const Hooks = {
   Phone,
   Quill,
   Select,
-  TimeZoneInput,
+  TZCookie
 };
 
 let csrfToken = document

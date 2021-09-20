@@ -1,6 +1,9 @@
 defmodule Picsello.SignUpTest do
   use Picsello.FeatureCase, async: true
 
+  alias Picsello.{Repo, Accounts.User}
+  alias PicselloWeb.Router.Helpers, as: Routes
+
   setup do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     :ok
@@ -19,10 +22,14 @@ defmodule Picsello.SignUpTest do
     |> fill_in(text_field("Name"), with: "Mary Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
+    |> set_cookie("time_zone", "FakeTimeZone")
     |> wait_for_enabled_submit_button()
     |> click(button("Sign up"))
     |> assert_has(css("h1", text: "Hello Mary Jane!"))
     |> assert_path("/home")
+
+    user = Repo.one(User)
+    assert "FakeTimeZone" = user.time_zone
   end
 
   feature "user sees validation error when signing up", %{session: session} do

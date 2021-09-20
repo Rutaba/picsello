@@ -4,8 +4,8 @@ defmodule PicselloWeb.UserRegistrationController do
   alias Picsello.Accounts
   alias PicselloWeb.UserAuth
 
-  def create(conn, %{"user" => user_params}) do
-    case Accounts.register_user(user_params) do
+  def create(%{req_cookies: cookies} = conn, %{"user" => user_params}) do
+    case user_params |> Enum.into(Map.take(cookies, ["time_zone"])) |> Accounts.register_user() do
       {:ok, user} ->
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(
