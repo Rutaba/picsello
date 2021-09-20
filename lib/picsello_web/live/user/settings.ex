@@ -11,11 +11,14 @@ defmodule PicselloWeb.Live.User.Settings do
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
     |> assign(
-      email_changeset: email_changeset(user),
-      password_changeset: password_changeset(user),
-      submit_changed_password: false,
-      sign_out: false,
-      page_title: "Settings"
+      case user.sign_up_auth_provider do
+        :password ->
+          [email_changeset: email_changeset(user), password_changeset: password_changeset(user)]
+
+        _ ->
+          [email_changeset: nil, password_changeset: nil]
+      end
+      |> Keyword.merge(submit_changed_password: false, sign_out: false, page_title: "Settings")
     )
     |> ok()
   end

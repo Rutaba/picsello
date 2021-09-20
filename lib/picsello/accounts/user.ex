@@ -105,6 +105,9 @@ defmodule Picsello.Accounts.User do
     user
     |> cast(attrs, [:email])
     |> validate_email()
+    |> validate_previous_sign_up_auth_provider(
+      message: "must sign up with password to change email"
+    )
     |> case do
       %{changes: %{email: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :email, "did not change")
@@ -126,8 +129,27 @@ defmodule Picsello.Accounts.User do
   def password_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:password])
+    |> validate_previous_sign_up_auth_provider(
+      message: "must sign up with password to change password"
+    )
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
+  end
+
+  def validate_previous_sign_up_auth_provider(changeset, opts) do
+    message = opts |> Keyword.get(:message, "is invalid")
+
+    case changeset |> get_field(:sign_up_auth_provider) do
+      :password ->
+        changeset
+
+      _ ->
+        add_error(
+          changeset,
+          :sign_up_auth_provider,
+          message
+        )
+    end
   end
 
   @doc """

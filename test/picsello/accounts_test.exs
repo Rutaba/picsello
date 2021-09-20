@@ -238,6 +238,14 @@ defmodule Picsello.AccountsTest do
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
+
+    test "is error if user signed up via google", %{user: user, token: token} do
+      assert :error =
+               user
+               |> Ecto.Changeset.cast(%{sign_up_auth_provider: :google}, [:sign_up_auth_provider])
+               |> Repo.update!()
+               |> Accounts.update_user_email(token)
+    end
   end
 
   describe "change_user_password/2" do
@@ -261,6 +269,19 @@ defmodule Picsello.AccountsTest do
   describe "update_user_password/3" do
     setup do
       %{user: insert(:user)}
+    end
+
+    test "is error if user signed up via google", %{user: user} do
+      assert {:error, changeset} =
+               user
+               |> Ecto.Changeset.cast(%{sign_up_auth_provider: :google}, [:sign_up_auth_provider])
+               |> Repo.update!()
+               |> Accounts.update_user_password(valid_user_password(), %{
+                 password: "new valid password"
+               })
+
+      assert %{sign_up_auth_provider: ["must sign up with password to change password"]} =
+               changeset |> errors_on()
     end
 
     test "validates password", %{user: user} do

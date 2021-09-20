@@ -30,9 +30,20 @@ defmodule PicselloWeb.Live.User.SettingsTest do
       conn = get(conn, Routes.user_settings_path(conn, :edit))
       assert redirected_to(conn) == Routes.user_session_path(conn, :new)
     end
+
+    test "only shows sign out form if user signed up via google", %{conn: conn, user: user} do
+      user
+      |> Ecto.Changeset.cast(%{sign_up_auth_provider: :google}, [:sign_up_auth_provider])
+      |> Picsello.Repo.update!()
+
+      {:ok, _view, html} = live(conn, Routes.user_settings_path(conn, :edit))
+      assert [form] = html |> Floki.parse_fragment!() |> Floki.find("form")
+      sign_out_path = Routes.user_session_path(conn, :delete)
+      assert [^sign_out_path] = form |> Floki.attribute("action")
+    end
   end
 
-  describe "PUT /users/settings (change password form)" do
+  describe "change password form" do
     test "updates the user password and resets tokens", %{conn: conn, user: user} do
       {:ok, view, _html} = live(conn, Routes.user_settings_path(conn, :edit))
 
