@@ -41,9 +41,11 @@ defmodule Picsello.Accounts.User do
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
-    |> put_assoc(:organization, %Picsello.Organization{
-      name: "#{attrs |> Map.get("name")} Photography"
-    })
+    |> then(
+      &put_assoc(&1, :organization, %Picsello.Organization{
+        name: "#{get_field(&1, :name)} Photography"
+      })
+    )
   end
 
   def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
