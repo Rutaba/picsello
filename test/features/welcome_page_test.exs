@@ -1,8 +1,8 @@
 defmodule Picsello.WelcomePageTest do
   use Picsello.FeatureCase, async: true
 
-  feature "user logs in", %{session: session} do
-    user = insert(:user, %{name: "Morty Smith"})
+  feature "user sees home page", %{session: session} do
+    user = insert(:user, %{name: "Morty Smith"}) |> onboard!
 
     session
     |> sign_in(user)

@@ -19,6 +19,7 @@ defmodule Picsello.JobIndexTest do
     [user: user, job: job, lead: lead, shoot: shoot, proposal: proposal]
   end
 
+  setup :onboarded
   setup :authenticated
 
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do

@@ -25,6 +25,8 @@ defmodule Picsello.SignUpTest do
     |> set_cookie("time_zone", "FakeTimeZone")
     |> wait_for_enabled_submit_button()
     |> click(button("Sign up"))
+    |> assert_path("/onboarding")
+    |> visit("/")
     |> assert_has(css("h1", text: "Hello Mary Jane!"))
     |> assert_path("/home")
 
@@ -76,7 +78,6 @@ defmodule Picsello.SignUpTest do
     |> visit("/")
     |> click(link("Sign Up"))
     |> click(link("Continue with Google"))
-    |> assert_has(css("h1", text: "Hello brian!"))
-    |> assert_path("/home")
+    |> assert_path("/onboarding")
   end
 end

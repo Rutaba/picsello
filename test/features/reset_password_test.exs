@@ -11,7 +11,7 @@ defmodule Picsello.ResetPasswordTest do
   end
 
   feature "user resets password", %{session: session} do
-    user = insert(:user)
+    user = insert(:user) |> onboard!()
 
     session
     |> navigate_to_forgot_password()

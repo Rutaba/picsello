@@ -21,8 +21,21 @@ defmodule Picsello.SignInTest do
     |> assert_has(css("p.text-red-invalid", text: "Invalid email or password"))
   end
 
-  feature "user logs in", %{session: session} do
+  feature "new user logs in", %{session: session} do
     user = insert(:user)
+
+    session
+    |> visit("/")
+    |> click(css("a", text: "Log In"))
+    |> fill_in(text_field("Email"), with: user.email)
+    |> fill_in(text_field("Password"), with: valid_user_password())
+    |> wait_for_enabled_submit_button()
+    |> click(button("Log In"))
+    |> assert_path("/onboarding")
+  end
+
+  feature "onboarded user logs in", %{session: session} do
+    user = insert(:user) |> onboard!()
 
     session
     |> visit("/")

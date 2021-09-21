@@ -25,6 +25,7 @@ module.exports = {
         'gray-disabled': '#AAA',
         'green': '#65D157',
         'orange': '#FFBA74',
+        'orange-onboarding-second': '#F5BD7F',
         'orange-warning': '#E1662F',
         'blue-onboarding-first': '#86C3CC'
       },

@@ -7,8 +7,12 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
-    def wait_for_enabled_submit_button(session) do
-      session |> assert_has(css("button:not(:disabled)[type='submit']"))
+    def wait_for_enabled_submit_button(session, opts \\ []) do
+      session |> assert_has(css("button:not(:disabled)[type='submit']", opts))
+    end
+
+    def assert_disabled_submit(session, opts \\ []) do
+      session |> assert_has(css("button:disabled[type='submit']", opts))
     end
 
     def sign_in(
@@ -22,7 +26,6 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
       |> click(button("Log In"))
-      |> assert_text("Hello")
     end
 
     def maybe_visit_log_in(session) do
@@ -42,6 +45,12 @@ defmodule Picsello.FeatureCase do
     def authenticated(%{session: session}) do
       authenticated(%{session: session, user: insert(:user)})
     end
+
+    def onboarded(%{user: user}) do
+      [user: Picsello.Factory.onboard!(user)]
+    end
+
+    def onboarded(_), do: onboarded(%{user: insert(:user)})
 
     def definition(term, opts) do
       xpath("//dt[contains(./text(), '#{term}')]/following-sibling::dd[1]", opts)

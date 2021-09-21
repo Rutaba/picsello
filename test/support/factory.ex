@@ -43,6 +43,12 @@ defmodule Picsello.Factory do
     |> Ecto.Changeset.apply_changes()
   end
 
+  def onboard!(%User{} = user) do
+    user
+    |> User.onboarding_changeset(%{onboarding: %{website: "example.com"}})
+    |> Repo.update!()
+  end
+
   def valid_user_attributes(attrs \\ %{}),
     do:
       attrs

@@ -26,7 +26,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == "/home"
+      assert redirected_to(conn) == "/onboarding"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user, password: password} do
@@ -40,7 +40,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_picsello_web_user_remember_me"]
-      assert redirected_to(conn) =~ "/home"
+      assert redirected_to(conn) =~ "/onboarding"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user, password: password} do

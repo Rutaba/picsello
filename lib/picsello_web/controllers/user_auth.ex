@@ -3,7 +3,7 @@ defmodule PicselloWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Picsello.Accounts
+  alias Picsello.{Accounts, Accounts.User}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   # Make the remember me cookie valid for 60 days.
@@ -27,14 +27,20 @@ defmodule PicselloWeb.UserAuth do
   """
   def log_in_user(conn, user, params \\ %{}) do
     token = Accounts.generate_user_session_token(user)
-    user_return_to = get_session(conn, :user_return_to)
+
+    redirect_to =
+      cond do
+        session_path = get_session(conn, :user_return_to) -> session_path
+        !User.onboarded?(user) -> Routes.onboarding_path(conn, :index)
+        true -> signed_in_path(conn)
+      end
 
     conn
     |> renew_session()
     |> put_session(:user_token, token)
     |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
     |> maybe_write_remember_me_cookie(token, params)
-    |> redirect(to: user_return_to || signed_in_path(conn))
+    |> redirect(to: redirect_to)
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do

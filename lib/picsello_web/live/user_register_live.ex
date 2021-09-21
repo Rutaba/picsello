@@ -3,6 +3,7 @@ defmodule PicselloWeb.UserRegisterLive do
   use PicselloWeb, live_view: [layout: "onboarding"]
 
   alias Picsello.{Accounts, Accounts.User}
+  import PicselloWeb.OnboardingLive.Index, only: [container: 1]
 
   @impl true
   def mount(_params, session, socket) do

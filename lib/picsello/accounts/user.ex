@@ -3,6 +3,54 @@ defmodule Picsello.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  defmodule Onboarding do
+    @moduledoc false
+
+    use Ecto.Schema
+
+    @primary_key false
+    embedded_schema do
+      field(:website, :string)
+      field(:no_website, :boolean, default: false)
+      field(:phone, :string)
+      field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
+    end
+
+    def changeset(question, attrs) do
+      question
+      |> cast(attrs, [:no_website, :website, :phone, :schedule])
+      |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
+      |> validate_change(:phone, &valid_phone/2)
+    end
+
+    def blank?(%__MODULE__{} = onboarding),
+      do:
+        onboarding
+        |> Map.from_struct()
+        |> Map.values()
+        |> Enum.all?(&(!&1))
+
+    def url_validation_errors(url) do
+      case URI.parse(url) do
+        %{scheme: nil} ->
+          ("https://" <> url) |> url_validation_errors()
+
+        %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
+          label = "[a-z0-9\\-]{1,63}+"
+
+          if Regex.compile!("^(?:(?:#{label})\\.)+(?:#{label})$")
+             |> Regex.match?(host),
+             do: [],
+             else: ["invalid host #{host}"]
+
+        %{scheme: scheme} ->
+          ["invalid scheme #{scheme}"]
+      end
+    end
+
+    defdelegate valid_phone(field, value), to: Picsello.Client
+  end
+
   @derive {Inspect, except: [:password]}
   schema "users" do
     field :confirmed_at, :naive_datetime
@@ -12,6 +60,7 @@ defmodule Picsello.Accounts.User do
     field :password, :string, virtual: true
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
+    embeds_one(:onboarding, Onboarding, on_replace: :update)
 
     belongs_to(:organization, Picsello.Organization)
 
@@ -59,6 +108,13 @@ defmodule Picsello.Accounts.User do
     user
     |> cast(attrs, [:email])
     |> validate_email_format()
+  end
+
+  def onboarding_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
+    user
+    |> cast(attrs, [])
+    |> cast_embed(:onboarding, required: true)
+    |> cast_assoc(:organization, with: &Picsello.Organization.registration_changeset/2)
   end
 
   def validate_email_format(changeset) do
@@ -201,4 +257,11 @@ defmodule Picsello.Accounts.User do
     end
     |> String.upcase()
   end
+
+  @doc """
+  Temporary implementation: need to track this separately
+  - true if user has skipped or next'd all onboarding steps.
+  """
+  def onboarded?(%__MODULE__{onboarding: nil}), do: false
+  def onboarded?(%__MODULE__{onboarding: onboarding}), do: !Onboarding.blank?(onboarding)
 end

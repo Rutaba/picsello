@@ -15,4 +15,23 @@ defmodule Picsello.Accounts.UserTest do
       assert "BD" == %User{name: "brian patrick hashrocket dunn"} |> User.initials()
     end
   end
+
+  describe "onboarding_changeset" do
+    test "validates website" do
+      assert [["invalid scheme ftp"], nil, nil, ["invalid host bad!.hostname"]] =
+               for(
+                 url <- [
+                   "ftp://example.com",
+                   "example.com",
+                   "example.com/my-profile",
+                   "https://bad!.hostname"
+                 ],
+                 do:
+                   %User{}
+                   |> User.onboarding_changeset(%{onboarding: %{website: url}})
+                   |> errors_on()
+                   |> get_in([:onboarding, :website])
+               )
+    end
+  end
 end

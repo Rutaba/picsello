@@ -1,6 +1,7 @@
 defmodule Picsello.CreateLeadTest do
   use Picsello.FeatureCase, async: true
 
+  setup :onboarded
   setup :authenticated
 
   feature "user creates lead", %{session: session} do
