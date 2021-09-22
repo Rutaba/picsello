@@ -111,7 +111,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
     )
   end
 
-  def assign_step(socket, _), do: push_redirect(socket, to: Routes.home_path(socket, :index))
+  def assign_step(%{assigns: %{current_user: current_user}} = socket, _) do
+    socket
+    |> assign(
+      current_user: current_user |> User.complete_onboarding_changeset() |> Repo.update!()
+    )
+    |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+  end
 
   def build_changeset(%{assigns: %{current_user: user}}, params \\ %{}, action \\ nil) do
     user |> User.onboarding_changeset(params) |> Map.put(:action, action)

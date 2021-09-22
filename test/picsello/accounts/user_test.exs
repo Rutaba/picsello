@@ -34,4 +34,28 @@ defmodule Picsello.Accounts.UserTest do
                )
     end
   end
+
+  describe "complete_onboarding_changeset" do
+    test "marks the onboarding as complete" do
+      user = insert(:user, onboarding: %{website: "http://example.com"})
+      refute user |> User.onboarded?()
+
+      assert %{onboarding: %{website: "http://example.com", completed_at: completed_at}} =
+               user
+               |> User.complete_onboarding_changeset()
+               |> Repo.update!()
+
+      assert completed_at
+    end
+  end
+
+  describe "onboarded?" do
+    test "false when partial onboarding data" do
+      refute insert(:user, onboarding: %{website: "example.com"}) |> User.onboarded?()
+    end
+
+    test "true when onboarding completed_at" do
+      assert insert(:user, onboarding: %{completed_at: DateTime.utc_now()}) |> User.onboarded?()
+    end
+  end
 end

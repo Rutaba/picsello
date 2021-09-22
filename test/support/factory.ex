@@ -45,7 +45,7 @@ defmodule Picsello.Factory do
 
   def onboard!(%User{} = user) do
     user
-    |> User.onboarding_changeset(%{onboarding: %{website: "example.com"}})
+    |> User.complete_onboarding_changeset()
     |> Repo.update!()
   end
 

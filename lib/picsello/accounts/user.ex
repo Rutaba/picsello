@@ -14,9 +14,10 @@ defmodule Picsello.Accounts.User do
       field(:no_website, :boolean, default: false)
       field(:phone, :string)
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
+      field(:completed_at, :utc_datetime)
     end
 
-    def changeset(onboarding, attrs) do
+    def changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
       |> cast(attrs, [:no_website, :website, :phone, :schedule])
       |> then(
@@ -28,12 +29,8 @@ defmodule Picsello.Accounts.User do
       |> validate_change(:phone, &valid_phone/2)
     end
 
-    def blank?(%__MODULE__{} = onboarding),
-      do:
-        onboarding
-        |> Map.from_struct()
-        |> Map.values()
-        |> Enum.all?(&(!&1))
+    def completed?(%__MODULE__{completed_at: nil}), do: false
+    def completed?(%__MODULE__{}), do: true
 
     def url_validation_errors(url) do
       case URI.parse(url) do
@@ -223,6 +220,12 @@ defmodule Picsello.Accounts.User do
     change(user, confirmed_at: now)
   end
 
+  def complete_onboarding_changeset(user) do
+    user
+    |> change()
+    |> put_embed(:onboarding, %{completed_at: DateTime.utc_now()})
+  end
+
   @doc """
   Verifies the password.
 
@@ -264,9 +267,8 @@ defmodule Picsello.Accounts.User do
   end
 
   @doc """
-  Temporary implementation: need to track this separately
-  - true if user has skipped or next'd all onboarding steps.
+  true if user has skipped or completed all onboarding steps.
   """
   def onboarded?(%__MODULE__{onboarding: nil}), do: false
-  def onboarded?(%__MODULE__{onboarding: onboarding}), do: !Onboarding.blank?(onboarding)
+  def onboarded?(%__MODULE__{onboarding: onboarding}), do: Onboarding.completed?(onboarding)
 end
