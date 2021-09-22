@@ -53,22 +53,50 @@ defmodule PicselloWeb.OnboardingLive.Index do
     ~H"""
       <%= for o <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for o %>
-        <%= labeled_input o, :name, label: "What would you like to name your business?", phx_debounce: "500", placeholder: "Jack Nimble Photography", wrapper_class: "mt-4" %>
+
+        <label class="flex flex-col">
+          <p class="py-2 font-extrabold">What would you like to name your business?</p>
+
+          <%= input o, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: "p-4" %>
+          <%= error_tag o, :name, class: "text-red-invalid text-sm" %>
+        </label>
       <% end %>
 
       <%= for o <- inputs_for(@f, :onboarding) do %>
         <%= hidden_inputs_for o %>
-        <%= labeled_input o, :website, label: "What is your website address? (No worries if you don’t have one)", placeholder: "www.mystudio.com", phx_debounce: "500", wrapper_class: "mt-4" %>
-        <%= labeled_input o, :no_website, type: :checkbox, label: "I don't have one", wrapper_class: "mt-4", class: "checkbox" %>
-        <%= labeled_input o, :phone, type: :telephone_input, label: "What is your phone number?", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", wrapper_class: "mt-4" %>
-        <%= labeled_select o, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, label: "Are you full-time or part-time?", wrapper_class: "mt-4" %>
-      <% end %>
-    """
-  end
 
-  def step(%{step: 3} = assigns) do
-    ~H"""
-      <h1>this is step 3!</h1>
+        <label class="flex flex-col mt-4">
+          <p class="py-2 font-extrabold">What is your website address? <i class="italic font-light">(No worries if you don’t have one)</i></p>
+
+          <div class="relative flex flex-col">
+            <%= input o, :website,
+                phx_debounce: "500",
+              disabled: input_value(o, :no_website) == true,
+                placeholder: "www.mystudio.com",
+                class: "p-4 sm:pr-48" %>
+            <%= error_tag o, :website, class: "text-red-invalid text-sm" %>
+
+            <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
+              <%= checkbox o, :no_website, class: "w-5 h-5 checkbox" %>
+
+              <p class="ml-2">I don't have one</p>
+            </label>
+          </div>
+        </label>
+
+        <label class="flex flex-col mt-4">
+          <p class="py-2 font-extrabold">What is your phone number?</p>
+
+          <%= input o, :phone, type: :telephone_input, phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
+          <%= error_tag o, :phone, class: "text-red-invalid text-sm" %>
+        </label>
+
+        <label class="flex flex-col mt-4">
+          <p class="py-2 font-extrabold">Are you full-time or part-time?</p>
+
+          <%= select o, :schedule, %{"" => nil, "Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+        </label>
+      <% end %>
     """
   end
 
@@ -98,19 +126,23 @@ defmodule PicselloWeb.OnboardingLive.Index do
     ~H"""
     <div class={"flex flex-col items-center justify-center w-screen min-h-screen p-5 #{@color_class}"}>
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
-        <div class="flex justify-between">
+        <div class="flex items-end justify-between">
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48" />
           <ul class="flex items-center">
             <%= for step <- 1..5 do %>
               <li>
-                <a phx-click="previous" title={"onboarding step #{step}"} href={"##{step}"} class={"#{ if step == @step, do: @color_class, else: "bg-gray-200" } block w-3 h-3 rounded-full ml-1.5"}>
+                <a
+                phx-click="previous"
+                title={"onboarding step #{step}"}
+                href={"##{step}"}
+                class={"#{ if step == @step, do: @color_class, else: "bg-gray-200" } block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3"}>
                 </a>
               </li>
             <% end %>
           </ul>
         </div>
-        <h1 class="text-3xl font-bold sm:text-4xl mt-7 sm:mt-11"><%= @title %></h1>
-        <h2 class="mt-2 sm:mt-5 sm:text-2xl"><%= @subtitle %></h2>
+        <h1 class="text-3xl font-bold sm:text-5xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
+        <h2 class="mt-2 sm:mb-7 sm:mt-5 sm:text-2xl"><%= @subtitle %></h2>
 
         <%= render_block(@inner_block) %>
        </div>

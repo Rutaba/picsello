@@ -16,9 +16,14 @@ defmodule Picsello.Accounts.User do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
     end
 
-    def changeset(question, attrs) do
-      question
+    def changeset(onboarding, attrs) do
+      onboarding
       |> cast(attrs, [:no_website, :website, :phone, :schedule])
+      |> then(
+        &if get_field(&1, :no_website),
+          do: put_change(&1, :website, nil),
+          else: &1
+      )
       |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
       |> validate_change(:phone, &valid_phone/2)
     end
