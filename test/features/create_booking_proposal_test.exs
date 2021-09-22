@@ -112,15 +112,4 @@ defmodule Picsello.CreateBookingProposalTest do
         answers: []
       })
       |> Repo.insert!()
-
-  def assert_disabled(session, %Element{} = el) do
-    disabled = session |> all(css("*:disabled"))
-
-    assert Enum.member?(disabled, el)
-
-    session
-  end
-
-  def assert_disabled(session, %Query{} = query),
-    do: assert_disabled(session, session |> find(query))
 end

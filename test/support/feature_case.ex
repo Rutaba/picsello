@@ -86,6 +86,17 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def assert_disabled(session, %Wallaby.Element{} = el) do
+      disabled = session |> all(css("*:disabled"))
+
+      assert Enum.member?(disabled, el)
+
+      session
+    end
+
+    def assert_disabled(session, %Wallaby.Query{} = query),
+      do: assert_disabled(session, session |> find(query))
+
     def navigate_to_forgot_password(session) do
       session
       |> visit("/")
