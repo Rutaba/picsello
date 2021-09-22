@@ -1,6 +1,7 @@
 defmodule Picsello.ManageShootTest do
   use Picsello.FeatureCase, async: true
 
+  setup :onboarded
   setup :authenticated
 
   setup %{session: session, user: user} do

@@ -2,7 +2,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
   use PicselloWeb.ConnCase, async: true
 
   setup do
-    %{user: insert(:user), password: valid_user_password()}
+    %{user: insert(:user) |> onboard!, password: valid_user_password()}
   end
 
   describe "GET /users/log_in" do
@@ -26,7 +26,7 @@ defmodule PicselloWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == "/onboarding"
+      assert redirected_to(conn) == "/home"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user, password: password} do
@@ -40,10 +40,12 @@ defmodule PicselloWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_picsello_web_user_remember_me"]
-      assert redirected_to(conn) =~ "/onboarding"
+      assert redirected_to(conn) =~ "/home"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user, password: password} do
+      user |> onboard!
+
       conn =
         conn
         |> init_test_session(user_return_to: "/foo/bar")

@@ -1,6 +1,7 @@
 defmodule Picsello.CreateLeadPackageTest do
   use Picsello.FeatureCase, async: true
 
+  setup :onboarded
   setup :authenticated
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do

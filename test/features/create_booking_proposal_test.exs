@@ -2,6 +2,7 @@ defmodule Picsello.CreateBookingProposalTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Questionnaire.Answer, BookingProposal, Repo, Organization}
 
+  setup :onboarded
   setup :authenticated
 
   setup %{user: user} do

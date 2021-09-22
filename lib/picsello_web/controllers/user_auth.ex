@@ -28,12 +28,7 @@ defmodule PicselloWeb.UserAuth do
   def log_in_user(conn, user, params \\ %{}) do
     token = Accounts.generate_user_session_token(user)
 
-    redirect_to =
-      cond do
-        session_path = get_session(conn, :user_return_to) -> session_path
-        !User.onboarded?(user) -> Routes.onboarding_path(conn, :index)
-        true -> signed_in_path(conn)
-      end
+    redirect_to = get_session(conn, :user_return_to) || signed_in_path(conn)
 
     conn
     |> renew_session()
@@ -137,12 +132,26 @@ defmodule PicselloWeb.UserAuth do
   def require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
+      |> maybe_redirect_to_onboarding()
     else
       conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
       |> redirect(to: Routes.user_session_path(conn, :new))
       |> halt()
+    end
+  end
+
+  defp maybe_redirect_to_onboarding(
+         %{request_path: request_path, assigns: %{current_user: current_user}} = conn
+       ) do
+    onboarding_path = Routes.onboarding_path(conn, :index)
+
+    case {request_path, User.onboarded?(current_user)} do
+      {^onboarding_path, true} -> conn |> redirect(to: Routes.home_path(conn, :index)) |> halt()
+      {_, true} -> conn
+      {^onboarding_path, false} -> conn
+      {_, false} -> conn |> redirect(to: onboarding_path) |> halt()
     end
   end
 

@@ -43,4 +43,12 @@ defmodule Picsello.UserOnboardsTest do
 
     assert %User{organization: %{name: "Photogenious"}} = user
   end
+
+  feature "user is redirected to onboarding", %{session: session} do
+    session
+    |> assert_path(Routes.onboarding_path(PicselloWeb.Endpoint, :index))
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :jobs))
+    |> assert_path(Routes.onboarding_path(PicselloWeb.Endpoint, :index))
+    |> assert_text("Tell us more about yourself")
+  end
 end

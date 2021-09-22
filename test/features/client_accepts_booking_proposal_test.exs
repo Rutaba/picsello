@@ -3,7 +3,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   alias Picsello.{Job, Repo, Organization}
 
   setup %{sessions: [photographer_session | _]} do
-    user = insert(:user)
+    user = insert(:user) |> onboard!
     photographer_session |> sign_in(user)
     [user: user]
   end

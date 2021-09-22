@@ -1,6 +1,7 @@
 defmodule Picsello.ViewJobTest do
   use Picsello.FeatureCase, async: true
 
+  setup :onboarded
   setup :authenticated
 
   setup %{user: user, session: session} do

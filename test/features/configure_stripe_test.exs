@@ -1,6 +1,7 @@
 defmodule Picsello.ConfigureStripeTest do
   use Picsello.FeatureCase, async: true
 
+  setup :onboarded
   setup :authenticated
 
   setup %{session: session} do

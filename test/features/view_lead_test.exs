@@ -1,6 +1,7 @@
 defmodule Picsello.ViewLeadTest do
   use Picsello.FeatureCase, async: true
 
+  setup :onboarded
   setup :authenticated
 
   setup %{user: user} do

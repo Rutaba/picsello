@@ -52,7 +52,7 @@ defmodule PicselloWeb.ConnCase do
   test context.
   """
   def register_and_log_in_user(%{conn: conn}) do
-    user = insert(:user)
+    user = insert(:user) |> onboard!()
     %{conn: log_in_user(conn, user), user: user}
   end
 

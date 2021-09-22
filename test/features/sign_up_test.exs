@@ -26,12 +26,14 @@ defmodule Picsello.SignUpTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Sign up"))
     |> assert_path("/onboarding")
-    |> visit("/")
-    |> assert_has(css("h1", text: "Hello Mary Jane!"))
-    |> assert_path("/home")
 
     user = Repo.one(User)
-    assert "FakeTimeZone" = user.time_zone
+
+    assert %{
+             name: "Mary Jane",
+             email: "user@example.com",
+             time_zone: "FakeTimeZone"
+           } = user
   end
 
   feature "user sees validation error when signing up", %{session: session} do
