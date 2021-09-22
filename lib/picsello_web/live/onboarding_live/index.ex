@@ -1,7 +1,7 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
-  alias Picsello.{Job, Repo, Accounts.User}
+  alias Picsello.{Repo, Accounts.User}
   require Ecto.Query
 
   @impl true
@@ -15,15 +15,17 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> ok()
   end
 
-  @imple true
+  @impl true
   def handle_event("previous", %{}, %{assigns: %{step: step}} = socket) do
     socket |> assign_step(step - 1) |> noreply()
   end
 
+  @impl true
   def handle_event("validate", %{"user" => params}, socket) do
     socket |> assign_changeset(params) |> noreply()
   end
 
+  @impl true
   def handle_event("save", %{"user" => params}, %{assigns: %{step: step}} = socket) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, user} -> socket |> assign(current_user: user) |> assign_step(step + 1) |> noreply()
@@ -31,7 +33,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     end
   end
 
-  @imple true
+  @impl true
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
@@ -83,7 +85,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   def assign_step(socket, _), do: push_redirect(socket, to: Routes.home_path(socket, :index))
 
-  def build_changeset(%{assigns: %{current_user: user}} = socket, params \\ %{}, action \\ nil) do
+  def build_changeset(%{assigns: %{current_user: user}}, params \\ %{}, action \\ nil) do
     user |> User.onboarding_changeset(params) |> Map.put(:action, action)
   end
 
