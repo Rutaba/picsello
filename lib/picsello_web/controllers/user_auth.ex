@@ -132,7 +132,6 @@ defmodule PicselloWeb.UserAuth do
   def require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
-      |> maybe_redirect_to_onboarding()
     else
       conn
       |> put_flash(:error, "You must log in to access this page.")

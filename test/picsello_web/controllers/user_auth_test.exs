@@ -36,9 +36,9 @@ defmodule PicselloWeb.UserAuthTest do
     end
 
     test "redirects to home if no session path", %{conn: conn, user: user} do
-      conn = conn |> UserAuth.log_in_user(user)
+      conn = conn |> UserAuth.log_in_user(user |> onboard!())
 
-      assert redirected_to(conn) == Routes.home_path(conn, :index)
+      assert redirected_to(conn) == "/home"
     end
 
     test "writes a cookie if remember_me is configured", %{conn: conn, user: user} do
@@ -170,51 +170,10 @@ defmodule PicselloWeb.UserAuthTest do
       refute get_session(halted_conn, :user_return_to)
     end
 
-    test "redirects to home if user is authenticated, onboarded and on onboarding path", %{
-      conn: conn,
-      user: user
-    } do
-      conn =
-        conn
-        |> Map.put(:request_path, Routes.onboarding_path(conn, :index))
-        |> assign(:current_user, user |> onboard!)
-        |> UserAuth.require_authenticated_user([])
-
-      assert conn.halted
-      assert redirected_to(conn) == Routes.home_path(conn, :index)
-    end
-
-    test "does not redirect if user is authenticated and onboarded", %{conn: conn, user: user} do
-      user = user |> onboard!
+    test "does not redirect if user is authenticated", %{conn: conn, user: user} do
       conn = conn |> assign(:current_user, user) |> UserAuth.require_authenticated_user([])
       refute conn.halted
       refute conn.status
-    end
-
-    test "does not redirect if user is authenticated, on onboarding path and not onboarded", %{
-      conn: conn,
-      user: user
-    } do
-      conn =
-        conn
-        |> Map.put(:request_path, Routes.onboarding_path(conn, :index))
-        |> assign(:current_user, user)
-        |> UserAuth.require_authenticated_user([])
-
-      refute conn.halted
-      refute conn.status
-    end
-
-    test "redirects to onboarding if user is authenticated, not onboarded and not on onboarding path",
-         %{conn: conn, user: user} do
-      conn =
-        conn
-        |> Map.put(:request_path, Routes.home_path(conn, :index))
-        |> assign(:current_user, user)
-        |> UserAuth.require_authenticated_user([])
-
-      assert conn.halted
-      assert redirected_to(conn) == Routes.onboarding_path(conn, :index)
     end
   end
 end

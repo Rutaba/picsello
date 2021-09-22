@@ -19,7 +19,7 @@ defmodule PicselloWeb.LiveAuth do
 
     case Accounts.get_user_by_session_token(user_token) do
       nil -> socket |> redirect(to: Routes.user_session_path(socket, :new)) |> halt()
-      user -> socket |> assign(:current_user, user) |> cont()
+      user -> socket |> assign(:current_user, user) |> maybe_redirect_to_onboarding()
     end
   end
 
@@ -35,6 +35,26 @@ defmodule PicselloWeb.LiveAuth do
     end
 
     socket
+  end
+
+  defp maybe_redirect_to_onboarding(
+         %{view: view, assigns: %{current_user: current_user}} = socket
+       ) do
+    onboarding_view = PicselloWeb.OnboardingLive.Index
+
+    case {view, User.onboarded?(current_user)} do
+      {^onboarding_view, true} ->
+        socket |> push_redirect(to: Routes.home_path(socket, :index)) |> halt()
+
+      {_, true} ->
+        socket |> cont()
+
+      {^onboarding_view, false} ->
+        socket |> cont()
+
+      {_, false} ->
+        socket |> push_redirect(to: Routes.onboarding_path(socket, :index)) |> halt()
+    end
   end
 
   defp cont(socket), do: {:cont, socket}
