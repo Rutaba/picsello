@@ -37,6 +37,35 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
+  def handle_event("skip", _params, %{assigns: %{changeset: changeset, step: step}} = socket) do
+    case socket
+         |> build_changeset(changes_without_errors(changeset))
+         |> Repo.update() do
+      {:ok, user} -> socket |> assign(current_user: user) |> assign_step(step + 1) |> noreply()
+      {:error, _} -> socket |> assign_step(step + 1) |> noreply()
+    end
+  end
+
+  defp changes_without_errors(%{errors: errors, changes: changes} = changeset) do
+    acc = changeset |> Ecto.Changeset.apply_changes() |> Map.take([:id])
+    error_fields = Keyword.keys(errors)
+
+    for {field, value} <- changes, reduce: acc do
+      acc ->
+        cond do
+          is_struct(value, Ecto.Changeset) ->
+            Map.put(acc, field, changes_without_errors(value))
+
+          Enum.member?(error_fields, field) ->
+            acc
+
+          true ->
+            Map.put(acc, field, value)
+        end
+    end
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
@@ -44,7 +73,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <.step f={f} step={@step} />
 
           <div class="flex justify-between mt-5 sm:justify-end sm:mt-9">
-            <button type="submit" phx-disable-with="Skipping..." disabled={!@changeset.valid?} class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">Skip</button>
+            <button type="button" phx-click="skip" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">Skip</button>
             <button type="submit" phx-disable-with="Saving..." disabled={!@changeset.valid?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">Next</button>
           </div>
         </.form>
