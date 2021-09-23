@@ -174,15 +174,15 @@ defmodule PicselloWeb.FormHelpers do
     end
   end
 
-  defp classes(constants), do: classes(constants, %{})
+  def classes(constants), do: classes(constants, %{})
 
-  defp classes(nil, optionals), do: classes([], optionals)
+  def classes(nil, optionals), do: classes([], optionals)
 
-  defp classes("" <> constant, optionals) do
+  def classes("" <> constant, optionals) do
     classes([constant], optionals)
   end
 
-  defp classes(constants, optionals) do
+  def classes(constants, optionals) do
     [
       constants,
       optionals

@@ -144,7 +144,11 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <li class="aspect-h-1 aspect-w-1">
                 <label>
                   <%= radio_button o, :color, color, class: "hidden" %>
-                  <div class={"flex cursor-pointer items-center hover:border-black justify-center w-full h-full border rounded #{if input_value(o, :color) == color, do: "border-black", else: "hover:border-opacity-40"}"}>
+                  <div class={classes(
+                    "flex cursor-pointer items-center hover:border-black justify-center w-full h-full border rounded", %{
+                    "border-black" => input_value(o, :color) == color,
+                    "hover:border-opacity-40" => input_value(o, :color) != color
+                  })}>
                     <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
                   </div>
                 </label>
@@ -197,7 +201,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   def container(assigns) do
     ~H"""
-    <div class={"flex flex-col items-center justify-center w-screen min-h-screen p-5 #{@color_class}"}>
+    <div class={classes(["flex flex-col items-center justify-center w-screen min-h-screen p-5", @color_class])}>
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
         <div class="flex items-end justify-between sm:items-center">
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48" />
@@ -205,7 +209,11 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
               <%= for step <- 1..5 do %>
-                <li class={"#{ if step == @step, do: @color_class, else: "bg-gray-200" } block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2"}></li>
+                <li class={classes(
+                  "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
+                  %{ @color_class => step == @step, "bg-gray-200" => step != @step }
+                )}>
+                </li>
               <% end %>
             </ul>
           </a>
