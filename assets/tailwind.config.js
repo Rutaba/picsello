@@ -24,6 +24,7 @@ module.exports = {
         'red-invalid-bg': '#FFF2F2',
         'gray-disabled': '#AAA',
         'green': '#65D157',
+        'green-onboarding-third': '#CFE7CD',
         'orange': '#FFBA74',
         'orange-onboarding-second': '#F5BD7F',
         'orange-warning': '#E1662F',
@@ -44,6 +45,7 @@ module.exports = {
     extend: {},
   },
   plugins: [
+    require('@tailwindcss/aspect-ratio'),
     require("@tailwindcss/forms")({
       strategy: 'class',
     }),

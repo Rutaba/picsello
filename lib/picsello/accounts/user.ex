@@ -8,18 +8,23 @@ defmodule Picsello.Accounts.User do
 
     use Ecto.Schema
 
+    @colors ~w(#5C6578 #3376FF #3AE7C7 #E466F8 #1AD0DC #FFD80D #F8AC66 #9566F8)
+
     @primary_key false
     embedded_schema do
       field(:website, :string)
+      field(:color, :string, default: @colors |> hd)
       field(:no_website, :boolean, default: false)
       field(:phone, :string)
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
     end
 
+    def colors(), do: @colors
+
     def changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
-      |> cast(attrs, [:no_website, :website, :phone, :schedule])
+      |> cast(attrs, [:no_website, :website, :phone, :schedule, :color])
       |> then(
         &if get_field(&1, :no_website),
           do: put_change(&1, :website, nil),

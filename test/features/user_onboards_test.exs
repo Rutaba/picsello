@@ -26,6 +26,11 @@ defmodule Picsello.UserOnboardsTest do
     |> click(option("Full-time"))
     |> wait_for_enabled_submit_button(count: 2)
     |> click(button("Next"))
+    |> click(link("previous"))
+    |> assert_has(org_name_field)
+    |> click(button("Next"))
+    |> click(css("li.aspect-h-1.aspect-w-1:nth-child(2)"))
+    |> click(button("Next"))
     |> assert_path(@home_path)
 
     user =
@@ -33,12 +38,15 @@ defmodule Picsello.UserOnboardsTest do
       |> Picsello.Repo.reload()
       |> Picsello.Repo.preload(:organization)
 
+    second_color = User.Onboarding.colors() |> tl |> hd
+
     assert %User{
              onboarding: %{
                schedule: :full_time,
                website: "example.com",
                phone: "(123) 456-7890",
-               no_website: false
+               no_website: false,
+               color: ^second_color
              }
            } = user
 
@@ -53,8 +61,7 @@ defmodule Picsello.UserOnboardsTest do
     |> assert_value(@website_field, "")
     |> assert_disabled(@website_field)
     |> wait_for_enabled_submit_button(count: 2)
-    |> click(button("Skip"))
-    |> assert_path(@home_path)
+    |> click(button("Next"))
 
     user =
       user

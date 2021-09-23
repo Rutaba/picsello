@@ -16,6 +16,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
+  def handle_event("previous", %{}, %{assigns: %{step: 2}} = socket), do: socket |> noreply()
+
+  @impl true
   def handle_event("previous", %{}, %{assigns: %{step: step}} = socket) do
     socket |> assign_step(step - 1) |> noreply()
   end
@@ -100,6 +103,30 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
+  defdelegate colors(), to: User.Onboarding
+
+  def step(%{step: 3} = assigns) do
+    ~H"""
+      <%= for o <- inputs_for(@f, :onboarding) do %>
+        <label class="flex flex-col">
+          <p class="py-2 font-extrabold">Color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
+          <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
+            <%= for(color <- colors()) do %>
+              <li class="aspect-h-1 aspect-w-1">
+                <label>
+                  <%= radio_button o, :color, color, class: "hidden" %>
+                  <div class={"flex cursor-pointer items-center hover:border-black justify-center w-full h-full border rounded #{if input_value(o, :color) == color, do: "border-black", else: "hover:border-opacity-40"}"}>
+                    <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
+                  </div>
+                </label>
+              </li>
+            <% end %>
+          </ul>
+        </label>
+      <% end %>
+    """
+  end
+
   def assign_step(socket, 2) do
     socket
     |> assign(
@@ -108,6 +135,17 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step_title: "Tell us more about yourself",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 2"
+    )
+  end
+
+  def assign_step(socket, 3) do
+    socket
+    |> assign(
+      step: 3,
+      color_class: "bg-green-onboarding-third",
+      step_title: "Customize your business",
+      subtitle: "We need a little more info to get your account ready!",
+      page_title: "Onboarding Step 3"
     )
   end
 
@@ -132,24 +170,20 @@ defmodule PicselloWeb.OnboardingLive.Index do
     ~H"""
     <div class={"flex flex-col items-center justify-center w-screen min-h-screen p-5 #{@color_class}"}>
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
-        <div class="flex items-end justify-between">
+        <div class="flex items-end justify-between sm:items-center">
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48" />
-          <ul class="flex items-center">
-            <%= for step <- 1..5 do %>
-              <li>
-                <a
-                phx-click="previous"
-                title={"onboarding step #{step}"}
-                href={"##{step}"}
-                class={"#{ if step == @step, do: @color_class, else: "bg-gray-200" } block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3"}>
-                </a>
-              </li>
-            <% end %>
-          </ul>
-        </div>
-        <h1 class="text-3xl font-bold sm:text-5xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
-        <h2 class="mt-2 sm:mb-7 sm:mt-5 sm:text-2xl"><%= @subtitle %></h2>
 
+          <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
+            <ul class="flex items-center">
+              <%= for step <- 1..5 do %>
+                <li class={"#{ if step == @step, do: @color_class, else: "bg-gray-200" } block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2"}></li>
+              <% end %>
+            </ul>
+          </a>
+        </div>
+
+        <h1 class="text-3xl font-bold sm:text-5xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
+        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-2xl"><%= @subtitle %></h2>
         <%= render_block(@inner_block) %>
        </div>
     </div>
