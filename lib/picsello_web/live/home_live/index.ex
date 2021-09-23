@@ -23,7 +23,7 @@ defmodule PicselloWeb.HomeLive.Index do
     [lead_count, job_count] =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload(:booking_proposals)
+      |> Ecto.Query.preload([:booking_proposals, :job_status])
       |> Repo.all()
       |> Enum.split_with(&Job.lead?/1)
       |> Tuple.to_list()
