@@ -46,7 +46,7 @@ defmodule Picsello.MixProject do
         {:paginator, "~> 1.0.4"},
         {:phoenix, "~> 1.5.12"},
         {:phoenix_ecto, "~> 4.4.0"},
-        {:phoenix_html, "~> 3.0.3"},
+        {:phoenix_html, "~> 3.0.4"},
         {:phoenix_live_dashboard, "~> 0.5.1"},
         {:phoenix_live_view, "~> 0.16.3"},
         {:plug_cowboy, "~> 2.5.2"},
