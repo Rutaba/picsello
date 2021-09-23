@@ -14,6 +14,7 @@ defmodule Picsello.Accounts.User do
     embedded_schema do
       field(:website, :string)
       field(:color, :string, default: @colors |> hd)
+      field(:job_types, {:array, :string}, default: [])
       field(:no_website, :boolean, default: false)
       field(:phone, :string)
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
@@ -24,12 +25,13 @@ defmodule Picsello.Accounts.User do
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
-      |> cast(attrs, [:no_website, :website, :phone, :schedule, :color])
+      |> cast(attrs, [:no_website, :website, :phone, :schedule, :color, :job_types])
       |> then(
         &if get_field(&1, :no_website),
           do: put_change(&1, :website, nil),
           else: &1
       )
+      |> prepare_changes(&clean_job_types/1)
       |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
       |> validate_change(:phone, &valid_phone/2)
     end
@@ -37,7 +39,7 @@ defmodule Picsello.Accounts.User do
     def completed?(%__MODULE__{completed_at: nil}), do: false
     def completed?(%__MODULE__{}), do: true
 
-    def url_validation_errors(url) do
+    defp url_validation_errors(url) do
       case URI.parse(url) do
         %{scheme: nil} ->
           ("https://" <> url) |> url_validation_errors()
@@ -53,6 +55,12 @@ defmodule Picsello.Accounts.User do
         %{scheme: scheme} ->
           ["invalid scheme #{scheme}"]
       end
+    end
+
+    defp clean_job_types(changeset) do
+      update_change(changeset, :job_types, fn
+        list -> list |> Enum.filter(&(&1 != "")) |> Enum.uniq() |> Enum.sort()
+      end)
     end
 
     defdelegate valid_phone(field, value), to: Picsello.Client

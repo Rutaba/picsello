@@ -19,6 +19,7 @@ module.exports = {
         'blue-primary': '#00ADC9',
         'blue-dark-primary': '#0094B0',
         'blue-light-primary': '#EFFDFB',
+        'blue-onboarding-fourth': '#92B6F9',
         black: '#231F20',
         'red-invalid': '#CB0000',
         'red-invalid-bg': '#FFF2F2',

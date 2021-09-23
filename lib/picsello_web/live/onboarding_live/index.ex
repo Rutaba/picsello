@@ -1,7 +1,7 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
-  alias Picsello.{Repo, Accounts.User}
+  alias Picsello.{Repo, Accounts.User, JobType}
   require Ecto.Query
 
   @impl true
@@ -132,8 +132,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
-  defdelegate colors(), to: User.Onboarding
-
   def step(%{step: 3} = assigns) do
     ~H"""
       <%= for o <- inputs_for(@f, :onboarding) do %>
@@ -160,6 +158,48 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
+  def step(%{step: 4} = assigns) do
+    ~H"""
+      <%= for o <- inputs_for(@f, :onboarding) do %>
+        <% input_name = input_name(o,:job_types) <> "[]" %>
+        <div class="flex flex-col pb-1">
+          <p class="py-2 font-extrabold">
+            What types of photography do you shoot?
+            <i class="italic font-light">(Select one or more)</i>
+          </p>
+
+          <input type="hidden" name={input_name} value="">
+
+          <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
+            <%= for(job_type <- job_types()) do %>
+              <.job_type_option name={input_name} job_type={job_type} checked={input_value(o, :job_types) |> Enum.member?(job_type)} />
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    """
+  end
+
+  def job_type_option(assigns) do
+    ~H"""
+      <label class={classes(
+        "flex items-center p-2 border rounded-lg hover:bg-blue-light-primary hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
+        %{"border-blue-primary bg-blue-light-primary" => @checked}
+      )}>
+        <input class="hidden" type="checkbox" name={@name} value={@job_type} checked={@checked} />
+
+        <div class={classes(
+          "flex items-center justify-center w-7 h-7 ml-1 mr-3 bg-gray-200 rounded-full flex-shrink-0",
+          %{"bg-blue-primary text-white" => @checked}
+        )}>
+          <.icon name={@job_type} class="fill-current" width="14" height="14" />
+        </div>
+
+        <%= dyn_gettext @job_type %>
+      </label>
+    """
+  end
+
   def assign_step(socket, 2) do
     socket
     |> assign(
@@ -179,6 +219,17 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step_title: "Customize your business",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 3"
+    )
+  end
+
+  def assign_step(socket, 4) do
+    socket
+    |> assign(
+      step: 4,
+      color_class: "bg-blue-onboarding-fourth",
+      step_title: "Customize your business",
+      subtitle: "We need a little more info to get your account ready!",
+      page_title: "Onboarding Step 4"
     )
   end
 
@@ -226,4 +277,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     </div>
     """
   end
+
+  defdelegate job_types(), to: JobType, as: :all
+  defdelegate colors(), to: User.Onboarding
 end

@@ -24,3 +24,21 @@ msgstr "1.5 hrs"
 
 msgid "duration-120"
 msgstr "2 hrs"
+
+msgid "wedding"
+msgstr "Wedding"
+
+msgid "family"
+msgstr "Family"
+
+msgid "newborn"
+msgstr "Maternity & Newborn"
+
+msgid "event"
+msgstr "Event"
+
+msgid "portrait"
+msgstr "Portrait"
+
+msgid "other"
+msgstr "Other"

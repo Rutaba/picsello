@@ -32,6 +32,9 @@ defmodule Picsello.UserOnboardsTest do
     |> click(button("Next"))
     |> click(@second_color_field)
     |> click(button("Next"))
+    |> click(css("label", text: "Portrait"))
+    |> click(css("label", text: "Event"))
+    |> click(button("Next"))
     |> assert_path(@home_path)
 
     user =
@@ -47,7 +50,8 @@ defmodule Picsello.UserOnboardsTest do
                website: "example.com",
                phone: "(123) 456-7890",
                no_website: false,
-               color: ^second_color
+               color: ^second_color,
+               job_types: ~w(event portrait)
              }
            } = user
 
