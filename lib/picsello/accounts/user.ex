@@ -17,6 +17,9 @@ defmodule Picsello.Accounts.User do
       field(:job_types, {:array, :string}, default: [])
       field(:no_website, :boolean, default: false)
       field(:phone, :string)
+      field(:photographer_years, :integer)
+      field(:used_software_before, :boolean)
+      field(:switching_from_software, :string)
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
     end
@@ -25,10 +28,25 @@ defmodule Picsello.Accounts.User do
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
-      |> cast(attrs, [:no_website, :website, :phone, :schedule, :color, :job_types])
+      |> cast(attrs, [
+        :no_website,
+        :website,
+        :phone,
+        :schedule,
+        :color,
+        :job_types,
+        :photographer_years,
+        :used_software_before,
+        :switching_from_software
+      ])
       |> then(
         &if get_field(&1, :no_website),
           do: put_change(&1, :website, nil),
+          else: &1
+      )
+      |> then(
+        &if get_field(&1, :used_software_before),
+          do: validate_required(&1, :switching_from_software),
           else: &1
       )
       |> prepare_changes(&clean_job_types/1)

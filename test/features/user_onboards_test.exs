@@ -14,6 +14,7 @@ defmodule Picsello.UserOnboardsTest do
 
   feature "user onboards", %{session: session, user: user} do
     phone_field = text_field("user_onboarding_phone")
+    switching_from_field = select("user_onboarding_switching_from_software")
 
     session
     |> assert_path(@onboarding_path)
@@ -35,6 +36,11 @@ defmodule Picsello.UserOnboardsTest do
     |> click(css("label", text: "Portrait"))
     |> click(css("label", text: "Event"))
     |> click(button("Next"))
+    |> fill_in(text_field("user_onboarding_photographer_years"), with: "5")
+    |> assert_disabled(switching_from_field)
+    |> find(select("user_onboarding_used_software_before"), &click(&1, option("Yes")))
+    |> find(switching_from_field, &click(&1, option("ShootProof")))
+    |> click(css("button[type='submit']", text: "Finish"))
     |> assert_path(@home_path)
 
     user =
@@ -51,9 +57,15 @@ defmodule Picsello.UserOnboardsTest do
                phone: "(123) 456-7890",
                no_website: false,
                color: ^second_color,
-               job_types: ~w(event portrait)
+               job_types: ~w(event portrait),
+               photographer_years: 5,
+               used_software_before: true,
+               switching_from_software: "shoot_proof",
+               completed_at: completed_at
              }
            } = user
+
+    assert completed_at
 
     assert %User{organization: %{name: "Photogenious"}} = user
   end

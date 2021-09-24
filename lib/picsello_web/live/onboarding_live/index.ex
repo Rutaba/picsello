@@ -73,8 +73,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <.step f={f} step={@step} />
 
           <div class="flex justify-between mt-5 sm:justify-end sm:mt-9">
-            <button type="button" phx-click="skip" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">Skip</button>
-            <button type="submit" phx-disable-with="Saving..." disabled={!@changeset.valid?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">Next</button>
+            <button type="button" phx-click="skip" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">
+              <%= if @step == 5, do: "Skip & Finish", else: "Skip" %>
+            </button>
+            <button type="submit" phx-disable-with="Saving..." disabled={!@changeset.valid?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
+              <%= if @step == 5, do: "Finish", else: "Next" %>
+            </button>
           </div>
         </.form>
       </.container>
@@ -180,6 +184,41 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
+  def step(%{step: 5} = assigns) do
+    ~H"""
+      <%= for o <- inputs_for(@f, :onboarding) do %>
+        <label class="flex flex-col mt-4">
+          <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
+
+          <%= input o, :photographer_years, type: :number_input, phx_debounce: 500, placeholder: "22", class: "p-4" %>
+          <%= error_tag o, :photographer_years, class: "text-red-invalid text-sm" %>
+        </label>
+
+        <label class="flex flex-col mt-4">
+          <p class="py-2 font-extrabold">Have you used business software for photography before?</p>
+
+          <%= select o, :used_software_before, %{"No" => false, "Yes" => true}, class: "select p-4" %>
+        </label>
+
+        <label class="flex flex-col mt-4">
+          <p class={classes("py-2 font-extrabold", %{"text-gray-400" => !input_value(o, :used_software_before) })}>
+            Are you switching from a different business or studio management tool?
+          </p>
+
+          <%= select o, :switching_from_software, software_options(), disabled: !input_value(o, :used_software_before), class: "select p-4" %>
+        </label>
+      <% end %>
+    """
+  end
+
+  def software_options(),
+    do: [
+      {"Select One", ""},
+      {"Studio Ninja", :studio_ninja},
+      {"ShootProof", :shoot_proof},
+      {"Other", :other}
+    ]
+
   def job_type_option(assigns) do
     ~H"""
       <label class={classes(
@@ -230,6 +269,18 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step_title: "Customize your business",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 4"
+    )
+  end
+
+  def assign_step(socket, 5) do
+    socket
+    |> assign(
+      step: 5,
+      color_class: "bg-blue-onboarding-first",
+      step_title: "Optional questions",
+      subtitle:
+        "While these final few questions are optional, answering them will help us understand and serve each of our customers better.",
+      page_title: "Onboarding Step 5"
     )
   end
 

@@ -33,6 +33,18 @@ defmodule Picsello.Accounts.UserTest do
                    |> get_in([:onboarding, :website])
                )
     end
+
+    test "requires switching_from_software if used_software_before" do
+      assert %{} =
+               %User{}
+               |> User.onboarding_changeset(%{onboarding: %{used_software_before: false}})
+               |> errors_on()
+
+      assert %{onboarding: %{switching_from_software: ["can't be blank"]}} =
+               %User{}
+               |> User.onboarding_changeset(%{onboarding: %{used_software_before: true}})
+               |> errors_on()
+    end
   end
 
   describe "complete_onboarding_changeset" do
