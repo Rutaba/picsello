@@ -1,6 +1,7 @@
 defmodule PicselloWeb.AuthController do
   use PicselloWeb, :controller
   plug Ueberauth
+  require Logger
 
   alias PicselloWeb.UserAuth
 
@@ -16,9 +17,13 @@ defmodule PicselloWeb.AuthController do
         conn
         |> UserAuth.log_in_user(user)
 
-      {:error, reason} ->
+      {:error, changeset} ->
+        Logger.info(fn ->
+          "auth failed: " <> inspect(Ecto.Changeset.traverse_errors(changeset, & &1))
+        end)
+
         conn
-        |> put_flash(:error, reason)
+        |> put_flash(:error, "We're having trouble on our end. Please contact support.")
         |> redirect(to: "/")
     end
   end
