@@ -38,7 +38,7 @@ config :stripity_stripe,
 
 config :ueberauth, Ueberauth,
   providers: [
-    google: {Ueberauth.Strategy.Google, []}
+    google: {Ueberauth.Strategy.Google, [default_scope: "email profile"]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,
