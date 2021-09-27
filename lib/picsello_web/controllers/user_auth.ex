@@ -141,19 +141,6 @@ defmodule PicselloWeb.UserAuth do
     end
   end
 
-  defp maybe_redirect_to_onboarding(
-         %{request_path: request_path, assigns: %{current_user: current_user}} = conn
-       ) do
-    onboarding_path = Routes.onboarding_path(conn, :index)
-
-    case {request_path, User.onboarded?(current_user)} do
-      {^onboarding_path, true} -> conn |> redirect(to: Routes.home_path(conn, :index)) |> halt()
-      {_, true} -> conn
-      {^onboarding_path, false} -> conn
-      {_, false} -> conn |> redirect(to: onboarding_path) |> halt()
-    end
-  end
-
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
   end
