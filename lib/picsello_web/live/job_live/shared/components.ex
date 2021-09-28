@@ -21,42 +21,6 @@ defmodule PicselloWeb.JobLive.Shared.Components do
     end
   end
 
-  defmodule ShootDetails do
-    @moduledoc false
-    use PicselloWeb, :live_component
-
-    def render(assigns) do
-      ~L"""
-        <%= for {shoot_number, shoot} <- @shoots do %>
-          <%= if shoot do %>
-            <button
-              class="mt-3 btn-row"
-              phx-click="edit-shoot-details"
-              phx-value-shoot-id="<%= shoot.id %>"
-              phx-value-shoot-number="<%= shoot_number %>"
-              title="Edit shoot"
-              type="button"
-            >
-              <%= shoot.name %>
-              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-            </button>
-          <% else %>
-            <button
-              class="mt-3 btn-row"
-              phx-click="edit-shoot-details"
-              phx-value-shoot-number="<%= shoot_number %>"
-              title="Add shoot details"
-              type="button"
-            >
-              Shoot <%= shoot_number %> (add details)
-              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-            </button>
-          <% end %>
-        <% end %>
-      """
-    end
-  end
-
   defmodule BookingDetails do
     @moduledoc false
     use PicselloWeb, :live_component
