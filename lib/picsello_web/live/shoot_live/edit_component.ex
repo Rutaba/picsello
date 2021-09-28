@@ -16,21 +16,17 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def render(assigns) do
     ~H"""
       <div class="flex flex-col modal">
-        <h2 class="text-xl font-semibold"><%= Job.name @job %></h2>
-        <h1 class="mt-2 title">Edit Shoot</h1>
+        <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
 
         <.form let={f} for={@changeset}, phx-change="validate" phx-submit="save" phx-target={@myself}>
-          <%= labeled_input f, :name, label: "Shoot name", placeholder: "Engagement Shoot" %>
-          <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "mt-4" %>
-          <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot duration", prompt: "Select below", wrapper_class: "mt-4" %>
-          <div class="mt-4 input-label">Shoot location</div>
-          <%= for location <- Shoot.locations() do %>
-            <label class="flex items-center mb-2">
-              <%= radio_button f, :location, location, class: "mr-2 radio" %>
-              <%= dyn_gettext location %>
-            </label>
-          <% end %>
-          <%= labeled_input f, :notes, type: :textarea, label: "Shoot notes", placeholder: "type notes here" %>
+
+          <div class="grid grid-cols-1 sm:grid-cols-6 gap-5">
+            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "Engagement Shoot", wrapper_class: "sm:col-span-3" %>
+            <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "sm:col-span-3", class: "w-full" %>
+            <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot Duration", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
+            <%= labeled_select f, :location, for(location <- Shoot.locations(), do: {dyn_gettext(location), location }), label: "Shoot Location", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
+            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "type notes here", wrapper_class: "sm:col-span-6" %>
+        </div>
 
           <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: !@changeset.valid? %>
         </.form>
