@@ -16,19 +16,35 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def render(assigns) do
     ~H"""
       <div class="flex flex-col modal">
-        <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
+        <div class="flex items-start justify-between">
+          <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
+
+          <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+            <.icon name="close-modal" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
+          </button>
+        </div>
 
         <.form let={f} for={@changeset}, phx-change="validate" phx-submit="save" phx-target={@myself}>
 
-          <div class="grid grid-cols-1 sm:grid-cols-6 gap-5">
+          <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "Engagement Shoot", wrapper_class: "sm:col-span-3" %>
             <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "sm:col-span-3", class: "w-full" %>
             <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot Duration", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
             <%= labeled_select f, :location, for(location <- Shoot.locations(), do: {dyn_gettext(location), location }), label: "Shoot Location", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
             <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "type notes here", wrapper_class: "sm:col-span-6" %>
-        </div>
+          </div>
 
-          <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: !@changeset.valid? %>
+          <PicselloWeb.LiveModal.footer>
+            <div class="flex flex-col gap-2 sm:flex-row-reverse">
+              <button class="px-8 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
+                Save
+              </button>
+
+              <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+                Cancel
+              </button>
+            </div>
+          </PicselloWeb.LiveModal.footer>
         </.form>
       </div>
     """

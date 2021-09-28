@@ -55,7 +55,11 @@
     <path d="M1,9 l9,-8 l9,8" stroke-width="2" fill="none"/>
   </svg>
 
-  <svg id="close-modal" viewBox="0 0 20 20">
+  <svg id="close-modal" viewBox="0 0 25 25" fill="none">
+    <path d="M1 1L24 24" stroke="black"/>
+    <path d="M24 1L1 24" stroke="black"/>
+  </svg>
+
     <path d="M1,1L18,18M1,18L18,1" stroke-width="2" stroke-linecap="round"/>
   </svg>
 
