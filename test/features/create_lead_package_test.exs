@@ -5,10 +5,10 @@ defmodule Picsello.CreateLeadPackageTest do
   setup :authenticated
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
-    job = insert(:job, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Add a package"))
     |> fill_in(text_field("Package name"), with: " ")
     |> fill_in(text_field("Package description"), with: " ")
@@ -37,7 +37,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(link("Finish shoot details", count: 1))
   end
 
-  feature "user selects previous package as template to job creation", %{
+  feature "user selects previous package as template to lead creation", %{
     session: session,
     user: user
   } do
@@ -49,8 +49,8 @@ defmodule Picsello.CreateLeadPackageTest do
       user: user
     })
 
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         client: %{
           email: "taylor@example.com",
           name: "Elizabeth Taylor"
@@ -60,7 +60,7 @@ defmodule Picsello.CreateLeadPackageTest do
       })
 
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Add a package"))
     |> assert_has(
       css("select[name='package[package_template_id]'] option:checked",

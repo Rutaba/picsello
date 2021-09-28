@@ -14,8 +14,8 @@ defmodule Picsello.CreateBookingProposalTest do
 
     insert(:questionnaire)
 
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         user: user,
         type: "newborn",
         package: %{
@@ -26,12 +26,12 @@ defmodule Picsello.CreateBookingProposalTest do
         }
       })
 
-    [job: job]
+    [lead: lead]
   end
 
-  feature "user sends booking proposal", %{session: session, job: job} do
+  feature "user sends booking proposal", %{session: session, lead: lead} do
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> assert_has(css("button:disabled", text: "Finish booking proposal"))
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot name"), with: "chute")
@@ -64,7 +64,7 @@ defmodule Picsello.CreateBookingProposalTest do
 
     assert "/proposals/" <> token = path
 
-    %{id: last_proposal_id} = proposal = BookingProposal.last_for_job(job.id)
+    %{id: last_proposal_id} = proposal = BookingProposal.last_for_job(lead.id)
 
     assert {:ok, ^last_proposal_id} =
              Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 1000)

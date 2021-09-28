@@ -5,76 +5,80 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
 
   describe "render" do
     setup do
-      [job: insert(:job), user: insert(:user)]
+      [lead: insert(:lead), user: insert(:user)]
     end
 
-    test "when status is :not_sent", %{job: job, user: user} do
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+    test "when status is :not_sent", %{lead: lead, user: user} do
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Lead created"
     end
 
-    test "when status is :sent", %{job: job, user: user} do
-      _proposal = insert(:proposal, %{job: job})
+    test "when status is :sent", %{lead: lead, user: user} do
+      _proposal = insert(:proposal, %{job: lead})
 
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal sent"
       assert component |> Floki.text() =~ "Awaiting acceptance"
     end
 
-    test "when status is :accepted", %{job: job, user: user} do
-      _proposal = insert(:proposal, %{job: job, accepted_at: DateTime.utc_now()})
+    test "when status is :accepted", %{lead: lead, user: user} do
+      _proposal = insert(:proposal, %{job: lead, accepted_at: DateTime.utc_now()})
 
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal accepted"
       assert component |> Floki.text() =~ "Awaiting contract"
     end
 
-    test "when status is :signed and no questionnaire is present", %{job: job, user: user} do
-      _proposal = insert(:proposal, %{job: job, signed_at: DateTime.utc_now()})
+    test "when status is :signed and no questionnaire is present", %{lead: lead, user: user} do
+      _proposal = insert(:proposal, %{job: lead, signed_at: DateTime.utc_now()})
 
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal signed"
       assert component |> Floki.text() =~ "Pending payment"
     end
 
-    test "when status is :signed and questionnaire is present", %{job: job, user: user} do
+    test "when status is :signed and questionnaire is present", %{lead: lead, user: user} do
       questionnaire = insert(:questionnaire)
 
       _proposal =
-        insert(:proposal, %{job: job, questionnaire: questionnaire, signed_at: DateTime.utc_now()})
+        insert(:proposal, %{
+          job: lead,
+          questionnaire: questionnaire,
+          signed_at: DateTime.utc_now()
+        })
 
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal signed"
       assert component |> Floki.text() =~ "Awaiting questionnaire"
     end
 
-    test "when status is :answered", %{job: job, user: user} do
+    test "when status is :answered", %{lead: lead, user: user} do
       questionnaire = insert(:questionnaire)
 
       proposal =
         insert(:proposal, %{
-          job: job,
+          job: lead,
           questionnaire: questionnaire,
           signed_at: DateTime.utc_now()
         })
 
       _answer = insert(:answer, proposal: proposal, questionnaire: questionnaire)
 
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Questionnaire answered"
       assert component |> Floki.text() =~ "Pending payment"
     end
 
-    test "when status is :deposit_paid", %{job: job, user: user} do
-      _proposal = insert(:proposal, %{job: job, deposit_paid_at: DateTime.utc_now()})
+    test "when status is :deposit_paid", %{lead: lead, user: user} do
+      _proposal = insert(:proposal, %{job: lead, deposit_paid_at: DateTime.utc_now()})
 
-      component = render_component(LeadStatusComponent, job: job, current_user: user)
+      component = render_component(LeadStatusComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Payment paid"
       assert component |> Floki.text() =~ "Job created"

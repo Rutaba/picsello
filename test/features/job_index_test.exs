@@ -4,17 +4,13 @@ defmodule Picsello.JobIndexTest do
 
   setup do
     user = insert(:user)
-    lead = insert(:job, user: user, type: "wedding")
-    job = insert(:job, user: user, type: "family", package: %{shoot_count: 1})
-    shoot = insert(:shoot, job: job)
+    lead = insert(:lead, user: user, type: "wedding")
 
-    proposal =
-      insert(:proposal,
-        job: job,
-        deposit_paid_at: DateTime.utc_now(),
-        accepted_at: DateTime.utc_now(),
-        signed_at: DateTime.utc_now()
-      )
+    %{shoots: [shoot], booking_proposals: [proposal]} =
+      job =
+      insert(:lead, user: user, type: "family", package: %{shoot_count: 1})
+      |> promote_to_job()
+      |> Repo.preload([:shoots, :booking_proposals])
 
     [user: user, job: job, lead: lead, shoot: shoot, proposal: proposal]
   end
@@ -66,7 +62,7 @@ defmodule Picsello.JobIndexTest do
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
-    archived_lead = insert(:job, user: user, type: "family", archived_at: DateTime.utc_now())
+    archived_lead = insert(:lead, user: user, type: "family", archived_at: DateTime.utc_now())
 
     refute Job.name(archived_lead) == Job.name(created_lead)
 
@@ -77,8 +73,7 @@ defmodule Picsello.JobIndexTest do
   end
 
   feature "elapsed shoot dates are hidden", %{session: session, job: future_job, user: user} do
-    elapsed_job = insert(:job, type: "wedding", user: user)
-    insert(:proposal, %{job: elapsed_job, deposit_paid_at: DateTime.utc_now()})
+    elapsed_job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
 
     future_job_shoot =
       insert(:shoot, job: future_job, starts_at: DateTime.utc_now() |> DateTime.add(100))
@@ -101,7 +96,7 @@ defmodule Picsello.JobIndexTest do
   end
 
   feature "pagination", %{session: session, user: user} do
-    insert_list(12, :job, user: user)
+    insert_list(12, :lead, user: user)
 
     session
     |> visit("/leads")

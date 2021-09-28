@@ -163,7 +163,7 @@ defmodule Picsello.Factory do
   end
 
   def proposal_factory(attrs) do
-    %BookingProposal{job: fn -> build(:job) end}
+    %BookingProposal{job: fn -> build(:lead) end}
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
@@ -178,7 +178,30 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-  def job_factory(attrs) do
+  def promote_to_job(%Job{package_id: nil} = job) do
+    job
+    |> Job.add_package_changeset(%{package_id: insert(:package).id})
+    |> Repo.update!()
+    |> promote_to_job()
+  end
+
+  def promote_to_job(%Job{} = job) do
+    %{package: %{shoot_count: shoot_count}, shoots: shoots} =
+      Repo.preload(job, [:package, :shoots], force: true)
+
+    insert(:proposal,
+      job: job,
+      deposit_paid_at: DateTime.utc_now(),
+      accepted_at: DateTime.utc_now(),
+      signed_at: DateTime.utc_now()
+    )
+
+    insert_list(shoot_count - Enum.count(shoots), :shoot, job: job)
+
+    job |> Repo.preload(:shoots, force: true)
+  end
+
+  def lead_factory(attrs) do
     user_attr = Map.take(attrs, [:user])
 
     build_package_template = fn ->

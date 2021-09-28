@@ -28,16 +28,16 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
         })
 
     setup %{user: user, conn: conn} do
-      job = insert(:job, %{user: user, package: %{}})
-      {:ok, view, _html} = live(conn, "/leads/#{job.id}")
+      lead = insert(:lead, %{user: user, package: %{}})
+      {:ok, view, _html} = live(conn, "/leads/#{lead.id}")
 
       click_edit_package(view)
 
-      [parent_view: view, view: view |> find_live_child("live_modal"), job: job]
+      [parent_view: view, view: view |> find_live_child("live_modal"), lead: lead]
     end
 
-    test "starts with one from package", %{view: view, job: job} do
-      %{package: %{package_template_id: template_id}} = job |> Repo.preload(:package)
+    test "starts with one from package", %{view: view, lead: lead} do
+      %{package: %{package_template_id: template_id}} = lead |> Repo.preload(:package)
 
       assert has_element?(view, "option[selected][value=#{template_id}]")
     end
@@ -59,10 +59,10 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
     test "reverts to template id when form is reset", %{
       view: view,
-      job: job,
+      lead: lead,
       parent_view: parent_view
     } do
-      %{package: %{package_template_id: template_id}} = job |> Repo.preload(:package)
+      %{package: %{package_template_id: template_id}} = lead |> Repo.preload(:package)
 
       assert has_element?(view, "option[selected][value=#{template_id}]")
 
@@ -86,14 +86,14 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
   describe "assign :shoot_count_options" do
     def shoot_count_options(user, shoot_count) do
-      job =
-        insert(:job, package: %{}, shoots: for(i <- 0..shoot_count, i > 0, do: %{}))
+      lead =
+        insert(:lead, package: %{}, shoots: for(i <- 0..shoot_count, i > 0, do: %{}))
         |> Repo.preload(:package)
 
       render_component(EditComponent,
         id: EditComponent,
-        job: job,
-        package: job.package,
+        job: lead,
+        package: lead.package,
         current_user: user,
         inner_block: fn _, _ -> nil end
       )

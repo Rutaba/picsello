@@ -15,8 +15,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         user: user,
         type: "newborn",
         package: %{
@@ -29,16 +29,16 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         shoots: [%{}]
       })
 
-    [job: job]
+    [lead: lead]
   end
 
   @sessions 2
   feature "client clicks link in booking proposal email", %{
     sessions: [photographer_session, client_session],
-    job: job
+    lead: lead
   } do
     photographer_session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
     |> click(button("Finish booking proposal"))
     |> click(button("Send email"))
@@ -54,7 +54,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       {:ok, "https://example.com/stripe-checkout"}
     end)
 
-    proposal_id = Picsello.BookingProposal.last_for_job(job.id).id
+    proposal_id = Picsello.BookingProposal.last_for_job(lead.id).id
 
     Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
       {:ok,
@@ -66,14 +66,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(css("h2", text: Job.name(job)))
+    |> assert_has(css("h2", text: Job.name(lead)))
     |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("Proposal TO-DO"))
     |> assert_has(definition("Package:", text: "My Package"))
     |> assert_has(definition("Total", text: "$1.00"))
     |> assert_has(
       definition("Proposal #:",
-        text: Picsello.BookingProposal.last_for_job(job.id).id |> Integer.to_string()
+        text: Picsello.BookingProposal.last_for_job(lead.id).id |> Integer.to_string()
       )
     )
     |> click(button("Accept proposal"))
@@ -115,12 +115,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   @sessions 2
   feature "client fills out booking proposal questionnaire", %{
     sessions: [photographer_session, client_session],
-    job: job
+    lead: lead
   } do
     insert(:questionnaire)
 
     photographer_session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
     |> click(button("Send email"))
 
@@ -158,21 +158,21 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   end
 
   @sessions 2
-  feature "client accesses proposal for archived job", %{
+  feature "client accesses proposal for archived lead", %{
     sessions: [photographer_session, client_session],
-    job: job
+    lead: lead
   } do
     insert(:questionnaire)
 
     photographer_session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
     |> click(button("Send email"))
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
 
-    job |> Job.archive_changeset() |> Repo.update!()
+    lead |> Job.archive_changeset() |> Repo.update!()
 
     client_session
     |> visit(url)

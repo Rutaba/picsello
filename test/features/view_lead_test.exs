@@ -6,11 +6,11 @@ defmodule Picsello.ViewLeadTest do
 
   setup %{user: user} do
     [
-      jobs:
+      leads:
         for(
           {client_name, job_type} <- [{"Rick Sanchez", "family"}, {"Morty Smith", "wedding"}],
           do:
-            insert(:job, %{
+            insert(:lead, %{
               user: user,
               type: job_type,
               client: %{name: client_name}
@@ -30,8 +30,11 @@ defmodule Picsello.ViewLeadTest do
     |> assert_has(css("h1", text: "Rick Sanchez Family"))
   end
 
-  feature "photographer sees scheduled reminder email date", %{session: session, jobs: [job | _]} do
-    insert(:proposal, job: job)
+  feature "photographer sees scheduled reminder email date", %{
+    session: session,
+    leads: [lead | _]
+  } do
+    insert(:proposal, job: lead)
 
     first_reminder_on =
       DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60) |> Calendar.strftime("%B %d, %Y")

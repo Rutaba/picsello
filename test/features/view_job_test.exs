@@ -5,7 +5,8 @@ defmodule Picsello.ViewJobTest do
   setup :authenticated
 
   setup %{user: user, session: session} do
-    job = insert(:job, user: user, type: "family", package: %{shoot_count: 1})
+    job = insert(:lead, user: user, type: "family", package: %{shoot_count: 1})
+
     questionnaire = insert(:questionnaire, job_type: "family")
     insert(:shoot, job: job)
 

@@ -1,23 +1,23 @@
-defmodule Picsello.EditJobTest do
+defmodule Picsello.EditleadTest do
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
   setup :authenticated
 
   setup %{session: session, user: user} do
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         user: user,
         type: "wedding",
         notes: "They're getting married!"
       })
 
-    [job: job, session: session]
+    [lead: lead, session: session]
   end
 
-  feature "user edits a lead", %{session: session, job: job} do
+  feature "user edits a lead", %{session: session, lead: lead} do
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Edit Lead"))
     |> assert_has(button("Cancel"))
     |> assert_value(select("Type of photography"), "wedding")

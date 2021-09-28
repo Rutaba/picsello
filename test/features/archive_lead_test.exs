@@ -5,8 +5,8 @@ defmodule Picsello.ArchiveLeadTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         user: user,
         package: %{
           name: "My Package",
@@ -17,12 +17,12 @@ defmodule Picsello.ArchiveLeadTest do
         shoots: [%{}, %{}]
       })
 
-    [job: job, session: session]
+    [lead: lead, session: session]
   end
 
-  feature "user archives lead", %{session: session, job: job} do
+  feature "user archives lead", %{session: session, lead: lead} do
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Manage"))
     |> click(button("Archive lead"))
     |> click(button("Yes, archive the lead"))

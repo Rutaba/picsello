@@ -5,8 +5,8 @@ defmodule Picsello.EditLeadPackageTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         user: user,
         package: %{
           name: "My Package",
@@ -17,17 +17,17 @@ defmodule Picsello.EditLeadPackageTest do
         shoots: [%{}, %{}]
       })
 
-    [job: job, session: session]
+    [lead: lead, session: session]
   end
 
-  feature "user edits a package", %{session: session, job: job} do
+  feature "user edits a package", %{session: session, lead: lead} do
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Edit package"))
     |> assert_has(button("Cancel"))
     |> assert_value(
       select("package[package_template_id]"),
-      job.package.package_template_id |> inspect
+      lead.package.package_template_id |> inspect
     )
     |> assert_value(text_field("Package price"), "$1.00")
     |> assert_value(text_field("Package name"), "My Package")
@@ -47,9 +47,9 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_value(text_field("Package description"), "indescribably great.")
   end
 
-  feature "user adds package template", %{session: session, job: job} do
+  feature "user adds package template", %{session: session, lead: lead} do
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Edit package"))
     |> click(css("option", text: "+ New Package"))
     |> assert_has(css("option", selected: true, text: "+ New Package"))
@@ -58,14 +58,14 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_has(css("option", selected: true, text: "+ New Package"))
     |> click(button("Save"))
     |> click(button("Edit package"))
-    |> assert_has(css("option", text: job.package.name))
+    |> assert_has(css("option", text: lead.package.name))
   end
 
-  feature "user changes package template", %{session: session, user: user, job: job} do
+  feature "user changes package template", %{session: session, user: user, lead: lead} do
     template = insert(:package, %{user: user, name: "Other Template"})
 
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Edit package"))
     |> click(css("option", text: "Other Template"))
     |> assert_value(text_field("Package name"), "Other Template")

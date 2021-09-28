@@ -1,24 +1,24 @@
-defmodule Picsello.ManageShootTest do
+defmodule Picsello.ManageLeadShootTest do
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
   setup :authenticated
 
   setup %{session: session, user: user} do
-    job =
-      insert(:job, %{
+    lead =
+      insert(:lead, %{
         user: user,
         type: "wedding",
         notes: "They're getting married!",
         package: %{}
       })
 
-    [job: job, session: session]
+    [lead: lead, session: session]
   end
 
-  feature "user adds shoot details and updates it", %{session: session, job: job} do
+  feature "user adds shoot details and updates it", %{session: session, lead: lead} do
     session
-    |> visit("/leads/#{job.id}")
+    |> visit("/leads/#{lead.id}")
     |> click(button("Add shoot details", count: 2, at: 1))
     |> fill_in(text_field("Shoot name"), with: " ")
     |> assert_has(css("label", text: "Shoot name can't be blank"))

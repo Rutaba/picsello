@@ -35,7 +35,7 @@ defmodule Picsello.JobTest do
 
   describe "lead?" do
     test "true when there are no paid deposits on this jobs proposals" do
-      job = insert(:job)
+      job = insert(:lead)
 
       assert Job.lead?(job)
 
