@@ -178,9 +178,12 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-  def promote_to_job(%Job{package_id: nil} = job) do
+  def promote_to_job(%Job{package_id: nil, client: %{organization: organization}} = job)
+      when not is_nil(organization) do
     job
-    |> Job.add_package_changeset(%{package_id: insert(:package).id})
+    |> Job.add_package_changeset(%{
+      package_id: insert(:package, organization: organization).id
+    })
     |> Repo.update!()
     |> promote_to_job()
   end
