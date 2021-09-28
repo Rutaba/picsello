@@ -8,6 +8,9 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_new(:address_field, fn ->
+      match?(%{shoot: %{address: address}} when not is_nil(address), assigns)
+    end)
     |> assign_changeset(%{}, nil)
     |> ok()
   end
@@ -29,8 +32,36 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "Engagement Shoot", wrapper_class: "sm:col-span-3" %>
             <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "sm:col-span-3", class: "w-full" %>
-            <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }), label: "Shoot Duration", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
-            <%= labeled_select f, :location, for(location <- Shoot.locations(), do: {dyn_gettext(location), location }), label: "Shoot Location", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
+            <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }),
+                  label: "Shoot Duration",
+                  prompt: "Select below",
+                  wrapper_class: classes("",%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
+            %>
+
+            <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})}>
+              <div class="flex items-center justify-between">
+                <%= label_for f, :location, label: "Shoot Location" %>
+
+                <%= unless @address_field do %>
+                  <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
+                <% end %>
+              </div>
+
+              <%= select_field f, :location, for(location <- Shoot.locations(), do: {dyn_gettext(location), location }), prompt: "Select below" %>
+            </div>
+
+            <%= if @address_field do %>
+              <div class="flex flex-col sm:col-span-2">
+                <div class="flex items-center justify-between">
+                  <%= label_for f, :address, label: "Shoot Address" %>
+
+                  <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
+                </div>
+
+                <%= input f, :address %>
+              </div>
+            <% end %>
+
             <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "type notes here", wrapper_class: "sm:col-span-6" %>
           </div>
 
@@ -51,6 +82,25 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   end
 
   @impl true
+  def handle_event("address", %{"action" => "add-field"}, socket) do
+    socket |> assign(address_field: true) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "address",
+        %{"action" => "remove"},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    socket
+    |> assign(
+      address_field: false,
+      changeset: Ecto.Changeset.put_change(changeset, :address, nil)
+    )
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"shoot" => params}, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
@@ -61,7 +111,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
         %{"shoot" => params},
         socket
       ) do
-    case socket |> build_changeset(params) |> upsert do
+    case socket |> build_changeset(params |> Enum.into(%{"address" => nil})) |> upsert do
       {:ok, shoot} ->
         send(
           self(),

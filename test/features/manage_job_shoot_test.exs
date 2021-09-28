@@ -71,4 +71,21 @@ defmodule Picsello.ManageJobShootTest do
     |> click(link(shoot2.name))
     |> assert_path(shoot_path(job, 1))
   end
+
+  feature "user adds address to shoot", %{session: session, job: job} do
+    address = "320 1st St N, Jax Beach, FL"
+
+    session
+    |> visit(shoot_path(job, 1))
+    |> click(button("edit shoot"))
+    |> click(link("Add an address"))
+    |> fill_in(text_field("Shoot Address"), with: address)
+    |> click(button("Save"))
+    |> assert_has(definition("Shoot Location", text: "In Client's Home #{address}"))
+    |> click(button("edit shoot"))
+    |> assert_has(text_field("Shoot Address", value: address))
+    |> click(link("Remove address"))
+    |> click(button("Save"))
+    |> assert_has(definition("Shoot Location", text: "In Client's Home"))
+  end
 end

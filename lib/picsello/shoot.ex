@@ -15,6 +15,7 @@ defmodule Picsello.Shoot do
     field :name, :string
     field :notes, :string
     field :starts_at, :utc_datetime
+    field :address, :string
     belongs_to(:job, Picsello.Job)
 
     timestamps()
@@ -30,7 +31,7 @@ defmodule Picsello.Shoot do
 
   def update_changeset(%__MODULE__{} = shoot, attrs) do
     shoot
-    |> cast(attrs, [:starts_at, :duration_minutes, :name, :location, :notes])
+    |> cast(attrs, [:address, :starts_at, :duration_minutes, :name, :location, :notes])
     |> validate_required([:starts_at, :duration_minutes, :name, :location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)

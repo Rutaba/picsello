@@ -52,7 +52,7 @@ defmodule Picsello.FeatureCase do
 
     def onboarded(_), do: onboarded(%{user: insert(:user)})
 
-    def definition(term, opts) do
+    def definition(term, opts \\ []) do
       xpath("//dt[contains(./text(), '#{term}')]/following-sibling::dd[1]", opts)
     end
 
