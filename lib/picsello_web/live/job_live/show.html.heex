@@ -82,7 +82,7 @@
   <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
   <%= for {shoot_number, shoot} <- @shoots do %>
     <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
-      <button type="button" class="w-full p-4 text-left" phx-click="edit-shoot-details" phx-value-shoot-id={shoot.id} phx-value-shoot-number={shoot_number} title="Edit shoot">
+      <%= live_redirect to: Routes.shoot_path(@socket, :shoots, @job.id, shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
         <div class="flex items-center justify-between text-xl font-semibold">
           <div>
             <%= shoot.name %>
@@ -96,7 +96,7 @@
         <hr class="my-3 border-top">
 
         <span class="text-gray-400"><%= dyn_gettext shoot.location %></span>
-      </button>
+      <% end %>
     </li>
   <% end %>
   </ul>

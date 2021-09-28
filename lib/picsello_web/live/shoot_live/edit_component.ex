@@ -21,11 +21,14 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def handle_event(
         "save",
         %{"shoot" => params},
-        %{assigns: %{shoot_number: shoot_number}} = socket
+        socket
       ) do
     case socket |> build_changeset(params) |> upsert do
       {:ok, shoot} ->
-        send(self(), {:update, %{shoot_number: shoot_number, shoot: shoot}})
+        send(
+          self(),
+          {:update, socket.assigns |> Map.take([:shoot_number]) |> Map.put(:shoot, shoot)}
+        )
 
         socket |> assign(shoot: shoot) |> close_modal() |> noreply()
 

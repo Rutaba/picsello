@@ -36,7 +36,11 @@ defmodule Picsello.Shoot do
     |> validate_inclusion(:duration_minutes, @durations)
   end
 
+  def by_starts_at(query \\ __MODULE__) do
+    query |> order_by(asc: :starts_at)
+  end
+
   def for_job(job_id) do
-    __MODULE__ |> where(job_id: ^job_id) |> order_by(asc: :starts_at)
+    __MODULE__ |> where(job_id: ^job_id) |> by_starts_at()
   end
 end
