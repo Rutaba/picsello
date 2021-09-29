@@ -26,9 +26,23 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event(
         "finish-proposal",
         %{},
-        socket
-      ),
-      do: socket |> PicselloWeb.LeadLive.ProposalMessageComponent.open_modal() |> noreply()
+        %{assigns: %{job: job}} = socket
+      ) do
+    %{client: %{organization: %{name: organization_name}, name: client_name}} =
+      job = Repo.preload(job, client: :organization)
+
+    subject = "Booking proposal from #{organization_name}"
+    body = "Hello #{client_name}.\r\n\r\nYou have a booking proposal from #{organization_name}."
+
+    socket
+    |> PicselloWeb.LeadLive.ProposalMessageComponent.open_modal(
+      body_html: body,
+      body_text: body,
+      job: job,
+      subject: subject
+    )
+    |> noreply()
+  end
 
   @impl true
   def handle_event(

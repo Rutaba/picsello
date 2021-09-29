@@ -7,13 +7,8 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     socket
     |> assign(assigns)
     |> assign_new(:changeset, fn ->
-      %{client: %{organization: organization} = client} =
-        job |> Repo.preload(client: :organization)
-
-      subject = "Booking proposal from #{organization.name}"
-      body = "Hello #{client.name}.\r\n\r\nYou have a booking proposal from #{organization.name}."
-
-      %{subject: subject, body_text: body, body_html: body}
+      assigns
+      |> Map.take([:subject, :body_text, :body_html])
       |> Picsello.ProposalMessage.create_changeset()
     end)
     |> assign_new(:show_cc, fn -> false end)
@@ -24,13 +19,6 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     ~L"""
     <div class="modal">
       <h1 class="mt-2 text-xs font-semibold tracking-widest text-gray-400 uppercase">Compose Email</h1>
-
-      <label class="block mt-4 input-label">
-        Select email template
-        <select class="w-full mt-2 select" disabled><option selected disabled>Default Email Template</option></select>
-      </label>
-
-      <hr class="mt-4 border-gray-200">
 
       <div class="pt-4 input-label">
         Client's email
@@ -104,15 +92,18 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     end
   end
 
-  def open_modal(%{assigns: assigns} = socket) do
-    socket
-    |> open_modal(
-      __MODULE__,
-      %{
-        assigns: assigns |> Map.take([:current_user, :job])
-      }
-    )
-  end
+  def open_modal(%{assigns: assigns} = socket, opts \\ []),
+    do:
+      open_modal(
+        socket,
+        __MODULE__,
+        %{
+          assigns:
+            opts
+            |> Enum.into(assigns)
+            |> Map.take([:current_user, :job, :subject, :body_html, :body_text])
+        }
+      )
 
   def client_email(%Job{client: %{email: email}}), do: email
 
