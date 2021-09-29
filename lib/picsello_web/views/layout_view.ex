@@ -3,10 +3,18 @@ defmodule PicselloWeb.LayoutView do
   alias Picsello.Accounts.User
 
   def meta_tags do
-    %{
-      "google-site-verification" => Application.get_env(:picsello, :google_site_verification),
-      "google-maps-api-key" => System.get_env("GOOGLE_MAPS_API_KEY")
-    }
-    |> Enum.filter(&elem(&1, 1))
+    for(
+      {meta_name, config_key} <- %{
+        "google-site-verification" => :google_site_verification,
+        "google-maps-api-key" => :google_maps_api_key
+      },
+      reduce: %{}
+    ) do
+      acc ->
+        case Application.get_env(:picsello, config_key) do
+          nil -> acc
+          value -> Map.put(acc, meta_name, value)
+        end
+    end
   end
 end

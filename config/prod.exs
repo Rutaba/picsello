@@ -64,3 +64,5 @@ config :picsello, Picsello.Mailer,
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]
+
+config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")

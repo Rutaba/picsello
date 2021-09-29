@@ -76,3 +76,4 @@ config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
 
 config :picsello, Picsello.Mailer, adapter: Bamboo.SendgridLocalAdapter
+config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")

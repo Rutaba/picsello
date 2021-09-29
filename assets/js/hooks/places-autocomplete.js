@@ -1,8 +1,10 @@
 const PlacesAutocomplete = {
   mounted() {
-    const { content: apiKey } = [
+    const metaTag = [
       ...document.head.getElementsByTagName('meta'),
     ].find(({ name }) => name == 'google-maps-api-key');
+
+    if(!metaTag) return;
 
     const input = this.el;
 
@@ -25,7 +27,7 @@ const PlacesAutocomplete = {
         setAutocomplete();
       };
 
-      const googleSrc = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=googleMapsInitAutocomplete`;
+      const googleSrc = `https://maps.googleapis.com/maps/api/js?key=${metaTag.content}&libraries=places&callback=googleMapsInitAutocomplete`;
 
       const scriptNode = document.createElement('script');
       scriptNode.setAttribute('src', googleSrc);
