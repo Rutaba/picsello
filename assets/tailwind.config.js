@@ -36,7 +36,7 @@ module.exports = {
       },
       spacing: {
         '90vw': '90vw',
-        '90vh': '90vh',
+        '85vh': '85vh',
         '5vw': '5vw'
       },
       zIndex: {'-10':'-10'}

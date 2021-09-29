@@ -51,7 +51,7 @@ defmodule PicselloWeb.JobLive.Shoot do
     </header>
 
     <div class="flex items-start justify-between p-4 m-4 border rounded-lg center-container">
-      <div class="flex flex-col flex-wrap flex-1 sm:flex-row">
+      <div class="flex flex-col flex-1 sm:flex-wrap sm:flex-row">
         <time datetime={DateTime.to_iso8601(@shoot.starts_at)} class="w-24 h-24 mb-2 mr-4 overflow-hidden text-center border rounded-lg border-blue-primary bg-blue-light-primary">
           <div class="py-1 text-sm font-semibold text-white uppercase bg-blue-primary">
             <%= strftime(@current_user.time_zone, @shoot.starts_at, "%B") %>

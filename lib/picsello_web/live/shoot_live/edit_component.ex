@@ -19,7 +19,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def render(assigns) do
     ~H"""
       <div class="flex flex-col modal">
-        <div class="flex items-start justify-between">
+        <div class="flex items-start justify-between flex-shrink-0">
           <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
 
           <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
@@ -68,7 +68,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
           <PicselloWeb.LiveModal.footer>
             <div class="flex flex-col gap-2 sm:flex-row-reverse">
-              <button class="px-8 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
+              <button class="px-8 mb-2 sm:mb-0 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
                 Save
               </button>
 
