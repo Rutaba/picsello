@@ -58,7 +58,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
                   <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
                 </div>
 
-                <%= input f, :address %>
+                <%= input f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off" %>
+                <div class="relative autocomplete-wrapper" phx-update="ignore"></div>
               </div>
             <% end %>
 

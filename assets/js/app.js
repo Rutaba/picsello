@@ -25,6 +25,7 @@ import '@fontsource/be-vietnam/700.css';
 import Phone from './hooks/phone';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
+import PlacesAutocomplete from './hooks/places-autocomplete';
 
 const Modal = {
   mounted() {
@@ -89,7 +90,8 @@ const Hooks = {
   Phone,
   Quill,
   Select,
-  TZCookie
+  TZCookie,
+  PlacesAutocomplete,
 };
 
 let csrfToken = document

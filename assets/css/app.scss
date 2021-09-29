@@ -12,6 +12,16 @@ html {
   @apply text-black bg-white;
 }
 
+// Google Maps autocomplete overrides
+.pac-container {
+  top: 0px !important;
+  left: 0px !important;
+}
+
+.pac-item {
+  @apply p-2;
+}
+
 .ql-snow {
   &.ql-toolbar button:hover {
     @apply text-blue-dark-primary bg-blue-primary/10;
