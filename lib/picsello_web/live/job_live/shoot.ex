@@ -131,17 +131,12 @@ defmodule PicselloWeb.JobLive.Shoot do
 
   defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared
 
-  @doc """
-    Load the shoot_number (1 based index) shoot of the job.
-    raise Ecto.NoResultsError if not found.
-
-    https://github.com/phoenixframework/phoenix_ecto/blob/v4.4.0/lib/phoenix_ecto/plug.ex#L4
-  """
   defp assign_shoot(%{assigns: %{job: job}} = socket, shoot_number) do
     case job.id
          |> Shoot.for_job()
          |> Repo.all()
          |> Enum.at(String.to_integer(shoot_number) - 1) do
+      # trigger a 404 response
       nil -> raise Ecto.NoResultsError
       shoot -> assign(socket, shoot: shoot, shoot_number: shoot_number)
     end

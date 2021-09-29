@@ -3,7 +3,7 @@ defmodule PicselloWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Picsello.{Accounts, Accounts.User}
+  alias Picsello.Accounts
   alias PicselloWeb.Router.Helpers, as: Routes
 
   # Make the remember me cookie valid for 60 days.

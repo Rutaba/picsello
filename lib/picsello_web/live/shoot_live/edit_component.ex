@@ -2,7 +2,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Shoot, Repo, Job}
+  alias Picsello.{Shoot, Repo}
 
   @impl true
   def update(assigns, socket) do
