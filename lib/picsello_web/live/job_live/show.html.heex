@@ -14,9 +14,10 @@
 
     <h1 class="flex items-center justify-between text-3xl font-bold lg:justify-start">
       <%= Job.name @job %>
-      <span class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-primary text-blue-primary">
+
+      <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-primary text-blue-primary">
         <div class="absolute -top-1.5 left-1.5">&hellip;</div>
-      </span>
+      </button>
     </h1>
   </div>
 </header>

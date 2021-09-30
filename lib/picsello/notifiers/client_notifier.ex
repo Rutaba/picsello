@@ -18,6 +18,18 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> deliver_later()
   end
 
+  def deliver_email(message, to_email) do
+    sendgrid_template(:email_template,
+      subject: message.subject,
+      body_html: message |> body_html,
+      body_text: message.body_text
+    )
+    |> to(to_email)
+    |> cc(message.cc_email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
   defp body_html(%{body_html: nil, body_text: body_text}),
     do: body_text |> Phoenix.HTML.Format.text_to_html() |> Phoenix.HTML.safe_to_string()
 

@@ -1,4 +1,4 @@
-defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
+defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Job}
@@ -6,36 +6,35 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
   @impl true
   def update(assigns, socket) do
     socket
-    |> assign(assigns)
+    |> assign(Enum.into(assigns, %{composed_event: :message_composed, show_cc: false}))
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
       |> Picsello.ClientMessage.create_changeset()
     end)
-    |> assign_new(:show_cc, fn -> false end)
     |> ok()
   end
 
   @impl true
   def render(assigns) do
-    ~L"""
+    ~H"""
     <div class="modal">
-      <h1 class="mt-2 text-xs font-semibold tracking-widest text-gray-400 uppercase">Compose Email</h1>
+      <h1 class="text-3xl font-bold">Send an email</h1>
 
-      <div class="pt-4 input-label">
+      <div class="pt-5 input-label">
         Client's email
       </div>
       <div class="relative text-input">
         <%= client_email @job %>
-        <a class="absolute cursor-pointer bottom-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target="<%= @myself %>">cc</a>
+        <a class="absolute cursor-pointer bottom-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target={@myself}>cc</a>
       </div>
 
-      <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, phx_target: @myself %>
+      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <%= if @show_cc do %>
           <div class="relative">
             <%= labeled_input f, :cc_email, label: "CC Email", wrapper_class: "mt-4", phx_debounce: "500" %>
-            <a class="absolute cursor-pointer top-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target="<%= @myself %>">
-              <%= icon_tag(@socket, "close-modal", class: "h-3 w-3 stroke-current") %>
+            <a class="absolute cursor-pointer top-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target={@myself}>
+              <.icon name="close-modal" class="w-3 h-3 stroke-current"/>
             </a>
             <%= if input_value(f, :cc_email) && input_value(f, :cc_email) != "" do %>
               <a id="cc-clear" class="absolute cursor-pointer bottom-2 right-2 text-blue-primary" phx-hook="ClearInput" data-input-name="cc_email">clear</a>
@@ -58,18 +57,18 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
           <%= hidden_input f, :body_text, phx_debounce: "500" %>
           <%= hidden_input f, :body_html, phx_debounce: "500" %>
         </div>
-        <%= live_component PicselloWeb.LiveModal.FooterComponent do %>
-          <div class="text-center">
-            <button class="w-full mb-4 btn-primary" type="submit" <%= unless @changeset.valid?, do: "disabled" %> phx-disable-with="Sending email...">
-              Send email
+        <PicselloWeb.LiveModal.footer>
+          <div class="flex flex-col gap-2 sm:flex-row-reverse">
+            <button class="px-8 mb-2 sm:mb-0 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+              Send Email
             </button>
 
-            <button class="w-full btn-secondary" type="button" phx-click="modal" phx-value-action="close">
-              Close
+            <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+              Cancel
             </button>
           </div>
-        <% end %>
-      </form>
+        </PicselloWeb.LiveModal.footer>
+      </.form>
     </div>
     """
   end
@@ -87,26 +86,29 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
   @impl true
   def handle_event("save", %{"client_message" => params}, socket) do
     socket = socket |> assign_changeset(:validate, params)
-    %{assigns: %{changeset: changeset}} = socket
+    %{assigns: %{changeset: changeset, composed_event: composed_event}} = socket
 
     if changeset.valid? do
-      send(socket.parent_pid, {:message_composed, changeset |> Map.put(:action, nil)})
+      send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil)})
       socket |> noreply()
     else
       socket |> noreply()
     end
   end
 
-  def open_modal(%{assigns: assigns} = socket, opts \\ []),
+  @spec open(%Phoenix.LiveView.Socket{}, %{
+          optional(:subject) => binary,
+          optional(:body_text) => any,
+          optional(:body_html) => binary,
+          optional(:composed_event) => any
+        }) :: %Phoenix.LiveView.Socket{}
+  def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
       open_modal(
         socket,
         __MODULE__,
         %{
-          assigns:
-            opts
-            |> Enum.into(assigns)
-            |> Map.take([:current_user, :job, :subject, :body_html, :body_text])
+          assigns: Enum.into(opts, Map.take(assigns, [:current_user, :job]))
         }
       )
 

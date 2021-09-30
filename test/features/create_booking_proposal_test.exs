@@ -1,6 +1,8 @@
 defmodule Picsello.CreateBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Questionnaire.Answer, BookingProposal, Repo, Organization}
+  alias Picsello.{Questionnaire.Answer, BookingProposal, Repo, Organization, ClientMessage}
+
+  @send_email_button button("Send Email")
 
   setup :onboarded
   setup :authenticated
@@ -47,13 +49,18 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("Subject"), with: "Proposal from me")
     |> wait_for_enabled_submit_button()
-    |> click(button("Send email"))
+    |> click(@send_email_button)
     |> assert_has(css("h1", text: "Email sent"))
     |> click(button("Close"))
 
     assert_receive {:delivered_email, email}
 
     assert "Proposal from me" = email |> email_substitutions |> Map.get("subject")
+
+    assert [proposal] = Repo.all(BookingProposal)
+    assert [client_message] = Repo.all(ClientMessage)
+    assert client_message.proposal_id == proposal.id
+    assert client_message.job_id == nil
 
     path =
       email

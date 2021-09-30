@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.Job
+  alias Picsello.{Repo, Job, Notifiers.ClientNotifier}
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
@@ -96,6 +96,16 @@ defmodule PicselloWeb.JobLive.Show do
     |> PicselloWeb.BookingProposalLive.QuestionnaireComponent.open_modal_from_proposal(proposal)
     |> noreply()
   end
+
+  @impl true
+  def handle_event("manage", %{}, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> PicselloWeb.ActionSheetComponent.open(%{
+        title: Job.name(job),
+        actions: [%{title: "Send an email", action_event: "open_email_compose"}]
+      })
+      |> noreply()
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared

@@ -2,6 +2,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo, Organization}
 
+  @send_email_button button("Send Email")
+
   setup %{sessions: [photographer_session | _]} do
     user = insert(:user) |> onboard!
     photographer_session |> sign_in(user)
@@ -41,7 +43,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
     |> click(button("Finish booking proposal"))
-    |> click(button("Send email"))
+    |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
@@ -122,7 +124,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
-    |> click(button("Send email"))
+    |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")
@@ -167,7 +169,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
-    |> click(button("Send email"))
+    |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
     url = email |> email_substitutions |> Map.get("url")

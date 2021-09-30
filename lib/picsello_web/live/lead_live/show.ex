@@ -35,12 +35,13 @@ defmodule PicselloWeb.LeadLive.Show do
     body = "Hello #{client_name}.\r\n\r\nYou have a booking proposal from #{organization_name}."
 
     socket
-    |> PicselloWeb.LeadLive.ProposalMessageComponent.open_modal(
+    |> assign(:job, job)
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      composed_event: :proposal_message_composed,
       body_html: body,
       body_text: body,
-      job: job,
       subject: subject
-    )
+    })
     |> noreply()
   end
 
@@ -51,11 +52,12 @@ defmodule PicselloWeb.LeadLive.Show do
         %{assigns: %{job: job}} = socket
       ) do
     actions =
-      if job.archived_at do
-        []
-      else
-        [%{title: "Archive lead", action_event: "confirm_archive_lead"}]
-      end
+      [%{title: "Send an email", action_event: "open_email_compose"}]
+      |> Enum.concat(
+        if job.archived_at,
+          do: [],
+          else: [%{title: "Archive lead", action_event: "confirm_archive_lead"}]
+      )
 
     socket
     |> PicselloWeb.ActionSheetComponent.open(%{
@@ -98,7 +100,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info(
-        {:message_composed, message_changeset},
+        {:proposal_message_composed, message_changeset},
         %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
       ) do
     questionnaire_id =

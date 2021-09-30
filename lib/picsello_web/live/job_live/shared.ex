@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.Shared do
   @moduledoc """
   handlers used by both leads and jobs
   """
-  alias Picsello.{Job, Shoot, Repo, BookingProposal}
+  alias Picsello.{Job, Shoot, Repo, BookingProposal, Notifiers.ClientNotifier}
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
@@ -57,6 +57,31 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{proposal: %{id: proposal_id}}} = socket
       ),
       do: socket |> redirect(to: BookingProposal.path(proposal_id)) |> noreply()
+
+  def handle_info({:action_event, "open_email_compose"}, socket) do
+    socket |> PicselloWeb.ClientMessageComponent.open() |> noreply()
+  end
+
+  def handle_info(
+        {:message_composed, message_changeset},
+        %{assigns: %{job: %{client: client} = job}} = socket
+      ) do
+    with {:ok, message} <-
+           message_changeset
+           |> Ecto.Changeset.put_change(:job_id, job.id)
+           |> Repo.insert(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
+      socket
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        title: "Email sent",
+        subtitle: "Yay! Your email has been successfully sent"
+      })
+      |> noreply()
+    else
+      _error ->
+        socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
+    end
+  end
 
   def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
