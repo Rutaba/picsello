@@ -11,7 +11,7 @@ defmodule Picsello.Factory do
     Job,
     Organization,
     Package,
-    ProposalMessage,
+    ClientMessage,
     Repo,
     Shoot,
     Accounts.User,
@@ -168,8 +168,8 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-  def proposal_message_factory(attrs) do
-    %ProposalMessage{
+  def client_message_factory(attrs) do
+    %ClientMessage{
       subject: "here is what i propose",
       body_text: "lets take some pictures!",
       body_html: "lets take <i>some</i> <b>pictures!</b>"

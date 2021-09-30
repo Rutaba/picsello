@@ -6,7 +6,7 @@ defmodule Picsello.ProposalReminder do
     Job,
     Notifiers.ClientNotifier,
     Organization,
-    ProposalMessage,
+    ClientMessage,
     Repo
   }
 
@@ -31,7 +31,7 @@ defmodule Picsello.ProposalReminder do
 
   defp next_proposal_info(query) do
     from(proposal in query,
-      left_join: message in ProposalMessage,
+      left_join: message in ClientMessage,
       on: proposal.id == message.proposal_id and message.scheduled,
       group_by: proposal.id,
       where: is_nil(proposal.deposit_paid_at),
@@ -65,7 +65,7 @@ defmodule Picsello.ProposalReminder do
       body = EEx.eval_string(copy, organization_name: organization_name, client_name: client_name)
 
       %{subject: "Proposal reminder", body_text: body}
-      |> ProposalMessage.create_changeset()
+      |> ClientMessage.create_changeset()
       |> Ecto.Changeset.put_change(:proposal_id, proposal_id)
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Repo.insert!()

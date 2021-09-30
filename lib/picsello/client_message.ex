@@ -1,11 +1,12 @@
-defmodule Picsello.ProposalMessage do
+defmodule Picsello.ClientMessage do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.BookingProposal
+  alias Picsello.{BookingProposal, Job}
 
-  schema "proposal_messages" do
+  schema "client_messages" do
     belongs_to :proposal, BookingProposal
+    belongs_to :job, Job
     field(:subject, :string)
     field(:cc_email, :string)
     field(:body_text, :string)

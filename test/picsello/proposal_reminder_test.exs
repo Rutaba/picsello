@@ -1,6 +1,6 @@
 defmodule Picsello.ProposalReminderTest do
   use Picsello.DataCase, async: true
-  alias Picsello.{ProposalMessage, ProposalReminder, Repo}
+  alias Picsello.{ClientMessage, ProposalReminder, Repo}
   require Ecto.Query
 
   setup do
@@ -12,7 +12,7 @@ defmodule Picsello.ProposalReminderTest do
 
   def messages_by_proposal,
     do:
-      from(r in ProposalMessage, group_by: r.proposal_id, select: {r.proposal_id, count(r.id)})
+      from(r in ClientMessage, group_by: r.proposal_id, select: {r.proposal_id, count(r.id)})
       |> Repo.all()
       |> Enum.into(%{})
 
@@ -46,14 +46,14 @@ defmodule Picsello.ProposalReminderTest do
 
     test "delivers correct email in reminder schedule for elapsed days", %{now: now} do
       %{id: unpaid_id} = insert(:proposal)
-      insert_list(2, :proposal_message, proposal_id: unpaid_id, scheduled: true)
+      insert_list(2, :client_message, proposal_id: unpaid_id, scheduled: true)
 
       :ok = now |> DateTime.add(2 * day()) |> DateTime.add(10) |> ProposalReminder.deliver_all()
 
       %{^unpaid_id => 3} = messages_by_proposal()
 
       body =
-        from(message in ProposalMessage,
+        from(message in ClientMessage,
           order_by: [desc: message.id],
           limit: 1,
           select: message.body_text

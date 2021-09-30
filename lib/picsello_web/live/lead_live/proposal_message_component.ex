@@ -3,18 +3,20 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Job}
 
+  @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
-      |> Picsello.ProposalMessage.create_changeset()
+      |> Picsello.ClientMessage.create_changeset()
     end)
     |> assign_new(:show_cc, fn -> false end)
     |> ok()
   end
 
+  @impl true
   def render(assigns) do
     ~L"""
     <div class="modal">
@@ -72,15 +74,18 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
     """
   end
 
+  @impl true
   def handle_event("toggle-cc", _, %{assigns: %{show_cc: show_cc}} = socket) do
     socket |> assign(:show_cc, !show_cc) |> noreply()
   end
 
-  def handle_event("validate", %{"proposal_message" => params}, socket) do
+  @impl true
+  def handle_event("validate", %{"client_message" => params}, socket) do
     socket |> assign_changeset(:validate, params) |> noreply()
   end
 
-  def handle_event("save", %{"proposal_message" => params}, socket) do
+  @impl true
+  def handle_event("save", %{"client_message" => params}, socket) do
     socket = socket |> assign_changeset(:validate, params)
     %{assigns: %{changeset: changeset}} = socket
 
@@ -112,7 +117,7 @@ defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
          action,
          params
        ) do
-    changeset = params |> Picsello.ProposalMessage.create_changeset() |> Map.put(:action, action)
+    changeset = params |> Picsello.ClientMessage.create_changeset() |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end
