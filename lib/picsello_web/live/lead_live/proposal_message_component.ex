@@ -1,9 +1,9 @@
 defmodule PicselloWeb.LeadLive.ProposalMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job}
 
-  def update(%{job: job} = assigns, socket) do
+  def update(assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:changeset, fn ->

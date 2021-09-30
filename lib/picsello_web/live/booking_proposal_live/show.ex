@@ -7,8 +7,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   alias PicselloWeb.BookingProposalLive.{
     ProposalComponent,
     QuestionnaireComponent,
-    ContractComponent,
-    ConfettiComponent
+    ContractComponent
   }
 
   require Logger
@@ -110,7 +109,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @impl true
   def handle_info(:confetti, socket) do
     socket
-    |> ConfettiComponent.open_modal()
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Thank you! Your session is now booked.",
+      subtitle:
+        "We are so excited to be working with you, thank you for your business. See you soon.",
+      close_label: "Whoo hoo!"
+    })
     # clear the success param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()

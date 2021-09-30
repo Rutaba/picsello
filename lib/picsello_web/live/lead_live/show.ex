@@ -48,9 +48,22 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event(
         "manage",
         %{},
-        socket
-      ),
-      do: socket |> PicselloWeb.LeadLive.ManageLeadComponent.open_modal() |> noreply()
+        %{assigns: %{job: job}} = socket
+      ) do
+    actions =
+      if job.archived_at do
+        []
+      else
+        [%{title: "Archive lead", action_event: "confirm_archive_lead"}]
+      end
+
+    socket
+    |> PicselloWeb.ActionSheetComponent.open(%{
+      title: "Manage #{Job.name(job)}",
+      actions: actions
+    })
+    |> noreply()
+  end
 
   @impl true
   def handle_event(
@@ -65,6 +78,19 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
+
+  @impl true
+  def handle_info({:action_event, "confirm_archive_lead"}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "archive",
+      confirm_label: "Yes, archive the lead",
+      icon: "warning",
+      title: "Are you sure you want to archive this lead?"
+    })
+    |> noreply()
+  end
 
   @impl true
   def handle_info({:stripe_status, status}, socket),
@@ -97,7 +123,10 @@ defmodule PicselloWeb.LeadLive.Show do
         socket
         |> assign_proposal()
         |> assign(:job, job)
-        |> PicselloWeb.LeadLive.ProposalMessageSentComponent.open_modal()
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "Email sent",
+          subtitle: "Yay! Your email has been successfully sent"
+        })
         |> noreply()
 
       {:error, _} ->
@@ -108,7 +137,7 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info(:archive, %{assigns: %{job: job}} = socket) do
+  def handle_info({:confirm_event, "archive"}, %{assigns: %{job: job}} = socket) do
     case job |> Job.archive_changeset() |> Repo.update() do
       {:ok, job} ->
         socket
