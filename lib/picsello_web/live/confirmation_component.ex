@@ -11,6 +11,7 @@ defmodule PicselloWeb.ConfirmationComponent do
         close_label: "Close",
         confirm_event: nil,
         confirm_label: "Yes",
+        confirm_class: "btn-warning",
         icon: "confetti",
         subtitle: nil
       })
@@ -22,7 +23,7 @@ defmodule PicselloWeb.ConfirmationComponent do
   def render(assigns) do
     ~H"""
     <div class="max-w-md modal">
-      <.icon name={@icon}, class="h-16" />
+      <.icon name={@icon}, class="w-11 h-11" />
 
       <h1 class="text-3xl font-semibold">
         <%= @title %>
@@ -33,7 +34,7 @@ defmodule PicselloWeb.ConfirmationComponent do
       <% end %>
 
       <%= if @confirm_event do %>
-        <button class="w-full mt-6 btn-warning" title={@confirm_label} type="button" phx-click={@confirm_event} phx-disable-with="Saving&hellip;" phx-target={@myself}>
+        <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="button" phx-click={@confirm_event} phx-disable-with="Saving&hellip;" phx-target={@myself}>
           <%= @confirm_label %>
         </button>
       <% end %>
@@ -60,6 +61,7 @@ defmodule PicselloWeb.ConfirmationComponent do
           optional(:close_label) => binary,
           optional(:confirm_event) => any,
           optional(:confirm_label) => binary,
+          optional(:confirm_class) => binary,
           optional(:icon) => binary,
           optional(:subtitle) => binary,
           title: binary
