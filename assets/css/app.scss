@@ -24,7 +24,7 @@ html {
 
 .ql-snow {
   &.ql-toolbar button:hover {
-    @apply text-blue-dark-primary bg-blue-primary/10;
+    @apply text-blue-secondary bg-blue-primary/10;
 
     .ql-stroke {
       @apply stroke-current;
@@ -36,7 +36,7 @@ html {
   }
 
   &.ql-toolbar button.ql-active {
-    @apply text-blue-dark-primary bg-blue-dark-primary/20;
+    @apply text-blue-secondary bg-blue-secondary/20;
 
     .ql-stroke {
       @apply stroke-current;

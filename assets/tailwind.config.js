@@ -16,9 +16,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'blue-primary': '#00ADC9',
-        'blue-dark-primary': '#0094B0',
-        'blue-light-primary': '#EFFDFB',
+        'blue-primary': '#4DAAC6',
+        'blue-secondary': '#86C3CC',
+        'blue-light-primary': '#F2FDFB',
         'blue-onboarding-fourth': '#92B6F9',
         black: '#231F20',
         'red-invalid': '#CB0000',
