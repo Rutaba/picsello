@@ -1,7 +1,9 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Repo, Job, Notifiers.ClientNotifier}
+  alias Picsello.{Job, Repo}
+
+  import PicselloWeb.JobLive.Shared, only: [assign_job: 2, assign_proposal: 1, status_badge: 1]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
@@ -112,6 +114,4 @@ defmodule PicselloWeb.JobLive.Show do
 
   @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
-  defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared
-  defdelegate assign_proposal(socket), to: PicselloWeb.JobLive.Shared
 end

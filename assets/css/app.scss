@@ -84,3 +84,7 @@ html {
   @apply px-4 py-3 sm:p-8 bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg;
 }
 
+.badge {
+  @apply px-2 py-1 font-bold text-white rounded;
+  font-size: 0.5rem;
+}
