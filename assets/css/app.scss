@@ -9,7 +9,7 @@
 @import "quill/dist/quill.snow.css";
 
 html {
-  @apply text-black bg-white;
+  @apply text-black bg-white text-13px sm:text-16px;
 }
 
 // Google Maps autocomplete overrides

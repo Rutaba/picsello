@@ -38,7 +38,11 @@ module.exports = {
       spacing: {
         '90vw': '90vw',
         '85vh': '85vh',
-        '5vw': '5vw'
+        '5vw': '5vw',
+      },
+      fontSize: {
+        '13px': '13px',
+        '16px': '16px'
       },
       zIndex: {'-10':'-10'}
     },
