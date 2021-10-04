@@ -46,7 +46,7 @@
       <a href={"mailto:#{@job.client.email}"} class="flex items-center min-w-0 text-xs lg:text-blue-primary">
         <span class="flex-shrink-0">
           <.circle radius="7" class="mr-2">
-          <.icon name="envelope" class="text-white stroke-current" width="12" height="10" />
+          <.icon name="envelope-outline" class="text-white stroke-current" width="12" height="10" />
           </.circle>
         </span>
         <span class="truncate"><%= @job.client.email %></span>
@@ -59,7 +59,7 @@
 
 <div class="p-6 center-container">
   <ul class="grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Finances" icon="money-bags" button_text="Send reminder">
+    <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder">
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
         <dd class="font-bold row-start-2" style="color: #429467">$500</dd>
@@ -67,10 +67,10 @@
         <dd class="font-bold row-start-2" style="color: #E1662F">$500</dd>
       </dl>
     </.overview_card>
-    <.overview_card title="Inbox" icon="envelope" button_text="Go to job inbox">
+    <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox">
       You are free as a bird!
     </.overview_card>
-    <.overview_card title="Orders" icon="cart" button_text="Learn how">
+    <.overview_card title="Orders" icon="cart-outline" button_text="Learn how">
       You need to upload photos to allow orders.
     </.overview_card>
     <.overview_card title="Gallery" icon="gallery" button_text="Learn how">

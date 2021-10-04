@@ -4,14 +4,22 @@ const svgToDataUri = require('mini-svg-data-uri');
 
 module.exports = {
   mode: 'jit',
-  purge: [
-    "../**/*.html.eex",
-    "../**/*.html.leex",
-    "../**/*.html.heex",
-    "../**/views/**/*.ex",
-    "../**/live/**/*.ex",
-    "./js/**/*.js"
-  ],
+  purge: {
+    content: [
+      "../**/*.html.eex",
+      "../**/*.html.leex",
+      "../**/*.html.heex",
+      "../**/views/**/*.ex",
+      "../**/live/**/*.ex",
+      "./js/**/*.js"
+    ],
+    safelist: [
+      "border-orange-warning",
+      "border-blue-primary",
+      "text-orange-warning",
+      "text-blue-primary"
+    ]
+  },
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
