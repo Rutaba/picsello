@@ -9,6 +9,7 @@ defmodule Picsello.Job do
     field(:type, :string)
     field(:notes, :string)
     field(:archived_at, :utc_datetime)
+    field(:completed_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     has_one(:job_status, JobStatus)
@@ -38,13 +39,12 @@ defmodule Picsello.Job do
     |> assoc_constraint(:package)
   end
 
-  def archive_changeset(job) do
-    attrs = %{archived_at: DateTime.utc_now()}
-
-    job
-    |> cast(attrs, [:archived_at])
-    |> validate_required([:archived_at])
+  defp timestamp_changeset(job, field) do
+    change(job, [{field, DateTime.utc_now() |> DateTime.truncate(:second)}])
   end
+
+  def archive_changeset(job), do: job |> timestamp_changeset(:archived_at)
+  def complete_changeset(job), do: job |> timestamp_changeset(:completed_at)
 
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do
     job
