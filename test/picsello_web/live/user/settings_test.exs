@@ -100,7 +100,7 @@ defmodule PicselloWeb.Live.User.SettingsTest do
         }
       })
 
-      assert view |> has_element?(".alert", "A link to confirm your email")
+      assert view |> has_element?("*[title='info']", "A link to confirm your email")
       assert_receive {:delivered_email, email}
       assert %{"url" => _url} = email |> email_substitutions()
       assert Accounts.get_user_by_email(user.email)

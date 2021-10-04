@@ -34,7 +34,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           <div class="relative">
             <%= labeled_input f, :cc_email, label: "CC Email", wrapper_class: "mt-4", phx_debounce: "500" %>
             <a class="absolute cursor-pointer top-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target={@myself}>
-              <.icon name="close-modal" class="w-3 h-3 stroke-current"/>
+              <.icon name="close-x" class="w-3 h-3 stroke-current"/>
             </a>
             <%= if input_value(f, :cc_email) && input_value(f, :cc_email) != "" do %>
               <a id="cc-clear" class="absolute cursor-pointer bottom-2 right-2 text-blue-primary" phx-hook="ClearInput" data-input-name="cc_email">clear</a>

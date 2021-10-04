@@ -23,7 +23,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
 
           <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
-            <.icon name="close-modal" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
+            <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
           </button>
         </div>
 
