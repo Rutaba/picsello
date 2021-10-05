@@ -88,7 +88,16 @@ const MasonryGrid = {
   mounted() {
     const grid = document.querySelector(".masonry");
     if (grid) {
-      setTimeout( () => {(new Masonry(grid)).layout()}, 100);
+      grid.classList.remove('hidden');
+
+      const options = {
+        itemSelector: ".item",
+        columnWidth: 309,
+        gutter: 20
+      };
+      setTimeout( () => {
+        (new Masonry(grid, options)).layout();
+      }, 100);
     }
   }
 }
