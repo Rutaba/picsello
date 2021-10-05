@@ -4,13 +4,13 @@ defmodule Picsello.Gallery do
   alias Picsello.Job
 
   @status_options [
-    values: [:draft, :active, :expired], 
-    default: :draft
+    values: ~w(draft active expired), 
+    default: "draft"
   ]
 
   schema "galleries" do
     field :name, :string
-    field(:status, Ecto.Enum, @status_options) 
+    field(:status, :string, @status_options) 
     field :cover_photo_id, :integer
     field :password, :string
     field :client_link_hash, :string
