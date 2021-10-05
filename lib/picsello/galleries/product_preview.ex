@@ -4,7 +4,7 @@ defmodule Picsello.Galleries.ProductPreview do
   alias Picsello.{Product, Photo}
 
   schema "product_previews" do
-    field :index, :string
+    field :index, :integer, default: 1
     belongs_to(:photo, Photo)
     belongs_to(:product, Product)
 

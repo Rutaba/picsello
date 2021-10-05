@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.CreateProductPreviews do
 
   def change do
     create table(:product_previews) do
-      add(:index, :string, null: false)
+      add(:index, :integer, default: 1, null: false)
       add(:product_id, references(:products, on_delete: :nothing), null: false)
       add(:photo_id, references(:photos, on_delete: :nothing), null: false)
 
