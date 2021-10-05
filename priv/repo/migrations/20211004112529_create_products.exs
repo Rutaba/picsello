@@ -3,9 +3,9 @@ defmodule Picsello.Repo.Migrations.CreateProducts do
 
   def change do
     create table(:products) do
-      add :name, :string
-      add :corners, {:array, {:array, :integer}}
-      add :template_image_url, :string
+      add(:name, :string, null: false)
+      add(:corners, {:array, {:array, :integer}}, null: false)
+      add(:template_image_url, :string, null: false)
       
       timestamps()
     end

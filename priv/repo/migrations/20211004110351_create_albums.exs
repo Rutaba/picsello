@@ -3,9 +3,9 @@ defmodule Picsello.Repo.Migrations.CreateAlbums do
 
   def change do
     create table(:albums) do
-      add :name, :string
-      add :position, :float
-      add :gallery_id, references(:galleries, on_delete: :nothing)
+      add(:name, :string, null: false)
+      add(:position, :float, null: false)
+      add(:gallery_id, references(:galleries, on_delete: :nothing),  null: false)
 
       timestamps()
     end

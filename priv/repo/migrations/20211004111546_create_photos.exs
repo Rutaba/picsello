@@ -3,15 +3,15 @@ defmodule Picsello.Repo.Migrations.CreatePhotos do
 
   def change do
     create table(:photos) do
-      add :name, :string
-      add :position, :float
-      add :original_url, :string
-      add :preview_url, :string
-      add :watermarked_url, :string
-      add :client_copy_url, :string
-      add :client_liked, :boolean, default: false, null: false
-      add :gallery_id, references(:galleries, on_delete: :nothing)
-      add :album_id, references(:albums, on_delete: :nothing)
+      add(:name, :string, null: false)
+      add(:position, :float, null: false)
+      add(:original_url, :string, null: false)
+      add(:preview_url, :string)
+      add(:watermarked_url, :string)
+      add(:client_copy_url, :string)
+      add(:client_liked, :boolean, default: false, null: false)
+      add(:gallery_id, references(:galleries, on_delete: :nothing), null: false)
+      add(:album_id, references(:albums, on_delete: :nothing))
 
       timestamps()
     end
