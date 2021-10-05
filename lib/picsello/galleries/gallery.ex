@@ -1,4 +1,4 @@
-defmodule Picsello.Gallery do
+defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Job
@@ -24,8 +24,8 @@ defmodule Picsello.Gallery do
   @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash]  
   @required_attrs [:name, :job_id, :status]
 
-  def create_changeset(attrs \\ %{}) do
-    %__MODULE__{}
+  def create_changeset(gallery, attrs \\ %{}) do
+    gallery
     |> cast(attrs, @create_attrs)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])

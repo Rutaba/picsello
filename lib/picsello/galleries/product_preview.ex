@@ -1,4 +1,4 @@
-defmodule Picsello.ProductPreview do
+defmodule Picsello.Galleries.ProductPreview do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.{Product, Photo}

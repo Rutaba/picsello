@@ -1,4 +1,4 @@
-defmodule Picsello.Product do
+defmodule Picsello.Galleries.Product do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -6,7 +6,7 @@ defmodule Picsello.Product do
     field :name, :string
     field :corners, {:array, {:array, :integer}}
     field :template_image_url, :string
-
+    
     timestamps(type: :utc_datetime)
   end
 
