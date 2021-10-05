@@ -1,11 +1,6 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 <main role="main" class="pb-10">
-  <%= [{:error, "alert-error"}, {:info, "alert-info"}] |> Enum.map(fn {key, class} -> %>
-    <% flash = live_flash(@flash, key) %>
-    <%= if flash do %>
-      <p class="alert <%= class %>" role="alert" phx-click="lv:clear-flash" phx-value-key="<%= key %>"><%= flash %></p>
-    <% end %>
-  <% end) %>
+  <%= flash(@flash) %>
 
   <%= @inner_content %>
 </main>

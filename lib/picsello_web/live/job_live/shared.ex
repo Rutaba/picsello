@@ -6,6 +6,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  use Phoenix.Component
 
   def handle_event(
         "edit-package",
@@ -143,4 +144,45 @@ defmodule PicselloWeb.JobLive.Shared do
     proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
     socket |> assign(proposal: proposal)
   end
+
+  @spec status_badge(%{job_status: %Picsello.JobStatus{}, class: binary}) ::
+          %Phoenix.LiveView.Rendered{}
+  def status_badge(%{job_status: %{current_status: status, is_lead: is_lead}} = assigns) do
+    {label, color_style} = status_content(is_lead, status)
+
+    assigns =
+      assigns
+      |> Enum.into(%{
+        label: label,
+        color_style: color_style,
+        class: ""
+      })
+
+    ~H"""
+    <span role="status" class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
+      <%= @label %>
+    </span>
+    """
+  end
+
+  @status_colors %{
+    gray: "bg-gray-200",
+    blue: "bg-blue-light-primary text-blue-primary group-hover:bg-white",
+    green: "bg-green-light text-green"
+  }
+
+  def status_content(_, :archived), do: {"Archived", @status_colors.gray}
+  def status_content(_, :completed), do: {"Completed", @status_colors.green}
+  def status_content(false, _), do: {"Active", @status_colors.blue}
+  def status_content(true, :not_sent), do: {"Created", @status_colors.blue}
+  def status_content(true, :sent), do: {"Awaiting Acceptance", @status_colors.blue}
+  def status_content(true, :accepted), do: {"Awaiting Contract", @status_colors.blue}
+
+  def status_content(true, :signed_with_questionnaire),
+    do: {"Awaiting Questionnaire", @status_colors.blue}
+
+  def status_content(true, status) when status in [:signed_without_questionnaire, :answered],
+    do: {"Awaiting Payment", @status_colors.blue}
+
+  def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), @status_colors.blue}
 end

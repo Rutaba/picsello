@@ -5,7 +5,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
 
   describe "render" do
     setup do
-      [lead: insert(:lead), user: insert(:user)]
+      [:lead, :user] |> Enum.map(&{&1, insert(&1)})
     end
 
     test "when status is :not_sent", %{lead: lead, user: user} do

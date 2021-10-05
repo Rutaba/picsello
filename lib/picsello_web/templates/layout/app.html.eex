@@ -1,9 +1,4 @@
 <main role="main">
-  <%= [{:error, "alert-error"}, {:info, "alert-info"}] |> Enum.map(fn {key, class} -> %>
-    <% flash = get_flash(@conn, key) %>
-    <%= if flash do %>
-      <p class="alert <%= class %>" role="alert"><%= flash %></p>
-    <% end %>
-  <% end) %>
+  <%= @conn |> get_flash() |> flash() %>
   <%= @inner_content %>
 </main>

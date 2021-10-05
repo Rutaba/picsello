@@ -5,6 +5,7 @@ defmodule PicselloWeb.JobLive.Index do
   alias Picsello.{Job, Repo}
   require Ecto.Query
   alias Ecto.Query
+  import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
 
   defmodule Pagination do
     @moduledoc false

@@ -6,6 +6,7 @@ defmodule Picsello.GalleriesTest do
   describe "galleries" do
     alias Picsello.Galleries.Gallery
 
+
     @valid_attrs %{name: "MainGallery", status: "active"}
     @update_attrs %{status: "expired"}
     @invalid_attrs %{status: "inactive"}

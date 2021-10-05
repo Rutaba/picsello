@@ -15,6 +15,22 @@ defmodule Picsello.FeatureCase do
       session |> assert_has(css("button:disabled[type='submit']", opts))
     end
 
+    def assert_flash(session, key, opts \\ []) do
+      try do
+        session |> assert_has(css("*[role='alert'][title='#{key}']", opts))
+      rescue
+        e ->
+          flash_messages =
+            for el <- all(session, css("*[role='alert']")),
+                do: {Wallaby.Element.attr(el, "title"), Wallaby.Element.text(el)},
+                into: %{}
+
+          message = "#{e.message}\nflash messages: #{inspect(flash_messages)}\n"
+
+          reraise(%{e | message: message}, __STACKTRACE__)
+      end
+    end
+
     def sign_in(
           session,
           %{email: email},

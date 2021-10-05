@@ -4,9 +4,7 @@ defmodule Picsello.ResetPasswordTest do
   feature "user visits invalid reset password link", %{session: session} do
     session
     |> visit("/users/reset_password/invalid-token")
-    |> assert_has(
-      css(".alert.alert-error", text: "Reset password link is invalid or it has expired.")
-    )
+    |> assert_flash(:error, text: "Reset password link is invalid or it has expired.")
     |> assert_path("/users/reset_password")
   end
 
@@ -20,7 +18,7 @@ defmodule Picsello.ResetPasswordTest do
     |> fill_in(text_field("Email"), with: user.email)
     |> wait_for_enabled_submit_button()
     |> click(button("Reset Password"))
-    |> assert_has(css(".alert.alert-info", text: "If your email is in our system"))
+    |> assert_flash(:info, text: "If your email is in our system")
 
     assert current_path(session) == "/"
 
@@ -35,7 +33,7 @@ defmodule Picsello.ResetPasswordTest do
     |> fill_in(text_field("New password"), with: "ThisIsAStrongP@ssw0rd")
     |> wait_for_enabled_submit_button()
     |> click(button("Reset Password"))
-    |> assert_has(css(".alert.alert-info", text: "Password reset successfully."))
+    |> assert_flash(:info, text: "Password reset successfully.")
 
     assert current_path(session) == "/users/log_in"
 

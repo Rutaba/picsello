@@ -53,11 +53,11 @@
           <div class="text-gray-400">
             <span class="font-semibold"><%= job.package.name %></span>
             —
-            <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
+            <span class="font-light"><%= dyn_gettext job.type %></span>
           </div>
           <span class="font-semibold"><%= job.package.price |> Money.to_string(fractional_unit: false) %></span>
         <% else %>
-          <span class="font-light"><%= job.type |> Phoenix.Naming.humanize() %></span>
+          <span class="font-light"><%= dyn_gettext job.type %></span>
         <% end %>
       </div>
 

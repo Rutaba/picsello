@@ -7,16 +7,8 @@ defmodule Picsello.JobStatus do
   @primary_key false
   schema "job_statuses" do
     field(:current_status, Ecto.Enum,
-      values: [
-        :deposit_paid,
-        :answered,
-        :signed_with_questionnaire,
-        :signed_without_questionnaire,
-        :accepted,
-        :sent,
-        :not_sent,
-        :archived
-      ]
+      values:
+        ~w[accepted answered archived completed deposit_paid not_sent sent signed_with_questionnaire signed_without_questionnaire]a
     )
 
     field(:changed_at, :utc_datetime)

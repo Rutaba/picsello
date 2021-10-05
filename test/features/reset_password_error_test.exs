@@ -12,6 +12,6 @@ defmodule Picsello.ResetPasswordErrorTest do
     |> fill_in(text_field("Email"), with: user.email)
     |> wait_for_enabled_submit_button()
     |> click(button("Reset Password"))
-    |> assert_has(css(".alert-error", text: "Unexpected error. Please try again."))
+    |> assert_flash(:error, text: "Unexpected error. Please try again.")
   end
 end

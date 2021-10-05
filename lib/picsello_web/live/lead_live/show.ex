@@ -2,6 +2,7 @@ defmodule PicselloWeb.LeadLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   alias Picsello.{Job, Repo, BookingProposal, Notifiers.ClientNotifier, Questionnaire}
+  import PicselloWeb.JobLive.Shared, only: [assign_job: 2, assign_proposal: 1]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
@@ -88,7 +89,7 @@ defmodule PicselloWeb.LeadLive.Show do
       close_label: "No! Get me out of here",
       confirm_event: "archive",
       confirm_label: "Yes, archive the lead",
-      icon: "warning",
+      icon: "warning-orange",
       title: "Are you sure you want to archive this lead?"
     })
     |> noreply()
@@ -158,9 +159,6 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
-
-  defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared
-  defdelegate assign_proposal(socket), to: PicselloWeb.JobLive.Shared
 
   def next_reminder_on(nil), do: nil
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder

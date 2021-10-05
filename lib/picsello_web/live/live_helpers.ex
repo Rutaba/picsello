@@ -5,6 +5,12 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.LiveView, only: [assign: 2]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
 
+  def live_modal(socket, component, opts) do
+    path = Keyword.fetch!(opts, :return_to)
+    modal_opts = [id: :modal, return_to: path, component: component, opts: opts]
+    live_component(socket, PicselloWeb.ModalComponent, modal_opts)
+  end
+
   def open_modal(socket, component, assigns \\ %{})
 
   # main process, modal pid is assigned
@@ -73,54 +79,6 @@ defmodule PicselloWeb.LiveHelpers do
     time
     |> DateTime.shift_zone!(time_zone)
     |> Calendar.strftime(format)
-  end
-
-  def status_badge(%{job_status: %{current_status: status, is_lead: is_lead}} = assigns) do
-    colors = %{
-      gray: "bg-gray-200",
-      blue: "bg-blue-light-primary text-blue-primary group-hover:bg-white"
-    }
-
-    {label, color_style} =
-      case {is_lead, status} do
-        {_, :archived} ->
-          {"Archived", colors.gray}
-
-        {false, _} ->
-          {"Active", colors.blue}
-
-        {true, :not_sent} ->
-          {"Created", colors.blue}
-
-        {true, :sent} ->
-          {"Awaiting Acceptance", colors.blue}
-
-        {true, :accepted} ->
-          {"Awaiting Contract", colors.blue}
-
-        {true, :signed_with_questionnaire} ->
-          {"Awaiting Questionnaire", colors.blue}
-
-        {true, status} when status in [:signed_without_questionnaire, :answered] ->
-          {"Awaiting Payment", colors.blue}
-
-        {_, status} ->
-          {status |> Phoenix.Naming.humanize(), colors.blue}
-      end
-
-    assigns =
-      assigns
-      |> Enum.into(%{
-        label: label,
-        color_style: color_style,
-        class: ""
-      })
-
-    ~H"""
-    <span class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
-      <%= @label %>
-    </span>
-    """
   end
 
   def icon(%{name: name} = assigns) do

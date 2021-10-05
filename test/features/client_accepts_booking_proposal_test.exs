@@ -178,7 +178,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(css(".alert-error", text: "not available"))
+    |> assert_flash(:error, text: "not available")
   end
 
   defp post(session, path, body, headers) do

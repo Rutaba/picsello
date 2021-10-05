@@ -26,7 +26,7 @@ defmodule Picsello.ArchiveLeadTest do
     |> click(button("Manage"))
     |> click(button("Archive lead"))
     |> click(button("Yes, archive the lead"))
-    |> assert_has(css(".alert-info", text: "Lead archived"))
+    |> assert_flash(:info, text: "Lead archived")
     |> assert_has(css("*[role='status']", text: "Lead archived"))
     |> click(button("Manage"))
     |> refute_has(button("Archive lead"))
