@@ -5,38 +5,57 @@
       <div>
         <PicselloWeb.LiveHelpers.icon name="hamburger" class="h-4 text-black w-9" />
       </div>
+
       <nav class="flex justify-center flex-1 mx-8 lg:justify-start">
         <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
           <PicselloWeb.LiveHelpers.icon name="logo" class="w-28 h-9" />
         <% end %>
 
         <%= if @current_user do %>
-          <%= live_redirect to: Routes.job_path(@socket, :leads), title: "Leads", class: "hidden lg:flex ml-12 items-center mx-6" do %>
-            <PicselloWeb.LiveHelpers.icon name="three-people" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
-            Leads
-          <% end %>
+        <%= live_redirect to: Routes.job_path(@socket, :leads), title: "Leads", class: "hidden lg:flex ml-12 items-center mx-6" do %>
+          <PicselloWeb.LiveHelpers.icon name="three-people" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
+          Leads
+        <% end %>
 
-          <%= live_redirect to: "#", title: "Finances", class: "hidden lg:flex items-center mx-6" do %>
-            <PicselloWeb.LiveHelpers.icon name="money-bags" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
-            Finances
-          <% end %>
+        <%= live_redirect to: "#", title: "Finances", class: "hidden lg:flex items-center mx-6" do %>
+          <PicselloWeb.LiveHelpers.icon name="money-bags" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
+          Finances
+        <% end %>
 
-          <%= live_redirect to: "#", title: "Help", class: "hidden lg:flex items-center mx-6" do %>
-            <PicselloWeb.LiveHelpers.icon name="question-mark" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
-            Help
-          <% end %>
+        <%= live_redirect to: "#", title: "Help", class: "hidden lg:flex items-center mx-6" do %>
+          <PicselloWeb.LiveHelpers.icon name="question-mark" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
+          Help
+        <% end %>
 
-          <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Settings", class: "hidden lg:flex items-center mx-6" do %>
-            <PicselloWeb.LiveHelpers.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
-            Settings
-          <% end %>
+        <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Settings", class: "hidden lg:flex items-center mx-6" do %>
+          <PicselloWeb.LiveHelpers.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-primary" />
+          Settings
+        <% end %>
         <% end %>
       </nav>
-      <div class="flex flex-row justify-end">
+
+      <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
         <%= if @current_user do %>
-          <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "User settings" do %>
-            <div class="flex flex-col items-center justify-center text-sm text-black bg-gray-100 rounded-full w-9 h-9 pb-0.5"><%= User.initials @current_user %></div>
-          <% end %>
+        <div class="absolute top-0 right-0 flex flex-col items-end hidden text-black toggle-content">
+          <div class="p-4 -mb-2 text-black bg-white shadow-md">
+            <PicselloWeb.LiveHelpers.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+          </div>
+
+          <div class="bg-gray-100 rounded-lg shadow-md">
+            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Profile", class: "flex items-center px-6 py-4 bg-white" do %>
+              <div class="flex flex-col items-center justify-center text-sm text-black bg-gray-100 rounded-full w-9 h-9 pb-0.5"><%= User.initials @current_user %></div>
+              <div class="ml-2 font-semibold">Profile</div>
+            <% end %>
+
+            <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
+              <%= submit "Logout", class: "px-6 text-left py-2 w-full" %>
+            </.form>
+          </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center text-sm text-black bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
+          <%= User.initials @current_user %>
+        </div>
         <% end %>
       </div>
     </div>

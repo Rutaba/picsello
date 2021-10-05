@@ -19,4 +19,19 @@ defmodule Picsello.WelcomePageTest do
     |> click(css("nav a", text: "Leads"))
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
   end
+
+  feature "user goes to profile page from initials menu", %{session: session} do
+    session
+    |> click(css("div[title='Morty Smith']"))
+    |> click(link("Profile"))
+    |> assert_path(Routes.user_settings_path(PicselloWeb.Endpoint, :edit))
+  end
+
+  feature "user logs out from initials menu", %{session: session} do
+    session
+    |> click(css("div[title='Morty Smith']"))
+    |> click(button("Logout"))
+    |> assert_path("/")
+    |> assert_flash(:info, text: "Logged out successfully")
+  end
 end
