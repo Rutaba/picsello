@@ -1,7 +1,7 @@
 defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Job
+  alias Picsello.{Galleries.Photo, Job}
 
   @status_options [
     values: ~w(draft active expired), 
@@ -16,6 +16,7 @@ defmodule Picsello.Galleries.Gallery do
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
     belongs_to(:job, Job)
+    has_many(:photos, Photo)
 
     timestamps(type: :utc_datetime)
   end
