@@ -128,6 +128,7 @@ defmodule Picsello.FeatureCase do
       use Wallaby.Feature
       import Wallaby.Query
       import Picsello.{Factory, FeatureCase.FeatureHelpers}
+      alias PicselloWeb.Router.Helpers, as: Routes
 
       setup do
         Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)

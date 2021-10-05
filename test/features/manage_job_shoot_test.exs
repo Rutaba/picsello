@@ -1,7 +1,6 @@
 defmodule Picsello.ManageJobShootTest do
   use Picsello.FeatureCase, async: true
 
-  alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{Shoot, Repo}
 
   setup :onboarded
