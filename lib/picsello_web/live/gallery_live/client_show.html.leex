@@ -1,12 +1,12 @@
-<h1>Gallery</h1>
-
-
-<ul>
-
-  <li>
-    <strong>Name:</strong>
-    <%= @hash %>
-  </li>
-
-</ul>
-
+<div
+  class="masonry"
+  data-masonry='{ "itemSelector": ".item", "columnWidth": 309, "gutter": 20 }'
+  phx-hook="MasonryGrid"
+  id="client-gallery-grid"
+>
+<%= for image <- @images do %>
+  <div class="item">
+    <img src="<%= image %>" />
+  </div>
+<% end %>
+</div>

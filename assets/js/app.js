@@ -16,6 +16,7 @@ import 'phoenix_html';
 import { Socket } from 'phoenix';
 import topbar from 'topbar';
 import { LiveSocket } from 'phoenix_live_view';
+import Masonry from 'masonry-layout'
 
 import '@fontsource/be-vietnam/100.css';
 import '@fontsource/be-vietnam/400.css';
@@ -83,6 +84,15 @@ const TZCookie = {
   },
 };
 
+const MasonryGrid = {
+  mounted() {
+    const grid = document.querySelector(".masonry");
+    if (grid) {
+      setTimeout( () => {(new Masonry(grid)).layout()}, 100);
+    }
+  }
+}
+
 const Hooks = {
   ClearInput,
   LockBodyScroll,
@@ -92,6 +102,7 @@ const Hooks = {
   Select,
   TZCookie,
   PlacesAutocomplete,
+  MasonryGrid,
 };
 
 let csrfToken = document

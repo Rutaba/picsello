@@ -88,3 +88,15 @@ html {
   @apply px-2 py-1 font-bold text-white rounded;
   font-size: 0.5rem;
 }
+
+.masonry {
+  .item {
+    width: 309px;
+    margin-bottom: 20px;
+
+    img {
+      border-radius: 8px;
+      border: 1px solid black; // todo: remove
+    }
+  }
+}
