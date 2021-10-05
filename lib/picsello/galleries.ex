@@ -51,7 +51,7 @@ defmodule Picsello.Galleries do
   """
   def create_gallery(attrs \\ %{}) do
     %Gallery{}
-    |> Gallery.changeset(attrs)
+    |> Gallery.create_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -69,7 +69,7 @@ defmodule Picsello.Galleries do
   """
   def update_gallery(%Gallery{} = gallery, attrs) do
     gallery
-    |> Gallery.changeset(attrs)
+    |> Gallery.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -99,6 +99,6 @@ defmodule Picsello.Galleries do
 
   """
   def change_gallery(%Gallery{} = gallery, attrs \\ %{}) do
-    Gallery.changeset(gallery, attrs)
+    Gallery.update_changeset(gallery, attrs)
   end
 end
