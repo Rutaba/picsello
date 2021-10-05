@@ -297,6 +297,8 @@ defmodule Picsello.Accounts.User do
     |> String.upcase()
   end
 
+  def first_name(%__MODULE__{name: name}), do: name |> String.split() |> hd
+
   @doc """
   true if user has skipped or completed all onboarding steps.
   """

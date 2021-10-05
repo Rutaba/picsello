@@ -19,6 +19,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> open_modal(PicselloWeb.JobLive.NewComponent, Map.take(socket.assigns, [:current_user]))
       |> noreply()
 
+  @impl true
+  def handle_event("redirect", %{"to" => path}, socket),
+    do:
+      socket
+      |> push_redirect(to: path)
+      |> noreply()
+
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     [lead_count, job_count] =
       current_user
@@ -32,8 +39,16 @@ defmodule PicselloWeb.HomeLive.Index do
     socket |> assign(lead_count: lead_count, job_count: job_count)
   end
 
-  def time_of_day_greeting(%User{name: name}) do
-    "Good Afternoon, #{name}!"
+  def time_of_day_greeting(%User{time_zone: time_zone} = user) do
+    greeting =
+      case DateTime.now(time_zone) do
+        {:ok, %{hour: hour}} when hour in 5..11 -> "Good Morning"
+        {:ok, %{hour: hour}} when hour in 12..17 -> "Good Afternoon"
+        {:ok, %{hour: hour}} when hour in 18..23 -> "Good Evening"
+        _ -> "Hello"
+      end
+
+    "#{greeting}, #{User.first_name(user)}!"
   end
 
   def attention_items(_socket) do
@@ -72,5 +87,29 @@ defmodule PicselloWeb.HomeLive.Index do
       }
     ]
     |> Enum.take(4)
+  end
+
+  def card(assigns) do
+    attrs = Map.drop(assigns, ~w(class icon color inner_block badge)a)
+
+    ~H"""
+    <li class={"relative #{Map.get(assigns, :class)}"} {attrs}>
+      <div class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-sm", %{"bg-black text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+        <%= if @badge > 0, do: @badge %>
+      </div>
+
+      <div class={"border h-full rounded-lg bg-#{@color} overflow-hidden"}>
+        <div class="h-full p-5 ml-3 bg-white">
+            <h1 class="text-lg font-bold">
+            <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
+
+            <%= @title %>
+          </h1>
+
+          <%= render_block(@inner_block) %>
+        </div>
+      </div>
+    </li>
+    """
   end
 end

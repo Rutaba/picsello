@@ -21,8 +21,7 @@ defmodule Picsello.ViewLeadTest do
 
   feature "user views lead list", %{session: session} do
     session
-    |> visit("/")
-    |> click(link("View current leads"))
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> assert_has(link("Rick Sanchez Family"))
     |> click(link("Morty Smith Wedding"))
     |> click(link("Leads"))
@@ -40,8 +39,7 @@ defmodule Picsello.ViewLeadTest do
       DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60) |> Calendar.strftime("%B %d, %Y")
 
     session
-    |> visit("/")
-    |> click(link("View current leads"))
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> click(link("Rick Sanchez Family"))
     |> assert_text("Email scheduled for #{first_reminder_on}")
   end

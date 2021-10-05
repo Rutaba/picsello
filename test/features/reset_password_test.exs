@@ -1,5 +1,6 @@
 defmodule Picsello.ResetPasswordTest do
   use Picsello.FeatureCase, async: true
+  alias Picsello.Accounts.User
 
   feature "user visits invalid reset password link", %{session: session} do
     session
@@ -39,6 +40,6 @@ defmodule Picsello.ResetPasswordTest do
 
     session
     |> sign_in(user, "ThisIsAStrongP@ssw0rd")
-    |> assert_has(css("h1", text: "Hello #{user.name}"))
+    |> assert_has(css("h1", text: "#{User.first_name(user)}!"))
   end
 end

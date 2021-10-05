@@ -8,9 +8,9 @@
       <% [] -> %>
       <% items -> %>
         <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-blue-secondary">Needs attention</h2>
-        <ul class="flex px-6 overflow-auto sm:overflow-none">
+        <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none">
           <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color} <- items do %>
-          <li class={"flex-shrink-0 flex sm:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg border-#{color}"}>
+          <li class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg border-#{color}"}>
             <div>
               <h1 class="text-lg font-bold">
               <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-light-primary text-#{color}"} />
@@ -28,32 +28,51 @@
   </div>
 </header>
 
-<div class="center-container">
+<div class="px-6 pb-6 center-container">
+  <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
 
-  <h1 class="text-3xl font-bold text-center">Hello <%=@current_user.name %>!</h1>
-  <h2 class="mt-2 mb-10 text-center text-gray-500">Let's get started today.</h2>
+  <ul class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+    <.card color="blue-primary" icon="three-people" title="Leads" badge={0} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer">
+      <p class="my-2">
+        Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
+      </p>
 
-  <div class="flex flex-col items-center px-8 pt-5 rounded-lg pb-14 bg-blue-primary bg-opacity-10">
-    <h2 class="font-bold text-blue-primary">Work Hub</h2>
+      <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
+    </.card>
 
-    <div class="mt-4 border-t-2 border-white">
-      <%= if @job_count > 0 do %>
-        <%= live_redirect to: Routes.job_path(@socket, :jobs), class: "btn-secondary text-lg mt-8 py-3 flex justify-center px-6" do %>
-          View jobs
-        <% end %>
-      <% end %>
+    <.card color="blue-primary" icon="camera-check" title="Jobs" badge={0} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
+      <p class="my-2">
+        Leads will become jobs when your client accepts your quote and pays the first 50% of your contract. Create your first lead!
+      </p>
+    </.card>
 
-      <%= if @lead_count > 0 do %>
-        <%= live_redirect to: Routes.job_path(@socket, :leads), class: "btn-secondary text-lg mt-8 py-3 flex justify-center px-6" do %>
-          View current leads
-        <% end %>
-      <% end %>
+    <li class="flex flex-col items-center justify-center h-full border rounded-lg">
+      <.icon name="upload" class="w-12 h-12 text-blue-primary" />
+      <p class="mt-2 text-lg font-bold">
+        Upload a shoot
+      </p>
+    </li>
+  </ul>
 
-      <button class="btn-primary text-lg mt-8 flex justify-center py-1.5 px-6" phx-click="create-lead">
-        <%= icon_tag(@socket, "sparkles", class: "w-10 h-10 fill-current flex-1 mx-2") %>
-        <div class="flex items-center h-9 flex-2">Create a lead</div>
-        <div class="flex-1 mx-2"></div>
-      </button>
-    </div>
-  </div>
+  <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
+
+  <ul class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+    <.card color="orange-dashboard-inbox" icon="envelope" title="Inbox" badge={0}>
+      <p class="my-2">
+        Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+      </p>
+    </.card>
+
+    <.card color="purple-dashboard-marketing" icon="bullhorn" title="Marketing" badge={0}>
+      <p class="my-2">
+        Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!
+      </p>
+    </.card>
+
+    <.card color="orange-warning" icon="cart" title="Manage Orders" badge={0}>
+      <p class="my-2">
+        After you upload your shoot, clients can buy prints and much more directly from your gallery page!
+      </p>
+    </.card>
+  </ul>
 </div>

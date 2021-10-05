@@ -6,7 +6,7 @@ defmodule Picsello.WelcomePageTest do
 
     session
     |> sign_in(user)
-    |> assert_has(css("h1", text: "Hello Morty"))
+    |> assert_has(css("h1", text: ", Morty!"))
     |> assert_has(css("header", text: "MS"))
     |> assert_path("/home")
   end
