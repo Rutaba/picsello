@@ -24,7 +24,7 @@ defmodule Picsello.ViewLeadTest do
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> assert_has(link("Rick Sanchez Family"))
     |> click(link("Morty Smith Wedding"))
-    |> click(link("Leads"))
+    |> click(css(":not(nav) > a", text: "Leads"))
     |> click(link("Rick Sanchez Family"))
     |> assert_has(css("h1", text: "Rick Sanchez Family"))
   end
