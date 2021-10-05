@@ -1,17 +1,44 @@
 defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Picsello.Job
+
+  @status_options [
+    values: ~w(draft active expired), 
+    default: "draft"
+  ]
 
   schema "galleries" do
     field :name, :string
+    field(:status, :string, @status_options) 
+    field :cover_photo_id, :integer
+    field :password, :string
+    field :client_link_hash, :string
+    field :expired_at, :utc_datetime
+    belongs_to(:job, Job)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
-  @doc false
-  def changeset(gallery, attrs) do
+  @create_attrs [:name, :job_id, :status, :cover_photo_id, :expired_at, :password, :client_link_hash] 
+  @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash]  
+  @required_attrs [:name, :job_id, :status]
+
+  def create_changeset(gallery, attrs \\ %{}) do
     gallery
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, @create_attrs)
+    |> validate_required(@required_attrs)
+    |> validate_status(@status_options[:values])
+    |> foreign_key_constraint(:job_id)
   end
+
+  def update_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, @update_attrs)
+    |> validate_required(@required_attrs)
+    |> validate_status(@status_options[:values])
+  end
+
+  defp validate_status(changeset, status_formats),
+    do: validate_inclusion(changeset, :status, status_formats)
 end
