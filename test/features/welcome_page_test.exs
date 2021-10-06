@@ -44,4 +44,18 @@ defmodule Picsello.WelcomePageTest do
     |> assert_path("/")
     |> assert_flash(:info, text: "Logged out successfully")
   end
+
+  feature "user resends confirmation email", %{session: session} do
+    session
+    |> assert_text("Confirm your email")
+    |> assert_has(testid("attention-item", count: 4))
+    |> click(button("Resend email"))
+
+    assert_receive {:delivered_email, email}
+
+    session
+    |> visit(email |> email_substitutions |> Map.get("url"))
+    |> assert_flash(:info, text: "Your email has been confirmed")
+    |> assert_has(testid("attention-item", count: 3))
+  end
 end

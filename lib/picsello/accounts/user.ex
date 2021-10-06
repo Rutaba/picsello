@@ -304,4 +304,7 @@ defmodule Picsello.Accounts.User do
   """
   def onboarded?(%__MODULE__{onboarding: nil}), do: false
   def onboarded?(%__MODULE__{onboarding: onboarding}), do: Onboarding.completed?(onboarding)
+
+  def confirmed?(%__MODULE__{confirmed_at: nil, sign_up_auth_provider: :password}), do: false
+  def confirmed?(%__MODULE__{}), do: true
 end

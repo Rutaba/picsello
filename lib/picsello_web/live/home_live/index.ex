@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts.User}
+  alias Picsello.{Job, Repo, Accounts, Accounts.User}
   require Ecto.Query
 
   @impl true
@@ -25,6 +25,29 @@ defmodule PicselloWeb.HomeLive.Index do
       socket
       |> push_redirect(to: path)
       |> noreply()
+
+  @impl true
+  def handle_event(
+        "send-confirmation-email",
+        %{},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case Accounts.deliver_user_confirmation_instructions(
+           current_user,
+           &Routes.user_confirmation_url(socket, :confirm, &1)
+         ) do
+      {:ok, _} ->
+        socket
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "Email sent",
+          subtitle: "The confirmation email has been sent. Please check your inbox."
+        })
+        |> noreply()
+
+      {:error, _} ->
+        socket |> put_flash(:error, "Failed to send email.") |> noreply()
+    end
+  end
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     [lead_count, job_count] =
@@ -51,42 +74,52 @@ defmodule PicselloWeb.HomeLive.Index do
     "#{greeting}, #{User.first_name(user)}!"
   end
 
-  def attention_items(_socket) do
-    [
-      %{
-        title: "Confirm your email",
-        body: "Check your email to confirm your account before you can start anything.",
-        icon: "envelope",
-        button_label: "Resend email",
-        button_class: "btn-primary",
-        color: "orange-warning"
-      },
-      %{
-        title: "Create your first lead",
-        body: "Leads are the first step to getting started with Picsello.",
-        icon: "three-people",
-        button_label: "Create your first lead",
-        button_class: "btn-secondary bg-blue-light-primary",
-        color: "blue-primary"
-      },
-      %{
-        title: "Set up Stripe",
-        body: "We use Stripe to make payment collection as seamless as possible for you.",
-        icon: "money-bags",
-        button_label: "Setup your Stripe Account",
-        button_class: "btn-secondary bg-blue-light-primary",
-        color: "blue-primary"
-      },
-      %{
-        title: "Helpful resources",
-        body: "Stuck? Need advice? We have a plethora of resources ready for you.",
-        icon: "question-mark",
-        button_label: "See available resources",
-        button_class: "btn-secondary bg-blue-light-primary",
-        color: "blue-primary"
-      }
-    ]
-    |> Enum.take(4)
+  def attention_items(current_user) do
+    for(
+      {true, item} <- [
+        {!User.confirmed?(current_user),
+         %{
+           action: "send-confirmation-email",
+           title: "Confirm your email",
+           body: "Check your email to confirm your account before you can start anything.",
+           icon: "envelope",
+           button_label: "Resend email",
+           button_class: "btn-primary",
+           color: "orange-warning"
+         }},
+        {true,
+         %{
+           action: "",
+           title: "Create your first lead",
+           body: "Leads are the first step to getting started with Picsello.",
+           icon: "three-people",
+           button_label: "Create your first lead",
+           button_class: "btn-secondary bg-blue-light-primary",
+           color: "blue-primary"
+         }},
+        {true,
+         %{
+           action: "",
+           title: "Set up Stripe",
+           body: "We use Stripe to make payment collection as seamless as possible for you.",
+           icon: "money-bags",
+           button_label: "Setup your Stripe Account",
+           button_class: "btn-secondary bg-blue-light-primary",
+           color: "blue-primary"
+         }},
+        {true,
+         %{
+           action: "",
+           title: "Helpful resources",
+           body: "Stuck? Need advice? We have a plethora of resources ready for you.",
+           icon: "question-mark",
+           button_label: "See available resources",
+           button_class: "btn-secondary bg-blue-light-primary",
+           color: "blue-primary"
+         }}
+      ],
+      do: item
+    )
   end
 
   def card(assigns) do
