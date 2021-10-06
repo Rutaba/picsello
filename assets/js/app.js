@@ -16,7 +16,6 @@ import 'phoenix_html';
 import { Socket } from 'phoenix';
 import topbar from 'topbar';
 import { LiveSocket } from 'phoenix_live_view';
-import Masonry from 'masonry-layout'
 
 import '@fontsource/be-vietnam/100.css';
 import '@fontsource/be-vietnam/400.css';
@@ -27,6 +26,7 @@ import Phone from './hooks/phone';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import PlacesAutocomplete from './hooks/places-autocomplete';
+import MasonryGrid from './hooks/masonry-grid'
 
 const Modal = {
   mounted() {
@@ -83,24 +83,6 @@ const TZCookie = {
     document.cookie = `time_zone=${timeZone}; path=/`;
   },
 };
-
-const MasonryGrid = {
-  mounted() {
-    const grid = document.querySelector(".masonry");
-    if (grid) {
-      grid.classList.remove('hidden');
-
-      const options = {
-        itemSelector: ".item",
-        columnWidth: 309,
-        gutter: 20
-      };
-      setTimeout( () => {
-        (new Masonry(grid, options)).layout();
-      }, 100);
-    }
-  }
-}
 
 const Hooks = {
   ClearInput,

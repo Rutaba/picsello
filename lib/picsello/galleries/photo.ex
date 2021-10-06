@@ -17,8 +17,25 @@ defmodule Picsello.Galleries.Photo do
     timestamps(type: :utc_datetime)
   end
 
-  @create_attrs [:name, :position, :original_url, :preview_url, :watermarked_url, :client_copy_url, :client_liked, :gallery_id, :album_id]
-  @update_attrs [:name, :position, :preview_url, :watermarked_url, :client_copy_url, :client_liked]
+  @create_attrs [
+    :name,
+    :position,
+    :original_url,
+    :preview_url,
+    :watermarked_url,
+    :client_copy_url,
+    :client_liked,
+    :gallery_id,
+    :album_id
+  ]
+  @update_attrs [
+    :name,
+    :position,
+    :preview_url,
+    :watermarked_url,
+    :client_copy_url,
+    :client_liked
+  ]
   @required_attrs [:name, :position, :gallery_id, :original_url]
 
   def create_changeset(attrs) do

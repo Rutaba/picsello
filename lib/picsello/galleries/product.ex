@@ -6,12 +6,12 @@ defmodule Picsello.Galleries.Product do
     field :name, :string
     field :corners, {:array, {:array, :integer}}
     field :template_image_url, :string
-    
+
     timestamps(type: :utc_datetime)
   end
 
   @attrs [:name, :corners, :template_image_url]
-  
+
   def create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, @attrs)

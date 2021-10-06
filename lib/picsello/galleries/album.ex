@@ -10,7 +10,7 @@ defmodule Picsello.Galleries.Album do
 
     timestamps(type: :utc_datetime)
   end
-  
+
   @create_attrs [:name, :position, :gallery_id]
   @update_attrs [:name, :position]
   @required_attrs [:name, :position, :gallery_id]
