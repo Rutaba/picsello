@@ -14,16 +14,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:hash, hash)
-     |> assign(:images, generate_images() ++ generate_images() ++ generate_images())
-    }
+     |> assign(:images, generate_images() ++ generate_images() ++ generate_images())}
   end
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
 
-
   defp generate_images() do
-    photos = 
+    photos =
       [
         "https://image.shutterstock.com/image-illustration/number-0-600w-637209301.jpg", # 0
         "https://thumbs.dreamstime.com/z/number-one-gold-golden-metal-metallic-logo-icon-design-company-business-147083105.jpg", # 1
@@ -47,11 +45,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         "http://cdn5.coloringcrew.com/coloring-book/painted/201641/number-8-letters-and-numbers-numbers-102589.jpg", #8
         "https://mysticalnumbers.com/wp-content/uploads/2012/07/Number-9-Mystical.png", #9
       ]
-      |> Enum.map(fn url -> %Photo{name: generate_name, original_url: url} end)
-    
+      |> Enum.map(fn url ->
+        %Photo{
+          name: generate_image_name,
+          original_url: url,
+          client_copy_url: url
+        }
+      end)
+
     %Gallery{name: "MainGallery", status: "draft", photos: photos}
   end
 
-  defp generate_name, 
-    do: for _ <- 1..10, into: "", do: <<Enum.random('0123456789abcdef')>>
+  defp generate_image_name, do: :crypto.strong_rand_bytes(5) |> Base.encode16()
 end
