@@ -70,7 +70,7 @@ defmodule PicselloWeb.HomeLive.Index do
         color: "blue-primary"
       },
       %{
-        title: "Create a finance account",
+        title: "Set up Stripe",
         body: "We use Stripe to make payment collection as seamless as possible for you.",
         icon: "money-bags",
         button_label: "Setup your Stripe Account",
