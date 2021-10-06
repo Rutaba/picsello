@@ -14,7 +14,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:hash, hash)
-     |> assign(:images, generate_images() ++ generate_images() ++ generate_images())}
+     |> assign(:gallery, generate_images())}
   end
 
   defp page_title(:show), do: "Show Gallery"
