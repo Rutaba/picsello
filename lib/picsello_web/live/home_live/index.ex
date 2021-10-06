@@ -98,7 +98,7 @@ defmodule PicselloWeb.HomeLive.Index do
         <%= if @badge > 0, do: @badge %>
       </div>
 
-      <div class={"border h-full rounded-lg bg-#{@color} overflow-hidden"}>
+      <div class={"border hover:border-#{@color} h-full rounded-lg bg-#{@color} overflow-hidden"}>
         <div class="h-full p-5 ml-3 bg-white">
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />

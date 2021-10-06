@@ -20,6 +20,16 @@ defmodule Picsello.WelcomePageTest do
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
   end
 
+  feature "user navigates to leads from sidebar", %{session: session} do
+    session
+    |> click(css("#hamburger-menu"))
+    |> assert_has(css("#hamburger-menu nav a[title='Leads']:not(.font-bold)"))
+    |> click(css("#hamburger-menu nav a", text: "Leads"))
+    |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
+    |> click(css("#hamburger-menu"))
+    |> assert_has(css("nav a.font-bold", text: "Lead"))
+  end
+
   feature "user goes to profile page from initials menu", %{session: session} do
     session
     |> click(css("div[title='Morty Smith']"))
