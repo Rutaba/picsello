@@ -1,25 +1,22 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main" class="relative flex flex-col min-h-screen">
+<main role="main" class="flex flex-col min-h-screen">
   <header class="border-b">
     <div class="flex items-center px-6 center-container">
-      <div id="hamburger-menu" phx-hook="ToggleContent">
+      <div id="hamburger-menu" class="relative cursor-pointer" phx-hook="ToggleContent">
         <%= if @current_user do %>
-        <div class="absolute top-0 left-0 z-10 hidden w-screen bg-black/50 toggle-content">
-          <div class="absolute top-0 bottom-0 left-0 w-2/6 bg-white" style="z-index: -1;"></div>
-          <nav class="center-container">
-            <div class="flex flex-col w-2/3 min-h-screen bg-white lg:w-2/6 max-w-m">
-              <div class="flex items-center pl-8 mr-16">
-                <.icon name="close-x" class="w-5 h-5 stroke-current stroke-2" />
-                <.icon name="logo" class="my-4 ml-10 w-28 h-9" />
-              </div>
-              <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket), @current_user do %>
-                <%= live_redirect to: path, title: title, class: classes("pl-6 py-4 w-full hover:bg-blue-light-primary hover:font-bold",%{"bg-blue-light-primary font-bold" => path_active?(@socket, @live_action, path) }) do %>
-                  <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-primary" />
+        <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default -top-2 toggle-content">
+          <div class="p-4 -mb-2 text-black bg-white shadow-md cursor-pointer">
+            <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+          </div>
 
-                  <%= title %>
-                <% end %>
+          <nav class="flex flex-col bg-white rounded-lg shadow-md">
+            <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket), @current_user do %>
+              <%= live_redirect to: path, title: title, class: classes("pl-6 flex items-center py-4 pr-28 hover:bg-blue-light-primary hover:font-bold",%{"bg-blue-light-primary font-bold" => path_active?(@socket, @live_action, path) }) do %>
+                <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-primary" />
+
+                <%= title %>
               <% end %>
-            </div>
+            <% end %>
           </nav>
         </div>
 
@@ -43,8 +40,8 @@
 
       <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
         <%= if @current_user do %>
-        <div class="absolute top-0 right-0 flex flex-col items-end hidden text-black toggle-content">
-          <div class="p-4 -mb-2 text-black bg-white shadow-md">
+        <div class="absolute top-0 right-0 flex flex-col items-end hidden text-black toggle-content cursor-default">
+          <div class="p-4 -mb-2 text-black bg-white shadow-md cursor-pointer">
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
           </div>
 
