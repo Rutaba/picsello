@@ -10,7 +10,7 @@ defmodule Picsello.Repo.Migrations.CreateGalleries do
         AS ENUM ('draft','active','expired')
       """,
       "DROP TYPE #{@type_name}"
-     )
+    )
 
     create table(:galleries) do
       add(:name, :string, null: false)

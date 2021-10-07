@@ -102,7 +102,6 @@ defmodule PicselloWeb.Router do
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
-
       # Photographers CRUD for gallery
       live "/galleries", GalleryLive.Index, :index
       live "/galleries/new", GalleryLive.Index, :new
@@ -110,7 +109,6 @@ defmodule PicselloWeb.Router do
 
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/show/edit", GalleryLive.Show, :edit
-
     end
   end
 
@@ -125,10 +123,11 @@ defmodule PicselloWeb.Router do
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
   end
 
-
   scope "/gallery", PicselloWeb do
     pipe_through [:browser]
 
+    get "/fill/:hash", GalleryFillController, :new
     live "/:hash", GalleryLive.ClientShow, :show
+    post "/:hash/downloads/all", GalleryDownloadsController, :all
   end
 end

@@ -1,12 +1,59 @@
-<h1>Gallery</h1>
+<div
+  style="
+    background-image: url('<%= @gallery.cover_photo_id && @gallery.cover_photo.client_copy_url %>');
+    background-size: cover;
+    background-position: center;
+    background-color: darkgray;
+    height: 566px;
+    text-shadow: 0 0 10px #222;
+  "
+  class="flex flex-nowrap text-left"
+>
+  <div class="w-2/3"></div>
+  <div class="w-1/3 h-full flex flex-wrap content-center text-white">
+    <div class="w-full text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></div>
+    <div class="font-bold text-4xl w-full py-1"><%= @gallery.name %></div>
+    <div class="w-full text-xl">
+      <%= @gallery.photos |> Enum.count() %>
+      photos
+    </div>
+  </div>
+</div>
+<div
+  style="background-color: lightgray; height: 70px; border-bottom: 1px solid gray;"
+>Menu line</div>
 
+<!-- Content -->
+<div style="padding: 60px 70px; ">
 
-<ul>
+  <div
+    class="font-bold text-3xl"
+  >
+    <%= @gallery.name %> Gallery
+  </div>
+  <div
+    style="color: #898989;"
+    class="text-xl"
+  >
+    <%= @gallery.photos |> Enum.count() %>
+    photos
+  </div>
+  <div class="my-6">
+    <%= button "Download all", to: "/gallery/#{@hash}/downloads/all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
+    <a class="cursor-pointer inline-block btn-primary px-8 ml-2">Download favorites</a>
+  </div>
 
-  <li>
-    <strong>Name:</strong>
-    <%= @hash %>
-  </li>
+  <!-- images -->
+  <div
+    class="masonry hidden"
+    phx-hook="MasonryGrid"
+    id="client-gallery-grid"
+  >
+    <%= for photo <- @gallery.photos do %>
+      <div class="item">
+        <img src="<%= photo.client_copy_url %>" />
+      </div>
+    <% end %>
+  </div>
 
-</ul>
-
+</div>

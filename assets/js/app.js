@@ -27,6 +27,7 @@ import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
+import MasonryGrid from './hooks/masonry-grid'
 
 const Modal = {
   mounted() {
@@ -94,6 +95,7 @@ const Hooks = {
   Select,
   TZCookie,
   PlacesAutocomplete,
+  MasonryGrid,
 };
 
 let csrfToken = document

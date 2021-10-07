@@ -1,27 +1,37 @@
 defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Job
+  alias Picsello.{Galleries.Photo, Job}
 
   @status_options [
-    values: ~w(draft active expired), 
+    values: ~w(draft active expired),
     default: "draft"
   ]
 
   schema "galleries" do
     field :name, :string
-    field(:status, :string, @status_options) 
+    field(:status, :string, @status_options)
     field :cover_photo_id, :integer
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
     belongs_to(:job, Job)
+    has_many(:photos, Photo)
+    has_one(:cover_photo, Photo)
 
     timestamps(type: :utc_datetime)
   end
 
-  @create_attrs [:name, :job_id, :status, :cover_photo_id, :expired_at, :password, :client_link_hash] 
-  @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash]  
+  @create_attrs [
+    :name,
+    :job_id,
+    :status,
+    :cover_photo_id,
+    :expired_at,
+    :password,
+    :client_link_hash
+  ]
+  @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash]
   @required_attrs [:name, :job_id, :status]
 
   def create_changeset(gallery, attrs \\ %{}) do

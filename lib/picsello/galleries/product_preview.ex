@@ -12,7 +12,7 @@ defmodule Picsello.Galleries.ProductPreview do
   end
 
   @attrs [:index, :photo_id, :product_id]
-  
+
   def create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, @attrs)
