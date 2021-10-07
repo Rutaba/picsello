@@ -7,7 +7,7 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
-    def testid(id, opts \\ []), do: css("*[data-testid=#{id}]", opts)
+    def testid(id, opts \\ []), do: css("*[data-testid='#{id}']", opts)
 
     def wait_for_enabled_submit_button(session, opts \\ []) do
       session |> assert_has(css("button:not(:disabled)[type='submit']", opts))
