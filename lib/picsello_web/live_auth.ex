@@ -4,23 +4,19 @@ defmodule PicselloWeb.LiveAuth do
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{Accounts, Accounts.User}
 
-  def mount(
-        _params,
-        %{"user_token" => "" <> _user_token},
-        %{assigns: %{current_user: %User{}}} = socket
-      ) do
+  def mount(_params, %{"user_token" => user_token}, socket) do
     socket
     |> allow_sandbox()
-    |> cont()
-  end
+    |> assign_new(:current_user, fn ->
+      Accounts.get_user_by_session_token(user_token)
+    end)
+    |> then(fn
+      %{assigns: %{current_user: nil}} = socket ->
+        socket |> redirect(to: Routes.user_session_path(socket, :new)) |> halt()
 
-  def mount(_params, %{"user_token" => user_token}, socket) do
-    socket = socket |> allow_sandbox()
-
-    case Accounts.get_user_by_session_token(user_token) do
-      nil -> socket |> redirect(to: Routes.user_session_path(socket, :new)) |> halt()
-      user -> socket |> assign(:current_user, user) |> maybe_redirect_to_onboarding()
-    end
+      socket ->
+        maybe_redirect_to_onboarding(socket)
+    end)
   end
 
   def mount(_params, _session, socket) do
