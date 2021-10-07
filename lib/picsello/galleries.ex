@@ -6,7 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   alias Picsello.Repo
 
-  alias Picsello.Galleries.Gallery
+  alias Picsello.Galleries.{Gallery, Photo}
 
   @doc """
   Returns the list of galleries.
@@ -36,6 +36,10 @@ defmodule Picsello.Galleries do
 
   """
   def get_gallery!(id), do: Repo.get!(Gallery, id)
+
+  def get_gallery_by_hash(hash) do
+    Repo.get_by(Gallery, client_link_hash: hash)
+  end
 
   @doc """
   Creates a gallery.
@@ -100,5 +104,14 @@ defmodule Picsello.Galleries do
   """
   def change_gallery(%Gallery{} = gallery, attrs \\ %{}) do
     Gallery.update_changeset(gallery, attrs)
+  end
+
+  def create_photo(%{} = attrs) do
+    IO.inspect("here")
+
+    attrs
+    |> IO.inspect()
+    |> Photo.create_changeset()
+    |> Repo.insert()
   end
 end
