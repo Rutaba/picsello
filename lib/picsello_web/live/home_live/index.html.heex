@@ -95,3 +95,24 @@
     </.card>
   </ul>
 </div>
+
+<div id="float-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
+  <div class="fixed p-6 text-white bg-black rounded-full shadow-md bottom-6 right-6">
+    <.icon name="close-x" class="w-6 h-6 stroke-current rotate-45 stroke-2" />
+  </div>
+  <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-black/60 toggle-content">
+    <nav class="flex flex-col w-64 m-8 overflow-hidden bg-white rounded-lg shadow-md">
+      <a href="#" phx-click="create-lead" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-primary">
+        <.icon name="three-people" class="inline-block w-5 h-5 mr-2 text-blue-primary" />
+        Add a lead
+      </a>
+      <div class="p-4 pl-12 text-sm text-white uppercase bg-black">
+       Quick actions
+      </div>
+    </nav>
+
+    <div class="fixed p-6 text-white bg-black rounded-full shadow-md bottom-6 right-6">
+      <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
+    </div>
+  </div>
+</div>

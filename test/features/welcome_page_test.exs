@@ -59,6 +59,17 @@ defmodule Picsello.WelcomePageTest do
       |> assert_flash(:info, text: "Your email has been confirmed")
       |> assert_has(testid("attention-item", count: 3))
     end
+
+    feature "user opens lead creation from floating menu", %{session: session} do
+      session
+      |> assert_has(css("#float-menu", visible: false))
+      # iPhone 8+
+      |> resize_window(414, 736)
+      |> assert_has(css("#float-menu", visible: true))
+      |> click(css("#float-menu svg"))
+      |> click(link("Add a lead"))
+      |> assert_has(text_field("Client name"))
+    end
   end
 
   def lead_counts(session) do
