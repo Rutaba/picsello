@@ -26,6 +26,11 @@ defmodule PicselloWeb.UserRegisterLive do
   end
 
   @impl true
+  def handle_event("previous", %{}, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
   def handle_event("save", %{"user" => user_params}, socket) do
     socket
     |> assign_changeset(user_params, :validate)

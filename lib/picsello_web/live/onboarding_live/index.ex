@@ -91,7 +91,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <%= hidden_inputs_for o %>
 
         <label class="flex flex-col">
-          <p class="py-2 font-extrabold">What would you like to name your business?</p>
+          <p class="py-2 font-extrabold">What’s the name of your photography business?</p>
 
           <%= input o, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: "p-4" %>
           <%= error_tag o, :name, class: "text-red-invalid text-sm" %>
@@ -102,7 +102,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <%= hidden_inputs_for o %>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your website address? <i class="italic font-light">(No worries if you don’t have one)</i></p>
+          <p class="py-2 font-extrabold">What is your website URL? <i class="italic font-light">(No worries if you don’t have one)</i></p>
 
           <div class="relative flex flex-col">
             <%= input o, :website,
@@ -121,14 +121,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
         </label>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your phone number?</p>
+          <p class="py-2 font-extrabold">What's your phone number?</p>
 
           <%= input o, :phone, type: :telephone_input, phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
           <%= error_tag o, :phone, class: "text-red-invalid text-sm" %>
         </label>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">Are you full-time or part-time?</p>
+          <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
 
           <%= select o, :schedule, %{"" => nil, "Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
         </label>
