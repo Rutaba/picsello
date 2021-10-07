@@ -17,6 +17,7 @@ defmodule Picsello.Galleries.Gallery do
     field :expired_at, :utc_datetime
     belongs_to(:job, Job)
     has_many(:photos, Photo)
+    has_one(:cover_photo, Photo)
 
     timestamps(type: :utc_datetime)
   end

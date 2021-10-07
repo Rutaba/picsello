@@ -2,15 +2,16 @@ defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
   import Plug.Conn
   alias Picsello.Galleries.Photo
-  
+
   @archive "photos.zip"
   def all(conn, _params) do
-    entries = 
+    entries =
       generate_photos()
       |> Enum.map(fn entry -> {entry.client_copy_url, entry.name} end)
       |> group()
-      
+
     stream = Packmatic.build_stream(entries, on_error: :skip)
+
     stream
     |> Packmatic.Conn.send_chunked(conn, @archive)
   end
@@ -23,7 +24,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
   end
 
   defp dublicates(entries) do
-    case entries do 
+    case entries do
       [_ | [_ | _]] -> annotate(entries)
       _ -> entries
     end

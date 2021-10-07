@@ -107,10 +107,7 @@ defmodule Picsello.Galleries do
   end
 
   def create_photo(%{} = attrs) do
-    IO.inspect("here")
-
     attrs
-    |> IO.inspect()
     |> Photo.create_changeset()
     |> Repo.insert()
   end
