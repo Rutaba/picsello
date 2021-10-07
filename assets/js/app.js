@@ -25,6 +25,7 @@ import '@fontsource/be-vietnam/700.css';
 import Phone from './hooks/phone';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
+import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import MasonryGrid from './hooks/masonry-grid'
 
@@ -89,6 +90,7 @@ const Hooks = {
   LockBodyScroll,
   Modal,
   Phone,
+  ToggleContent,
   Quill,
   Select,
   TZCookie,

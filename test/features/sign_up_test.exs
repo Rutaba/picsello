@@ -2,7 +2,6 @@ defmodule Picsello.SignUpTest do
   use Picsello.FeatureCase, async: true
 
   alias Picsello.{Repo, Accounts.User}
-  alias PicselloWeb.Router.Helpers, as: Routes
 
   setup do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)

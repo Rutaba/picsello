@@ -1,0 +1,78 @@
+<header class="bg-blue-light-primary">
+  <div class="pt-6 pb-12 center-container">
+    <h1 class="px-6 text-3xl font-bold">
+      <%= time_of_day_greeting @current_user %>
+    </h1>
+
+    <%= case attention_items(@current_user) do %>
+      <% [] -> %>
+      <% items -> %>
+        <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-blue-secondary">Needs attention</h2>
+        <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none">
+          <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action} <- items do %>
+          <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg border-#{color}"}>
+            <div>
+              <h1 class="text-lg font-bold">
+              <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-light-primary text-#{color}"} />
+              <%= title %>
+              </h1>
+
+              <p class="my-2 text-sm"><%= body %></p>
+            </div>
+
+            <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
+          </li>
+          <% end %>
+        </ul>
+    <% end %>
+  </div>
+</header>
+
+<div class="px-6 pb-6 center-container">
+  <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
+
+  <ul class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+    <.card color="blue-primary" icon="three-people" title="Leads" badge={0} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer">
+      <p class="my-2">
+        Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
+      </p>
+
+      <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
+    </.card>
+
+    <.card color="blue-primary" icon="camera-check" title="Jobs" badge={0} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
+      <p class="my-2">
+        Leads will become jobs when your client accepts your quote and pays the first 50% of your contract. Create your first lead!
+      </p>
+    </.card>
+
+    <li class="flex flex-col items-center justify-center h-full border rounded-lg">
+      <.icon name="upload" class="w-12 h-12 text-blue-primary" />
+      <p class="mt-2 text-lg font-bold">
+        Upload a shoot
+      </p>
+    </li>
+  </ul>
+
+  <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
+
+  <ul class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+    <.card color="orange-dashboard-inbox" icon="envelope" title="Inbox" badge={0}>
+      <p class="my-2">
+        Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+      </p>
+    </.card>
+
+    <.card color="purple-dashboard-marketing" icon="bullhorn" title="Marketing" badge={0}>
+      <p class="my-2">
+        Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!
+      </p>
+    </.card>
+
+    <.card color="orange-warning" icon="cart" title="Manage Orders" badge={0}>
+      <p class="my-2">
+        After you upload your shoot, clients can buy prints and much more directly from your gallery page!
+      </p>
+    </.card>
+  </ul>
+</div>

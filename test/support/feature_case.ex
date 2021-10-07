@@ -7,6 +7,8 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
+    def testid(id, opts \\ []), do: css("*[data-testid=#{id}]", opts)
+
     def wait_for_enabled_submit_button(session, opts \\ []) do
       session |> assert_has(css("button:not(:disabled)[type='submit']", opts))
     end
@@ -128,6 +130,7 @@ defmodule Picsello.FeatureCase do
       use Wallaby.Feature
       import Wallaby.Query
       import Picsello.{Factory, FeatureCase.FeatureHelpers}
+      alias PicselloWeb.Router.Helpers, as: Routes
 
       setup do
         Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
