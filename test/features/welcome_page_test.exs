@@ -121,4 +121,37 @@ defmodule Picsello.WelcomePageTest do
 
     assert {"", "0 pending leads", "0 active leads"} == counts
   end
+
+  feature "jobs card shows numbers", %{session: session, user: user} do
+    day = 24 * 60 * 60
+
+    for(seconds_from_now <- [-1, 1, 7 * day - 1, 7 * day + 1]) do
+      starts_at = DateTime.add(DateTime.utc_now(), seconds_from_now)
+
+      insert(:lead, user: user, package: %{shoot_count: 1}, shoots: [%{starts_at: starts_at}])
+      |> promote_to_job()
+    end
+
+    session
+    |> sign_in(user)
+    |> find(testid("jobs-card"))
+    |> assert_has(testid("badge", text: "2"))
+    |> assert_text("2 upcoming jobs within the next seven days")
+  end
+
+  feature "jobs card empty state", %{session: session, user: user} do
+    insert(:lead, user: user)
+
+    session |> sign_in(user) |> find(testid("jobs-card")) |> assert_text("Leads will become jobs")
+
+    insert(:lead,
+      user: user,
+      completed_at: DateTime.utc_now(),
+      package: %{shoot_count: 1},
+      shoots: [%{starts_at: DateTime.add(DateTime.utc_now(), 1)}]
+    )
+    |> promote_to_job()
+
+    session |> visit("/") |> find(testid("jobs-card")) |> assert_text("0 upcoming jobs")
+  end
 end

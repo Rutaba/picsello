@@ -54,10 +54,15 @@
       <% end %>
     </.card>
 
-    <.card color="blue-primary" icon="camera-check" title="Jobs" badge={0} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
+    <.card {testid("jobs-card")} color="blue-primary" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
+      <%= if @jobs_empty? do %>
       <p class="my-2">
-        Leads will become jobs when your client accepts your quote and pays the first 50% of your contract. Create your first lead!
+        Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.
+        <%= if @leads_empty? do %>Create your first lead!<% end %>
       </p>
+      <% else %>
+        <p class="my-2"><span class="font-bold"><%= @job_count %></span> upcoming <%= ngettext "job", "jobs", @job_count %> within the next seven days</p>
+      <% end %>
     </.card>
 
     <li class="flex flex-col items-center justify-center h-full p-5 border rounded-lg">

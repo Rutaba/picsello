@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Accounts.User}
+  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User}
   import Ecto.Query
 
   @impl true
@@ -50,13 +50,7 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
-    job_count_by_status =
-      from(j in Job.for_user(current_user),
-        join: s in assoc(j, :job_status),
-        group_by: [s.current_status, s.is_lead],
-        select: %{lead?: s.is_lead, status: s.current_status, count: count(j.id)}
-      )
-      |> Repo.all()
+    job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
 
     lead_stats =
       for(
@@ -83,11 +77,22 @@ defmodule PicselloWeb.HomeLive.Index do
           Keyword.update(acc, name, count, &(&1 + count))
       end
 
+    job_count =
+      for(
+        %{lead?: false, shoot_within_week?: true, count: count, status: status}
+        when status != :completed <- job_count_by_status,
+        reduce: 0
+      ) do
+        acc -> acc + count
+      end
+
     socket
     |> assign(
       lead_stats: lead_stats,
       lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
-      leads_empty?: Enum.empty?(job_count_by_status)
+      leads_empty?: Enum.empty?(job_count_by_status),
+      jobs_empty?: !Enum.any?(job_count_by_status, &(!&1.lead?)),
+      job_count: job_count
     )
   end
 
@@ -173,5 +178,33 @@ defmodule PicselloWeb.HomeLive.Index do
       </div>
     </li>
     """
+  end
+
+  defp job_count_by_status(user) do
+    now = DateTime.utc_now()
+    a_week_from_now = DateTime.add(now, 7 * 24 * 60 * 60)
+
+    from(job in Job.for_user(user),
+      join: status in assoc(job, :job_status),
+      left_join:
+        shoots in subquery(
+          from(shoots in Shoot,
+            group_by: shoots.job_id,
+            select: %{
+              shoot_within_week?:
+                min(shoots.starts_at) >= ^now and min(shoots.starts_at) < ^a_week_from_now,
+              job_id: shoots.job_id
+            }
+          )
+        ),
+      on: shoots.job_id == job.id,
+      group_by: [status.current_status, status.is_lead, shoots.shoot_within_week?],
+      select: %{
+        lead?: status.is_lead,
+        status: status.current_status,
+        count: count(job.id),
+        shoot_within_week?: coalesce(shoots.shoot_within_week?, false)
+      }
+    )
   end
 end
