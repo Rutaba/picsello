@@ -33,7 +33,7 @@
 
   <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
     <.card {testid("leads-card")} color="blue-primary" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer">
-      <%= if @lead_count == 0 do %>
+      <%= if @leads_empty? do %>
       <p class="my-2">
         Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
       </p>

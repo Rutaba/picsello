@@ -50,19 +50,17 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
-    lead_count_by_status =
+    job_count_by_status =
       from(j in Job.for_user(current_user),
         join: s in assoc(j, :job_status),
-        where: s.is_lead,
-        group_by: s.current_status,
-        select: {s.current_status, count(j.id)}
+        group_by: [s.current_status, s.is_lead],
+        select: %{lead?: s.is_lead, status: s.current_status, count: count(j.id)}
       )
       |> Repo.all()
-      |> Enum.into(%{})
 
     lead_stats =
       for(
-        {name, statuses} <- [
+        {name, statuses_for_name} <- [
           pending: [:not_sent, :sent],
           active: [
             :accepted,
@@ -71,13 +69,25 @@ defmodule PicselloWeb.HomeLive.Index do
             :answered
           ]
         ],
-        do: {name, statuses |> Enum.map(&Map.get(lead_count_by_status, &1, 0)) |> Enum.sum()}
-      )
+        %{lead?: true, status: status, count: count} <- job_count_by_status,
+        reduce: []
+      ) do
+        acc ->
+          count =
+            if Enum.member?(statuses_for_name, status) do
+              count
+            else
+              0
+            end
+
+          Keyword.update(acc, name, count, &(&1 + count))
+      end
 
     socket
     |> assign(
       lead_stats: lead_stats,
-      lead_count: lead_stats |> Keyword.values() |> Enum.sum()
+      lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
+      leads_empty?: Enum.empty?(job_count_by_status)
     )
   end
 

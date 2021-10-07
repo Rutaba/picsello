@@ -61,6 +61,21 @@ defmodule Picsello.WelcomePageTest do
     end
   end
 
+  def lead_counts(session) do
+    card =
+      session
+      |> find(testid("leads-card"))
+
+    badge = card |> find(testid("badge")) |> Element.text()
+
+    counts =
+      card
+      |> find(css("li", count: 2))
+      |> Enum.map(&Element.text/1)
+
+    {badge, counts |> hd, counts |> tl |> hd}
+  end
+
   feature "leads card shows numbers", %{session: session, user: user} do
     _archived = insert(:lead, user: user, archived_at: DateTime.utc_now())
     _pending_1 = insert(:lead, user: user)
@@ -89,11 +104,21 @@ defmodule Picsello.WelcomePageTest do
     counts =
       session
       |> sign_in(user)
-      |> find(testid("leads-card"))
-      |> assert_has(testid("badge", text: "6"))
-      |> find(css("li", count: 2))
-      |> Enum.map(&Element.text/1)
+      |> lead_counts()
 
-    assert ["4 pending leads", "2 active leads"] == counts
+    assert {"6", "4 pending leads", "2 active leads"} == counts
+  end
+
+  feature "leads card has empty state", %{session: session, user: user} do
+    session
+    |> sign_in(user)
+    |> find(testid("leads-card"))
+    |> assert_text("This is your first step")
+
+    insert(:lead, user: user, archived_at: DateTime.utc_now())
+
+    counts = session |> visit("/") |> lead_counts()
+
+    assert {"", "0 pending leads", "0 active leads"} == counts
   end
 end
