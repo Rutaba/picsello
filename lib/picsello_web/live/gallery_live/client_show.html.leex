@@ -37,7 +37,7 @@
     photos
   </div>
   <div class="my-6">
-    <a class="cursor-pointer inline-block btn-primary px-8">Download all</a>
+    <%= button "Download all", to: "/gallery/#{@hash}/downloads/all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
     <a class="cursor-pointer inline-block btn-primary px-8 ml-2">Download favorites</a>
   </div>
 
