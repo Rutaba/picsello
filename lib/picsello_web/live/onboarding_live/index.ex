@@ -94,7 +94,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <p class="py-2 font-extrabold">What’s the name of your photography business?</p>
 
           <%= input o, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: "p-4" %>
-          <%= error_tag o, :name, class: "text-red-invalid text-sm" %>
+          <%= error_tag o, :name, prefix: "Photography business name", class: "text-red-invalid text-sm" %>
         </label>
       <% end %>
 
@@ -110,7 +110,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               disabled: input_value(o, :no_website) == true,
                 placeholder: "www.mystudio.com",
                 class: "p-4 sm:pr-48" %>
-            <%= error_tag o, :website, class: "text-red-invalid text-sm" %>
+            <%= error_tag o, :website, class: "text-red-invalid text-sm", prefix: "Website URL" %>
 
             <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
               <%= checkbox o, :no_website, class: "w-5 h-5 checkbox" %>
@@ -124,7 +124,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <p class="py-2 font-extrabold">What's your phone number?</p>
 
           <%= input o, :phone, type: :telephone_input, phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
-          <%= error_tag o, :phone, class: "text-red-invalid text-sm" %>
+          <%= error_tag o, :phone, class: "text-red-invalid text-sm", prefix: "Phone number" %>
         </label>
 
         <label class="flex flex-col mt-4">

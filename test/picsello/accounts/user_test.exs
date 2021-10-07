@@ -18,7 +18,7 @@ defmodule Picsello.Accounts.UserTest do
 
   describe "onboarding_changeset" do
     test "validates website" do
-      assert [["invalid scheme ftp"], nil, nil, ["invalid host bad!.hostname"]] =
+      assert [["is invalid"], nil, nil, ["is invalid"]] =
                for(
                  url <- [
                    "ftp://example.com",

@@ -18,6 +18,8 @@ defmodule Picsello.UserOnboardsTest do
     session
     |> assert_path(@onboarding_path)
     |> assert_value(@org_name_field, "#{user.name} Photography")
+    |> fill_in(@org_name_field, with: "")
+    |> assert_has(css("span.invalid-feedback", text: "Photography business name can't be blank"))
     |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@website_field, with: "inval!d.com")
     |> fill_in(phone_field, with: "123")
