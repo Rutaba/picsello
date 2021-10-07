@@ -26,7 +26,6 @@ defmodule Picsello.CreateLeadTest do
     |> assert_value(text_field("Lead notes"), "things to know about")
     |> click(button("Cancel"))
     |> click(link("Picsello"))
-    |> assert_has(link("View current leads"))
   end
 
   feature "user sees validation errors when creating lead", %{session: session} do

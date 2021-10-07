@@ -1,0 +1,73 @@
+<%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
+<main role="main" class="relative flex flex-col min-h-screen">
+  <header class="border-b">
+    <div class="flex items-center px-6 center-container">
+      <div id="hamburger-menu" phx-hook="ToggleContent">
+        <%= if @current_user do %>
+        <div class="absolute top-0 left-0 z-10 hidden w-screen bg-black/50 toggle-content">
+          <div class="absolute top-0 bottom-0 left-0 w-2/6 bg-white" style="z-index: -1;"></div>
+          <nav class="center-container">
+            <div class="flex flex-col w-2/3 min-h-screen bg-white lg:w-2/6 max-w-m">
+              <div class="flex items-center pl-8 mr-16">
+                <.icon name="close-x" class="w-5 h-5 stroke-current stroke-2" />
+                <.icon name="logo" class="my-4 ml-10 w-28 h-9" />
+              </div>
+              <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket), @current_user do %>
+                <%= live_redirect to: path, title: title, class: classes("pl-6 py-4 w-full hover:bg-blue-light-primary hover:font-bold",%{"bg-blue-light-primary font-bold" => path_active?(@socket, @live_action, path) }) do %>
+                  <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-primary" />
+
+                  <%= title %>
+                <% end %>
+              <% end %>
+            </div>
+          </nav>
+        </div>
+
+        <.icon name="hamburger" class="h-4 text-black w-9" />
+        <% end %>
+      </div>
+
+      <nav class="flex items-center justify-center flex-1 mx-8 lg:justify-start">
+        <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
+          <.icon name="logo" class="my-4 w-28 h-9" />
+        <% end %>
+
+        <%= for %{title: title, icon: icon, path: path} <- top_nav(@socket), @current_user do %>
+          <%= live_redirect to: path, title: title, class: "hidden lg:flex ml-10 items-center p-3 mr-2 hover:bg-blue-light-primary" do %>
+            <.icon name={icon} class="inline-block w-6 h-6 mr-2 text-blue-primary" />
+
+            <%= title %>
+          <% end %>
+        <% end %>
+      </nav>
+
+      <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
+        <%= if @current_user do %>
+        <div class="absolute top-0 right-0 flex flex-col items-end hidden text-black toggle-content">
+          <div class="p-4 -mb-2 text-black bg-white shadow-md">
+            <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+          </div>
+
+          <div class="bg-gray-100 rounded-lg shadow-md">
+            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Profile", class: "flex items-center px-6 py-4 bg-white" do %>
+              <div class="flex flex-col items-center justify-center text-sm text-black bg-gray-100 rounded-full w-9 h-9 pb-0.5"><%= User.initials @current_user %></div>
+              <div class="ml-2 font-semibold">Profile</div>
+            <% end %>
+
+            <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
+              <%= submit "Logout", class: "px-6 text-left py-2 w-full" %>
+            </.form>
+          </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center text-sm text-black bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
+          <%= User.initials @current_user %>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </header>
+  <%= flash(@flash) %>
+
+  <%= @inner_content %>
+</main>

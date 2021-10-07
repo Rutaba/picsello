@@ -1,7 +1,6 @@
 defmodule Picsello.UserOnboardsTest do
   use Picsello.FeatureCase, async: true
 
-  alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{Accounts.User, Repo}
 
   setup :authenticated

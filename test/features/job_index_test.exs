@@ -2,6 +2,9 @@ defmodule Picsello.JobIndexTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo}
 
+  @leads_card css("li[title='Leads']")
+  @jobs_card css("li[title='Jobs']")
+
   setup do
     user = insert(:user)
     lead = insert(:lead, user: user, type: "wedding")
@@ -20,11 +23,11 @@ defmodule Picsello.JobIndexTest do
 
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
-    |> click(link("View current leads"))
+    |> click(@leads_card)
     |> assert_has(css("main > ul > li", count: 1))
     |> assert_has(link(Job.name(lead)))
     |> click(link("Picsello"))
-    |> click(link("View jobs"))
+    |> click(@jobs_card)
     |> assert_has(css("main > ul > li", count: 1))
     |> assert_has(link(Job.name(job)))
     |> click(link(Job.name(job)))
@@ -67,7 +70,8 @@ defmodule Picsello.JobIndexTest do
     refute Job.name(archived_lead) == Job.name(created_lead)
 
     session
-    |> click(link("View current leads"))
+    |> click(@leads_card)
+    |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> assert_has(link(Job.name(archived_lead), text: "Archived"))
     |> assert_has(link(Job.name(created_lead), text: "Created"))
   end
@@ -82,7 +86,7 @@ defmodule Picsello.JobIndexTest do
       insert(:shoot, job: elapsed_job, starts_at: DateTime.utc_now() |> DateTime.add(-100))
 
     session
-    |> click(link("View jobs"))
+    |> click(@jobs_card)
     |> assert_has(
       link(Job.name(future_job),
         text: "On #{future_job_shoot.starts_at |> Calendar.strftime("%B")}"

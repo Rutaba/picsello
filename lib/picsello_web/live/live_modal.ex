@@ -1,6 +1,5 @@
 defmodule PicselloWeb.LiveModal do
   @moduledoc false
-  use Phoenix.Component
 
   defmodule FooterComponent do
     @moduledoc "default footer"
@@ -32,14 +31,6 @@ defmodule PicselloWeb.LiveModal do
       </div>
       """
     end
-  end
-
-  def footer(assigns) do
-    assigns = Map.put_new(assigns, :disabled, false)
-
-    ~H"""
-      <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: @disabled, inner_block: @inner_block %>
-    """
   end
 
   defmodule Modal do
@@ -119,6 +110,14 @@ defmodule PicselloWeb.LiveModal do
           </div>
         <% end %>
       </div>
+    """
+  end
+
+  def footer(assigns) do
+    assigns = Map.put_new(assigns, :disabled, false)
+
+    ~H"""
+      <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: @disabled, inner_block: @inner_block %>
     """
   end
 end

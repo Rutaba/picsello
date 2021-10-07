@@ -1,4 +1,5 @@
 import { createPopper } from '@popperjs/core';
+import { Modal } from './shared';
 
 export default {
   mounted() {
@@ -13,54 +14,31 @@ export default {
       arrow.setAttribute('xlink:href', href.replace(/#.+$/, `#${direction}`));
     }
 
-    function clickOutside(e) {
-      const isOutside = e.target.closest(`#${el.id}`) === null;
-
-      if (isOutside) {
-        close();
-      }
-    }
-
-    this.removeClickOutside = () => {
-      document.body.removeEventListener('click', clickOutside);
-    };
-
-    const close = () => {
+    function onClose() {
       popper.destroy();
       content.classList.add('hidden');
       changeArrowTo('down');
-      this.removeClickOutside();
-    };
+    }
 
-    const open = () => {
+    function onOpen() {
       content.classList.remove('hidden');
       changeArrowTo('up');
 
       popper = createPopper(el, content, {
         modifiers: [{ name: 'offset', options: { offset: [10, 10] } }],
       });
+    }
 
-      document.body.addEventListener('click', clickOutside);
-    };
+    const isClosed = () => content.classList.contains('hidden');
 
-    this.isClosed = () => content.classList.contains('hidden');
-
-    el.addEventListener('click', () => {
-      if (this.isClosed()) {
-        open();
-      } else {
-        close();
-      }
-    });
+    this.modal = Modal({ onClose, onOpen, el, isClosed });
   },
 
   destroyed() {
-    this.removeClickOutside();
+    this.modal.destroyed();
   },
 
   updated() {
-    if (this.isClosed()) {
-      this.removeClickOutside();
-    }
+    this.modal.updated();
   },
 };

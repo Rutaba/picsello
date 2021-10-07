@@ -1,5 +1,6 @@
 defmodule Picsello.SignInTest do
   use Picsello.FeatureCase, async: true
+  alias Picsello.Accounts.User
 
   feature "user views log in button", %{session: session} do
     session
@@ -44,7 +45,7 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Password"), with: valid_user_password())
     |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
-    |> assert_has(css("h1", text: "Hello #{user.name}"))
+    |> assert_has(css("h1", text: ", #{User.first_name(user)}!"))
     |> assert_path("/home")
   end
 end

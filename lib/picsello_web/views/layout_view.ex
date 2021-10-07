@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
   alias Picsello.Accounts.User
+  import PicselloWeb.LiveHelpers, only: [icon: 1]
 
   use Phoenix.Component
 
@@ -52,4 +53,42 @@ defmodule PicselloWeb.LayoutView do
     </div>
     """
   end
+
+  def side_nav(socket),
+    do: [
+      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+      %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
+      %{title: "Orders", icon: "cart", path: "#"},
+      %{title: "Calendar", icon: "calendar", path: "#"},
+      %{title: "Inbox", icon: "envelope", path: "#"},
+      %{title: "Marketing", icon: "bullhorn", path: "#"},
+      %{title: "Contacts", icon: "phone", path: "#"},
+      %{title: "Finances", icon: "money-bags", path: "#"},
+      %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
+      %{title: "Help", icon: "question-mark", path: "#"}
+    ]
+
+  def top_nav(socket),
+    do: [
+      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+      %{title: "Finances", icon: "money-bags", path: "#"},
+      %{title: "Help", icon: "question-mark", path: "#"},
+      %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
+    ]
+
+  def path_active?(
+        %{
+          view: socket_view,
+          router: router,
+          host_uri: %{host: host}
+        },
+        socket_live_action,
+        path
+      ),
+      do:
+        match?(
+          %{phoenix_live_view: {view, live_action, _, _}}
+          when view == socket_view and live_action == socket_live_action,
+          Phoenix.Router.route_info(router, "GET", path, host)
+        )
 end

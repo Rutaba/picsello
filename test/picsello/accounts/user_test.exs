@@ -70,4 +70,20 @@ defmodule Picsello.Accounts.UserTest do
       assert insert(:user, onboarding: %{completed_at: DateTime.utc_now()}) |> User.onboarded?()
     end
   end
+
+  describe "confirmed?" do
+    test "siend up with google always true" do
+      assert %User{sign_up_auth_provider: :google, confirmed_at: nil} |> User.confirmed?()
+
+      assert %User{sign_up_auth_provider: :google, confirmed_at: DateTime.utc_now()}
+             |> User.confirmed?()
+    end
+
+    test "siend up with password must have confirmed_at set" do
+      refute %User{sign_up_auth_provider: :password, confirmed_at: nil} |> User.confirmed?()
+
+      assert %User{sign_up_auth_provider: :password, confirmed_at: DateTime.utc_now()}
+             |> User.confirmed?()
+    end
+  end
 end
