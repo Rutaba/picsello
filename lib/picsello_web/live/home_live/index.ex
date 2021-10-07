@@ -2,7 +2,7 @@ defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   alias Picsello.{Job, Repo, Accounts, Accounts.User}
-  require Ecto.Query
+  import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
@@ -50,16 +50,35 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
-    [lead_count, job_count] =
-      current_user
-      |> Job.for_user()
-      |> Ecto.Query.preload([:booking_proposals, :job_status])
+    lead_count_by_status =
+      from(j in Job.for_user(current_user),
+        join: s in assoc(j, :job_status),
+        where: s.is_lead,
+        group_by: s.current_status,
+        select: {s.current_status, count(j.id)}
+      )
       |> Repo.all()
-      |> Enum.split_with(&Job.lead?/1)
-      |> Tuple.to_list()
-      |> Enum.map(&Enum.count/1)
+      |> Enum.into(%{})
 
-    socket |> assign(lead_count: lead_count, job_count: job_count)
+    lead_stats =
+      for(
+        {name, statuses} <- [
+          pending: [:not_sent, :sent],
+          active: [
+            :accepted,
+            :signed_with_questionnaire,
+            :signed_without_questionnaire,
+            :answered
+          ]
+        ],
+        do: {name, statuses |> Enum.map(&Map.get(lead_count_by_status, &1, 0)) |> Enum.sum()}
+      )
+
+    socket
+    |> assign(
+      lead_stats: lead_stats,
+      lead_count: lead_stats |> Keyword.values() |> Enum.sum()
+    )
   end
 
   def time_of_day_greeting(%User{time_zone: time_zone} = user) do
@@ -127,7 +146,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {attrs}>
-      <div class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-sm", %{"bg-black text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+      <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-black text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
         <%= if @badge > 0, do: @badge %>
       </div>
 
