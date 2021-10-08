@@ -57,6 +57,8 @@ config :logger, level: :info
 config :picsello, Picsello.Mailer,
   adapter: Bamboo.SendGridAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
+  confirmation_instructions_template:
+    System.get_env("SENDGRID_CONFIRMATION_INSTRUCTIONS_TEMPLATE"),
   password_reset_template: System.get_env("SENDGRID_PASSWORD_RESET_TEMPLATE"),
   update_email_template: System.get_env("SENDGRID_UPDATE_EMAIL_TEMPLATE"),
   booking_proposal_template: System.get_env("SENDGRID_BOOKING_PROPOSAL_TEMPLATE"),
