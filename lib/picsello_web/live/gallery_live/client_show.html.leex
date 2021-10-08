@@ -25,11 +25,11 @@
 
 <!-- Content -->
 <div style="padding: 60px 70px; ">
-
   <div
     class="font-bold text-3xl"
   >
     <%= @gallery.name %> Gallery
+    
   </div>
   <div
     style="color: #898989;"
@@ -45,14 +45,13 @@
 
   <!-- images -->
   <div
-    class="masonry hidden"
+    class="masonry"
     phx-hook="MasonryGrid"
     id="client-gallery-grid"
+    phx-update="replace"
   >
     <%= for photo <- @gallery.photos do %>
-      <div class="item">
-        <img src="<%= photo.client_copy_url %>" />
-      </div>
+      <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent, id: photo.id, photo: photo %>
     <% end %>
   </div>
 
