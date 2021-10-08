@@ -111,4 +111,14 @@ defmodule Picsello.Galleries do
     |> Photo.create_changeset()
     |> Repo.insert()
   end
+
+  @doc false
+  def get_photo(id), do: Repo.get(Photo, id)
+
+  @doc false
+  def mark_photo_as_liked(%Photo{client_liked: client_liked} = photo) do
+    photo
+    |> Photo.update_changeset(%{client_liked: !client_liked})
+    |> Repo.update()
+  end
 end

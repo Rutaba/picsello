@@ -1,7 +1,7 @@
 import Masonry from "masonry-layout";
 
 export default {
-  mounted() {
+  updated() {
     const grid = document.querySelector(".masonry");
     if (grid) {
       grid.classList.remove('hidden');
