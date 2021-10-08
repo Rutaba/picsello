@@ -4,10 +4,8 @@
 
 @layer components {
   .title {
-    @apply
-      text-blue-primary
+    @apply text-blue-planning-300
       font-bold
-      text-3xl
-    ;
+      text-3xl;
   }
 }

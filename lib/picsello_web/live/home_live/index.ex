@@ -123,7 +123,7 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "envelope",
              button_label: "Resend email",
              button_class: "btn-primary",
-             color: "orange-warning"
+             color: "red-sales-300"
            }},
           {leads_empty?,
            %{
@@ -132,8 +132,8 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Leads are the first step to getting started with Picsello.",
              icon: "three-people",
              button_label: "Create your first lead",
-             button_class: "btn-secondary bg-blue-light-primary",
-             color: "blue-primary"
+             button_class: "btn-secondary bg-blue-planning-100",
+             color: "blue-planning-300"
            }},
           {true,
            %{
@@ -142,8 +142,8 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "We use Stripe to make payment collection as seamless as possible for you.",
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
-             button_class: "btn-secondary bg-blue-light-primary",
-             color: "blue-primary"
+             button_class: "btn-secondary bg-blue-planning-100",
+             color: "blue-planning-300"
            }},
           {true,
            %{
@@ -152,8 +152,8 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Stuck? Need advice? We have a plethora of resources ready for you.",
              icon: "question-mark",
              button_label: "See available resources",
-             button_class: "btn-secondary bg-blue-light-primary",
-             color: "blue-primary"
+             button_class: "btn-secondary bg-blue-planning-100",
+             color: "blue-planning-300"
            }}
         ],
         do: item
@@ -167,7 +167,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {attrs}>
-      <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-black text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+      <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
         <%= if @badge > 0, do: @badge %>
       </div>
 

@@ -147,8 +147,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
                 <label>
                   <%= radio_button o, :color, color, class: "hidden" %>
                   <div class={classes(
-                    "flex cursor-pointer items-center hover:border-black justify-center w-full h-full border rounded", %{
-                    "border-black" => input_value(o, :color) == color,
+                    "flex cursor-pointer items-center hover:border-base-300 justify-center w-full h-full border rounded", %{
+                    "border-base-300" => input_value(o, :color) == color,
                     "hover:border-opacity-40" => input_value(o, :color) != color
                   })}>
                     <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
@@ -222,14 +222,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def job_type_option(assigns) do
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-light-primary hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
-        %{"border-blue-primary bg-blue-light-primary" => @checked}
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
+        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
       )}>
         <input class="hidden" type="checkbox" name={@name} value={@job_type} checked={@checked} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 bg-gray-200 rounded-full flex-shrink-0",
-          %{"bg-blue-primary text-white" => @checked}
+          %{"bg-blue-planning-300 text-white" => @checked}
         )}>
           <.icon name={@job_type} class="fill-current" width="14" height="14" />
         </div>
@@ -243,7 +243,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 2,
-      color_class: "bg-orange-onboarding-second",
+      color_class: "bg-orange-inbox-200",
       step_title: "Tell us more about yourself",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 2"
@@ -254,7 +254,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 3,
-      color_class: "bg-green-onboarding-third",
+      color_class: "bg-green-finances-100",
       step_title: "Customize your business",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 3"
@@ -265,7 +265,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 4,
-      color_class: "bg-blue-onboarding-fourth",
+      color_class: "bg-blue-gallery-200",
       step_title: "Customize your business",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 4"
@@ -276,7 +276,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 5,
-      color_class: "bg-blue-onboarding-first",
+      color_class: "bg-blue-planning-200",
       step_title: "Optional questions",
       subtitle:
         "While these final few questions are optional, answering them will help us understand and serve each of our customers better.",

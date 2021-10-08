@@ -25,7 +25,7 @@ defmodule PicselloWeb.JobLive.Show do
           <%= render_block(@inner_block) %>
         </div>
 
-        <button type="button" class="w-full p-2 mt-6 text-sm text-center border border-black rounded-lg" >
+        <button type="button" class="w-full p-2 mt-6 text-sm text-center border rounded-lg border-base-300" >
           <%= @button_text %>
         </button>
       </li>
@@ -43,7 +43,7 @@ defmodule PicselloWeb.JobLive.Show do
       })
 
     ~H"""
-      <div class={"flex items-center justify-center rounded-full bg-blue-primary #{@radius_class} #{@class}"}>
+      <div class={"flex items-center justify-center rounded-full bg-blue-planning-300 #{@radius_class} #{@class}"}>
         <%= render_block(@inner_block) %>
       </div>
     """
@@ -51,14 +51,14 @@ defmodule PicselloWeb.JobLive.Show do
 
   def details_item(assigns) do
     ~H"""
-    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-light-primary" phx-click="open-proposal" phx-value-action={@action} title={@title}>
+    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" phx-click="open-proposal" phx-value-action={@action} title={@title}>
       <.circle radius="8" class="flex-shrink-0">
         <.icon name={@icon} width="14" height="14" />
       </.circle>
       <div class="ml-2">
         <div class="flex items-center font-bold">
           <%= @title %>
-          <.icon name="forth" class="w-3 h-3 ml-2 text-black stroke-current" />
+          <.icon name="forth" class="w-3 h-3 ml-2 stroke-current text-base-300" />
         </div>
         <div class="text-xs text-gray-500"><%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span></div>
       </div>

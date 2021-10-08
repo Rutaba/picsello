@@ -23,11 +23,12 @@ defmodule PicselloWeb.LayoutView do
 
   defp flash_styles,
     do: [
-      {:error, "warning-white", "bg-red-invalid-bg", "bg-red-invalid", "text-red-invalid",
-       "border-red-invalid"},
-      {:info, "info", "bg-blue-light-primary", "bg-blue-primary", "text-blue-primary",
-       "border-blue-primary"},
-      {:success, "checkmark", "bg-green-light", "bg-green", "text-green", "border-green"}
+      {:error, "warning-white", "bg-red-sales-100", "bg-red-sales-300", "text-red-sales-300",
+       "border-red-sales-300"},
+      {:info, "info", "bg-blue-planning-100", "bg-blue-planning-300", "text-blue-planning-300",
+       "border-blue-planning-300"},
+      {:success, "checkmark", "bg-green-finances-100", "bg-green-finances-300",
+       "text-green-finances-300", "border-green-finances-300"}
     ]
 
   def flash(flash) do

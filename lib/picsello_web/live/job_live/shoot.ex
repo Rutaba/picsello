@@ -15,9 +15,9 @@ defmodule PicselloWeb.JobLive.Shoot do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="bg-blue-light-primary">
+    <header class="bg-blue-planning-100">
       <div class="px-6 py-2 lg:pb-6 center-container">
-        <div class="text-xs text-blue-primary/50">
+        <div class="text-xs text-blue-planning-200">
           <%= live_redirect to: Routes.job_path(@socket, :jobs) do %>
             <%= action_name(@live_action, :plural) %>
           <% end %>
@@ -37,7 +37,7 @@ defmodule PicselloWeb.JobLive.Shoot do
 
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="mt-4 text-xs font-bold tracking-widest uppercase text-blue-primary/50"><%= Job.name @job %></h2>
+            <h2 class="mt-4 text-xs font-bold tracking-widest uppercase text-blue-planning-200"><%= Job.name @job %></h2>
 
             <h1 class="mb-4 text-3xl font-bold">
               <%= @shoot.name %>
@@ -52,16 +52,16 @@ defmodule PicselloWeb.JobLive.Shoot do
 
     <div class="flex items-start justify-between p-4 m-4 border rounded-lg center-container">
       <div class="flex flex-col flex-1 sm:flex-wrap sm:flex-row">
-        <time datetime={DateTime.to_iso8601(@shoot.starts_at)} class="w-24 h-24 mb-2 mr-4 overflow-hidden text-center border rounded-lg border-blue-primary bg-blue-light-primary">
-          <div class="py-1 text-sm font-semibold text-white uppercase bg-blue-primary">
+        <time datetime={DateTime.to_iso8601(@shoot.starts_at)} class="w-24 h-24 mb-2 mr-4 overflow-hidden text-center border rounded-lg border-blue-planning-300 bg-blue-planning-100">
+          <div class="py-1 text-sm font-semibold text-white uppercase bg-blue-planning-300">
             <%= strftime(@current_user.time_zone, @shoot.starts_at, "%B") %>
           </div>
 
-          <div class="text-3xl font-bold text-blue-primary">
+          <div class="text-3xl font-bold text-blue-planning-300">
             <%= strftime(@current_user.time_zone, @shoot.starts_at, "%d") %>
           </div>
 
-          <div class="text-sm text-blue-primary">
+          <div class="text-sm text-blue-planning-300">
             <%= strftime(@current_user.time_zone, @shoot.starts_at, "%I:%M %p") %>
           </div>
         </time>
@@ -94,8 +94,8 @@ defmodule PicselloWeb.JobLive.Shoot do
         </div>
       </div>
 
-      <button title="edit shoot" phx-click="edit-shoot-details" class="flex items-center px-2 py-1 text-xs border btn-secondary border-blue-primary">
-        <span class="text-blue-primary">
+      <button title="edit shoot" phx-click="edit-shoot-details" class="flex items-center px-2 py-1 text-xs border btn-secondary border-blue-planning-300">
+        <span class="text-blue-planning-300">
           <.icon name="pencil" class="inline-block w-3 h-3 mb-0.5 mr-1 fill-current" />
         </span>
         Edit

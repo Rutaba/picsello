@@ -167,8 +167,8 @@ defmodule PicselloWeb.JobLive.Shared do
 
   @status_colors %{
     gray: "bg-gray-200",
-    blue: "bg-blue-light-primary text-blue-primary group-hover:bg-white",
-    green: "bg-green-light text-green"
+    blue: "bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
+    green: "bg-green-finances-100 text-green-finances-200"
   }
 
   def status_content(_, :archived), do: {"Archived", @status_colors.gray}

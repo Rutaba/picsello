@@ -26,18 +26,18 @@ defmodule PicselloWeb.ClientMessageComponent do
       </div>
       <div class="relative text-input">
         <%= client_email @job %>
-        <a class="absolute cursor-pointer bottom-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target={@myself}>cc</a>
+        <a class="absolute cursor-pointer bottom-2 right-2 text-blue-planning-300" phx-click="toggle-cc" phx-target={@myself}>cc</a>
       </div>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <%= if @show_cc do %>
           <div class="relative">
             <%= labeled_input f, :cc_email, label: "CC Email", wrapper_class: "mt-4", phx_debounce: "500" %>
-            <a class="absolute cursor-pointer top-2 right-2 text-blue-primary" phx-click="toggle-cc" phx-target={@myself}>
+            <a class="absolute cursor-pointer top-2 right-2 text-blue-planning-300" phx-click="toggle-cc" phx-target={@myself}>
               <.icon name="close-x" class="w-3 h-3 stroke-current"/>
             </a>
             <%= if input_value(f, :cc_email) && input_value(f, :cc_email) != "" do %>
-              <a id="cc-clear" class="absolute cursor-pointer bottom-2 right-2 text-blue-primary" phx-hook="ClearInput" data-input-name="cc_email">clear</a>
+              <a id="cc-clear" class="absolute cursor-pointer bottom-2 right-2 text-blue-planning-300" phx-hook="ClearInput" data-input-name="cc_email">clear</a>
             <% end %>
           </div>
         <% end %>
@@ -45,7 +45,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
         <label class="block mt-4 input-label" for="editor">Message</label>
         <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore">
-          <div id="toolbar" class="bg-blue-light-primary text-blue-primary">
+          <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
             <button class="ql-bold"></button>
             <button class="ql-italic"></button>
             <button class="ql-underline"></button>

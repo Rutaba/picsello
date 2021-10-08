@@ -111,12 +111,12 @@ defmodule PicselloWeb.JobLive.Index do
 
   def select(assigns) do
     ~H"""
-    <div id="page-dropdown" class="flex items-center px-2 py-1 border rounded cursor-pointer border-blue-primary" phx-hook="Select">
+    <div id="page-dropdown" class="flex items-center px-2 py-1 border rounded cursor-pointer border-blue-planning-300" phx-hook="Select">
       <div class="hidden border shadow popover-content">
         <%= for(option <- @options) do %>
-          <label class={"p-2 pr-6 flex items-center cursor-pointer hover:bg-blue-light-primary #{if @value == option, do: "bg-blue-light-primary", else: "bg-white"}"}>
+          <label class={"p-2 pr-6 flex items-center cursor-pointer hover:bg-blue-planning-100 #{if @value == option, do: "bg-blue-planning-100", else: "bg-white"}"}>
             <input type="radio" class="hidden" name={@name} value={option} />
-            <div class={"flex items-center justify-center w-5 h-5 mr-2 rounded-full #{if @value == option, do: "bg-blue-primary", else: "border"}"}>
+            <div class={"flex items-center justify-center w-5 h-5 mr-2 rounded-full #{if @value == option, do: "bg-blue-planning-300", else: "border"}"}>
               <.icon name="checkmark" class="w-3 h-3 stroke-current" />
             </div>
             <%= option %>
@@ -124,7 +124,7 @@ defmodule PicselloWeb.JobLive.Index do
         <% end %>
       </div>
       <span class="text-xs font-semibold"><%= @value %></span>
-      <.icon name="down" class="w-3 h-3 ml-2 stroke-current text-blue-primary" />
+      <.icon name="down" class="w-3 h-3 ml-2 stroke-current text-blue-planning-300" />
     </div>
     """
   end

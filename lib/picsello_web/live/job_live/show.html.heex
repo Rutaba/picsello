@@ -1,6 +1,6 @@
-<header class="bg-blue-light-primary">
+<header class="bg-blue-planning-100">
   <div class="p-6 pb-2 lg:pb-6 center-container">
-    <div class="text-xs text-blue-primary/50">
+    <div class="text-xs text-blue-planning-200">
       <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
         <%= action_name(@live_action, :plural) %>
       <% end %>
@@ -15,14 +15,14 @@
     <h1 class="flex items-center justify-between text-3xl font-bold lg:justify-start">
       <%= Job.name @job %>
 
-      <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-primary text-blue-primary">
+      <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-planning-300 text-blue-planning-300">
         <div class="absolute -top-1.5 left-1.5">&hellip;</div>
       </button>
     </h1>
   </div>
 </header>
 
-<div class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-light-primary gap-5 lg:grid-cols-2 lg:bg-white">
+<div class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white">
   <div class="flex justify-between min-w-0 lg:justify-start">
     <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
 
@@ -35,7 +35,7 @@
     <span class="mb-3 mr-6 font-bold lg:mb-0 whitespace-nowrap"><%= @job.client.name %></span>
 
     <div class="flex">
-      <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-xs whitespace-nowrap lg:text-blue-primary">
+      <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-xs whitespace-nowrap lg:text-blue-planning-300">
         <.circle radius="7" class="mr-2">
           <.icon name="phone-outline" class="text-white stroke-current" width="12" height="10" />
         </.circle>
@@ -43,7 +43,7 @@
         <%= @job.client.phone %>
       </a>
 
-      <a href={"mailto:#{@job.client.email}"} class="flex items-center min-w-0 text-xs lg:text-blue-primary">
+      <a href={"mailto:#{@job.client.email}"} class="flex items-center min-w-0 text-xs lg:text-blue-planning-300">
         <span class="flex-shrink-0">
           <.circle radius="7" class="mr-2">
           <.icon name="envelope-outline" class="text-white stroke-current" width="12" height="10" />
@@ -82,17 +82,17 @@
 
   <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
   <%= for {shoot_number, shoot} <- @shoots do %>
-    <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
+    <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
       <%= live_redirect to: Routes.shoot_path(@socket, :shoots, @job.id, shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
         <div class="flex items-center justify-between text-xl font-semibold">
           <div>
             <%= shoot.name %>
           </div>
 
-          <.icon name="forth" class="w-4 h-4 text-black stroke-current" />
+          <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
         </div>
 
-        <div class="font-semibold text-blue-primary"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
+        <div class="font-semibold text-blue-planning-300"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
 
         <hr class="my-3 border-top">
 
@@ -106,7 +106,7 @@
 <div class="center-container">
   <h2 class="px-6 mb-3 text-xs font-bold tracking-widest text-gray-400 uppercase" id="booking-details">Booking Details</h2>
 
-  <div class="p-2 m-0 border-0 rounded-lg lg:border lg:mx-6 lg:p-3 grid gap-5 lg:grid-cols-3 bg-blue-light-primary lg:bg-white">
+  <div class="p-2 m-0 border-0 rounded-lg lg:border lg:mx-6 lg:p-3 grid gap-5 lg:grid-cols-3 bg-blue-planning-100 lg:bg-white">
     <.details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
     <.details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
     <%= if @proposal.answer do %>
