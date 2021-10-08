@@ -48,7 +48,7 @@ defmodule Picsello.WelcomePageTest do
 
     feature "user resends confirmation email", %{session: session} do
       session
-      |> assert_text("Confirm your email")
+      |> assert_has(testid("attention-item", text: "Confirm your email"))
       |> assert_has(testid("attention-item", count: 4))
       |> click(button("Resend email"))
 
@@ -57,6 +57,22 @@ defmodule Picsello.WelcomePageTest do
       session
       |> visit(email |> email_substitutions |> Map.get("url"))
       |> assert_flash(:info, text: "Your email has been confirmed")
+      |> assert_has(testid("attention-item", count: 3))
+    end
+
+    feature "user sees attention card to create new lead", %{session: session, user: user} do
+      session
+      |> assert_has(testid("attention-item", count: 4))
+      |> find(
+        testid("attention-item", text: "Create your first lead"),
+        &click(&1, button("Create your first lead"))
+      )
+      |> assert_has(text_field("Client name"))
+
+      insert(:lead, user: user)
+
+      session
+      |> visit("/")
       |> assert_has(testid("attention-item", count: 3))
     end
 

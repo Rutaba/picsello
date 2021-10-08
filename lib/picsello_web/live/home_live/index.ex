@@ -9,6 +9,7 @@ defmodule PicselloWeb.HomeLive.Index do
     socket
     |> assign(:page_title, "Work Hub")
     |> assign_counts()
+    |> assign_attention_items()
     |> ok()
   end
 
@@ -108,52 +109,57 @@ defmodule PicselloWeb.HomeLive.Index do
     "#{greeting}, #{User.first_name(user)}!"
   end
 
-  def attention_items(current_user) do
-    for(
-      {true, item} <- [
-        {!User.confirmed?(current_user),
-         %{
-           action: "send-confirmation-email",
-           title: "Confirm your email",
-           body: "Check your email to confirm your account before you can start anything.",
-           icon: "envelope",
-           button_label: "Resend email",
-           button_class: "btn-primary",
-           color: "orange-warning"
-         }},
-        {true,
-         %{
-           action: "create-lead",
-           title: "Create your first lead",
-           body: "Leads are the first step to getting started with Picsello.",
-           icon: "three-people",
-           button_label: "Create your first lead",
-           button_class: "btn-secondary bg-blue-light-primary",
-           color: "blue-primary"
-         }},
-        {true,
-         %{
-           action: "",
-           title: "Set up Stripe",
-           body: "We use Stripe to make payment collection as seamless as possible for you.",
-           icon: "money-bags",
-           button_label: "Setup your Stripe Account",
-           button_class: "btn-secondary bg-blue-light-primary",
-           color: "blue-primary"
-         }},
-        {true,
-         %{
-           action: "",
-           title: "Helpful resources",
-           body: "Stuck? Need advice? We have a plethora of resources ready for you.",
-           icon: "question-mark",
-           button_label: "See available resources",
-           button_class: "btn-secondary bg-blue-light-primary",
-           color: "blue-primary"
-         }}
-      ],
-      do: item
-    )
+  def assign_attention_items(
+        %{assigns: %{current_user: current_user, leads_empty?: leads_empty?}} = socket
+      ) do
+    items =
+      for(
+        {true, item} <- [
+          {!User.confirmed?(current_user),
+           %{
+             action: "send-confirmation-email",
+             title: "Confirm your email",
+             body: "Check your email to confirm your account before you can start anything.",
+             icon: "envelope",
+             button_label: "Resend email",
+             button_class: "btn-primary",
+             color: "orange-warning"
+           }},
+          {leads_empty?,
+           %{
+             action: "create-lead",
+             title: "Create your first lead",
+             body: "Leads are the first step to getting started with Picsello.",
+             icon: "three-people",
+             button_label: "Create your first lead",
+             button_class: "btn-secondary bg-blue-light-primary",
+             color: "blue-primary"
+           }},
+          {true,
+           %{
+             action: "",
+             title: "Set up Stripe",
+             body: "We use Stripe to make payment collection as seamless as possible for you.",
+             icon: "money-bags",
+             button_label: "Setup your Stripe Account",
+             button_class: "btn-secondary bg-blue-light-primary",
+             color: "blue-primary"
+           }},
+          {true,
+           %{
+             action: "",
+             title: "Helpful resources",
+             body: "Stuck? Need advice? We have a plethora of resources ready for you.",
+             icon: "question-mark",
+             button_label: "See available resources",
+             button_class: "btn-secondary bg-blue-light-primary",
+             color: "blue-primary"
+           }}
+        ],
+        do: item
+      )
+
+    socket |> assign(:attention_items, items)
   end
 
   def card(assigns) do

@@ -4,7 +4,7 @@
       <%= time_of_day_greeting @current_user %>
     </h1>
 
-    <%= case attention_items(@current_user) do %>
+    <%= case @attention_items do %>
       <% [] -> %>
       <% items -> %>
         <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-blue-secondary">Needs attention</h2>
