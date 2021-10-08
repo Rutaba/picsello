@@ -123,7 +123,7 @@ defmodule PicselloWeb.HomeLive.Index do
          }},
         {true,
          %{
-           action: "",
+           action: "create-lead",
            title: "Create your first lead",
            body: "Leads are the first step to getting started with Picsello.",
            icon: "three-people",
