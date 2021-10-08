@@ -15,6 +15,8 @@ defmodule Picsello.Galleries.Gallery do
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
+    field :total_count, :integer
+
     belongs_to(:job, Job)
     has_many(:photos, Photo)
     has_one(:cover_photo, Photo)
@@ -29,9 +31,10 @@ defmodule Picsello.Galleries.Gallery do
     :cover_photo_id,
     :expired_at,
     :password,
-    :client_link_hash
+    :client_link_hash,
+    :total_count,
   ]
-  @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash]
+  @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash, :total_count]
   @required_attrs [:name, :job_id, :status]
 
   def create_changeset(gallery, attrs \\ %{}) do
