@@ -31,7 +31,7 @@ defmodule PicselloWeb.GalleryFillController do
         name: "Avery only",
         status: "draft",
         job_id: job_id,
-        client_link_hash: "Avery"
+        client_link_hash: "Avery2"
       })
 
     data = [
