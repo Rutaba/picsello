@@ -25,11 +25,11 @@
 
 <!-- Content -->
 <div style="padding: 60px 70px; ">
-
   <div
     class="font-bold text-3xl"
   >
     <%= @gallery.name %> Gallery
+    
   </div>
   <div
     style="color: #898989;"
@@ -39,20 +39,19 @@
     photos
   </div>
   <div class="my-6">
-    <%= button "Download all", to: "/gallery/#{@hash}/downloads/all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
-    <a class="cursor-pointer inline-block btn-primary px-8 ml-2">Download favorites</a>
+    <%= button "Download all", to: "/gallery/#{@hash}/downloads?type=all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
+    <%= button "Download favorites", to: "/gallery/#{@hash}/downloads?type=favorites", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
   </div>
 
   <!-- images -->
   <div
-    class="masonry hidden"
+    class="masonry"
     phx-hook="MasonryGrid"
     id="client-gallery-grid"
+    phx-update="replace"
   >
     <%= for photo <- @gallery.photos do %>
-      <div class="item">
-        <img src="<%= photo.client_copy_url %>" />
-      </div>
+      <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent, id: photo.id, photo: photo %>
     <% end %>
   </div>
 
