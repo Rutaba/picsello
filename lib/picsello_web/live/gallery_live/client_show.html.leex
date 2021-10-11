@@ -25,11 +25,11 @@
 
 <!-- Content -->
 <div style="padding: 60px 70px; ">
-
   <div
     class="font-bold text-3xl"
   >
     <%= @gallery.name %> Gallery
+
   </div>
   <div
     style="color: #898989;"
@@ -39,8 +39,8 @@
     photos
   </div>
   <div class="my-6">
-    <%= button "Download all", to: "/gallery/#{@hash}/downloads/all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
-    <a class="cursor-pointer inline-block btn-primary px-8 ml-2">Download favorites</a>
+    <%= button "Download all", to: "/gallery/#{@hash}/downloads?type=all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %>
+    <%= button "Download favorites", to: "/gallery/#{@hash}/downloads?type=favorites", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %>
   </div>
 
   <!-- images -->
@@ -52,16 +52,8 @@
       data-page="<%= @page %>"
       data-total="<%= @gallery.total_count %>"
     >
-      <%= for photo <- @photos do %>
-        <div class="item"
-          id="photo-<%= photo.id %>"
-        >
-          <img
-              width="309"
-              height="<%= 309 / photo.aspect_ratio %>"
-              src="<%= photo.client_copy_url %>"
-          />
-        </div>
+      <%= for photo <- @gallery.photos do %>
+        <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent, id: photo.id, photo: photo %>
       <% end %>
     </div>
   </div>
