@@ -128,6 +128,6 @@ defmodule PicselloWeb.Router do
 
     get "/fill/:hash", GalleryFillController, :new
     live "/:hash", GalleryLive.ClientShow, :show
-    post "/:hash/downloads/all", GalleryDownloadsController, :all
+    post "/:hash/downloads", GalleryDownloadsController, :download
   end
 end
