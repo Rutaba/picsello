@@ -120,7 +120,38 @@ defmodule Picsello.Galleries do
   def change_gallery(%Gallery{} = gallery, attrs \\ %{}) do
     Gallery.update_changeset(gallery, attrs)
   end
-  
+
+  @doc """
+  Loads the gallery photos.
+
+  ## Examples
+
+      iex> load_gallery_photos(gallery, "all")
+      [
+        %Photo{},
+        %Photo{},
+        %Photo{}
+      ]
+  """
+  def load_gallery_photos(%Gallery{} = gallery, type \\ "all") do
+    load_gallery_photos_by_type(gallery, type)
+  end
+
+
+  defp load_gallery_photos_by_type(gallery, "all") do
+    Photo
+    |> where(gallery_id: ^gallery.id)
+    |> Repo.all()
+  end
+
+  defp load_gallery_photos_by_type(gallery, "favorites") do
+    Photo
+    |> where([gallery_id: ^gallery.id, client_liked: true])
+    |> Repo.all()       
+  end
+
+  defp load_gallery_photos_by_type(_,_), do: []
+
   @doc """
   Creates a photo.
 
