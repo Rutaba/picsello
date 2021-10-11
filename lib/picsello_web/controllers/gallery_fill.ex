@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryFillController do
 
   alias Picsello.Galleries
 
-  def new(conn, %{"hash" => hash}) when hash in ["Avery2"] do
+  def new(conn, %{"hash" => hash}) when hash in ["Avery3"] do
     found = Galleries.get_gallery_by_hash(hash)
 
     if found == nil do
@@ -23,7 +23,7 @@ defmodule PicselloWeb.GalleryFillController do
     redirect(conn, to: "/")
   end
 
-  defp build("Avery2") do
+  defp build("Avery3") do
     job_id = get_job_id()
 
     {:ok, gallery} =
@@ -31,7 +31,7 @@ defmodule PicselloWeb.GalleryFillController do
         name: "Avery only",
         status: "draft",
         job_id: job_id,
-        client_link_hash: "Avery2"
+        client_link_hash: "Avery3"
       })
 
     data = [
