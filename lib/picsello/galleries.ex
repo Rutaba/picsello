@@ -37,8 +37,30 @@ defmodule Picsello.Galleries do
   """
   def get_gallery!(id), do: Repo.get!(Gallery, id)
 
+  @doc """
+  Gets a single gallery by hash or nil if not found
+  """
+  @spec get_gallery_by_hash(hash :: binary) :: Gallery | nil
   def get_gallery_by_hash(hash) do
-    Repo.get_by(Gallery, client_link_hash: hash)
+    Gallery
+    |> where(client_link_hash: ^hash)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets paginated photos by gallery id
+  """
+  @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer) :: list(Photo)
+  def get_gallery_photos(id, per_page, page) do
+    offset = per_page * page
+
+    Photo
+    |> where(gallery_id: ^id)
+    |> order_by(asc: :position)
+    |> offset(^offset)
+    |> limit(^per_page)
+    |> Repo.all()
   end
 
   @doc """

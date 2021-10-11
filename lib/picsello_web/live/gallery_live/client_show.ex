@@ -2,8 +2,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
-  alias Picsello.Galleries.{Gallery, Photo}
   alias Picsello.Repo
+
+  @per_page 12
 
   @impl true
   def mount(_params, _session, socket) do
@@ -15,16 +16,26 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     gallery = Galleries.get_gallery_by_hash(hash)
 
     if gallery do
-      {:noreply,
-       socket
-       |> assign(:page_title, page_title(socket.assigns.live_action))
-       |> assign(:hash, hash)
-       |> assign(:gallery, gallery |> Repo.preload([:photos, :cover_photo]))}
+      socket
+      |> assign(:hash, hash)
+      |> assign(:gallery, gallery |> Repo.preload([:cover_photo]))
+      |> assign(:page_title, "Show Gallery")
+      |> assign(:page, 0)
+      |> assign_photos()
+      |> noreply()
     else
       {:noreply, socket}
     end
   end
 
-  defp page_title(:show), do: "Show Gallery"
-  defp page_title(:edit), do: "Edit Gallery"
+  def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
+    socket
+    |> assign(page: page + 1)
+    |> assign_photos()
+    |> noreply()
+  end
+
+  defp assign_photos(%{assigns: %{gallery: %{id: id}, page: page}} = socket) do
+    assign(socket, photos: Galleries.get_gallery_photos(id, @per_page, page))
+  end
 end

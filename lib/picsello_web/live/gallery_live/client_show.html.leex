@@ -14,7 +14,7 @@
     <div class="w-full text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></div>
     <div class="font-bold text-4xl w-full py-1"><%= @gallery.name %></div>
     <div class="w-full text-xl">
-      <%= @gallery.photos |> Enum.count() %>
+      <%= @gallery.total_count %>
       photos
     </div>
   </div>
@@ -35,7 +35,7 @@
     style="color: #898989;"
     class="text-xl"
   >
-    <%= @gallery.photos |> Enum.count() %>
+    <%= @gallery.total_count %>
     photos
   </div>
   <div class="my-6">
@@ -44,16 +44,26 @@
   </div>
 
   <!-- images -->
-  <div
-    class="masonry hidden"
-    phx-hook="MasonryGrid"
-    id="client-gallery-grid"
-  >
-    <%= for photo <- @gallery.photos do %>
-      <div class="item">
-        <img src="<%= photo.client_copy_url %>" />
-      </div>
-    <% end %>
+  <div class="masonry" style="position: relative;">
+    <div
+      id="client-gallery-grid"
+      phx-hook="MasonryGrid"
+      phx-update="append"
+      data-page="<%= @page %>"
+      data-total="<%= @gallery.total_count %>"
+    >
+      <%= for photo <- @photos do %>
+        <div class="item"
+          id="photo-<%= photo.id %>"
+        >
+          <img
+              width="309"
+              height="<%= 309 / photo.aspect_ratio %>"
+              src="<%= photo.client_copy_url %>"
+          />
+        </div>
+      <% end %>
+    </div>
   </div>
 
 </div>
