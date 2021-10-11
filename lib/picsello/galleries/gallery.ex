@@ -32,9 +32,17 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :password,
     :client_link_hash,
-    :total_count,
+    :total_count
   ]
-  @update_attrs [:name, :status, :cover_photo_id, :expired_at, :password, :client_link_hash, :total_count]
+  @update_attrs [
+    :name,
+    :status,
+    :cover_photo_id,
+    :expired_at,
+    :password,
+    :client_link_hash,
+    :total_count
+  ]
   @required_attrs [:name, :job_id, :status]
 
   def create_changeset(gallery, attrs \\ %{}) do
