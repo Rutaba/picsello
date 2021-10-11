@@ -52,8 +52,34 @@ defmodule Picsello.Galleries do
       nil
 
   """
+  @spec get_gallery_by_hash(hash :: binary) :: Gallery | nil
   def get_gallery_by_hash(hash) do
-    Repo.get_by(Gallery, client_link_hash: hash)
+    Gallery
+    |> where(client_link_hash: ^hash)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets single gallery by hash, with relations populated (cover_photo)
+  """
+  def get_detailed_gallery_by_hash(hash) do
+    Repo.preload(get_gallery_by_hash(hash), [:cover_photo])
+  end
+
+  @doc """
+  Gets paginated photos by gallery id
+  """
+  @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer) :: list(Photo)
+  def get_gallery_photos(id, per_page, page) do
+    offset = per_page * page
+
+    Photo
+    |> where(gallery_id: ^id)
+    |> order_by(asc: :position)
+    |> offset(^offset)
+    |> limit(^per_page)
+    |> Repo.all()
   end
 
   @doc """
@@ -147,7 +173,7 @@ defmodule Picsello.Galleries do
   defp load_gallery_photos_by_type(gallery, "favorites") do
     Photo
     |> where([gallery_id: ^gallery.id, client_liked: true])
-    |> Repo.all()       
+    |> Repo.all()
   end
 
   defp load_gallery_photos_by_type(_,_), do: []

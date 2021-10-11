@@ -14,7 +14,7 @@
     <div class="w-full text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></div>
     <div class="font-bold text-4xl w-full py-1"><%= @gallery.name %></div>
     <div class="w-full text-xl">
-      <%= @gallery.photos |> Enum.count() %>
+      <%= @gallery.total_count %>
       photos
     </div>
   </div>
@@ -29,30 +29,37 @@
     class="font-bold text-3xl"
   >
     <%= @gallery.name %> Gallery
-    
+
   </div>
   <div
     style="color: #898989;"
     class="text-xl"
   >
-    <%= @gallery.photos |> Enum.count() %>
+    <%= @gallery.total_count %>
     photos
   </div>
   <div class="my-6">
-    <%= button "Download all", to: "/gallery/#{@hash}/downloads?type=all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
-    <%= button "Download favorites", to: "/gallery/#{@hash}/downloads?type=favorites", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %> 
+    <%= button "Download all", to: "/gallery/#{@hash}/downloads?type=all", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %>
+    <%= button "Download favorites", to: "/gallery/#{@hash}/downloads?type=favorites", method: :post, class: "cursor-pointer inline-block btn-primary px-8" %>
   </div>
 
   <!-- images -->
-  <div
-    class="masonry"
-    phx-hook="MasonryGrid"
-    id="client-gallery-grid"
-    phx-update="replace"
-  >
-    <%= for photo <- @gallery.photos do %>
-      <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent, id: photo.id, photo: photo %>
-    <% end %>
+  <div class="masonry" style="position: relative;">
+    <div
+      id="client-gallery-grid"
+      phx-hook="MasonryGrid"
+      phx-update="append"
+      data-page="<%= @page %>"
+      data-total="<%= @gallery.total_count %>"
+    >
+      <%= for photo <- @photos do %>
+        <div class="item" id="photo-item-<%= photo.id%>">
+          <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo %>
+        </div>
+      <% end %>
+    </div>
   </div>
 
 </div>

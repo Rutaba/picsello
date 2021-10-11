@@ -11,6 +11,8 @@ defmodule Picsello.Galleries.Photo do
     field :position, :float
     field :preview_url, :string
     field :watermarked_url, :string
+    field :aspect_ratio, :float
+
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
 
@@ -26,7 +28,8 @@ defmodule Picsello.Galleries.Photo do
     :client_copy_url,
     :client_liked,
     :gallery_id,
-    :album_id
+    :album_id,
+    :aspect_ratio
   ]
   @update_attrs [
     :name,
@@ -34,7 +37,8 @@ defmodule Picsello.Galleries.Photo do
     :preview_url,
     :watermarked_url,
     :client_copy_url,
-    :client_liked
+    :client_liked,
+    :aspect_ratio
   ]
   @required_attrs [:name, :position, :gallery_id, :original_url]
 
