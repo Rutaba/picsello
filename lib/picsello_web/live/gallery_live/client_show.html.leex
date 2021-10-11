@@ -52,8 +52,12 @@
       data-page="<%= @page %>"
       data-total="<%= @gallery.total_count %>"
     >
-      <%= for photo <- @gallery.photos do %>
-        <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent, id: photo.id, photo: photo %>
+      <%= for photo <- @photos do %>
+        <div class="item" id="photo-item-<%= photo.id%>">
+          <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo %>
+        </div>
       <% end %>
     </div>
   </div>

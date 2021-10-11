@@ -1,5 +1,9 @@
-<div id="photo-<%= @id %>" class="item">
-  <img src="<%= @photo.client_copy_url %>" />
+<div id="photo-<%= @id %>">
+  <img
+      width="309"
+      height="<%= 309 / @photo.aspect_ratio %>"
+      src="<%= @photo.client_copy_url %>"
+  />
   <button id="heart-button" class="btn" phx-click="like" phx-target="<%= @myself %>" phx-value-id="<%= @id %>">
     <%= if @photo.client_liked do %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
