@@ -20,6 +20,6 @@
   }
 
   .btn-warning {
-    @apply btn-primary bg-red-sales-300 border-red-sales-300 focus:ring-red-sales-300 hover:bg-red-sales-100;
+    @apply btn-primary bg-red-sales-300 border-red-sales-300 focus:ring-red-sales-300 hover:bg-red-sales-200;
   }
 }
