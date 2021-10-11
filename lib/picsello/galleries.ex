@@ -61,6 +61,13 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Gets single gallery by hash, with relations populated (cover_photo)
+  """
+  def get_detailed_gallery_by_hash(hash) do
+    Repo.preload(get_gallery_by_hash(hash), [:cover_photo])
+  end
+
+  @doc """
   Gets paginated photos by gallery id
   """
   @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer) :: list(Photo)

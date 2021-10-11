@@ -13,12 +13,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   @impl true
   def handle_params(%{"hash" => hash}, _, socket) do
-    gallery = Galleries.get_gallery_by_hash(hash)
+    gallery = Galleries.get_detailed_gallery_by_hash(hash)
 
     if gallery do
       socket
       |> assign(:hash, hash)
-      |> assign(:gallery, gallery |> Repo.preload([:cover_photo]))
+      |> assign(:gallery, gallery)
       |> assign(:page_title, "Show Gallery")
       |> assign(:page, 0)
       |> assign_photos()
