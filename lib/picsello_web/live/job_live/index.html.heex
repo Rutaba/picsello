@@ -1,4 +1,4 @@
-<header class="bg-blue-light-primary">
+<header class="bg-blue-planning-100">
   <h1 class="p-6 text-3xl font-semibold center-container">
     Your <%= action_name(@live_action, :plural) %>
   </h1>
@@ -32,18 +32,18 @@
 <% else %>
 <ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
 <%= for job <- @jobs do %>
-  <li class="border rounded-lg hover:bg-blue-light-primary hover:border-blue-primary">
+  <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
     <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block group", title: Job.name(job) do %>
       <.status_badge job_status={job.job_status} />
 
       <div class="flex items-center justify-between text-xl font-semibold">
         <%= job |> Job.name() %>
-        <.icon name="forth" class="w-4 h-4 text-black stroke-current" />
+        <.icon name="forth" class="w-4 h-4 text-base-300 stroke-current" />
       </div>
 
       <%= case card_date(@live_action, @current_user.time_zone, job) do %>
         <% nil -> %>
-        <% date -> %> <span class="font-semibold text-blue-primary"> On <%= date %> </span>
+        <% date -> %> <span class="font-semibold text-blue-planning-300"> On <%= date %> </span>
       <% end %>
 
       <hr class="my-3 border-top">

@@ -68,10 +68,10 @@ defmodule Picsello.Accounts.User do
           if Regex.compile!("^(?:(?:#{label})\\.)+(?:#{label})$")
              |> Regex.match?(host),
              do: [],
-             else: ["invalid host #{host}"]
+             else: ["is invalid"]
 
-        %{scheme: scheme} ->
-          ["invalid scheme #{scheme}"]
+        %{scheme: _scheme} ->
+          ["is invalid"]
       end
     end
 

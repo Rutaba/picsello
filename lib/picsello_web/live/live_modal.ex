@@ -102,7 +102,7 @@ defmodule PicselloWeb.LiveModal do
   def render(assigns) do
     ~L"""
     <div role="dialog" id="modal-wrapper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms"
-         class="flex items-center justify-center w-full h-full bg-black/20 shadow z-20 fixed transition-opacity ease-in-out
+         class="flex items-center justify-center w-full h-full bg-base-300/20 shadow z-20 fixed transition-opacity ease-in-out
                 <%= %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state] %>">
         <%= if @modal.state != :closed do %>
           <div id="modal-container" class="self-end overflow-hidden rounded-t-lg sm:rounded-b-lg sm:self-auto" phx-hook="LockBodyScroll">

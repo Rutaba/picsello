@@ -2,15 +2,11 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 const plugin = require('tailwindcss/plugin');
 const svgToDataUri = require('mini-svg-data-uri');
 
-const dynamicColors = {
-  'blue-primary': '#4DAAC6',
-  'orange-dashboard-inbox': '#F19D4A',
-  'orange-warning': '#E1662F',
-  'purple-dashboard-marketing': '#585DF6',
-};
-
 const safelist = ['border', 'text', 'bg']
-  .map((pre) => Object.keys(dynamicColors).map((c) => [pre, c].join('-')))
+  .map((pre) =>
+    ['red-sales-300', 'purple-marketing-300', 'orange-inbox-300', 'blue-planning-300']
+      .map((c) => [pre, c].join('-'))
+  )
   .flat();
 
 module.exports = {
@@ -30,20 +26,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ...dynamicColors,
-        black: '#231F20',
-        'blue-light-primary': '#F2FDFB',
-        'blue-onboarding-first': '#86C3CC',
-        'blue-onboarding-fourth': '#92B6F9',
-        'blue-secondary': '#86C3CC',
-        'gray-disabled': '#AAA',
-        green: '#429467',
-        'green-light': '#CFE7CD',
-        'green-onboarding-third': '#CFE7CD',
-        orange: '#FFBA74',
-        'orange-onboarding-second': '#F5BD7F',
-        'red-invalid': '#CB0000',
-        'red-invalid-bg': '#FFF2F2',
+        base: {
+          300: '#1F1C1E',
+          250: '#898989',
+          200: '#EFEFEF',
+          100: '#FFFFFF',
+        },
+        'blue-gallery': {
+          300: '#6696F8',
+          200: '#92B6F9',
+          100: '#E1EBFD',
+        },
+        'red-sales': { 300: '#E1662F', 200: '#EF8F83', 100: '#FDF2F2' },
+        'blue-planning': { 300: '#4DAAC6', 200: '#86C3CC', 100: '#F2FDFB' },
+        'yellow-files': { 300: '#F7CB45', 200: '#FAE46B', 100: '#FEF9E2' },
+        'purple-marketing': { 300: '#585DF6', 200: '#7F82E6', 100: '#F8F4FE' },
+        'orange-inbox': { 300: '#F19D4A', 200: '#F5BD7F', 100: '#FDF4E9' },
+        'green-finances': { 300: '#429467', 200: '#81CF67', 100: '#CFE7CD' },
       },
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],

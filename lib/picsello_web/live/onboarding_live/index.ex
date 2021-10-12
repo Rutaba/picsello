@@ -91,10 +91,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <%= hidden_inputs_for o %>
 
         <label class="flex flex-col">
-          <p class="py-2 font-extrabold">What would you like to name your business?</p>
+          <p class="py-2 font-extrabold">What’s the name of your photography business?</p>
 
           <%= input o, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: "p-4" %>
-          <%= error_tag o, :name, class: "text-red-invalid text-sm" %>
+          <%= error_tag o, :name, prefix: "Photography business name", class: "text-red-invalid text-sm" %>
         </label>
       <% end %>
 
@@ -102,7 +102,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <%= hidden_inputs_for o %>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your website address? <i class="italic font-light">(No worries if you don’t have one)</i></p>
+          <p class="py-2 font-extrabold">What is your website URL? <i class="italic font-light">(No worries if you don’t have one)</i></p>
 
           <div class="relative flex flex-col">
             <%= input o, :website,
@@ -110,7 +110,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               disabled: input_value(o, :no_website) == true,
                 placeholder: "www.mystudio.com",
                 class: "p-4 sm:pr-48" %>
-            <%= error_tag o, :website, class: "text-red-invalid text-sm" %>
+            <%= error_tag o, :website, class: "text-red-invalid text-sm", prefix: "Website URL" %>
 
             <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
               <%= checkbox o, :no_website, class: "w-5 h-5 checkbox" %>
@@ -121,14 +121,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
         </label>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your phone number?</p>
+          <p class="py-2 font-extrabold">What's your phone number?</p>
 
           <%= input o, :phone, type: :telephone_input, phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
-          <%= error_tag o, :phone, class: "text-red-invalid text-sm" %>
+          <%= error_tag o, :phone, class: "text-red-invalid text-sm", prefix: "Phone number" %>
         </label>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">Are you full-time or part-time?</p>
+          <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
 
           <%= select o, :schedule, %{"" => nil, "Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
         </label>
@@ -147,8 +147,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
                 <label>
                   <%= radio_button o, :color, color, class: "hidden" %>
                   <div class={classes(
-                    "flex cursor-pointer items-center hover:border-black justify-center w-full h-full border rounded", %{
-                    "border-black" => input_value(o, :color) == color,
+                    "flex cursor-pointer items-center hover:border-base-300 justify-center w-full h-full border rounded", %{
+                    "border-base-300" => input_value(o, :color) == color,
                     "hover:border-opacity-40" => input_value(o, :color) != color
                   })}>
                     <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
@@ -222,14 +222,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def job_type_option(assigns) do
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-light-primary hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
-        %{"border-blue-primary bg-blue-light-primary" => @checked}
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
+        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
       )}>
         <input class="hidden" type="checkbox" name={@name} value={@job_type} checked={@checked} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 bg-gray-200 rounded-full flex-shrink-0",
-          %{"bg-blue-primary text-white" => @checked}
+          %{"bg-blue-planning-300 text-white" => @checked}
         )}>
           <.icon name={@job_type} class="fill-current" width="14" height="14" />
         </div>
@@ -243,7 +243,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 2,
-      color_class: "bg-orange-onboarding-second",
+      color_class: "bg-orange-inbox-200",
       step_title: "Tell us more about yourself",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 2"
@@ -254,7 +254,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 3,
-      color_class: "bg-green-onboarding-third",
+      color_class: "bg-green-finances-100",
       step_title: "Customize your business",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 3"
@@ -265,7 +265,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 4,
-      color_class: "bg-blue-onboarding-fourth",
+      color_class: "bg-blue-gallery-200",
       step_title: "Customize your business",
       subtitle: "We need a little more info to get your account ready!",
       page_title: "Onboarding Step 4"
@@ -276,7 +276,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign(
       step: 5,
-      color_class: "bg-blue-onboarding-first",
+      color_class: "bg-blue-planning-200",
       step_title: "Optional questions",
       subtitle:
         "While these final few questions are optional, answering them will help us understand and serve each of our customers better.",

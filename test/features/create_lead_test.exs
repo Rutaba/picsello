@@ -24,8 +24,11 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(definition("Client email", text: client_email))
     |> assert_has(definition("Client phone", text: client_phone))
     |> assert_value(text_field("Lead notes"), "things to know about")
+    |> assert_has(option("Wedding", selected: true))
     |> click(button("Cancel"))
     |> click(link("Picsello"))
+    |> find(testid("leads-card"))
+    |> assert_text("1 pending lead")
   end
 
   feature "user sees validation errors when creating lead", %{session: session} do

@@ -14,7 +14,7 @@
   <%= case next_reminder_on(@proposal) do %>
     <% nil -> %>
     <% date -> %>
-      <span class="inline-block mb-2 px-2 py-0.5 text-xs font-semibold rounded bg-white text-blue-primary">
+      <span class="inline-block mb-2 px-2 py-0.5 text-xs font-semibold rounded bg-white text-blue-planning-300">
         Email scheduled for <%= strftime(@current_user.time_zone, date, "%B %d, %Y") %>
       </span>
   <% end %>

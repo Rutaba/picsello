@@ -15,7 +15,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
     ~L"""
     <div class="flex mt-2" role="status">
       <%= if @next_status do %>
-        <div class="w-1/2 p-2 mr-2 font-bold border rounded-lg text-blue-primary border-blue-primary">
+        <div class="w-1/2 p-2 mr-2 font-bold border rounded-lg text-blue-planning-300 border-blue-planning-300">
           <%= @next_status %>
         </div>
       <% end %>

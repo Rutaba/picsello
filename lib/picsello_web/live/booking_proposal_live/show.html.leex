@@ -1,5 +1,5 @@
 <%= if @proposal do %>
-  <h1 class="px-8 py-4 text-2xl font-bold text-white bg-black mt-7"><%= @organization.name %></h1>
+  <h1 class="px-8 py-4 text-2xl font-bold text-white bg-base-300 mt-7"><%= @organization.name %></h1>
 
   <div class="max-w-md px-8 pt-6 mx-auto">
     <h2 class="text-xl font-semibold"><%= Job.name @job %> Shoot</h2>
@@ -16,9 +16,9 @@
     <button title="Proposal" type="button" phx-click="open-proposal" class="mt-6 font-semibold btn-row">
       Proposal
       <%= if @proposal.accepted_at do %>
-        <span class="ml-auto mr-2 bg-green badge">DONE</span>
+        <span class="ml-auto mr-2 bg-green-finances-300 badge">DONE</span>
       <% else %>
-        <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
+        <span class="ml-auto mr-2 bg-red-sales-300 badge">TO-DO</span>
       <% end %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
@@ -26,9 +26,9 @@
     <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
       Contract
       <%= if @proposal.signed_at do %>
-        <span class="ml-auto mr-2 bg-green badge">DONE</span>
+        <span class="ml-auto mr-2 bg-green-finances-300 badge">DONE</span>
       <% else %>
-        <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
+        <span class="ml-auto mr-2 bg-red-sales-300 badge">TO-DO</span>
       <% end %>
       <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
     </button>
@@ -37,9 +37,9 @@
       <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
         Questionnaire
         <%= if @answer do %>
-          <span class="ml-auto mr-2 bg-green badge">DONE</span>
+          <span class="ml-auto mr-2 bg-green-finances-300 badge">DONE</span>
         <% else %>
-          <span class="ml-auto mr-2 bg-orange badge">TO-DO</span>
+          <span class="ml-auto mr-2 bg-red-sales-300 badge">TO-DO</span>
         <% end %>
         <%= icon_tag(@socket, "forth", class: "stroke-current h-6 w-6") %>
       </button>

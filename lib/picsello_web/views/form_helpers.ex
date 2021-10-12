@@ -11,14 +11,19 @@ defmodule PicselloWeb.FormHelpers do
   Generates tag for inlined form input errors.
   """
   def error_tag(form, field, opts \\ []) do
-    class = classes(["invalid-feedback", Keyword.get_values(opts, :class)])
+    {class, opts} = Keyword.pop_values(opts, :class)
+    {prefix, _opts} = Keyword.pop(opts, :prefix, "")
 
-    Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      content_tag(:span, translate_error(error),
+    class = classes(["invalid-feedback"] ++ class)
+
+    form.errors
+    |> Keyword.get_values(field)
+    |> Enum.map(
+      &content_tag(:span, String.trim("#{prefix} #{translate_error(&1)}"),
         class: class,
         phx_feedback_for: input_name(form, field)
       )
-    end)
+    )
   end
 
   @doc """

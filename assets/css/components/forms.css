@@ -4,67 +4,55 @@
 
 @layer components {
   .text-input {
-    @apply
-      form-input
+    @apply form-input
       placeholder-gray-400
       focus:ring-0
       focus:outline-none
-      focus:border-blue-primary
+      focus:border-blue-planning-300
       border
       border-gray-200
       rounded-lg
-      p-3
-    ;
+      p-3;
   }
   .text-input-invalid:not(.phx-no-feedback) {
-    @apply
-      border-red-invalid
-      bg-red-invalid-bg
-      focus:border-red-invalid
-    ;
+    @apply border-red-sales-300
+      bg-red-sales-100
+      focus:border-red-sales-300;
   }
   .input-label {
-    @apply
-      text-sm
+    @apply text-sm
       font-semibold
-      py-1
-    ;
+      py-1;
   }
   .input-label-invalid:not(.phx-no-feedback) {
-    @apply
-      text-red-invalid
-    ;
+    @apply text-red-sales-300;
   }
   .select {
-    @apply
-      form-select
+    @apply form-select
       focus:ring-0
       focus:outline-none
-      focus:border-blue-primary
+      focus:border-blue-planning-300
       border
       border-gray-200
       rounded-lg
-      p-3
+      p-3;
   }
   .select-prompt {
-    @apply
-      text-gray-400
+    @apply text-gray-400;
   }
   .select-invalid:not(.phx-no-feedback) {
-    @apply
-      border-red-invalid
-      bg-red-invalid-bg
-      focus:border-red-invalid
-    ;
+    @apply border-red-sales-300
+      bg-red-sales-100
+      focus:border-red-sales-300;
   }
   .invalid-feedback.phx-no-feedback {
     display: none;
   }
   .checkbox {
-    @apply form-checkbox text-blue-primary focus:ring-1 focus:ring-blue-primary rounded
+    @apply form-checkbox text-blue-planning-300 focus:ring-1 focus:ring-blue-planning-300 rounded;
   }
 
   .radio {
-    @apply form-radio text-blue-primary focus:ring-1 focus:ring-blue-primary
+    @apply form-radio text-blue-planning-300 focus:ring-1 focus:ring-blue-planning-300;
   }
 }

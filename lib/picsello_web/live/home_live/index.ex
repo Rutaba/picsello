@@ -1,14 +1,15 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Accounts.User}
-  require Ecto.Query
+  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User}
+  import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Work Hub")
     |> assign_counts()
+    |> assign_attention_items()
     |> ok()
   end
 
@@ -50,16 +51,50 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
-    [lead_count, job_count] =
-      current_user
-      |> Job.for_user()
-      |> Ecto.Query.preload([:booking_proposals, :job_status])
-      |> Repo.all()
-      |> Enum.split_with(&Job.lead?/1)
-      |> Tuple.to_list()
-      |> Enum.map(&Enum.count/1)
+    job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
 
-    socket |> assign(lead_count: lead_count, job_count: job_count)
+    lead_stats =
+      for(
+        {name, statuses_for_name} <- [
+          pending: [:not_sent, :sent],
+          active: [
+            :accepted,
+            :signed_with_questionnaire,
+            :signed_without_questionnaire,
+            :answered
+          ]
+        ],
+        %{lead?: true, status: status, count: count} <- job_count_by_status,
+        reduce: []
+      ) do
+        acc ->
+          count =
+            if Enum.member?(statuses_for_name, status) do
+              count
+            else
+              0
+            end
+
+          Keyword.update(acc, name, count, &(&1 + count))
+      end
+
+    job_count =
+      for(
+        %{lead?: false, shoot_within_week?: true, count: count, status: status}
+        when status != :completed <- job_count_by_status,
+        reduce: 0
+      ) do
+        acc -> acc + count
+      end
+
+    socket
+    |> assign(
+      lead_stats: lead_stats,
+      lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
+      leads_empty?: Enum.empty?(job_count_by_status),
+      jobs_empty?: !Enum.any?(job_count_by_status, &(!&1.lead?)),
+      job_count: job_count
+    )
   end
 
   def time_of_day_greeting(%User{time_zone: time_zone} = user) do
@@ -74,52 +109,57 @@ defmodule PicselloWeb.HomeLive.Index do
     "#{greeting}, #{User.first_name(user)}!"
   end
 
-  def attention_items(current_user) do
-    for(
-      {true, item} <- [
-        {!User.confirmed?(current_user),
-         %{
-           action: "send-confirmation-email",
-           title: "Confirm your email",
-           body: "Check your email to confirm your account before you can start anything.",
-           icon: "envelope",
-           button_label: "Resend email",
-           button_class: "btn-primary",
-           color: "orange-warning"
-         }},
-        {true,
-         %{
-           action: "",
-           title: "Create your first lead",
-           body: "Leads are the first step to getting started with Picsello.",
-           icon: "three-people",
-           button_label: "Create your first lead",
-           button_class: "btn-secondary bg-blue-light-primary",
-           color: "blue-primary"
-         }},
-        {true,
-         %{
-           action: "",
-           title: "Set up Stripe",
-           body: "We use Stripe to make payment collection as seamless as possible for you.",
-           icon: "money-bags",
-           button_label: "Setup your Stripe Account",
-           button_class: "btn-secondary bg-blue-light-primary",
-           color: "blue-primary"
-         }},
-        {true,
-         %{
-           action: "",
-           title: "Helpful resources",
-           body: "Stuck? Need advice? We have a plethora of resources ready for you.",
-           icon: "question-mark",
-           button_label: "See available resources",
-           button_class: "btn-secondary bg-blue-light-primary",
-           color: "blue-primary"
-         }}
-      ],
-      do: item
-    )
+  def assign_attention_items(
+        %{assigns: %{current_user: current_user, leads_empty?: leads_empty?}} = socket
+      ) do
+    items =
+      for(
+        {true, item} <- [
+          {!User.confirmed?(current_user),
+           %{
+             action: "send-confirmation-email",
+             title: "Confirm your email",
+             body: "Check your email to confirm your account before you can start anything.",
+             icon: "envelope",
+             button_label: "Resend email",
+             button_class: "btn-primary",
+             color: "red-sales-300"
+           }},
+          {leads_empty?,
+           %{
+             action: "create-lead",
+             title: "Create your first lead",
+             body: "Leads are the first step to getting started with Picsello.",
+             icon: "three-people",
+             button_label: "Create your first lead",
+             button_class: "btn-secondary bg-blue-planning-100",
+             color: "blue-planning-300"
+           }},
+          {true,
+           %{
+             action: "",
+             title: "Set up Stripe",
+             body: "We use Stripe to make payment collection as seamless as possible for you.",
+             icon: "money-bags",
+             button_label: "Setup your Stripe Account",
+             button_class: "btn-secondary bg-blue-planning-100",
+             color: "blue-planning-300"
+           }},
+          {true,
+           %{
+             action: "",
+             title: "Helpful resources",
+             body: "Stuck? Need advice? We have a plethora of resources ready for you.",
+             icon: "question-mark",
+             button_label: "See available resources",
+             button_class: "btn-secondary bg-blue-planning-100",
+             color: "blue-planning-300"
+           }}
+        ],
+        do: item
+      )
+
+    socket |> assign(:attention_items, items)
   end
 
   def card(assigns) do
@@ -127,7 +167,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {attrs}>
-      <div class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-sm", %{"bg-black text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+      <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
         <%= if @badge > 0, do: @badge %>
       </div>
 
@@ -144,5 +184,33 @@ defmodule PicselloWeb.HomeLive.Index do
       </div>
     </li>
     """
+  end
+
+  defp job_count_by_status(user) do
+    now = DateTime.utc_now()
+    a_week_from_now = DateTime.add(now, 7 * 24 * 60 * 60)
+
+    from(job in Job.for_user(user),
+      join: status in assoc(job, :job_status),
+      left_join:
+        shoots in subquery(
+          from(shoots in Shoot,
+            group_by: shoots.job_id,
+            select: %{
+              shoot_within_week?:
+                min(shoots.starts_at) >= ^now and min(shoots.starts_at) < ^a_week_from_now,
+              job_id: shoots.job_id
+            }
+          )
+        ),
+      on: shoots.job_id == job.id,
+      group_by: [status.current_status, status.is_lead, shoots.shoot_within_week?],
+      select: %{
+        lead?: status.is_lead,
+        status: status.current_status,
+        count: count(job.id),
+        shoot_within_week?: coalesce(shoots.shoot_within_week?, false)
+      }
+    )
   end
 end
