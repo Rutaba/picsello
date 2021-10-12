@@ -6,7 +6,11 @@ defmodule Picsello.Application do
   use Application
 
   def start(_type, _args) do
+    topologies = Application.get_env(:libcluster, :topologies) || []
+
     children = [
+      # Start libCluster
+      {Cluster.Supervisor, [topologies, [name: Picsello.ClusterSupervisor]]},
       # Start the Ecto repository
       Picsello.Repo,
       # Start the Telemetry supervisor
