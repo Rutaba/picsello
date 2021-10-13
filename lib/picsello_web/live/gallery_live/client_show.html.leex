@@ -20,11 +20,24 @@
   </div>
 </div>
 <div
-  style="background-color: lightgray; height: 70px; border-bottom: 1px solid gray;"
->Menu line</div>
+  class="align-center px-8 border-b"
+>
+  <img
+      height=50
+      width=150
+      src="https://janegoodrichphotography.com/wp-content/uploads/2019/08/janelogo3.png"
+      class="inline-block my-2 ml-8"
+  />
+  <a class="mx-6" href="">Home</a>
+  <a class="mx-6" href="">Shop</a>
+  <a class="mx-6" href="">My orders</a>
+  <a class="mx-6" href="">Help</a>
+</div>
 
 <!-- Content -->
-<div style="padding: 60px 70px; ">
+<div
+  class="px-8 pt-5 m-8"
+>
   <div
     class="font-bold text-3xl"
   >
@@ -32,8 +45,7 @@
 
   </div>
   <div
-    style="color: #898989;"
-    class="text-xl"
+    class="text-xl text-gray-400"
   >
     <%= @gallery.total_count %>
     photos
