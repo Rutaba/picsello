@@ -95,6 +95,17 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def icon_button(assigns) do
+    assigns = Map.put(assigns, :rest, Map.drop(assigns, [:color, :icon, :inner_block]))
+
+    ~H"""
+    <button type="button" class={"flex items-center px-2 py-1 border rounded-lg text-2m border-#{@color}"} {@rest}>
+      <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
+      <%= render_block(@inner_block) %>
+    </button>
+    """
+  end
+
   def ok(socket), do: {:ok, socket}
   def noreply(socket), do: {:noreply, socket}
 
