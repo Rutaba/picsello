@@ -100,6 +100,17 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
+  def handle_event(
+        "open-notes",
+        %{},
+        socket
+      ) do
+    socket
+    |> PicselloWeb.JobLive.Shared.NotesModal.open()
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("manage", %{}, %{assigns: %{job: job}} = socket),
     do:
       socket

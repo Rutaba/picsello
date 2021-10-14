@@ -27,6 +27,7 @@ import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
+import AutoHeight from './hooks/auto-height';
 
 const Modal = {
   mounted() {
@@ -105,6 +106,7 @@ const Hooks = {
   Select,
   TZCookie,
   PlacesAutocomplete,
+  AutoHeight,
 };
 
 let csrfToken = document
