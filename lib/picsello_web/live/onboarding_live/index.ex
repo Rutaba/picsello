@@ -228,8 +228,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <input class="hidden" type="checkbox" name={@name} value={@job_type} checked={@checked} />
 
         <div class={classes(
-          "flex items-center justify-center w-7 h-7 ml-1 mr-3 bg-gray-200 rounded-full flex-shrink-0",
-          %{"bg-blue-planning-300 text-white" => @checked}
+          "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
+          %{"bg-blue-planning-300 text-white" => @checked, "bg-base-200" => !@checked}
         )}>
           <.icon name={@job_type} class="fill-current" width="14" height="14" />
         </div>
