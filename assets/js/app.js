@@ -65,14 +65,25 @@ const LockBodyScroll = {
 
 const ClearInput = {
   mounted() {
-    const { inputName } = this.el.dataset;
-    const input = this.el.parentElement.querySelector(
-      `input[name*=${inputName}]`
-    );
+    const { el } = this;
+    const {
+      dataset: { inputName },
+    } = el;
+
+    const input = this.el
+      .closest('form')
+      .querySelector(`*[name*='${inputName}']`);
+
+    let inputWasFocussed = false;
+
+    input.addEventListener('blur', (e) => {
+      inputWasFocussed = e.relatedTarget == el;
+    });
 
     this.el.addEventListener('click', () => {
       input.value = null;
       input.dispatchEvent(new Event('input', { bubbles: true }));
+      if (inputWasFocussed) input.focus();
     });
   },
 };
