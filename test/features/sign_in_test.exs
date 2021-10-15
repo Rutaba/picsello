@@ -19,7 +19,7 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
     |> wait_for_enabled_submit_button()
     |> click(button("Log In"))
-    |> assert_has(css("p.text-red-invalid", text: "Invalid email or password"))
+    |> assert_has(css("p.text-red-sales-300", text: "Invalid email or password"))
   end
 
   feature "new user logs in", %{session: session} do

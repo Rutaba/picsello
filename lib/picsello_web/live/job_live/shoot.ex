@@ -94,12 +94,9 @@ defmodule PicselloWeb.JobLive.Shoot do
         </div>
       </div>
 
-      <button title="edit shoot" phx-click="edit-shoot-details" class="flex items-center px-2 py-1 text-xs border btn-secondary border-blue-planning-300">
-        <span class="text-blue-planning-300">
-          <.icon name="pencil" class="inline-block w-3 h-3 mb-0.5 mr-1 fill-current" />
-        </span>
+      <.icon_button title="edit shoot" phx-click="edit-shoot-details" color="blue-planning-300" icon="pencil">
         Edit
-      </button>
+      </.icon_button>
     </div>
     """
   end

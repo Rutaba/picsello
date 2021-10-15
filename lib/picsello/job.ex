@@ -53,6 +53,10 @@ defmodule Picsello.Job do
     |> assoc_constraint(:package)
   end
 
+  def notes_changeset(job \\ %__MODULE__{}, attrs) do
+    job |> cast(attrs, [:notes])
+  end
+
   def name(%__MODULE__{type: type} = job) do
     %{client: %{name: client_name}} = job |> Repo.preload(:client)
     [client_name, Phoenix.Naming.humanize(type)] |> Enum.join(" ")
