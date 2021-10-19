@@ -1,8 +1,46 @@
 defmodule Picsello.CreateLeadPackageTest do
   use Picsello.FeatureCase, async: true
+  alias Picsello.{Repo, Package}
 
   setup :onboarded
   setup :authenticated
+
+  feature "user without package templates creates a package", %{session: session, user: user} do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Add a package"))
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> take_screenshot()
+    |> fill_in(text_field("Description"), with: "My greatest wedding package")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> fill_in(text_field("package[base_price]"), with: "$100")
+    |> fill_in(text_field("package[gallery_credit]"), with: "$10")
+    |> fill_in(text_field("package[download_count]"), with: "2")
+    |> fill_in(text_field("package[download_each_price]"), with: "$2")
+    |> assert_has(definition("Total Price", text: "$114.00"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+
+    base_price = Money.new(10_000)
+    gallery_credit = Money.new(1000)
+    download_each_price = Money.new(200)
+
+    assert %Package{
+             name: "Wedding Deluxe",
+             shoot_count: 2,
+             description: "My greatest wedding package",
+             base_price: ^base_price,
+             gallery_credit: ^gallery_credit,
+             download_count: 2,
+             download_each_price: ^download_each_price
+           } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
+  end
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
@@ -10,75 +48,23 @@ defmodule Picsello.CreateLeadPackageTest do
     session
     |> visit("/leads/#{lead.id}")
     |> click(button("Add a package"))
-    |> fill_in(text_field("Package name"), with: " ")
-    |> fill_in(text_field("Package description"), with: " ")
-    |> fill_in(text_field("Package price"), with: "-1")
-    |> assert_has(css("label", text: "Package name can't be blank"))
-    |> assert_has(css("label", text: "Package description can't be blank"))
-    |> assert_has(css("label", text: "Package price must be greater than or equal to 0"))
     |> assert_has(css("button:disabled[type='submit']"))
-    |> assert_has(
-      css("select[name='package[package_template_id]'] option:checked", text: "+ New Package")
-    )
-    |> find(select("Number of shoots for this package"), &click(&1, option("2")))
-    |> fill_in(text_field("Package name"), with: "Wedding Deluxe")
-    |> fill_in(text_field("Package description"), with: "My greatest wedding package")
-    |> fill_in(text_field("Package price"), with: "1234.50")
+    |> fill_in(text_field("Title"), with: " ")
+    |> fill_in(text_field("Description"), with: " ")
+    |> assert_has(css("label", text: "Title can't be blank"))
+    |> assert_has(css("label", text: "Description can't be blank"))
+    |> assert_has(css("button:disabled[type='submit']"))
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> fill_in(text_field("Description"), with: "My greatest wedding package")
     |> wait_for_enabled_submit_button()
-    |> click(button("Save"))
-    |> assert_has(button("Add shoot details", count: 2))
-    |> click(button("Edit package"))
-    |> assert_has(option("Wedding Deluxe"))
-    |> assert_value(text_field("Package description"), "My greatest wedding package")
-    |> assert_value(text_field("Package name"), "Wedding Deluxe")
-    |> assert_value(text_field("Package price"), "$1,234.50")
-    |> click(button("Cancel"))
-    |> assert_has(button("Add shoot details", count: 2))
-    |> assert_has(link("Finish shoot details", count: 1))
-  end
-
-  feature "user selects previous package as template to lead creation", %{
-    session: session,
-    user: user
-  } do
-    insert(:package, %{
-      price: 100,
-      name: "My Package Template",
-      description: "My custom description",
-      shoot_count: 2,
-      user: user
-    })
-
-    lead =
-      insert(:lead, %{
-        client: %{
-          email: "taylor@example.com",
-          name: "Elizabeth Taylor"
-        },
-        type: "wedding",
-        user: user
-      })
-
-    session
-    |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
-    |> assert_has(
-      css("select[name='package[package_template_id]'] option:checked",
-        text: "Select below"
-      )
-    )
-    |> click(option("My Package Template"))
-    |> assert_value(text_field("Package description"), "My custom description")
-    |> assert_value(text_field("Package name"), "My Package Template")
-    |> assert_value(text_field("Package price"), "$1.00")
-    |> assert_value(select("Number of shoots for this package"), "2")
-    |> fill_in(text_field("Package name"), with: "My job package")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Save"))
-    |> click(button("Edit package"))
-    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_value(text_field("Package description"), "My custom description")
-    |> assert_value(text_field("Package name"), "My job package")
-    |> assert_value(text_field("Package price"), "$1.00")
+    |> click(button("Next"))
+    |> assert_has(css("button:disabled[type='submit']"))
+    |> fill_in(text_field("package[base_price]"), with: " ")
+    |> fill_in(text_field("package[gallery_credit]"), with: " ")
+    |> fill_in(text_field("package[download_count]"), with: " ")
+    |> fill_in(text_field("package[download_each_price]"), with: " ")
+    |> assert_has(definition("Total Price", text: "$0.00"))
+    |> assert_has(css("button:disabled[type='submit']"))
   end
 end

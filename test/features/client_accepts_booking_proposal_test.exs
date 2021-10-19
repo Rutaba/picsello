@@ -25,7 +25,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          price: 100
+          base_price: 100
         },
         client: %{name: "John"},
         shoots: [%{}]

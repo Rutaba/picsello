@@ -9,7 +9,10 @@ defmodule Picsello.Package do
   schema "packages" do
     field :description, :string
     field :name, :string
-    field :price, Money.Ecto.Amount.Type
+    field :base_price, Money.Ecto.Amount.Type
+    field :gallery_credit, Money.Ecto.Amount.Type
+    field :download_each_price, Money.Ecto.Amount.Type
+    field :download_count, :integer
     field :shoot_count, :integer
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
@@ -18,12 +21,38 @@ defmodule Picsello.Package do
   end
 
   @doc false
-  def create_changeset(package \\ %__MODULE__{}, attrs) do
+  def create_changeset(package \\ %__MODULE__{}, attrs, opts) do
+    case Keyword.get(opts, :step, :pricing) do
+      :details -> package |> create_details(attrs)
+      :pricing -> package |> create_details(attrs) |> update_pricing(attrs)
+    end
+  end
+
+  defp create_details(package, attrs) do
     package
-    |> cast(attrs, [:price, :name, :description, :shoot_count, :organization_id])
-    |> validate_required([:price, :name, :description, :shoot_count, :organization_id])
-    |> validate_money(:price)
-    |> validate_number(:shoot_count, less_than: 6)
+    |> cast(attrs, [
+      :description,
+      :name,
+      :organization_id,
+      :shoot_count
+    ])
+    |> validate_required([:name, :description, :shoot_count, :organization_id])
+    |> validate_number(:shoot_count, less_than_or_equal_to: 10)
+  end
+
+  defp update_pricing(package, attrs) do
+    package
+    |> cast(attrs, [
+      :base_price,
+      :download_count,
+      :download_each_price,
+      :gallery_credit
+    ])
+    |> validate_required([:base_price, :download_count, :download_each_price])
+    |> validate_money(:base_price)
+    |> validate_number(:download_count, greater_than_or_equal_to: 0)
+    |> validate_money(:download_each_price)
+    |> validate_money(:gallery_credit)
   end
 
   def update_changeset(package, %{"package_template_id" => "new"} = attrs) do
@@ -33,7 +62,7 @@ defmodule Picsello.Package do
       |> Map.put(
         "package_template",
         package
-        |> create_changeset(attrs)
+        |> create_changeset(attrs, [])
         |> apply_changes()
         |> Map.from_struct()
       )
@@ -49,15 +78,14 @@ defmodule Picsello.Package do
     changeset =
       package
       |> cast(attrs, [
-        :price,
+        :base_price,
         :name,
         :description,
         :shoot_count,
         :package_template_id
       ])
-      |> cast_assoc(:package_template, with: &create_changeset/2)
-      |> validate_required([:price, :name, :description, :shoot_count])
-      |> validate_money(:price)
+      |> validate_required([:base_price, :name, :description, :shoot_count])
+      |> validate_money(:base_price)
 
     if validate_shoot_count do
       changeset
@@ -66,6 +94,25 @@ defmodule Picsello.Package do
     else
       changeset
     end
+  end
+
+  def downloads_price(%__MODULE__{download_each_price: price, download_count: count})
+      when nil in [price, count],
+      do: Money.new(0)
+
+  def downloads_price(%__MODULE__{download_each_price: each_price, download_count: count}),
+    do: Money.multiply(each_price, count)
+
+  def gallery_credit(%__MODULE__{gallery_credit: nil}), do: Money.new(0)
+  def gallery_credit(%__MODULE__{gallery_credit: credit}), do: credit
+
+  def price(%__MODULE__{base_price: nil} = package),
+    do: price(%{package | base_price: Money.new(0)})
+
+  def price(%__MODULE__{base_price: base} = package) do
+    downloads = downloads_price(package)
+    gallery = gallery_credit(package)
+    Enum.reduce([base, gallery, downloads], Money.new(0), &Money.add/2)
   end
 
   defp validate_money(changeset, field) do

@@ -19,7 +19,6 @@ defmodule Picsello.PackageTest do
         |> Package.update_changeset(%{"name" => "new template", "package_template_id" => "new"})
         |> Repo.update!()
 
-      assert "new template" = package.package_template.name
       assert "new template" = package.name
     end
   end

@@ -5,17 +5,7 @@ defmodule Picsello.ArchiveLeadTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
-    lead =
-      insert(:lead, %{
-        user: user,
-        package: %{
-          name: "My Package",
-          description: "My custom description",
-          shoot_count: 2,
-          price: 100
-        },
-        shoots: [%{}, %{}]
-      })
+    lead = insert(:lead, user: user)
 
     [lead: lead, session: session]
   end

@@ -69,7 +69,9 @@ defmodule Picsello.Factory do
 
   def package_factory(attrs) do
     %Package{
-      price: 10,
+      base_price: 10,
+      download_count: 0,
+      download_each_price: 0,
       name: "Package name",
       description: "Package description",
       shoot_count: 2,

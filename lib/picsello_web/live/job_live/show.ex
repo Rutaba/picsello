@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, Package}
 
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2, assign_proposal: 1, status_badge: 1]
 

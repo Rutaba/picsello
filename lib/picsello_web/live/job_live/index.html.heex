@@ -55,7 +55,7 @@
             —
             <span class="font-light"><%= dyn_gettext job.type %></span>
           </div>
-          <span class="font-semibold"><%= job.package.price |> Money.to_string(fractional_unit: false) %></span>
+          <span class="font-semibold"><%= job.package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
         <% else %>
           <span class="font-light"><%= dyn_gettext job.type %></span>
         <% end %>

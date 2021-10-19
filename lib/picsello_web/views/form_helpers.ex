@@ -1,5 +1,6 @@
 defmodule PicselloWeb.FormHelpers do
   alias PicselloWeb.Router.Helpers, as: Routes
+  use Phoenix.Component
 
   @moduledoc """
   Conveniences for translating and building error messages.
@@ -88,6 +89,16 @@ defmodule PicselloWeb.FormHelpers do
     label form, field, label_opts do
       [label_text, " ", error_tag(form, field)]
     end
+  end
+
+  def input_label(assigns) do
+    %{form: form, field: field, class: class} = assigns |> Enum.into(%{class: ""})
+
+    class = classes([class], %{"input-label-invalid" => form.errors[field]})
+
+    ~H"""
+    <label class={class} phx-feedback-for={input_name(form,field)} for={input_id(form, field)}><%= render_block @inner_block %></label>
+    """
   end
 
   def labeled_input(form, field, opts \\ []) do
