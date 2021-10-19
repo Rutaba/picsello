@@ -101,6 +101,14 @@ defmodule PicselloWeb.Router do
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :shoots, as: :shoot
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
+
+      # Photographers CRUD for gallery
+      live "/galleries", GalleryLive.Index, :index
+      live "/galleries/new", GalleryLive.Index, :new
+      live "/galleries/:id/edit", GalleryLive.Index, :edit
+
+      live "/galleries/:id", GalleryLive.Show, :show
+      live "/galleries/:id/show/edit", GalleryLive.Show, :edit
     end
   end
 
@@ -113,5 +121,13 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
+  end
+
+  scope "/gallery", PicselloWeb do
+    pipe_through [:browser]
+
+    get "/fill/:hash", GalleryFillController, :new
+    live "/:hash", GalleryLive.ClientShow, :show
+    post "/:hash/downloads", GalleryDownloadsController, :download
   end
 end

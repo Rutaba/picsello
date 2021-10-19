@@ -88,3 +88,28 @@ html {
   @apply px-2 py-1 font-bold text-white rounded;
   font-size: 0.5rem;
 }
+
+.masonry {
+  margin: 0 auto;
+
+  .item {
+    width: 309px;
+    margin-bottom: 20px;
+
+    img {
+      border-radius: 8px;
+    }
+  }
+
+  .item .btn {
+    position: relative;
+    left: 85%;
+    transform: translate(-30%, -100%);
+    color: black;
+    padding: 12px 24px;
+    
+    svg {
+      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    }
+  }
+}
