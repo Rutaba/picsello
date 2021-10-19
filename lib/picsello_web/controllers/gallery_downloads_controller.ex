@@ -2,21 +2,21 @@ defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
   import Plug.Conn
   alias Picsello.Galleries
-  
-  def download(conn, %{"hash" => hash, "type" => type} = params) do
+
+  def download(conn, %{"hash" => hash, "type" => type} = _params) do
     try do
       gallery = Galleries.get_gallery_by_hash(hash)
       photos = Galleries.load_gallery_photos(gallery, type)
-      
+
       photos
       |> group()
       |> Packmatic.build_stream(on_error: :skip)
       |> Packmatic.Conn.send_chunked(conn, "#{gallery.name}.zip")
-    rescue 
+    rescue
       e -> conn |> send_resp(500, "#{e}")
     end
   end
- 
+
   def group(entries) do
     entries
     |> Enum.map(fn entry -> [source: {:url, entry.client_copy_url}, path: entry.name] end)

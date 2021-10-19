@@ -1,4 +1,5 @@
 defmodule PicselloWeb.ModalComponent do
+  @moduledoc false
   use PicselloWeb, :live_component
 
   @impl true

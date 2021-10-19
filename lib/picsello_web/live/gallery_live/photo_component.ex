@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
-    {:ok, photo} = 
+    {:ok, photo} =
       Galleries.get_photo(id)
       |> Galleries.mark_photo_as_liked()
 
