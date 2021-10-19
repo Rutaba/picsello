@@ -1,25 +1,31 @@
 defmodule PicselloWeb.PackageLive.NewComponent do
   @moduledoc false
 
+  @steps [:details, :pricing]
+
   use PicselloWeb, :live_component
   alias Picsello.{Package, Repo, Job}
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign(steps: @steps)
     |> assign_new(:step, fn -> :details end)
+    |> assign_new(:package, fn -> %Package{} end)
     |> assign_step()
     |> ok()
   end
 
   @impl true
   def render(assigns) do
-    assigns = Enum.into(assigns, %{steps: [:details, :pricing]})
-
     ~H"""
     <div class="py-8 bare-modal">
       <div class="flex px-9">
-        <span class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">Step <%= Enum.find_index(@steps, &(&1 == @step)) + 1 %></span>
+        <a {if step_number(@step) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself}, else: %{}} class="flex">
+          <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
+            Step <%= step_number(@step) %>
+          </span>
+
           <ul class="flex items-center inline-block">
             <%= for step <- @steps do %>
               <li class={classes(
@@ -29,6 +35,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
               </li>
             <% end %>
           </ul>
+        </a>
 
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="ml-auto">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2" />
@@ -84,27 +91,24 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step(%{name: :pricing} = assigns) do
     ~H"""
-      <%= hidden_input @f, :name %>
-      <%= hidden_input @f, :shoot_count %>
-      <%= hidden_input @f, :description %>
       <div class="items-center mt-6 justify-items-end grid grid-cols-1 sm:grid-cols-[max-content,3fr,1fr] gap-6">
         <label class="font-bold justify-self-start sm:justify-self-end" for={input_id(@f, :base_price)}>Base Price</label>
         <div class="w-full sm:w-auto sm:col-span-2"><%= input @f, :base_price, placeholder: "$0.00", class: "w-full px-4 font-bold sm:w-28 sm:text-right text-center", phx_hook: "PriceMask" %></div>
         <hr class="w-full sm:col-span-3"/>
 
-        <div class="font-bold justify-self-start sm:justify-self-end">Add</div>
+        <label for={input_id(@f, :gallery_credit)} class="font-bold justify-self-start sm:justify-self-end">Add</label>
         <div class="flex items-center justify-self-start">
-          <%= input @f, :gallery_credit, class: "w-20 inline mr-6 text-center", placeholder: "$0.00", phx_hook: "PriceMask" %> optional Gallery store credit
+          <%= input @f, :gallery_credit, class: "w-20 px-2 inline mr-6 text-center", placeholder: "$0.00", phx_hook: "PriceMask" %> optional Gallery store credit
         </div>
         <div class="pr-4">+<%= gallery_credit(@f) %></div>
         <hr class="w-full sm:hidden"/>
 
-        <div class="font-bold justify-self-start sm:justify-self-end">Download</div>
+        <label for={input_id(@f, :download_count)} class="font-bold justify-self-start sm:justify-self-end">Download</label>
         <div class="flex items-center justify-self-start">
           <%= input @f, :download_count, type: :number_input, min: 0, placeholder: "0", class: "w-20 text-center inline mr-6" %>
           photos at
-          <%= input @f, :download_each_price, class: "w-20 inline mx-6 text-center", placeholder: "$0.00", phx_hook: "PriceMask" %>
-          each
+          <%= input @f, :download_each_price, class: "w-20 px-2 inline mx-6 text-center", placeholder: "$0.00", phx_hook: "PriceMask" %>
+          <label for={input_id(@f, :download_each_price)}>each</label>
         </div>
         <div class="pr-4">+<%=downloads_total(@f) %></div>
 
@@ -126,13 +130,27 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   end
 
   @impl true
+  def handle_event("back", %{}, %{assigns: %{step: :pricing}} = socket) do
+    socket |> assign(step: :details) |> assign_step() |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"package" => params}, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
   def handle_event("submit", %{"package" => params}, %{assigns: %{step: :details}} = socket) do
-    socket |> assign(step: :pricing) |> assign_step() |> assign_changeset(params) |> noreply()
+    case socket |> assign_changeset(params, :validate) do
+      %{assigns: %{changeset: %{valid?: true} = changeset}} ->
+        socket
+        |> assign(step: :pricing)
+        |> assign_step()
+
+      socket ->
+        socket
+    end
+    |> noreply()
   end
 
   @impl true
@@ -167,18 +185,18 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   end
 
   defp build_changeset(
-         %{assigns: %{current_user: current_user, step: step}},
+         %{assigns: %{current_user: current_user, step: step, package: package}},
          params
        ) do
-    params
-    |> Map.put("organization_id", current_user.organization_id)
-    |> Package.create_changeset(step: step)
+    params = Map.put(params, "organization_id", current_user.organization_id)
+
+    package |> Package.create_changeset(params, step: step)
   end
 
   defp assign_changeset(socket, params \\ %{}, action \\ nil) do
     changeset = build_changeset(socket, params) |> Map.put(:action, action)
 
-    assign(socket, changeset: changeset)
+    assign(socket, changeset: changeset, package: Ecto.Changeset.apply_changes(changeset))
   end
 
   defp current_package(form) do
@@ -191,4 +209,6 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   defp downloads_total(form), do: form |> current_package() |> Package.downloads_price()
 
   defp total_price(form), do: form |> current_package() |> Package.price()
+
+  defp step_number(name), do: Enum.find_index(@steps, &(&1 == name)) + 1
 end
