@@ -38,7 +38,7 @@
 
       <div class="flex items-center justify-between text-xl font-semibold">
         <%= job |> Job.name() %>
-        <.icon name="forth" class="w-4 h-4 text-base-300 stroke-current" />
+        <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
       </div>
 
       <%= case card_date(@live_action, @current_user.time_zone, job) do %>
