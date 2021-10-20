@@ -130,4 +130,30 @@ defmodule PicselloWeb.Live.User.Settings do
     |> assign(sign_out: true)
     |> noreply()
   end
+
+  def settings_nav(assigns) do
+    ~H"""
+    <div class="bg-blue-planning-100"><h1 class="px-6 py-8 text-3xl font-bold center-container">Your Settings</h1></div>
+
+    <div class="px-6 center-container flex flex-col flex-1">
+      <ul class="flex my-4 font-bold text-blue-planning-300">
+        <li>
+          <.nav_link title="Profile" to={Routes.user_settings_path(@socket, :edit)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+            Profile
+          </.nav_link>
+        </li>
+
+        <li>
+          <.nav_link title="Package Templates" to={Routes.package_templates_path(@socket, :index)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+            Package Templates
+          </.nav_link>
+        </li>
+      </ul>
+
+      <hr />
+
+      <%= render_block @inner_block %>
+    </div>
+    """
+  end
 end
