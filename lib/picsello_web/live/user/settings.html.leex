@@ -3,7 +3,7 @@
   <%= if @email_changeset do %>
     <h3 class="mt-4 text-lg font-bold">Change email</h3>
 
-    <%= f = form_for @email_changeset, "#", phx_change: :validate, phx_submit: :save %>
+    <%= f = form_for @email_changeset, "#", phx_change: :validate, phx_submit: :save, id: "email_form" %>
       <%= hidden_input f, :action, name: "action", value: "update_email" %>
 
       <%= labeled_input f, :email, type: :email_input %>
