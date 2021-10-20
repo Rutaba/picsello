@@ -86,6 +86,11 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def package_template_factory(attrs) do
+    build(:package, attrs)
+    |> merge_attributes(attrs |> Map.drop([:user]) |> Enum.into(%{job_type: "wedding"}))
+  end
+
   def client_factory(attrs) do
     %Client{
       email: sequence(:email, &"client-#{&1}@example.com"),

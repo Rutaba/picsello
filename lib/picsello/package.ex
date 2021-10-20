@@ -2,7 +2,7 @@ defmodule Picsello.Package do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Repo, Shoot}
+  alias Picsello.{Repo, Shoot, Accounts.User}
   require Ecto.Query
   import Ecto.Query
 
@@ -14,6 +14,7 @@ defmodule Picsello.Package do
     field :download_each_price, Money.Ecto.Amount.Type
     field :download_count, :integer
     field :shoot_count, :integer
+    field :job_type, :string
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
 
@@ -53,23 +54,6 @@ defmodule Picsello.Package do
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
     |> validate_money(:gallery_credit)
-  end
-
-  def update_changeset(package, %{"package_template_id" => "new"} = attrs) do
-    attrs =
-      attrs
-      |> Map.drop(["package_template_id"])
-      |> Map.put(
-        "package_template",
-        package
-        |> create_changeset(attrs, [])
-        |> apply_changes()
-        |> Map.from_struct()
-      )
-
-    package
-    |> Repo.preload(:package_template)
-    |> update_changeset(attrs)
   end
 
   def update_changeset(package, attrs, opts \\ []) do
@@ -113,6 +97,13 @@ defmodule Picsello.Package do
     downloads = downloads_price(package)
     gallery = gallery_credit(package)
     Enum.reduce([base, gallery, downloads], Money.new(0), &Money.add/2)
+  end
+
+  def templates_for_user(%User{organization_id: organization_id}) do
+    from(package in __MODULE__,
+      where: not is_nil(package.job_type) and package.organization_id == ^organization_id,
+      order_by: [desc: package.inserted_at]
+    )
   end
 
   defp validate_money(changeset, field) do

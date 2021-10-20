@@ -132,10 +132,12 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   def settings_nav(assigns) do
+    assigns = assigns |> Enum.into(%{container_class: ""})
+
     ~H"""
     <div class="bg-blue-planning-100"><h1 class="px-6 py-8 text-3xl font-bold center-container">Your Settings</h1></div>
 
-    <div class="px-6 center-container flex flex-col flex-1">
+    <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"}>
       <ul class="flex my-4 font-bold text-blue-planning-300">
         <li>
           <.nav_link title="Profile" to={Routes.user_settings_path(@socket, :edit)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
