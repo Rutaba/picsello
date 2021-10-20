@@ -16,7 +16,7 @@ defmodule Picsello.CreateLeadTest do
     |> fill_in(text_field("Client phone"), with: client_phone)
     |> fill_in(text_field("Lead notes"), with: "things to know about")
     |> click(option("Wedding"))
-    |> wait_for_enabled_submit_button()
+    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
     |> click(button("Edit Lead"))

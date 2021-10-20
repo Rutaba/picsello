@@ -102,7 +102,25 @@
         </div>
       </label>
 
-      <%= live_render @socket, PicselloWeb.StripeOnboardingLive, id: :stripe_onboarding, session: %{"return_url" => @socket |> Routes.job_url(@live_action, @job.id)} %>
+      <label class="flex mt-4">
+        <input type="checkbox" class="w-6 h-6 mt-1 checkbox" checked disabled />
+        <div class="pl-3 text-xs">
+          <h3 class="input-label">Standard Payment</h3>
+          <%= case @stripe_status do %>
+            <% :charges_enabled -> %>
+              50% deposit and 50% on day of shoot.
+            <% :loading -> %>
+            <% _ -> %>
+              You must create a Stripe account to send proposals and receive payments. After your Stripe account has been created you will return to this page.
+          <% end %>
+        </div>
+      </label>
+
+      <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+          current_user: @current_user,
+          class: "w-full mt-8 btn-primary",
+          return_url: Routes.job_url(@socket, @live_action, @job.id),
+          stripe_status: @stripe_status %>
 
       <label class="block mt-8 input-label" for="contract_type">Contract type</label>
       <select id="contract_type" class="w-full select"><option>Standard Contract</option></select>

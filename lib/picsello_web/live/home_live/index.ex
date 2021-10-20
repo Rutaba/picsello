@@ -7,6 +7,7 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign_stripe_status()
     |> assign(:page_title, "Work Hub")
     |> assign_counts()
     |> assign_attention_items()
@@ -110,7 +111,13 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   def assign_attention_items(
-        %{assigns: %{current_user: current_user, leads_empty?: leads_empty?}} = socket
+        %{
+          assigns: %{
+            stripe_status: stripe_status,
+            current_user: current_user,
+            leads_empty?: leads_empty?
+          }
+        } = socket
       ) do
     items =
       for(
@@ -135,9 +142,9 @@ defmodule PicselloWeb.HomeLive.Index do
              button_class: "btn-secondary bg-blue-planning-100",
              color: "blue-planning-300"
            }},
-          {true,
+          {stripe_status != :charges_enabled,
            %{
-             action: "",
+             action: "set-up-stripe",
              title: "Set up Stripe",
              body: "We use Stripe to make payment collection as seamless as possible for you.",
              icon: "money-bags",
@@ -213,4 +220,14 @@ defmodule PicselloWeb.HomeLive.Index do
       }
     )
   end
+
+  def handle_info({:stripe_status, status}, socket) do
+    socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
+  end
+
+  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+    socket |> assign(stripe_status: payments().status(current_user))
+  end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end

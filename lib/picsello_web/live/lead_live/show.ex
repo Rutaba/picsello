@@ -7,7 +7,8 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
     socket
-    |> assign(stripe_status: :loading, include_questionnaire: true)
+    |> assign_stripe_status()
+    |> assign(include_questionnaire: true)
     |> assign_job(job_id)
     |> assign_proposal()
     |> ok()
@@ -96,10 +97,6 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info({:stripe_status, status}, socket),
-    do: socket |> assign(:stripe_status, status) |> noreply()
-
-  @impl true
   def handle_info(
         {:proposal_message_composed, message_changeset},
         %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
@@ -158,8 +155,19 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_info({:stripe_status, status}, socket) do
+    socket |> assign(stripe_status: status) |> noreply()
+  end
+
+  @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 
   def next_reminder_on(nil), do: nil
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
+
+  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+    socket |> assign(stripe_status: payments().status(current_user))
+  end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end

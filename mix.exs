@@ -42,6 +42,7 @@ defmodule Picsello.MixProject do
         {:ecto_sql, "~> 3.7"},
         {:gettext, "~> 0.18"},
         {:jason, "~> 1.2.2"},
+        {:libcluster, "~> 3.3"},
         {:money, "~> 1.9"},
         {:paginator, "~> 1.0.4"},
         {:phoenix, "~> 1.5.12"},

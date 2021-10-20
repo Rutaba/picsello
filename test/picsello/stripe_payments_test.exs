@@ -22,7 +22,7 @@ defmodule Picsello.StripePaymentsTest do
   describe "status" do
     test ":no_account when organization has no stripe account" do
       organization = insert(:organization)
-      assert {:ok, :no_account} == Picsello.StripePayments.status(organization)
+      assert :no_account == Picsello.StripePayments.status(organization)
     end
 
     test ":missing_information when there is a disabled reason other than 'pending verification'" do
