@@ -116,4 +116,47 @@ defmodule PicselloWeb.LiveHelpers do
       %{}
     end
   end
+
+  def classes(constants), do: classes(constants, %{})
+
+  def classes(nil, optionals), do: classes([], optionals)
+
+  def classes("" <> constant, optionals) do
+    classes([constant], optionals)
+  end
+
+  def classes(constants, optionals) do
+    [
+      constants,
+      optionals
+      |> Enum.filter(&elem(&1, 1))
+      |> Enum.map(&elem(&1, 0))
+    ]
+    |> Enum.concat()
+    |> Enum.join(" ")
+  end
+
+  def path_active?(
+        %{
+          view: socket_view,
+          router: router,
+          host_uri: %{host: host}
+        },
+        socket_live_action,
+        path
+      ),
+      do:
+        match?(
+          %{phoenix_live_view: {view, live_action, _, _}}
+          when view == socket_view and live_action == socket_live_action,
+          Phoenix.Router.route_info(router, "GET", path, host)
+        )
+
+  def nav_link(assigns) do
+    ~H"""
+      <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => path_active?(@socket, @live_action, @to)}) do %>
+        <%= render_block(@inner_block) %>
+      <% end %>
+    """
+  end
 end

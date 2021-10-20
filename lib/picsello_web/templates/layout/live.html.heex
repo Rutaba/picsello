@@ -11,11 +11,10 @@
 
           <nav class="flex flex-col bg-white rounded-lg shadow-md">
             <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket), @current_user do %>
-              <%= live_redirect to: path, title: title, class: classes("pl-6 flex items-center py-4 pr-28 hover:bg-blue-planning-100 hover:font-bold",%{"bg-blue-planning-100 font-bold" => path_active?(@socket, @live_action, path) }) do %>
+              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="pl-6 flex items-center py-4 pr-28 hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
                 <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-
                 <%= title %>
-              <% end %>
+              </.nav_link>
             <% end %>
           </nav>
         </div>

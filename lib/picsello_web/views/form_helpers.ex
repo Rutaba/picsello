@@ -1,6 +1,7 @@
 defmodule PicselloWeb.FormHelpers do
   alias PicselloWeb.Router.Helpers, as: Routes
   use Phoenix.Component
+  import PicselloWeb.LiveHelpers, only: [classes: 1, classes: 2]
 
   @moduledoc """
   Conveniences for translating and building error messages.
@@ -188,24 +189,5 @@ defmodule PicselloWeb.FormHelpers do
     content_tag(:svg, opts) do
       tag(:use, "xlink:href": Routes.static_path(conn, "/images/icons.svg#" <> name))
     end
-  end
-
-  def classes(constants), do: classes(constants, %{})
-
-  def classes(nil, optionals), do: classes([], optionals)
-
-  def classes("" <> constant, optionals) do
-    classes([constant], optionals)
-  end
-
-  def classes(constants, optionals) do
-    [
-      constants,
-      optionals
-      |> Enum.filter(&elem(&1, 1))
-      |> Enum.map(&elem(&1, 0))
-    ]
-    |> Enum.concat()
-    |> Enum.join(" ")
   end
 end
