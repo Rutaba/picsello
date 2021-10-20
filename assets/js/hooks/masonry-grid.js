@@ -77,7 +77,7 @@ export default {
    */
   hasMorePhotoToLoad() {
     let totalImagesNumber;
-    const {isFavoritesShown, favoritesCount, total } = this.el.dataset;
+    const { isFavoritesShown, favoritesCount, total } = this.el.dataset;
     const amount = this.get_grid().getItemElements().length;
 
     if(isFavoritesShown === 'true'){
