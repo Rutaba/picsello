@@ -142,7 +142,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   @impl true
   def handle_event("submit", %{"package" => params}, %{assigns: %{step: :details}} = socket) do
     case socket |> assign_changeset(params, :validate) do
-      %{assigns: %{changeset: %{valid?: true} = changeset}} ->
+      %{assigns: %{changeset: %{valid?: true}}} ->
         socket
         |> assign(step: :pricing)
         |> assign_step()
