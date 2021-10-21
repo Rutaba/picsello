@@ -1,0 +1,8 @@
+.clientGallery__coverImg{
+    background-size: cover;
+    background-position: center;
+    background-color: darkgray;
+    height: 566px;
+    text-shadow: 0 0 10px #222;
+}
+
