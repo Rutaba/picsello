@@ -56,7 +56,8 @@ defmodule Picsello.MixProject do
         {:telemetry_poller, "~> 0.5.1"},
         {:tz, "~> 0.20"},
         {:ueberauth_google, "~> 0.10"},
-        {:packmatic, "~> 1.1.2"}
+        {:packmatic, "~> 1.1.2"},
+        {:gcs_sign, "~> 1.0"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
