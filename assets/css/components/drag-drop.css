@@ -1,0 +1,82 @@
+.dragDrop__wrapper {
+    width: 958px;
+    height: 226px;
+    border: 2px dashed #4DAAC6;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    margin: 0 auto;
+}
+
+#dragDrop-form, .dragDrop {
+    width: 100%;
+    height: 100%;
+    transition: 0.3s all ease;
+}
+
+.dragDrop.active {
+    background-color: #F2FDFB;
+}
+
+.dragDrop__content input[type='file'] {
+    display: none;
+    visibility: hidden;
+}
+
+.dragDrop__content p {
+    color: #898989;
+    text-align: center;
+}
+
+.dragDrop__content label {
+    color: #4DAAC6;
+    cursor: pointer;
+}
+
+.uploadingList__wrapper {
+    width: 951px;
+    max-height: 273px;
+    overflow: scroll;
+    margin: 0 auto;
+}
+
+.uploadingList__wrapper progress {
+    width:150px;
+    height: 8px;
+    background: #F2FDFB;
+    border-radius: 20px;
+}
+
+.uploadingList__wrapper progress::-webkit-progress-bar {
+    background-color: #F2FDFB;
+}
+
+.uploadingList__wrapper progress::-webkit-progress-value {
+    background: #4DAAC6;
+    border-radius: 6px;
+}
+
+.uploadingList__wrapper progress::-moz-progress-bar {
+    background: #4DAAC6;
+    border-radius: 6px;
+}
+
+.uploadEntry .btn {
+    font-size: 12px;
+    line-height: 10px;
+    border-radius: 4px;
+    padding: 3px 8px 6px;
+    text-align: center;
+}
+
+.uploadEntry .error{
+    color: #E1662F;
+    background: #FDF2F2;
+}
+
+.uploadEntry .retry{
+    border: 1px solid #4DAAC6;
+    color: #1F1C1E;
+    background: #FFFFFF;
+}
+
+

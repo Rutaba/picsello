@@ -5,6 +5,7 @@
 @import "./components/buttons.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
+@import "./components/drag-drop.css";
 @import "quill/dist/quill.core.css";
 @import "quill/dist/quill.snow.css";
 
@@ -107,9 +108,10 @@ html {
     transform: translate(-30%, -100%);
     color: black;
     padding: 12px 24px;
-    
+
     svg {
       filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
     }
   }
 }
+

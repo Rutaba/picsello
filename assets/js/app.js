@@ -28,6 +28,7 @@ import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import MasonryGrid from './hooks/masonry-grid'
+import DragDrop from './hooks/drag-drop'
 
 const Modal = {
   mounted() {
@@ -96,6 +97,7 @@ const Hooks = {
   TZCookie,
   PlacesAutocomplete,
   MasonryGrid,
+  DragDrop,
 };
 
 let Uploaders = {}
@@ -104,11 +106,11 @@ Uploaders.GCS = function(entries, onViewError){
     let formData = new FormData()
     console.log(formData)
     let {url, fields} = entry.meta
-    
+
     Object.entries(fields).forEach(([key, val]) => formData.append(key, val))
     formData.append("file", entry.file)
-    
-    let xhr = new XMLHttpRequest()    
+
+    let xhr = new XMLHttpRequest()
     onViewError(() => xhr.abort())
     xhr.onload = () => xhr.status === 204 ? entry.progress(100) : entry.error()
     xhr.onerror = () => entry.error()
