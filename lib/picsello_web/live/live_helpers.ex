@@ -4,6 +4,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   import Phoenix.LiveView, only: [assign: 2]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
+  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
   def open_modal(socket, component, assigns \\ %{})
 
@@ -157,6 +158,26 @@ defmodule PicselloWeb.LiveHelpers do
       <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => path_active?(@socket, @live_action, @to)}) do %>
         <%= render_block(@inner_block) %>
       <% end %>
+    """
+  end
+
+  def job_type_option(assigns) do
+    ~H"""
+      <label class={classes(
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
+        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
+      )}>
+        <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} />
+
+        <div class={classes(
+          "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
+          %{"bg-blue-planning-300 text-white" => @checked, "bg-base-200" => !@checked}
+        )}>
+          <.icon name={@job_type} class="fill-current" width="14" height="14" />
+        </div>
+
+        <%= dyn_gettext @job_type %>
+      </label>
     """
   end
 end
