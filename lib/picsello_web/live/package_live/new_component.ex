@@ -4,7 +4,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   @steps [:details, :pricing]
 
   use PicselloWeb, :live_component
-  alias Picsello.{Package, Repo, Job}
+  alias Picsello.{Package, Repo, Job, JobType}
   @impl true
   def update(assigns, socket) do
     socket
@@ -12,6 +12,8 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     |> assign(steps: @steps)
     |> assign_new(:step, fn -> :details end)
     |> assign_new(:package, fn -> %Package{} end)
+    |> assign_new(:job, fn -> nil end)
+    |> assign(:is_template, assigns |> Map.get(:job) |> is_nil())
     |> assign_step()
     |> ok()
   end
@@ -44,13 +46,15 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
       <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold">Add a Package:</strong> <%= @heading %></h1>
 
-      <div class="py-4 px-9 bg-blue-planning-100">
-        <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %></h2>
-        <p>Create a new package</p>
-      </div>
+      <%= unless @is_template do %>
+        <div class="py-4 px-9 bg-blue-planning-100">
+          <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %></h2>
+          <p>Create a new package</p>
+        </div>
+      <% end %>
 
       <.form for={@changeset} let={f} class="px-9" phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
-        <.step name={@step} f={f} />
+        <.step name={@step} f={f} is_template={@is_template} />
 
         <PicselloWeb.LiveModal.footer>
           <div class="flex flex-col gap-2 sm:flex-row-reverse">
@@ -86,6 +90,20 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
         <%= input @f, :description, type: :textarea, placeholder: "The most deluxe of weddings", phx_debounce: "500" %>
       </div>
+
+      <%= if @is_template do %>
+        <div class="flex flex-col mt-4">
+          <.input_label form={@f} class="mb-1 text-sm font-semibold" field={:job_type}>
+            Type of Photography
+          </.input_label>
+
+          <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
+            <%= for(job_type <- job_types()) do %>
+              <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     """
   end
 
@@ -157,6 +175,23 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   def handle_event(
         "submit",
         %{"package" => params},
+        %{assigns: %{step: :pricing, is_template: true}} = socket
+      ) do
+    changeset = build_changeset(socket, params)
+
+    case Repo.insert(changeset) do
+      {:ok, package} ->
+        successfull_save(socket, package)
+
+      _ ->
+        socket |> assign(changeset: changeset) |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "submit",
+        %{"package" => params},
         %{assigns: %{step: :pricing, job: job}} = socket
       ) do
     changeset = build_changeset(socket, params)
@@ -171,10 +206,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
     case result do
       {:ok, %{package: package}} ->
-        send(self(), {:update, %{package: package}})
-        close_modal(socket)
-
-        socket |> noreply()
+        successfull_save(socket, package)
 
       {:error, :package, changeset, _} ->
         socket |> assign(changeset: changeset) |> noreply()
@@ -184,13 +216,27 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     end
   end
 
+  defp successfull_save(socket, package) do
+    send(self(), {:update, %{package: package}})
+    close_modal(socket)
+
+    socket |> noreply()
+  end
+
   defp build_changeset(
-         %{assigns: %{current_user: current_user, step: step, package: package}},
+         %{
+           assigns: %{
+             current_user: current_user,
+             step: step,
+             package: package,
+             is_template: is_template
+           }
+         },
          params
        ) do
     params = Map.put(params, "organization_id", current_user.organization_id)
 
-    package |> Package.create_changeset(params, step: step)
+    package |> Package.create_changeset(params, step: step, is_template: is_template)
   end
 
   defp assign_changeset(socket, params \\ %{}, action \\ nil) do
@@ -211,4 +257,6 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   defp total_price(form), do: form |> current_package() |> Package.price()
 
   defp step_number(name), do: Enum.find_index(@steps, &(&1 == name)) + 1
+
+  defdelegate job_types(), to: JobType, as: :all
 end

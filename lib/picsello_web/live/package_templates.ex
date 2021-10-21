@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         </div>
 
         <div class="fixed bottom-0 left-0 right-0 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-          <a href="#" class="w-full px-8 text-center btn-primary">Add a package</a>
+          <a href="#" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add a package</a>
         </div>
       </div>
 
@@ -74,6 +74,21 @@ defmodule PicselloWeb.Live.PackageTemplates do
       <% end %>
     </.settings_nav>
     """
+  end
+
+  @impl true
+  def handle_event("add-package", %{}, %{assigns: assigns} = socket),
+    do:
+      socket
+      |> open_modal(PicselloWeb.PackageLive.NewComponent, assigns |> Map.take([:current_user]))
+      |> noreply()
+
+  @impl true
+  def handle_info({:update, _package}, socket) do
+    socket
+    |> assign_templates()
+    |> put_flash(:success, "The package has been successfully created")
+    |> noreply()
   end
 
   defp assign_templates(%{assigns: %{current_user: user}} = socket) do

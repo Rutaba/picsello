@@ -24,12 +24,12 @@ defmodule Picsello.Package do
   @doc false
   def create_changeset(package \\ %__MODULE__{}, attrs, opts) do
     case Keyword.get(opts, :step, :pricing) do
-      :details -> package |> create_details(attrs)
-      :pricing -> package |> create_details(attrs) |> update_pricing(attrs)
+      :details -> package |> create_details(attrs, opts)
+      :pricing -> package |> create_details(attrs, opts) |> update_pricing(attrs)
     end
   end
 
-  defp create_details(package, attrs) do
+  defp create_details(package, attrs, opts) do
     package
     |> cast(attrs, [
       :description,
@@ -39,6 +39,13 @@ defmodule Picsello.Package do
     ])
     |> validate_required([:name, :description, :shoot_count, :organization_id])
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
+    |> then(fn changeset ->
+      if Keyword.get(opts, :is_template) do
+        changeset |> cast(attrs, [:job_type]) |> validate_required([:job_type])
+      else
+        changeset
+      end
+    end)
   end
 
   defp update_pricing(package, attrs) do
