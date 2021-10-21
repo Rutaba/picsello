@@ -87,7 +87,11 @@ html {
 }
 
 .modal {
-  @apply px-4 py-3 sm:p-8 bare-modal;
+  @apply px-4 py-3 sm:p-8 max-w-screen-xl bare-modal;
+}
+
+.dialog {
+  @apply px-4 py-3 sm:p-8 max-w-md bare-modal;
 }
 
 .badge {

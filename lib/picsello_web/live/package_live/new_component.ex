@@ -21,7 +21,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="py-8 bare-modal">
+    <div class="py-8 max-w-screen-xl bare-modal">
       <div class="flex px-9">
         <a {if step_number(@step) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself}, else: %{}} class="flex">
           <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">

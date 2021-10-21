@@ -14,7 +14,7 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-2xl modal">
+    <div class="modal">
       <h1 class="flex justify-between mb-4 text-3xl font-bold">
         Edit Note
 
