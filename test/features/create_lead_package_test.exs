@@ -5,12 +5,8 @@ defmodule Picsello.CreateLeadPackageTest do
   setup :onboarded
   setup :authenticated
 
-  feature "user without package templates creates a package", %{session: session, user: user} do
-    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
-
+  def fill_in_package_form(session) do
     session
-    |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
@@ -21,6 +17,15 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in(text_field("Download"), with: "2")
     |> fill_in(text_field("each"), with: "$2")
     |> assert_has(definition("Total Price", text: "$114.00"))
+  end
+
+  feature "user without package templates creates a package", %{session: session, user: user} do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Add a package"))
+    |> fill_in_package_form()
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
@@ -41,7 +46,7 @@ defmodule Picsello.CreateLeadPackageTest do
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
   end
 
-  feature "user with package templates chooses one", %{session: session, user: user} do
+  feature "user with package templates sees them", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     insert(:package_template, user: user, job_type: "wedding", name: "best wedding")
@@ -52,6 +57,25 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Add a package"))
     |> find(testid("template-card", count: 1))
     |> assert_text("best wedding")
+  end
+
+  feature "user with package templates creates new package", %{session: session, user: user} do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    insert(:package_template, user: user, job_type: "wedding", name: "best wedding")
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Add a package"))
+    |> click(button("New Package"))
+    |> fill_in_package_form()
+    |> click(link("back"))
+    |> click(link("back"))
+    |> click(button("New Package"))
+    |> click(button("Next"))
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
   end
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do

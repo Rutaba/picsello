@@ -35,7 +35,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     ~H"""
     <div class="py-8 max-w-screen-xl bare-modal">
       <div class="flex px-9">
-        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself}, else: %{}} class="flex">
+        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
           <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
             Step <%= step_number(@step, @steps) %>
           </span>
@@ -70,7 +70,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
         <PicselloWeb.LiveModal.footer>
           <div class="flex flex-col gap-2 sm:flex-row-reverse">
-            <.step_buttons name={@step} package={@package} is_valid={@changeset.valid?} />
+            <.step_buttons name={@step} package={@package} is_valid={@changeset.valid?} myself={@myself} />
             <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
               Cancel
             </button>
@@ -121,7 +121,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         Customize
       </button>
     <% else %>
-      <button class="px-8 mb-2 sm:mb-0 btn-primary" title="New Package" type="button" phx-click="new-package">
+      <button class="px-8 mb-2 sm:mb-0 btn-primary" title="New Package" type="button" phx-click="new-package" phx-target={@myself}>
         New Package
       </button>
     <% end %>
@@ -268,6 +268,11 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   end
 
   @impl true
+  def handle_event("back", %{}, %{assigns: %{step: :details}} = socket) do
+    socket |> assign_step(:choose_template) |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"package" => params}, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
@@ -328,6 +333,11 @@ defmodule PicselloWeb.PackageLive.NewComponent do
       {:error, :job, _changeset, _} ->
         socket |> put_flash(:error, "Oops! Something went wrong. Please try again.") |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event("new-package", %{}, socket) do
+    socket |> assign(step: :details) |> noreply()
   end
 
   defp successfull_save(socket, package) do
