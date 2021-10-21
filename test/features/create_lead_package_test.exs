@@ -41,6 +41,19 @@ defmodule Picsello.CreateLeadPackageTest do
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
   end
 
+  feature "user with package templates chooses one", %{session: session, user: user} do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    insert(:package_template, user: user, job_type: "wedding", name: "best wedding")
+    insert(:package_template, user: user, job_type: "other")
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Add a package"))
+    |> find(testid("template-card", count: 1))
+    |> assert_text("best wedding")
+  end
+
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 

@@ -24,9 +24,14 @@ defmodule Picsello.Package do
   @doc false
   def create_changeset(package \\ %__MODULE__{}, attrs, opts) do
     case Keyword.get(opts, :step, :pricing) do
+      :choose_template -> package |> choose_template(attrs)
       :details -> package |> create_details(attrs, opts)
       :pricing -> package |> create_details(attrs, opts) |> update_pricing(attrs)
     end
+  end
+
+  defp choose_template(package, attrs) do
+    package |> cast(attrs, [:package_template_id])
   end
 
   defp create_details(package, attrs, opts) do
@@ -111,6 +116,10 @@ defmodule Picsello.Package do
       where: not is_nil(package.job_type) and package.organization_id == ^organization_id,
       order_by: [desc: package.inserted_at]
     )
+  end
+
+  def templates_for_user(user, type) when type != nil do
+    from(template in templates_for_user(user), where: template.job_type == ^type)
   end
 
   defp validate_money(changeset, field) do

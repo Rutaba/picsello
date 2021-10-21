@@ -1,21 +1,33 @@
 defmodule PicselloWeb.PackageLive.NewComponent do
   @moduledoc false
 
-  @steps [:details, :pricing]
-
   use PicselloWeb, :live_component
   alias Picsello.{Package, Repo, Job, JobType}
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign(steps: @steps)
-    |> assign_new(:step, fn -> :details end)
     |> assign_new(:package, fn -> %Package{} end)
     |> assign_new(:job, fn -> nil end)
+    |> choose_initial_step()
     |> assign(:is_template, assigns |> Map.get(:job) |> is_nil())
-    |> assign_step()
+    |> assign_changeset()
     |> ok()
+  end
+
+  defp choose_initial_step(%{assigns: %{current_user: user, job: job}} = socket) do
+    with %{type: job_type} <- job,
+         templates when templates != [] <-
+           user |> Package.templates_for_user(job_type) |> Repo.all() do
+      socket
+      |> assign(
+        templates: templates,
+        step: :choose_template,
+        steps: [:choose_template, :details, :pricing]
+      )
+    else
+      _ -> socket |> assign(templates: [], step: :details, steps: [:details, :pricing])
+    end
   end
 
   @impl true
@@ -23,9 +35,9 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     ~H"""
     <div class="py-8 max-w-screen-xl bare-modal">
       <div class="flex px-9">
-        <a {if step_number(@step) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself}, else: %{}} class="flex">
+        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself}, else: %{}} class="flex">
           <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
-            Step <%= step_number(@step) %>
+            Step <%= step_number(@step, @steps) %>
           </span>
 
           <ul class="flex items-center inline-block">
@@ -44,24 +56,21 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         </button>
       </div>
 
-      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold">Add a Package:</strong> <%= @heading %></h1>
+      <.step_heading name={@step} />
 
       <%= unless @is_template do %>
         <div class="py-4 px-9 bg-blue-planning-100">
           <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %></h2>
-          <p>Create a new package</p>
+          <.step_subheading name={@step} />
         </div>
       <% end %>
 
       <.form for={@changeset} let={f} class="px-9" phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
-        <.step name={@step} f={f} is_template={@is_template} />
+        <.step name={@step} f={f} is_template={@is_template} templates={@templates} />
 
         <PicselloWeb.LiveModal.footer>
           <div class="flex flex-col gap-2 sm:flex-row-reverse">
-            <button class="px-8 mb-2 sm:mb-0 btn-primary" title={@submit_label} type="submit" disabled={!@changeset.valid?} phx-disable-with={@submit_label}>
-              <%= @submit_label %>
-            </button>
-
+            <.step_buttons name={@step} package={@package} is_valid={@changeset.valid?} />
             <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
               Cancel
             </button>
@@ -69,6 +78,116 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         </PicselloWeb.LiveModal.footer>
       </.form>
     </div>
+    """
+  end
+
+  def step_heading(%{name: :choose_template} = assigns) do
+    ~H"""
+      <h1 class="mt-2 mb-4 text-3xl font-bold px-9">Package Templates</h1>
+    """
+  end
+
+  def step_heading(%{name: :details} = assigns) do
+    ~H"""
+      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold">Package Templates</strong> Provide Details</h1>
+    """
+  end
+
+  def step_heading(%{name: :pricing} = assigns) do
+    ~H"""
+      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold">Package Templates</strong> Set Pricing</h1>
+    """
+  end
+
+  def step_subheading(%{name: :choose_template} = assigns) do
+    ~H"""
+    """
+  end
+
+  def step_subheading(assigns) do
+    ~H"""
+      <p>Create a new package</p>
+    """
+  end
+
+  def step_buttons(%{name: :choose_template} = assigns) do
+    ~H"""
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="button" phx-click="use-template" disabled={is_nil(@package.package_template_id)}>
+      Use template
+    </button>
+
+    <%= if @package.package_template_id do %>
+      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template">
+        Customize
+      </button>
+    <% else %>
+      <button class="px-8 mb-2 sm:mb-0 btn-primary" title="New Package" type="button" phx-click="new-package">
+        New Package
+      </button>
+    <% end %>
+    """
+  end
+
+  def step_buttons(%{name: :details} = assigns) do
+    ~H"""
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
+      Next
+    </button>
+    """
+  end
+
+  def step_buttons(%{name: :pricing} = assigns) do
+    ~H"""
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Save" type="submit" disabled={!@is_valid} phx-disable-with="Save">
+      Save
+    </button>
+    """
+  end
+
+  def step(%{name: :choose_template} = assigns) do
+    ~H"""
+      <h1 class="mt-6 text-xl font-bold">Select Package</h1>
+      <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+        <input class="hidden" type="hidden" name={input_name(@f, :package_template_id)} value="" />
+
+        <%= for template <- @templates do %>
+          <% checked = input_value(@f, :package_template_id) == template.id %>
+
+          <label {testid("template-card")} class={classes("p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group", %{"bg-blue-planning-100 border-blue-planning-300" => checked})}>
+            <input class="hidden" type="checkbox" name={input_name(@f, :package_template_id)} value={template.id} checked={checked} />
+
+            <h1 class="text-2xl font-bold line-clamp-2"><%= template.name %></h1>
+
+            <p class="line-clamp-2"><%= template.description %></p>
+
+            <dl class="flex flex-row-reverse items-center justify-end mt-2">
+              <dt class="ml-2 text-gray-500">Downloadable photos</dt>
+
+              <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+                <%= template.download_count %>
+              </dd>
+            </dl>
+
+            <dl class="flex flex-row-reverse items-center justify-end mt-2">
+              <dt class="ml-2 text-gray-500">Print credits</dt>
+
+              <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+                0
+              </dd>
+            </dl>
+
+            <hr class="my-4" />
+
+            <div class="flex items-center justify-between">
+              <div class="text-gray-500"><%= dyn_gettext template.job_type %></div>
+
+              <div class="text-lg font-bold">
+                <%= template |> Package.price() |> Money.to_string(fractional_unit: false) %>
+              </div>
+            </div>
+          </label>
+        <% end %>
+      </div>
     """
   end
 
@@ -139,17 +258,13 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     """
   end
 
-  def assign_step(%{assigns: %{step: :details}} = socket) do
-    socket |> assign_changeset() |> assign(heading: "Provide Details", submit_label: "Next")
-  end
-
-  def assign_step(%{assigns: %{step: :pricing}} = socket) do
-    socket |> assign_changeset() |> assign(heading: "Set Pricing", submit_label: "Save")
+  def assign_step(socket, step) do
+    socket |> assign(:step, step) |> assign_changeset()
   end
 
   @impl true
   def handle_event("back", %{}, %{assigns: %{step: :pricing}} = socket) do
-    socket |> assign(step: :details) |> assign_step() |> noreply()
+    socket |> assign_step(:details) |> noreply()
   end
 
   @impl true
@@ -162,8 +277,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
         socket
-        |> assign(step: :pricing)
-        |> assign_step()
+        |> assign_step(:pricing)
 
       socket ->
         socket
@@ -256,7 +370,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   defp total_price(form), do: form |> current_package() |> Package.price()
 
-  defp step_number(name), do: Enum.find_index(@steps, &(&1 == name)) + 1
+  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defdelegate job_types(), to: JobType, as: :all
 end
