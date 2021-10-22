@@ -32,7 +32,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
-    IO.inspect socket
     socket
     |> assign(page: page + 1)
     |> assign(:update_mode, "append")
