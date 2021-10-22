@@ -86,7 +86,7 @@ export default {
       totalImagesNumber = parseInt(total);
     }
 
-    return amount < total;
+    return amount < totalImagesNumber;
   },
   /**
    * Mount callback
