@@ -12,7 +12,7 @@ defmodule Picsello.EditLeadPackageTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 2,
-          price: 100
+          base_price: 100
         },
         shoots: [%{}, %{}]
       })
@@ -45,20 +45,6 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_value(text_field("Package price"), "$2.00")
     |> assert_value(text_field("Package name"), "My Greatest Package")
     |> assert_value(text_field("Package description"), "indescribably great.")
-  end
-
-  feature "user adds package template", %{session: session, lead: lead} do
-    session
-    |> visit("/leads/#{lead.id}")
-    |> click(button("Edit package"))
-    |> click(css("option", text: "+ New Package"))
-    |> assert_has(css("option", selected: true, text: "+ New Package"))
-    |> fill_in(text_field("Package price"), with: "3.00")
-    |> wait_for_enabled_submit_button()
-    |> assert_has(css("option", selected: true, text: "+ New Package"))
-    |> click(button("Save"))
-    |> click(button("Edit package"))
-    |> assert_has(css("option", text: lead.package.name))
   end
 
   feature "user changes package template", %{session: session, user: user, lead: lead} do

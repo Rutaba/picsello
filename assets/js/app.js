@@ -23,6 +23,7 @@ import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
 import Phone from './hooks/phone';
+import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
@@ -102,6 +103,7 @@ const Hooks = {
   LockBodyScroll,
   Modal,
   Phone,
+  PriceMask,
   ToggleContent,
   Quill,
   Select,

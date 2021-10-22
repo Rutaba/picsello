@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, Job, BookingProposal}
+  alias Picsello.{Repo, Job, BookingProposal, Package}
 
   @impl true
   def update(assigns, socket) do

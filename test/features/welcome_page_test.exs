@@ -151,8 +151,17 @@ defmodule Picsello.WelcomePageTest do
 
   feature "jobs card shows numbers", %{session: session, user: user} do
     day = 24 * 60 * 60
+    # seconds between insertion and assertion. slow on github.
+    delta_seconds = 10
 
-    for(seconds_from_now <- [-1, 1, 7 * day - 1, 7 * day + 1]) do
+    for(
+      seconds_from_now <- [
+        -1,
+        delta_seconds,
+        7 * day - delta_seconds,
+        7 * day + delta_seconds
+      ]
+    ) do
       starts_at = DateTime.add(DateTime.utc_now(), seconds_from_now)
 
       insert(:lead, user: user, package: %{shoot_count: 1}, shoots: [%{starts_at: starts_at}])

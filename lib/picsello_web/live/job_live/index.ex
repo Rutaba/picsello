@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, Package}
   require Ecto.Query
   alias Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
