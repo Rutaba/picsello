@@ -112,7 +112,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step_buttons(%{name: :choose_template} = assigns) do
     ~H"""
-    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="button" phx-click="use-template" disabled={is_nil(@package.package_template_id)}>
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="submit" phx-target={@myself} phx-disable-with="Use Template" disabled={is_nil(@package.package_template_id)}>
       Use template
     </button>
 
@@ -278,6 +278,23 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   end
 
   @impl true
+  def handle_event(
+        "submit",
+        %{"package" => %{"package_template_id" => package_template_id}},
+        %{assigns: %{step: :choose_template, templates: templates, job: job}} = socket
+      ) do
+    attrs =
+      templates
+      |> Enum.find(&(&1.id == String.to_integer(package_template_id)))
+      |> Map.from_struct()
+      |> Map.put(:package_template_id, package_template_id)
+
+    changeset = Package.create_from_template_changeset(attrs)
+
+    insert_package_and_update_job(socket, changeset, job)
+  end
+
+  @impl true
   def handle_event("submit", %{"package" => params}, %{assigns: %{step: :details}} = socket) do
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
@@ -314,7 +331,22 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         %{assigns: %{step: :pricing, job: job}} = socket
       ) do
     changeset = build_changeset(socket, params)
+    insert_package_and_update_job(socket, changeset, job)
+  end
 
+  @impl true
+  def handle_event("new-package", %{}, socket) do
+    socket |> assign(step: :details) |> noreply()
+  end
+
+  defp successfull_save(socket, package) do
+    send(self(), {:update, %{package: package}})
+    close_modal(socket)
+
+    socket |> noreply()
+  end
+
+  defp insert_package_and_update_job(socket, changeset, job) do
     result =
       Ecto.Multi.new()
       |> Ecto.Multi.insert(:package, changeset)
@@ -333,18 +365,6 @@ defmodule PicselloWeb.PackageLive.NewComponent do
       {:error, :job, _changeset, _} ->
         socket |> put_flash(:error, "Oops! Something went wrong. Please try again.") |> noreply()
     end
-  end
-
-  @impl true
-  def handle_event("new-package", %{}, socket) do
-    socket |> assign(step: :details) |> noreply()
-  end
-
-  defp successfull_save(socket, package) do
-    send(self(), {:update, %{package: package}})
-    close_modal(socket)
-
-    socket |> noreply()
   end
 
   defp build_changeset(

@@ -78,6 +78,49 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_text("Wedding Deluxe")
   end
 
+  feature "user with package templates uses one as-is", %{session: session, user: user} do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    base_price = Money.new(10_000)
+    gallery_credit = Money.new(1000)
+    download_each_price = Money.new(200)
+
+    template =
+      insert(:package_template,
+        user: user,
+        job_type: "wedding",
+        name: "best wedding",
+        shoot_count: 1,
+        description: "desc",
+        base_price: base_price,
+        gallery_credit: gallery_credit,
+        download_count: 1,
+        download_each_price: download_each_price
+      )
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Add a package"))
+    |> click(testid("template-card"))
+    |> click(button("Use template"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("best wedding")
+
+    template_id = template.id
+
+    assert %Package{
+             name: "best wedding",
+             job_type: nil,
+             shoot_count: 1,
+             description: "desc",
+             base_price: ^base_price,
+             gallery_credit: ^gallery_credit,
+             download_count: 1,
+             download_each_price: ^download_each_price,
+             package_template_id: ^template_id
+           } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
+  end
+
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 

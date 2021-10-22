@@ -30,11 +30,19 @@ defmodule Picsello.Package do
     end
   end
 
+  def create_from_template_changeset(package \\ %__MODULE__{}, attrs) do
+    package
+    |> choose_template(attrs)
+    |> validate_required([:package_template_id])
+    |> create_details(attrs)
+    |> update_pricing(attrs)
+  end
+
   defp choose_template(package, attrs) do
     package |> cast(attrs, [:package_template_id])
   end
 
-  defp create_details(package, attrs, opts) do
+  defp create_details(package, attrs, opts \\ []) do
     package
     |> cast(attrs, [
       :description,
