@@ -23,6 +23,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       |> assign(:page, 0)
       |> assign(:update_mode, "append")
       |> assign(:favorites_filter, false)
+      |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
       |> assign_photos()
       |> noreply()
     else
@@ -46,6 +47,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> assign(:favorites_filter, !toggle_state)
     |> assign_photos()
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(:increase_favorites_count, %{assigns: %{favorites_count: count}} = socket) do
+    socket |> assign(:count, count + 1) |> noreply()
+  end
+
+  @impl true
+  def handle_info(:reduce_favorites_count, %{assigns: %{favorites_count: count}} = socket) do
+    socket |> assign(:count, count - 1) |> noreply()
   end
 
   defp assign_photos(

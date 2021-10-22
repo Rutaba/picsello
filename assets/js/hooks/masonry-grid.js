@@ -53,6 +53,13 @@ export default {
     return this.init_masonry()
   },
   /**
+   * Recollects all item elements to apply changes to the DOM to Masonry
+   */
+  reload_masonry () {
+    const grid = this.get_grid();
+    grid.reloadItems();
+  },
+  /**
    * Injects newly added photos into grid
    */
   inject_new_items() {
@@ -69,10 +76,17 @@ export default {
    * @returns {boolean}
    */
   hasMorePhotoToLoad() {
-    const total = parseInt(this.el.dataset.total);
+    let totalImagesNumber;
+    const { isFavoritesShown, favoritesCount, total } = this.el.dataset;
     const amount = this.get_grid().getItemElements().length;
 
-    return amount < total;
+    if(isFavoritesShown === 'true'){
+      totalImagesNumber = parseInt(favoritesCount);
+    }else{
+      totalImagesNumber = parseInt(total);
+    }
+
+    return amount < totalImagesNumber;
   },
   /**
    * Mount callback
@@ -104,6 +118,7 @@ export default {
    */
   updated(){
     this.pending = this.page();
+    this.reload_masonry();
     this.inject_new_items();
   }
 };

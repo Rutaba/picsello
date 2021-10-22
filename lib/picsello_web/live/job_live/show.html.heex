@@ -26,7 +26,7 @@
   <div class="flex justify-between min-w-0 lg:justify-start">
     <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
 
-    <span class="ml-2 font-bold lg:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
+    <span class="ml-2 font-bold lg:ml-6"><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
   </div>
 
   <hr class="border-white lg:hidden lg:col-span-2"/>

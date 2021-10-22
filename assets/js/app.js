@@ -23,13 +23,14 @@ import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
 import Phone from './hooks/phone';
+import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
-import MasonryGrid from './hooks/masonry-grid';
 import SortableMasonry from './hooks/sortable-masonry';
 import AutoHeight from './hooks/auto-height';
+import MasonryGrid from './hooks/masonry-grid';
 
 const Modal = {
   mounted() {
@@ -103,6 +104,7 @@ const Hooks = {
   LockBodyScroll,
   Modal,
   Phone,
+  PriceMask,
   ToggleContent,
   Quill,
   Select,

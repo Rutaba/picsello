@@ -6,7 +6,7 @@ defmodule PicselloWeb.ActionSheetComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-md modal">
+    <div class="dialog">
       <h2 class="text-xs font-semibold tracking-widest text-gray-400 uppercase"><%= @title %></h2>
       <%= for %{title: title, action_event: event} <- @actions do %>
         <button class="mt-4 btn-row"

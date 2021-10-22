@@ -1,5 +1,5 @@
 <fieldset <%= if @read_only, do: "disabled" %>>
-<div class="relative modal center-container">
+<div class="relative modal">
   <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
     <%= icon_tag(@socket, "close-x", class: "h-7 w-7 stroke-current") %>
   </button>
@@ -50,7 +50,7 @@
 
   <dl class="flex flex-row items-center justify-between text-xl font-bold">
     <dt>Total</dt>
-    <dd><%= @package.price %></dd>
+    <dd><%= Package.price(@package) %></dd>
   </dl>
 
   <%= live_component PicselloWeb.LiveModal.FooterComponent do %>

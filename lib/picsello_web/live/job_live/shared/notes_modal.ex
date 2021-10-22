@@ -14,7 +14,7 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-2xl modal">
+    <div class="modal">
       <h1 class="flex justify-between mb-4 text-3xl font-bold">
         Edit Note
 
@@ -73,7 +73,7 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
     do: socket |> assign(:edit_mode, true) |> noreply()
 
   @impl true
-  def handle_event("save", %{"job" => params}, %{assigns: %{job: job}} = socket) do
+  def handle_event("save", %{"job" => params}, socket) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, job} ->
         send(socket.parent_pid, {:update, %{job: job}})

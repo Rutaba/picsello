@@ -11,6 +11,7 @@
     "@popperjs/core": "~2.10.1",
     "@tailwindcss/aspect-ratio": "~0.2.1",
     "@tailwindcss/forms": "~0.3.3",
+    "@tailwindcss/line-clamp": "~0.2.2",
     "imask": "~6.1.0",
     "masonry-layout": "^4.2.2",
     "muuri": "^0.9.5",

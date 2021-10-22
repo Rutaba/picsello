@@ -187,6 +187,20 @@ defmodule Picsello.Galleries do
   defp load_gallery_photos_by_type(_, _), do: []
 
   @doc """
+  Loads the number of favorite photos from the gallery
+
+  ## Examples
+
+      iex> gallery_favorites_count(gallery)
+      5
+  """
+  def gallery_favorites_count(%Gallery{} = gallery) do
+    Photo
+    |> where(gallery_id: ^gallery.id, client_liked: true)
+    |> Repo.aggregate(:count, [])
+  end
+
+  @doc """
   Creates a photo.
 
   ## Examples

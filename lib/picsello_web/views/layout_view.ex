@@ -1,7 +1,7 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
   alias Picsello.Accounts.User
-  import PicselloWeb.LiveHelpers, only: [icon: 1]
+  import PicselloWeb.LiveHelpers, only: [icon: 1, nav_link: 1, classes: 1]
 
   use Phoenix.Component
 
@@ -76,20 +76,4 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Help", icon: "question-mark", path: "#"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
-
-  def path_active?(
-        %{
-          view: socket_view,
-          router: router,
-          host_uri: %{host: host}
-        },
-        socket_live_action,
-        path
-      ),
-      do:
-        match?(
-          %{phoenix_live_view: {view, live_action, _, _}}
-          when view == socket_view and live_action == socket_live_action,
-          Phoenix.Router.route_info(router, "GET", path, host)
-        )
 end

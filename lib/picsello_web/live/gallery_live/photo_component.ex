@@ -9,6 +9,13 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
       Galleries.get_photo(id)
       |> Galleries.mark_photo_as_liked()
 
+    favorites_update =
+      if photo.client_liked,
+        do: :increase_favorites_count,
+        else: :reduce_favorites_count
+
+    send(self(), favorites_update)
+
     {:noreply, assign(socket, :photo, photo)}
   end
 end
