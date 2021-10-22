@@ -22,7 +22,7 @@ defmodule PicselloWeb.ConfirmationComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-md modal">
+    <div class="dialog">
       <.icon name={@icon}, class="w-11 h-11" />
 
       <h1 class="text-3xl font-semibold">

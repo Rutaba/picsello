@@ -3,6 +3,7 @@ defmodule Picsello.StripePayments do
 
   @behaviour Picsello.Payments
 
+  require Logger
   alias Picsello.{Repo, BookingProposal, Organization, Accounts.User, Client}
 
   def link(user, opts, stripe_module \\ Stripe)
@@ -63,16 +64,19 @@ defmodule Picsello.StripePayments do
     status(organization)
   end
 
-  def status(%Organization{stripe_account_id: nil}), do: {:ok, :no_account}
+  def status(%Organization{stripe_account_id: nil}), do: :no_account
 
   def status(%Organization{stripe_account_id: account_id}) do
-    case Stripe.Account.retrieve(account_id) do
-      {:ok, account} ->
-        {:ok, account_status(account)}
+    Picsello.StripeStatusCache.current_for(account_id, fn ->
+      case Stripe.Account.retrieve(account_id) do
+        {:ok, account} ->
+          account_status(account)
 
-      e ->
-        e
-    end
+        {:error, error} ->
+          Logger.error(error)
+          :error
+      end
+    end)
   end
 
   def account_status(%Stripe.Account{charges_enabled: true}), do: :charges_enabled

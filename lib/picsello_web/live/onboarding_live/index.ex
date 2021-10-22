@@ -176,7 +176,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
           <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
             <%= for(job_type <- job_types()) do %>
-              <.job_type_option name={input_name} job_type={job_type} checked={input_value(o, :job_types) |> Enum.member?(job_type)} />
+              <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={input_value(o, :job_types) |> Enum.member?(job_type)} />
             <% end %>
           </div>
         </div>
@@ -218,26 +218,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       {"ShootProof", :shoot_proof},
       {"Other", :other}
     ]
-
-  def job_type_option(assigns) do
-    ~H"""
-      <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
-        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
-      )}>
-        <input class="hidden" type="checkbox" name={@name} value={@job_type} checked={@checked} />
-
-        <div class={classes(
-          "flex items-center justify-center w-7 h-7 ml-1 mr-3 bg-gray-200 rounded-full flex-shrink-0",
-          %{"bg-blue-planning-300 text-white" => @checked}
-        )}>
-          <.icon name={@job_type} class="fill-current" width="14" height="14" />
-        </div>
-
-        <%= dyn_gettext @job_type %>
-      </label>
-    """
-  end
 
   def assign_step(socket, 2) do
     socket

@@ -4,8 +4,12 @@ const svgToDataUri = require('mini-svg-data-uri');
 
 const safelist = ['border', 'text', 'bg']
   .map((pre) =>
-    ['red-sales-300', 'purple-marketing-300', 'orange-inbox-300', 'blue-planning-300']
-      .map((c) => [pre, c].join('-'))
+    [
+      'red-sales-300',
+      'purple-marketing-300',
+      'orange-inbox-300',
+      'blue-planning-300',
+    ].map((c) => [pre, c].join('-'))
   )
   .flat();
 
@@ -64,6 +68,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/aspect-ratio'),
+    require('@tailwindcss/line-clamp'),
     require('@tailwindcss/forms')({
       strategy: 'class',
     }),

@@ -22,7 +22,8 @@ defmodule Picsello.Application do
       {Phoenix.PubSub, name: Picsello.PubSub},
       # Start the Endpoint (http/https)
       PicselloWeb.Endpoint,
-      {Picsello.ProposalReminderScheduler, []}
+      {Picsello.ProposalReminderScheduler, []},
+      {Picsello.StripeStatusCache, []}
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
     ]

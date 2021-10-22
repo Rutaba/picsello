@@ -23,10 +23,12 @@ import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
 import Phone from './hooks/phone';
+import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
+import MasonryGrid from './hooks/masonry-grid'
 import AutoHeight from './hooks/auto-height';
 
 const Modal = {
@@ -101,12 +103,14 @@ const Hooks = {
   LockBodyScroll,
   Modal,
   Phone,
+  PriceMask,
   ToggleContent,
   Quill,
   Select,
   TZCookie,
   PlacesAutocomplete,
   AutoHeight,
+  MasonryGrid,
 };
 
 let csrfToken = document

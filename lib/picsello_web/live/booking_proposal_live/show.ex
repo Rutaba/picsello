@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
 
-  alias Picsello.{Repo, BookingProposal, Job}
+  alias Picsello.{Repo, BookingProposal, Job, Package}
 
   alias PicselloWeb.BookingProposalLive.{
     ProposalComponent,
@@ -77,7 +77,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
             name: "#{Job.name(job)} 50% Deposit"
           },
           unit_amount:
-            package.price
+            package
+            |> Package.price()
             |> Money.multiply(0.5)
             |> then(& &1.amount)
         },

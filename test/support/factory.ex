@@ -16,7 +16,8 @@ defmodule Picsello.Factory do
     Shoot,
     Accounts.User,
     Questionnaire,
-    Questionnaire.Answer
+    Questionnaire.Answer,
+    Galleries.Gallery
   }
 
   def valid_user_password(), do: "hello world!"
@@ -69,7 +70,9 @@ defmodule Picsello.Factory do
 
   def package_factory(attrs) do
     %Package{
-      price: 10,
+      base_price: 10,
+      download_count: 0,
+      download_each_price: 0,
       name: "Package name",
       description: "Package description",
       shoot_count: 2,
@@ -82,6 +85,11 @@ defmodule Picsello.Factory do
     }
     |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
+  end
+
+  def package_template_factory(attrs) do
+    build(:package, attrs)
+    |> merge_attributes(attrs |> Map.drop([:user]) |> Enum.into(%{job_type: "wedding"}))
   end
 
   def client_factory(attrs) do
@@ -244,6 +252,14 @@ defmodule Picsello.Factory do
       end
     }
     |> merge_attributes(Map.drop(attrs, [:client, :package, :shoots, :user]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def gallery_factory(attrs) do
+    %{id: job_id} = insert(:lead)
+
+    %Gallery{job_id: job_id}
+    |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
 end

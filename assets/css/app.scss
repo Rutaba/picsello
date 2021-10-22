@@ -80,11 +80,46 @@ html {
   @apply xl:container xl:mx-auto;
 }
 
+@layer components {
+  .bare-modal {
+    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg;
+  }
+}
+
 .modal {
-  @apply px-4 py-3 sm:p-8 bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg;
+  @apply px-4 py-3 sm:p-8 max-w-screen-xl bare-modal;
+}
+
+.dialog {
+  @apply px-4 py-3 sm:p-8 max-w-md bare-modal;
 }
 
 .badge {
   @apply px-2 py-1 font-bold text-white rounded;
   font-size: 0.5rem;
+}
+
+.masonry {
+  margin: 0 auto;
+
+  .item {
+    width: 309px;
+    margin-bottom: 20px;
+
+    img {
+      border-radius: 8px;
+    }
+  }
+
+  .item .btn {
+    position: relative;
+    left: 85%;
+    transform: translate(-30%, -100%);
+    color: black;
+    padding: 12px 24px;
+    
+    svg {
+      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    }
+  }
 }
