@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryLive.Index do
   @moduledoc false
-  use PicselloWeb, :live_view
+  use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Gallery

@@ -20,3 +20,38 @@
 
 <span><%= live_patch "Edit", to: Routes.gallery_show_path(@socket, :edit, @gallery), class: "button" %></span>
 <span><%= live_redirect "Back", to: Routes.gallery_index_path(@socket, :index) %></span>
+
+<hr>
+<button
+    phx-click="add_page"
+>more</button>
+
+<button
+    phx-click="save_sort"
+    phx-value-order="initial"
+>Save sorting</button>
+<hr>
+
+<div
+  phx-hook="SortableMasonry"
+  phx-update="append"
+  id="muuri-grid"
+  class="muuri grid"
+>
+    <%= for photo <- @photos do %>
+      <div
+        class="item"
+        id="photo-item-<%= photo.id %>"
+        style="
+            width: 309px;
+            height: <%= 309 / photo.aspect_ratio %>px;
+        "
+      >
+        <div class="item-content">
+            <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo %>
+        </div>
+      </div>
+    <% end %>
+</div>
