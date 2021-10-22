@@ -12,6 +12,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
+    |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(text_field("Base Price"), with: "$100")
     |> fill_in(text_field("Add"), with: "$10")
     |> fill_in(text_field("Download"), with: "2")
