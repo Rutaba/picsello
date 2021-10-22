@@ -83,7 +83,7 @@
     >
       <%= for photo <- @photos do %>
         <div class="item" id="photo-item-<%= photo.id%>">
-          <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+          <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
                     photo: photo %>
         </div>
