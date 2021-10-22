@@ -23,11 +23,17 @@ defmodule Picsello.Package do
 
   @doc false
   def create_changeset(package \\ %__MODULE__{}, attrs, opts) do
-    case Keyword.get(opts, :step, :pricing) do
-      :choose_template -> package |> choose_template(attrs)
-      :details -> package |> create_details(attrs, opts)
-      :pricing -> package |> create_details(attrs, opts) |> update_pricing(attrs)
-    end
+    steps = [
+      choose_template: &choose_template/3,
+      details: &create_details/3,
+      pricing: &update_pricing/3
+    ]
+
+    step = Keyword.get(opts, :step, :pricing)
+
+    Enum.reduce_while(steps, package, fn {step_name, initializer}, changeset ->
+      {if(step_name == step, do: :halt, else: :cont), initializer.(changeset, attrs, opts)}
+    end)
   end
 
   def create_from_template_changeset(package \\ %__MODULE__{}, attrs) do
@@ -38,7 +44,7 @@ defmodule Picsello.Package do
     |> update_pricing(attrs)
   end
 
-  defp choose_template(package, attrs) do
+  defp choose_template(package, attrs, opts \\ []) do
     package |> cast(attrs, [:package_template_id])
   end
 
@@ -61,7 +67,7 @@ defmodule Picsello.Package do
     end)
   end
 
-  defp update_pricing(package, attrs) do
+  defp update_pricing(package, attrs, opts \\ []) do
     package
     |> cast(attrs, [
       :base_price,
