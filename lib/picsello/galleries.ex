@@ -186,7 +186,6 @@ defmodule Picsello.Galleries do
 
   defp load_gallery_photos_by_type(_, _), do: []
 
-  
   @doc """
   Loads the number of favorite photos from the gallery
 
