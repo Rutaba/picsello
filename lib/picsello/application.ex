@@ -11,6 +11,9 @@ defmodule Picsello.Application do
     children = [
       # Start libCluster
       {Cluster.Supervisor, [topologies, [name: Picsello.ClusterSupervisor]]},
+      ImageProcessing.TaskKeeper,
+      ImageProcessing.TaskProxy,
+      ImageProcessing.Flow,
       # Start the Ecto repository
       Picsello.Repo,
       # Start the Telemetry supervisor
