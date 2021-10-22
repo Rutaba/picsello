@@ -117,7 +117,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     </button>
 
     <%= if @package.package_template_id do %>
-      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template">
+      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
         Customize
       </button>
     <% else %>
@@ -281,15 +281,9 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   def handle_event(
         "submit",
         %{"package" => %{"package_template_id" => package_template_id}},
-        %{assigns: %{step: :choose_template, templates: templates, job: job}} = socket
+        %{assigns: %{step: :choose_template, job: job}} = socket
       ) do
-    attrs =
-      templates
-      |> Enum.find(&(&1.id == String.to_integer(package_template_id)))
-      |> Map.from_struct()
-      |> Map.put(:package_template_id, package_template_id)
-
-    changeset = Package.create_from_template_changeset(attrs)
+    changeset = changeset_from_template(socket, String.to_integer(package_template_id))
 
     insert_package_and_update_job(socket, changeset, job)
   end
@@ -336,7 +330,26 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   @impl true
   def handle_event("new-package", %{}, socket) do
-    socket |> assign(step: :details) |> noreply()
+    socket |> assign_step(:details) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "customize-template",
+        %{},
+        %{assigns: %{package: %{package_template_id: template_id}}} = socket
+      ) do
+    package = socket |> changeset_from_template(template_id) |> Ecto.Changeset.apply_changes()
+
+    socket |> assign(package: package) |> assign_step(:details) |> noreply()
+  end
+
+  defp changeset_from_template(%{assigns: %{templates: templates}}, template_id) do
+    templates
+    |> Enum.find(&(&1.id == template_id))
+    |> Map.from_struct()
+    |> Map.put(:package_template_id, template_id)
+    |> Package.create_from_template_changeset()
   end
 
   defp successfull_save(socket, package) do

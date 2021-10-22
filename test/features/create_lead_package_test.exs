@@ -121,6 +121,63 @@ defmodule Picsello.CreateLeadPackageTest do
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
   end
 
+  feature "user customizes package template", %{session: session, user: user} do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    base_price = Money.new(10_000)
+    gallery_credit = Money.new(1000)
+    download_each_price = Money.new(200)
+
+    template =
+      insert(:package_template,
+        user: user,
+        job_type: "wedding",
+        name: "best wedding",
+        shoot_count: 2,
+        description: "desc",
+        base_price: base_price,
+        gallery_credit: gallery_credit,
+        download_count: 1,
+        download_each_price: download_each_price
+      )
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Add a package"))
+    |> click(testid("template-card"))
+    |> click(button("Customize"))
+    |> assert_value(text_field("Title"), "best wedding")
+    |> assert_value(select("# of Shoots"), "2")
+    |> assert_value(text_field("Description"), "desc")
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> assert_value(text_field("Base Price"), "$100.00")
+    |> assert_value(text_field("Add"), "$10.00")
+    |> assert_value(text_field("Download"), "1")
+    |> assert_value(text_field("each"), "$2.00")
+    |> fill_in(text_field("Base Price"), with: "200")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+
+    template_id = template.id
+    base_price = Money.new(20_000)
+
+    assert %Package{
+             name: "Wedding Deluxe",
+             job_type: nil,
+             shoot_count: 2,
+             description: "desc",
+             base_price: ^base_price,
+             gallery_credit: ^gallery_credit,
+             download_count: 1,
+             download_each_price: ^download_each_price,
+             package_template_id: ^template_id
+           } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
+  end
+
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
