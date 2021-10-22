@@ -78,6 +78,8 @@
       phx-update="<%= @update_mode %>"
       data-page="<%= @page %>"
       data-total="<%= @gallery.total_count %>"
+      data-favorites-count="<%= @favorites_count %>"
+      data-is-favorites-shown="<%= @favorites_filter %>"
     >
       <%= for photo <- @photos do %>
         <div class="item" id="photo-item-<%= photo.id%>">
