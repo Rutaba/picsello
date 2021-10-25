@@ -29,7 +29,6 @@ import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import MasonryGrid from './hooks/masonry-grid'
 import DragDrop from './hooks/drag-drop'
-import UploadEntries from './hooks/upload-entries'
 
 const Modal = {
   mounted() {
@@ -98,8 +97,7 @@ const Hooks = {
   TZCookie,
   PlacesAutocomplete,
   MasonryGrid,
-  DragDrop,
-  UploadEntries
+  DragDrop
 };
 
 let Uploaders = {}

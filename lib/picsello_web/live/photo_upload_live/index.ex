@@ -2,13 +2,13 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   
-  @app :picsello
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
     max_entries: 50,
     max_file_size: 104_857_600,
     auto_upload: true
   ]
+  @bucket "picsello-staging"
   
   @impl true
   def mount(_params, _session, socket) do
@@ -16,7 +16,11 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
      socket
      |> assign(:uploaded_files, [])
      |> assign(:gcp_credentials, gcp_credentials())
-     |> allow_upload(:photo, Keyword.put(@upload_options, :external, &presign_entry/2))}
+     |> assign(:upload_bucket, @bucket)
+     |> allow_upload(:photo, Keyword.merge(@upload_options, [
+       external: &presign_entry/2,
+       progress: &handle_progress/3]
+    ))}
   end
   
   @impl true
@@ -26,41 +30,27 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
 
   @impl true
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    IO.inspect ref
     {:noreply, cancel_upload(socket, :photo, ref)}
   end
 
-  @impl true
-  def handle_event("111", _params, socket) do
-    IO.inspect "11"
-    {:noreply, socket}
+  defp handle_progress(:photo, entry, %{assigns: assigns} = socket) do
+    if entry.done? do
+      sign_opts = [bucket: assigns.upload_bucket, key: entry.client_name]
+      upload = GCSSign.sign_url_v4(socket.assigns.gcp_credentials, sign_opts)
+        
+      {:noreply, update(socket, :uploaded_files, &(&1 ++ [upload]))}
+    else
+      {:noreply, socket}
+    end
   end
 
-  @impl true
-  def handle_event("save", %{"id" => id}, socket) do
-    IO.inspect "save"
-    
-    entry = Enum.find(socket.assigns.uploads.photo.entries, fn e -> e.uuid == id end)
-    IO.inspect entry
-    upload =
-      consume_uploaded_entry(socket, entry, fn meta ->
-        sign_opts = [bucket: meta[:fields]["bucket"], key: meta[:key]]
-        GCSSign.sign_url_v4(socket.assigns.gcp_credentials, sign_opts)
-      end)
-    
-    socket = update(socket, :uploaded_files, &(&1 ++ upload))
-    #IO.inspect socket
-    {:noreply, socket}
-  end
-
-  @bucket "picsello-staging"
   defp presign_entry(entry, socket) do
     uploads = socket.assigns.uploaded_files
     key = entry.client_name
     
     sign_opts = [
       expires_in: 600,
-      bucket: @bucket,
+      bucket: socket.assigns.upload_bucket,
       key: key,
       fields: %{
         "content-type" => entry.client_type,
@@ -70,7 +60,7 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
     ]
     {:ok, params} = GCSSign.sign_post_policy_v4(socket.assigns.gcp_credentials, sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-    #IO.inspect meta
+
     {:ok, meta, socket}
   end
 
