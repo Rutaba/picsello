@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.Shared do
   @moduledoc """
   handlers used by both leads and jobs
   """
-  alias Picsello.{Job, Shoot, Repo, BookingProposal, Notifiers.ClientNotifier}
+  alias Picsello.{Job, Shoot, Repo, BookingProposal, Notifiers.ClientNotifier, Package}
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
@@ -58,6 +58,16 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{proposal: %{id: proposal_id}}} = socket
       ),
       do: socket |> redirect(to: BookingProposal.path(proposal_id)) |> noreply()
+
+  def handle_event(
+        "open-notes",
+        %{},
+        socket
+      ) do
+    socket
+    |> PicselloWeb.JobLive.Shared.NotesModal.open()
+    |> noreply()
+  end
 
   def handle_info({:action_event, "open_email_compose"}, socket) do
     socket |> PicselloWeb.ClientMessageComponent.open() |> noreply()
@@ -185,4 +195,91 @@ defmodule PicselloWeb.JobLive.Shared do
     do: {"Awaiting Payment", @status_colors.blue}
 
   def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), @status_colors.blue}
+
+  @spec subheader(%{package: %Picsello.Package{}, job: %Picsello.Job{}}) ::
+          %Phoenix.LiveView.Rendered{}
+  def subheader(assigns) do
+    ~H"""
+    <div class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white">
+      <div class="flex justify-between min-w-0 lg:justify-start">
+        <%= if @package do %>
+          <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
+
+          <span class="ml-2 font-bold lg:ml-6"><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
+        <% end %>
+      </div>
+
+      <hr class="border-white lg:hidden lg:col-span-2"/>
+
+      <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end">
+        <span class="mb-3 mr-6 font-bold lg:mb-0 whitespace-nowrap"><%= @job.client.name %></span>
+
+        <div class="flex">
+          <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-xs whitespace-nowrap lg:text-blue-planning-300">
+            <.circle radius="7" class="mr-2">
+              <.icon name="phone-outline" class="text-white stroke-current" width="12" height="10" />
+            </.circle>
+
+            <%= @job.client.phone %>
+          </a>
+
+          <a href={"mailto:#{@job.client.email}"} class="flex items-center min-w-0 text-xs lg:text-blue-planning-300">
+            <span class="flex-shrink-0">
+              <.circle radius="7" class="mr-2">
+              <.icon name="envelope-outline" class="text-white stroke-current" width="12" height="10" />
+              </.circle>
+            </span>
+            <span class="truncate"><%= @job.client.email %></span>
+          </a>
+        </div>
+      </div>
+
+      <hr class="hidden border-gray-200 lg:block col-span-2"/>
+    </div>
+    """
+  end
+
+  def circle(assigns) do
+    radiuses = %{"7" => "w-7 h-7", "8" => "w-8 h-8"}
+
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: nil,
+        radius_class: Map.get(radiuses, assigns.radius)
+      })
+
+    ~H"""
+      <div class={"flex items-center justify-center rounded-full bg-blue-planning-300 #{@radius_class} #{@class}"}>
+        <%= render_block(@inner_block) %>
+      </div>
+    """
+  end
+
+  @spec notes(%{job: %Picsello.Job{}}) :: %Phoenix.LiveView.Rendered{}
+  def notes(assigns) do
+    ~H"""
+      <div class="flex items-baseline justify-between p-4 my-8 border rounded-lg border-base-200" {testid("notes")}>
+        <dl class="min-w-0">
+          <dt class="font-bold">Private Notes</dt>
+            <%= case @job.notes do %>
+            <% nil -> %>
+              <dd class="text-base-250"> Click edit to add a note </dd>
+            <% notes -> %>
+              <dd class="truncate"><%= String.split(notes, "\n") |> hd %></dd>
+            <% end %>
+        </dl>
+
+
+        <%= case @job.notes do %>
+        <% nil -> %>
+          <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes">Edit</.icon_button>
+        <% _notes -> %>
+          <button class="px-2 py-1 text-sm border rounded-lg border-blue-planning-300" type="button" phx-click="open-notes">
+            View
+          </button>
+        <% end %>
+      </div>
+    """
+  end
 end

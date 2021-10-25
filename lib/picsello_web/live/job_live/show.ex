@@ -3,7 +3,8 @@ defmodule PicselloWeb.JobLive.Show do
   use PicselloWeb, :live_view
   alias Picsello.{Job, Repo, Package}
 
-  import PicselloWeb.JobLive.Shared, only: [assign_job: 2, assign_proposal: 1, status_badge: 1]
+  import PicselloWeb.JobLive.Shared,
+    only: [assign_job: 2, assign_proposal: 1, status_badge: 1, subheader: 1, circle: 1, notes: 1]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
@@ -29,23 +30,6 @@ defmodule PicselloWeb.JobLive.Show do
           <%= @button_text %>
         </button>
       </li>
-    """
-  end
-
-  def circle(assigns) do
-    radiuses = %{"7" => "w-7 h-7", "8" => "w-8 h-8"}
-
-    assigns =
-      assigns
-      |> Enum.into(%{
-        class: nil,
-        radius_class: Map.get(radiuses, assigns.radius)
-      })
-
-    ~H"""
-      <div class={"flex items-center justify-center rounded-full bg-blue-planning-300 #{@radius_class} #{@class}"}>
-        <%= render_block(@inner_block) %>
-      </div>
     """
   end
 
@@ -96,17 +80,6 @@ defmodule PicselloWeb.JobLive.Show do
       ) do
     socket
     |> PicselloWeb.BookingProposalLive.QuestionnaireComponent.open_modal_from_proposal(proposal)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "open-notes",
-        %{},
-        socket
-      ) do
-    socket
-    |> PicselloWeb.JobLive.Shared.NotesModal.open()
     |> noreply()
   end
 
