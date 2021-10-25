@@ -45,11 +45,11 @@
                 <div class="relative ml-3">
                     <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
                     <%= if @favorites_filter do %>
-                    <div class="block bg-blue-300 w-14 h-8 rounded-full"></div>
-                    <div class="dot absolute right-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                        <div class="block bg-blue-300 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute right-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
                     <% else %>
-                    <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                    <div class="dot absolute left-1 top-1 bg-blue-300 w-6 h-6 rounded-full transition"></div>
+                        <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-blue-300 w-6 h-6 rounded-full transition"></div>
                     <% end %>
                 </div>
             </label>
