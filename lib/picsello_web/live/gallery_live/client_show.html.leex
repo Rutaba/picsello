@@ -71,24 +71,33 @@
   </div>
 
   <!-- images -->
-  <div class="masonry" style="position: relative;">
-    <div
-      id="client-gallery-grid"
-      phx-hook="MasonryGrid"
-      phx-update="<%= @update_mode %>"
-      data-page="<%= @page %>"
-      data-total="<%= @gallery.total_count %>"
-      data-favorites-count="<%= @favorites_count %>"
-      data-is-favorites-shown="<%= @favorites_filter %>"
-    >
-      <%= for photo <- @photos do %>
-        <div class="item" id="photo-item-<%= photo.id%>">
+  <div
+    id="muuri-grid"
+    class="muuri grid"
+    phx-hook="MasonryGrid"
+    phx-update="<%= @update_mode %>"
+    data-page="<%= @page %>"
+    data-total="<%= @gallery.total_count %>"
+    data-favorites-count="<%= @favorites_count %>"
+    data-is-favorites-shown="<%= @favorites_filter %>"
+  >
+    <%= for photo <- @photos do %>
+      <div
+        class="item"
+        id="photo-item-<%= photo.id %>"
+        style="
+          width: 309px;
+          height: <%= 309 / photo.aspect_ratio %>px;
+        "
+      >
+        <div class="item-content">
           <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
                     photo: photo %>
         </div>
-      <% end %>
-    </div>
+      </div>
+
+    <% end %>
   </div>
 
 </div>

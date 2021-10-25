@@ -1,4 +1,4 @@
-import Masonry from "masonry-layout";
+import Muuri from "muuri";
 
 /**
  * Returns true when reached either document percent or screens to bottom threshold
@@ -28,17 +28,18 @@ export default {
    * @returns {boolean|*}
    */
   init_masonry () {
-    const grid = document.querySelector(".masonry");
-    if (grid) {
-      const options = {
-        itemSelector: ".item",
-        columnWidth: 309,
-        gutter: 20,
-        fitWidth: true,
+    const gridElement = document.querySelector("#muuri-grid");
+    if (gridElement) {
+      const opts = {
+        layout: {
+          fillGaps: true,
+        },
+        dragEnabled: false,
       };
-      window.grid = new Masonry(grid, options);
+      const grid = new Muuri(gridElement, opts);
+      window.grid = this.grid = grid;
 
-      return window.grid;
+      return grid;
     }
     return false;
   },
@@ -47,8 +48,8 @@ export default {
    * @returns {Element|boolean|*}
    */
   get_grid() {
-    if (window.grid) {
-      return window.grid;
+    if (this.grid) {
+      return this.grid;
     }
     return this.init_masonry()
   },
@@ -57,34 +58,31 @@ export default {
    */
   reload_masonry () {
     const grid = this.get_grid();
-    grid.reloadItems();
+    grid.remove(grid.getItems());
+    grid.add(document.querySelectorAll('#muuri-grid .item'));
   },
   /**
    * Injects newly added photos into grid
    */
   inject_new_items() {
-    const grid = this.get_grid();
-    const allItems = document.querySelectorAll('.masonry .item');
-    const addedItemsIds = grid.getItemElements().map(x => x.id);
+    const grid = this.grid;
+    const addedItemsIds = grid.getItems().map(x => x.getElement().id);
+    const allItems = document.querySelectorAll('#muuri-grid .item');
     const itemsToInject = Array.from(allItems).filter(x => !addedItemsIds.includes(x.id))
 
-    grid.addItems(itemsToInject);
-    grid.layout();
+    grid.add(itemsToInject);
   },
   /**
    * Returns true if there are more photos to load. Based on total counter
    * @returns {boolean}
    */
   hasMorePhotoToLoad() {
-    let totalImagesNumber;
     const { isFavoritesShown, favoritesCount, total } = this.el.dataset;
-    const amount = this.get_grid().getItemElements().length;
+    const amount = this.get_grid().getItems().length;
 
-    if(isFavoritesShown === 'true'){
-      totalImagesNumber = parseInt(favoritesCount);
-    }else{
-      totalImagesNumber = parseInt(total);
-    }
+    const totalImagesNumber = isFavoritesShown === 'true'
+      ? parseInt(favoritesCount)
+      : parseInt(total);
 
     return amount < totalImagesNumber;
   },
@@ -111,14 +109,16 @@ export default {
    */
   reconnected(){
     this.pending = this.page();
-    this.inject_new_items();
   },
   /**
    * Updated callback
    */
   updated(){
     this.pending = this.page();
-    this.reload_masonry();
-    this.inject_new_items();
+    if (this.pending === "0") {
+      this.reload_masonry();
+    }else {
+      this.inject_new_items();
+    }
   }
 };
