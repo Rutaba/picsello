@@ -29,6 +29,7 @@ import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import MasonryGrid from './hooks/masonry-grid'
 import DragDrop from './hooks/drag-drop'
+import UploadEntry from './hooks/upload-entry'
 
 const Modal = {
   mounted() {
@@ -98,13 +99,13 @@ const Hooks = {
   PlacesAutocomplete,
   MasonryGrid,
   DragDrop,
+  UploadEntry
 };
 
 let Uploaders = {}
 Uploaders.GCS = function(entries, onViewError){
   entries.forEach(entry => {
     let formData = new FormData()
-    console.log(formData)
     let {url, fields} = entry.meta
 
     Object.entries(fields).forEach(([key, val]) => formData.append(key, val))

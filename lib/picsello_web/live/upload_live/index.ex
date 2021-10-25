@@ -6,7 +6,8 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
     max_entries: 50,
-    max_file_size: 104_857_600
+    max_file_size: 104_857_600,
+    auto_upload: true
   ]
   
   @impl true
@@ -31,6 +32,9 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
 
   @impl true
   def handle_event("save", params, socket) do
+    IO.inspect "save"
+    IO.inspect params
+    IO.inspect socket
     uploads =
       consume_uploaded_entries(socket, :photo, fn meta, _entry ->
         sign_opts = [bucket: meta[:fields]["bucket"], key: meta[:key]]
@@ -58,8 +62,8 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
     {:ok, params} = GCSSign.sign_post_policy_v4(socket.assigns.gcp_credentials, sign_opts)
-   
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+    IO.inspect meta
     {:ok, meta, socket}
   end
 

@@ -1,0 +1,44 @@
+<div class="dragDrop__wrapper">
+    <form id="dragDrop-form" phx-submit="save" phx-change="validate">
+        <div class="flex flex-col items-center justify-center gap-8 dragDrop"
+             id="dropzone"
+             phx-hook="DragDrop"
+             phx-drop-target="<%= @uploads.photo.ref %>"
+        >
+            <img src="/images/drag-drop-img.png" width="76" height="76"/>
+            <div class="dragDrop__content">
+                <span class="font-bold">Drop images or </span>
+                <label class="font-bold">Download
+                    <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                </label>
+                <p>Supports JPEG or PNG</p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<%# use phx-drop-target with the upload ref to enable file drag and drop %>
+<div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper py-8 px-4" phx-update="ignore">
+    <%= for entry <- @uploads.photo.entries do %>
+      <div class="uploadEntry grid grid-cols-4 pb-4 items-center" id="<%= entry.uuid %>" phx-hook="UploadEntry">
+          <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
+
+          <%# entry.progress will update automatically for in-flight entries %>
+          <progress value="<%= entry.progress %>" max="100"> <%= entry.progress %>%</progress>
+
+          <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
+          <%= for err <- upload_errors(@uploads.photo, entry) do %>
+            <div class="flex gap-x-4">
+              <p class="error btn"><%= err %></p>
+              <p class="retry btn">Retry ?</p>
+            </div>
+          <% end %>
+
+          <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+          <button phx-click="cancel-upload" phx-value-ref="<%= entry.ref %>" aria-label="cancel" class="justify-self-end">
+            <img src="/images/remove-icon.png" width="14" height="14"/>
+          </button> 
+      </div>
+    <% end %>
+</div>
+
