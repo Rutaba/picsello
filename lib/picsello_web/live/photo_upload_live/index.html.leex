@@ -38,12 +38,8 @@
         </div>
         <% end %>
         <%# entry.progress will update automatically for in-flight entries %>
-        <%= if entry.progress == 100 do%>
-        <%= entry.client_size %>
-        <% else %>
         <progress value="<%= entry.progress %>" max="100"> <%= entry.progress %>%
         </progress>
-        <% end %>
         <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
         <button phx-click="cancel-upload" phx-value-ref="<%= entry.ref %>" aria-label="cancel" class="justify-self-end">
             <img src="/images/remove-icon.png" width="14" height="14"/>
