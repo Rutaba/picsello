@@ -56,8 +56,15 @@ defmodule Picsello.CreateLeadPackageTest do
     session
     |> visit("/leads/#{lead.id}")
     |> click(button("Add a package"))
-    |> find(testid("template-card", count: 1))
-    |> assert_text("best wedding")
+    |> find(testid("template-card", count: 1), &assert_text(&1, "best wedding"))
+    |> find(button("New Package"), &assert(!Element.attr(&1, :disabled)))
+    |> find(button("Use template"), &assert(Element.attr(&1, :disabled)))
+    |> click(testid("template-card"))
+    |> find(button("Customize"), &assert(!Element.attr(&1, :disabled)))
+    |> find(button("Use template"), &assert(!Element.attr(&1, :disabled)))
+    |> click(testid("template-card"))
+    |> find(button("New Package"), &assert(!Element.attr(&1, :disabled)))
+    |> find(button("Use template"), &assert(Element.attr(&1, :disabled)))
   end
 
   feature "user with package templates creates new package", %{session: session, user: user} do

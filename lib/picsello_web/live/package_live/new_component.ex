@@ -129,26 +129,17 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step_buttons(%{name: :choose_template} = assigns) do
     ~H"""
-      <button class="mb-2 sm:mb-0" title="Use template" phx-target={@myself} phx-disable-with="Use Template" disabled={is_nil(input_value(@form, :package_template_id))}>
-        <label class="px-8 btn-primary">
-          <input type="radio" name="template-action" value="use" class="hidden" />
-          Use template
-        </label>
-      </button>
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="submit" phx-disable-with="Use Template" disabled={@form |> current_package() |> Map.get(:package_template_id) |> is_nil() }>
+      Use template
+    </button>
 
-    <%= unless is_nil(input_value(@form, :package_template_id)) do %>
-      <button class="mb-2 sm:mb-0" title="Customize" phx-target={@myself}>
-        <label class="px-10 btn-secondary">
-          <input type="radio" name="template-action" value="customize" class="hidden" />
-          Customize
-        </label>
+    <%= if @form |> current_package() |> Map.get(:package_template_id) do %>
+      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
+        Customize
       </button>
     <% else %>
-      <button class="px-8 mb-2 sm:mb-0" title="New Package" type="submit" phx-target={@myself}>
-        <label class="px-8 btn-primary">
-          <input type="radio" name="template-action" value="new" class="hidden" />
-          New Package
-        </label>
+      <button class="px-8 mb-2 sm:mb-0 btn-primary" title="New Package" type="button" phx-click="new-package" phx-target={@myself}>
+        New Package
       </button>
     <% end %>
     """
@@ -308,30 +299,14 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   def handle_event(
         "submit",
         %{
-          "package" => params,
-          "template-action" => "new",
-          "step" => "choose_template"
-        },
-        socket
-      ),
-      do: socket |> assign(step: :details) |> assign_changeset(params) |> noreply()
-
-  @impl true
-  def handle_event(
-        "submit",
-        %{
           "package" => %{"package_template_id" => package_template_id},
-          "template-action" => action,
           "step" => "choose_template"
         },
         %{assigns: %{job: job}} = socket
       ) do
     changeset = changeset_from_template(socket, String.to_integer(package_template_id))
 
-    case action do
-      "use" -> insert_package_and_update_job(socket, changeset, job)
-      "customize" -> socket |> assign(changeset: changeset, step: :details) |> noreply()
-    end
+    insert_package_and_update_job(socket, changeset, job)
   end
 
   @impl true
@@ -371,6 +346,25 @@ defmodule PicselloWeb.PackageLive.NewComponent do
       ) do
     changeset = build_changeset(socket, params)
     insert_package_and_update_job(socket, changeset, job)
+  end
+
+  @impl true
+  def handle_event("new-package", %{}, socket) do
+    socket
+    |> assign(step: :details, changeset: update_changeset(socket, step: :details))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "customize-template",
+        %{},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    package = current_package(%{source: changeset})
+    changeset = socket |> changeset_from_template(package.package_template_id)
+
+    socket |> assign(step: :details, changeset: changeset) |> noreply()
   end
 
   # takes the current changeset off the socket and returns a new changeset with the same data but new_opts
