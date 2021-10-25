@@ -3,6 +3,7 @@
 @import "tailwindcss/utilities";
 
 @import "./components/buttons.css";
+@import "./components/clientGallery.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
 @import "quill/dist/quill.core.css";
@@ -99,30 +100,7 @@ html {
   font-size: 0.5rem;
 }
 
-.masonry {
-  margin: 0 auto;
 
-  .item {
-    width: 309px;
-    margin-bottom: 20px;
-
-    img {
-      border-radius: 8px;
-    }
-  }
-
-  .item .btn {
-    position: relative;
-    left: 85%;
-    transform: translate(-30%, -100%);
-    color: black;
-    padding: 12px 24px;
-    
-    svg {
-      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
-    }
-  }
-}
 
 
 .muuri.grid {
@@ -133,8 +111,6 @@ html {
     position: absolute;
     margin: 10px;
     z-index: 1;
-    //background: white;
-    //color: #fff;
   }
   .item.muuri-item-dragging {
     z-index: 3;
