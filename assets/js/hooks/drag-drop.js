@@ -3,8 +3,8 @@ import { Modal } from './shared';
 export default {
     mounted() {
         const { el } = this;
-        let content = document.getElementById('dragDrop__wrapper');
         let dropArea = document.getElementById(el.id);
+        let content = dropArea.closest('.dragDrop__wrapper');
         [("dragenter", "dragover", "dragleave", "drop")].forEach((eventName) => {
             dropArea.addEventListener(eventName, preventDefaults, false);
         });
