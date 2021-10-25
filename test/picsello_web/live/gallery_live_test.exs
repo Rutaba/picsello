@@ -22,6 +22,7 @@ defmodule PicselloWeb.GalleryLiveTest do
   describe "Index" do
     setup [:create_gallery]
 
+    @tag :skip
     test "lists all galleries", %{conn: conn, gallery: gallery} do
       {:ok, _index_live, html} = live(conn, Routes.gallery_index_path(conn, :index))
 
@@ -29,6 +30,7 @@ defmodule PicselloWeb.GalleryLiveTest do
       assert html =~ gallery.name
     end
 
+    @tag :skip
     test "saves new gallery", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, Routes.gallery_index_path(conn, :index))
 
@@ -51,6 +53,7 @@ defmodule PicselloWeb.GalleryLiveTest do
       assert html =~ "some name"
     end
 
+    @tag :skip
     test "updates gallery in listing", %{conn: conn, gallery: gallery} do
       {:ok, index_live, _html} = live(conn, Routes.gallery_index_path(conn, :index))
 
@@ -73,6 +76,7 @@ defmodule PicselloWeb.GalleryLiveTest do
       assert html =~ "some updated name"
     end
 
+    @tag :skip
     test "deletes gallery in listing", %{conn: conn, gallery: gallery} do
       {:ok, index_live, _html} = live(conn, Routes.gallery_index_path(conn, :index))
 
@@ -84,6 +88,7 @@ defmodule PicselloWeb.GalleryLiveTest do
   describe "Show" do
     setup [:create_gallery]
 
+    @tag :skip
     test "displays gallery", %{conn: conn, gallery: gallery} do
       {:ok, _show_live, html} = live(conn, Routes.gallery_show_path(conn, :show, gallery))
 
@@ -91,6 +96,7 @@ defmodule PicselloWeb.GalleryLiveTest do
       assert html =~ gallery.name
     end
 
+    @tag :skip
     test "updates gallery within modal", %{conn: conn, gallery: gallery} do
       {:ok, show_live, _html} = live(conn, Routes.gallery_show_path(conn, :show, gallery))
 

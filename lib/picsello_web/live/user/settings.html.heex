@@ -1,9 +1,8 @@
-<div class="px-8 pt-2">
-  <h1 class="flex-1 mb-1 text-center title">Settings</h1>
+<.settings_nav socket={@socket} live_action={@live_action}>
   <%= if @email_changeset do %>
     <h3 class="mt-4 text-lg font-bold">Change email</h3>
 
-    <%= f = form_for @email_changeset, "#", phx_change: :validate, phx_submit: :save %>
+    <.form let={f} for={@email_changeset} phx-change="validate" phx-submit="save" id="email_form">
       <%= hidden_input f, :action, name: "action", value: "update_email" %>
 
       <%= labeled_input f, :email, type: :email_input %>
@@ -13,13 +12,13 @@
       <div class="mt-5 text-center">
         <%= submit "Change email", class: "btn-primary mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Changing email..." %>
       </div>
-    </form>
+    </.form>
   <% end %>
 
   <%= if @password_changeset do %>
     <h3 class="mt-4 text-lg font-bold">Change password</h3>
 
-    <%= f = form_for @password_changeset, Routes.user_settings_path(@socket, :update), phx_change: :validate, phx_submit: :save, method: :put, phx_trigger_action: @submit_changed_password %>
+    <.form let={f} for={@password_changeset} action={Routes.user_settings_path(@socket, :update)} phx-change="validate" phx-submit="save" method="put" phx-trigger-action={@submit_changed_password}>
       <%= hidden_input f, :action, name: "action", value: "update_password" %>
 
       <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :change_new_password, label: "New password" %>
@@ -29,12 +28,12 @@
       <div class="mt-5 text-center">
         <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
       </div>
-    </form>
+    </.form>
   <% end %>
 
-  <%= form_for :sign_out, Routes.user_session_path(@socket, :delete), method: :delete, phx_trigger_action: @sign_out, phx_submit: :sign_out %>
+  <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
     <div class="mt-5 text-center">
        <%= submit "Sign out", class: "btn-primary" %>
     </div>
-  </form>
-</div>
+  </.form>
+</.settings_nav>

@@ -37,7 +37,6 @@ defmodule Picsello.Galleries do
   """
   def get_gallery!(id), do: Repo.get!(Gallery, id)
 
-
   @doc """
   Gets a single gallery by hash parameter.
 
@@ -52,7 +51,7 @@ defmodule Picsello.Galleries do
       nil
 
   """
-  @spec get_gallery_by_hash(hash :: binary) :: Gallery | nil
+  @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
   def get_gallery_by_hash(hash) do
     Gallery
     |> where(client_link_hash: ^hash)
@@ -74,12 +73,16 @@ defmodule Picsello.Galleries do
     * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`
 
   """
-  @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) :: list(Photo)
+  @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
+          list(Photo)
   def get_gallery_photos(id, per_page, page, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
-    select_opts = (if only_favorites, do: [client_liked: true], else: []) |> Keyword.merge([gallery_id: id])
+
+    select_opts =
+      if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id)
+
     offset = per_page * page
-    
+
     Photo
     |> where(^select_opts)
     |> order_by(asc: :position)
@@ -169,7 +172,6 @@ defmodule Picsello.Galleries do
     load_gallery_photos_by_type(gallery, type)
   end
 
-
   defp load_gallery_photos_by_type(gallery, "all") do
     Photo
     |> where(gallery_id: ^gallery.id)
@@ -178,11 +180,25 @@ defmodule Picsello.Galleries do
 
   defp load_gallery_photos_by_type(gallery, "favorites") do
     Photo
-    |> where([gallery_id: ^gallery.id, client_liked: true])
+    |> where(gallery_id: ^gallery.id, client_liked: true)
     |> Repo.all()
   end
 
-  defp load_gallery_photos_by_type(_,_), do: []
+  defp load_gallery_photos_by_type(_, _), do: []
+
+  @doc """
+  Loads the number of favorite photos from the gallery
+
+  ## Examples
+
+      iex> gallery_favorites_count(gallery)
+      5
+  """
+  def gallery_favorites_count(%Gallery{} = gallery) do
+    Photo
+    |> where(gallery_id: ^gallery.id, client_liked: true)
+    |> Repo.aggregate(:count, [])
+  end
 
   @doc """
   Creates a photo.

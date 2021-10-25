@@ -23,6 +23,8 @@ defmodule PicselloWeb.LiveAuthTest do
       conn: conn,
       user: user
     } do
+      Mox.stub(Picsello.MockPayments, :status, fn _ -> :no_account end)
+
       assert {:ok, _, _} = conn |> log_in_user(user |> onboard!()) |> live(@home_path)
     end
 

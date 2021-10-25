@@ -16,6 +16,20 @@ config :picsello, PicselloWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+dns_name = System.get_env("RENDER_DISCOVERY_SERVICE")
+app_name = System.get_env("RENDER_SERVICE_NAME")
+
+config :libcluster,
+  topologies: [
+    render: [
+      strategy: Cluster.Strategy.Kubernetes.DNS,
+      config: [
+        service: dns_name,
+        application_name: app_name
+      ]
+    ]
+  ]
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

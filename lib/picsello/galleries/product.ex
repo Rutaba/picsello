@@ -1,5 +1,7 @@
 defmodule Picsello.Galleries.Product do
+  @moduledoc false
   use Ecto.Schema
+
   import Ecto.Changeset
 
   schema "products" do

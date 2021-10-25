@@ -4,11 +4,12 @@ defmodule PicselloWeb.LiveHelpers do
 
   import Phoenix.LiveView, only: [assign: 2]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
+  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
-  def live_modal(socket, component, opts) do
+  def live_modal(_socket, component, opts) do
     path = Keyword.fetch!(opts, :return_to)
     modal_opts = [id: :modal, return_to: path, component: component, opts: opts]
-    live_component(socket, PicselloWeb.ModalComponent, modal_opts)
+    live_component(PicselloWeb.ModalComponent, modal_opts)
   end
 
   def open_modal(socket, component, assigns \\ %{})
@@ -101,6 +102,17 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def icon_button(assigns) do
+    assigns = Map.put(assigns, :rest, Map.drop(assigns, [:color, :icon, :inner_block]))
+
+    ~H"""
+    <button type="button" class={"flex items-center px-2 py-1 border rounded-lg text-2m border-#{@color}"} {@rest}>
+      <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
+      <%= render_block(@inner_block) %>
+    </button>
+    """
+  end
+
   def ok(socket), do: {:ok, socket}
   def noreply(socket), do: {:noreply, socket}
 
@@ -110,5 +122,68 @@ defmodule PicselloWeb.LiveHelpers do
     else
       %{}
     end
+  end
+
+  def classes(constants), do: classes(constants, %{})
+
+  def classes(nil, optionals), do: classes([], optionals)
+
+  def classes("" <> constant, optionals) do
+    classes([constant], optionals)
+  end
+
+  def classes(constants, optionals) do
+    [
+      constants,
+      optionals
+      |> Enum.filter(&elem(&1, 1))
+      |> Enum.map(&elem(&1, 0))
+    ]
+    |> Enum.concat()
+    |> Enum.join(" ")
+  end
+
+  def path_active?(
+        %{
+          view: socket_view,
+          router: router,
+          host_uri: %{host: host}
+        },
+        socket_live_action,
+        path
+      ),
+      do:
+        match?(
+          %{phoenix_live_view: {view, live_action, _, _}}
+          when view == socket_view and live_action == socket_live_action,
+          Phoenix.Router.route_info(router, "GET", path, host)
+        )
+
+  def nav_link(assigns) do
+    ~H"""
+      <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => path_active?(@socket, @live_action, @to)}) do %>
+        <%= render_block(@inner_block) %>
+      <% end %>
+    """
+  end
+
+  def job_type_option(assigns) do
+    ~H"""
+      <label class={classes(
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
+        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
+      )}>
+        <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} />
+
+        <div class={classes(
+          "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
+          %{"bg-blue-planning-300 text-white" => @checked, "bg-base-200" => !@checked}
+        )}>
+          <.icon name={@job_type} class="fill-current" width="14" height="14" />
+        </div>
+
+        <%= dyn_gettext @job_type %>
+      </label>
+    """
   end
 end

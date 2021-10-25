@@ -23,11 +23,13 @@ import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
 import Phone from './hooks/phone';
+import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
-import MasonryGrid from './hooks/masonry-grid'
+import AutoHeight from './hooks/auto-height';
+import MasonryGrid from './hooks/masonry-grid';
 
 const Modal = {
   mounted() {
@@ -66,14 +68,25 @@ const LockBodyScroll = {
 
 const ClearInput = {
   mounted() {
-    const { inputName } = this.el.dataset;
-    const input = this.el.parentElement.querySelector(
-      `input[name*=${inputName}]`
-    );
+    const { el } = this;
+    const {
+      dataset: { inputName },
+    } = el;
+
+    const input = this.el
+      .closest('form')
+      .querySelector(`*[name*='${inputName}']`);
+
+    let inputWasFocussed = false;
+
+    input.addEventListener('blur', (e) => {
+      inputWasFocussed = e.relatedTarget == el;
+    });
 
     this.el.addEventListener('click', () => {
       input.value = null;
       input.dispatchEvent(new Event('input', { bubbles: true }));
+      if (inputWasFocussed) input.focus();
     });
   },
 };
@@ -90,11 +103,13 @@ const Hooks = {
   LockBodyScroll,
   Modal,
   Phone,
+  PriceMask,
   ToggleContent,
   Quill,
   Select,
   TZCookie,
   PlacesAutocomplete,
+  AutoHeight,
   MasonryGrid,
 };
 

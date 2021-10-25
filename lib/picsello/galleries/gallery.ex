@@ -1,4 +1,5 @@
 defmodule Picsello.Galleries.Gallery do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.{Galleries.Photo, Job}

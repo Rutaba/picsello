@@ -6,7 +6,14 @@ defmodule Picsello.Application do
   use Application
 
   def start(_type, _args) do
+    topologies = Application.get_env(:libcluster, :topologies) || []
+
     children = [
+      # Start libCluster
+      {Cluster.Supervisor, [topologies, [name: Picsello.ClusterSupervisor]]},
+      ImageProcessing.TaskKeeper,
+      ImageProcessing.TaskProxy,
+      ImageProcessing.Flow,
       # Start the Ecto repository
       Picsello.Repo,
       # Start the Telemetry supervisor
@@ -15,7 +22,8 @@ defmodule Picsello.Application do
       {Phoenix.PubSub, name: Picsello.PubSub},
       # Start the Endpoint (http/https)
       PicselloWeb.Endpoint,
-      {Picsello.ProposalReminderScheduler, []}
+      {Picsello.ProposalReminderScheduler, []},
+      {Picsello.StripeStatusCache, []}
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
     ]

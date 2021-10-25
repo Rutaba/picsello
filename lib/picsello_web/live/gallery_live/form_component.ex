@@ -1,4 +1,5 @@
 defmodule PicselloWeb.GalleryLive.FormComponent do
+  @moduledoc false
   use PicselloWeb, :live_component
 
   alias Picsello.Galleries
