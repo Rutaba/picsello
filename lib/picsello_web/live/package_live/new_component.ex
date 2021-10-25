@@ -129,11 +129,11 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step_buttons(%{name: :choose_template} = assigns) do
     ~H"""
-    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="submit" phx-disable-with="Use Template" disabled={@form |> current_package() |> Map.get(:package_template_id) |> is_nil() }>
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="submit" phx-disable-with="Use Template" disabled={!template_selected?(@form)}>
       Use template
     </button>
 
-    <%= if @form |> current_package() |> Map.get(:package_template_id) do %>
+    <%= if template_selected?(@form) do %>
       <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
         Customize
       </button>
@@ -163,15 +163,13 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step(%{name: :choose_template} = assigns) do
     ~H"""
-      <h1 class="mt-6 text-xl font-bold">Select Package</h1>
+    <h1 class="mt-6 text-xl font-bold">Select Package <%= if template_selected?(@f), do: "(1 selected)", else: "" %></h1>
       <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        <input class="hidden" type="hidden" name={input_name(@f, :package_template_id)} value="" />
-
         <%= for template <- @templates do %>
           <% checked = input_value(@f, :package_template_id) == template.id %>
 
           <label {testid("template-card")} class={classes("p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group", %{"bg-blue-planning-100 border-blue-planning-300" => checked})}>
-            <input class="hidden" type="checkbox" name={input_name(@f, :package_template_id)} value={template.id} checked={checked} />
+            <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: template.id} />
 
             <h1 class="text-2xl font-bold line-clamp-2"><%= template.name %></h1>
 
@@ -366,6 +364,9 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
     socket |> assign(step: :details, changeset: changeset) |> noreply()
   end
+
+  defp template_selected?(form),
+    do: form |> current_package() |> Map.get(:package_template_id) != nil
 
   # takes the current changeset off the socket and returns a new changeset with the same data but new_opts
   # this is for special cases like "back." mostly we want to use params when we create a changset, not

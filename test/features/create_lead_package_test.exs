@@ -51,20 +51,32 @@ defmodule Picsello.CreateLeadPackageTest do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     insert(:package_template, user: user, job_type: "wedding", name: "best wedding")
+    insert(:package_template, user: user, job_type: "wedding", name: "lame wedding")
+
     insert(:package_template, user: user, job_type: "other")
 
     session
     |> visit("/leads/#{lead.id}")
     |> click(button("Add a package"))
-    |> find(testid("template-card", count: 1), &assert_text(&1, "best wedding"))
+    |> assert_has(testid("template-card", count: 2))
     |> find(button("New Package"), &assert(!Element.attr(&1, :disabled)))
     |> find(button("Use template"), &assert(Element.attr(&1, :disabled)))
-    |> click(testid("template-card"))
+    |> click(testid("template-card", text: "best wedding"))
     |> find(button("Customize"), &assert(!Element.attr(&1, :disabled)))
     |> find(button("Use template"), &assert(!Element.attr(&1, :disabled)))
-    |> click(testid("template-card"))
+    |> click(testid("template-card", text: "best wedding"))
     |> find(button("New Package"), &assert(!Element.attr(&1, :disabled)))
     |> find(button("Use template"), &assert(Element.attr(&1, :disabled)))
+    |> click(testid("template-card", text: "best wedding"))
+    |> find(
+      css("[data-testid='template-card'].border-blue-planning-300"),
+      &assert_text(&1, "best wedding")
+    )
+    |> click(testid("template-card", text: "lame wedding"))
+    |> find(
+      css("[data-testid='template-card'].border-blue-planning-300"),
+      &assert_text(&1, "lame wedding")
+    )
   end
 
   feature "user with package templates creates new package", %{session: session, user: user} do
