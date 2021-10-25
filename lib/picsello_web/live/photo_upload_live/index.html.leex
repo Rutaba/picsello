@@ -9,42 +9,36 @@
             <div class="dragDrop__content">
                 <span class="font-bold">Drop images or </span>
                 <label class="font-bold">Download
-                    <%= live_file_input @uploads.photo %>
+                    <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                 </label>
                 <p>Supports JPEG or PNG</p>
             </div>
         </div>
-        <button type="submit">Upload</button>
     </form>
 </div>
 
 <%# use phx-drop-target with the upload ref to enable file drag and drop %>
-<div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper py-8 px-4">
+<div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper py-8 px-4" id="UploadEntries">
     <%= for entry <- @uploads.photo.entries do %>
-    <div class="uploadEntry grid grid-cols-4 pb-4 items-center">
-        <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
+      <div class="uploadEntry grid grid-cols-4 pb-4 items-center" id="<%= entry.uuid %>">
+          <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
 
-        <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
-        <%= for err <- upload_errors(@uploads.photo, entry) do%>
-        <div class="flex gap-x-4">
-            <p class="error btn">
-                <%= if err == :not_accepted do %>
-                Unacceptable file type
-                <% else %>
-                Too large
-                <% end %>
-            </p>
-            <!--<p class="retry btn">Retry ?</p>-->
-        </div>
-        <% end %>
-        <%# entry.progress will update automatically for in-flight entries %>
-        <progress value="<%= entry.progress %>" max="100"> <%= entry.progress %>%
-        </progress>
-        <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
-        <button phx-click="cancel-upload" phx-value-ref="<%= entry.ref %>" aria-label="cancel" class="justify-self-end">
+          <%# entry.progress will update automatically for in-flight entries %>
+          <progress value="<%= entry.progress %>" max="100"> <%= entry.progress %>%</progress>
+          <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= upload_errors(@uploads.photo, entry) %></p>
+          <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
+          <%= for err <- upload_errors(@uploads.photo, entry) do %>
+            <div class="flex gap-x-4">
+              <p class="error btn"><%= err %></p>
+              <p class="retry btn">Retry ?</p>
+            </div>
+          <% end %>
+
+          <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+          <button phx-click="cancel-upload" phx-value-ref="<%= entry.ref %>" aria-label="cancel" class="justify-self-end">
             <img src="/images/remove-icon.png" width="14" height="14"/>
-        </button>
-    </div>
+          </button> 
+      </div>
     <% end %>
 </div>
 
