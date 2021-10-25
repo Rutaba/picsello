@@ -18,14 +18,14 @@
 </div>
 
 <%# use phx-drop-target with the upload ref to enable file drag and drop %>
-<div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper py-8 px-4" phx-update="ignore">
+<div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper py-8 px-4" id="UploadEntries" phx-hook="UploadEntries">
     <%= for entry <- @uploads.photo.entries do %>
-      <div class="uploadEntry grid grid-cols-4 pb-4 items-center" id="<%= entry.uuid %>" phx-hook="UploadEntry">
+      <div class="uploadEntry grid grid-cols-4 pb-4 items-center" id="<%= entry.uuid %>">
           <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
 
           <%# entry.progress will update automatically for in-flight entries %>
           <progress value="<%= entry.progress %>" max="100"> <%= entry.progress %>%</progress>
-
+          <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= upload_errors(@uploads.photo, entry) %></p>
           <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
           <%= for err <- upload_errors(@uploads.photo, entry) do %>
             <div class="flex gap-x-4">

@@ -31,18 +31,25 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
   end
 
   @impl true
-  def handle_event("save", params, socket) do
+  def handle_event("111", _params, socket) do
+    IO.inspect "11"
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("save", %{"id" => id}, socket) do
     IO.inspect "save"
-    IO.inspect params
-    IO.inspect socket
-    uploads =
-      consume_uploaded_entries(socket, :photo, fn meta, _entry ->
+    
+    entry = Enum.find(socket.assigns.uploads.photo.entries, fn e -> e.uuid == id end)
+    IO.inspect entry
+    upload =
+      consume_uploaded_entry(socket, entry, fn meta ->
         sign_opts = [bucket: meta[:fields]["bucket"], key: meta[:key]]
         GCSSign.sign_url_v4(socket.assigns.gcp_credentials, sign_opts)
       end)
     
-    socket = update(socket, :uploaded_files, &(&1 ++ uploads))
-    IO.inspect socket
+    socket = update(socket, :uploaded_files, &(&1 ++ upload))
+    #IO.inspect socket
     {:noreply, socket}
   end
 
@@ -63,7 +70,7 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
     ]
     {:ok, params} = GCSSign.sign_post_policy_v4(socket.assigns.gcp_credentials, sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-    IO.inspect meta
+    #IO.inspect meta
     {:ok, meta, socket}
   end
 

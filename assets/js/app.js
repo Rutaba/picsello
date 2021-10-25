@@ -29,7 +29,7 @@ import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import MasonryGrid from './hooks/masonry-grid'
 import DragDrop from './hooks/drag-drop'
-import UploadEntry from './hooks/upload-entry'
+import UploadEntries from './hooks/upload-entries'
 
 const Modal = {
   mounted() {
@@ -99,7 +99,7 @@ const Hooks = {
   PlacesAutocomplete,
   MasonryGrid,
   DragDrop,
-  UploadEntry
+  UploadEntries
 };
 
 let Uploaders = {}
