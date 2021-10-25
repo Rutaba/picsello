@@ -16,6 +16,17 @@ const isScrolledOver = (percent, screen) => {
         || (scrollTop + clientHeight > scrollHeight - screen * clientHeight)
 }
 
+/**
+ *  Fills gallery changes form field
+ */
+const setGalleryChange = (name, value) => {
+  const field = document.querySelector(`#gallery_changes > input[name=${name}]`);
+  if (field) {
+    field.value = value;
+  }
+}
+
+
 export default {
   /**
    * Current page getter
@@ -34,15 +45,26 @@ export default {
         layout: {
           fillGaps: true,
         },
-        dragEnabled: false,
+        dragEnabled: true,
+        dragStartPredicate: (item, e) => {
+          const {isFavoritesShown, isSortable} = this.el.dataset;
+
+          return isSortable === 'true' && isFavoritesShown !== 'true';
+        }
       };
       const grid = new Muuri(gridElement, opts);
+      grid.on('dragReleaseEnd', (item) => {
+        const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
+        setGalleryChange('photo_order', order);
+      })
+
       window.grid = this.grid = grid;
 
       return grid;
     }
     return false;
   },
+
   /**
    * Masonry grid getter
    * @returns {Element|boolean|*}
@@ -53,6 +75,7 @@ export default {
     }
     return this.init_masonry()
   },
+
   /**
    * Recollects all item elements to apply changes to the DOM to Masonry
    */
@@ -61,6 +84,7 @@ export default {
     grid.remove(grid.getItems());
     grid.add(document.querySelectorAll('#muuri-grid .item'));
   },
+
   /**
    * Injects newly added photos into grid
    */
@@ -72,6 +96,7 @@ export default {
 
     grid.add(itemsToInject);
   },
+
   /**
    * Returns true if there are more photos to load. Based on total counter
    * @returns {boolean}
@@ -86,6 +111,7 @@ export default {
 
     return amount < totalImagesNumber;
   },
+
   /**
    * Mount callback
    */
@@ -102,14 +128,20 @@ export default {
       }
     })
 
-    this.init_masonry();
+    const grid = this.init_masonry();
+    grid.on('dragReleaseEnd', (item) => {
+      const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
+      setGalleryChange('photo_order', order);
+    });
   },
+
   /**
    * Reconnect callback
    */
   reconnected(){
     this.pending = this.page();
   },
+
   /**
    * Updated callback
    */
@@ -122,3 +154,4 @@ export default {
     }
   }
 };
+

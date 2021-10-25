@@ -28,7 +28,6 @@ import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import PlacesAutocomplete from './hooks/places-autocomplete';
-import SortableMasonry from './hooks/sortable-masonry';
 import AutoHeight from './hooks/auto-height';
 import MasonryGrid from './hooks/masonry-grid';
 
@@ -112,7 +111,6 @@ const Hooks = {
   PlacesAutocomplete,
   AutoHeight,
   MasonryGrid,
-  SortableMasonry,
 };
 
 let csrfToken = document
