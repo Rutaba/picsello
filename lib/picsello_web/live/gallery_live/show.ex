@@ -44,14 +44,19 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  defp assign_photos(%{
-    assigns: %{gallery: %{id: id}, page: page, favorites_filter: filter}
-  } = socket) do
+  defp assign_photos(
+         %{
+           assigns: %{
+             gallery: %{id: id},
+             page: page,
+             favorites_filter: filter
+           }
+         } = socket
+       ) do
     assign(socket,
       photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
     )
   end
-
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"

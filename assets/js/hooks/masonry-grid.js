@@ -128,11 +128,7 @@ export default {
       }
     })
 
-    const grid = this.init_masonry();
-    grid.on('dragReleaseEnd', (item) => {
-      const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
-      setGalleryChange('photo_order', order);
-    });
+    this.init_masonry();
   },
 
   /**
