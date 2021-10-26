@@ -18,5 +18,33 @@
 
 </ul>
 
-<span><%= live_patch "Edit", to: Routes.gallery_show_path(@socket, :edit, @gallery), class: "button" %></span>
-<span><%= live_redirect "Back", to: Routes.gallery_index_path(@socket, :index) %></span>
+
+<div
+    phx-hook="MasonryGrid"
+    phx-update="<%= @update_mode %>"
+    id="muuri-grid"
+    class="muuri grid"
+    data-page="<%= @page %>"
+    data-total="<%= @gallery.total_count %>"
+    data-favorites-count="<%= @favorites_count %>"
+    data-is-favorites-shown="<%= @favorites_filter %>"
+    data-is-sortable="true"
+ >
+    <%= for photo <- @photos do %>
+      <div
+        class="item"
+        id="photo-item-<%= photo.id %>"
+        style="
+            width: 309px;
+            height: <%= 309 / photo.aspect_ratio %>px;
+        "
+      >
+        <div class="item-content">
+            <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo,
+                    is_likable: false %>
+        </div>
+      </div>
+    <% end %>
+</div>

@@ -251,4 +251,26 @@ defmodule Picsello.Galleries do
     |> Photo.update_changeset(%{client_liked: !client_liked})
     |> Repo.update()
   end
+
+  @doc """
+  Normalizes photos positions within a gallery
+  """
+  def normalize_gallery_photo_positions(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH ranks AS (
+          SELECT id, RANK() OVER (ORDER BY position) AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+        )
+        UPDATE photos
+        SET POSITION = r.pos
+        FROM ranks r
+        WHERE photos.gallery_id = $1::integer
+          AND photos.id = r.id
+      """,
+      [gallery_id]
+    )
+  end
 end
