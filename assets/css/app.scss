@@ -3,6 +3,7 @@
 @import "tailwindcss/utilities";
 
 @import "./components/buttons.css";
+@import "./components/clientGallery.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
 @import "./components/drag-drop.css";
@@ -81,8 +82,18 @@ html {
   @apply xl:container xl:mx-auto;
 }
 
+@layer components {
+  .bare-modal {
+    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg;
+  }
+}
+
 .modal {
-  @apply px-4 py-3 sm:p-8 bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg;
+  @apply px-4 py-3 sm:p-8 max-w-screen-xl bare-modal;
+}
+
+.dialog {
+  @apply px-4 py-3 sm:p-8 max-w-md bare-modal;
 }
 
 .badge {
@@ -90,18 +101,36 @@ html {
   font-size: 0.5rem;
 }
 
-.masonry {
-  margin: 0 auto;
+
+
+
+.muuri.grid {
+  position: relative;
 
   .item {
-    width: 309px;
-    margin-bottom: 20px;
-
-    img {
-      border-radius: 8px;
-    }
+    display: block;
+    position: absolute;
+    margin: 10px;
+    z-index: 1;
+  }
+  .item.muuri-item-dragging {
+    z-index: 3;
+  }
+  .item.muuri-item-releasing {
+    z-index: 2;
+  }
+  .item.muuri-item-hidden {
+    z-index: 0;
+  }
+  .item-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
 
+  /**************************************************************************************
+   *  PicSello specific
+   **/
   .item .btn {
     position: relative;
     left: 85%;
@@ -113,5 +142,11 @@ html {
       filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
     }
   }
+
+  .item .item-content img {
+    background-color: gray;
+    border-radius: 8px;
+  }
+
 }
 

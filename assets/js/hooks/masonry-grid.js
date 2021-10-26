@@ -1,4 +1,4 @@
-import Masonry from "masonry-layout";
+import Muuri from "muuri";
 
 /**
  * Returns true when reached either document percent or screens to bottom threshold
@@ -16,6 +16,17 @@ const isScrolledOver = (percent, screen) => {
         || (scrollTop + clientHeight > scrollHeight - screen * clientHeight)
 }
 
+/**
+ *  Fills gallery changes form field
+ */
+const setGalleryChange = (name, value) => {
+  const field = document.querySelector(`#gallery_changes > input[name=${name}]`);
+  if (field) {
+    field.value = value;
+  }
+}
+
+
 export default {
   /**
    * Current page getter
@@ -28,52 +39,79 @@ export default {
    * @returns {boolean|*}
    */
   init_masonry () {
-    const grid = document.querySelector(".masonry");
-    if (grid) {
-      const options = {
-        itemSelector: ".item",
-        columnWidth: 309,
-        gutter: 20,
-        fitWidth: true,
-      };
-      window.grid = new Masonry(grid, options);
+    const gridElement = document.querySelector("#muuri-grid");
+    if (gridElement) {
+      const opts = {
+        layout: {
+          fillGaps: true,
+        },
+        dragEnabled: true,
+        dragStartPredicate: (item, e) => {
+          const {isFavoritesShown, isSortable} = this.el.dataset;
 
-      return window.grid;
+          return isSortable === 'true' && isFavoritesShown !== 'true';
+        }
+      };
+      const grid = new Muuri(gridElement, opts);
+      grid.on('dragReleaseEnd', (item) => {
+        const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
+        setGalleryChange('photo_order', order);
+      })
+
+      window.grid = this.grid = grid;
+
+      return grid;
     }
     return false;
   },
+
   /**
    * Masonry grid getter
    * @returns {Element|boolean|*}
    */
   get_grid() {
-    if (window.grid) {
-      return window.grid;
+    if (this.grid) {
+      return this.grid;
     }
     return this.init_masonry()
   },
+
+  /**
+   * Recollects all item elements to apply changes to the DOM to Masonry
+   */
+  reload_masonry () {
+    const grid = this.get_grid();
+    grid.remove(grid.getItems());
+    grid.add(document.querySelectorAll('#muuri-grid .item'));
+  },
+
   /**
    * Injects newly added photos into grid
    */
   inject_new_items() {
-    const grid = this.get_grid();
-    const allItems = document.querySelectorAll('.masonry .item');
-    const addedItemsIds = grid.getItemElements().map(x => x.id);
+    const grid = this.grid;
+    const addedItemsIds = grid.getItems().map(x => x.getElement().id);
+    const allItems = document.querySelectorAll('#muuri-grid .item');
     const itemsToInject = Array.from(allItems).filter(x => !addedItemsIds.includes(x.id))
 
-    grid.addItems(itemsToInject);
-    grid.layout();
+    grid.add(itemsToInject);
   },
+
   /**
    * Returns true if there are more photos to load. Based on total counter
    * @returns {boolean}
    */
   hasMorePhotoToLoad() {
-    const total = parseInt(this.el.dataset.total);
-    const amount = this.get_grid().getItemElements().length;
+    const { isFavoritesShown, favoritesCount, total } = this.el.dataset;
+    const amount = this.get_grid().getItems().length;
 
-    return amount < total;
+    const totalImagesNumber = isFavoritesShown === 'true'
+      ? parseInt(favoritesCount)
+      : parseInt(total);
+
+    return amount < totalImagesNumber;
   },
+
   /**
    * Mount callback
    */
@@ -92,18 +130,24 @@ export default {
 
     this.init_masonry();
   },
+
   /**
    * Reconnect callback
    */
   reconnected(){
     this.pending = this.page();
-    this.inject_new_items();
   },
+
   /**
    * Updated callback
    */
   updated(){
     this.pending = this.page();
-    this.inject_new_items();
+    if (this.pending === "0") {
+      this.reload_masonry();
+    }else {
+      this.inject_new_items();
+    }
   }
 };
+

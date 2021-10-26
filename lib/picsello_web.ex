@@ -43,11 +43,14 @@ defmodule PicselloWeb do
   end
 
   def live_view(options) do
-    layout = Keyword.get(options, :layout, "live")
+    options =
+      case Keyword.get(options, :layout, "live") do
+        false -> []
+        name -> [layout: {PicselloWeb.LayoutView, "#{name}.html"}]
+      end
 
     quote do
-      use Phoenix.LiveView,
-        layout: {PicselloWeb.LayoutView, "#{unquote(layout)}.html"}
+      use Phoenix.LiveView, unquote(options)
 
       import PicselloWeb.{LiveViewHelpers, LiveHelpers}
 

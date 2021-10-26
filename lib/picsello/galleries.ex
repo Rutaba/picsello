@@ -187,6 +187,20 @@ defmodule Picsello.Galleries do
   defp load_gallery_photos_by_type(_, _), do: []
 
   @doc """
+  Loads the number of favorite photos from the gallery
+
+  ## Examples
+
+      iex> gallery_favorites_count(gallery)
+      5
+  """
+  def gallery_favorites_count(%Gallery{} = gallery) do
+    Photo
+    |> where(gallery_id: ^gallery.id, client_liked: true)
+    |> Repo.aggregate(:count, [])
+  end
+
+  @doc """
   Creates a photo.
 
   ## Examples
@@ -236,5 +250,27 @@ defmodule Picsello.Galleries do
     photo
     |> Photo.update_changeset(%{client_liked: !client_liked})
     |> Repo.update()
+  end
+
+  @doc """
+  Normalizes photos positions within a gallery
+  """
+  def normalize_gallery_photo_positions(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH ranks AS (
+          SELECT id, RANK() OVER (ORDER BY position) AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+        )
+        UPDATE photos
+        SET POSITION = r.pos
+        FROM ranks r
+        WHERE photos.gallery_id = $1::integer
+          AND photos.id = r.id
+      """,
+      [gallery_id]
+    )
   end
 end

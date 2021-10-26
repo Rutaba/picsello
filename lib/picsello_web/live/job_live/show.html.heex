@@ -26,7 +26,7 @@
   <div class="flex justify-between min-w-0 lg:justify-start">
     <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
 
-    <span class="ml-2 font-bold lg:ml-6"><%= @package.price |> Money.to_string(fractional_unit: false) %></span>
+    <span class="ml-2 font-bold lg:ml-6"><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
   </div>
 
   <hr class="border-white lg:hidden lg:col-span-2"/>
@@ -77,6 +77,28 @@
       Looks like you need to upload photos.
     </.overview_card>
   </ul>
+
+  <div class="flex items-baseline justify-between p-4 my-8 border rounded-lg border-base-200" {testid("notes")}>
+    <dl class="min-w-0">
+      <dt class="font-bold">Private Notes</dt>
+        <%= case @job.notes do %>
+        <% nil -> %>
+          <dd class="text-base-250"> Click edit to add a note </dd>
+        <% notes -> %>
+          <dd class="truncate"><%= String.split(notes, "\n") |> hd %></dd>
+        <% end %>
+    </dl>
+
+
+    <%= case @job.notes do %>
+    <% nil -> %>
+      <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes">Edit</.icon_button>
+    <% _notes -> %>
+      <button class="px-2 py-1 text-sm border rounded-lg border-blue-planning-300" type="button" phx-click="open-notes">
+        View
+      </button>
+    <% end %>
+  </div>
 
   <h2 class="mt-8 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
 

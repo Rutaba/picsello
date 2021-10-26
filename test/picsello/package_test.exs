@@ -12,15 +12,5 @@ defmodule Picsello.PackageTest do
       assert %{errors: []} = Package.update_changeset(package, %{shoot_count: 2})
       assert %{errors: [{:shoot_count, _}]} = Package.update_changeset(package, %{shoot_count: 1})
     end
-
-    test "adds new template when package_template_id is new" do
-      package =
-        insert(:package)
-        |> Package.update_changeset(%{"name" => "new template", "package_template_id" => "new"})
-        |> Repo.update!()
-
-      assert "new template" = package.package_template.name
-      assert "new template" = package.name
-    end
   end
 end

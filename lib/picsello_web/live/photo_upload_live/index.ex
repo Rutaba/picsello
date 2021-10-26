@@ -85,7 +85,7 @@ defmodule PicselloWeb.PhotoUploadLive.Index do
   defp total(_), do: nil
 
   defp done?(progress), do: progress == 100
-
+  
   defp gcp_credentials do
     Application.get_env(:gcs_sign, :gcp_credentials)
     |> File.read!()
