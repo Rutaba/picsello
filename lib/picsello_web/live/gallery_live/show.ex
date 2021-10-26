@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PositionNormalizer
 
   @per_page 12
 
@@ -57,7 +58,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       args
     )
 
-    Galleries.PositionNormalizer.normalize(gallery_id)
+    PositionNormalizer.normalize(gallery_id)
 
     noreply(socket)
   end

@@ -40,7 +40,7 @@
         "
       >
         <div class="item-content">
-            <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+            <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
                     photo: photo,
                     is_likable: false %>

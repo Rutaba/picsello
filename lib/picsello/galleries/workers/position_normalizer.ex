@@ -1,4 +1,4 @@
-defmodule Picsello.Galleries.PositionNormalizer do
+defmodule Picsello.Galleries.Workers.PositionNormalizer do
   @moduledoc """
   Debounce photo position normalization within a gallery
   """
