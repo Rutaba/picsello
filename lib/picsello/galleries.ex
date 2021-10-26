@@ -296,6 +296,7 @@ defmodule Picsello.Galleries do
       [gallery_id, photo_id, first_id, second_id]
     )
   end
+
   def update_gallery_photo_position(gallery_id, photo_id, "before", [another_id]) do
     Ecto.Adapters.SQL.query(
       Repo,
@@ -315,6 +316,7 @@ defmodule Picsello.Galleries do
       [gallery_id, photo_id, another_id]
     )
   end
+
   def update_gallery_photo_position(gallery_id, photo_id, "after", [another_id]) do
     Ecto.Adapters.SQL.query(
       Repo,

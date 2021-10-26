@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"] # todo: remove when user logged in
+  use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
 
@@ -56,6 +56,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       type,
       args
     )
+
     Galleries.PositionNormalizer.normalize(gallery_id)
 
     noreply(socket)

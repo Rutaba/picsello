@@ -27,7 +27,7 @@ defmodule Picsello.Application do
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
       # Gallery workers
-      Picsello.Galleries.PositionNormalizer,
+      Picsello.Galleries.PositionNormalizer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
