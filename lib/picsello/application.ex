@@ -23,9 +23,11 @@ defmodule Picsello.Application do
       # Start the Endpoint (http/https)
       PicselloWeb.Endpoint,
       {Picsello.ProposalReminderScheduler, []},
-      {Picsello.StripeStatusCache, []}
+      {Picsello.StripeStatusCache, []},
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
+      # Gallery workers
+      Picsello.Galleries.PositionNormalizer,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
