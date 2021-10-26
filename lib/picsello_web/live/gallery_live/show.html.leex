@@ -1,50 +1,88 @@
-<h1>Show Gallery</h1>
+<div class="coverImg__wrapper">
+    <div class="gallery__container py-11 flex justify-between">
+        <div>
+            <button class="backBtn flex items-center justify-center">
+                <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
+                <span>Back to job</span>
+            </button>
+            <div class="uploadingBlock">
+                <p class="font-bold">Upload cover photo</p>
+            </div>
+        </div>
+        <div class="w-1/3 text-white pt-36">
+            <p class="text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></p>
+            <p class="font-bold text-4xl"><%= @gallery.name %></p>
+        </div>
+    </div>
+</div>
 
-<%= if @live_action in [:edit] do %>
-  <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
+<div class="gallery__container pb-32">
+    <%= if @live_action in [:edit] do %>
+    <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
     id: @gallery.id,
     title: @page_title,
     action: @live_action,
     gallery: @gallery,
     return_to: Routes.gallery_show_path(@socket, :show, @gallery) %>
 <% end %>
-
-<ul>
-
-  <li>
-    <strong>Name:</strong>
-    <%= @gallery.name %>
-  </li>
-
-</ul>
-
-
-<div
-    phx-hook="MasonryGrid"
-    phx-update="<%= @update_mode %>"
-    id="muuri-grid"
-    class="muuri grid"
-    data-page="<%= @page %>"
-    data-total="<%= @gallery.total_count %>"
-    data-favorites-count="<%= @favorites_count %>"
-    data-is-favorites-shown="<%= @favorites_filter %>"
-    data-is-sortable="true"
- >
-    <%= for photo <- @photos do %>
-      <div
-        class="item"
-        id="photo-item-<%= photo.id %>"
-        style="
-            width: 309px;
-            height: <%= 309 / photo.aspect_ratio %>px;
-        "
-      >
-        <div class="item-content">
-            <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
+    <div class="py-16">
+        <div class="font-bold text-3xl">
+            <%= @gallery.name %> Gallery
+        </div>
+        <div class="text-xl text-gray-400">
+            <%= @gallery.total_count %>
+            photos
+        </div>
+    </div>
+    <div
+            phx-hook="MasonryGrid"
+            phx-update="<%= @update_mode %>"
+            id="muuri-grid"
+            class="muuri grid"
+            data-page="<%= @page %>"
+            data-total="<%= @gallery.total_count %>"
+            data-favorites-count="<%= @favorites_count %>"
+            data-is-favorites-shown="<%= @favorites_filter %>"
+            data-is-sortable="true"
+    >
+        <%= for photo <- @photos do %>
+        <div
+                class="item"
+                id="photo-item-<%= photo.id %>"
+                style="
+                        width: 300px;
+                        height: <%= 300 / photo.aspect_ratio %>px;
+                        "
+        >
+            <div class="item-content">
+                <%= live_component @socket, PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
                     photo: photo,
-                    is_likable: false %>
+                    is_likable: false,
+                    is_removable: true %>
+            </div>
         </div>
-      </div>
-    <% end %>
+        <% end %>
+    </div>
+</div>
+<div class="bottomBar">
+    <div class="gallery__container flex justify-between items-center">
+        <div class="flex">
+            <button class="bottomBar__btn mr-3">
+                <img class="mr-3" src="/images/settings-icon.png" alt="settings" width="24" height="24"/>
+                <span>Gallery settings</span>
+            </button>
+            <button class="bottomBar__btn">
+                <img class="mr-3" src="/images/gallery-icon.png" alt="gallery" width="21" height="26"/>
+                <span>View gallery</span>
+            </button>
+        </div>
+        <div class="flex">
+            <button class="bottomBar__btn mr-3">
+                <img class="mr-3" src="/images/settings-icon.png" alt="uploading" width="24" height="24"/>
+                <span>Add photos</span>
+            </button>
+            <button class="bottomBar__btn primary">Share gallery</button>
+        </div>
+    </div>
 </div>
