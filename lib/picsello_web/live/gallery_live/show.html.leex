@@ -18,27 +18,6 @@
 
 </ul>
 
-<span><%= live_patch "Edit", to: Routes.gallery_show_path(@socket, :edit, @gallery), class: "button" %></span>
-<span><%= live_redirect "Back", to: Routes.gallery_index_path(@socket, :index) %></span>
-
-<hr>
-
-<label class="flex items-center cursor-pointer">
-    <div class="ml-3">Show favorites only</div>&nbsp;
-    <div class="relative" >
-        <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
-        <%= if @favorites_filter do %>
-        <div class="block bg-blue-300 w-14 h-8 rounded-full"></div>
-        <div class="dot absolute right-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-        <% else %>
-        <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-        <div class="dot absolute left-1 top-1 bg-blue-300 w-6 h-6 rounded-full transition"></div>
-        <% end %>
-    </div>
-</label>
-
-
-<hr>
 
 <div
     phx-hook="MasonryGrid"
