@@ -49,37 +49,17 @@
 
   <h2 class="mt-8 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
 
-  <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
-  <%= for {shoot_number, shoot} <- @shoots do %>
-    <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
-      <%= live_redirect to: Routes.shoot_path(@socket, :shoots, @job.id, shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
-        <div class="flex items-center justify-between text-xl font-semibold">
-          <div>
-            <%= shoot.name %>
-          </div>
-
-          <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
-        </div>
-
-        <div class="font-semibold text-blue-planning-300"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
-
-        <hr class="my-3 border-top">
-
-        <span class="text-gray-400"><%= dyn_gettext shoot.location %></span>
-      <% end %>
-    </li>
-  <% end %>
-  </ul>
+  <.shoot_details shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} current_user={@current_user} shoots={@shoots} />
 </div>
 
 <div class="center-container">
   <h2 class="px-6 mb-3 text-xs font-bold tracking-widest text-gray-400 uppercase" id="booking-details">Booking Details</h2>
 
   <div class="p-2 m-0 border-0 rounded-lg lg:border lg:mx-6 lg:p-3 grid gap-5 lg:grid-cols-3 bg-blue-planning-100 lg:bg-white">
-    <.details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
-    <.details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
+    <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
+    <.proposal_details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
     <%= if @proposal.answer do %>
-      <.details_item title="Questionnaire" icon="document" status="Completed" date={@proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
+      <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={@proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
     <% end %>
   </div>
 </div>

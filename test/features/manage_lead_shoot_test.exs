@@ -1,5 +1,6 @@
 defmodule Picsello.ManageLeadShootTest do
   use Picsello.FeatureCase, async: true
+  alias Picsello.Job
 
   setup :onboarded
   setup :authenticated
@@ -29,7 +30,8 @@ defmodule Picsello.ManageLeadShootTest do
     |> fill_in(text_field("Shoot Notes"), with: "my notes")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> click(button("chute"))
+    |> click(link("chute"))
+    |> click(button("Edit"))
     |> assert_value(text_field("Shoot Title"), "chute")
     |> assert_value(text_field("Shoot Date"), "2040-04-05T12:00")
     |> assert_value(select("Shoot Duration"), "90")
@@ -42,8 +44,11 @@ defmodule Picsello.ManageLeadShootTest do
     |> find(select("Shoot Duration"), &click(&1, option("2 hrs")))
     |> find(select("Shoot Location"), &click(&1, option("In Studio")))
     |> fill_in(text_field("Shoot Notes"), with: "new notes")
+    |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> click(button("updated chute"))
+    |> click(link("Go back to #{Job.name(lead)}"))
+    |> click(link("updated chute"))
+    |> click(button("Edit"))
     |> assert_value(text_field("Shoot Date"), "2040-05-05T12:00")
     |> assert_value(select("Shoot Duration"), "120")
     |> assert_value(select("Shoot Location"), "studio")

@@ -1,7 +1,7 @@
 <fieldset <%= if @read_only, do: "disabled" %>>
 <div class="relative modal">
   <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
-    <%= icon_tag(@socket, "close-modal", class: "h-7 w-7 stroke-current") %>
+    <%= icon_tag(@socket, "close-x", class: "h-7 w-7 stroke-current") %>
   </button>
 
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>

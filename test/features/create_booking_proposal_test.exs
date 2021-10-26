@@ -35,6 +35,7 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> visit("/leads/#{lead.id}")
     |> assert_has(css("button:disabled", text: "Finish booking proposal"))
+    |> assert_text("You haven’t sent a proposal yet.")
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot Title"), with: "chute")
     |> fill_in(text_field("Shoot Date"), with: "04052040\t1200P")
@@ -77,16 +78,15 @@ defmodule Picsello.CreateBookingProposalTest do
              Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 1000)
 
     session
-    |> assert_has(xpath("//div[text() = 'Proposal sent']"))
-    |> click(button("View booking proposal"))
-    |> click(button("Proposal"))
+    |> assert_text("Proposal sent")
+    |> click(link("Proposal"))
     |> assert_disabled(button("Accept proposal"))
     |> click(button("cancel"))
-    |> click(button("Contract"))
+    |> click(link("Standard Contract"))
     |> assert_disabled(text_field("Type your full legal name"))
     |> assert_disabled(button("Sign"))
     |> click(button("cancel"))
-    |> click(button("Questionnaire"))
+    |> click(link("Questionnaire"))
     |> all(css("input, textarea, select"))
     |> Enum.reduce(session, fn el, session -> assert_disabled(session, el) end)
 
@@ -96,10 +96,13 @@ defmodule Picsello.CreateBookingProposalTest do
 
     session
     |> visit(current_path(session))
-    |> assert_has(button("Proposal", text: "DONE"))
-    |> assert_has(button("Contract", text: "DONE"))
-    |> assert_has(button("Questionnaire", text: "DONE"))
-    |> assert_disabled(button("Pay 50% deposit"))
+    |> assert_has(link("Proposal", text: "Accepted"))
+    |> assert_has(link("Contract", text: "Signed"))
+    |> assert_has(link("Questionnaire", text: "Completed"))
+
+    session
+    |> click(button("Client Link"))
+    |> assert_text("Copied!")
   end
 
   defp complete_proposal(proposal, :accept),

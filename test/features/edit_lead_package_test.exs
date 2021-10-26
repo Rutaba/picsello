@@ -4,6 +4,8 @@ defmodule Picsello.EditLeadPackageTest do
   setup :onboarded
   setup :authenticated
 
+  @edit_package_button button("Package settings")
+
   setup %{session: session, user: user} do
     lead =
       insert(:lead, %{
@@ -23,7 +25,7 @@ defmodule Picsello.EditLeadPackageTest do
   feature "user edits a package", %{session: session, lead: lead} do
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Edit package"))
+    |> click(@edit_package_button)
     |> assert_has(button("Cancel"))
     |> assert_value(
       select("package[package_template_id]"),
@@ -41,7 +43,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> fill_in(text_field("Package description"), with: "indescribably great.")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> click(button("Edit package"))
+    |> click(@edit_package_button)
     |> assert_value(text_field("Package price"), "$2.00")
     |> assert_value(text_field("Package name"), "My Greatest Package")
     |> assert_value(text_field("Package description"), "indescribably great.")
@@ -52,12 +54,12 @@ defmodule Picsello.EditLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Edit package"))
+    |> click(@edit_package_button)
     |> click(css("option", text: "Other Template"))
     |> assert_value(text_field("Package name"), "Other Template")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> click(button("Edit package"))
+    |> click(@edit_package_button)
     |> assert_value(select("package[package_template_id]"), template.id |> inspect)
   end
 end

@@ -2,7 +2,17 @@ defmodule PicselloWeb.JobLive.Shared do
   @moduledoc """
   handlers used by both leads and jobs
   """
-  alias Picsello.{Job, Shoot, Repo, BookingProposal, Notifiers.ClientNotifier, Package}
+  alias Picsello.{
+    Job,
+    Shoot,
+    Repo,
+    BookingProposal,
+    Notifiers.ClientNotifier,
+    Package,
+    Accounts.User
+  }
+
+  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
@@ -20,15 +30,6 @@ defmodule PicselloWeb.JobLive.Shared do
           %{current_user: current_user, job: job |> Map.put(:package_id, package_id)}
         )
         |> noreply()
-
-  def handle_event("edit-job", %{}, %{assigns: assigns} = socket),
-    do:
-      socket
-      |> open_modal(
-        PicselloWeb.LeadLive.EditComponent,
-        assigns |> Map.take([:current_user, :package, :job])
-      )
-      |> noreply()
 
   def handle_event(
         "edit-shoot-details",
@@ -49,6 +50,23 @@ defmodule PicselloWeb.JobLive.Shared do
         shoot_number: shoot_number
       })
     )
+    |> noreply()
+  end
+
+  def handle_event(
+        "open-proposal",
+        %{"action" => "" <> action},
+        %{assigns: %{proposal: proposal}} = socket
+      ) do
+    Map.get(
+      %{
+        "questionnaire" => PicselloWeb.BookingProposalLive.QuestionnaireComponent,
+        "details" => PicselloWeb.BookingProposalLive.ProposalComponent,
+        "contract" => PicselloWeb.BookingProposalLive.ContractComponent
+      },
+      action
+    )
+    |> apply(:open_modal_from_proposal, [socket, proposal])
     |> noreply()
   end
 
@@ -155,57 +173,76 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> assign(proposal: proposal)
   end
 
+  @badge_colors %{
+    gray: "bg-gray-200",
+    blue: "bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
+    green: "bg-green-finances-100 text-green-finances-200",
+    red: "bg-red-sales-100 text-red-sales-300"
+  }
+
+  def badge(%{color: color} = assigns) do
+    assigns =
+      assigns |> Map.put(:color_style, Map.get(@badge_colors, color)) |> Enum.into(%{class: ""})
+
+    ~H"""
+    <span role="status" class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
+      <%= render_block @inner_block %>
+    </span>
+    """
+  end
+
   @spec status_badge(%{job_status: %Picsello.JobStatus{}, class: binary}) ::
           %Phoenix.LiveView.Rendered{}
   def status_badge(%{job_status: %{current_status: status, is_lead: is_lead}} = assigns) do
-    {label, color_style} = status_content(is_lead, status)
+    {label, color} = status_content(is_lead, status)
 
     assigns =
       assigns
       |> Enum.into(%{
         label: label,
-        color_style: color_style,
+        color: color,
         class: ""
       })
 
     ~H"""
-    <span role="status" class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
-      <%= @label %>
-    </span>
+      <.badge class={@class} color={@color}>
+        <%= @label %>
+      </.badge>
     """
   end
 
-  @status_colors %{
-    gray: "bg-gray-200",
-    blue: "bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
-    green: "bg-green-finances-100 text-green-finances-200"
-  }
-
-  def status_content(_, :archived), do: {"Archived", @status_colors.gray}
-  def status_content(_, :completed), do: {"Completed", @status_colors.green}
-  def status_content(false, _), do: {"Active", @status_colors.blue}
-  def status_content(true, :not_sent), do: {"Created", @status_colors.blue}
-  def status_content(true, :sent), do: {"Awaiting Acceptance", @status_colors.blue}
-  def status_content(true, :accepted), do: {"Awaiting Contract", @status_colors.blue}
+  def status_content(_, :archived), do: {"Archived", :gray}
+  def status_content(_, :completed), do: {"Completed", :green}
+  def status_content(false, _), do: {"Active", :blue}
+  def status_content(true, :not_sent), do: {"Created", :blue}
+  def status_content(true, :sent), do: {"Awaiting Acceptance", :blue}
+  def status_content(true, :accepted), do: {"Awaiting Contract", :blue}
 
   def status_content(true, :signed_with_questionnaire),
-    do: {"Awaiting Questionnaire", @status_colors.blue}
+    do: {"Awaiting Questionnaire", :blue}
 
   def status_content(true, status) when status in [:signed_without_questionnaire, :answered],
-    do: {"Awaiting Payment", @status_colors.blue}
+    do: {"Awaiting Payment", :blue}
 
-  def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), @status_colors.blue}
+  def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), :blue}
 
   @spec subheader(%{package: %Picsello.Package{}, job: %Picsello.Job{}}) ::
           %Phoenix.LiveView.Rendered{}
   def subheader(assigns) do
     ~H"""
-    <div class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white">
-      <div class="flex justify-between min-w-0 lg:justify-start">
+    <div {testid("subheader")} class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white">
+      <div class="flex flex-col lg:items-center lg:flex-row">
         <%= if @package do %>
-          <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
+          <div class="flex justify-between min-w-0 lg:flex-row lg:justify-start">
+            <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
+            <span class="ml-2 font-bold lg:ml-6"><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
+          </div>
 
-          <span class="ml-2 font-bold lg:ml-6"><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
+          <%= if Job.lead?(@job) do %>
+            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class="mt-2 lg:mt-0 w-max lg:ml-6">
+              Package settings
+            </.icon_button>
+          <% end %>
         <% end %>
       </div>
 
@@ -256,10 +293,59 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
+  @spec shoot_details(%{
+          current_user: %Picsello.Accounts.User{},
+          shoot_path: fun(),
+          job: %Picsello.Job{},
+          shoots: list(%Picsello.Shoot{}),
+          socket: %Phoenix.LiveView.Socket{}
+        }) :: %Phoenix.LiveView.Rendered{}
+  def shoot_details(assigns) do
+    ~H"""
+    <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
+    <%= for {shoot_number, shoot} <- @shoots do %>
+      <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
+        <%= if shoot do %>
+          <%= live_redirect to: @shoot_path.(shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
+            <div class="flex items-center justify-between text-xl font-semibold">
+              <div>
+                <%= shoot.name %>
+              </div>
+
+              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
+            </div>
+
+            <div class="font-semibold text-blue-planning-300"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
+
+            <hr class="my-3 border-top">
+
+            <span class="text-gray-400">
+              <%= shoot.address || dyn_gettext shoot.location %>
+            </span>
+          <% end %>
+        <% else %>
+          <button title="Add shoot details" class="flex flex-col w-full h-full p-4 text-left" type="button" phx-click="edit-shoot-details" phx-value-shoot-number={shoot_number}>
+            <.badge color={:red}>Missing information</.badge>
+
+            <div class="flex items-center justify-between w-full mt-1 text-xl font-semibold">
+              <div>
+                Shoot <%= shoot_number %>
+              </div>
+
+              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
+            </div>
+          </button>
+        <% end %>
+      </li>
+    <% end %>
+    </ul>
+    """
+  end
+
   @spec notes(%{job: %Picsello.Job{}}) :: %Phoenix.LiveView.Rendered{}
   def notes(assigns) do
     ~H"""
-      <div class="flex items-baseline justify-between p-4 my-8 border rounded-lg border-base-200" {testid("notes")}>
+      <div {testid("notes")} class="flex items-baseline justify-between p-4 my-8 border rounded-lg border-base-200" {testid("notes")}>
         <dl class="min-w-0">
           <dt class="font-bold">Private Notes</dt>
             <%= case @job.notes do %>
@@ -280,6 +366,36 @@ defmodule PicselloWeb.JobLive.Shared do
           </button>
         <% end %>
       </div>
+    """
+  end
+
+  @spec proposal_details_item(%{
+          title: binary(),
+          icon: binary(),
+          status: binary(),
+          date: %DateTime{},
+          current_user: %User{}
+        }) :: %Phoenix.LiveView.Rendered{}
+  def proposal_details_item(assigns) do
+    ~H"""
+    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" href="#" phx-click="open-proposal" phx-value-action={@action} title={@title}>
+      <.circle radius="8" class="flex-shrink-0">
+        <.icon name={@icon} width="14" height="14" />
+      </.circle>
+      <div class="ml-2">
+        <div class="flex items-center font-bold">
+          <%= @title %>
+          <.icon name="forth" class="w-3 h-3 ml-2 stroke-current text-base-300" />
+        </div>
+        <div class="text-xs text-gray-500">
+          <%= if @date do %>
+            <%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span>
+          <% else %>
+            Pending
+          <% end %>
+        </div>
+      </div>
+    </a>
     """
   end
 end

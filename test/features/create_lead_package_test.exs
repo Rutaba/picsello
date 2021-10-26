@@ -5,6 +5,8 @@ defmodule Picsello.CreateLeadPackageTest do
   setup :onboarded
   setup :authenticated
 
+  @add_package_button testid("add-package-from-shoot")
+
   def fill_in_package_form(session) do
     session
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
@@ -25,7 +27,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> fill_in_package_form()
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
@@ -57,7 +59,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> assert_has(testid("template-card", count: 2))
     |> find(button("New Package"), &assert(!Element.attr(&1, :disabled)))
     |> find(button("Use template"), &assert(Element.attr(&1, :disabled)))
@@ -86,7 +88,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> click(button("New Package"))
     |> fill_in_package_form()
     |> click(link("back"))
@@ -120,7 +122,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> click(testid("template-card"))
     |> click(button("Use template"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
@@ -163,7 +165,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> click(testid("template-card"))
     |> click(button("Customize"))
     |> assert_value(text_field("Title"), "best wedding")
@@ -203,11 +205,11 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("Title"), with: " ")
-    |> fill_in(text_field("Description"), with: " ")
     |> assert_has(css("label", text: "Title can't be blank"))
+    |> fill_in(text_field("Description"), with: " ")
     |> assert_has(css("label", text: "Description can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
@@ -229,7 +231,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Add a package"))
+    |> click(@add_package_button)
     |> assert_has(testid("step-number", text: "Step 1"))
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")

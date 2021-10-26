@@ -4,7 +4,14 @@ defmodule PicselloWeb.LeadLive.Show do
   alias Picsello.{Job, Repo, BookingProposal, Notifiers.ClientNotifier, Questionnaire}
 
   import PicselloWeb.JobLive.Shared,
-    only: [assign_job: 2, assign_proposal: 1, subheader: 1, notes: 1]
+    only: [
+      assign_job: 2,
+      assign_proposal: 1,
+      subheader: 1,
+      notes: 1,
+      shoot_details: 1,
+      proposal_details_item: 1
+    ]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do

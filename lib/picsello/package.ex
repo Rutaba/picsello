@@ -44,7 +44,7 @@ defmodule Picsello.Package do
     |> update_pricing(attrs)
   end
 
-  defp choose_template(package, attrs, opts \\ []) do
+  defp choose_template(package, attrs, _opts \\ []) do
     package |> cast(attrs, [:package_template_id])
   end
 
@@ -67,7 +67,7 @@ defmodule Picsello.Package do
     end)
   end
 
-  defp update_pricing(package, attrs, opts \\ []) do
+  defp update_pricing(package, attrs, _opts \\ []) do
     package
     |> cast(attrs, [
       :base_price,
