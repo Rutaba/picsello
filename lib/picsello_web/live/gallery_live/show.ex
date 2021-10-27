@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_event("open_upload_popup", _, socket) do
     socket
-    |> open_modal(UploadComponent, %{index: "hello", id: 13777})
+    |> open_modal(UploadComponent, %{index: "hello"})
     |> noreply()
   end
 
@@ -90,7 +90,16 @@ defmodule PicselloWeb.GalleryLive.Show do
     noreply(socket)
   end
 
-  def handle_info({:overall_progress, upload_state}, socket) do
+  @impl true
+  def handle_event("start", _params, socket) do
+    socket.assigns.uploads.cover_photo
+    |> case do
+      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_info({:overall_progress, _upload_state}, socket) do
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
 
     {:noreply, socket}
@@ -100,15 +109,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     socket
     |> close_modal()
     |> noreply()
-  end
-
-  @impl true
-  def handle_event("start", _params, socket) do
-    socket.assigns.uploads.cover_photo
-    |> case do
-      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
-      _ -> {:noreply, socket}
-    end
   end
 
   defp handle_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
