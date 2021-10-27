@@ -1,10 +1,16 @@
 <div class="coverImg__wrapper">
     <div class="gallery__container py-11 flex justify-between">
         <div>
-           <button class="backBtn flex items-center justify-center">
-                 <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
-                 <span>Back to job</span>
-             </button>
+            <div class="circleBtn">
+                <ul>
+                    <li>
+                        <a href="#">
+                            <img src="/images/arrow-left.png"/>
+                            <span>Back to job</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             <div class="uploadingBlock">
                 <p class="font-bold mb-8">Upload cover photo</p>
                 <div class="dragDrop__wrapper">
@@ -31,7 +37,6 @@
         </div>
     </div>
 </div>
-<a href="#" phx-click="upload_popup">Add photos</a>
 
 <div class="gallery__container pb-32">
     <%= if @live_action in [:edit] do %>
@@ -95,7 +100,7 @@
             </button>
         </div>
         <div class="flex">
-            <button class="bottomBar__btn mr-3">
+            <button class="bottomBar__btn mr-3" phx-click="upload_popup">
                 <img class="mr-3" src="/images/settings-icon.png" alt="uploading" width="24" height="24"/>
                 <span>Add photos</span>
             </button>
