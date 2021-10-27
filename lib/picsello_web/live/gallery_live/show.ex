@@ -28,12 +28,14 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_event("upload_popup", _, socket) do
+  @impl true
+  def handle_event("open_upload_popup", _, socket) do
     socket
     |> open_modal(UploadComponent, %{index: "hello", id: 13777})
     |> noreply()
   end
 
+  @impl true
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)
@@ -71,10 +73,15 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   def handle_info({:overall_progress, upload_state}, socket) do
-    IO.inspect upload_state
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
 
     {:noreply, socket}
+  end
+
+  def handle_info(:close_upload_popup, socket) do
+    socket
+    |> close_modal()
+    |> noreply()
   end
 
   defp assign_photos(

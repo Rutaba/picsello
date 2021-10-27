@@ -1,4 +1,5 @@
 <div class="uploadPopup" id="hello">
+  
   <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
     <%= if total(@uploads.photo.entries) > 0 do %>
       <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap">
@@ -7,7 +8,7 @@
       <progress class="grid-cols-1" value="<%= @overall_progress %>" max="100"> <%= @overall_progress %>%</progress>
     <% end %>
   </div>
-  
+  <a href="#" phx-click="close" phx-target="<%= @myself %>">Close</a>
   <div class="dragDrop__wrapper overflow-hidden">
       <form id="dragDrop-form" phx-submit="save" phx-change="start" phx-target="<%= @myself %>">
           <div class="flex flex-col items-center justify-center gap-8 dragDrop"
@@ -40,7 +41,7 @@
             <% else %>
             <progress class="grid-cols-1" value="<%= entry.progress %>" max="100"> <%= entry.progress %>%</progress>
             <% end %>
-            <!-- <p class="col-span-2 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= upload_errors(@uploads.photo, entry) %></p> -->
+            
             <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
             <%= for err <- upload_errors(@uploads.photo, entry) do %>
               <div class="flex gap-x-4 grid-cols-1">
