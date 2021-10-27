@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias PicselloWeb.GalleryLive.UploadComponent
 
   @per_page 12
 
@@ -24,6 +25,12 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:favorites_filter, false)
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
+    |> noreply()
+  end
+
+  def handle_event("upload_popup", _, socket) do
+    socket
+    |> open_modal(UploadComponent, %{index: "hello", id: 13777})
     |> noreply()
   end
 
@@ -61,6 +68,13 @@ defmodule PicselloWeb.GalleryLive.Show do
     PositionNormalizer.normalize(gallery_id)
 
     noreply(socket)
+  end
+
+  def handle_info({:overall_progress, upload_state}, socket) do
+    IO.inspect upload_state
+    send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
+
+    {:noreply, socket}
   end
 
   defp assign_photos(

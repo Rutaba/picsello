@@ -1,5 +1,7 @@
-<h1>Show Gallery</h1>
 
+
+<h1>Show Gallery</h1>
+<a href="#" phx-click="upload_popup">Add photos</a>
 <%= if @live_action in [:edit] do %>
   <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
     id: @gallery.id,
