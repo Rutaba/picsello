@@ -31,7 +31,6 @@
         </div>
     </div>
 </div>
-<a href="#" phx-click="upload_popup">Add photos</a>
 
 <div class="gallery__container pb-32">
     <%= if @live_action in [:edit] do %>
@@ -95,7 +94,7 @@
             </button>
         </div>
         <div class="flex">
-            <button class="bottomBar__btn mr-3">
+            <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
                 <img class="mr-3" src="/images/settings-icon.png" alt="uploading" width="24" height="24"/>
                 <span>Add photos</span>
             </button>
