@@ -16,7 +16,7 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
   describe "package_template_id" do
     def click_edit_package(view),
-      do: view |> element("button[title$='Edit package']") |> render_click()
+      do: view |> element("button[title$='Package settings']") |> render_click()
 
     def choose_new_template_package(view),
       do:
@@ -29,6 +29,7 @@ defmodule PicselloWeb.PackageLiveEditComponentTest do
 
     setup %{user: user, conn: conn} do
       lead = insert(:lead, %{user: user, package: %{}})
+      assert Picsello.Job.lead?(lead)
       {:ok, view, _html} = live(conn, "/leads/#{lead.id}")
 
       click_edit_package(view)

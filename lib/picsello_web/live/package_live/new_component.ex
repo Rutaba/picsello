@@ -3,15 +3,17 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   use PicselloWeb, :live_component
   alias Picsello.{Package, Repo, Job, JobType}
+
+  @all_fields Package.__schema__(:fields)
+
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_new(:package, fn -> %Package{} end)
     |> assign_new(:job, fn -> nil end)
     |> choose_initial_step()
     |> assign(:is_template, assigns |> Map.get(:job) |> is_nil())
-    |> assign_changeset()
+    |> assign_changeset(%{})
     |> ok()
   end
 
@@ -33,7 +35,7 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="py-8 max-w-screen-xl bare-modal">
+    <div class="py-8 pb-3 sm:pb-8 max-w-screen-xl bare-modal">
       <div class="flex px-9">
         <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
           <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
@@ -66,11 +68,16 @@ defmodule PicselloWeb.PackageLive.NewComponent do
       <% end %>
 
       <.form for={@changeset} let={f} class="px-9" phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+        <input type="hidden" name="step" value={@step} />
+
+        <.wizard_state form={f} />
+
         <.step name={@step} f={f} is_template={@is_template} templates={@templates} />
 
         <PicselloWeb.LiveModal.footer>
           <div class="flex flex-col gap-2 sm:flex-row-reverse">
-            <.step_buttons name={@step} package={@package} is_valid={@changeset.valid?} myself={@myself} />
+            <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
+
             <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
               Cancel
             </button>
@@ -78,6 +85,16 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         </PicselloWeb.LiveModal.footer>
       </.form>
     </div>
+    """
+  end
+
+  def wizard_state(assigns) do
+    fields = @all_fields
+
+    ~H"""
+      <%= for field <- fields, input_value(@form, field) do %>
+        <%= hidden_input @form, field, id: nil %>
+      <% end %>
     """
   end
 
@@ -112,12 +129,12 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step_buttons(%{name: :choose_template} = assigns) do
     ~H"""
-    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="button" phx-click="use-template" disabled={is_nil(@package.package_template_id)}>
+    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="submit" phx-disable-with="Use Template" disabled={!template_selected?(@form)}>
       Use template
     </button>
 
-    <%= if @package.package_template_id do %>
-      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template">
+    <%= if template_selected?(@form) do %>
+      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
         Customize
       </button>
     <% else %>
@@ -146,15 +163,13 @@ defmodule PicselloWeb.PackageLive.NewComponent do
 
   def step(%{name: :choose_template} = assigns) do
     ~H"""
-      <h1 class="mt-6 text-xl font-bold">Select Package</h1>
+    <h1 class="mt-6 text-xl font-bold">Select Package <%= if template_selected?(@f), do: "(1 selected)", else: "" %></h1>
       <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        <input class="hidden" type="hidden" name={input_name(@f, :package_template_id)} value="" />
-
         <%= for template <- @templates do %>
           <% checked = input_value(@f, :package_template_id) == template.id %>
 
           <label {testid("template-card")} class={classes("p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group", %{"bg-blue-planning-100 border-blue-planning-300" => checked})}>
-            <input class="hidden" type="checkbox" name={input_name(@f, :package_template_id)} value={template.id} checked={checked} />
+            <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: template.id} />
 
             <h1 class="text-2xl font-bold line-clamp-2"><%= template.name %></h1>
 
@@ -258,18 +273,19 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     """
   end
 
-  def assign_step(socket, step) do
-    socket |> assign(:step, step) |> assign_changeset()
-  end
-
   @impl true
-  def handle_event("back", %{}, %{assigns: %{step: :pricing}} = socket) do
-    socket |> assign_step(:details) |> noreply()
-  end
+  def handle_event(
+        "back",
+        %{},
+        %{assigns: %{step: step, steps: steps}} = socket
+      ) do
+    previous_step = Enum.at(steps, Enum.find_index(steps, &(&1 == step)) - 1)
 
-  @impl true
-  def handle_event("back", %{}, %{assigns: %{step: :details}} = socket) do
-    socket |> assign_step(:choose_template) |> noreply()
+    changeset = update_changeset(socket, step: previous_step)
+
+    socket
+    |> assign(step: previous_step, changeset: changeset)
+    |> noreply()
   end
 
   @impl true
@@ -278,11 +294,24 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   end
 
   @impl true
-  def handle_event("submit", %{"package" => params}, %{assigns: %{step: :details}} = socket) do
+  def handle_event(
+        "submit",
+        %{
+          "package" => %{"package_template_id" => package_template_id},
+          "step" => "choose_template"
+        },
+        %{assigns: %{job: job}} = socket
+      ) do
+    changeset = changeset_from_template(socket, String.to_integer(package_template_id))
+
+    insert_package_and_update_job(socket, changeset, job)
+  end
+
+  @impl true
+  def handle_event("submit", %{"package" => params, "step" => "details"}, socket) do
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
-        socket
-        |> assign_step(:pricing)
+        socket |> assign(step: :pricing) |> assign_changeset(params)
 
       socket ->
         socket
@@ -293,8 +322,8 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   @impl true
   def handle_event(
         "submit",
-        %{"package" => params},
-        %{assigns: %{step: :pricing, is_template: true}} = socket
+        %{"package" => params, "step" => "pricing"},
+        %{assigns: %{is_template: true}} = socket
       ) do
     changeset = build_changeset(socket, params)
 
@@ -310,11 +339,62 @@ defmodule PicselloWeb.PackageLive.NewComponent do
   @impl true
   def handle_event(
         "submit",
-        %{"package" => params},
-        %{assigns: %{step: :pricing, job: job}} = socket
+        %{"package" => params, "step" => "pricing"},
+        %{assigns: %{job: job}} = socket
       ) do
     changeset = build_changeset(socket, params)
+    insert_package_and_update_job(socket, changeset, job)
+  end
 
+  @impl true
+  def handle_event("new-package", %{}, socket) do
+    socket
+    |> assign(step: :details, changeset: update_changeset(socket, step: :details))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "customize-template",
+        %{},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    package = current_package(%{source: changeset})
+    changeset = socket |> changeset_from_template(package.package_template_id)
+
+    socket |> assign(step: :details, changeset: changeset) |> noreply()
+  end
+
+  defp template_selected?(form),
+    do: form |> current_package() |> Map.get(:package_template_id) != nil
+
+  # takes the current changeset off the socket and returns a new changeset with the same data but new_opts
+  # this is for special cases like "back." mostly we want to use params when we create a changset, not
+  # the socket data.
+  defp update_changeset(%{assigns: %{changeset: changeset} = assigns}, new_opts) do
+    opts = assigns |> Map.take([:is_template, :step]) |> Map.to_list() |> Keyword.merge(new_opts)
+
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> Package.create_changeset(%{}, opts)
+  end
+
+  defp changeset_from_template(%{assigns: %{templates: templates}}, template_id) do
+    templates
+    |> Enum.find(&(&1.id == template_id))
+    |> Map.from_struct()
+    |> Map.put(:package_template_id, template_id)
+    |> Package.create_from_template_changeset()
+  end
+
+  defp successfull_save(socket, package) do
+    send(self(), {:update, %{package: package}})
+    close_modal(socket)
+
+    socket |> noreply()
+  end
+
+  defp insert_package_and_update_job(socket, changeset, job) do
     result =
       Ecto.Multi.new()
       |> Ecto.Multi.insert(:package, changeset)
@@ -335,24 +415,11 @@ defmodule PicselloWeb.PackageLive.NewComponent do
     end
   end
 
-  @impl true
-  def handle_event("new-package", %{}, socket) do
-    socket |> assign(step: :details) |> noreply()
-  end
-
-  defp successfull_save(socket, package) do
-    send(self(), {:update, %{package: package}})
-    close_modal(socket)
-
-    socket |> noreply()
-  end
-
   defp build_changeset(
          %{
            assigns: %{
              current_user: current_user,
              step: step,
-             package: package,
              is_template: is_template
            }
          },
@@ -360,13 +427,13 @@ defmodule PicselloWeb.PackageLive.NewComponent do
        ) do
     params = Map.put(params, "organization_id", current_user.organization_id)
 
-    package |> Package.create_changeset(params, step: step, is_template: is_template)
+    Package.create_changeset(%Package{}, params, step: step, is_template: is_template)
   end
 
-  defp assign_changeset(socket, params \\ %{}, action \\ nil) do
+  defp assign_changeset(socket, params, action \\ nil) do
     changeset = build_changeset(socket, params) |> Map.put(:action, action)
 
-    assign(socket, changeset: changeset, package: Ecto.Changeset.apply_changes(changeset))
+    assign(socket, changeset: changeset)
   end
 
   defp current_package(form) do

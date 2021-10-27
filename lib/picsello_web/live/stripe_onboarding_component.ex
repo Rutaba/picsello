@@ -31,25 +31,25 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             </div>
 
           <% :error -> %>
-            <button type="submit" phx-disable-with="Redirecting..." class={@class}>
+            <button type="submit" phx-disable-with="Retry Stripe Account" class={@class}>
               Retry Stripe Account
             </button>
-            <em class="block pt-1 text-xs text-center">Error accessing your Stripe information.</em>
+            <em class="block pt-1 text-xs text-center text-red-sales-300">Error accessing your Stripe information.</em>
 
           <% :no_account -> %>
-            <button type="submit" phx-disable-with="Redirecting..." class={@class}>
+            <button type="submit" phx-disable-with="Create Stripe Account" class={@class}>
               Create Stripe Account
             </button>
 
           <% :missing_information -> %>
-            <button type="submit" phx-disable-with="Redirecting..." class={@class}>
-              Complete Stripe Account
+            <button type="submit" phx-disable-with="Stripe Account Incomplete" class={@class}>
+              Stripe Account Incomplete
             </button>
-            <em class="block pt-1 text-xs text-center">Please provide missing information.</em>
+            <em class="block pt-1 text-xs text-center text-red-sales-300">Please provide missing information.</em>
 
           <% :pending_verification -> %>
-            <button type="button" class={@class} disabled>
-              Stripe Account Created
+            <button type="submit" phx-disable-with="Check Stripe Status" class={@class}>
+              Check Stripe Status
             </button>
             <em class="block pt-1 text-xs text-center">Your account has been created. Please wait for Stripe to verify your information.</em>
 

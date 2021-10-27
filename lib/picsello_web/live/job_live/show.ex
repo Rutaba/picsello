@@ -1,9 +1,18 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Package}
+  alias Picsello.{Job, Repo}
 
-  import PicselloWeb.JobLive.Shared, only: [assign_job: 2, assign_proposal: 1, status_badge: 1]
+  import PicselloWeb.JobLive.Shared,
+    only: [
+      assign_job: 2,
+      assign_proposal: 1,
+      notes: 1,
+      shoot_details: 1,
+      status_badge: 1,
+      subheader: 1,
+      proposal_details_item: 1
+    ]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
@@ -30,84 +39,6 @@ defmodule PicselloWeb.JobLive.Show do
         </button>
       </li>
     """
-  end
-
-  def circle(assigns) do
-    radiuses = %{"7" => "w-7 h-7", "8" => "w-8 h-8"}
-
-    assigns =
-      assigns
-      |> Enum.into(%{
-        class: nil,
-        radius_class: Map.get(radiuses, assigns.radius)
-      })
-
-    ~H"""
-      <div class={"flex items-center justify-center rounded-full bg-blue-planning-300 #{@radius_class} #{@class}"}>
-        <%= render_block(@inner_block) %>
-      </div>
-    """
-  end
-
-  def details_item(assigns) do
-    ~H"""
-    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" phx-click="open-proposal" phx-value-action={@action} title={@title}>
-      <.circle radius="8" class="flex-shrink-0">
-        <.icon name={@icon} width="14" height="14" />
-      </.circle>
-      <div class="ml-2">
-        <div class="flex items-center font-bold">
-          <%= @title %>
-          <.icon name="forth" class="w-3 h-3 ml-2 stroke-current text-base-300" />
-        </div>
-        <div class="text-xs text-gray-500"><%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span></div>
-      </div>
-    </a>
-    """
-  end
-
-  @impl true
-  def handle_event(
-        "open-proposal",
-        %{"action" => "details"},
-        %{assigns: %{proposal: proposal}} = socket
-      ) do
-    socket
-    |> PicselloWeb.BookingProposalLive.ProposalComponent.open_modal_from_proposal(proposal)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "open-proposal",
-        %{"action" => "contract"},
-        %{assigns: %{proposal: proposal}} = socket
-      ) do
-    socket
-    |> PicselloWeb.BookingProposalLive.ContractComponent.open_modal_from_proposal(proposal)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "open-proposal",
-        %{"action" => "questionnaire"},
-        %{assigns: %{proposal: proposal}} = socket
-      ) do
-    socket
-    |> PicselloWeb.BookingProposalLive.QuestionnaireComponent.open_modal_from_proposal(proposal)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "open-notes",
-        %{},
-        socket
-      ) do
-    socket
-    |> PicselloWeb.JobLive.Shared.NotesModal.open()
-    |> noreply()
   end
 
   @impl true

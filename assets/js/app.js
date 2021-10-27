@@ -22,7 +22,10 @@ import '@fontsource/be-vietnam/400.css';
 import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
+import AutoHeight from './hooks/auto-height';
+import Clipboard from './hooks/clipboard';
 import Phone from './hooks/phone';
+import PlacesAutocomplete from './hooks/places-autocomplete';
 import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
@@ -101,6 +104,7 @@ const TZCookie = {
 
 const Hooks = {
   ClearInput,
+  Clipboard,
   LockBodyScroll,
   Modal,
   Phone,
