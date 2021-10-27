@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <div>
           <h1 class="text-2xl font-bold">Photography Package Templates</h1>
 
-          <p class="my-2">
+          <p class="max-w-2xl my-2">
             <%= if Enum.empty? @templates do %>
               You don’t have any packages at the moment.
               (A package is a reusable template to use when creating a potential photoshoot.)
