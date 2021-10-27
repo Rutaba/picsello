@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
 
   @per_page 12
@@ -51,13 +52,31 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
+  @impl true
+  def handle_event(
+        "update_photo_position",
+        %{"photo_id" => photo_id, "type" => type, "args" => args},
+        %{assigns: %{gallery: %{id: gallery_id}}} = socket
+      ) do
+    Galleries.update_gallery_photo_position(
+      gallery_id,
+      photo_id |> String.to_integer(),
+      type,
+      args
+    )
+
+    PositionNormalizer.normalize(gallery_id)
+
+    noreply(socket)
+  end
+
   def handle_info({:overall_progress, upload_state}, socket) do
     IO.inspect upload_state
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
-    
+
     {:noreply, socket}
   end
-  
+
   defp assign_photos(
          %{
            assigns: %{

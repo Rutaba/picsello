@@ -17,13 +17,45 @@ const isScrolledOver = (percent, screen) => {
 }
 
 /**
- *  Fills gallery changes form field
+ *  Prepares positionChange for backend
  */
-const setGalleryChange = (name, value) => {
-  const field = document.querySelector(`#gallery_changes > input[name=${name}]`);
-  if (field) {
-    field.value = value;
-  }
+const positionChange = (movedId, order) => {
+    const orderLen = order.length;
+
+    if (orderLen < 2) {
+        return false;
+    }
+
+    if (order[0] == movedId) {
+        return {
+            "photo_id": movedId,
+            "type": "before",
+            "args": [order[1]]
+        }
+    }
+    if (order[orderLen-1] == movedId) {
+        return {
+            "photo_id": movedId,
+            "type": "after",
+            "args": [order[orderLen-2]]
+        }
+    }
+
+    if (orderLen < 3) {
+        return false;
+    }
+
+    for (let i = 1; i + 1 < orderLen; i += 1){
+        if (order[i] == movedId) {
+            return {
+                "photo_id": movedId,
+                "type": "between",
+                "args": [order[i-1], order[i+1]]
+            }
+        }
+    }
+
+    return false;
 }
 
 
@@ -55,7 +87,12 @@ export default {
       const grid = new Muuri(gridElement, opts);
       grid.on('dragReleaseEnd', (item) => {
         const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
-        setGalleryChange('photo_order', order);
+        const movedId = item.getElement().id.slice(11)
+        const change = positionChange(movedId, order)
+
+        if (change) {
+            this.pushEvent("update_photo_position", change)
+        }
       })
 
       window.grid = this.grid = grid;

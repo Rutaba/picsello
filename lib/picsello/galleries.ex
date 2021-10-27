@@ -264,13 +264,76 @@ defmodule Picsello.Galleries do
           FROM photos
           WHERE gallery_id = $1::integer
         )
-        UPDATE photos
-        SET POSITION = r.pos
+        UPDATE photos p
+        SET position = r.pos
         FROM ranks r
-        WHERE photos.gallery_id = $1::integer
-          AND photos.id = r.id
+        WHERE p.gallery_id = $1::integer
+          AND p.id = r.id
       """,
       [gallery_id]
+    )
+  end
+
+  @doc """
+    Changes photo position within a gallery updating the only row
+  """
+  def update_gallery_photo_position(gallery_id, photo_id, "between", [first_id, second_id]) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH newpos AS (
+          SELECT avg(position) AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+            AND id in ($3::integer, $4::integer)
+        )
+        UPDATE photos
+        SET position = newpos.pos
+        FROM newpos
+        WHERE id = $2::integer
+          AND gallery_id = $1::integer
+      """,
+      [gallery_id, photo_id, first_id, second_id]
+    )
+  end
+
+  def update_gallery_photo_position(gallery_id, photo_id, "before", [another_id]) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH newpos AS (
+          SELECT position - 1 AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+            AND id = $3::integer
+        )
+        UPDATE photos
+        SET position = newpos.pos
+        FROM newpos
+        WHERE id = $2::integer
+          AND gallery_id = $1::integer
+      """,
+      [gallery_id, photo_id, another_id]
+    )
+  end
+
+  def update_gallery_photo_position(gallery_id, photo_id, "after", [another_id]) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH newpos AS (
+          SELECT position + 1 AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+            AND id = $3::integer
+        )
+        UPDATE photos
+        SET position = newpos.pos
+        FROM newpos
+        WHERE id = $2::integer
+          AND gallery_id = $1::integer
+      """,
+      [gallery_id, photo_id, another_id]
     )
   end
 end
