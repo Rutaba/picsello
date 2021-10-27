@@ -22,7 +22,7 @@ defmodule Picsello.Package do
   end
 
   @doc false
-  def create_changeset(package \\ %__MODULE__{}, attrs, opts) do
+  def changeset(package \\ %__MODULE__{}, attrs, opts) do
     steps = [
       choose_template: &choose_template/3,
       details: &create_details/3,
@@ -65,6 +65,16 @@ defmodule Picsello.Package do
         changeset
       end
     end)
+    |> then(fn changeset ->
+      if Keyword.get(opts, :validate_shoot_count) do
+        package_id = Ecto.Changeset.get_field(changeset, :id)
+
+        changeset
+        |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package_id))
+      else
+        changeset
+      end
+    end)
   end
 
   defp update_pricing(package, attrs, _opts \\ []) do
@@ -80,30 +90,6 @@ defmodule Picsello.Package do
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
     |> validate_money(:gallery_credit)
-  end
-
-  def update_changeset(package, attrs, opts \\ []) do
-    validate_shoot_count = opts |> Keyword.get(:validate_shoot_count, true)
-
-    changeset =
-      package
-      |> cast(attrs, [
-        :base_price,
-        :name,
-        :description,
-        :shoot_count,
-        :package_template_id
-      ])
-      |> validate_required([:base_price, :name, :description, :shoot_count])
-      |> validate_money(:base_price)
-
-    if validate_shoot_count do
-      changeset
-      |> validate_number(:shoot_count, less_than: 6)
-      |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package))
-    else
-      changeset
-    end
   end
 
   def downloads_price(%__MODULE__{download_each_price: price, download_count: count})
@@ -143,9 +129,7 @@ defmodule Picsello.Package do
     end)
   end
 
-  defp shoot_count_minimum(%{package_template_id: nil}), do: 1
-
-  defp shoot_count_minimum(%{id: package_id}) do
+  defp shoot_count_minimum(package_id) do
     Shoot
     |> join(:inner, [shoot], job in assoc(shoot, :job), on: job.package_id == ^package_id)
     |> Repo.aggregate(:count)

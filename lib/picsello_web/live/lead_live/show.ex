@@ -35,6 +35,20 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_event(
+        "edit-package",
+        %{},
+        %{assigns: assigns} = socket
+      ),
+      do:
+        socket
+        |> open_modal(
+          PicselloWeb.PackageLive.WizardComponent,
+          assigns |> Map.take([:current_user, :job, :package])
+        )
+        |> noreply()
+
+  @impl true
+  def handle_event(
         "finish-proposal",
         %{},
         %{assigns: %{job: job}} = socket

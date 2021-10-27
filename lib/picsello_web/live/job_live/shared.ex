@@ -19,19 +19,6 @@ defmodule PicselloWeb.JobLive.Shared do
   use Phoenix.Component
 
   def handle_event(
-        "edit-package",
-        %{},
-        %{assigns: %{current_user: current_user, job: job, package: %{id: package_id}}} = socket
-      ),
-      do:
-        socket
-        |> open_modal(
-          PicselloWeb.PackageLive.EditComponent,
-          %{current_user: current_user, job: job |> Map.put(:package_id, package_id)}
-        )
-        |> noreply()
-
-  def handle_event(
         "edit-shoot-details",
         %{"shoot-number" => shoot_number},
         %{assigns: %{shoots: shoots} = assigns} = socket

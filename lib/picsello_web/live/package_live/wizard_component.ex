@@ -12,14 +12,16 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
+    |> assign_new(:package, fn -> %Package{} end)
     |> choose_initial_step()
     |> assign(:is_template, assigns |> Map.get(:job) |> is_nil())
     |> assign_changeset(%{})
     |> ok()
   end
 
-  defp choose_initial_step(%{assigns: %{current_user: user, job: job}} = socket) do
+  defp choose_initial_step(%{assigns: %{current_user: user, job: job, package: package}} = socket) do
     with %{type: job_type} <- job,
+         %{id: nil} <- package,
          templates when templates != [] <-
            user |> Package.templates_for_user(job_type) |> Repo.all() do
       socket
@@ -59,12 +61,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         </button>
       </div>
 
-      <.step_heading name={@step} />
+      <.step_heading name={@step} is_edit={@package.id} />
 
       <%= unless @is_template do %>
         <div class="py-4 px-9 bg-blue-planning-100">
           <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %></h2>
-          <.step_subheading name={@step} />
+          <%= unless @package.id do %>
+            <.step_subheading name={@step} />
+          <% end %>
         </div>
       <% end %>
 
@@ -105,15 +109,26 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step_heading(%{name: :details} = assigns) do
-    ~H"""
-      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold">Package Templates</strong> Provide Details</h1>
-    """
-  end
+  def step_heading(%{name: name, is_edit: is_edit} = assigns) do
+    title = if is_edit, do: "Edit Package", else: "Add a Package"
 
-  def step_heading(%{name: :pricing} = assigns) do
+    subtitle =
+      Map.get(
+        %{
+          details: "Provide Details",
+          pricing: "Set Pricing"
+        },
+        name
+      )
+
+    assigns =
+      Enum.into(assigns, %{
+        title: title,
+        subtitle: subtitle
+      })
+
     ~H"""
-      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold">Package Templates</strong> Set Pricing</h1>
+      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold"><%= @title %>:</strong> <%= @subtitle %></h1>
     """
   end
 
@@ -295,7 +310,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event(
         "submit",
         %{"package" => params, "step" => "pricing"},
-        %{assigns: %{is_template: true}} = socket
+        %{assigns: %{is_template: false, job: job, package: %Package{id: nil}}} = socket
+      ) do
+    changeset = build_changeset(socket, params)
+    insert_package_and_update_job(socket, changeset, job)
+  end
+
+  @impl true
+  def handle_event(
+        "submit",
+        %{"package" => params, "step" => "pricing"},
+        socket
       ) do
     case socket |> build_changeset(params) |> Repo.insert_or_update() do
       {:ok, package} ->
@@ -304,16 +329,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
-  end
-
-  @impl true
-  def handle_event(
-        "submit",
-        %{"package" => params, "step" => "pricing"},
-        %{assigns: %{job: job}} = socket
-      ) do
-    changeset = build_changeset(socket, params)
-    insert_package_and_update_job(socket, changeset, job)
   end
 
   @impl true
@@ -346,7 +361,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     changeset
     |> Ecto.Changeset.apply_changes()
-    |> Package.create_changeset(%{}, opts)
+    |> Package.changeset(%{}, opts)
   end
 
   defp changeset_from_template(%{assigns: %{templates: templates}}, template_id) do
@@ -391,18 +406,19 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
              current_user: current_user,
              step: step,
              is_template: is_template,
-             package: package
+             package: package,
+             job: job
            }
          },
          params
        ) do
     params = Map.put(params, "organization_id", current_user.organization_id)
 
-    Package.create_changeset(package, params, step: step, is_template: is_template)
-  end
-
-  defp build_changeset(socket, params) do
-    socket |> assign(package: %Package{}) |> build_changeset(params)
+    Package.changeset(package, params,
+      step: step,
+      is_template: is_template,
+      validate_shoot_count: job && package.id
+    )
   end
 
   defp assign_changeset(socket, params, action \\ nil) do

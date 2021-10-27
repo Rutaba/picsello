@@ -30,15 +30,6 @@ defmodule Picsello.Job do
     |> assoc_constraint(:client)
   end
 
-  def update_changeset(job, attrs \\ %{}) do
-    job
-    |> cast(attrs, [:type, :notes])
-    |> cast_assoc(:package, with: &Package.update_changeset/2)
-    |> validate_required([:type])
-    |> foreign_key_constraint(:type)
-    |> assoc_constraint(:package)
-  end
-
   defp timestamp_changeset(job, field) do
     change(job, [{field, DateTime.utc_now() |> DateTime.truncate(:second)}])
   end

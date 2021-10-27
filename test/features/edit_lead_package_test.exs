@@ -1,5 +1,6 @@
 defmodule Picsello.EditLeadPackageTest do
   use Picsello.FeatureCase, async: true
+  alias Picsello.Repo
 
   setup :onboarded
   setup :authenticated
@@ -27,39 +28,38 @@ defmodule Picsello.EditLeadPackageTest do
     |> visit("/leads/#{lead.id}")
     |> click(@edit_package_button)
     |> assert_has(button("Cancel"))
-    |> assert_value(
-      select("package[package_template_id]"),
-      lead.package.package_template_id |> inspect
-    )
-    |> assert_value(text_field("Package price"), "$1.00")
-    |> assert_value(text_field("Package name"), "My Package")
-    |> assert_value(text_field("Package description"), "My custom description")
-    |> assert_value(select("Number of shoots for this package"), "2")
-    |> assert_has(css("option[disabled]", text: "1"))
-    |> fill_in(text_field("Package price"), with: "")
-    |> assert_has(css("label", text: "Package price can't be blank"))
-    |> fill_in(text_field("Package price"), with: "2.00")
-    |> fill_in(text_field("Package name"), with: "My Greatest Package")
-    |> fill_in(text_field("Package description"), with: "indescribably great.")
+    |> assert_text("Edit Package")
+    |> assert_value(text_field("Title"), "My Package")
+    |> assert_value(select("# of Shoots"), "2")
+    |> assert_value(text_field("Description"), "My custom description")
+    |> fill_in(text_field("Title"), with: "My Greatest Package")
+    |> fill_in(text_field("Description"), with: "indescribably great.")
+    |> find(select("# of Shoots"), &click(&1, option("1")))
+    |> assert_has(css("label", text: "# of Shoots must be greater than or equal to 2"))
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> assert_value(text_field("Base Price"), "$1.00")
+    |> fill_in(text_field("Base Price"), with: "2.00")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> click(@edit_package_button)
-    |> assert_value(text_field("Package price"), "$2.00")
-    |> assert_value(text_field("Package name"), "My Greatest Package")
-    |> assert_value(text_field("Package description"), "indescribably great.")
-  end
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("My Greatest Package")
 
-  feature "user changes package template", %{session: session, user: user, lead: lead} do
-    template = insert(:package, %{user: user, name: "Other Template"})
+    package = lead |> Repo.preload(:package) |> Map.get(:package)
 
-    session
-    |> visit("/leads/#{lead.id}")
-    |> click(@edit_package_button)
-    |> click(css("option", text: "Other Template"))
-    |> assert_value(text_field("Package name"), "Other Template")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Save"))
-    |> click(@edit_package_button)
-    |> assert_value(select("package[package_template_id]"), template.id |> inspect)
+    form_fields =
+      ~w(base_price description job_type name gallery_credit download_count download_each_price shoot_count)a
+
+    updated =
+      %{
+        package
+        | name: "My Greatest Package",
+          description: "indescribably great.",
+          base_price: %Money{amount: 200, currency: :USD}
+      }
+      |> Map.take([:id | form_fields])
+
+    assert ^updated = Repo.reload!(package) |> Map.take([:id | form_fields])
   end
 end
