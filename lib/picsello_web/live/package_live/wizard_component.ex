@@ -1,8 +1,9 @@
-defmodule PicselloWeb.PackageLive.NewComponent do
+defmodule PicselloWeb.PackageLive.WizardComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
   alias Picsello.{Package, Repo, Job, JobType}
+  import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
 
   @all_fields Package.__schema__(:fields)
 
@@ -168,38 +169,9 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         <%= for template <- @templates do %>
           <% checked = input_value(@f, :package_template_id) == template.id %>
 
-          <label {testid("template-card")} class={classes("p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group", %{"bg-blue-planning-100 border-blue-planning-300" => checked})}>
+          <label {testid("template-card")}>
             <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: template.id} />
-
-            <h1 class="text-2xl font-bold line-clamp-2"><%= template.name %></h1>
-
-            <p class="line-clamp-2"><%= template.description %></p>
-
-            <dl class="flex flex-row-reverse items-center justify-end mt-2">
-              <dt class="ml-2 text-gray-500">Downloadable photos</dt>
-
-              <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-                <%= template.download_count %>
-              </dd>
-            </dl>
-
-            <dl class="flex flex-row-reverse items-center justify-end mt-2">
-              <dt class="ml-2 text-gray-500">Print credits</dt>
-
-              <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-                0
-              </dd>
-            </dl>
-
-            <hr class="my-4" />
-
-            <div class="flex items-center justify-between">
-              <div class="text-gray-500"><%= dyn_gettext template.job_type %></div>
-
-              <div class="text-lg font-bold">
-                <%= template |> Package.price() |> Money.to_string(fractional_unit: false) %>
-              </div>
-            </div>
+            <.package_card package={template} class={classes(%{"bg-blue-planning-100 border-blue-planning-300" => checked})} />
           </label>
         <% end %>
       </div>
@@ -325,13 +297,11 @@ defmodule PicselloWeb.PackageLive.NewComponent do
         %{"package" => params, "step" => "pricing"},
         %{assigns: %{is_template: true}} = socket
       ) do
-    changeset = build_changeset(socket, params)
-
-    case Repo.insert(changeset) do
+    case socket |> build_changeset(params) |> Repo.insert_or_update() do
       {:ok, package} ->
         successfull_save(socket, package)
 
-      _ ->
+      {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
   end
@@ -420,14 +390,19 @@ defmodule PicselloWeb.PackageLive.NewComponent do
            assigns: %{
              current_user: current_user,
              step: step,
-             is_template: is_template
+             is_template: is_template,
+             package: package
            }
          },
          params
        ) do
     params = Map.put(params, "organization_id", current_user.organization_id)
 
-    Package.create_changeset(%Package{}, params, step: step, is_template: is_template)
+    Package.create_changeset(package, params, step: step, is_template: is_template)
+  end
+
+  defp build_changeset(socket, params) do
+    socket |> assign(package: %Package{}) |> build_changeset(params)
   end
 
   defp assign_changeset(socket, params, action \\ nil) do

@@ -28,7 +28,7 @@ defmodule PicselloWeb.LeadLive.Show do
     do:
       socket
       |> open_modal(
-        PicselloWeb.PackageLive.NewComponent,
+        PicselloWeb.PackageLive.WizardComponent,
         assigns |> Map.take([:current_user, :job])
       )
       |> noreply()
