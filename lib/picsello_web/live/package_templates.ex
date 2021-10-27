@@ -2,6 +2,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   alias Picsello.{Package, Repo}
 
   @impl true
@@ -17,7 +18,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <div>
           <h1 class="text-2xl font-bold">Photography Package Templates</h1>
 
-          <p class="my-2">
+          <p class="max-w-2xl my-2">
             <%= if Enum.empty? @templates do %>
               You don’t have any packages at the moment.
               (A package is a reusable template to use when creating a potential photoshoot.)
@@ -28,7 +29,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
           </p>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+        <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
           <a href="#" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add a package</a>
         </div>
       </div>
@@ -37,39 +38,25 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <hr class="my-4" />
 
         <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-          <%= for template <- @templates do %>
-          <div class="p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group">
-            <h1 class="text-2xl font-bold line-clamp-2"><%= template.name %></h1>
+        <%= for template <- @templates do %>
+          <div {testid("package-template-card")} class="relative">
+            <div class="absolute top-6 right-5" data-offset="0" phx-hook="Select" data-close-svg="close-x" data-open-svg="hellip" id={"mange-template-#{template.id}"}>
+              <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
+                <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+              </button>
 
-            <p class="line-clamp-2"><%= template.description %></p>
-
-            <dl class="flex flex-row-reverse items-center justify-end mt-2">
-              <dt class="ml-2 text-gray-500">Downloadable photos</dt>
-
-              <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-                <%= template.download_count %>
-              </dd>
-            </dl>
-
-            <dl class="flex flex-row-reverse items-center justify-end mt-2">
-              <dt class="ml-2 text-gray-500">Print credits</dt>
-
-              <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-                0
-              </dd>
-            </dl>
-
-            <hr class="my-4" />
-
-            <div class="flex items-center justify-between">
-              <div class="text-gray-500"><%= dyn_gettext template.job_type %></div>
-
-              <div class="text-lg font-bold">
-                <%= template |> Package.price() |> Money.to_string(fractional_unit: false) %>
+              <div class="hidden bg-white border rounded-lg shadow-lg popover-content">
+                <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={template.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                  <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                  Edit
+                </button>
               </div>
             </div>
+
+            <div phx-click="edit-package" phx-value-package-id={template.id} class="h-full"><.package_card package={template} class="h-full"/></div>
           </div>
-          <% end %>
+        <% end %>
         </div>
       <% end %>
     </.settings_nav>
@@ -80,14 +67,32 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event("add-package", %{}, %{assigns: assigns} = socket),
     do:
       socket
-      |> open_modal(PicselloWeb.PackageLive.NewComponent, assigns |> Map.take([:current_user]))
+      |> open_modal(PicselloWeb.PackageLive.WizardComponent, assigns |> Map.take([:current_user]))
       |> noreply()
+
+  @impl true
+  def handle_event(
+        "edit-package",
+        %{"package-id" => package_id},
+        %{assigns: %{current_user: current_user, templates: templates}} = socket
+      ) do
+    package_id = String.to_integer(package_id)
+
+    package = Enum.find(templates, &(&1.id == package_id))
+
+    socket
+    |> open_modal(PicselloWeb.PackageLive.WizardComponent, %{
+      current_user: current_user,
+      package: package
+    })
+    |> noreply()
+  end
 
   @impl true
   def handle_info({:update, _package}, socket) do
     socket
     |> assign_templates()
-    |> put_flash(:success, "The package has been successfully created")
+    |> put_flash(:success, "The package has been successfully saved")
     |> noreply()
   end
 

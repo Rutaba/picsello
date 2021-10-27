@@ -1,4 +1,4 @@
-<div class="modal relative">
+<div class="relative modal">
   <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
     <%= icon_tag(@socket, "close-x", class: "h-7 w-7 stroke-current") %>
   </button>
@@ -6,12 +6,12 @@
   <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
   <h2 class="title">Questionnaire</h2>
 
-  <form action="#" phx-submit="submit" phx-change="validate" phx-target="<%= @myself %>">
-    <fieldset <%= if(@answer.id || @read_only, do: "disabled") %>>
+  <form action="#" phx-submit="submit" phx-change="validate" phx-target={ @myself }>
+    <fieldset disabled={@answer.id || @read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
           <dt class="pt-4">
-            <label for="question_<%= question_index %>">
+            <label for={"question_#{question_index}"}>
               <%= question.prompt %>
             </label>
             <%= if question.optional do %>
@@ -20,7 +20,7 @@
           </dt>
             <%= case question.type do %>
               <% :multiselect -> %>
-                <input type="hidden" name="answers[<%= question_index %>][]" value="">
+                <input type="hidden" name={"answers[#{question_index}][]"} value="">
 
                 <dd>
                   <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
@@ -28,10 +28,10 @@
                       <input
                         class="checkbox"
                         type="checkbox"
-                        name="answers[<%= question_index %>][]"
-                        value="<%= option_index %>"
-                        <%= if answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index), do: "checked" %>>
-                      <div class="pl-2 input-label" ><%= option %></div>
+                        name={"answers[#{question_index}][]"}
+                        value={option_index}
+                        checked={answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index)}>
+                        <div class="pl-2 input-label" ><%= option %></div>
                     </label>
                   <% end %>
                 </dd>
@@ -43,9 +43,9 @@
                       <input
                         class="radio"
                         type="radio"
-                        name="answers[<%= question_index %>][]"
-                        value="<%= option_index %>"
-                        <%= if answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index), do: "checked" %>>
+                        name={"answers[#{question_index}][]"}
+                        value={option_index}
+                        checked={answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index)}>
                       <div class="pl-2 input-label" ><%= option %></div>
                     </label>
                   <% end %>
@@ -53,27 +53,27 @@
 
               <% :text -> %>
                 <dd class="pt-4">
-                  <input type="text" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" placeholder="<%= question.placeholder %>" />
+                  <input type="text" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} placeholder={question.placeholder} />
                 </dd>
 
               <% :phone -> %>
                 <dd class="pt-4">
-                  <input type="tel" phx-hook="Phone" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                  <input type="tel" phx-hook="Phone" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
                 </dd>
 
               <% :email -> %>
                 <dd class="pt-4">
-                  <input type="email" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                  <input type="email" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
                 </dd>
 
               <% :date -> %>
                 <dd class="pt-4">
-                  <input type="date" phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]" value="<%= answer %>" />
+                  <input type="date" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
                 </dd>
 
               <% :textarea -> %>
                 <dd class="pt-4">
-                  <textarea phx-debounce="1000" class="w-full text-input" id="question_<%= question_index %>" name="answers[<%= question_index %>][]"><%= answer %></textarea>
+                  <textarea phx-debounce="1000" class="w-full text-input"  id={"question_#{question_index}"} name={"answers[#{question_index}][]"}><%= answer %></textarea>
                 </dd>
             <% end %>
         <% end %>
@@ -87,7 +87,7 @@
         </button>
         <em class="block pt-2 text-xs text-center">Answered: <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></em>
       <% else %>
-        <button type="submit" class="w-full mt-8 btn-primary" <%= if(@disable_submit, do: "disabled") %>>
+        <button type="submit" class="w-full mt-8 btn-primary" disabled={@disable_submit}>
           Save
         </button>
       <% end %>

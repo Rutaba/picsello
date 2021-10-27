@@ -15,19 +15,19 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
     ~L"""
     <div class="flex mt-2" role="status">
       <%= if @next_status do %>
-        <div class="w-1/2 p-2 mr-2 font-bold border rounded-lg text-blue-planning-300 border-blue-planning-300">
+        <div class="p-2 mr-2 font-bold border rounded-lg text-blue-planning-300 border-blue-planning-300">
           <%= @next_status %>
         </div>
       <% end %>
 
-      <div class="flex w-1/2 ml-2 overflow-hidden font-bold text-gray-400 border border-gray-300 rounded-lg">
-        <div class="flex flex-col items-center justify-center px-2 mr-2 text-xs font-semibold bg-gray-200">
+      <div class="flex overflow-hidden font-bold border rounded-lg text-blue-planning-300 border-blue-planning-300">
+        <div class="flex flex-col items-center justify-center px-2 mr-2 text-xs font-semibold text-white bg-blue-planning-300">
           <div class="uppercase"><%= @month %></div>
 
           <div><%= @day %></div>
         </div>
 
-        <div class="flex items-center"><%= @current_status %></div>
+        <div class="flex items-center pr-2"><%= @current_status %></div>
       </div>
     </div>
     """

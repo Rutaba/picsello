@@ -6,7 +6,6 @@ defmodule PicselloWeb.JobLive.Shoot do
   @impl true
   def handle_params(%{"id" => job_id, "shoot_number" => shoot_number}, _url, socket) do
     socket
-    |> assign(live_action: :jobs)
     |> assign_job(job_id)
     |> assign_shoot(shoot_number)
     |> noreply()
@@ -18,13 +17,13 @@ defmodule PicselloWeb.JobLive.Shoot do
     <header class="bg-blue-planning-100">
       <div class="px-6 py-2 lg:pb-6 center-container">
         <div class="text-xs text-blue-planning-200">
-          <%= live_redirect to: Routes.job_path(@socket, :jobs) do %>
+          <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
             <%= action_name(@live_action, :plural) %>
           <% end %>
 
           <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
 
-          <%= live_redirect to: Routes.job_path(@socket, :jobs, @job.id) do %>
+          <%= live_redirect to: Routes.job_path(@socket, @live_action, @job.id) do %>
             <%= Job.name @job %>
           <% end %>
 
@@ -43,7 +42,7 @@ defmodule PicselloWeb.JobLive.Shoot do
               <%= @shoot.name %>
             </h1>
           </div>
-          <%= live_redirect to: Routes.job_path(@socket, :jobs, @job.id), class: "fixed sm:static bottom-4 left-4 right-4 text-center btn-primary" do %>
+          <%= live_redirect to: Routes.job_path(@socket, @live_action, @job.id), class: "fixed sm:static bottom-4 left-4 right-4 text-center btn-primary" do %>
             Go back to <%= Job.name @job %>
           <% end %>
         </div>
@@ -112,7 +111,7 @@ defmodule PicselloWeb.JobLive.Shoot do
     |> noreply()
   end
 
-  def handle_info({:update, %{shoot: shoot}}, socket) do
+  def handle_info({:update, %{shoot: shoot}}, %{assigns: %{live_action: live_action}} = socket) do
     shoot_index =
       Shoot.for_job(shoot.job_id)
       |> Repo.all()
@@ -120,7 +119,7 @@ defmodule PicselloWeb.JobLive.Shoot do
 
     socket
     |> push_patch(
-      to: Routes.shoot_path(socket, :shoots, shoot.job_id, shoot_index + 1),
+      to: Routes.shoot_path(socket, live_action, shoot.job_id, shoot_index + 1),
       replace: true
     )
     |> noreply()
@@ -129,13 +128,18 @@ defmodule PicselloWeb.JobLive.Shoot do
   defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared
 
   defp assign_shoot(%{assigns: %{job: job}} = socket, shoot_number) do
-    case job.id
-         |> Shoot.for_job()
-         |> Repo.all()
-         |> Enum.at(String.to_integer(shoot_number) - 1) do
-      # trigger a 404 response
-      nil -> raise Ecto.NoResultsError
-      shoot -> assign(socket, shoot: shoot, shoot_number: shoot_number)
-    end
+    queryable = Shoot.for_job(job.id)
+
+    shoot_index = String.to_integer(shoot_number) - 1
+
+    shoot =
+      case queryable |> Repo.all() do
+        # trigger a 404 response
+        [] -> raise Ecto.NoResultsError, queryable: queryable
+        shoots when length(shoots) > shoot_index -> Enum.at(shoots, shoot_index)
+        shoots -> shoots |> Enum.reverse() |> hd
+      end
+
+    assign(socket, shoot: shoot, shoot_number: shoot_number)
   end
 end
