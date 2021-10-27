@@ -30,7 +30,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   def handle_event("upload_popup", _, socket) do
     socket
-    |> open_modal(UploadComponent, %{index: "hello", id: 13777})
+    |> open_modal(UploadComponent, %{index: "hello"})
     |> noreply()
   end
 
@@ -71,7 +71,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   def handle_info({:overall_progress, upload_state}, socket) do
-    IO.inspect upload_state
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
 
     {:noreply, socket}
@@ -92,5 +91,5 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   defp page_title(:show), do: "Show Gallery"
-  defp page_title(:edit), do: "Edit Gallery"
+  defp page_title(:upload), do: "New Gallery"
 end

@@ -140,7 +140,7 @@ defmodule PicselloWeb.JobLive.Shared do
         end
       end)
       |> Repo.get!(job_id)
-      |> Repo.preload([:client, :package, :job_status])
+      |> Repo.preload([:client, :package, :job_status, :gallery])
 
     socket
     |> assign(

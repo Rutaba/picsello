@@ -30,8 +30,6 @@ import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
-import PlacesAutocomplete from './hooks/places-autocomplete';
-import AutoHeight from './hooks/auto-height';
 import MasonryGrid from './hooks/masonry-grid';
 import DragDrop from './hooks/drag-drop';
 

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.UploadComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  
+
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
     max_entries: 50,
@@ -27,16 +27,14 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      )}
   end
 
-
   def update(assigns, socket) do
-    IO.inspect assigns
     {:ok, assign(socket, :id, "hello")}
   end
 
   @impl true
   def handle_event("start", _params, socket) do
     send(self(), {:overall_progress, socket})
-    
+
     {:noreply, socket}
   end
 
@@ -45,13 +43,11 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     uploading_achievements = for entry <- socket.assigns.uploads.photo.entries, do: entry.progress
     overall_progress = Enum.sum(uploading_achievements) / Enum.count(uploading_achievements)
     socket = socket |> assign(:overall_progress, overall_progress)
-    
-    IO.inspect overall_progress
 
     unless done?(overall_progress) do
       Process.send_after(self(), {:overall_progress, socket}, 500)
     end
-    
+
     {:noreply, socket}
   end
 
@@ -73,6 +69,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp presign_entry(entry, socket) do
     key = entry.client_name
+
     sign_opts = [
       expires_in: 600,
       bucket: socket.assigns.upload_bucket,
