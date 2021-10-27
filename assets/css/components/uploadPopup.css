@@ -1,0 +1,8 @@
+.uploadPopup {
+  width: 1200px;
+  height: 500px;
+  border: 2px dashed #4DAAC6;
+  border-radius: 8px;
+  background-color: #FFFFFF;
+  margin: 0 auto;
+}
