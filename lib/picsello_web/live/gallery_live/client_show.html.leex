@@ -78,7 +78,9 @@
                         <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                             id: photo.id,
                             photo: photo,
-                            is_likable: false %>
+                            is_likable: false,
+                            is_removable: false %>
+                            %>
                     </div>
                 </div>
           <% end %>
