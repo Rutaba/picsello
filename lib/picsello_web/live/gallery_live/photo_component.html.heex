@@ -1,21 +1,18 @@
-<div id="photo-<%= @id %>"
-        <%= if @is_removable do %>
-     class="galleryItem cursor-pointer"
-        <% end %>
+<div
+    id={"photo-#{@id}"}
+    class={@is_removable && "galleryItem cursor-pointer"}
 >
     <img
-            width="309"
-            height="<%= 309 / @photo.aspect_ratio %>"
-            src="<%= @photo.client_copy_url %>"
-            class="relative"
+        width="309"
+        height={309 / @photo.aspect_ratio}
+        src={@photo.client_copy_url}
+        class="relative"
     />
     <button
-            class="btn"
-            <%= if @is_likable do %>
-            phx-click="like"
-            phx-target="<%= @myself %>"
-            phx-value-id="<%= @id %>"
-            <% end %>
+        class="btn"
+        phx-click={@is_likable && "like"}
+        phx-target={@myself}
+        phx-value-id={@id}
     >
         <%= if @photo.client_liked do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
@@ -31,13 +28,13 @@
         <% end %>
     </button>
     <%= if @is_removable do %>
-    <button class="removeBtn absolute"
+        <button
+            class="removeBtn absolute"
             phx-click="remove"
-            phx-target="<%= @myself %>"
-            phx-value-id="<%= @id %>"
-
-    >
-        <img src="/images/remove-icon.svg" alt="remove">
-    </button>
+            phx-target={@myself}
+            phx-value-id={@id}
+        >
+            <img src="/images/remove-icon.svg" alt="remove">
+        </button>
     <% end %>
 </div>
