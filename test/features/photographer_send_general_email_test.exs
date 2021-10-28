@@ -21,8 +21,9 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     |> fill_in(text_field("Subject line"), with: "Check this out")
     |> click(css("div[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
-    |> wait_for_enabled_submit_button()
+    |> within_modal(&wait_for_enabled_submit_button/1)
     |> click(@send_email_button)
+    |> assert_text("Email sent")
 
     assert_receive {:delivered_email, email}
 

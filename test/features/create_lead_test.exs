@@ -11,10 +11,10 @@ defmodule Picsello.CreateLeadTest do
 
     session
     |> click(button("Create a lead"))
-    |> fill_in(text_field("Client name"), with: client_name)
-    |> fill_in(text_field("Client email"), with: client_email)
-    |> fill_in(text_field("Client phone"), with: client_phone)
-    |> fill_in(text_field("Lead notes"), with: "things to know about")
+    |> fill_in(text_field("Client Name"), with: client_name)
+    |> fill_in(text_field("Client Email"), with: client_email)
+    |> fill_in(text_field("Client Phone"), with: client_phone)
+    |> fill_in(text_field("Private Notes"), with: "things to know about")
     |> click(option("Wedding"))
     |> find(css(".modal"), &wait_for_enabled_submit_button/1)
     |> click(button("Save"))
@@ -31,15 +31,15 @@ defmodule Picsello.CreateLeadTest do
   feature "user sees validation errors when creating lead", %{session: session} do
     session
     |> click(button("Create a lead"))
-    |> fill_in(text_field("Client name"), with: " ")
-    |> fill_in(text_field("Client email"), with: " ")
-    |> fill_in(text_field("Client phone"), with: "123")
+    |> fill_in(text_field("Client Name"), with: " ")
+    |> fill_in(text_field("Client Email"), with: " ")
+    |> fill_in(text_field("Client Phone"), with: "123")
     |> click(option("Wedding"))
     |> click(option("Select below"))
-    |> assert_has(css("label", text: "Client name can't be blank"))
-    |> assert_has(css("label", text: "Client email can't be blank"))
-    |> assert_has(css("label", text: "Client phone is invalid"))
-    |> assert_has(css("label", text: "Type of photography can't be blank"))
+    |> assert_has(css("label", text: "Client Name can't be blank"))
+    |> assert_has(css("label", text: "Client Email can't be blank"))
+    |> assert_has(css("label", text: "Client Phone is invalid"))
+    |> assert_has(css("label", text: "Type of Photography can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
@@ -53,8 +53,8 @@ defmodule Picsello.CreateLeadTest do
 
     session
     |> click(button("Create a lead"))
-    |> fill_in(text_field("Client email"), with: email)
-    |> assert_has(css("label", text: "email has already been taken"))
+    |> fill_in(text_field("Client Email"), with: email)
+    |> assert_has(css("label", text: "Email has already been taken"))
     |> assert_has(css("button:disabled[type='submit']"))
   end
 end
