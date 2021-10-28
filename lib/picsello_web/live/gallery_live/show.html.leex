@@ -1,11 +1,11 @@
-<div style="background-image: url('<%= @gallery.cover_photo_url %>')" class="coverImg__wrapper">
+<div style="background-image: url('<%= cover_photo(@gallery.cover_photo_id) %>')" class="coverImg__wrapper">
   <div class="gallery__container py-11 flex justify-between">
     <div>
       <button class="backBtn flex items-center justify-center">
         <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
         <span>Back to job</span>
       </button>
-      <%= if is_nil(@gallery.cover_photo_url) do %>
+      <%= if is_nil(@gallery.cover_photo_id) do %>
         <div class="uploadingBlock">
           <p class="font-bold mb-8">Upload cover photo</p>
           <div class="dragDrop__wrapper">

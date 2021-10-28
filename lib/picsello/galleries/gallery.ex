@@ -12,7 +12,7 @@ defmodule Picsello.Galleries.Gallery do
   schema "galleries" do
     field :name, :string
     field(:status, :string, @status_options)
-    field :cover_photo_url, :string
+    field :cover_photo_id, :string
     field :cover_photo_aspect_ratio, :float
     field :password, :string
     field :client_link_hash, :string
@@ -21,7 +21,7 @@ defmodule Picsello.Galleries.Gallery do
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
-  
+
     timestamps(type: :utc_datetime)
   end
 
@@ -33,7 +33,7 @@ defmodule Picsello.Galleries.Gallery do
     :password,
     :client_link_hash,
     :total_count,
-    :cover_photo_url,
+    :cover_photo_id,
     :cover_photo_aspect_ratio
   ]
   @update_attrs [
@@ -43,7 +43,7 @@ defmodule Picsello.Galleries.Gallery do
     :password,
     :client_link_hash,
     :total_count,
-    :cover_photo_url,
+    :cover_photo_id,
     :cover_photo_aspect_ratio
   ]
   @required_attrs [:name, :job_id, :status]
