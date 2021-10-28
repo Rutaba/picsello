@@ -56,9 +56,8 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event("open_upload_popup", _, socket) do
-    socket
-    |> open_modal(UploadComponent, %{index: "hello"})
-    |> noreply()
+    send(self(), :open_modal)
+    socket |> noreply()
   end
 
   @impl true
