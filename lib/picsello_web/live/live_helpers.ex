@@ -127,6 +127,7 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
+  def classes(%{} = optionals), do: classes([], optionals)
   def classes(constants), do: classes(constants, %{})
 
   def classes(nil, optionals), do: classes([], optionals)

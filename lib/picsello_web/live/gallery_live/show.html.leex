@@ -1,37 +1,52 @@
-<div class="coverImg__wrapper">
+<div style="background-image: url('<%= @cover_photo %>')"class="coverImg__wrapper">
     <div class="gallery__container py-11 flex justify-between">
         <div>
-           <button class="backBtn flex items-center justify-center">
-                 <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
-                 <span>Back to job</span>
-             </button>
-            <div class="uploadingBlock">
-                <p class="font-bold mb-8">Upload cover photo</p>
-                <div class="dragDrop__wrapper">
-                    <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-                        <div class="flex flex-col items-center justify-center gap-8 dragDrop h-full"
-                             id="dropzone"
-                             phx-hook="DragDrop"
-                        >
-                            <img src="/images/drag-drop-img.png" width="76" height="76"/>
-                            <div class="dragDrop__content">
-                                <span class="font-bold">Drop images or </span>
-                                <label class="font-bold">Download
-                                </label>
-                                <p>Supports JPEG or PNG</p>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+            <div class="circleBtn">
+                <ul>
+                    <li>
+                        <a href="#">
+                            <img src="/images/arrow-left.png"/>
+                            <span>Back to job</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
+      <%= if is_nil(@cover_photo) do %>
+        <div class="uploadingBlock">
+          <p class="font-bold mb-8">Upload cover photo</p>
+          <div class="dragDrop__wrapper">
+            <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+              <div class="flex flex-col items-center justify-center gap-8 dragDrop h-full" id="dropzone" phx-hook="DragDrop">
+                <img src="/images/drag-drop-img.png" width="76" height="76"/>
+                <div class="dragDrop__content">
+                  <span class="font-bold">Drop images or </span>
+                  <label class="font-bold">Download
+                    <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                  </label>
+                  <p>Supports JPEG or PNG</p>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
-        <div class="w-1/3 text-white pt-36">
-            <p class="text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></p>
-            <p class="font-bold text-4xl"><%= @gallery.name %></p>
+      <% else %>
+        <div class="reuploadingBlock">
+          <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+            <div class="dragDrop__content">
+              <label class="font-bold text-white">Choose a new photo
+                <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+              </label>
+            </div>
+          </form>
         </div>
+      <% end %>
     </div>
+    <div class="w-1/3 text-white pt-36">
+      <p class="text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></p>
+      <p class="font-bold text-4xl"><%= @gallery.name %></p>
+    </div>
+  </div>
 </div>
-<a href="#" phx-click="upload_popup">Add photos</a>
 
 <div class="gallery__container pb-32">
     <%= if @live_action in [:edit] do %>
@@ -95,7 +110,7 @@
             </button>
         </div>
         <div class="flex">
-            <button class="bottomBar__btn mr-3">
+            <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
                 <img class="mr-3" src="/images/settings-icon.png" alt="uploading" width="24" height="24"/>
                 <span>Add photos</span>
             </button>

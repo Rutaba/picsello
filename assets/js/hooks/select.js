@@ -5,27 +5,34 @@ export default {
   mounted() {
     const { el } = this;
     const content = el.querySelector('.popover-content');
+    const openIcon = el.querySelector('.open-icon');
+    const closeIcon = el.querySelector('.close-icon');
+    const {
+      dataset: { offsetY },
+    } = el;
+
     let popper;
-
-    function changeArrowTo(direction) {
-      const arrow = el.querySelector(`#${el.id} > svg > use`);
-      const href = arrow.getAttribute('xlink:href');
-
-      arrow.setAttribute('xlink:href', href.replace(/#.+$/, `#${direction}`));
-    }
 
     function onClose() {
       popper.destroy();
       content.classList.add('hidden');
-      changeArrowTo('down');
+      openIcon.classList.remove('hidden');
+      closeIcon.classList.add('hidden');
     }
 
     function onOpen() {
       content.classList.remove('hidden');
-      changeArrowTo('up');
+      openIcon.classList.add('hidden');
+      closeIcon.classList.remove('hidden');
 
       popper = createPopper(el, content, {
-        modifiers: [{ name: 'offset', options: { offset: [10, 10] } }],
+        placement: 'bottom-start',
+        modifiers: [
+          {
+            name: 'offset',
+            options: { offset: [0, parseInt(offsetY || "0")] },
+          },
+        ],
       });
     }
 

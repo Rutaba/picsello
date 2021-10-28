@@ -42,7 +42,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
-    |> assert_flash(:success, text: "The package has been successfully created")
+    |> assert_flash(:success, text: "The package has been successfully saved")
 
     base_price = Money.new(10_000)
     gallery_credit = Money.new(1000)
@@ -59,5 +59,36 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
              job_type: "portrait",
              package_template_id: nil
            } = user |> Package.templates_for_user() |> Repo.one!()
+  end
+
+  feature "edit", %{session: session, user: user} do
+    template = insert(:package_template, user: user) |> Repo.reload!()
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> find(testid("package-template-card"))
+    |> click(button("Manage"))
+    |> click(button("Edit"))
+
+    session
+    |> assert_value(text_field("Title"), template.name)
+    |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
+    |> assert_flash(:success, text: "The package has been successfully saved")
+
+    form_fields =
+      ~w(base_price description job_type name gallery_credit download_count download_each_price shoot_count)a
+
+    updated =
+      %{template | name: "Wedding Super Deluxe"}
+      |> Map.take([:id | form_fields])
+
+    assert ^updated =
+             user |> Package.templates_for_user() |> Repo.one!() |> Map.take([:id | form_fields])
   end
 end
