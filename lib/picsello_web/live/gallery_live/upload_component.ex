@@ -27,7 +27,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      )}
   end
 
-@impl true
+  @impl true
   def update(_assigns, socket) do
     {:ok, assign(socket, :id, "hello")}
   end
@@ -39,6 +39,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
         _, socket -> socket
       end)
+
     {:noreply, socket}
   end
 

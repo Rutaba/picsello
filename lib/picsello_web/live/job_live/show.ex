@@ -36,15 +36,49 @@ defmodule PicselloWeb.JobLive.Show do
           <%= render_block(@inner_block) %>
         </div>
 
-        <button
-          type="button"
-          class="w-full p-2 mt-6 text-sm text-center border rounded-lg border-base-300"
-          phx-click={button_click}
-        >
-          <%= @button_text %>
-        </button>
+        <%= if @button_text do %>
+          <button
+            type="button"
+            class="w-full p-2 mt-6 text-sm text-center border rounded-lg border-base-300"
+            phx-click={button_click}
+          >
+            <%= @button_text %>
+          </button>
+        <% end %>
       </li>
     """
+  end
+
+  def gallery_overview_card(%{gallery: gallery} = assigns) do
+    attrs =
+      case Picsello.Galleries.gallery_current_status(gallery) do
+        :none_created ->
+          %{
+            button_text: "Upload photo",
+            button_click: "create-gallery",
+            inner_block: fn _, _ -> "Looks like you need to upload photos." end
+          }
+
+        :upload_in_progress ->
+          %{
+            button_text: false,
+            inner_block: fn _, _ -> "Photos currently uploading" end
+          }
+
+        :ready ->
+          %{
+            button_text: "View Gallery",
+            button_click: "view-gallery",
+            inner_block: fn _, _ -> "#{gallery.total_count} photos" end
+          }
+
+        :deactivated ->
+          %{}
+      end
+
+    assigns
+    |> Map.merge(attrs)
+    |> overview_card()
   end
 
   @impl true
@@ -76,7 +110,7 @@ defmodule PicselloWeb.JobLive.Show do
     {:ok, gallery} =
       Picsello.Galleries.create_gallery(%{
         job_id: job.id,
-        name: job.name
+        name: Job.name(job)
       })
 
     socket
