@@ -4,6 +4,7 @@ defmodule Picsello.Job do
   use Ecto.Schema
   import Ecto.{Changeset, Query}
   alias Picsello.{Client, JobStatus, Package, Shoot, BookingProposal, Repo}
+  alias Picsello.Galleries.Gallery
 
   schema "jobs" do
     field(:type, :string)
@@ -13,6 +14,7 @@ defmodule Picsello.Job do
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     has_one(:job_status, JobStatus)
+    has_one(:gallery, Gallery)
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
 

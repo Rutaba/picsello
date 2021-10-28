@@ -336,4 +336,25 @@ defmodule Picsello.Galleries do
       [gallery_id, photo_id, another_id]
     )
   end
+
+  def gallery_current_status(nil), do: :none_created
+  def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
+  def gallery_current_status(%Gallery{total_count: nil}), do: :upload_in_progress
+
+  def gallery_current_status(%Gallery{} = gallery) do
+    gallery = Repo.preload(gallery, [:photos])
+    has_watermark = false
+
+    gallery
+    |> Map.get(:photos, [])
+    |> Enum.any?(fn photo ->
+      is_nil(photo.aspect_ratio) ||
+        is_nil(photo.preview_url) ||
+        (has_watermark && is_nil(photo.watermarked_url))
+    end)
+    |> then(fn
+      false -> :ready
+      true -> :upload_in_progress
+    end)
+  end
 end
