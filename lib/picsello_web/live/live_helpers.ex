@@ -6,6 +6,12 @@ defmodule PicselloWeb.LiveHelpers do
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
+  def live_modal(_socket, component, opts) do
+    path = Keyword.fetch!(opts, :return_to)
+    modal_opts = [id: :modal, return_to: path, component: component, opts: opts]
+    live_component(PicselloWeb.ModalComponent, modal_opts)
+  end
+
   def open_modal(socket, component, assigns \\ %{})
 
   # main process, modal pid is assigned

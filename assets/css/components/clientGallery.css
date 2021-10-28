@@ -1,0 +1,215 @@
+.clientGallery__coverImg {
+    background-size: cover;
+    background-position: center;
+    background-color: darkgray;
+    height: 566px;
+    text-shadow: 0 0 10px #222;
+}
+
+.coverImg__wrapper {
+  background-size: cover;
+  background-position: center;
+  background-color: #EFEFEF;;
+  height: 566px;
+}
+
+.gallery__container {
+    max-width: 1440px;
+    padding: 0 70px;
+    margin: 0 auto;
+    height: 100%;
+}
+
+.uploadingBlock {
+    width: 334px;
+    height: 285px;
+    background: #FFFFFF;
+    box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    padding: 13px 26px 36px;
+    color: #231F20;
+    margin-top: 60px;
+}
+
+.reuploadingBlock {
+  width: 334px;
+  height: 50px;
+  background: #FFFFFF;
+  box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
+  border-radius: 25px;
+  padding: 13px 26px 36px;
+  color: #231F20;
+  margin-top: 60px;
+}
+
+.uploadingBlock > p {
+    font-size: 24px;
+    line-height: 35px;
+}
+
+.uploadingBlock .dragDrop__wrapper {
+    width: 100%;
+    height: 180px;
+    border: 2px dashed #4DAAC6;
+    border-radius: 8px;
+}
+
+.uploadingBlock .dragDrop__wrapper label {
+    color: #4DAAC6;
+}
+
+.circleBtn {
+    position: relative;
+    left: 0;
+    text-align: right;
+    font-size: 25px;
+    font-weight: 800;
+    color: #231F20;
+}
+
+.circleBtn ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 75px;
+}
+
+.circleBtn ul:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.circleBtn img {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 5) 33%, rgba(255, 255, 255, 1) 33%);
+    box-sizing: border-box;
+    padding: 14px;
+    padding-right: 0;
+    position: relative;
+    margin: -20px;
+    text-decoration: none;
+    position: absolute;
+    z-index: 1;
+    left: 24px;
+    bottom: 21px;
+    font-size: 26px !important;
+    text-align: center;
+    line-height: 28px !important;
+}
+
+.circleBtn ul li {
+    background: #fff;
+    padding: 0px;
+    width: auto;
+    border-radius: 50px;
+    text-align: center;
+    overflow: hidden;
+    float: left;
+    box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
+}
+
+.circleBtn ul li a {
+    position: relative;
+    display: block;
+    min-width: 50px;
+    padding: 5px 15px;
+}
+
+.circleBtn ul span {
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+    margin-right: 0px;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    visibility: none;
+    width: auto;
+    max-width: 0px;
+    opacity: 0;
+    text-align: center;
+    transition: all .4s;
+    box-sizing: border-box;
+    padding-right: 0px;
+    text-decoration: none;
+    color: black;
+    padding-bottom: 3px;
+}
+
+.circleBtn li:hover {
+    cursor: pointer;
+}
+
+.circleBtn li:hover span {
+    margin-right: 0px;
+    opacity: 1;
+    width: auto;
+    max-width: 500px;
+    padding-left: 50px;
+}
+
+
+.bottomBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 139px;
+    background: #1F1C1E;
+    opacity: 0.96;
+    box-shadow: 0px -14px 34px rgba(0, 0, 0, 0.15);
+    z-index: 1;
+}
+
+.bottomBar__btn {
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 18px;
+    text-align: center;
+    border: 1px solid #FFFFFF;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    cursor: pointer;
+}
+
+.bottomBar__btn.primary {
+    background-color: #FFFFFF;
+    color: #1F1C1E;
+}
+
+.galleryItem:hover .removeBtn {
+    opacity: 1;
+}
+
+.galleryItem:hover img {
+    background-color: transparent !important;
+}
+
+.galleryItem:before {
+    content: '';
+    display: block;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    bottom: 0;
+    opacity: 0;
+    transition: all .3s ease-out;
+    background: linear-gradient(0deg, rgba(31, 28, 30, 0.65) 0%, rgba(31, 28, 30, 0.065) 100%);
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.galleryItem:hover:before {
+    opacity: 1;
+}
+
+.removeBtn {
+    opacity: 0;
+    left: 15px;
+    bottom: 13px;
+    z-index: 1;
+}

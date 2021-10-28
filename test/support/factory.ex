@@ -16,7 +16,8 @@ defmodule Picsello.Factory do
     Shoot,
     Accounts.User,
     Questionnaire,
-    Questionnaire.Answer
+    Questionnaire.Answer,
+    Galleries.Gallery
   }
 
   def valid_user_password(), do: "hello world!"
@@ -251,6 +252,14 @@ defmodule Picsello.Factory do
       end
     }
     |> merge_attributes(Map.drop(attrs, [:client, :package, :shoots, :user]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def gallery_factory(attrs) do
+    %{id: job_id} = insert(:lead)
+
+    %Gallery{job_id: job_id}
+    |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
 end

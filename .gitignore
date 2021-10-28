@@ -36,3 +36,6 @@ npm-debug.log
 .env
 /screenshots/
 .elixir_ls
+
+.idea
+*.iml

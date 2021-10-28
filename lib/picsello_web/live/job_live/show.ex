@@ -23,6 +23,8 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   def overview_card(assigns) do
+    button_click = assigns[:button_click]
+
     ~H"""
       <li class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
@@ -34,11 +36,49 @@ defmodule PicselloWeb.JobLive.Show do
           <%= render_block(@inner_block) %>
         </div>
 
-        <button type="button" class="w-full p-2 mt-6 text-sm text-center border rounded-lg border-base-300" >
-          <%= @button_text %>
-        </button>
+        <%= if @button_text do %>
+          <button
+            type="button"
+            class="w-full p-2 mt-6 text-sm text-center border rounded-lg border-base-300"
+            phx-click={button_click}
+          >
+            <%= @button_text %>
+          </button>
+        <% end %>
       </li>
     """
+  end
+
+  def gallery_overview_card(%{gallery: gallery} = assigns) do
+    attrs =
+      case Picsello.Galleries.gallery_current_status(gallery) do
+        :none_created ->
+          %{
+            button_text: "Upload photo",
+            button_click: "create-gallery",
+            inner_block: fn _, _ -> "Looks like you need to upload photos." end
+          }
+
+        :upload_in_progress ->
+          %{
+            button_text: false,
+            inner_block: fn _, _ -> "Photos currently uploading" end
+          }
+
+        :ready ->
+          %{
+            button_text: "View Gallery",
+            button_click: "view-gallery",
+            inner_block: fn _, _ -> "#{gallery.total_count} photos" end
+          }
+
+        :deactivated ->
+          %{}
+      end
+
+    assigns
+    |> Map.merge(attrs)
+    |> overview_card()
   end
 
   @impl true
@@ -57,6 +97,26 @@ defmodule PicselloWeb.JobLive.Show do
           )
       })
       |> noreply()
+
+  @impl true
+  def handle_event("view-gallery", _, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.gallery_show_path(socket, :show, job.gallery.id))
+      |> noreply()
+
+  @impl true
+  def handle_event("create-gallery", _, %{assigns: %{job: job}} = socket) do
+    {:ok, gallery} =
+      Picsello.Galleries.create_gallery(%{
+        job_id: job.id,
+        name: Job.name(job)
+      })
+
+    socket
+    |> push_redirect(to: Routes.gallery_show_path(socket, :upload, gallery.id))
+    |> noreply()
+  end
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared

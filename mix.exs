@@ -41,6 +41,7 @@ defmodule Picsello.MixProject do
         {:ecto_psql_extras, "~> 0.7.2"},
         {:ecto_sql, "~> 3.7"},
         {:gettext, "~> 0.18"},
+        {:flow, "~> 1.1"},
         {:jason, "~> 1.2.2"},
         {:libcluster, "~> 3.3"},
         {:money, "~> 1.9"},
@@ -56,7 +57,9 @@ defmodule Picsello.MixProject do
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 0.5.1"},
         {:tz, "~> 0.20"},
-        {:ueberauth_google, "~> 0.10"}
+        {:ueberauth_google, "~> 0.10"},
+        {:packmatic, "~> 1.1.2"},
+        {:gcs_sign, "~> 1.0"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},

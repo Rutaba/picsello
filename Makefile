@@ -1,6 +1,6 @@
 #!make
 include .env
-.PHONY: help console outdated setup server test update-mix
+.PHONY: help console outdated setup server test update-mix check iex
 
 HELP_PADDING = 20
 
@@ -36,10 +36,7 @@ server: ## Start the App server.
 	mix phx.server
 
 test: ## Run the test suite.
-test: setup
-	mix format
-	MIX_ENV=test mix credo
-	mix dialyzer
+test: setup check
 	killall chrome | true
 	rm -f screenshots/*.png
 	mix test
@@ -52,3 +49,12 @@ update-mix: ## Update mix packages.
 
 stripe-connect-listen:
 	stripe listen --log-level=debug --forward-to localhost:4000/stripe/connect-webhooks --latest
+
+
+check:
+	mix format
+	MIX_ENV=test mix credo
+	mix dialyzer
+
+iex: setup
+	iex -S mix phx.server

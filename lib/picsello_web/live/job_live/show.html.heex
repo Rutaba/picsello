@@ -40,9 +40,7 @@
     <.overview_card title="Orders" icon="cart-outline" button_text="Learn how">
       You need to upload photos to allow orders.
     </.overview_card>
-    <.overview_card title="Gallery" icon="gallery" button_text="Learn how">
-      Looks like you need to upload photos.
-    </.overview_card>
+    <.gallery_overview_card gallery={@job.gallery} title="Gallery" icon="gallery"/>
   </ul>
 
   <.notes job={@job} />
