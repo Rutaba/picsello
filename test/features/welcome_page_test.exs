@@ -67,7 +67,7 @@ defmodule Picsello.WelcomePageTest do
         testid("attention-item", text: "Create your first lead"),
         &click(&1, button("Create your first lead"))
       )
-      |> assert_has(text_field("Client name"))
+      |> assert_has(text_field("Client Name"))
 
       insert(:lead, user: user)
 
@@ -84,7 +84,7 @@ defmodule Picsello.WelcomePageTest do
       |> assert_has(css("#float-menu", visible: true))
       |> click(css("#float-menu svg"))
       |> click(link("Add a lead"))
-      |> assert_has(text_field("Client name"))
+      |> assert_has(text_field("Client Name"))
     end
   end
 
