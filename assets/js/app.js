@@ -66,6 +66,8 @@ const Modal = {
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
+    window.removeEventListener('scroll', this.scrollListener);
+    document.body.classList.remove('overflow-hidden');
   },
 };
 
