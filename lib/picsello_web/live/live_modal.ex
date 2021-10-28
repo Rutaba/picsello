@@ -84,6 +84,7 @@ defmodule PicselloWeb.LiveModal do
     Process.send_after(self(), {:modal, :open}, 50)
 
     socket
+    |> push_event("modal:open", %{transition_ms: modal.transition_ms})
     |> assign(modal: modal |> Modal.open(component, config))
     |> noreply()
   end
@@ -100,16 +101,14 @@ defmodule PicselloWeb.LiveModal do
 
   @impl true
   def render(assigns) do
-    ~L"""
-    <div role="dialog" id="modal-wrapper" phx-hook="Modal" style="transition-duration: <%= @modal.transition_ms %>ms"
-         class="flex items-center justify-center w-full h-full bg-base-300/20 shadow z-20 fixed transition-opacity ease-in-out
-                <%= %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state] %>">
-        <%= if @modal.state != :closed do %>
-          <div id="modal-container" class="self-end overflow-hidden rounded-t-lg sm:rounded-b-lg sm:self-auto" phx-hook="LockBodyScroll">
-            <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
-          </div>
-        <% end %>
-      </div>
+    ~H"""
+    <div role="dialog" id="modal-wrapper" phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/20 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
+      <%= if @modal.state != :closed do %>
+        <div class="self-end overflow-hidden rounded-t-lg sm:rounded-b-lg sm:self-auto">
+          <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
+        </div>
+      <% end %>
+    </div>
     """
   end
 

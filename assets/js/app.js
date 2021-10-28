@@ -44,24 +44,25 @@ const Modal = {
       }
     };
 
+    this.scrollListener = () => {
+      document.body.classList.add('overflow-hidden');
+    };
+
     document.addEventListener('keydown', this.keydownListener);
+
+    this.handleEvent('modal:open', () => {
+      window.addEventListener('scroll', this.scrollListener);
+    });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
+      document.body.classList.remove('overflow-hidden');
+      window.removeEventListener('scroll', this.scrollListener);
     });
   },
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
-  },
-};
-
-const LockBodyScroll = {
-  mounted() {
-    document.body.style.overflow = 'hidden';
-  },
-  destroyed() {
-    document.body.style.overflow = '';
   },
 };
 
@@ -100,7 +101,6 @@ const TZCookie = {
 const Hooks = {
   ClearInput,
   Clipboard,
-  LockBodyScroll,
   Modal,
   Phone,
   PriceMask,

@@ -28,7 +28,7 @@ defmodule Picsello.ManageLeadShootTest do
     |> find(select("Shoot Duration"), &click(&1, option("1.5 hrs")))
     |> find(select("Shoot Location"), &click(&1, option("On Location")))
     |> fill_in(text_field("Shoot Notes"), with: "my notes")
-    |> wait_for_enabled_submit_button()
+    |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("chute"))
     |> click(button("Edit"))
