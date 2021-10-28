@@ -1,11 +1,11 @@
-<div style="background-image: url('<%= @cover_photo %>')" class="coverImg__wrapper">
+<div style="background-image: url('<%= @gallery.cover_photo_url %>')" class="coverImg__wrapper">
   <div class="gallery__container py-11 flex justify-between">
     <div>
       <button class="backBtn flex items-center justify-center">
         <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
         <span>Back to job</span>
       </button>
-      <%= if is_nil(@cover_photo) do %>
+      <%= if is_nil(@gallery.cover_photo_url) do %>
         <div class="uploadingBlock">
           <p class="font-bold mb-8">Upload cover photo</p>
           <div class="dragDrop__wrapper">
@@ -24,14 +24,17 @@
           </div>
         </div>
       <%= else %>
-        <div class="reuploadingBlock">
+        <div class="reuploadingBlock flex justify-between">
           <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
             <div class="dragDrop__content">
               <label class="font-bold text-white">Choose a new photo
                 <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
               </label>
             </div>
-          </form>      
+          </form>
+          <button phx-click="delete_cover_photo_popup" class="">
+            <img src="/images/remove-icon.png" width="21" height="21"/>
+          </button>      
         </div>
       <%= end %>
     </div>

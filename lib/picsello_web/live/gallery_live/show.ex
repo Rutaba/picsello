@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
+  alias PicselloWeb.GalleryLive.DeleteCoverPhoto
 
   @per_page 12
   @upload_options [
@@ -19,7 +20,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:cover_photo, nil)
      |> assign(:gcp_credentials, gcp_credentials())
      |> assign(:upload_bucket, @bucket)
      |> allow_upload(
@@ -90,12 +90,36 @@ defmodule PicselloWeb.GalleryLive.Show do
     noreply(socket)
   end
 
+  @impl true
+  def handle_event("delete_cover_photo_popup", _, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> open_modal(DeleteCoverPhoto, %{gallery_name: gallery.name})
+    |> noreply()
+  end
+
+  @impl true  
+  def handle_info({:close_delete_cover_photo, params}, %{assigns: %{gallery: gallery}} = socket) do
+    socket = 
+      if params["delete"] do
+        {:ok, gallery} = Galleries.update_gallery(gallery, %{cover_photo_url: nil})
+        assign(socket, :gallery, gallery)
+      else
+        socket
+      end
+    
+    socket
+    |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:overall_progress, upload_state}, socket) do
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
 
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info(:close_upload_popup, socket) do
     socket
     |> close_modal()
@@ -114,9 +138,11 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp handle_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
     if entry.done? do
       sign_opts = [bucket: assigns.upload_bucket, key: entry.client_name, expires_in: 600_000]
-      upload = GCSSign.sign_url_v4(socket.assigns.gcp_credentials, sign_opts)
+      upload_url = GCSSign.sign_url_v4(socket.assigns.gcp_credentials, sign_opts)
 
-      {:noreply, socket |> assign(:cover_photo, upload)}
+      {:ok, gallery} = Galleries.update_gallery(assigns.gallery, %{cover_photo_url: upload_url, cover_photo_aspect_ratio: 1})
+
+      {:noreply, socket |> assign(:gallery, gallery)}
     else
       {:noreply, socket}
     end
