@@ -17,6 +17,8 @@ defmodule Picsello.FeatureCase do
       session |> assert_has(css("button:disabled[type='submit']", opts))
     end
 
+    def within_modal(session, fun), do: find(session, css("#modal-wrapper"), fun)
+
     def assert_flash(session, key, opts \\ []) do
       try do
         session |> assert_has(css("*[role='alert'][title='#{key}']", opts))
