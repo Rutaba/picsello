@@ -21,7 +21,7 @@
             </div>
             <% end %>
             <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap font-bold">
-                Uploaded {total(@uploaded_files)} of {total(@uploads.photo.entries)} photos
+                <.overall_progress uploads={@uploaded_files} entries={@uploads.photo.entries}/> 
             </p>
         </div>
         <div class="uploadingProgress__wrapper">

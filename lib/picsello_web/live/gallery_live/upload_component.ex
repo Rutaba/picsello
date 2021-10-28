@@ -2,6 +2,8 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
+  alias Picsello.Galleries
+
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
     max_entries: 50,
@@ -14,7 +16,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   def mount(socket) do
     {:ok,
      socket
-     |> assign(:uploaded_files, [])
+     |> assign(:uploaded_files, 0)
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
      |> allow_upload(
@@ -27,8 +29,11 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   end
 
   @impl true
-  def update(_assigns, socket) do
-    {:ok, assign(socket, :id, "hello")}
+  def update(assigns, socket) do
+    {:ok,
+     socket
+     |> assign(:id, assigns.id)
+     |> assign(:gallery, assigns.gallery)}
   end
 
   @impl true
@@ -69,17 +74,24 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp handle_progress(:photo, entry, %{assigns: assigns} = socket) do
     if entry.done? do
-      sign_opts = [bucket: assigns.upload_bucket, key: entry.client_name]
-      upload = GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
+      {:ok, _photo} =
+        Galleries.create_photo(%{
+          gallery_id: assigns.gallery.id,
+          name: entry.client_name,
+          original_url: entry.uuid,
+          client_copy_url: entry.uuid,
+          position: 1,
+          aspect_ratio: 1
+        })
 
-      {:noreply, update(socket, :uploaded_files, &(&1 ++ [upload]))}
+      {:noreply, assign(socket, :uploaded_files, assigns.uploaded_files + 1)}
     else
       {:noreply, socket}
     end
   end
 
   defp presign_entry(entry, socket) do
-    key = entry.client_name
+    key = entry.uuid <> Path.extname(entry.client_name)
 
     sign_opts = [
       expires_in: 600,
@@ -102,6 +114,12 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   defp total(_), do: nil
 
   defp done?(progress), do: progress == 100
+
+  defp overall_progress(assigns) do
+    ~H"""
+    Uploaded {total(@uploads)} of {total(@entries)} photos
+    """
+  end
 
   defp gcp_credentials() do
     conf = Application.get_env(:gcs_sign, :gcp_credentials)

@@ -113,21 +113,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_info({:close_delete_cover_photo, params}, %{assigns: %{gallery: gallery}} = socket) do
-    socket =
-      if params["delete"] do
-        {:ok, gallery} = Galleries.update_gallery(gallery, %{cover_photo_id: nil})
-        assign(socket, :gallery, gallery)
-      else
-        socket
-      end
-
-    socket
-    |> close_modal()
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("start", _params, socket) do
     socket.assigns.uploads.cover_photo
     |> case do
@@ -142,10 +127,24 @@ defmodule PicselloWeb.GalleryLive.Show do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_info({:close_delete_cover_photo, params}, %{assigns: %{gallery: gallery}} = socket) do
+    socket =
+      if params["delete"] do
+        {:ok, gallery} = Galleries.update_gallery(gallery, %{cover_photo_id: nil})
+        assign(socket, :gallery, gallery)
+      else
+        socket
+      end
+
+    socket
+    |> close_modal()
+    |> noreply()
+  end
 
   def handle_info(:open_modal, socket) do
     socket
-    |> open_modal(UploadComponent, %{index: "hello"})
+    |> open_modal(UploadComponent, socket.assigns)
     |> noreply()
   end
 
@@ -206,7 +205,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
-
 
   defp gcp_credentials do
     conf = Application.get_env(:gcs_sign, :gcp_credentials)

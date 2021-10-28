@@ -4,11 +4,11 @@
             <h1 class="mb-8 text-3xl text-start">Delete this photo?</h1>
             <p>Are you sure you wish to permanently delete this photo from <%= @gallery_name %>?</p>
 
-            <a href="#" phx-click="close" phx-target="<%= @myself %>" phx-value-delete="true" class="flex items-center text-center justify-center px-5 py-3 border border-black text-base font-medium rounded-md  bg-yellow-500">
+            <a href="#" phx-click="close" phx-target={@myself} phx-value-delete="true" class="flex items-center text-center justify-center px-5 py-3 border border-black text-base font-medium rounded-md  bg-yellow-500">
               Yes, delete
             </a>
              &nbsp; 
-            <a href="#" phx-click="close" phx-target="<%= @myself %>" class="flex items-center text-center justify-center px-5 py-3 border border-black text-base font-medium rounded-md  bg-transparent">
+            <a href="#" phx-click="close" phx-target={@myself} class="flex items-center text-center justify-center px-5 py-3 border border-black text-base font-medium rounded-md  bg-transparent">
               No, go back
             </a>
         </div>

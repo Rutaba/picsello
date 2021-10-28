@@ -5,7 +5,7 @@
     <img
         width="309"
         height={309 / @photo.aspect_ratio}
-        src={@photo.client_copy_url}
+        src={display(@photo.client_copy_url <> Path.extname(@photo.name))}
         class="relative"
     />
     <button
