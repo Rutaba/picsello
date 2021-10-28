@@ -35,12 +35,9 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @impl true
   def handle_event("start", _params, socket) do
     socket =
-      Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn entry, socket ->
-        entry
-        |> case do
-          %{valid?: false, ref: ref} -> cancel_upload(socket, :photo, ref)
-          _ -> socket
-        end
+      Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
+        %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+        _, socket -> socket
       end)
 
     {:noreply, socket}

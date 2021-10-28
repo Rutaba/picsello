@@ -36,7 +36,7 @@ defmodule Picsello.ManageJobShootTest do
   end
 
   def shoot_path(job, shoot_number),
-    do: Routes.shoot_path(PicselloWeb.Endpoint, :shoots, job.id, shoot_number)
+    do: Routes.shoot_path(PicselloWeb.Endpoint, :jobs, job.id, shoot_number)
 
   def job_path(job), do: Routes.job_path(PicselloWeb.Endpoint, :jobs, job.id)
 

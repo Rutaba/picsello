@@ -1,4 +1,4 @@
-<fieldset <%= if @read_only, do: "disabled" %>>
+<fieldset disabled={@read_only}>
 <div class="relative modal">
   <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
     <%= icon_tag(@socket, "close-x", class: "h-7 w-7 stroke-current") %>
@@ -8,7 +8,7 @@
 
   <dl>
     <dt class="inline-block pt-4 font-semibold">Proposal #:</dt>
-    <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0")  %></dd>
+    <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
 
     <dt class="inline-block font-semibold">Dated:</dt>
     <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
@@ -60,7 +60,7 @@
       </button>
       <em class="block pt-2 text-xs text-center">Accepted: <%= strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %></em>
     <% else %>
-      <button class="w-full btn-primary" phx-click="accept-proposal" phx-target="<%= @myself %>">
+      <button class="w-full btn-primary" phx-click="accept-proposal" phx-target={@myself}>
         Accept proposal
       </button>
     <% end %>

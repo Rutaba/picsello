@@ -22,13 +22,14 @@ import '@fontsource/be-vietnam/400.css';
 import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
+import AutoHeight from './hooks/auto-height';
+import Clipboard from './hooks/clipboard';
 import Phone from './hooks/phone';
+import PlacesAutocomplete from './hooks/places-autocomplete';
 import PriceMask from './hooks/price-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
-import PlacesAutocomplete from './hooks/places-autocomplete';
-import AutoHeight from './hooks/auto-height';
 import MasonryGrid from './hooks/masonry-grid';
 import DragDrop from './hooks/drag-drop';
 
@@ -101,6 +102,7 @@ const TZCookie = {
 
 const Hooks = {
   ClearInput,
+  Clipboard,
   LockBodyScroll,
   Modal,
   Phone,

@@ -99,7 +99,8 @@ defmodule PicselloWeb.Router do
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job
       live "/jobs", JobLive.Index, :jobs, as: :job
-      live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :shoots, as: :shoot
+      live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
+      live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
     end
@@ -121,6 +122,7 @@ defmodule PicselloWeb.Router do
     live "/galleries/:id/edit", GalleryLive.Index, :edit
 
     live "/galleries/:id", GalleryLive.Show, :show
+    live "/galleries/:id/upload", GalleryLive.Show, :upload
     live "/galleries/:id/show/edit", GalleryLive.Show, :edit
   end
 

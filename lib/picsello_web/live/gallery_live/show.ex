@@ -42,6 +42,14 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:favorites_filter, false)
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
+    |> then(fn
+      %{assigns: %{live_action: :upload}} = socket ->
+        send(self(), :open_modal)
+        socket
+
+      socket ->
+        socket
+    end)
     |> noreply()
   end
 
@@ -56,9 +64,8 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event("open_upload_popup", _, socket) do
-    socket
-    |> open_modal(UploadComponent, %{})
-    |> noreply()
+    send(self(), :open_modal)
+    socket |> noreply()
   end
 
   @impl true
@@ -121,13 +128,27 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
+  def handle_event("start", _params, socket) do
+    socket.assigns.uploads.cover_photo
+    |> case do
+      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
+      _ -> {:noreply, socket}
+    end
+  end
+
   def handle_info({:overall_progress, _upload_state}, socket) do
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
 
     {:noreply, socket}
   end
 
-  @impl true
+
+  def handle_info(:open_modal, socket) do
+    socket
+    |> open_modal(UploadComponent, %{index: "hello"})
+    |> noreply()
+  end
+
   def handle_info(:close_upload_popup, socket) do
     socket
     |> close_modal()
@@ -184,6 +205,8 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
+  defp page_title(:upload), do: "New Gallery"
+
 
   defp gcp_credentials do
     Application.get_env(:gcs_sign, :gcp_credentials)

@@ -1,11 +1,11 @@
-<div style="background-image: url('<%= @gallery.cover_photo_id && @gallery.cover_photo.client_copy_url %>')"
+<div style="background-image: url('{@gallery.cover_photo_id && @gallery.cover_photo.client_copy_url}')"
      class="flex flex-nowrap text-left clientGallery__coverImg">
     <div class="w-2/3"></div>
     <div class="w-1/3 h-full flex flex-wrap content-center text-white">
-        <div class="w-full text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></div>
-        <div class="font-bold text-4xl w-full py-1"><%= @gallery.name %></div>
+        <div class="w-full text-2xl">{@gallery.inserted_at |> Calendar.strftime("%B %d, %Y")}</div>
+        <div class="font-bold text-4xl w-full py-1">{@gallery.name}</div>
         <div class="w-full text-xl">
-            <%= @gallery.total_count %>
+            {@gallery.total_count}
             photos
         </div>
     </div>
@@ -13,8 +13,8 @@
 <div class="px-2 md:px-16">
     <div class="flex items-center border-b flex-wrap py-2">
         <img
-                height=50
-                width=150
+                height="50"
+                width="150"
                 src="https://janegoodrichphotography.com/wp-content/uploads/2019/08/janelogo3.png"
                 class="inline-block mr-8"
         />
@@ -29,10 +29,10 @@
     <!-- Content -->
     <div class="pt-16">
         <div class="font-bold text-3xl">
-            <%= @gallery.name %> Gallery
+            {@gallery.name} Gallery
         </div>
         <div class="text-xl text-gray-400">
-            <%= @gallery.total_count %>
+            {@gallery.total_count}
             photos
         </div>
         <div class="flex items-center justify-between flex-wrap mb-16">
@@ -59,20 +59,20 @@
               id="muuri-grid"
               class="muuri grid"
               phx-hook="MasonryGrid"
-              phx-update="<%= @update_mode %>"
-              data-page="<%= @page %>"
-              data-total="<%= @gallery.total_count %>"
-              data-favorites-count="<%= @favorites_count %>"
-              data-is-favorites-shown="<%= @favorites_filter %>"
+              phx-update={@update_mode}
+              data-page={@page}
+              data-total={@gallery.total_count}
+              data-favorites-count={@favorites_count}
+              data-is-favorites-shown={@favorites_filter}
         >
             <%= for photo <- @photos do %>
                 <div
                     class="item"
-                    id="photo-item-<%= photo.id %>"
-                    style="
+                    id={"photo-item-#{photo.id}"}
+                    style={"
                       width: 309px;
-                      height: <%= 309 / photo.aspect_ratio %>px;
-                    "
+                      height: #{309 / photo.aspect_ratio}px;
+                    "}
                 >
                     <div class="item-content">
                         <%= live_component PicselloWeb.GalleryLive.PhotoComponent,

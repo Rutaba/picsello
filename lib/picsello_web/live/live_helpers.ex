@@ -103,10 +103,13 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def icon_button(assigns) do
-    assigns = Map.put(assigns, :rest, Map.drop(assigns, [:color, :icon, :inner_block]))
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class]))
+      |> Enum.into(%{class: ""})
 
     ~H"""
-    <button type="button" class={"flex items-center px-2 py-1 border rounded-lg text-2m border-#{@color}"} {@rest}>
+    <button type="button" class={"flex items-center px-2 py-1 border rounded-lg text-2m border-#{@color} #{@class}"} {@rest}>
       <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
       <%= render_block(@inner_block) %>
     </button>
@@ -124,6 +127,7 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
+  def classes(%{} = optionals), do: classes([], optionals)
   def classes(constants), do: classes(constants, %{})
 
   def classes(nil, optionals), do: classes([], optionals)

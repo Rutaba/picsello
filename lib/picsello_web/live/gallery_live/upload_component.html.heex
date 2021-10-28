@@ -1,0 +1,88 @@
+<div class="uploadPopup" id="hello">
+  <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
+    <%= if total(@uploads.photo.entries) > 0 do %>
+    <p class="font-bold text-xl px-12 pb-4">Upload photos to Gallery Name</p>
+    <div class="flex items-center justify-between p-12  uploadOverallStatus mb-12">
+        <div class="flex items-center">
+            <%= if @overall_progress !== 100 do%>
+            <div class="sk-circle mr-4">
+                <div class="sk-circle1 sk-child"></div>
+                <div class="sk-circle2 sk-child"></div>
+                <div class="sk-circle3 sk-child"></div>
+                <div class="sk-circle4 sk-child"></div>
+                <div class="sk-circle5 sk-child"></div>
+                <div class="sk-circle6 sk-child"></div>
+                <div class="sk-circle7 sk-child"></div>
+                <div class="sk-circle8 sk-child"></div>
+                <div class="sk-circle9 sk-child"></div>
+                <div class="sk-circle10 sk-child"></div>
+                <div class="sk-circle11 sk-child"></div>
+                <div class="sk-circle12 sk-child"></div>
+            </div>
+            <% end %>
+            <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap font-bold">
+                Uploaded {total(@uploaded_files)} of {total(@uploads.photo.entries)} photos
+            </p>
+        </div>
+        <div class="uploadingProgress__wrapper">
+            <!-- <progress class="grid-cols-1" value="<%= @overall_progress %>" max="100"></progress>
+            <div class="flex items-center justify-between">
+                <p>{@overall_progress} %</p>
+                <p>Est. few seconds remaining</p>
+            </div> -->
+        </div>
+    </div>
+    <% end %>
+
+    <a href="#" phx-click="close" phx-target={@myself}>Close</a>
+    <div class="dragDrop__wrapper overflow-hidden">
+        <form id="dragDrop-form" phx-submit="save" phx-change="start" phx-target={@myself}>
+            <div class="flex flex-col items-center justify-center gap-8 dragDrop"
+                 id="dropzone"
+                 phx-hook="DragDrop"
+                 phx-drop-target={@uploads.photo.ref}
+
+            >
+                <img src="/images/drag-drop-img.png" width="76" height="76"/>
+                <div class="dragDrop__content">
+                    <span class="font-bold">Drop images or </span>
+                    <label class="font-bold">Download
+                        <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                    </label>
+                    <p>Supports JPEG or PNG</p>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <%# use phx-drop-target with the upload ref to enable file drag and drop %>
+    <div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper px-4" id="UploadEntries">
+        <%= for entry <- @uploads.photo.entries do %>
+        <div class="uploadEntry grid grid-cols-5 pb-4 items-center" id={entry.uuid}>
+            <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
+
+            <%# entry.progress will update automatically for in-flight entries %>
+            <%= if entry.progress == 100 do%>
+                <p class="grid-cols-1">{entry.client_size} Kb</p>
+            <% else %>
+                <progress class="grid-cols-1" value={entry.progress} max="100">{entry.progress}%</progress>
+            <% end %>
+
+            <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
+            <%= for err <- upload_errors(@uploads.photo, entry) do %>
+                <div class="flex gap-x-4 grid-cols-1">
+                    <p class="error btn">{err}</p>
+                    <p class="retry btn">Retry ?</p>
+                </div>
+            <% end %>
+
+            <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+            <button phx-target={@myself} phx-click="cancel-upload" phx-value-ref={entry.ref}
+                    aria-label="cancel" class="justify-self-end grid-cols-1">
+                <img src="/images/remove-icon.png" width="14" height="14"/>
+            </button>
+        </div>
+        <% end %>
+    </div>
+  </div>
+</div>
