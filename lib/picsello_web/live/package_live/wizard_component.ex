@@ -12,7 +12,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
-    |> assign_new(:package, fn -> %Package{} end)
+    |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
     |> choose_initial_step()
     |> assign(:is_template, assigns |> Map.get(:job) |> is_nil())
     |> assign_changeset(%{})
@@ -191,7 +191,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :details} = assigns) do
     ~H"""
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-7">
-        <%= labeled_input @f, :name, label: "Title", placeholder: "Super Deluxe", phx_debounce: "500", wrapper_class: "mt-4" %>
+        <%= labeled_input @f, :name, label: "Title", placeholder: "Wedding Deluxe, or 1 Hour Portrait Session", phx_debounce: "500", wrapper_class: "mt-4" %>
         <%= labeled_select @f, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", phx_update: "ignore" %>
       </div>
 
@@ -204,7 +204,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </.icon_button>
         </.input_label>
 
-        <%= input @f, :description, type: :textarea, placeholder: "The most deluxe of weddings", phx_debounce: "500" %>
+        <%= input @f, :description, type: :textarea, placeholder: "Full wedding package ideal for multiple shoots across the entire wedding journey.", phx_debounce: "500" %>
       </div>
 
       <%= if @is_template do %>
