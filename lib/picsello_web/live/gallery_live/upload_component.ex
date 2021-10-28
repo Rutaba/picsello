@@ -117,7 +117,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp overall_progress(assigns) do
     ~H"""
-    Uploaded {total(@uploads)} of {total(@entries)} photos
+    Uploaded <%= total(@uploads) %> of <%= total(@entries) %> photos
     """
   end
 

@@ -112,14 +112,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  @impl true
-  def handle_event("start", _params, socket) do
-    socket.assigns.uploads.cover_photo
-    |> case do
-      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
-      _ -> {:noreply, socket}
-    end
-  end
 
   def handle_info({:overall_progress, _upload_state}, socket) do
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)

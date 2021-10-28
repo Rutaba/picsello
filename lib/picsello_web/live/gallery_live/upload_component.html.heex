@@ -25,9 +25,9 @@
             </p>
         </div>
         <div class="uploadingProgress__wrapper">
-            <!-- <progress class="grid-cols-1" value="<%= @overall_progress %>" max="100"></progress>
+            <!-- <progress class="grid-cols-1" value={@overall_progress} max="100"></progress>
             <div class="flex items-center justify-between">
-                <p>{@overall_progress} %</p>
+                <p><%= @overall_progress %> %</p>
                 <p>Est. few seconds remaining</p>
             </div> -->
         </div>
@@ -63,15 +63,15 @@
 
             <%# entry.progress will update automatically for in-flight entries %>
             <%= if entry.progress == 100 do%>
-                <p class="grid-cols-1">{entry.client_size} Kb</p>
+                <p class="grid-cols-1"><%= entry.client_size %> Kb</p>
             <% else %>
-                <progress class="grid-cols-1" value={entry.progress} max="100">{entry.progress}%</progress>
+                <progress class="grid-cols-1" value={entry.progress} max="100"><%= entry.progress %>%</progress>
             <% end %>
 
             <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
             <%= for err <- upload_errors(@uploads.photo, entry) do %>
                 <div class="flex gap-x-4 grid-cols-1">
-                    <p class="error btn">{err}</p>
+                    <p class="error btn"><%= err %></p>
                     <p class="retry btn">Retry ?</p>
                 </div>
             <% end %>
