@@ -23,6 +23,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
+    |> assert_text("Email sent")
 
     assert_receive {:delivered_email, email}
 
