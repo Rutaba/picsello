@@ -15,7 +15,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     {:ok,
      socket
      |> assign(:uploaded_files, [])
-     |> assign(:gcp_credentials, gcp_credentials())
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
      |> allow_upload(
@@ -71,7 +70,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   defp handle_progress(:photo, entry, %{assigns: assigns} = socket) do
     if entry.done? do
       sign_opts = [bucket: assigns.upload_bucket, key: entry.client_name]
-      upload = GCSSign.sign_url_v4(socket.assigns.gcp_credentials, sign_opts)
+      upload = GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
 
       {:noreply, update(socket, :uploaded_files, &(&1 ++ [upload]))}
     else
@@ -93,7 +92,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
 
-    {:ok, params} = GCSSign.sign_post_policy_v4(socket.assigns.gcp_credentials, sign_opts)
+    {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
     {:ok, meta, socket}
@@ -106,7 +105,5 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp gcp_credentials do
     Application.get_env(:gcs_sign, :gcp_credentials)
-    |> File.read!()
-    |> Jason.decode!()
   end
 end

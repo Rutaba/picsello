@@ -1,6 +1,6 @@
 #!make
 include .env
-.PHONY: help console outdated setup server test update-mix check
+.PHONY: help console outdated setup server test update-mix check iex
 
 HELP_PADDING = 20
 
@@ -55,3 +55,6 @@ check:
 	mix format
 	MIX_ENV=test mix credo
 	mix dialyzer
+
+iex: setup
+	iex -S mix phx.server

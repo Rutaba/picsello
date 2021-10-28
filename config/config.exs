@@ -46,8 +46,18 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
 config :gcs_sign,
-  gcp_credentials: System.get_env("GCP_CREDENTIALS")
-
+  gcp_credentials: %{
+    "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
+    "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
+    "client_email" => "storage-account@celtic-rite-323300.iam.gserviceaccount.com",
+    "client_id" => "111011783898360383654",
+    "client_x509_cert_url" => "https://www.googleapis.com/robot/v1/metadata/x509/storage-account%40celtic-rite-323300.iam.gserviceaccount.com",
+    "private_key" => System.get_env("GCP_PRIVATE_KEY"),
+    "private_key_id" => System.get_env("GCP_PRIVATE_KEY_ID"),
+    "project_id" => "celtic-rite-323300",
+    "token_uri" => "https://oauth2.googleapis.com/token",
+    "type" => "service_account"
+  }
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
