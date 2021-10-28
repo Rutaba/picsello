@@ -9,11 +9,13 @@ defmodule Picsello.CreateLeadPackageTest do
 
   def fill_in_package_form(session) do
     session
+    |> assert_text("Add a Package: Provide Details")
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
+    |> assert_text("Add a Package: Set Pricing")
     |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(text_field("Base Price"), with: "$100")
     |> fill_in(text_field("Add"), with: "$10")

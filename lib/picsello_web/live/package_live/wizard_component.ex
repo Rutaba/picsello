@@ -109,27 +109,22 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step_heading(%{name: name, is_edit: is_edit} = assigns) do
-    title = if is_edit, do: "Edit Package", else: "Add a Package"
-
-    subtitle =
-      Map.get(
-        %{
-          details: "Provide Details",
-          pricing: "Set Pricing"
-        },
-        name
-      )
-
-    assigns =
-      Enum.into(assigns, %{
-        title: title,
-        subtitle: subtitle
-      })
-
+  def step_heading(assigns) do
     ~H"""
-      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold"><%= @title %>:</strong> <%= @subtitle %></h1>
+      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold"><%= heading_title(@is_edit) %>:</strong> <%= heading_subtitle(@name) %></h1>
     """
+  end
+
+  def heading_title(is_edit), do: if(is_edit, do: "Edit Package", else: "Add a Package")
+
+  def heading_subtitle(step) do
+    Map.get(
+      %{
+        details: "Provide Details",
+        pricing: "Set Pricing"
+      },
+      step
+    )
   end
 
   def step_subheading(%{name: :choose_template} = assigns) do
