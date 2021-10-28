@@ -7,21 +7,22 @@ defmodule Picsello.Package do
   import Ecto.Query
 
   schema "packages" do
-    field :description, :string
-    field :name, :string
+    field :archived_at, :utc_datetime
     field :base_price, Money.Ecto.Amount.Type
-    field :gallery_credit, Money.Ecto.Amount.Type
-    field :download_each_price, Money.Ecto.Amount.Type
+    field :description, :string
     field :download_count, :integer
-    field :shoot_count, :integer
+    field :download_each_price, Money.Ecto.Amount.Type
+    field :gallery_credit, Money.Ecto.Amount.Type
     field :job_type, :string
+    field :name, :string
+    field :shoot_count, :integer
+
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
 
     timestamps()
   end
 
-  @doc false
   def changeset(package \\ %__MODULE__{}, attrs, opts) do
     steps = [
       choose_template: &choose_template/3,
@@ -43,6 +44,9 @@ defmodule Picsello.Package do
     |> create_details(attrs)
     |> update_pricing(attrs)
   end
+
+  def archive_changeset(package),
+    do: change(package, %{archived_at: DateTime.truncate(DateTime.utc_now(), :second)})
 
   defp choose_template(package, attrs, _opts \\ []) do
     package |> cast(attrs, [:package_template_id])
@@ -113,7 +117,9 @@ defmodule Picsello.Package do
 
   def templates_for_user(%User{organization_id: organization_id}) do
     from(package in __MODULE__,
-      where: not is_nil(package.job_type) and package.organization_id == ^organization_id,
+      where:
+        not is_nil(package.job_type) and package.organization_id == ^organization_id and
+          is_nil(package.archived_at),
       order_by: [desc: package.inserted_at]
     )
   end

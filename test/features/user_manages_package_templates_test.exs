@@ -1,6 +1,6 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Package}
+  alias Picsello.{Repo, Package, JobType}
 
   setup :onboarded
   setup :authenticated
@@ -26,7 +26,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(link("Add a package"))
+    |> click(button("Add a package"))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
@@ -62,7 +62,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   end
 
   feature "edit", %{session: session, user: user} do
-    template = insert(:package_template, user: user) |> Repo.reload!()
+    template = insert(:package_template, user: user)
 
     session
     |> click(link("Settings"))
@@ -90,5 +90,31 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     assert ^updated =
              user |> Package.templates_for_user() |> Repo.one!() |> Map.take([:id | form_fields])
+  end
+
+  feature "archive", %{session: session, user: user} do
+    type = JobType.all() |> hd
+
+    for name <- ~w(deluxe lame) do
+      insert(:package_template, user: user, job_type: type, name: name)
+    end
+
+    lead = insert(:lead, user: user, type: type)
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> find(testid("package-template-card", text: "lame"))
+    |> click(button("Manage"))
+    |> click(button("Archive"))
+
+    session
+    |> click(button("Yes, archive"))
+    |> find(testid("package-template-card", count: 1), &assert_text(&1, "deluxe"))
+    |> assert_flash(:success, text: "The package has been archived")
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> click(button("Add a package", count: 2, at: 1))
+    |> find(testid("template-card", count: 1), &assert_text(&1, "deluxe"))
   end
 end

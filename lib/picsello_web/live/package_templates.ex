@@ -29,8 +29,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
           </p>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-          <a href="#" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add a package</a>
+        <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+          <button type="button" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add a package</button>
         </div>
       </div>
 
@@ -40,16 +40,22 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         <%= for template <- @templates do %>
           <div {testid("package-template-card")} class="relative">
-            <div class="absolute top-6 right-5" data-offset="0" phx-hook="Select" data-close-svg="close-x" data-open-svg="hellip" id={"mange-template-#{template.id}"}>
+            <div class="absolute z-10 top-6 right-5" data-offset="0" phx-hook="Select" id={"mange-template-#{template.id}"}>
               <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
                 <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+
                 <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
               </button>
 
-              <div class="hidden bg-white border rounded-lg shadow-lg popover-content">
+              <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
                 <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={template.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                   <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                   Edit
+                </button>
+
+                <button title="Archive" type="button" phx-click="confirm-archive-package" phx-value-package-id={template.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+                  <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+                  Archive
                 </button>
               </div>
             </div>
@@ -86,6 +92,42 @@ defmodule PicselloWeb.Live.PackageTemplates do
       package: package
     })
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("confirm-archive-package", %{"package-id" => package_id}, socket),
+    do:
+      socket
+      |> assign(:archive_package_id, package_id)
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        close_label: "No! Get me out of here",
+        confirm_event: "archive",
+        confirm_label: "Yes, archive",
+        icon: "warning-orange",
+        subtitle:
+          "Archiving a package template doesn’t affect active leads or jobs—this will remove the option to create anything with this package template.",
+        title: "Are you sure you want to archive this package template?"
+      })
+      |> noreply()
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "archive"},
+        %{assigns: %{archive_package_id: package_id}} = socket
+      ) do
+    with %Package{} = package <- Repo.get(Package, package_id),
+         {:ok, _package} <- package |> Package.archive_changeset() |> Repo.update() do
+      socket
+      |> assign_templates()
+      |> put_flash(:success, "The package has been archived")
+      |> close_modal()
+      |> noreply()
+    else
+      _ ->
+        socket
+        |> put_flash(:error, "Failed to archive package")
+        |> noreply()
+    end
   end
 
   @impl true
