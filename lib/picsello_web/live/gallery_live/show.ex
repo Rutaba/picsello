@@ -209,9 +209,9 @@ defmodule PicselloWeb.GalleryLive.Show do
 
 
   defp gcp_credentials do
-    Application.get_env(:gcs_sign, :gcp_credentials)
-    |> File.read!()
-    |> Jason.decode!()
+    conf = Application.get_env(:gcs_sign, :gcp_credentials)
+
+    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
   end
 
   defp cover_photo(key) do

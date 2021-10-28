@@ -103,7 +103,9 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp done?(progress), do: progress == 100
 
-  defp gcp_credentials do
-    Application.get_env(:gcs_sign, :gcp_credentials)
+  defp gcp_credentials() do
+    conf = Application.get_env(:gcs_sign, :gcp_credentials)
+
+    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
   end
 end
