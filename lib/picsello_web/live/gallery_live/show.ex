@@ -112,7 +112,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-
   def handle_info({:overall_progress, _upload_state}, socket) do
     send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
 
