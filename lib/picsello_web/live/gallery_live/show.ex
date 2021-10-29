@@ -21,16 +21,21 @@ defmodule PicselloWeb.GalleryLive.Show do
     {:ok,
      socket
      |> assign(:upload_bucket, @bucket)
-     |> allow_upload(:cover_photo, Keyword.merge(@upload_options,
-          max_entries: 1,
-           external: &presign_cover_entry/2,
-           progress: &handle_cover_progress/3
-       ))
-     |> allow_upload(:photo,  Keyword.merge(@upload_options,
-              external: &UploadComponent.presign_entry/2,
-              progress: &UploadComponent.handle_progress/3
-       ))
-     }
+     |> allow_upload(
+       :cover_photo,
+       Keyword.merge(@upload_options,
+         max_entries: 1,
+         external: &presign_cover_entry/2,
+         progress: &handle_cover_progress/3
+       )
+     )
+     |> allow_upload(
+       :photo,
+       Keyword.merge(@upload_options,
+         external: &UploadComponent.presign_entry/2,
+         progress: &UploadComponent.handle_progress/3
+       )
+     )}
   end
 
   @impl true
@@ -115,13 +120,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:overall_progress, _upload_state}, socket) do
-    IO.inspect("info overall_progress")
-    send_update(UploadComponent, id: "hello", overall_progress: 10)
-
-    {:noreply, socket}
-  end
-
   @impl true
   def handle_info({:close_delete_cover_photo, params}, %{assigns: %{gallery: gallery}} = socket) do
     socket =
@@ -147,6 +145,21 @@ defmodule PicselloWeb.GalleryLive.Show do
     socket
     |> close_modal()
     |> noreply()
+  end
+
+  def handle_info({:update_total_count, count}, %{assigns: %{gallery: gallery}} = socket) do
+    {:ok, gallery} =
+      Galleries.update_gallery(gallery, %{total_count: gallery.total_count + count})
+
+    socket
+    |> assign(:gallery, gallery)
+    |> noreply()
+  end
+
+  def handle_info(:gallery_position_normalize, %{assigns: %{gallery: gallery}} = socket) do
+    Galleries.normalize_gallery_photo_positions(gallery.id)
+
+    socket |> noreply()
   end
 
   defp handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
