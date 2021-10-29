@@ -64,7 +64,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
       send(self(), :close_upload_popup)
       send(self(), {:update_total_count, socket.assigns.uploaded_files})
       send(self(), :gallery_position_normalize)
-      # send(self(), {:gallery_refresh, socket.assigns.uploaded_files})
     end
 
     socket

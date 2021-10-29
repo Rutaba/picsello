@@ -159,7 +159,8 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_info(:gallery_position_normalize, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.normalize_gallery_photo_positions(gallery.id)
 
-    socket |> noreply()
+    socket
+    |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery.id))
   end
 
   defp handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
