@@ -10,7 +10,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   @per_page 12
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
-    max_entries: 1,
+    max_entries: 50,
     max_file_size: 104_857_600,
     auto_upload: true
   ]
@@ -21,13 +21,16 @@ defmodule PicselloWeb.GalleryLive.Show do
     {:ok,
      socket
      |> assign(:upload_bucket, @bucket)
-     |> allow_upload(
-       :cover_photo,
-       Keyword.merge(@upload_options,
-         external: &presign_entry/2,
-         progress: &handle_progress/3
-       )
-     )}
+     |> allow_upload(:cover_photo, Keyword.merge(@upload_options,
+          max_entries: 1,
+           external: &presign_cover_entry/2,
+           progress: &handle_cover_progress/3
+       ))
+     |> allow_upload(:photo,  Keyword.merge(@upload_options,
+              external: &UploadComponent.presign_entry/2,
+              progress: &UploadComponent.handle_progress/3
+       ))
+     }
   end
 
   @impl true
@@ -113,7 +116,8 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   def handle_info({:overall_progress, _upload_state}, socket) do
-    send_update(self(), UploadComponent, id: "hello", overall_progress: 1)
+    IO.inspect("info overall_progress")
+    send_update(UploadComponent, id: "hello", overall_progress: 10)
 
     {:noreply, socket}
   end
@@ -145,7 +149,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  defp handle_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
+  defp handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
     if entry.done? do
       {:ok, gallery} =
         Galleries.update_gallery(assigns.gallery, %{
@@ -159,7 +163,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     end
   end
 
-  defp presign_entry(entry, socket) do
+  defp presign_cover_entry(entry, socket) do
     key = entry.uuid
 
     sign_opts = [
