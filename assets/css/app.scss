@@ -89,7 +89,7 @@ html {
 }
 
 .modal {
-  @apply max-w-screen-xl bare-modal;
+  @apply max-w-screen-xl relative bare-modal;
 }
 
 .modal-banner {

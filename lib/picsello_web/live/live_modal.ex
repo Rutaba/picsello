@@ -1,38 +1,6 @@
 defmodule PicselloWeb.LiveModal do
   @moduledoc false
 
-  defmodule FooterComponent do
-    @moduledoc "default footer"
-    use PicselloWeb, :live_component
-
-    def update(assigns, socket) do
-      socket |> assign(assigns |> Enum.into(%{inner_block: nil, disabled: false})) |> ok()
-    end
-
-    def render(assigns) do
-      ~L"""
-      <div class="pt-40"></div>
-
-      <div id="modal-buttons" class="sticky px-4 -m-4 -bottom-4 sm:px-8 sm:-m-8 sm:-bottom-8">
-        <div class="py-6 text-center bg-white">
-
-          <%= if @inner_block do %>
-            <%= render_block @inner_block %>
-          <% else %>
-            <button class="w-32 m-1 btn-primary" title="save" type="submit" <%= if @disabled, do: "disabled" %> phx-disable-with="Saving...">
-              Save
-            </button>
-
-            <button class="w-32 m-1 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-              Cancel
-            </button>
-          <% end %>
-        </div>
-      </div>
-      """
-    end
-  end
-
   defmodule Modal do
     @moduledoc "stuff for modals"
 
@@ -113,10 +81,34 @@ defmodule PicselloWeb.LiveModal do
   end
 
   def footer(assigns) do
-    assigns = Map.put_new(assigns, :disabled, false)
+    assigns = Enum.into(assigns, %{disabled: false, inner_block: nil})
 
     ~H"""
-      <%= live_component PicselloWeb.LiveModal.FooterComponent, disabled: @disabled, inner_block: @inner_block %>
+      <div class="pt-40"></div>
+
+      <div {testid("modal-buttons")} class="sticky px-4 -m-4 -bottom-4 sm:px-8 sm:-m-8 sm:-bottom-8">
+        <div class="flex flex-col py-6 bg-white gap-2 sm:flex-row-reverse">
+          <%= if @inner_block do %>
+            <%= render_block @inner_block %>
+          <% else %>
+            <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Saving...">
+              Save
+            </button>
+
+            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+              Cancel
+            </button>
+          <% end %>
+        </div>
+      </div>
+    """
+  end
+
+  def close_x(assigns) do
+    ~H"""
+      <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute p-2 top-3 right-3 sm:top-6 sm:right-6">
+        <.icon name="close-x" class="w-6 h-6 stroke-current" />
+      </button>
     """
   end
 end

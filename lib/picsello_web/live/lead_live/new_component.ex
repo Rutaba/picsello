@@ -45,17 +45,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
             </div>
           </div>
 
-          <PicselloWeb.LiveModal.footer>
-            <div class="flex flex-col gap-2 sm:flex-row-reverse">
-              <button class="px-8 mb-2 sm:mb-0 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
-                Save
-              </button>
-
-              <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-                Cancel
-              </button>
-            </div>
-          </PicselloWeb.LiveModal.footer>
+          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
         </.form>
       </div>
     """

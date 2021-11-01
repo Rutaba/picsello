@@ -4,6 +4,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Package, Repo, Job, JobType}
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
 
@@ -38,28 +39,24 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="py-8 pb-3 sm:pb-8 max-w-screen-xl modal">
-      <div class="flex">
-        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
-          <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
-            Step <%= step_number(@step, @steps) %>
-          </span>
+    <div class="modal">
+      <.close_x />
 
-          <ul class="flex items-center inline-block">
-            <%= for step <- @steps do %>
-              <li class={classes(
-                "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
-                %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
-                )}>
-              </li>
-            <% end %>
-          </ul>
-        </a>
+      <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
+        <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
+          Step <%= step_number(@step, @steps) %>
+        </span>
 
-        <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="ml-auto">
-          <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2" />
-        </button>
-      </div>
+        <ul class="flex items-center inline-block">
+          <%= for step <- @steps do %>
+            <li class={classes(
+              "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
+              %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
+              )}>
+            </li>
+          <% end %>
+        </ul>
+      </a>
 
       <.step_heading name={@step} is_edit={@package.id} />
 
@@ -79,15 +76,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.step name={@step} f={f} is_template={@is_template} templates={@templates} />
 
-        <PicselloWeb.LiveModal.footer>
-          <div class="flex flex-col gap-2 sm:flex-row-reverse">
-            <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
+        <.footer>
+          <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
 
-            <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-              Cancel
-            </button>
-          </div>
-        </PicselloWeb.LiveModal.footer>
+          <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+            Cancel
+          </button>
+        </.footer>
       </.form>
     </div>
     """
@@ -140,16 +135,16 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step_buttons(%{name: :choose_template} = assigns) do
     ~H"""
-    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Use template" type="submit" phx-disable-with="Use Template" disabled={!template_selected?(@form)}>
+    <button class="btn-primary" title="Use template" type="submit" phx-disable-with="Use Template" disabled={!template_selected?(@form)}>
       Use template
     </button>
 
     <%= if template_selected?(@form) do %>
-      <button class="px-10 mb-2 sm:mb-0 btn-secondary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
+      <button class="btn-secondary" title="Customize" type="button" phx-click="customize-template" phx-target={@myself}>
         Customize
       </button>
     <% else %>
-      <button class="px-8 mb-2 sm:mb-0 btn-primary" title="New Package" type="button" phx-click="new-package" phx-target={@myself}>
+      <button class="btn-primary" title="New Package" type="button" phx-click="new-package" phx-target={@myself}>
         New Package
       </button>
     <% end %>
@@ -158,7 +153,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step_buttons(%{name: :details} = assigns) do
     ~H"""
-    <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
+    <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
       Next
     </button>
     """

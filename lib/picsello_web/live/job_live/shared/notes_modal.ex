@@ -47,21 +47,19 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
         </div>
 
         <PicselloWeb.LiveModal.footer>
-          <div class="flex flex-col gap-2 sm:flex-row-reverse">
-            <%= if @edit_mode do %>
-              <button class="px-8 mb-2 sm:mb-0 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
-                Save
-              </button>
+          <%= if @edit_mode do %>
+            <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
+              Save
+            </button>
 
-              <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-                Cancel
-              </button>
-            <% else %>
-              <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-                Close
-              </button>
-            <% end %>
-          </div>
+            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+              Cancel
+            </button>
+          <% else %>
+            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+              Close
+            </button>
+          <% end %>
         </PicselloWeb.LiveModal.footer>
       </.form>
     </div>

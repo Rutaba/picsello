@@ -80,7 +80,7 @@
       </dl>
     </fieldset>
 
-    <%= live_component PicselloWeb.LiveModal.FooterComponent do %>
+    <PicselloWeb.LiveModal.footer>
       <%= if @answer.id do %>
         <button type="submit" class="w-full mt-8 btn-primary" disabled>
           Questionnaire answered
@@ -91,6 +91,6 @@
           Save
         </button>
       <% end %>
-    <% end %>
+    </PicselloWeb.LiveModal.footer>
   </form>
 </div>

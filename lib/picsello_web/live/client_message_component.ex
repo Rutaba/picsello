@@ -58,15 +58,13 @@ defmodule PicselloWeb.ClientMessageComponent do
           <%= hidden_input f, :body_html, phx_debounce: "500" %>
         </div>
         <PicselloWeb.LiveModal.footer>
-          <div class="flex flex-col gap-2 sm:flex-row-reverse">
-            <button class="px-8 mb-2 sm:mb-0 btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
-              Send Email
-            </button>
+          <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+            Send Email
+          </button>
 
-            <button class="px-8 btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-              Cancel
-            </button>
-          </div>
+          <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+            Cancel
+          </button>
         </PicselloWeb.LiveModal.footer>
       </.form>
     </div>
