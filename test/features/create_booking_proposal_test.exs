@@ -80,7 +80,7 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> assert_text("Proposal sent")
     |> click(link("Proposal"))
-    |> assert_disabled(button("Accept proposal"))
+    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
     |> click(button("cancel"))
     |> click(link("Standard Contract"))
     |> assert_disabled(text_field("Type your full legal name"))

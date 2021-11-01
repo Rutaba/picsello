@@ -3,6 +3,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
 
   use PicselloWeb, :live_component
   alias Picsello.{Repo, Job, BookingProposal, Package}
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -42,7 +43,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
 
     socket
     |> open_modal(__MODULE__, %{
-      read_only: read_only,
+      read_only: read_only || proposal.accepted_at != nil,
       job: job,
       proposal: proposal,
       photographer: photographer,

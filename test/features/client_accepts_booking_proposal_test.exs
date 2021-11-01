@@ -1,11 +1,14 @@
 defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Job, Repo, Organization}
+  alias Picsello.{Job, Repo, Organization, BookingProposal}
 
   @send_email_button button("Send Email")
 
   setup %{sessions: [photographer_session | _]} do
-    user = insert(:user) |> onboard!
+    user =
+      insert(:user, email: "photographer@example.com", organization: %{name: "Photography LLC"})
+      |> onboard!
+
     photographer_session |> sign_in(user)
     [user: user]
   end
@@ -28,7 +31,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           base_price: 100
         },
         client: %{name: "John"},
-        shoots: [%{}]
+        shoots: [
+          %{
+            name: "Shoot 1",
+            address: "320 1st st",
+            starts_at: ~U[2021-09-30 19:00:00Z],
+            duration_minutes: 15
+          }
+        ]
       })
 
     [lead: lead]
@@ -56,7 +66,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       {:ok, "https://example.com/stripe-checkout"}
     end)
 
-    proposal_id = Picsello.BookingProposal.last_for_job(lead.id).id
+    proposal = BookingProposal.last_for_job(lead.id)
+    proposal_id = proposal.id
 
     Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
       {:ok,
@@ -71,15 +82,23 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(css("h2", text: Job.name(lead)))
     |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Proposal"))
+    |> assert_has(
+      definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
+    )
+    |> assert_has(definition("Quote #:", text: Integer.to_string(proposal.id)))
+    |> assert_has(definition("For:", text: "John"))
+    |> assert_has(definition("From:", text: "Photography LLC"))
+    |> assert_has(definition("Email:", text: "photographer@example.com"))
     |> assert_has(definition("Package:", text: "My Package"))
     |> assert_has(definition("Total", text: "$1.00"))
-    |> assert_has(
-      definition("Proposal #:",
-        text: Picsello.BookingProposal.last_for_job(lead.id).id |> Integer.to_string()
-      )
-    )
-    |> click(button("Accept proposal"))
-    |> assert_has(button("Completed Proposal"))
+    |> assert_has(testid("shoot-title", text: "Shoot 1"))
+    |> assert_has(testid("shoot-title", text: "September 30, 2021"))
+    |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
+    |> assert_has(testid("shoot-description", text: "320 1st st"))
+    |> click(button("Accept Quote"))
+    |> click(button("Completed Proposal"))
+    |> within_modal(&assert_has(&1, css("button", count: 1, text: "Close")))
+    |> click(button("Close"))
     |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Contract"))
     |> assert_has(css("h3", text: "Terms and Conditions"))
@@ -132,7 +151,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> click(button("To-Do Proposal"))
-    |> click(button("Accept proposal"))
+    |> click(button("Accept Quote"))
     |> click(button("To-Do Contract"))
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
