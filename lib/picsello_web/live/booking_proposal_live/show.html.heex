@@ -1,0 +1,77 @@
+<%= if @proposal do %>
+  <div class="bg-base-300">
+    <h1 class="max-w-2xl px-8 py-4 mx-auto text-2xl font-bold text-white"><%= @organization.name %></h1>
+  </div>
+
+  <div class="max-w-2xl px-8 pt-6 mx-auto">
+    <h2 class="text-3xl font-bold"><%= Job.name @job %> Shoot</h2>
+
+    <p class="mt-2 mb-6">
+      Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.
+    </p>
+
+    <button title="Proposal" type="button" phx-click="open-proposal" class="mt-6 font-semibold btn-row">
+      <div class="flex flex-col items-start w-full">
+        <%= if @proposal.accepted_at do %>
+          <.badge class="mb-1" color={:green}>Completed</.badge>
+        <% else %>
+          <.badge class="mb-1" color={:red}>To-Do</.badge>
+        <% end %>
+        <div class="flex items-center justify-between w-full">
+          Proposal
+          <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+        </div>
+      </div>
+    </button>
+
+    <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
+      <div class="flex flex-col items-start w-full">
+        <%= if @proposal.signed_at do %>
+          <.badge class="mb-1" color={:green}>Completed</.badge>
+        <% else %>
+          <.badge class="mb-1" color={:red}>To-Do</.badge>
+        <% end %>
+        <div class="flex items-center justify-between w-full">
+          Contract
+          <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+        </div>
+      </div>
+    </button>
+
+    <%= if @proposal.questionnaire_id do %>
+      <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
+        <div class="flex flex-col items-start w-full">
+          <%= if @answer do %>
+            <.badge class="mb-1" color={:green}>Completed</.badge>
+          <% else %>
+            <.badge class="mb-1" color={:red}>To-Do</.badge>
+          <% end %>
+          <div class="flex items-center justify-between w-full">
+            Questionnaire
+            <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+          </div>
+        </div>
+      </button>
+    <% end %>
+
+    <%= if @proposal.deposit_paid_at do %>
+      <button class="w-full mt-6 btn-primary" disabled>
+        50% deposit paid
+      </button>
+      <em class="block pt-2 text-xs text-center">Paid: <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></em>
+    <% else %>
+      <% questionnaire_answered = if @proposal.questionnaire_id, do: @answer, else: true %>
+      <button
+        class="w-full mt-6 btn-primary"
+        phx-click="redirect-stripe"
+        phx-disable-with="Redirecting to Stripe..."
+        disabled={!(@proposal.accepted_at && @proposal.signed_at && questionnaire_answered && !@read_only)}
+      >
+        Pay 50% deposit
+      </button>
+      <em class="block pt-2 text-xs text-center">
+        <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}, {questionnaire_answered, "answer questionnaire"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
+      </em>
+    <% end %>
+  </div>
+<% end %>

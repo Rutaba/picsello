@@ -190,4 +190,22 @@ defmodule PicselloWeb.LiveHelpers do
       </label>
     """
   end
+
+  @badge_colors %{
+    gray: "bg-gray-200",
+    blue: "bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
+    green: "bg-green-finances-100 text-green-finances-300",
+    red: "bg-red-sales-100 text-red-sales-300"
+  }
+
+  def badge(%{color: color} = assigns) do
+    assigns =
+      assigns |> Map.put(:color_style, Map.get(@badge_colors, color)) |> Enum.into(%{class: ""})
+
+    ~H"""
+    <span role="status" class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
+      <%= render_block @inner_block %>
+    </span>
+    """
+  end
 end
