@@ -1,4 +1,6 @@
-defmodule PicselloWeb.Live.GalleryLive.ShowTest do
+defmodule PicselloWeb.GalleryLive.ShowTest do
+  @moduledoc false
+
   use PicselloWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
