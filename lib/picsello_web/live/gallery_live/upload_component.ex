@@ -22,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      |> assign(:uploaded_files, 0)
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
+     |> assign(:update_mode, "prepend")
      |> allow_upload(:photo, @upload_options)
     }
   end
@@ -33,6 +34,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
         _, socket -> socket
       end)
+      |> assign(:update_mode, "prepend")
 
     {:noreply, socket}
   end
@@ -47,6 +49,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @impl true
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
     socket
+    |> assign(:update_mode, "replace")
     |> cancel_upload(:photo, ref)
     |> noreply()
   end
