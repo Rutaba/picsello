@@ -84,16 +84,20 @@ html {
 
 @layer components {
   .bare-modal {
-    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg;
+    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg px-4 py-3 sm:p-8;
   }
 }
 
 .modal {
-  @apply px-4 py-3 sm:p-8 max-w-screen-xl bare-modal;
+  @apply max-w-screen-xl bare-modal;
+}
+
+.modal-banner {
+  @apply -mx-4 sm:-mx-8 px-4 sm:px-8
 }
 
 .dialog {
-  @apply px-4 py-3 sm:p-8 max-w-md bare-modal;
+  @apply max-w-md bare-modal;
 }
 
 .badge {

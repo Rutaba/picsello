@@ -38,8 +38,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="py-8 pb-3 sm:pb-8 max-w-screen-xl bare-modal">
-      <div class="flex px-9">
+    <div class="py-8 pb-3 sm:pb-8 max-w-screen-xl modal">
+      <div class="flex">
         <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
           <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
             Step <%= step_number(@step, @steps) %>
@@ -64,7 +64,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.step_heading name={@step} is_edit={@package.id} />
 
       <%= unless @is_template do %>
-        <div class="py-4 px-9 bg-blue-planning-100">
+        <div class="py-4 bg-blue-planning-100 modal-banner">
           <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %></h2>
           <%= unless @package.id do %>
             <.step_subheading name={@step} />
@@ -72,7 +72,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         </div>
       <% end %>
 
-      <.form for={@changeset} let={f} class="px-9" phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} />
@@ -105,13 +105,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step_heading(%{name: :choose_template} = assigns) do
     ~H"""
-      <h1 class="mt-2 mb-4 text-3xl font-bold px-9">Package Templates</h1>
+      <h1 class="mt-2 mb-4 text-3xl font-bold">Package Templates</h1>
     """
   end
 
   def step_heading(assigns) do
     ~H"""
-      <h1 class="mt-2 mb-4 text-3xl px-9"><strong class="font-bold"><%= heading_title(@is_edit) %>:</strong> <%= heading_subtitle(@name) %></h1>
+      <h1 class="mt-2 mb-4 text-3xl"><strong class="font-bold"><%= heading_title(@is_edit) %>:</strong> <%= heading_subtitle(@name) %></h1>
     """
   end
 
