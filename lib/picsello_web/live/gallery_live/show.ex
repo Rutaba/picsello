@@ -23,8 +23,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     {:ok,
      socket
      |> assign(:upload_bucket, @bucket)
-     |> allow_upload(:cover_photo, @upload_options)
-    }
+     |> allow_upload(:cover_photo, @upload_options)}
   end
 
   @impl true

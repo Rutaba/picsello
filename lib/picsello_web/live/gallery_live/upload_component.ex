@@ -11,7 +11,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     auto_upload: true,
     external: &__MODULE__.presign_entry/2,
     progress: &__MODULE__.handle_progress/3
-
   ]
   @bucket "picsello-staging"
 
@@ -23,8 +22,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
      |> assign(:update_mode, "prepend")
-     |> allow_upload(:photo, @upload_options)
-    }
+     |> allow_upload(:photo, @upload_options)}
   end
 
   @impl true
