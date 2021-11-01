@@ -14,7 +14,7 @@
     <% end %>
   </div>
 
-  <div class="mt-4 grid grid-cols-[2fr,3fr] gap-6">
+  <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
     <dl class="flex flex-col">
       <dt class="inline-block font-semibold">Dated:</dt>
       <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
@@ -27,7 +27,7 @@
 
     <hr class="col-span-2">
 
-    <dl class="flex flex-col">
+    <dl class="flex flex-col col-span-2 sm:col-span-1">
       <dt class="font-semibold">For:</dt>
       <dd><%= @client.name %></dd>
       <dd class="inline"><%= @client.email %></dd>
@@ -36,25 +36,30 @@
       <dd><%= @package.name %></dd>
     </dl>
 
-    <dl class="flex flex-col">
+    <dl class="flex flex-col col-span-2 sm:col-span-1">
       <dt class="font-semibold">From:</dt>
       <dd><%= @organization.name %></dd>
       <dt class="mt-4 font-semibold">Email:</dt>
       <dd><%= @photographer.email %></dd>
     </dl>
 
+    <dl class="border-t pt-2 flex justify-between text-2xl font-bold col-span-2 sm:hidden">
+      <dt>Total</dt>
+      <dd><%= Package.price(@package) %></dd>
+    </dl>
+
     <div class="modal-banner uppercase font-bold py-4 bg-base-200 grid grid-cols-[2fr,3fr] gap-4 col-span-2">
       <h2>item</h2>
-      <h2>details</h2>
+      <h2 class="hidden sm:block">details</h2>
     </div>
 
     <%= for shoot <- @shoots do %>
-      <div {testid("shoot-title")} class="flex flex-col">
+      <div {testid("shoot-title")} class="flex flex-col col-span-2 sm:col-span-1">
         <h3 class="font-bold"><%= shoot.name %></h3>
         <%= strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
       </div>
 
-      <div {testid("shoot-description")} class="flex flex-col">
+      <div {testid("shoot-description")} class="flex flex-col col-span-2 sm:col-span-1">
         <p>
           <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
           starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
@@ -72,11 +77,11 @@
       <hr class="col-span-2">
     <% end %>
 
-    <h3 class="font-bold">Photo Downloads</h3>
-    <p><%= ngettext "1 photo download", "%{count} photo downloads", @package.download_count %></p>
-    <hr class="col-span-2">
+    <h3 class="font-bold col-span-2 sm:col-span-1">Photo Downloads</h3>
+    <p class="col-span-2 sm:col-span-1"><%= ngettext "1 photo download", "%{count} photo downloads", @package.download_count %></p>
+    <hr class="hidden col-span-2 sm:block">
 
-    <dl class="flex justify-between text-2xl font-bold col-start-2">
+    <dl class="flex justify-between hidden text-2xl font-bold col-start-2 sm:flex">
       <dt>Total</dt>
       <dd><%= Package.price(@package) %></dd>
     </dl>
