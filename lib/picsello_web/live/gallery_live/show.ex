@@ -10,9 +10,11 @@ defmodule PicselloWeb.GalleryLive.Show do
   @per_page 12
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
-    max_entries: 50,
+    max_entries: 1,
     max_file_size: 104_857_600,
-    auto_upload: true
+    auto_upload: true,
+    external: &__MODULE__.presign_cover_entry/2,
+    progress: &__MODULE__.handle_cover_progress/3
   ]
   @bucket "picsello-staging"
 
@@ -21,21 +23,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     {:ok,
      socket
      |> assign(:upload_bucket, @bucket)
-     |> allow_upload(
-       :cover_photo,
-       Keyword.merge(@upload_options,
-         max_entries: 1,
-         external: &presign_cover_entry/2,
-         progress: &handle_cover_progress/3
-       )
-     )
-     |> allow_upload(
-       :photo,
-       Keyword.merge(@upload_options,
-         external: &UploadComponent.presign_entry/2,
-         progress: &UploadComponent.handle_progress/3
-       )
-     )}
+     |> allow_upload(:cover_photo, @upload_options)
+    }
   end
 
   @impl true
@@ -135,9 +124,9 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info(:open_modal, socket) do
+  def handle_info(:open_modal, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> open_modal(UploadComponent, socket.assigns)
+    |> open_modal(UploadComponent, %{gallery: gallery})
     |> noreply()
   end
 
@@ -161,9 +150,10 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     socket
     |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery.id))
+    |> noreply
   end
 
-  defp handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
+  def handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
     if entry.done? do
       {:ok, gallery} =
         Galleries.update_gallery(assigns.gallery, %{
@@ -177,7 +167,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     end
   end
 
-  defp presign_cover_entry(entry, socket) do
+  def presign_cover_entry(entry, socket) do
     key = entry.uuid
 
     sign_opts = [

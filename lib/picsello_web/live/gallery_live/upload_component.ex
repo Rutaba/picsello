@@ -8,7 +8,10 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     accept: ~w(.jpg .jpeg .png),
     max_entries: 50,
     max_file_size: 104_857_600,
-    auto_upload: true
+    auto_upload: true,
+    external: &__MODULE__.presign_entry/2,
+    progress: &__MODULE__.handle_progress/3
+
   ]
   @bucket "picsello-staging"
 
@@ -19,13 +22,8 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      |> assign(:uploaded_files, 0)
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
-     |> allow_upload(
-       :photo,
-       Keyword.merge(@upload_options,
-         external: &presign_entry/2,
-         progress: &handle_progress/3
-       )
-     )}
+     |> allow_upload(:photo, @upload_options)
+    }
   end
 
   @impl true
