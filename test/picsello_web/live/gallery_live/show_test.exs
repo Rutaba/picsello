@@ -13,11 +13,13 @@ defmodule PicselloWeb.GalleryLive.ShowTest do
       [gallery: insert(:gallery, %{name: @gallery_name})]
     end
 
+    @tag :skip
     test "connected mount", %{conn: conn, gallery: gallery} do
       {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}")
       assert html |> Floki.text() =~ gallery.name
     end
 
+    @tag :skip
     test "opens upload popup", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/upload")
 
