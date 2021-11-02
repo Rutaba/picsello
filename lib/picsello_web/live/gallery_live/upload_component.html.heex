@@ -1,8 +1,8 @@
 <div class="uploadPopup" id="hello">
   <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
+    <p class="font-bold text-xl px-12 pb-4">Upload photos to <%= @gallery.name %></p>
     <%= if total(@uploads.photo.entries) > 0 do %>
-    <p class="font-bold text-xl px-12 pb-4">Upload photos to Gallery Name</p>
-    <div class="flex items-center justify-between p-12  uploadOverallStatus mb-12">
+    <div class="flex items-center justify-between p-12 uploadOverallStatus mb-12">
         <div class="flex items-center">
             <%= if @overall_progress !== 100 do%>
             <div class="sk-circle mr-4">
@@ -25,11 +25,11 @@
             </p>
         </div>
         <div class="uploadingProgress__wrapper">
-            <!-- <progress class="grid-cols-1" value={@overall_progress} max="100"></progress>
+            <progress class="grid-cols-1" value={@overall_progress} max="100"></progress>
             <div class="flex items-center justify-between">
                 <p><%= @overall_progress %> %</p>
                 <p>Est. few seconds remaining</p>
-            </div> -->
+            </div> 
         </div>
     </div>
     <% end %>
@@ -46,7 +46,7 @@
                 <img src="/images/drag-drop-img.png" width="76" height="76"/>
                 <div class="dragDrop__content">
                     <span class="font-bold">Drop images or </span>
-                    <label class="font-bold">Download
+                    <label class="font-bold">Browse
                         <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                     </label>
                     <p>Supports JPEG or PNG</p>
@@ -56,7 +56,7 @@
     </div>
 
     <%# use phx-drop-target with the upload ref to enable file drag and drop %>
-    <div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper px-4" id="UploadEntries">
+    <div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper px-4" id="UploadEntries" phx-update={@update_mode}>
         <%= for entry <- @uploads.photo.entries do %>
         <div class="uploadEntry grid grid-cols-5 pb-4 items-center" id={entry.uuid}>
             <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>

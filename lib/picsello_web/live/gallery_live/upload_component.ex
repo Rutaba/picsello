@@ -8,7 +8,9 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     accept: ~w(.jpg .jpeg .png),
     max_entries: 50,
     max_file_size: 104_857_600,
-    auto_upload: true
+    auto_upload: true,
+    external: &__MODULE__.presign_entry/2,
+    progress: &__MODULE__.handle_progress/3
   ]
   @bucket "picsello-staging"
 
@@ -19,21 +21,8 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      |> assign(:uploaded_files, 0)
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
-     |> allow_upload(
-       :photo,
-       Keyword.merge(@upload_options,
-         external: &presign_entry/2,
-         progress: &handle_progress/3
-       )
-     )}
-  end
-
-  @impl true
-  def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(:id, assigns.id)
-     |> assign(:gallery, assigns.gallery)}
+     |> assign(:update_mode, "prepend")
+     |> allow_upload(:photo, @upload_options)}
   end
 
   @impl true
@@ -43,6 +32,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
         _, socket -> socket
       end)
+      |> assign(:update_mode, "prepend")
 
     {:noreply, socket}
   end
@@ -55,42 +45,58 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   end
 
   @impl true
-  def handle_event("overall_progress", _, socket) do
-    uploading_achievements = for entry <- socket.assigns.uploads.photo.entries, do: entry.progress
-    overall_progress = Enum.sum(uploading_achievements) / Enum.count(uploading_achievements)
-    socket = socket |> assign(:overall_progress, overall_progress)
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    socket
+    |> assign(:update_mode, "replace")
+    |> cancel_upload(:photo, ref)
+    |> noreply()
+  end
 
-    unless done?(overall_progress) do
-      Process.send_after(self(), {:overall_progress, socket}, 500)
+  defp assign_overall_progress(socket) do
+    total_progress =
+      socket.assigns.uploads.photo.entries
+      |> Enum.map(& &1.progress)
+      |> then(&(Enum.sum(&1) / Enum.count(&1)))
+      |> trunc
+
+    if total_progress == 100 do
+      send(self(), :close_upload_popup)
+      send(self(), {:update_total_count, socket.assigns.uploaded_files})
+      send(self(), :gallery_position_normalize)
     end
 
-    {:noreply, socket}
+    socket
+    |> assign(:overall_progress, total_progress)
   end
 
-  @impl true
-  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :photo, ref)}
-  end
-
-  defp handle_progress(:photo, entry, %{assigns: assigns} = socket) do
+  def handle_progress(
+        :photo,
+        entry,
+        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files}} = socket
+      ) do
     if entry.done? do
       {:ok, _photo} =
         Galleries.create_photo(%{
-          gallery_id: assigns.gallery.id,
+          gallery_id: gallery.id,
           name: entry.client_name,
           original_url: entry.uuid,
           client_copy_url: entry.uuid,
-          position: 1,
+          position: gallery.total_count + 100,
           aspect_ratio: 1
         })
 
-      {:noreply, assign(socket, :uploaded_files, assigns.uploaded_files + 1)}
+      socket
+      |> assign(uploaded_files: uploaded_files + 1)
+      |> assign_overall_progress()
+      |> noreply()
     else
-      {:noreply, socket}
+      socket
+      |> assign_overall_progress()
+      |> noreply()
     end
   end
 
-  defp presign_entry(entry, socket) do
+  def presign_entry(entry, socket) do
     key = entry.uuid <> Path.extname(entry.client_name)
 
     sign_opts = [
@@ -113,11 +119,9 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp done?(progress), do: progress == 100
-
   defp overall_progress(assigns) do
     ~H"""
-    Uploaded <%= total(@uploads) %> of <%= total(@entries) %> photos
+    Uploading <%= @uploads %> of <%= total(@entries) %> photos
     """
   end
 
