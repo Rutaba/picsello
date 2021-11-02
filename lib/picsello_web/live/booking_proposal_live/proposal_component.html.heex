@@ -1,18 +1,12 @@
 <div class="modal">
   <.close_x />
 
-  <h1 class="mb-4 text-3xl font-bold">Proposal</h1>
-
-  <div class="py-4 bg-blue-planning-100 modal-banner">
-    <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %> Shoot</h2>
-    <p>
-      <%= @package.description %>
-    </p>
-
+  <.banner title="Proposal" job={@job} package={@package}>
+    <p><%= @package.description %></p>
     <%=if @proposal.accepted_at do %>
       <p>Accepted on <%= strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %></p>
     <% end %>
-  </div>
+  </.banner>
 
   <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
     <dl class="flex flex-col">
@@ -43,7 +37,7 @@
       <dd><%= @photographer.email %></dd>
     </dl>
 
-    <dl class="border-t pt-2 flex justify-between text-2xl font-bold col-span-2 sm:hidden">
+    <dl class="flex justify-between pt-2 text-2xl font-bold border-t col-span-2 sm:hidden">
       <dt>Total</dt>
       <dd><%= Package.price(@package) %></dd>
     </dl>

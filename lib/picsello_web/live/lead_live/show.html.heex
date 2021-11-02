@@ -69,7 +69,7 @@
     <%= if @proposal do %>
 
       <div class="p-2 border rounded-lg">
-        <div class="flex items-end justify-between p-2">
+        <div class="flex items-start justify-between p-2">
           <p>The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%B %d, %Y") %>.</p>
           <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 ml-2 transition-colors" id="copy-client-link" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
             <span>Client Link</span>

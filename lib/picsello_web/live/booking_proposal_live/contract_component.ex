@@ -2,7 +2,9 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, Job, BookingProposal}
+  alias Picsello.{Repo, BookingProposal}
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -48,19 +50,26 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
     %{
       job:
         %{
-          package: %{organization: %{user: photographer} = organization}
+          package: %{organization: %{user: photographer} = organization} = package,
+          client: client
         } = job
-    } =
-      proposal
-      |> Repo.preload(job: [package: [organization: :user]])
+    } = proposal |> Repo.preload(job: [:client, package: [organization: :user]])
 
     socket
     |> open_modal(__MODULE__, %{
-      read_only: read_only,
+      read_only: read_only || proposal.signed_at != nil,
+      client: client,
       job: job,
       proposal: proposal,
+      package: package,
       photographer: photographer,
       organization: organization
     })
+  end
+
+  def li(assigns) do
+    ~H"""
+    <li class="py-3"><strong class="mx-1"><%=@title%></strong><%= render_slot @inner_block%></li>
+    """
   end
 end

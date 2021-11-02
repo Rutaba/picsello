@@ -50,7 +50,7 @@ defmodule Picsello.ViewJobTest do
   feature "user views contract", %{session: session} do
     session
     |> click(css("a[title='Standard Contract']"))
-    |> assert_has(css(".modal", text: "Contract signed"))
+    |> assert_has(css(".modal", text: "Signed on"))
   end
 
   feature "user views questionnaire", %{session: session} do
