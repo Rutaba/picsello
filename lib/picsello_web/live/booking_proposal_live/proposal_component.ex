@@ -4,7 +4,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Repo, BookingProposal, Package}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
 
   @impl true
   def update(assigns, socket) do

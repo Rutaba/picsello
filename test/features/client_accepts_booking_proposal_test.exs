@@ -80,7 +80,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> assert_has(css("h2", text: Job.name(lead)))
-    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Proposal"))
     |> assert_has(
       definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
@@ -99,7 +98,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(button("Completed Proposal"))
     |> within_modal(&assert_has(&1, css("button", count: 1, text: "Close")))
     |> click(button("Close"))
-    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Contract"))
     |> assert_text("Terms and Conditions")
     |> assert_has(button("Submit", disabled: true))
@@ -107,8 +105,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
     |> assert_has(button("Completed Contract"))
-    |> assert_has(css("button:not(:disabled)", text: "Pay 50% deposit"))
-    |> click(button("Pay 50% deposit"))
+    |> click(button("To-Do Invoice"))
+    |> assert_has(definition("Total", text: "$1.00"))
+    |> assert_has(definition("50% deposit today", text: "$0.50"))
+    |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.50"))
+    |> click(button("Pay Invoice"))
     |> assert_url_contains("stripe-checkout")
     |> post("/stripe/connect-webhooks", "", [{"stripe-signature", "love, stripe"}])
 
@@ -125,12 +126,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit(stripe_success_url)
     |> assert_has(css("h1", text: "Thank you"))
     |> click(button("Whoo hoo!"))
-    |> assert_has(button("50% deposit paid"))
-    # reload and the message is not displayed again
-    |> visit(stripe_success_url)
-    |> assert_has(css("h1", text: "Thank you"))
-    |> visit(client_session |> current_url())
-    |> assert_has(button("50% deposit paid"))
+    |> click(button("To-Do Invoice"))
+    |> assert_has(definition("Total", text: "$1.00"))
+    |> assert_has(
+      definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        text: "$0.50"
+      )
+    )
+    |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.50"))
   end
 
   @sessions 2
@@ -161,7 +164,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(button("Close"))
     |> click(button("To-Do Questionnaire"))
     |> visit(url)
-    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Questionnaire"))
     |> click(checkbox("My partner", selected: false))
     |> assert_has(css("button:disabled", text: "Save"))
@@ -173,7 +175,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("Phone"), with: "(255) 123-1234")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(css("button:not(:disabled)", text: "Pay 50% deposit"))
     |> click(button("Completed Questionnaire"))
     |> assert_has(checkbox("My partner", selected: true))
   end

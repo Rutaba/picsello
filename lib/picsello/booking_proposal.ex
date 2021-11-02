@@ -53,14 +53,14 @@ defmodule Picsello.BookingProposal do
   end
 
   @doc "here since used from both emails and views"
-  def url(proposal_id), do: build_url(proposal_id, :booking_proposal_url)
+  def url(proposal_id, params \\ []), do: build_url(proposal_id, :booking_proposal_url, params)
 
-  def path(proposal_id), do: build_url(proposal_id, :booking_proposal_path)
+  def path(proposal_id, params \\ []), do: build_url(proposal_id, :booking_proposal_path, params)
 
-  defp build_url(proposal_id, helper) do
+  defp build_url(proposal_id, helper, params) do
     conn = PicselloWeb.Endpoint
     token = Phoenix.Token.sign(conn, "PROPOSAL_ID", proposal_id)
-    apply(PicselloWeb.Router.Helpers, helper, [conn, :show, token])
+    apply(PicselloWeb.Router.Helpers, helper, [conn, :show, token, params])
   end
 
   def last_for_job(job_id) do
@@ -81,4 +81,10 @@ defmodule Picsello.BookingProposal do
 
   def deposit_paid?(%__MODULE__{deposit_paid_at: nil}), do: false
   def deposit_paid?(%__MODULE__{}), do: true
+
+  def remainder_due_on(%__MODULE__{} = proposal) do
+    %{job: %{shoots: shoots}} = Repo.preload(proposal, job: :shoots)
+
+    shoots |> Enum.map(&Map.get(&1, :starts_at)) |> Enum.min(DateTime)
+  end
 end

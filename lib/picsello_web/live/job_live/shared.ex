@@ -43,17 +43,10 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_event(
         "open-proposal",
         %{"action" => "" <> action},
-        %{assigns: %{proposal: proposal}} = socket
+        socket
       ) do
-    Map.get(
-      %{
-        "questionnaire" => PicselloWeb.BookingProposalLive.QuestionnaireComponent,
-        "details" => PicselloWeb.BookingProposalLive.ProposalComponent,
-        "contract" => PicselloWeb.BookingProposalLive.ContractComponent
-      },
-      action
-    )
-    |> apply(:open_modal_from_proposal, [socket, proposal])
+    socket
+    |> PicselloWeb.BookingProposalLive.Show.open_page_modal(action, true)
     |> noreply()
   end
 

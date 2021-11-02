@@ -2,17 +2,11 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
 
-  alias Picsello.{Repo, BookingProposal, Job, Package}
-
-  alias PicselloWeb.BookingProposalLive.{
-    ProposalComponent,
-    QuestionnaireComponent,
-    ContractComponent
-  }
-
-  require Logger
+  alias Picsello.{Repo, BookingProposal, Job}
 
   @max_age 60 * 60 * 24 * 365 * 10
+
+  @pages ~w(details contract questionnaire invoice)
 
   @impl true
   def mount(%{"token" => token} = params, session, socket) do
@@ -28,75 +22,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @impl true
   def handle_event(
-        "open-proposal",
+        "open-" <> page,
         %{},
-        %{assigns: %{proposal: proposal, read_only: read_only}} = socket
-      ) do
+        %{assigns: %{read_only: read_only}} = socket
+      )
+      when page in @pages do
     socket
-    |> ProposalComponent.open_modal_from_proposal(proposal, read_only)
+    |> open_page_modal(page, read_only)
     |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "open-contract",
-        %{},
-        %{assigns: %{proposal: proposal, read_only: read_only}} = socket
-      ) do
-    socket
-    |> ContractComponent.open_modal_from_proposal(proposal, read_only)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "open-questionnaire",
-        %{},
-        %{assigns: %{proposal: proposal, read_only: read_only}} = socket
-      ) do
-    socket
-    |> QuestionnaireComponent.open_modal_from_proposal(proposal, read_only)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("redirect-stripe", %{}, socket) do
-    %{
-      assigns: %{
-        package: package,
-        proposal: proposal,
-        job: job
-      }
-    } = socket
-
-    line_items = [
-      %{
-        price_data: %{
-          currency: "usd",
-          product_data: %{
-            name: "#{Job.name(job)} 50% Deposit"
-          },
-          unit_amount:
-            package
-            |> Package.price()
-            |> Money.multiply(0.5)
-            |> then(& &1.amount)
-        },
-        quantity: 1
-      }
-    ]
-
-    case payments().checkout_link(proposal, line_items,
-           success_url: stripe_redirect(socket, :url, success: true),
-           cancel_url: stripe_redirect(socket, :url)
-         ) do
-      {:ok, url} ->
-        socket |> redirect(external: url) |> noreply()
-
-      {:error, error} ->
-        Logger.error(error)
-        socket |> put_flash(:error, "Couldn't redirect to stripe. Please try again") |> noreply()
-    end
   end
 
   @impl true
@@ -119,6 +52,20 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     # clear the success param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()
+  end
+
+  def open_page_modal(%{assigns: %{proposal: proposal}} = socket, page, read_only \\ false)
+      when page in @pages do
+    Map.get(
+      %{
+        "questionnaire" => PicselloWeb.BookingProposalLive.QuestionnaireComponent,
+        "details" => PicselloWeb.BookingProposalLive.ProposalComponent,
+        "contract" => PicselloWeb.BookingProposalLive.ContractComponent,
+        "invoice" => PicselloWeb.BookingProposalLive.InvoiceComponent
+      },
+      page
+    )
+    |> apply(:open_modal_from_proposal, [socket, proposal, read_only])
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
@@ -157,8 +104,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         |> put_flash(:error, "This proposal is not available anymore")
     end
   end
-
-  defp payments, do: Application.get_env(:picsello, :payments)
 
   defp stripe_redirect(%{assigns: %{token: token}} = socket, suffix, params \\ []),
     do: apply(Routes, :"booking_proposal_#{suffix}", [socket, :show, token, params])
