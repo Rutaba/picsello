@@ -3,6 +3,8 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
 
   use PicselloWeb, :live_component
   alias Picsello.{Repo, Job, Questionnaire.Answer}
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -109,7 +111,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       questionnaire: questionnaire,
       job:
         %{
-          package: %{organization: %{user: photographer}}
+          package: %{organization: %{user: photographer}} = package
         } = job
     } =
       proposal
@@ -117,8 +119,9 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
 
     socket
     |> open_modal(__MODULE__, %{
-      read_only: read_only,
+      read_only: read_only || answer != nil,
       job: job,
+      package: package,
       answer: answer,
       questionnaire: questionnaire,
       photographer: photographer,

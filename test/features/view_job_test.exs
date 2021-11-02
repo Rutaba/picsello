@@ -56,7 +56,7 @@ defmodule Picsello.ViewJobTest do
   feature "user views questionnaire", %{session: session} do
     session
     |> click(css("a[title='Questionnaire']"))
-    |> assert_has(css(".modal", text: "Questionnaire answered"))
+    |> assert_has(css(".modal", text: "Answered on"))
   end
 
   feature "user adds notes", %{session: session} do

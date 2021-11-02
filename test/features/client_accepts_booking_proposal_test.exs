@@ -158,7 +158,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(button("Submit"))
     |> click(button("To-Do Questionnaire"))
     |> click(checkbox("My partner", selected: false))
-    |> click(button("cancel"))
+    |> click(button("Close"))
     |> click(button("To-Do Questionnaire"))
     |> visit(url)
     |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
