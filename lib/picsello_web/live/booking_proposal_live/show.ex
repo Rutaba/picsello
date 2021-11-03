@@ -63,14 +63,21 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> apply(:open_modal_from_proposal, [socket, proposal, read_only])
   end
 
-  defp show_confetti_banner(%{assigns: %{proposal: proposal}} = socket, :deposit) do
+  defp show_confetti_banner(
+         %{assigns: %{proposal: proposal, job: %{shoots: shoots}}} = socket,
+         :deposit
+       ) do
     if BookingProposal.deposit_paid?(proposal) do
+      shoot_count = Enum.count(shoots)
+
       socket
       |> PicselloWeb.ConfirmationComponent.open(%{
-        title: "Thank you! Your session is now booked.",
+        title:
+          "Thank you! Your #{ngettext("session is", "sessions are", shoot_count)} now booked.",
         subtitle:
           "We are so excited to be working with you, thank you for your business. See you soon.",
-        close_label: "Whoo hoo!"
+        close_label: "Got it",
+        close_class: "btn-primary"
       })
     else
       socket
@@ -81,10 +88,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     if BookingProposal.remainder_paid?(proposal) do
       socket
       |> PicselloWeb.ConfirmationComponent.open(%{
-        title: "Thank you! Your session is now paid for.",
-        subtitle:
-          "We are so excited to be working with you, thank you for your business. See you soon.",
-        close_label: "Whoo hoo!"
+        title: "Paid in full. Thank you!",
+        subtitle: "Now it’s time to make some memories.",
+        close_label: "Got it",
+        close_class: "btn-primary"
       })
     else
       socket

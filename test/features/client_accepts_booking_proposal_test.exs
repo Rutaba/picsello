@@ -151,7 +151,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit(stripe_success_url)
     |> assert_has(css("h1", text: "Thank you"))
     |> assert_has(css("h1", text: "Your session is now booked."))
-    |> click(button("Whoo hoo!"))
+    |> click(button("Got it"))
     |> click(button("To-Do Invoice"))
     |> assert_has(definition("Total", text: "$1.00"))
     |> assert_has(
@@ -182,8 +182,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(stripe_success_url)
-    |> assert_has(css("h1", text: "Your session is now paid for."))
-    |> click(button("Whoo hoo!"))
+    |> assert_has(css("h1", text: "Paid in full."))
+    |> click(button("Got it"))
     |> click(button("Completed Invoice"))
     |> assert_has(definition("Total", text: "$1.00"))
     |> assert_has(
