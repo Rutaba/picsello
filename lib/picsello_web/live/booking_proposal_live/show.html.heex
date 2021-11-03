@@ -6,9 +6,17 @@
   <div class="max-w-2xl px-8 pt-6 mx-auto">
     <h2 class="text-3xl font-bold"><%= Job.name @job %> Shoot <%= @package.name %></h2>
 
-    <p class="mt-2 mb-6">
-      Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.
-    </p>
+    <%= if BookingProposal.remainder_paid?(@proposal) do %>
+      <p class="mt-2 mb-6 text-lg">
+        Thanks for your business!
+      </p>
+      <h3 class="text-sm text-gray-400 uppercase">Have questions?</h3>
+      <a class="block pt-2 link" href={"mailto:#{@photographer.email}"}>Email us at <%= @photographer.email %></a>
+    <% else %>
+      <p class="mt-2 mb-6 text-lg">
+        Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.
+      </p>
+    <% end %>
 
     <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
       <div class="flex flex-col items-start w-full">
