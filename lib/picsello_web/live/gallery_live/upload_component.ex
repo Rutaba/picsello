@@ -81,6 +81,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
           name: entry.client_name,
           original_url: entry.uuid,
           client_copy_url: entry.uuid,
+          preview_url: entry.uuid,
           position: gallery.total_count + 100,
           aspect_ratio: 1
         })
