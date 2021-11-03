@@ -3,9 +3,6 @@
     <.close_x />
 
     <.banner title="Questionnaire" job={@job} package={@package}>
-      <%= unless @read_only do %>
-        <p class="py-2">Please list who will be photographed at the following sessions:</p>
-      <% end %>
       <%= if @answer.id do %>
         <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
       <% end %>
