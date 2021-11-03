@@ -123,7 +123,8 @@ defmodule Picsello.StripePayments do
       payment_method_types: ["card"],
       customer: customer_id,
       mode: "payment",
-      line_items: line_items
+      line_items: line_items,
+      metadata: Keyword.get(opts, :metadata, %{})
     }
 
     case Stripe.Session.create(stripe_params, connect_account: organization.stripe_account_id) do

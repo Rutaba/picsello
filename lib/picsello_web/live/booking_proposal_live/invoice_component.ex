@@ -9,7 +9,12 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
   @impl true
   def render(%{proposal: proposal} = assigns) do
-    assigns = assigns |> Enum.into(%{deposit_paid: BookingProposal.deposit_paid?(proposal)})
+    assigns =
+      assigns
+      |> Enum.into(%{
+        deposit_paid: BookingProposal.deposit_paid?(proposal),
+        remainder_paid: BookingProposal.remainder_paid?(proposal)
+      })
 
     ~H"""
     <div class="modal">
@@ -36,8 +41,12 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
           <dd><%= Package.deposit_price(@package) %></dd>
         </dl>
 
-        <dl class={classes("flex justify-between mt-4", %{"font-bold" => @deposit_paid})} >
-          <dt>Remainder Due on <%= strftime(@photographer.time_zone, BookingProposal.remainder_due_on(@proposal), "%b %d, %Y") %></dt>
+        <dl class={classes("flex justify-between mt-4", %{"font-bold" => @deposit_paid && !@remainder_paid, "text-green-finances-300" => @remainder_paid})} >
+          <%= if @remainder_paid do %>
+            <dt>Remainder Paid on <%= strftime(@photographer.time_zone, @proposal.remainder_paid_at, "%b %d, %Y") %></dt>
+          <% else %>
+            <dt>Remainder Due on <%= strftime(@photographer.time_zone, BookingProposal.remainder_due_on(@proposal), "%b %d, %Y") %></dt>
+          <% end %>
           <dd><%= Package.remainder_price(@package) %></dd>
         </dl>
       </.items>
@@ -65,26 +74,30 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       }
     } = socket
 
+    {payment_type, price} =
+      if BookingProposal.deposit_paid?(proposal) do
+        {:remainder, Package.deposit_price(package)}
+      else
+        {:deposit, Package.remainder_price(package)}
+      end
+
     line_items = [
       %{
         price_data: %{
           currency: "usd",
           product_data: %{
-            name: "#{Job.name(job)} 50% Deposit"
+            name: "#{Job.name(job)} 50% #{payment_type}"
           },
-          unit_amount:
-            package
-            |> Package.price()
-            |> Money.multiply(0.5)
-            |> then(& &1.amount)
+          unit_amount: price.amount
         },
         quantity: 1
       }
     ]
 
     case payments().checkout_link(proposal, line_items,
-           success_url: BookingProposal.url(proposal.id, success: true),
-           cancel_url: BookingProposal.url(proposal.id)
+           success_url: BookingProposal.url(proposal.id, success: payment_type),
+           cancel_url: BookingProposal.url(proposal.id),
+           metadata: %{"paying_for" => payment_type}
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
@@ -109,7 +122,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
     socket
     |> open_modal(__MODULE__, %{
-      read_only: read_only,
+      read_only: read_only || BookingProposal.remainder_paid?(proposal),
       job: job,
       proposal: proposal,
       photographer: photographer,

@@ -13,7 +13,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     socket
     |> assign_defaults(session)
     |> assign_proposal(token)
-    |> then(&maybe_confetti(Map.has_key?(params, "success")).(&1))
+    |> then(&maybe_confetti(Map.get(params, "success")).(&1))
     |> ok()
   end
 
@@ -41,14 +41,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     do: socket |> assign(answer: answer, proposal: %{proposal | answer: answer}) |> noreply()
 
   @impl true
-  def handle_info(:confetti, socket) do
+  def handle_info({:confetti, payment_type}, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      title: "Thank you! Your session is now booked.",
-      subtitle:
-        "We are so excited to be working with you, thank you for your business. See you soon.",
-      close_label: "Whoo hoo!"
-    })
+    |> show_confetti_banner(payment_type)
     # clear the success param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()
@@ -66,6 +61,34 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       page
     )
     |> apply(:open_modal_from_proposal, [socket, proposal, read_only])
+  end
+
+  defp show_confetti_banner(%{assigns: %{proposal: proposal}} = socket, :deposit) do
+    if BookingProposal.deposit_paid?(proposal) do
+      socket
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        title: "Thank you! Your session is now booked.",
+        subtitle:
+          "We are so excited to be working with you, thank you for your business. See you soon.",
+        close_label: "Whoo hoo!"
+      })
+    else
+      socket
+    end
+  end
+
+  defp show_confetti_banner(%{assigns: %{proposal: proposal}} = socket, :remainder) do
+    if BookingProposal.remainder_paid?(proposal) do
+      socket
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        title: "Thank you! Your session is now paid for.",
+        subtitle:
+          "We are so excited to be working with you, thank you for your business. See you soon.",
+        close_label: "Whoo hoo!"
+      })
+    else
+      socket
+    end
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
@@ -108,11 +131,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   defp stripe_redirect(%{assigns: %{token: token}} = socket, suffix, params \\ []),
     do: apply(Routes, :"booking_proposal_#{suffix}", [socket, :show, token, params])
 
-  defp maybe_confetti(has_success_param),
-    do: fn %{assigns: %{proposal: proposal}} = socket ->
-      if connected?(socket) && proposal && BookingProposal.deposit_paid?(proposal) &&
-           has_success_param,
-         do: send(self(), :confetti)
+  defp maybe_confetti(success_param),
+    do: fn socket ->
+      if connected?(socket) && not is_nil(success_param),
+        do: send(self(), {:confetti, String.to_existing_atom(success_param)})
 
       socket
     end

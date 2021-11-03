@@ -56,7 +56,11 @@
 
     <button title="Invoice" type="button" phx-click="open-invoice" class="mt-6 font-semibold btn-row">
       <div class="flex flex-col items-start w-full">
-        <.badge class="mb-1" color={:red}>To-Do</.badge>
+        <%= if BookingProposal.remainder_paid?(@proposal) do %>
+          <.badge class="mb-1" color={:green}>Completed</.badge>
+        <% else %>
+          <.badge class="mb-1" color={:red}>To-Do</.badge>
+        <% end %>
         <div class="flex items-center justify-between w-full">
           Invoice
           <.icon name="forth" class="w-4 h-4 stroke-current"/>
