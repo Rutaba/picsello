@@ -138,4 +138,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
       socket
     end
+
+  defp invoice_disabled?(%BookingProposal{accepted_at: accepted_at, signed_at: signed_at}) do
+    is_nil(accepted_at) || is_nil(signed_at)
+  end
 end

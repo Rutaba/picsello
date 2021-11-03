@@ -3,6 +3,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   alias Picsello.{Job, Repo, Organization, BookingProposal}
 
   @send_email_button button("Send Email")
+  @invoice_button button("Invoice")
 
   setup %{sessions: [photographer_session | _]} do
     user =
@@ -88,6 +89,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> assert_has(css("h2", text: Job.name(lead)))
+    |> assert_disabled(@invoice_button)
     |> click(button("To-Do Proposal"))
     |> assert_has(
       definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
@@ -103,12 +105,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
     |> assert_has(testid("shoot-description", text: "320 1st st"))
     |> click(button("Accept Quote"))
+    |> assert_disabled(@invoice_button)
     |> click(button("Completed Proposal"))
     |> within_modal(&assert_has(&1, css("button", count: 1, text: "Close")))
     |> click(button("Close"))
     |> click(button("To-Do Contract"))
     |> assert_text("Terms and Conditions")
-    |> assert_has(button("Submit", disabled: true))
+    |> assert_disabled(button("Submit"))
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
@@ -213,12 +216,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
+    |> assert_disabled(@invoice_button)
     |> click(button("To-Do Proposal"))
     |> click(button("Accept Quote"))
+    |> assert_disabled(@invoice_button)
     |> click(button("To-Do Contract"))
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
+    |> assert_enabled(@invoice_button)
     |> click(button("To-Do Questionnaire"))
     |> click(checkbox("My partner", selected: false))
     |> click(button("Close"))

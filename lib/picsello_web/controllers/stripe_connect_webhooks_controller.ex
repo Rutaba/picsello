@@ -23,7 +23,7 @@ defmodule PicselloWeb.StripeConnectWebhooksController do
   end
 
   def handle_webhook(
-        %{type: "checkout.session.completed", data: %{object: session}} = stripe_event,
+        %{type: "checkout.session.completed", data: %{object: session}},
         conn
       ) do
     "proposal_" <> proposal_id = session.client_reference_id
