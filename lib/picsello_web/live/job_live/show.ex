@@ -11,7 +11,7 @@ defmodule PicselloWeb.JobLive.Show do
       shoot_details: 1,
       status_badge: 1,
       subheader: 1,
-      proposal_details_item: 1
+      proposal_details: 1
     ]
 
   @impl true

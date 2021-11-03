@@ -10,7 +10,7 @@ defmodule PicselloWeb.LeadLive.Show do
       subheader: 1,
       notes: 1,
       shoot_details: 1,
-      proposal_details_item: 1
+      proposal_details: 1
     ]
 
   @impl true
