@@ -40,7 +40,7 @@ defmodule PicselloWeb.ConfirmationComponent do
         </button>
       <% end %>
 
-      <button class={"w-full mt-6" <> @close_class} type="button" phx-click="modal" phx-value-action="close">
+      <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
         <%= @close_label %>
       </button>
     </div>

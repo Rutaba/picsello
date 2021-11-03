@@ -18,62 +18,66 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
     ~H"""
     <div class="modal">
-      <.close_x />
+      <form action="#" phx-submit="submit" phx-target={ @myself }>
+        <.close_x />
 
-      <.banner title="Invoice" job={@job} package={@package}>
-        <p><%= @package.description %></p>
-      </.banner>
+        <.banner title="Invoice" job={@job} package={@package}>
+          <p><%= @package.description %></p>
+        </.banner>
 
-      <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client}>
-        <dl class="flex justify-between text-2xl font-bold">
-          <dt>Total</dt>
-          <dd><%= Package.price(@package) %></dd>
-        </dl>
+        <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client}>
+          <dl class="flex justify-between text-2xl font-bold">
+            <dt>Total</dt>
+            <dd><%= Package.price(@package) %></dd>
+          </dl>
 
-        <hr class="my-4" />
+          <hr class="my-4" />
 
-        <dl class={classes("flex justify-between", %{"text-green-finances-300" => @deposit_paid, "font-bold" => !@deposit_paid})}>
-          <%= if @deposit_paid do %>
-            <dt>Deposit Paid on <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></dt>
-          <% else %>
-            <dt>50% deposit today</dt>
+          <dl class={classes("flex justify-between", %{"text-green-finances-300" => @deposit_paid, "font-bold" => !@deposit_paid})}>
+            <%= if @deposit_paid do %>
+              <dt>Deposit Paid on <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></dt>
+            <% else %>
+              <dt>50% deposit today</dt>
+            <% end %>
+            <dd><%= Package.deposit_price(@package) %></dd>
+          </dl>
+
+          <dl class={classes("flex justify-between mt-4", %{"font-bold" => @deposit_paid && !@remainder_paid, "text-green-finances-300" => @remainder_paid})} >
+            <%= if @remainder_paid do %>
+              <dt>Remainder Paid on <%= strftime(@photographer.time_zone, @proposal.remainder_paid_at, "%b %d, %Y") %></dt>
+            <% else %>
+              <dt>Remainder Due on <%= strftime(@photographer.time_zone, BookingProposal.remainder_due_on(@proposal), "%b %d, %Y") %></dt>
+            <% end %>
+            <dd><%= Package.remainder_price(@package) %></dd>
+          </dl>
+        </.items>
+
+        <.footer>
+          <%= unless @read_only do %>
+            <button type="submit" class="btn-primary" phx-disabled-with="Pay Invoice">
+              Pay Invoice
+            </button>
           <% end %>
-          <dd><%= Package.deposit_price(@package) %></dd>
-        </dl>
 
-        <dl class={classes("flex justify-between mt-4", %{"font-bold" => @deposit_paid && !@remainder_paid, "text-green-finances-300" => @remainder_paid})} >
-          <%= if @remainder_paid do %>
-            <dt>Remainder Paid on <%= strftime(@photographer.time_zone, @proposal.remainder_paid_at, "%b %d, %Y") %></dt>
-          <% else %>
-            <dt>Remainder Due on <%= strftime(@photographer.time_zone, BookingProposal.remainder_due_on(@proposal), "%b %d, %Y") %></dt>
-          <% end %>
-          <dd><%= Package.remainder_price(@package) %></dd>
-        </dl>
-      </.items>
-
-      <.footer>
-        <%= unless @read_only do %>
-          <button class="btn-primary" phx-click="redirect-stripe" phx-target={@myself}>
-            Pay Invoice
-          </button>
-        <% end %>
-
-        <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">Close</button>
-      </.footer>
+          <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">Close</button>
+        </.footer>
+      </form>
     </div>
     """
   end
 
   @impl true
-  def handle_event("redirect-stripe", %{}, socket) do
-    %{
-      assigns: %{
-        package: package,
-        proposal: proposal,
-        job: job
-      }
-    } = socket
-
+  def handle_event(
+        "submit",
+        %{},
+        %{
+          assigns: %{
+            package: package,
+            proposal: proposal,
+            job: job
+          }
+        } = socket
+      ) do
     {payment_type, price} =
       if BookingProposal.deposit_paid?(proposal) do
         {:remainder, Package.deposit_price(package)}
