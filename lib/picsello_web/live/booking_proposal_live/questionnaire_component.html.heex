@@ -8,7 +8,7 @@
       <% end %>
     </.banner>
 
-    <fieldset disabled={@read_only}>
+    <fieldset class={classes(%{"opacity-50" => @read_only})} disabled={@read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
           <dt class="pt-4">
