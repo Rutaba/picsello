@@ -1,0 +1,16 @@
+
+<div class="gallery__container py-11 flex justify-between">
+  <button class="backBtn flex items-center justify-center">
+    <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
+    <span><%= live_redirect "Gallery Settings", to: Routes.gallery_show_path(@socket, :show, @gallery) %></span>
+  </button>
+</div>
+
+<div class="galleryCustomWatermark">
+  <%= if is_nil(@watermark) do %>
+    <button phx-click="open_watermark_popup">Set custom watermark</button>
+  <% else %>
+    <button phx-click="open_watermark_popup">Edit custom watermark</button>
+  <% end %>
+</div>
+

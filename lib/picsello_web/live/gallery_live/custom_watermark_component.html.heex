@@ -1,0 +1,70 @@
+<div class="customWatermarkPopup">
+  <div class="flex justify-between">
+    <h1>Custom watermark</h1>
+    <a href="#" phx-click="close" phx-target={@myself}>Close</a>
+  </div>
+    
+  <div class="flex justify-start mt-12">
+    <button class="mr-3" phx-click="image_case" phx-target={@myself}>
+      <span>Image</span>
+    </button>
+    <button class="mr-3" phx-click="text_case" phx-target={@myself}>
+      <span>Text</span>
+    </button>
+  </div>
+  
+  <%= if !is_nil(@watermark) and @watermark.type == "image" do  %>
+    <div class="flex justify-between">
+      <p><%= @watermark.name %></p>
+      <p><%= @watermark.size %></p>
+    </div>
+  <% end %>
+
+  <%= if @case == :image do %>
+    <div class="dragDrop__wrapper overflow-hidden">
+      <form id="dragDrop-form" phx-submit="save" phx-change="validate_image_input" phx-target={@myself}>
+        <div class="flex flex-col items-center justify-center gap-8 dragDrop"
+          id="dropzone"
+          phx-hook="DragDrop"
+          phx-drop-target={@uploads.image.ref}>
+        
+          <img src="/images/drag-drop-img.png" width="76" height="76"/>
+          <div class="dragDrop__content">
+            <span class="font-bold">Drop images or </span>
+            <label class="font-bold">Browse
+              <%= live_file_input @uploads.image, class: "dragDropInput" %>
+            </label>
+            <p>Supports JPEG or PNG</p>
+          </div>
+        </div>
+      </form>
+    </div>
+    <%= for entry <- @uploads.image.entries do %>
+      <div class="flex justify-between" id={entry.uuid}>
+        <%= if entry.progress == 100 do%>
+          <p>Upload complete!</p>
+        <% else %>
+          <p>Uploading...</p>
+        <% end %>
+        <progress class="grid-cols-1" value={entry.progress} max="100"><%= entry.progress %>%</progress>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="dragDrop__wrapper overflow-hidden">
+      <.form let={f} for={@changeset} phx-change="validate_text_input" phx-target={@myself}>
+        <%= label f, :text %>
+        <%= text_input f, :text %>
+        <%= error_tag f, :text %>
+      </.form>
+    </div>
+  <% end %>
+
+  <div class="flex justify-end">
+    <button class="mr-3" phx-target={@myself}>
+      <span>Cancel</span>
+    </button>
+    <button class="mr-3" phx-click="save" phx-target={@myself}>
+      <span>Save</span>
+    </button>
+  </div>
+</div>

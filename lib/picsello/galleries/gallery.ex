@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Galleries.Photo, Job}
+  alias Picsello.{Galleries.Photo, Galleries.Watermark, Job}
 
   @status_options [
     values: ~w(draft active expired),
@@ -21,6 +21,7 @@ defmodule Picsello.Galleries.Gallery do
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
+    has_one(:watermark, Watermark)
 
     timestamps(type: :utc_datetime)
   end
@@ -61,6 +62,12 @@ defmodule Picsello.Galleries.Gallery do
     |> cast(attrs, @update_attrs)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
+  end
+
+  def save_watermark(gallery, watermark_changeset) do
+    gallery
+    |> change
+    |> put_assoc(:watermark, watermark_changeset)
   end
 
   defp validate_status(changeset, status_formats),

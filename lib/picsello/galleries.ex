@@ -6,7 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   alias Picsello.Repo
 
-  alias Picsello.Galleries.{Gallery, Photo}
+  alias Picsello.Galleries.{Gallery, Photo, Watermark}
 
   @doc """
   Returns the list of galleries.
@@ -357,4 +357,33 @@ defmodule Picsello.Galleries do
       true -> :upload_in_progress
     end)
   end
+
+  ## doc
+  def gallery_watermark(%Gallery{id: id}) do
+    Watermark
+    |> where(gallery_id: ^id)
+    |> Repo.one()
+  end
+
+  def save_gallery_watermark(gallery, watermark_change) do
+    gallery
+    |> Repo.preload(:watermark)
+    |> Gallery.save_watermark(watermark_change)
+    |> Repo.update()
+  end
+
+  def gallery_watermark_change(nil), do: Ecto.Changeset.change(%Watermark{})
+  def gallery_watermark_change(%Watermark{} = watermark), do: Ecto.Changeset.change(watermark)
+
+  def gallery_image_watermark_change(%Watermark{} = watermark, attrs),
+    do: Watermark.image_changeset(watermark, attrs)
+
+  def gallery_image_watermark_change(nil, attrs),
+    do: Watermark.image_changeset(%Watermark{}, attrs)
+
+  def gallery_text_watermark_change(%Watermark{} = watermark, attrs),
+    do: Watermark.text_changeset(watermark, attrs)
+
+  def gallery_text_watermark_change(nil, attrs),
+    do: Watermark.text_changeset(%Watermark{}, attrs)
 end
