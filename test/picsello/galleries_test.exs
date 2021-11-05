@@ -65,7 +65,7 @@ defmodule Picsello.GalleriesTest do
       {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
 
       assert %Watermark{} = watermark
-      assert true = watermark.gallery_id == gallery.id
+      assert watermark.gallery_id == gallery.id
     end
 
     test "updates watermark", %{gallery: gallery} do
@@ -80,7 +80,7 @@ defmodule Picsello.GalleriesTest do
       {:ok, %{watermark: image_watermark}} =
         Galleries.save_gallery_watermark(gallery, image_watermark_change)
 
-      assert true = text_watermark.id == image_watermark.id
+      assert text_watermark.id == image_watermark.id
     end
 
     test "preloads watermark", %{gallery: gallery} do
@@ -88,7 +88,7 @@ defmodule Picsello.GalleriesTest do
       {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
       gallery = Galleries.load_gallery_watermark(gallery)
 
-      assert true = watermark == gallery.watermark
+      assert watermark == gallery.watermark
     end
 
     test "deletes watermark", %{gallery: gallery} do
@@ -98,7 +98,7 @@ defmodule Picsello.GalleriesTest do
       Galleries.delete_gallery_watermark(watermark)
       gallery = Galleries.load_gallery_watermark(gallery)
 
-      assert true = nil == gallery.watermark
+      assert nil == gallery.watermark
     end
   end
 end
