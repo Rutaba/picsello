@@ -21,21 +21,21 @@ defmodule Picsello.Galleries.Watermark do
 
   def image_changeset(%Watermark{} = watermark, attrs) do
     watermark
-    |> nilify_fields(@text_attrs)
     |> cast(attrs, @image_attrs)
     |> put_change(:type, "image")
     |> validate_required(@image_attrs)
+    |> nilify_fields(@text_attrs)
   end
 
   def text_changeset(%Watermark{} = watermark, attrs) do
     watermark
-    |> nilify_fields(@image_attrs)
     |> cast(attrs, @text_attrs)
     |> put_change(:type, "text")
     |> validate_required(@text_attrs)
+    |> nilify_fields(@image_attrs)
   end
 
-  defp nilify_fields(watermark, fields) do
-    Enum.reduce(fields, watermark, fn key, watermark -> Map.put(watermark, key, nil) end)
+  defp nilify_fields(changeset, fields) do
+    Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
   end
 end

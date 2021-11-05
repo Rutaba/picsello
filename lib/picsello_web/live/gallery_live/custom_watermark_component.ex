@@ -30,7 +30,7 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
      socket
      |> assign(:id, assigns.id)
      |> assign(:watermark, assigns.watermark)
-     |> assign(:changeset, Galleries.gallery_watermark_change(assigns.watermark))
+     |> assign_default_changeset()
      |> assign(:gallery, assigns.gallery)}
   end
 
@@ -38,7 +38,7 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   def handle_event("image_case", _params, socket) do
     socket
     |> assign(:case, :image)
-    |> assign(:changeset, Galleries.gallery_watermark_change(socket.assigns.watermark))
+    |> assign_default_changeset()
     |> assign(:ready_to_save, false)
     |> noreply()
   end
@@ -47,7 +47,7 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   def handle_event("text_case", _params, socket) do
     socket
     |> assign(:case, :text)
-    |> assign(:changeset, Galleries.gallery_watermark_change(socket.assigns.watermark))
+    |> assign_default_changeset()
     |> assign(:ready_to_save, false)
     |> noreply()
   end
@@ -59,12 +59,19 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
 
   @impl true
   def handle_event("validate_text_input", params, socket) do
-    socket |> assign_text_watermark_change(params) |> noreply
+    socket 
+    |> assign_text_watermark_change(params) 
+    |> assign(:ready_to_save, true)
+    |> noreply
   end
 
   @impl true
   def handle_event("save", _, socket) do
-    socket |> assign_watermark() |> noreply()
+    socket 
+    |> assign_watermark() 
+    |> assign(:ready_to_save, false)
+    |> clear_uploads()
+    |> noreply()
   end
 
   def presign_image(image, %{assigns: %{gallery: gallery}} = socket) do
@@ -96,6 +103,11 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
     |> noreply()
   end
 
+  defp assign_default_changeset(%{assigns: %{watermark: watermark}} = socket) do
+    socket
+    |> assign(:changeset, Galleries.gallery_watermark_change(watermark))
+  end
+
   defp handle_image_validation(socket) do
     case socket.assigns.uploads.image.entries do
       %{valid?: false, ref: ref} -> cancel_upload(socket, :photo, ref)
@@ -123,12 +135,23 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
 
   defp assign_watermark(%{assigns: %{gallery: gallery, changeset: changeset}} = socket) do
     {:ok, gallery} = Galleries.save_gallery_watermark(gallery, changeset)
-    socket |> assign(:watermark, gallery.watermark)
+    socket 
+    |> assign(:watermark, gallery.watermark)
   end
+
+  defp clear_uploads(%{assigns: %{case: :image}} = socket) do
+    [image] = socket.assigns.uploads.image.entries
+    socket |> cancel_upload(:image, image.ref)
+  end
+  defp clear_uploads(socket), do: socket
 
   defp gcp_credentials() do
     conf = Application.get_env(:gcs_sign, :gcp_credentials)
 
     Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
   end
+
+  defp watermark_type(%{type: "image"}), do: :image
+  defp watermark_type(%{type: "text"}), do: :text
+  defp watermark_type(_), do: :undefined
 end

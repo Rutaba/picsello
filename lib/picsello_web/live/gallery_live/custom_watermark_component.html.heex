@@ -4,6 +4,17 @@
     <a href="#" phx-click="close" phx-target={@myself}>Close</a>
   </div>
     
+  <%= if @case == :image and watermark_type(@watermark) == :text do  %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <span class="block sm:inline">Note: you already have a text watermark saved. If you choose to save an image watermark, this will replace your currently saved text watermark.</span>
+    </div>
+  <% end %>
+  <%= if @case == :text and watermark_type(@watermark) == :image do  %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <span class="block sm:inline">Note: you already have an image watermark saved. If you choose to save a text watermark, this will replace your currently saved image watermark.</span>
+    </div>
+  <% end %>
+
   <div class="flex justify-start mt-12">
     <button class="mr-3" phx-click="image_case" phx-target={@myself}>
       <span>Image</span>
@@ -12,15 +23,14 @@
       <span>Text</span>
     </button>
   </div>
-  
-  <%= if !is_nil(@watermark) and @watermark.type == "image" do  %>
-    <div class="flex justify-between">
-      <p><%= @watermark.name %></p>
-      <p><%= @watermark.size %></p>
-    </div>
-  <% end %>
 
   <%= if @case == :image do %>
+    <%= if watermark_type(@watermark) == :image do  %>
+      <div class="flex justify-between">
+        <p><%= @watermark.name %></p>
+        <p><%= @watermark.size %></p>
+      </div>
+    <% end %>
     <div class="dragDrop__wrapper overflow-hidden">
       <form id="dragDrop-form" phx-submit="save" phx-change="validate_image_input" phx-target={@myself}>
         <div class="flex flex-col items-center justify-center gap-8 dragDrop"
@@ -52,9 +62,7 @@
   <% else %>
     <div class="dragDrop__wrapper overflow-hidden">
       <.form let={f} for={@changeset} phx-change="validate_text_input" phx-target={@myself}>
-        <%= label f, :text %>
         <%= text_input f, :text %>
-        <%= error_tag f, :text %>
       </.form>
     </div>
   <% end %>
@@ -63,8 +71,14 @@
     <button class="mr-3" phx-target={@myself}>
       <span>Cancel</span>
     </button>
-    <button class="mr-3" phx-click="save" phx-target={@myself}>
-      <span>Save</span>
-    </button>
+    <%= if @ready_to_save do %>
+      <button class="bg-black text-white font-bold py-2 px-4 rounded" phx-click="save" phx-target={@myself}>
+        Save
+      </button> 
+    <% else %>  
+      <button class="bg-black text-white font-bold py-2 px-4 rounded opacity-50 cursor-not-allowed">
+        Save
+      </button>      
+    <% end %>
   </div>
 </div>
