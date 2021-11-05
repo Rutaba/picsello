@@ -45,18 +45,28 @@ defmodule Picsello.ViewJobTest do
     session
     |> click(css("a[title='Proposal']"))
     |> within_modal(&assert_text(&1, "Accepted on"))
+    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 
   feature "user views contract", %{session: session} do
     session
     |> click(css("a[title='Standard Contract']"))
     |> assert_has(css(".modal", text: "Signed on"))
+    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 
   feature "user views questionnaire", %{session: session} do
     session
     |> click(css("a[title='Questionnaire']"))
     |> assert_has(css(".modal", text: "Answered on"))
+    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
+  end
+
+  feature "user views invoice", %{session: session} do
+    session
+    |> click(css("a[title='Invoice']"))
+    |> assert_has(css(".modal", text: "Paid on"))
+    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 
   feature "user adds notes", %{session: session} do

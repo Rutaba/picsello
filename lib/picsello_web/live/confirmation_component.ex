@@ -9,6 +9,7 @@ defmodule PicselloWeb.ConfirmationComponent do
     |> assign(
       Enum.into(assigns, %{
         close_label: "Close",
+        close_class: "btn-secondary",
         confirm_event: nil,
         confirm_label: "Yes",
         confirm_class: "btn-warning",
@@ -39,7 +40,7 @@ defmodule PicselloWeb.ConfirmationComponent do
         </button>
       <% end %>
 
-      <button class="w-full mt-6 btn-secondary" type="button" phx-click="modal" phx-value-action="close">
+      <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
         <%= @close_label %>
       </button>
     </div>
@@ -59,6 +60,7 @@ defmodule PicselloWeb.ConfirmationComponent do
 
   @spec open(%Phoenix.LiveView.Socket{}, %{
           optional(:close_label) => binary,
+          optional(:close_class) => binary,
           optional(:confirm_event) => any,
           optional(:confirm_label) => binary,
           optional(:confirm_class) => binary,

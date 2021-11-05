@@ -6,11 +6,19 @@
   <div class="max-w-2xl px-8 pt-6 mx-auto">
     <h2 class="text-3xl font-bold"><%= Job.name @job %> Shoot <%= @package.name %></h2>
 
-    <p class="mt-2 mb-6">
-      Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.
-    </p>
+    <%= if BookingProposal.remainder_paid?(@proposal) do %>
+      <p class="mt-2 mb-6 text-lg">
+        Thanks for your business!
+      </p>
+      <h3 class="text-sm text-gray-400 uppercase">Have questions?</h3>
+      <a class="block pt-2 link" href={"mailto:#{@photographer.email}"}>Email us at <%= @photographer.email %></a>
+    <% else %>
+      <p class="mt-2 mb-6 text-lg">
+        Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.
+      </p>
+    <% end %>
 
-    <button title="Proposal" type="button" phx-click="open-proposal" class="mt-6 font-semibold btn-row">
+    <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
       <div class="flex flex-col items-start w-full">
         <%= if @proposal.accepted_at do %>
           <.badge class="mb-1" color={:green}>Completed</.badge>
@@ -54,24 +62,17 @@
       </button>
     <% end %>
 
-    <%= if @proposal.deposit_paid_at do %>
-      <button class="w-full mt-6 btn-primary" disabled>
-        50% deposit paid
-      </button>
-      <em class="block pt-2 text-xs text-center">Paid: <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></em>
-    <% else %>
-      <% questionnaire_answered = if @proposal.questionnaire_id, do: @answer, else: true %>
-      <button
-        class="w-full mt-6 btn-primary"
-        phx-click="redirect-stripe"
-        phx-disable-with="Redirecting to Stripe..."
-        disabled={!(@proposal.accepted_at && @proposal.signed_at && questionnaire_answered && !@read_only)}
-      >
-        Pay 50% deposit
-      </button>
-      <em class="block pt-2 text-xs text-center">
-        <%= [{@proposal.accepted_at, "accept proposal"}, {@proposal.signed_at, "sign contract"}, {questionnaire_answered, "answer questionnaire"}] |> Enum.reject(&elem(&1, 0)) |> Enum.map(&elem(&1, 1)) |> Enum.join(" & ") %>
-      </em>
-    <% end %>
-  </div>
+    <button title="Invoice" type="button" {if invoice_disabled?(@proposal), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal)})} disabled={invoice_disabled?(@proposal)}>
+      <div class="flex flex-col items-start w-full">
+        <%= if BookingProposal.remainder_paid?(@proposal) do %>
+          <.badge class="mb-1" color={:green}>Completed</.badge>
+        <% else %>
+          <.badge class="mb-1" color={:red}>To-Do</.badge>
+        <% end %>
+        <div class="flex items-center justify-between w-full">
+          Invoice
+          <.icon name="forth" class="w-4 h-4 stroke-current"/>
+        </div>
+      </div>
+    </button>
 <% end %>

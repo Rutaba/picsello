@@ -3,6 +3,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   alias Picsello.{Job, Repo, Organization, BookingProposal}
 
   @send_email_button button("Send Email")
+  @invoice_button button("Invoice")
 
   setup %{sessions: [photographer_session | _]} do
     user =
@@ -60,8 +61,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     test_pid = self()
 
-    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, _, return_urls ->
-      send(test_pid, {:success_url, Keyword.get(return_urls, :success_url)})
+    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, products, opts ->
+      send(
+        test_pid,
+        {:checkout_linked, opts |> Enum.into(%{products: products})}
+      )
 
       {:ok, "https://example.com/stripe-checkout"}
     end)
@@ -69,18 +73,24 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     proposal = BookingProposal.last_for_job(lead.id)
     proposal_id = proposal.id
 
-    Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
+    Mox.stub(Picsello.MockPayments, :construct_event, fn metadata, _, _ ->
       {:ok,
        %{
          type: "checkout.session.completed",
-         data: %{object: %{client_reference_id: "proposal_#{proposal_id}"}}
+         data: %{
+           object: %{
+             client_reference_id: "proposal_#{proposal_id}",
+             metadata: %{"paying_for" => metadata}
+           }
+         }
        }}
     end)
 
     client_session
     |> visit(url)
     |> assert_has(css("h2", text: Job.name(lead)))
-    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
+    |> assert_disabled(@invoice_button)
+    |> assert_text("Below are details for")
     |> click(button("To-Do Proposal"))
     |> assert_has(
       definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
@@ -96,21 +106,26 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
     |> assert_has(testid("shoot-description", text: "320 1st st"))
     |> click(button("Accept Quote"))
+    |> assert_disabled(@invoice_button)
     |> click(button("Completed Proposal"))
     |> within_modal(&assert_has(&1, css("button", count: 1, text: "Close")))
     |> click(button("Close"))
-    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Contract"))
     |> assert_text("Terms and Conditions")
-    |> assert_has(button("Submit", disabled: true))
+    |> assert_disabled(button("Submit"))
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
     |> assert_has(button("Completed Contract"))
-    |> assert_has(css("button:not(:disabled)", text: "Pay 50% deposit"))
-    |> click(button("Pay 50% deposit"))
+    |> click(button("To-Do Invoice"))
+    |> assert_has(definition("Total", text: "$1.00"))
+    |> assert_has(definition("50% deposit today", text: "$0.50"))
+    |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.50"))
+    |> click(button("Pay Invoice"))
     |> assert_url_contains("stripe-checkout")
-    |> post("/stripe/connect-webhooks", "", [{"stripe-signature", "love, stripe"}])
+    |> post("/stripe/connect-webhooks", "deposit", [
+      {"stripe-signature", "love, stripe"}
+    ])
 
     assert_receive {:delivered_email, email}
 
@@ -119,18 +134,72 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     assert String.ends_with?(email_link, "/jobs")
 
-    assert_receive {:success_url, stripe_success_url}
+    assert_receive {:checkout_linked,
+                    %{
+                      success_url: stripe_success_url,
+                      metadata: %{"paying_for" => :deposit},
+                      products: [
+                        %{
+                          price_data: %{
+                            product_data: %{name: "John Newborn 50% deposit"},
+                            unit_amount: 50
+                          }
+                        }
+                      ]
+                    }}
 
     client_session
     |> visit(stripe_success_url)
     |> assert_has(css("h1", text: "Thank you"))
-    |> click(button("Whoo hoo!"))
-    |> assert_has(button("50% deposit paid"))
-    # reload and the message is not displayed again
+    |> assert_has(css("h1", text: "Your session is now booked."))
+    |> click(button("Got it"))
+    |> assert_text("Below are details for")
+    |> click(button("To-Do Invoice"))
+    |> assert_has(definition("Total", text: "$1.00"))
+    |> assert_has(
+      definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        text: "$0.50"
+      )
+    )
+    |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.50"))
+    |> click(button("Pay Invoice"))
+    |> assert_url_contains("stripe-checkout")
+    |> post("/stripe/connect-webhooks", "remainder", [
+      {"stripe-signature", "love, stripe"}
+    ])
+
+    assert_receive {:checkout_linked,
+                    %{
+                      success_url: stripe_success_url,
+                      metadata: %{"paying_for" => :remainder},
+                      products: [
+                        %{
+                          price_data: %{
+                            product_data: %{name: "John Newborn 50% remainder"},
+                            unit_amount: 50
+                          }
+                        }
+                      ]
+                    }}
+
+    client_session
     |> visit(stripe_success_url)
-    |> assert_has(css("h1", text: "Thank you"))
-    |> visit(client_session |> current_url())
-    |> assert_has(button("50% deposit paid"))
+    |> assert_has(css("h1", text: "Paid in full."))
+    |> click(button("Got it"))
+    |> assert_text("Thanks for your business!")
+    |> click(button("Completed Invoice"))
+    |> assert_has(definition("Total", text: "$1.00"))
+    |> assert_has(
+      definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        text: "$0.50"
+      )
+    )
+    |> assert_has(
+      definition("Remainder Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        text: "$0.50"
+      )
+    )
+    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 
   @sessions 2
@@ -150,18 +219,20 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
+    |> assert_disabled(@invoice_button)
     |> click(button("To-Do Proposal"))
     |> click(button("Accept Quote"))
+    |> assert_disabled(@invoice_button)
     |> click(button("To-Do Contract"))
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
+    |> assert_enabled(@invoice_button)
     |> click(button("To-Do Questionnaire"))
     |> click(checkbox("My partner", selected: false))
     |> click(button("Close"))
     |> click(button("To-Do Questionnaire"))
     |> visit(url)
-    |> assert_has(css("button:disabled", text: "Pay 50% deposit"))
     |> click(button("To-Do Questionnaire"))
     |> click(checkbox("My partner", selected: false))
     |> assert_has(css("button:disabled", text: "Save"))
@@ -173,7 +244,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("Phone"), with: "(255) 123-1234")
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_has(css("button:not(:disabled)", text: "Pay 50% deposit"))
     |> click(button("Completed Questionnaire"))
     |> assert_has(checkbox("My partner", selected: true))
   end

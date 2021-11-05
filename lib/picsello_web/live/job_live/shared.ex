@@ -43,17 +43,10 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_event(
         "open-proposal",
         %{"action" => "" <> action},
-        %{assigns: %{proposal: proposal}} = socket
+        socket
       ) do
-    Map.get(
-      %{
-        "questionnaire" => PicselloWeb.BookingProposalLive.QuestionnaireComponent,
-        "details" => PicselloWeb.BookingProposalLive.ProposalComponent,
-        "contract" => PicselloWeb.BookingProposalLive.ContractComponent
-      },
-      action
-    )
-    |> apply(:open_modal_from_proposal, [socket, proposal])
+    socket
+    |> PicselloWeb.BookingProposalLive.Show.open_page_modal(action, true)
     |> noreply()
   end
 
@@ -334,6 +327,34 @@ defmodule PicselloWeb.JobLive.Shared do
             View
           </button>
         <% end %>
+      </div>
+    """
+  end
+
+  @spec proposal_details(%{
+          proposal: %BookingProposal{},
+          current_user: %User{}
+        }) :: %Phoenix.LiveView.Rendered{}
+  def proposal_details(assigns) do
+    ~H"""
+      <div class="p-2 border rounded-lg">
+        <div class="flex items-start justify-between p-2">
+          <p>The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%B %d, %Y") %>.</p>
+          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 ml-2 transition-colors" id="copy-client-link" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
+            <span>Client Link</span>
+            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+              Copied!
+            </div>
+          </.icon_button>
+        </div>
+        <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
+          <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
+          <.proposal_details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
+          <%= if @proposal.questionnaire_id do %>
+            <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
+          <% end %>
+          <.proposal_details_item title="Invoice" icon="document" status="Completed" date={@proposal.remainder_paid_at} current_user={@current_user} action="invoice" />
+        </div>
       </div>
     """
   end

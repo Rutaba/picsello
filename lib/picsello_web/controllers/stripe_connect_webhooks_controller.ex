@@ -22,16 +22,32 @@ defmodule PicselloWeb.StripeConnectWebhooksController do
     |> send_resp(422, error)
   end
 
-  def handle_webhook(%{type: "checkout.session.completed"} = stripe_event, conn) do
-    session = stripe_event.data.object
-
+  def handle_webhook(
+        %{type: "checkout.session.completed", data: %{object: session}},
+        conn
+      ) do
     "proposal_" <> proposal_id = session.client_reference_id
     proposal = Repo.get!(BookingProposal, proposal_id)
 
-    proposal |> BookingProposal.deposit_paid_changeset() |> Repo.update!()
+    %{metadata: %{"paying_for" => paying_for}} = session
 
-    url = Routes.job_url(conn, :jobs)
-    Picsello.Notifiers.UserNotifier.deliver_lead_converted_to_job(proposal, url)
+    case paying_for do
+      "deposit" ->
+        proposal |> BookingProposal.deposit_paid_changeset() |> Repo.update!()
+        url = Routes.job_url(conn, :jobs)
+        Picsello.Notifiers.UserNotifier.deliver_lead_converted_to_job(proposal, url)
+        {:ok, true}
+
+      "remainder" ->
+        proposal
+        |> BookingProposal.remainder_paid_changeset()
+        |> Repo.update!()
+
+        {:ok, true}
+
+      error ->
+        {:error, error}
+    end
   end
 
   def handle_webhook(_stripe_event, _conn), do: {:ok, "success"}
