@@ -1,6 +1,6 @@
 defmodule Picsello.Galleries.WatermarkTest do
   use Picsello.DataCase, async: true
-  alias Picsello.Galleries.{Watermark, Gallery}
+  alias Picsello.Galleries.Watermark
 
   describe "changesets" do
     test "image changeset is valid" do
