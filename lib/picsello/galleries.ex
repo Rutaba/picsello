@@ -358,6 +358,9 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  @doc """
+  Creates or updates watermark of the gallery.
+  """
   def save_gallery_watermark(gallery, watermark_change) do
     gallery
     |> Repo.preload(:watermark)
@@ -365,23 +368,38 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
+  @doc """
+  Preloads the watermark of the gallery.
+  """
   def load_gallery_watermark(%Gallery{} = gallery) do
     Repo.preload(gallery, :watermark, force: true)
   end
 
+  @doc """
+  Removes the watermark.
+  """
   def delete_gallery_watermark(watermark) do
     Repo.delete(watermark)
   end
 
+  @doc """
+  Returns the changeset of watermark struct.
+  """
   def gallery_watermark_change(nil), do: Ecto.Changeset.change(%Watermark{})
   def gallery_watermark_change(%Watermark{} = watermark), do: Ecto.Changeset.change(watermark)
 
+  @doc """
+  Returns the changeset of watermark struct with :type => "image".
+  """
   def gallery_image_watermark_change(%Watermark{} = watermark, attrs),
     do: Watermark.image_changeset(watermark, attrs)
 
   def gallery_image_watermark_change(nil, attrs),
     do: Watermark.image_changeset(%Watermark{}, attrs)
 
+  @doc """
+  Returns the changeset of watermark struct with :type => "text".
+  """
   def gallery_text_watermark_change(%Watermark{} = watermark, attrs),
     do: Watermark.text_changeset(watermark, attrs)
 

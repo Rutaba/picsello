@@ -28,8 +28,8 @@ defmodule PicselloWeb.GalleryLive.Settings do
   @impl true
   def handle_event("delete_watermark", _, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.delete_gallery_watermark(gallery.watermark)
-    
-    socket 
+
+    socket
     |> preload_watermark()
     |> noreply()
   end
