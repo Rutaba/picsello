@@ -15,8 +15,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
     gallery = Galleries.get_gallery!(id)
 
     socket
-    |> assign(:gallery, gallery)
-    |> assign(:watermark, Galleries.gallery_watermark(gallery))
+    |> assign(:gallery, Galleries.load_gallery_watermark(gallery))
     |> noreply()
   end
 
@@ -27,9 +26,21 @@ defmodule PicselloWeb.GalleryLive.Settings do
   end
 
   @impl true
-  def handle_info(:open_modal, %{assigns: %{gallery: gallery, watermark: watermark}} = socket) do
+  def handle_info(:open_modal, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> open_modal(CustomWatermarkComponent, %{gallery: gallery, watermark: watermark})
+    |> open_modal(CustomWatermarkComponent, %{gallery: gallery})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(:close_watermark_popup, socket) do
+    socket |> close_modal() |> noreply()
+  end
+
+  @impl true
+  def handle_info(:preload_watermark, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:gallery, Galleries.load_gallery_watermark(gallery))
     |> noreply()
   end
 end

@@ -29,6 +29,12 @@
       <div class="flex justify-between">
         <p><%= @watermark.name %></p>
         <p><%= @watermark.size %></p>
+        <div class="flex justify-between">
+          <p><%= @watermark.size %></p>
+          <button phx-click="delete" phx-target={@myself}>
+            <span>Delete</span>
+          </button>
+        </div>
       </div>
     <% end %>
     <div class="dragDrop__wrapper overflow-hidden">
@@ -68,7 +74,7 @@
   <% end %>
 
   <div class="flex justify-end">
-    <button class="mr-3" phx-target={@myself}>
+    <button class="mr-3" phx-click="close" phx-target={@myself}>
       <span>Cancel</span>
     </button>
     <%= if @ready_to_save do %>

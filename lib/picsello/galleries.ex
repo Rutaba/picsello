@@ -358,18 +358,19 @@ defmodule Picsello.Galleries do
     end)
   end
 
-  ## doc
-  def gallery_watermark(%Gallery{id: id}) do
-    Watermark
-    |> where(gallery_id: ^id)
-    |> Repo.one()
-  end
-
   def save_gallery_watermark(gallery, watermark_change) do
     gallery
     |> Repo.preload(:watermark)
     |> Gallery.save_watermark(watermark_change)
     |> Repo.update()
+  end
+
+  def load_gallery_watermark(%Gallery{} = gallery) do
+    Repo.preload(gallery, :watermark, force: true)
+  end
+
+  def delete_gallery_watermark(watermark) do
+    Repo.delete(watermark)
   end
 
   def gallery_watermark_change(nil), do: Ecto.Changeset.change(%Watermark{})

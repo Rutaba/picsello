@@ -6,11 +6,33 @@
   </button>
 </div>
 
-<div class="galleryCustomWatermark">
-  <%= if is_nil(@watermark) do %>
-    <button phx-click="open_watermark_popup">Set custom watermark</button>
-  <% else %>
+<div class="galleryCustomWatermark flex justify-start">
+  <%= if @gallery.watermark do %>
+    <%= if @gallery.watermark.type == "image" do %>
+      <div class="flex justify-between">
+        <p><%= @gallery.watermark.name %></p>
+        <div class="flex justify-between">
+          <p><%= @gallery.watermark.size %></p>
+          <button phx-click="delete">
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    <% else %>
+      <div class="flex justify-between">
+        <p><%= @gallery.watermark.text %></p>
+        <div class="flex justify-between">
+          <p> T </p>
+          <button phx-click="delete">
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    <% end %>
+
     <button phx-click="open_watermark_popup">Edit custom watermark</button>
+  <% else %>
+    <button phx-click="open_watermark_popup">Set custom watermark</button>
   <% end %>
 </div>
 
