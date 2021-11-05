@@ -26,6 +26,15 @@ defmodule PicselloWeb.GalleryLive.Settings do
   end
 
   @impl true
+  def handle_event("delete_watermark", _, %{assigns: %{gallery: gallery}} = socket) do
+    Galleries.delete_gallery_watermark(gallery.watermark)
+    
+    socket 
+    |> preload_watermark()
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(:open_modal, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> open_modal(CustomWatermarkComponent, %{gallery: gallery})
@@ -40,7 +49,12 @@ defmodule PicselloWeb.GalleryLive.Settings do
   @impl true
   def handle_info(:preload_watermark, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(:gallery, Galleries.load_gallery_watermark(gallery))
+    |> preload_watermark()
     |> noreply()
+  end
+
+  defp preload_watermark(%{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:gallery, Galleries.load_gallery_watermark(gallery))
   end
 end

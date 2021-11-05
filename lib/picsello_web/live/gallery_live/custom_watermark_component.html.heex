@@ -69,12 +69,13 @@
     <div class="dragDrop__wrapper overflow-hidden">
       <.form let={f} for={@changeset} phx-change="validate_text_input" phx-target={@myself}>
         <%= text_input f, :text %>
+        <%= error_tag f, :text %>
       </.form>
     </div>
   <% end %>
 
   <div class="flex justify-end">
-    <button class="mr-3" phx-click="close" phx-target={@myself}>
+    <button class="mr-3" phx-target={@myself}>
       <span>Cancel</span>
     </button>
     <%= if @ready_to_save do %>

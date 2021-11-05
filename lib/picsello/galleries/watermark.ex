@@ -32,6 +32,7 @@ defmodule Picsello.Galleries.Watermark do
     |> cast(attrs, @text_attrs)
     |> put_change(:type, "text")
     |> validate_required(@text_attrs)
+    |> validate_length(:text, min: 3, max: 13)
     |> nilify_fields(@image_attrs)
   end
 

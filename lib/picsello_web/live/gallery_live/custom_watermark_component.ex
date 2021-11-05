@@ -61,7 +61,6 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   def handle_event("validate_text_input", params, socket) do
     socket
     |> assign_text_watermark_change(params)
-    |> assign(:ready_to_save, true)
     |> noreply
   end
 
@@ -112,7 +111,6 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   def handle_image_progress(:image, image, socket) do
     socket
     |> assign_image_watermark_change(image)
-    |> assign(:ready_to_save, true)
     |> noreply()
   end
 
@@ -129,21 +127,25 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   end
 
   defp assign_image_watermark_change(%{assigns: %{watermark: watermark}} = socket, image) do
-    socket
-    |> assign(
-      :changeset,
+    changeset =
       Galleries.gallery_image_watermark_change(watermark, %{
         name: image.client_name,
         size: image.client_size
       })
-    )
+
+    socket
+    |> assign(:changeset, changeset)
+    |> assign(:ready_to_save, changeset.valid?)
   end
 
   defp assign_text_watermark_change(%{assigns: %{watermark: watermark}} = socket, %{
          "watermark" => %{"text" => text}
        }) do
+    changeset = Galleries.gallery_text_watermark_change(watermark, %{text: text})
+
     socket
-    |> assign(:changeset, Galleries.gallery_text_watermark_change(watermark, %{text: text}))
+    |> assign(:changeset, changeset)
+    |> assign(:ready_to_save, changeset.valid?)
   end
 
   defp assign_watermark(%{assigns: %{gallery: gallery, changeset: changeset}} = socket) do
