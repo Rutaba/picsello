@@ -18,3 +18,8 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+
+## Setup Image Processing 
+
+Create PubSub Topic and set PHOTO_PROCESSING_OUTPUT_TOPIC, so images created on your environment will get to you from Cloud Function. https://console.cloud.google.com/cloudpubsub/topic/list?project=celtic-rite-323300 

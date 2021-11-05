@@ -50,9 +50,24 @@ defmodule Picsello.Galleries.Photo do
     |> foreign_key_constraint(:gallery_id)
   end
 
-  def update_changeset(photo, attrs \\ %{}) do
+  def update_changeset(%__MODULE__{} = photo, attrs \\ %{}) do
     photo
     |> cast(attrs, @update_attrs)
     |> validate_required(@required_attrs)
   end
+
+  def original_path(name, gallery_id, uuid),
+    do: "galleries/#{gallery_id}/original/#{uuid}#{Path.extname(name)}"
+
+  def original_path(%__MODULE__{name: name, gallery_id: gallery_id}),
+    do: "galleries/#{gallery_id}/original/#{UUID.uuid4()}#{Path.extname(name)}"
+
+  def preview_path(%__MODULE__{name: name, gallery_id: gallery_id}),
+    do: "galleries/#{gallery_id}/preview/#{UUID.uuid4()}#{Path.extname(name)}"
+
+  def watermarked_path(%__MODULE__{name: name, gallery_id: gallery_id}),
+    do: "galleries/#{gallery_id}/watermarked/#{UUID.uuid4()}#{Path.extname(name)}"
+
+  def watermarked_preview_path(%__MODULE__{name: name, gallery_id: gallery_id}),
+    do: "galleries/#{gallery_id}/watermarked_preview/#{UUID.uuid4()}#{Path.extname(name)}"
 end

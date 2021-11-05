@@ -1,10 +1,10 @@
-<div class="uploadPopup" id="hello">
+<div class="uploadPopup" id="photo-upload-component">
   <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
     <p class="font-bold text-xl px-12 pb-4">Upload photos to <%= @gallery.name %></p>
     <%= if total(@uploads.photo.entries) > 0 do %>
     <div class="flex items-center justify-between p-12 uploadOverallStatus mb-12">
         <div class="flex items-center">
-            <%= if @overall_progress !== 100 do%>
+            <%= if @overall_progress !== 100 do %>
             <div class="sk-circle mr-4">
                 <div class="sk-circle1 sk-child"></div>
                 <div class="sk-circle2 sk-child"></div>
@@ -21,7 +21,7 @@
             </div>
             <% end %>
             <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap font-bold">
-                <.overall_progress uploads={@uploaded_files} entries={@uploads.photo.entries}/> 
+                Uploading <%= @uploaded_files %> of <%= total(@uploads.photo.entries) %> photos
             </p>
         </div>
         <div class="uploadingProgress__wrapper">
@@ -62,10 +62,12 @@
             <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
 
             <%# entry.progress will update automatically for in-flight entries %>
-            <%= if entry.progress == 100 do%>
+            <%= if progress_for_entry(@progress, entry) == 100 do%>
                 <p class="grid-cols-1"><%= entry.client_size %> Kb</p>
             <% else %>
-                <progress class="grid-cols-1" value={entry.progress} max="100"><%= entry.progress %>%</progress>
+                <progress class="grid-cols-1" value={progress_for_entry(@progress, entry)} max="100">
+                    <%= progress_for_entry(@progress, entry) %>%
+                </progress>
             <% end %>
 
             <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>

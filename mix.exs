@@ -59,7 +59,12 @@ defmodule Picsello.MixProject do
         {:tz, "~> 0.20"},
         {:ueberauth_google, "~> 0.10"},
         {:packmatic, "~> 1.1.2"},
-        {:gcs_sign, "~> 1.0"}
+        {:gcs_sign, "~> 1.0"},
+        {:broadway_cloud_pub_sub, "~> 0.7.0"},
+        {:goth, "~> 1.0"},
+        {:elixir_uuid, "~> 1.2"},
+        {:kane, "~> 0.9.0"},
+        {:struct_access, "~> 1.1"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},

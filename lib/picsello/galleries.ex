@@ -219,6 +219,15 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Updates a photo
+  """
+  def update_photo(%Photo{id: _} = photo, %{} = attrs) do
+    photo
+    |> Photo.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
   Gets a single photo by id.
 
   Returns nil if the Photo does not exist.

@@ -23,7 +23,8 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   # some removing item logic
   # end
 
-  @bucket "picsello-staging"
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+
   defp display(key) do
     sign_opts = [bucket: @bucket, key: key]
     GCSSign.sign_url_v4(gcp_credentials(), sign_opts)

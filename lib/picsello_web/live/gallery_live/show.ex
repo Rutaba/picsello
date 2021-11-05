@@ -16,7 +16,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     external: &__MODULE__.presign_cover_entry/2,
     progress: &__MODULE__.handle_cover_progress/3
   ]
-  @bucket "picsello-staging"
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
   def mount(_params, _session, socket) do
@@ -109,6 +109,18 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
+  def handle_info(
+        {:photo_processed, %{"task" => %{"photoId" => photo_id}}},
+        %{assigns: %{modal_pid: modal_pid}} = socket
+      ) do
+    send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
+
+    noreply(socket)
+  end
+
+  def handle_info({:photo_processed, _}, socket), do: noreply(socket)
+
+  @impl true
   def handle_info({:close_delete_cover_photo, params}, %{assigns: %{gallery: gallery}} = socket) do
     socket =
       if params["delete"] do
@@ -135,21 +147,15 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:update_total_count, count}, %{assigns: %{gallery: gallery}} = socket) do
-    {:ok, gallery} =
+  def handle_info({:photo_upload_completed, count}, %{assigns: %{gallery: gallery}} = socket) do
+    {:ok, _gallery} =
       Galleries.update_gallery(gallery, %{total_count: gallery.total_count + count})
 
-    socket
-    |> assign(:gallery, gallery)
-    |> noreply()
-  end
-
-  def handle_info(:gallery_position_normalize, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.normalize_gallery_photo_positions(gallery.id)
 
     socket
     |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery.id))
-    |> noreply
+    |> noreply()
   end
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do

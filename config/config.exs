@@ -60,6 +60,15 @@ config :gcs_sign,
     "type" => "service_account"
   }
 
+config :picsello,
+  photo_output_subscription: {
+    BroadwayCloudPubSub.Producer,
+    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION")
+  },
+  photo_processing_input_topic: System.get_env("PHOTO_PROCESSING_INPUT_TOPIC"),
+  photo_processing_output_topic: System.get_env("PHOTO_PROCESSING_OUTPUT_TOPIC"),
+  photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
