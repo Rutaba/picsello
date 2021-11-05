@@ -21,7 +21,7 @@ defmodule Picsello.MixProject do
   def application do
     [
       mod: {Picsello.Application, []},
-      extra_applications: [:logger, :os_mon, :runtime_tools]
+      extra_applications: [:logger, :os_mon, :runtime_tools, :crypto]
     ]
   end
 
