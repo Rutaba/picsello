@@ -49,6 +49,12 @@ export default {
 
     updated() {
         this.modal.updated();
+        let errorElements = document.querySelectorAll('.photoUploadingIsFailed');
+        let errorElementsArray = Array.from(errorElements);
+
+        if(errorElementsArray.length){
+            errorElementsArray.forEach(el=> document.getElementById(el.dataset.name).querySelector('progress').style.display = 'none');
+        }
     },
 };
 

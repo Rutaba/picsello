@@ -4,6 +4,7 @@
     padding: 30px 0;
     background-color: #FFFFFF;
     margin: 0 auto;
+    overflow-y: scroll;
 }
 
 .uploadOverallStatus {
@@ -60,7 +61,7 @@
     visibility: hidden;
 }
 
-.dragDrop__content p {
+.dragDrop__content .gray {
     color: #898989;
     text-align: center;
 }
@@ -68,6 +69,10 @@
 .dragDrop__content label {
     color: #4DAAC6;
     cursor: pointer;
+}
+
+.dragDrop__content .primary {
+    color: #4DAAC6;
 }
 
 .uploadingList__wrapper {
@@ -104,13 +109,14 @@
 
 .uploadEntry .btn {
     font-size: 12px;
-    line-height: 10px;
+   /* line-height: 10px;*/
     border-radius: 4px;
-    padding: 3px 8px 6px;
+    padding: 3px 8px;
     text-align: center;
 }
 
 .uploadEntry .error {
+    border: 1px solid #FDF2F2;
     color: #E1662F;
     background: #FDF2F2;
 }
@@ -287,6 +293,12 @@
     40% {
         -webkit-transform: scale(1);
         transform: scale(1);
+    }
+}
+
+@media screen and (max-width:1400px) {
+    .uploadPopup {
+        max-height: 100vh;
     }
 }
 
