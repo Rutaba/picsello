@@ -296,7 +296,7 @@
     }
 }
 
-@media screen and (max-width:1400px) {
+@media screen and (max-height:950px) {
     .uploadPopup {
         max-height: 100vh;
     }

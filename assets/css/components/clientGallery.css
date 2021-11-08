@@ -54,10 +54,6 @@
     border-radius: 8px;
 }
 
-.uploadingBlock .dragDrop__wrapper label {
-    color: #4DAAC6;
-}
-
 .circleBtn {
     position: relative;
     left: 0;
@@ -172,7 +168,6 @@
     border: 1px solid #FFFFFF;
     border-radius: 7px;
     display: flex;
-    align-items: center;
     padding: 15px 25px;
     cursor: pointer;
 }
@@ -190,13 +185,17 @@
     background-color: transparent !important;
 }
 
+.galleryItem img {
+    object-fit: cover;
+}
+
 .galleryItem:before {
     content: '';
     display: block;
     position: absolute;
     height: 100%;
     width: 100%;
-    bottom: 0;
+    top: 0;
     opacity: 0;
     transition: all .3s ease-out;
     background: linear-gradient(0deg, rgba(31, 28, 30, 0.65) 0%, rgba(31, 28, 30, 0.065) 100%);
@@ -211,6 +210,16 @@
 .removeBtn {
     opacity: 0;
     left: 15px;
+    bottom: 16px;
+    z-index: 1;
+}
+
+.likeBtn{
+    right: 15px;
     bottom: 13px;
     z-index: 1;
+}
+
+.likeBtn img {
+    background-color: transparent!important;
 }

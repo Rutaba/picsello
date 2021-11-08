@@ -3,7 +3,7 @@
         <div class="bg-white px-6 py-8 rounded shadow-md text-black w-full">
         <img src="/images/aware-icon.svg" width="45" height="45" alt="aware icon" class="mb-2"/>
             <h1 class="mb-8 text-3xl text-start">Delete this photo?</h1>
-            <p class="mb-12">Are you sure you wish to permanently delete this photo from <%= @gallery_name %>?</p>
+            <p class="mb-8">Are you sure you wish to permanently delete this photo from <%= @gallery_name %>?</p>
             <a href="#" phx-click="close" phx-target={@myself} phx-value-delete="true" class="block text-center btn-warning">
               Yes, delete
             </a>
