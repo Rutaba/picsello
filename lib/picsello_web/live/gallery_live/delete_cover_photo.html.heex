@@ -1,14 +1,13 @@
 <div class="bg-grey-lighter min-h-screen flex flex-col">
-    <div class="container max-w-sm mx-auto flex-1 flex flex-col items-center justify-center px-2">
+    <div class="container max-w-md mx-auto flex-1 flex flex-col items-center justify-center px-2">
         <div class="bg-white px-6 py-8 rounded shadow-md text-black w-full">
+        <img src="/images/aware-icon.svg" width="45" height="45" alt="aware icon" class="mb-2"/>
             <h1 class="mb-8 text-3xl text-start">Delete this photo?</h1>
-            <p>Are you sure you wish to permanently delete this photo from <%= @gallery_name %>?</p>
-
-            <a href="#" phx-click="close" phx-target={@myself} phx-value-delete="true" class="flex items-center text-center justify-center px-5 py-3 border border-black text-base font-medium rounded-md  bg-yellow-500">
+            <p class="mb-12">Are you sure you wish to permanently delete this photo from <%= @gallery_name %>?</p>
+            <a href="#" phx-click="close" phx-target={@myself} phx-value-delete="true" class="block text-center btn-warning">
               Yes, delete
             </a>
-             &nbsp; 
-            <a href="#" phx-click="close" phx-target={@myself} class="flex items-center text-center justify-center px-5 py-3 border border-black text-base font-medium rounded-md  bg-transparent">
+            <a href="#" phx-click="close" phx-target={@myself} class="block text-center border-black btn-row mt-4">
               No, go back
             </a>
         </div>

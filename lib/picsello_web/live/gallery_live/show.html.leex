@@ -1,10 +1,16 @@
 <div style="background-image: url('<%= cover_photo(@gallery.cover_photo_id) %>')" class="coverImg__wrapper">
   <div class="gallery__container py-11 flex justify-between">
     <div>
-      <button class="backBtn flex items-center justify-center">
-        <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
-        <span>Back to job</span>
-      </button>
+        <div class="circleBtn">
+            <ul>
+                <li>
+                    <a href="#">
+                        <img src="/images/arrow-left.png"/>
+                        <span>Back to job</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
       <%= if is_nil(@gallery.cover_photo_id) do %>
         <div class="uploadingBlock">
           <p class="font-bold mb-8">Upload cover photo</p>
@@ -108,7 +114,7 @@
         </div>
         <div class="flex">
             <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
-                <img class="mr-3" src="/images/add-photos-icon.png" alt="uploading" width="30" height="30"/>
+                <img class="mr-3" src="/images/add-photos-icon.png" alt="uploading" width="26" height="26"/>
                 <span>Add photos</span>
             </button>
             <button class="bottomBar__btn primary">Share gallery</button>
