@@ -54,6 +54,7 @@ defmodule Picsello.Galleries.Gallery do
     |> cast(attrs, @create_attrs)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
+    |> validate_length(:name, max: 50)
     |> foreign_key_constraint(:job_id)
   end
 
@@ -62,6 +63,7 @@ defmodule Picsello.Galleries.Gallery do
     |> cast(attrs, @update_attrs)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
+    |> validate_length(:name, max: 50)
   end
 
   def save_watermark(gallery, watermark_changeset) do

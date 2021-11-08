@@ -1,0 +1,9 @@
+<div>
+  <p>Gallery name</p>
+  <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+    <%= text_input f, :name %>
+
+    <%= submit "Save", class: "px-4 btn-primary mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+  </.form>
+  <button phx-click="reset" phx-target={@myself}>Reset</button>
+</div>
