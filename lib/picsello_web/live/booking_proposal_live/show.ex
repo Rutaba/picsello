@@ -1,7 +1,7 @@
 defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-
+  require Logger
   alias Picsello.{Repo, BookingProposal, Job}
 
   @max_age 60 * 60 * 24 * 365 * 10
@@ -13,7 +13,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     socket
     |> assign_defaults(session)
     |> assign_proposal(token)
-    |> then(&maybe_confetti(Map.get(params, "success")).(&1))
+    |> maybe_confetti(params)
     |> ok()
   end
 
@@ -41,7 +41,22 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     do: socket |> assign(answer: answer, proposal: %{proposal | answer: answer}) |> noreply()
 
   @impl true
-  def handle_info({:confetti, payment_type}, socket) do
+  def handle_info({:confetti, stripe_session_id}, socket) do
+    {payment_type, socket} =
+      with {:ok, %{metadata: %{"paying_for" => payment_type}} = session} <-
+             payments().retrieve_session(stripe_session_id),
+           {:ok, proposal} <- Picsello.Payments.handle_payment(session) do
+        {String.to_existing_atom(payment_type), socket |> assign(proposal: proposal)}
+      else
+        e ->
+          Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
+
+          {cond do
+             BookingProposal.remainder_paid?(socket.assigns.proposal) -> :remainder
+             BookingProposal.deposit_paid?(socket.assigns.proposal) -> :deposit
+           end, socket}
+      end
+
     socket
     |> show_confetti_banner(payment_type)
     # clear the success param
@@ -138,15 +153,20 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   defp stripe_redirect(%{assigns: %{token: token}} = socket, suffix, params \\ []),
     do: apply(Routes, :"booking_proposal_#{suffix}", [socket, :show, token, params])
 
-  defp maybe_confetti(success_param),
-    do: fn socket ->
-      if connected?(socket) && not is_nil(success_param),
-        do: send(self(), {:confetti, String.to_existing_atom(success_param)})
+  defp maybe_confetti(socket, %{
+         "session_id" => "" <> session_id
+       }) do
+    if connected?(socket),
+      do: send(self(), {:confetti, session_id})
 
-      socket
-    end
+    socket
+  end
+
+  defp maybe_confetti(socket, %{}), do: socket
 
   defp invoice_disabled?(%BookingProposal{accepted_at: accepted_at, signed_at: signed_at}) do
     is_nil(accepted_at) || is_nil(signed_at)
   end
+
+  defp payments(), do: Application.get_env(:picsello, :payments)
 end

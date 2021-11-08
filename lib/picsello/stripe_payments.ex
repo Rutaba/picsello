@@ -133,5 +133,7 @@ defmodule Picsello.StripePayments do
     end
   end
 
+  defdelegate retrieve_session(id), to: Stripe.Session, as: :retrieve
+
   defdelegate construct_event(body, stripe_signature, signing_secret), to: Stripe.Webhook
 end

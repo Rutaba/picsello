@@ -8,7 +8,7 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
        %{
          type: "checkout.session.completed",
          data: %{
-           object: %{
+           object: %Stripe.Session{
              client_reference_id: "proposal_#{proposal_id}",
              metadata: %{"paying_for" => paying_for}
            }
