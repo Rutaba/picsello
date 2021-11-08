@@ -60,6 +60,12 @@ config :gcs_sign,
     "type" => "service_account"
   }
 
+config :picsello, :whcc_client,
+  url: System.get_env("WHCC_URL"),
+  key: System.get_env("WHCC_KEY"),
+  secret: System.get_env("WHCC_SECRET"),
+  token_valid_for: 60 * 90
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

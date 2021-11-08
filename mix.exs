@@ -56,6 +56,7 @@ defmodule Picsello.MixProject do
         {:stripity_stripe, "~> 2.12.1"},
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 0.5.1"},
+        {:tesla, "~> 1.4.3"},
         {:tz, "~> 0.20"},
         {:ueberauth_google, "~> 0.10"},
         {:packmatic, "~> 1.1.2"},
@@ -72,7 +73,7 @@ defmodule Picsello.MixProject do
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
         {:floki, "~> 0.31.0", only: :test},
         {:httpoison, "~> 1.8.0"},
-        {:wallaby, "~> 0.28.1", runtime: false, only: :test}
+        {:wallaby, "~> 0.29.1", runtime: false, only: :test}
       ]
     ]
     |> Enum.concat()
