@@ -86,7 +86,7 @@
 
             <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
             <button phx-target={@myself} phx-click="cancel-upload" phx-value-ref={entry.ref}
-                    aria-label="cancel" class="justify-self-end grid-cols-1">
+                    aria-label="cancel" class="justify-self-end grid-cols-1 cursor-pointer">
                 <img src="/images/remove-icon-active.svg" width="14" height="14"/>
             </button>
         </div>
