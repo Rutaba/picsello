@@ -47,7 +47,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
   end
 
   @impl true
-  def handle_info(:preload_watermark, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(:preload_watermark, socket) do
     socket
     |> preload_watermark()
     |> noreply()

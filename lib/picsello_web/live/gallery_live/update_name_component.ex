@@ -5,20 +5,17 @@ defmodule PicselloWeb.GalleryLive.UpdateNameComponent do
 
   @impl true
   def update(%{id: id, gallery: gallery}, socket) do
-    {:ok, 
-      socket
-      |> assign(:id, id)
-      |> assign(:gallery, gallery)
-      |> assign(:changeset, Galleries.change_gallery(gallery))
-    }
+    {:ok,
+     socket
+     |> assign(:id, id)
+     |> assign(:gallery, gallery)
+     |> assign_gallery_changeset()}
   end
 
   @impl true
   def handle_event("validate", %{"gallery" => %{"name" => name}}, socket) do
-    %{assigns: %{gallery: gallery}} = socket
-    
     socket
-    |> assign(:changeset, Galleries.change_gallery(gallery, %{name: name}))
+    |> assign_gallery_changeset(%{name: name})
     |> noreply
   end
 
@@ -26,7 +23,7 @@ defmodule PicselloWeb.GalleryLive.UpdateNameComponent do
   def handle_event("save", %{"gallery" => %{"name" => name}}, socket) do
     %{assigns: %{gallery: gallery}} = socket
     {:ok, gallery} = Galleries.update_gallery(gallery, %{name: name})
-    
+
     socket
     |> assign(:gallery, gallery)
     |> noreply
@@ -34,12 +31,17 @@ defmodule PicselloWeb.GalleryLive.UpdateNameComponent do
 
   @impl true
   def handle_event("reset", _params, socket) do
-    %{assigns: %{gallery: gallery}} = socket 
-    {:ok, gallery} = Galleries.reset_gallery_name(gallery)
-    
+    %{assigns: %{gallery: gallery}} = socket
+
     socket
-    |> assign(:gallery, gallery)
-    |> assign(:changeset, Galleries.change_gallery(gallery))
+    |> assign(:gallery, Galleries.reset_gallery_name(gallery))
+    |> assign_gallery_changeset()
     |> noreply
   end
+
+  defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
+    do: socket |> assign(:changeset, Galleries.change_gallery(gallery))
+
+  defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
+    do: socket |> assign(:changeset, Galleries.change_gallery(gallery, attrs))
 end

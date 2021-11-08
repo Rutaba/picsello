@@ -131,13 +131,17 @@ defmodule Picsello.Galleries do
   Set the gallery name as the job type.
   """
   def reset_gallery_name(%Gallery{} = gallery) do
-    %{job: job} = Repo.preload(gallery, :job)
-    
+    alias Picsello.Job
+
+    name =
+      gallery
+      |> Repo.preload(:job)
+      |> then(fn %{job: job} -> Job.name(job) end)
+
     gallery
-    |> Gallery.update_changeset(%{name: String.capitalize(job.type)})
-    |> Repo.update()
+    |> Gallery.update_changeset(%{name: name})
+    |> Repo.update!()
   end
-  
 
   @doc """
   Deletes a gallery.
