@@ -1,9 +1,9 @@
 <div>
-  <p>Gallery name</p>
+  <h3>Gallery name</h3>
   <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
     <%= text_input f, :name %>
 
-    <%= submit "Save", class: "px-4 btn-primary mx-1", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+    <%= submit "Save", class: "btn-primary mt-5 float-right cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
   </.form>
-  <button phx-click="reset" phx-target={@myself}>Reset</button>
+  <button phx-click="reset" phx-target={@myself} class="text-blue-planning-300 p-4 font-bold cursor-pointer">Reset</button>
 </div>

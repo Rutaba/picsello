@@ -1,12 +1,21 @@
-
-<div class="gallery__container py-11 flex justify-between">
-  <button class="backBtn flex items-center justify-center">
-    <img class="mr-3" src="/images/arrow-left.png" alt="arrow" width="14" height="24"/>
-    <span><%= live_redirect "Gallery Settings", to: Routes.gallery_show_path(@socket, :show, @gallery) %></span>
-  </button>
+<div class="w-full bg-base-200 px-16 py-7">
+<div class="flex items-center justify-between" style="width:360px;">
+   <div class="circleBtn">
+            <ul>
+                <li>
+                    <a href="#">
+                        <img src="/images/arrow-left.png"/>
+                        <span>Back to job</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+  <span class="text-4xl bold text-base-300">Gallery Settings</span>
+  </div>
 </div>
 
-<div class="galleryCustomWatermark flex justify-start">
+<div class="gallery__container settings__wrapper py-11 grid grid-cols-2 grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
+   <div class="galleryCustomWatermark flex justify-start col-start-2 col-end-3 row-start-2 row-end-3">
   <%= if @gallery.watermark do %>
     <%= if @gallery.watermark.type == "image" do %>
       <div class="flex justify-between">
@@ -32,13 +41,20 @@
 
     <button phx-click="open_watermark_popup">Edit custom watermark</button>
   <% else %>
-    <button phx-click="open_watermark_popup">Set custom watermark</button>
+   <div>
+    <h3>Custom watermark</h3>
+    <p>If you’d like, add a custom watermark to your photos. Upload your logo, & we’ll do the rest!</p>
+    <button phx-click="open_watermark_popup" class="btn-row border-black mt-7 justify-center">Set custom watermark</button>
+    </div>
   <% end %>
 </div>
 
-<div class="galleryUpdateName flex justify-start">
+<div class="galleryUpdateName col-start-1 col-end-2 row-start-1 row-end-2">
   <%= live_component PicselloWeb.GalleryLive.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
 </div>
+
+</div>
+
 
 
 

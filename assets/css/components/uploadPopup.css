@@ -45,6 +45,10 @@
     margin: 0 auto;
 }
 
+.dragDrop__wrapper.tiny {
+    height:90px;
+}
+
 #dragDrop-form, .dragDrop {
     width: 100%;
     height: 100%;
