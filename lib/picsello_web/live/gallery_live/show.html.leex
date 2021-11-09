@@ -86,7 +86,7 @@
                 id="photo-item-<%= photo.id %>"
                 style="
                         width: 300px;
-                        height: auto;
+                        height: <%= 300 / photo.aspect_ratio %>px;
                         "
         >
             <div class="item-content">

@@ -43,7 +43,6 @@
                  id="dropzone"
                  phx-hook="DragDrop"
                  phx-drop-target={@uploads.photo.ref}
-
             >
             <label class="w-full h-full flex flex-col items-center justify-center gap-8">
             <div class="mx-auto max-w-xs">
@@ -76,12 +75,11 @@
             <% end %>
 
             <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
-            <%= for err <- upload_errors(@uploads.photo, entry) do %>
+            <%= for _err <- upload_errors(@uploads.photo, entry) do %>
                 <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed" data-name={entry.uuid}>
                                 <p class="error btn">Failed</p>
                                 <p class="retry btn">Retry?</p>
                 </div>
-
            <% end %>
 
             <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
