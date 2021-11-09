@@ -15,37 +15,35 @@
 </div>
 
 <div class="gallery__container settings__wrapper py-11 grid grid-cols-2 grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
-   <div class="galleryCustomWatermark flex justify-start col-start-2 col-end-3 row-start-2 row-end-3">
+   <div class="galleryCustomWatermark flex flex-col col-start-2 col-end-3 row-start-2 row-end-3">
+   <h3>Custom watermark</h3>
   <%= if @gallery.watermark do %>
     <%= if @gallery.watermark.type == "image" do %>
-      <div class="flex justify-between">
-        <p><%= @gallery.watermark.name %></p>
-        <div class="flex justify-between">
+      <div class="flex justify-between py-3">
+          <p><%= @gallery.watermark.name %></p>
+          <div class="flex">
           <p><%= @gallery.watermark.size %></p>
-          <button phx-click="delete_watermark">
-            <span>Delete</span>
+          <button phx-click="delete_watermark" class="pl-14">
+             <img src="/images/remove-icon.svg" alt="remove">
           </button>
-        </div>
+           </div>
       </div>
     <% else %>
       <div class="flex justify-between">
         <p><%= @gallery.watermark.text %></p>
-        <div class="flex justify-between">
+        <div class="flex">
           <p> T </p>
-          <button phx-click="delete_watermark">
-            <span>Delete</span>
+          <button phx-click="delete_watermark" class="pl-14">
+            <img src="/images/remove-icon.svg" alt="remove">
           </button>
         </div>
       </div>
     <% end %>
 
-    <button phx-click="open_watermark_popup">Edit custom watermark</button>
+    <button phx-click="open_watermark_popup" class="btn-row border-black mt-7 justify-center">Edit custom watermark</button>
   <% else %>
-   <div>
-    <h3>Custom watermark</h3>
     <p>If you’d like, add a custom watermark to your photos. Upload your logo, & we’ll do the rest!</p>
     <button phx-click="open_watermark_popup" class="btn-row border-black mt-7 justify-center">Set custom watermark</button>
-    </div>
   <% end %>
 </div>
 
