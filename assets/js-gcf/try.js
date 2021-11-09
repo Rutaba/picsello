@@ -3,7 +3,7 @@ import {
     aspectStage,
     cleanupStage,
     debugStage,
-    downloadStage,
+    downloadStage, downloadWatermarkStage,
     previewStage,
     responseStage,
     watermarkStage
@@ -25,12 +25,14 @@ const simpleTask = {
 }
 
 const fullTask = {
-    bucket: "picsello-staging",
-    originalPath: "0279c71f-802b-4242-96d7-5cb844f17878.jpeg",
-    previewPath: "preview_5cb844f17878.jpeg",
-    watermarkPath: "preview_5cb844f17878.jpeg",
-    watermarkedOriginalPath: "preview_5cb844f17878.jpeg",
-    watermarkedPreviewPath: "preview_5cb844f17878.jpeg",
+    "bucket": "picsello-staging",
+    "originalPath": "galleries/6/original/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
+    "photoId": 156,
+    "previewPath": "galleries/6/preview/5db2b5f5-8e69-41ca-a1a4-beafcad77304.png",
+    "pubSubTopic": "projects/celtic-rite-323300/topics/lukianov-processed-photos",
+    "watermarkPath": "galleries/6/original/902266c8-725c-483f-81ff-5d35f0019d65.png",
+    "watermarkedOriginalPath": "galleries/6/watermarked/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
+    "watermarkedPreviewPath": "galleries/6/watermarked_preview/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
 }
 
 const watermarkTask = {
@@ -48,6 +50,11 @@ const context = task => { return {
             filename: false,
             image: false
         },
+        watermark: {
+            downloaded: false,
+            filename: false,
+            image: false
+        },
         aspectRatio: false,
         isPreviewUploaded: false,
     }};
@@ -55,12 +62,13 @@ const context = task => { return {
 
 /*********************************************************************************/
 
-const res = await downloadStage(context(simpleTask))
+const res = await downloadStage(context(fullTask))
     .then(aspectStage)
     .then(previewStage)
+    .then(downloadWatermarkStage)
     .then(watermarkStage)
     .then(cleanupStage)
-    .then(responseStage)
+    // .then(responseStage)
     // .then(debugStage)
     .catch(error => {
         console.error(error);

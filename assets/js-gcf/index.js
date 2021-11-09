@@ -4,6 +4,7 @@ import {
   cleanupStage,
   debugStage,
   downloadStage,
+  downloadWatermarkStage,
   previewStage,
   responseStage,
   watermarkStage
@@ -40,6 +41,7 @@ export const doProcessing = async (event, meta) => {
   await downloadStage(context)
       .then(aspectStage)
       .then(previewStage)
+      .then(downloadWatermarkStage)
       .then(watermarkStage)
       .then(cleanupStage)
       .then(responseStage)

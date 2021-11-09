@@ -105,18 +105,111 @@ export const previewStage = context => {
     return context;
 }
 
-export const watermarkStage = context => context;
+
+export const downloadWatermarkStage = context => {
+    if (context.task && context.task.bucket && context.task.watermarkPath) {
+        const filename = tmpFileName(context.task.watermarkPath)
+        return downloadInto(context.task.bucket, context.task.watermarkPath, filename)
+            .then(() => {
+                context.artifacts.watermark.downloaded = true;
+                context.artifacts.watermark.filename = filename;
+                context.artifacts.watermark.image = sharp(filename);
+
+                return context;
+            })
+    }
+
+    return context;
+}
+
+
+export const watermarkStage = async context => {
+    const ratio = 0.8;
+    const task = context.task;
+    const original = context.artifacts.original;
+    const watermark = context.artifacts.watermark;
+
+    if (task
+        && task.bucket
+        && task.watermarkedOriginalPath
+        && task.watermarkedPreviewPath
+        && original.filename
+        && watermark.image
+    ) {
+        const watermarkedFilename = tmpFileName(task.watermarkedOriginalPath)
+        const watermarkedPreviewFilename = tmpFileName(task.watermarkedPreviewPath)
+        const wmPattern = tmpFileName(task.watermarkPath + ".pattern.png")
+        const wmLayer = tmpFileName(task.watermarkPath + ".layer.png")
+
+        const originalMeta = await original.image.metadata()
+
+        await watermark.image
+            .linear(0, 0)
+            .resize(
+                Math.floor(originalMeta.width * ratio),
+                Math.floor(originalMeta.height * ratio),
+                {
+                    fit: 'contain',
+                    background: { r: 0, g: 0, b: 0, alpha: 0 }
+                }
+            )
+            .toFile(wmPattern)
+
+
+        await sharp({
+                create: {
+                    width: originalMeta.width,
+                    height: originalMeta.height,
+                    channels: 4,
+                    background: { r: 255, g: 255, b: 255, alpha: 1 }
+                }
+            })
+            .png()
+            .composite([{input: wmPattern}])
+            .removeAlpha()
+            .linear(-1, 255)
+            .ensureAlpha(0.25)
+            .toFile(wmLayer)
+
+        await original.image
+            .resize({width: originalMeta.width})
+            .composite([{input: wmLayer}])
+            .toFile(watermarkedFilename)
+
+        await sharp(watermarkedFilename)
+            .resize(previewWidth)
+            .toFile(watermarkedPreviewFilename)
+
+        await uploadTo(watermarkedFilename, task.bucket, task.watermarkedOriginalPath)
+        await uploadTo(watermarkedPreviewFilename, task.bucket, task.watermarkedPreviewPath)
+
+        context.artifacts.isWatermarkedUploaded = true;
+
+        return context;
+
+    }
+
+
+    return context;
+
+};
 
 export const cleanupStage = context => {
     const original = context.artifacts.original;
+    const watermark = context.artifacts.watermark;
     if (original.filename) {
         fs.unlinkSync(original.filename);
 
         context.artifacts.original.filename = null;
         context.artifacts.original.image = null;
         context.artifacts.original.downloaded = null;
+    }
+    if (watermark.filename) {
+        fs.unlinkSync(original.filename);
 
-        return context;
+        context.artifacts.watermark.filename = null;
+        context.artifacts.watermark.image = null;
+        context.artifacts.watermark.downloaded = null;
     }
 
     return context;
