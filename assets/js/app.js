@@ -32,6 +32,7 @@ import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import MasonryGrid from './hooks/masonry-grid';
 import DragDrop from './hooks/drag-drop';
+import CopyToClipboard from './hooks/copy-to-clipboard';
 
 const Modal = {
   mounted() {
@@ -116,7 +117,8 @@ const Hooks = {
   PlacesAutocomplete,
   AutoHeight,
   MasonryGrid,
-  DragDrop
+  DragDrop,
+  CopyToClipboard
 };
 
 let Uploaders = {}

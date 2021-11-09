@@ -144,6 +144,15 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Generates new password for the gallery.
+  """
+  def regenerate_gallery_password(%Gallery{} = gallery) do
+    gallery
+    |> Gallery.update_changeset(%{password: Gallery.generate_password()})
+    |> Repo.update!()
+  end
+
+  @doc """
   Deletes a gallery.
 
   ## Examples
