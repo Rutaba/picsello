@@ -45,6 +45,10 @@
     margin: 0 auto;
 }
 
+.dragDrop__content .primary {
+    color: #4DAAC6;
+}
+
 .dragDrop__wrapper.tiny {
     height:90px;
 }
