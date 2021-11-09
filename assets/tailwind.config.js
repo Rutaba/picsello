@@ -13,6 +13,21 @@ const safelist = ['border', 'text', 'bg']
   )
   .flat();
 
+const combineValues = (values, prefix, cssProperty) =>
+  Object.keys(values).reduce(
+    (acc, key) => ({
+      ...acc,
+      ...(typeof values[key] === 'string'
+        ? {
+            [`${prefix}-${key}`]: {
+              [cssProperty]: values[key],
+            },
+          }
+        : combineValues(values[key], `${prefix}-${key}`, cssProperty)),
+    }),
+    {}
+  );
+
 module.exports = {
   mode: 'jit',
   purge: {
@@ -61,8 +76,8 @@ module.exports = {
         '16px': '16px',
       },
       boxShadow: {
-        md: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-        lg: "0px 4px 14px 0px rgba(0, 0, 0, 0.15)"
+        md: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
+        lg: '0px 4px 14px 0px rgba(0, 0, 0, 0.15)',
       },
       zIndex: { '-10': '-10' },
     },
@@ -75,6 +90,12 @@ module.exports = {
     require('@tailwindcss/line-clamp'),
     require('@tailwindcss/forms')({
       strategy: 'class',
+    }),
+    plugin(({ addUtilities, theme }) => {
+      addUtilities(combineValues(theme('colors'), '.text-decoration', 'textDecorationColor'));
+    }),
+    plugin(({ addUtilities, theme }) => {
+      addUtilities(combineValues(theme('spacing'), '.underline-offset', 'textUnderlineOffset'));
     }),
     plugin(({ addBase }) => {
       addBase({
