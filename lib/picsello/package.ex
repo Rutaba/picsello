@@ -115,6 +115,14 @@ defmodule Picsello.Package do
     Enum.reduce([base, gallery, downloads], Money.new(0), &Money.add/2)
   end
 
+  def deposit_price(%__MODULE__{} = package) do
+    package |> price() |> Money.multiply(0.5)
+  end
+
+  def remainder_price(%__MODULE__{} = package) do
+    package |> price() |> Money.subtract(deposit_price(package))
+  end
+
   def templates_for_user(%User{organization_id: organization_id}) do
     from(package in __MODULE__,
       where:

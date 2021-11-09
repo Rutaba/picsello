@@ -85,9 +85,11 @@
     <p class="mt-4 font-semibold">I confirm that I have read and understood this contract, and I agree to enter into this contract with <%= @organization.name %></p>
     <hr class="my-6" />
 
-    <%= labeled_input f, :signed_legal_name, label: "Type your full legal name", phx_debounce: "500", disabled: @read_only %>
+    <fieldset class={classes(%{"opacity-50" => @read_only})} disabled={@read_only}>
+      <%= labeled_input f, :signed_legal_name, label: "Type your full legal name", phx_debounce: "500" %>
+    </fieldset>
 
-    <p class="mt-4 text-xs text-base-250">
+    <p class="mt-4 text-xs text-base-250 max-w-xs">
       By typing your full legal name and clicking the submit button, you agree to sign this legally binding contract.
     </p>
 

@@ -11,6 +11,7 @@ use Mix.Config
 # before starting your production server.
 config :picsello, PicselloWeb.Endpoint,
   url: [host: System.get_env("RENDER_EXTERNAL_HOSTNAME") || "localhost", port: 80],
+  debug_errors: System.get_env("DEBUG_ERRORS") == "true",
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production

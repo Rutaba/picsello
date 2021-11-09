@@ -31,7 +31,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
 
   defp gcp_credentials() do
     conf = Application.get_env(:gcs_sign, :gcp_credentials)
-
     Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
   end
 end

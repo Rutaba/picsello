@@ -1,17 +1,18 @@
-<div class="relative modal">
-  <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute top-4 right-4">
-    <%= icon_tag(@socket, "close-x", class: "h-7 w-7 stroke-current") %>
-  </button>
-
-  <h1 class="text-lg font-bold"><%= Job.name @job %></h1>
-  <h2 class="title">Questionnaire</h2>
-
+<div class="modal">
   <form action="#" phx-submit="submit" phx-change="validate" phx-target={ @myself }>
-    <fieldset disabled={@answer.id || @read_only}>
+    <.close_x />
+
+    <.banner title="Questionnaire" job={@job} package={@package}>
+      <%= if @answer.id do %>
+        <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
+      <% end %>
+    </.banner>
+
+    <fieldset class={classes(%{"opacity-50" => @read_only})} disabled={@read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
           <dt class="pt-4">
-            <label for={"question_#{question_index}"}>
+            <label class="input-label" for={"question_#{question_index}"}>
               <%= question.prompt %>
             </label>
             <%= if question.optional do %>
@@ -24,7 +25,7 @@
 
                 <dd>
                   <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
-                    <label class="flex items-center mt-4">
+                    <label class="flex items-center mt-2">
                       <input
                         class="checkbox"
                         type="checkbox"
@@ -39,7 +40,7 @@
               <% :select -> %>
                 <dd>
                   <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
-                    <label class="flex items-center mt-4">
+                    <label class="flex items-center mt-2">
                       <input
                         class="radio"
                         type="radio"
@@ -52,27 +53,27 @@
                 </dd>
 
               <% :text -> %>
-                <dd class="pt-4">
+                <dd class="mt-2">
                   <input type="text" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} placeholder={question.placeholder} />
                 </dd>
 
               <% :phone -> %>
-                <dd class="pt-4">
+                <dd class="mt-2">
                   <input type="tel" phx-hook="Phone" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
                 </dd>
 
               <% :email -> %>
-                <dd class="pt-4">
+                <dd class="mt-2">
                   <input type="email" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
                 </dd>
 
               <% :date -> %>
-                <dd class="pt-4">
+                <dd class="mt-2">
                   <input type="date" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
                 </dd>
 
               <% :textarea -> %>
-                <dd class="pt-4">
+                <dd class="mt-2">
                   <textarea phx-debounce="1000" class="w-full text-input"  id={"question_#{question_index}"} name={"answers[#{question_index}][]"}><%= answer %></textarea>
                 </dd>
             <% end %>
@@ -80,17 +81,15 @@
       </dl>
     </fieldset>
 
-    <PicselloWeb.LiveModal.footer>
-      <%= if @answer.id do %>
-        <button type="submit" class="w-full mt-8 btn-primary" disabled>
-          Questionnaire answered
-        </button>
-        <em class="block pt-2 text-xs text-center">Answered: <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></em>
-      <% else %>
-        <button type="submit" class="w-full mt-8 btn-primary" disabled={@disable_submit}>
+    <.footer>
+      <%= unless @read_only do %>
+        <button type="submit" class="btn-primary" disabled={@disable_submit}>
           Save
         </button>
       <% end %>
-    </PicselloWeb.LiveModal.footer>
+      <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+        Close
+      </button>
+    </.footer>
   </form>
 </div>

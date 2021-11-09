@@ -1,38 +1,21 @@
 defmodule PicselloWeb.StripeConnectWebhooksController do
   use PicselloWeb, :controller
-  alias Picsello.Repo
-  alias Picsello.BookingProposal
+  require Logger
+  alias Picsello.Payments
 
   def webhooks(%Plug.Conn{assigns: %{stripe_event: stripe_event}} = conn, _params) do
-    case handle_webhook(stripe_event, conn) do
-      {:ok, _} -> handle_success(conn)
-      {:error, error} -> handle_error(conn, error)
-    end
-  end
+    :ok = handle_webhook(stripe_event)
 
-  defp handle_success(conn) do
     conn
     |> put_resp_content_type("text/plain")
     |> send_resp(200, "ok")
   end
 
-  defp handle_error(conn, error) do
-    conn
-    |> put_resp_content_type("text/plain")
-    |> send_resp(422, error)
+  def handle_webhook(%{type: "checkout.session.completed", data: %{object: session}}) do
+    Logger.info("handling webhook - %{session}")
+    {:ok, _} = Payments.handle_payment(session)
+
+    Logger.info("handled webhook")
+    :ok
   end
-
-  def handle_webhook(%{type: "checkout.session.completed"} = stripe_event, conn) do
-    session = stripe_event.data.object
-
-    "proposal_" <> proposal_id = session.client_reference_id
-    proposal = Repo.get!(BookingProposal, proposal_id)
-
-    proposal |> BookingProposal.deposit_paid_changeset() |> Repo.update!()
-
-    url = Routes.job_url(conn, :jobs)
-    Picsello.Notifiers.UserNotifier.deliver_lead_converted_to_job(proposal, url)
-  end
-
-  def handle_webhook(_stripe_event, _conn), do: {:ok, "success"}
 end

@@ -47,8 +47,6 @@ defmodule PicselloWeb.Endpoint do
   plug Plug.RequestId
   plug PicselloWeb.Plugs.Telemetry, event_prefix: [:phoenix, :endpoint]
 
-  plug PicselloWeb.Plugs.StripeWebhooks
-
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
