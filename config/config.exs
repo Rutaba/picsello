@@ -73,7 +73,8 @@ config :picsello, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
      crontab: [
-       {"*/10 * * * *", Picsello.Workers.SendProposalReminder}
+       {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
+       {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
      ]}
   ]
 
