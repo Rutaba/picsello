@@ -27,33 +27,18 @@ defmodule PicselloWeb.Live.Admin.Categories do
         <%= for({_, %{category: %{whcc_id: whcc_id, whcc_name: whcc_name}, changeset: changeset}} <- Enum.sort_by(@rows, &elem(&1,0))) do %>
           <div><%= whcc_name %></div>
           <div><%= whcc_id %></div>
-          <.form let={f} for={changeset} class="col-span-4 grid gap-2 grid-cols-4 items-center" phx-change="change" phx-submit="save" id={"form-#{whcc_id}"}>
-          <%= hidden_input f, :id %>
-          <%= checkbox f, :hidden, class: "checkbox" %>
-          <%= input f, :icon %>
-          <%= input f, :name %>
-          <div class="flex">
-            <%= input f, :position, type: :number_input, class: "w-20 mr-2" %>
-            <input type="submit" value="save"/>
-          </div>
+
+          <.form let={f} for={changeset} class="col-span-4 grid gap-2 grid-cols-4 items-center" phx-change="save" id={"form-#{whcc_id}"}>
+            <%= hidden_input f, :id %>
+            <%= checkbox f, :hidden, class: "checkbox", phx_debounce: 200 %>
+            <%= input f, :icon, phx_debounce: 200 %>
+            <%= input f, :name, phx_debounce: 200 %>
+            <%= input f, :position, type: :number_input, class: "w-20", phx_debounce: 200 %>
           </.form>
         <% end %>
       </div>
     </div>
     """
-  end
-
-  @impl true
-  def handle_event("change", params, socket) do
-    socket
-    |> update_row(params, fn %{category: category} = args, params ->
-      Map.put(
-        args,
-        :changeset,
-        category |> Category.changeset(params) |> Map.put(:action, :validate)
-      )
-    end)
-    |> noreply()
   end
 
   @impl true
