@@ -265,4 +265,13 @@ defmodule Picsello.Factory do
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
+
+  def category_factory,
+    do: %Picsello.Category{
+      whcc_id: sequence("whcc_id"),
+      whcc_name: "shirts",
+      name: "cool shirts",
+      position: 0,
+      icon: "book"
+    }
 end
