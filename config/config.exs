@@ -64,8 +64,7 @@ config :picsello, :whcc,
   adapter: Picsello.WHCC.Client,
   url: System.get_env("WHCC_URL"),
   key: System.get_env("WHCC_KEY"),
-  secret: System.get_env("WHCC_SECRET"),
-  token_valid_for: 60 * 90
+  secret: System.get_env("WHCC_SECRET")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -12,28 +12,21 @@ defmodule Picsello.WHCC.Client do
     use Agent
     @moduledoc false
 
-    def start_link(_), do: Agent.start_link(fn -> %{} end, name: __MODULE__)
+    def start_link(_), do: Agent.start_link(fn -> nil end, name: __MODULE__)
 
     def get_and_update(f), do: Agent.get_and_update(__MODULE__, f)
   end
 
-  def token() do
-    update =
-      &case &1 do
-        %{fetched_at: fetched_at} ->
-          if expired?(fetched_at) do
-            fetch_token()
-          else
-            &1
-          end
-
-        %{} ->
-          fetch_token()
+  def token(get_and_update \\ &TokenStore.get_and_update/1) do
+    get_and_update.(fn state ->
+      with %{expires_at: expires_at, token: token} <- state,
+           false <- expired?(expires_at) do
+        {token, state}
+      else
+        _ ->
+          %{token: token} = state = fetch_token()
+          {token, state}
       end
-
-    TokenStore.get_and_update(fn state ->
-      %{token: token} = state = update.(state)
-      {token, state}
     end)
   end
 
@@ -55,19 +48,17 @@ defmodule Picsello.WHCC.Client do
   end
 
   defp fetch_token() do
-    {:ok, %{body: %{"accessToken" => token, "expires" => fetched_at}}} =
+    {:ok, %{body: %{"accessToken" => token, "expires" => expires_unix_time}}} =
       post(
         "/auth/access-token",
         config() |> Keyword.take([:key, :secret]) |> Enum.into(%{})
       )
 
-    %{token: token, fetched_at: DateTime.from_unix!(fetched_at)}
+    %{token: token, expires_at: DateTime.from_unix!(expires_unix_time)}
   end
 
-  defp expired?(fetched_at) do
-    expires_at = DateTime.add(fetched_at, Keyword.get(config(), :token_valid_for))
-    now = DateTime.utc_now()
-    DateTime.compare(expires_at, now) != :gt
+  defp expired?(expires_at) do
+    DateTime.compare(DateTime.utc_now(), expires_at) in [:eq, :gt]
   end
 
   defp config, do: Application.get_env(:picsello, :whcc)

@@ -47,3 +47,5 @@ config :stripity_stripe,
 config :ueberauth, Ueberauth, providers: [google: {Picsello.MockAuthStrategy, []}]
 
 config :picsello, :whcc, adapter: Picsello.MockWHCCClient
+
+config :tesla, adapter: Tesla.Mock
