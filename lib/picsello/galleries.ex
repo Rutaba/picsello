@@ -396,7 +396,7 @@ defmodule Picsello.Galleries do
   @doc """
   Preloads the watermark of the gallery.
   """
-  def load_gallery_watermark(%Gallery{} = gallery) do
+  def load_watermark_in_gallery(%Gallery{} = gallery) do
     Repo.preload(gallery, :watermark, force: true)
   end
 
