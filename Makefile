@@ -50,6 +50,11 @@ update-mix: ## Update mix packages.
 stripe-connect-listen:
 	stripe listen --log-level=debug --forward-to=localhost:4000/stripe/connect-webhooks --latest --events=checkout.session.completed
 
+rollback:
+	mix ecto.rollback && MIX_ENV=test mix ecto.rollback
+
+migrate:
+	mix ecto.migrate && MIX_ENV=test mix ecto.migrate
 
 check:
 	mix format
