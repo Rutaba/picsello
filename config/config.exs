@@ -66,6 +66,17 @@ config :picsello, :whcc,
   key: System.get_env("WHCC_KEY"),
   secret: System.get_env("WHCC_SECRET")
 
+config :picsello, Oban,
+  repo: Picsello.Repo,
+  queues: [default: 10],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 60 * 60},
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"*/10 * * * *", Picsello.Workers.SendProposalReminder}
+     ]}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

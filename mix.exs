@@ -45,6 +45,7 @@ defmodule Picsello.MixProject do
         {:jason, "~> 1.2.2"},
         {:libcluster, "~> 3.3"},
         {:money, "~> 1.9"},
+        {:oban, "~> 2.10.1"},
         {:paginator, "~> 1.0.4"},
         {:phoenix, "~> 1.5.12"},
         {:phoenix_ecto, "~> 4.4.0"},
