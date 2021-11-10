@@ -59,11 +59,12 @@ defmodule PicselloWeb.Router do
   # as long as you are also using SSL (which you should anyway).
   import Phoenix.LiveDashboard.Router
 
-  scope "/" do
+  scope "/", PicselloWeb do
     pipe_through :browser
 
     unless Mix.env() in [:dev, :test], do: pipe_through(:admins_only)
-    live_dashboard "/dashboard", metrics: PicselloWeb.Telemetry, ecto_repos: [Picsello.Repo]
+    live_dashboard "/dashboard", metrics: Telemetry, ecto_repos: [Repo]
+    live "/admin/categories", Live.Admin.Categories, :index
   end
 
   ## Authentication routes
