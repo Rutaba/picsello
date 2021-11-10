@@ -79,10 +79,6 @@
     cursor: pointer;
 }
 
-.dragDrop__content .primary {
-    color: #4DAAC6;
-}
-
 .uploadingList__wrapper {
     width: 951px;
     max-height: 273px;
