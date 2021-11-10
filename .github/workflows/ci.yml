@@ -65,7 +65,7 @@ jobs:
     - name: Build js
       run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
     - name: Dump Google app credentials
-      run: base64 -d "$JSON" > /tmp/google_app_credentials.json
+      run: echo $JSON | base64 -d > /tmp/google_app_credentials.json
       env:
         JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
     - name: Check credentials
