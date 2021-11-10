@@ -10,11 +10,19 @@
                 </li>
             </ul>
         </div>
-  <span class="text-4xl bold text-base-300">Gallery Settings</span>
+  <span class="text-4xl font-bold text-base-300">Gallery Settings</span>
   </div>
 </div>
 
-<div class="gallery__container settings__wrapper py-11 grid grid-cols-2 grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
+<div class="gallery__container">
+<nav class="bg-grey-light rounded font-sans w-full pt-11 mx-12 text-blue-planning-300">
+  <ol class="list-reset flex text-grey-dark">
+    <li><a href="#">Gallery</a></li>
+    <li><span class="mx-2">></span></li>
+    <li><a href="#" class="font-bold">Gallery settings</a></li>
+  </ol>
+</nav>
+<div class="settings__wrapper py-11 mx-12 grid grid-cols-2 grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
    <div class="galleryCustomWatermark flex flex-col col-start-2 col-end-3 row-start-2 row-end-3">
    <h3>Custom watermark</h3>
   <%= if @gallery.watermark do %>
@@ -24,17 +32,17 @@
           <div class="flex">
           <p><%= @gallery.watermark.size %></p>
           <button phx-click="delete_watermark" class="pl-14">
-             <img src="/images/remove-icon-active.svg" alt="remove" width="14" height="14">
+             <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
           </button>
            </div>
       </div>
     <% else %>
       <div class="flex justify-between">
         <p><%= @gallery.watermark.text %></p>
-        <div class="flex">
-          <p> T </p>
+        <div class="flex items-center">
+          <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
           <button phx-click="delete_watermark" class="pl-14">
-            <img src="/images/remove-icon-active.svg" alt="remove" width="14" height="14">
+             <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
           </button>
         </div>
       </div>
@@ -50,12 +58,10 @@
 <div class="galleryUpdateName col-start-1 col-end-2 row-start-1 row-end-2">
   <%= live_component PicselloWeb.GalleryLive.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
 </div>
-</div>
 
+
+<div class="galleryManagePassword col-start-1 col-end-2 row-start-2 row-end-3">
 <%= live_component PicselloWeb.GalleryLive.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
-
-
-
-
-
-
+</div>
+</div>
+</div>

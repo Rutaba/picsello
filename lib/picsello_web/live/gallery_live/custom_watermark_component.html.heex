@@ -33,8 +33,8 @@
         <div class="flex">
         <p><%= @watermark.size %></p>
         <button phx-click="delete" phx-target={@myself} class="pl-7">
-          <img src="/images/remove-icon-active.svg" alt="remove" width="14" height="14">
-        </button>
+            <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+         </button>
         </div>
       </div>
     <% end %>
@@ -55,7 +55,7 @@
               <%= live_file_input @uploads.image, class: "dragDropInput" %>
             </span>
             </p>
-            <p>Supports PNG</p>
+            <p class="text-center">Supports PNG</p>
           </div>
         </div>
         </label>
@@ -74,7 +74,7 @@
   <% else %>
     <div>
       <.form let={f} for={@changeset} phx-change="validate_text_input" phx-target={@myself} class="mt-5">
-        <%= text_input f, :text , placeholder: "Enter your watermark text here" %>
+        <%= text_input f, :text , placeholder: "Enter your watermark text here", class: "gallerySettingsInput" %>
         <%= error_tag f, :text %>
       </.form>
     </div>
