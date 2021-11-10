@@ -331,4 +331,18 @@
   <svg id="typography-symbol" viewBox="0 0 12 14" fill="none">
     <path d="M11.2998 0H1.4998C1.31415 0 1.13611 0.0737498 1.00483 0.205025C0.873555 0.336301 0.799805 0.514348 0.799805 0.7V2.8H2.1998V1.4H5.6998V12.6H3.5998V14H9.1998V12.6H7.0998V1.4H10.5998V2.8H11.9998V0.7C11.9998 0.514348 11.9261 0.336301 11.7948 0.205025C11.6635 0.0737498 11.4855 0 11.2998 0V0Z" fill="black"/>
   </svg>
+
+  <svg id="heart-filled" viewBox="0 0 20 20" fill="none">
+    <g fill="currentColor">
+    <path fill-rule="evenodd"
+          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+          clip-rule="evenodd"/>
+    </g>
+  </svg>
+
+  <svg id="heart" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+  </svg>
+
 </svg>
