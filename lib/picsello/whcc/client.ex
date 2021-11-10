@@ -70,15 +70,5 @@ defmodule Picsello.WHCC.Client do
     DateTime.compare(expires_at, now) != :gt
   end
 
-  defp request_start(%Tesla.Env{headers: headers}) do
-    with {request_start_ms, ""} <-
-           headers
-           |> Enum.find_value("0", fn {k, v} -> k == "x-request-start" && v end)
-           |> Integer.parse(),
-         {:ok, request_start} <- request_start_ms |> div(1000) |> DateTime.from_unix() do
-      request_start
-    end
-  end
-
-  defp config, do: Application.get_env(:picsello, :whcc_client)
+  defp config, do: Application.get_env(:picsello, :whcc)
 end

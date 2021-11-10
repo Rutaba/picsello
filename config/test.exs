@@ -45,3 +45,5 @@ config :stripity_stripe,
   api_base_url: "http://localhost:12111/v1/"
 
 config :ueberauth, Ueberauth, providers: [google: {Picsello.MockAuthStrategy, []}]
+
+config :picsello, :whcc, adapter: Picsello.MockWHCCClient
