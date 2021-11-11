@@ -7,5 +7,5 @@ defmodule Picsello.WHCC.Category do
           name: String.t()
         }
 
-  def from_map(%{"_id" => id, "name" => name}), do: %__MODULE__{id: id, name: name}
+  def from_map(%{"id" => id, "name" => name}), do: %__MODULE__{id: id, name: name}
 end

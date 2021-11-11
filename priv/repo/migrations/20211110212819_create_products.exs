@@ -10,6 +10,7 @@ defmodule Picsello.Repo.Migrations.CreateProducts do
       add(:position, :integer, null: false)
       add(:whcc_id, :string, null: false)
       add(:whcc_name, :string, null: false)
+      add(:attribute_categories, :map, null: false, default: fragment("'[]'::jsonb"))
 
       add(:inserted_at, :utc_datetime,
         null: false,

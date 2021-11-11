@@ -9,6 +9,7 @@ defmodule Picsello.Product do
     field :position, :integer
     field :whcc_id, :string
     field :whcc_name, :string
+    field :attribute_categories, {:array, :map}
 
     belongs_to(:category, Picsello.Category)
 

@@ -1,6 +1,19 @@
 defmodule Picsello.WHCCTest do
   use Picsello.DataCase
 
+  setup do
+    Mox.stub(Picsello.MockWHCCClient, :product_details, fn product ->
+      %{
+        product
+        | attribute_categories: [
+            %{"id" => "size", "name" => "size", "attributes" => []}
+          ]
+      }
+    end)
+
+    :ok
+  end
+
   describe "sync() - categories" do
     setup do
       Mox.stub(Picsello.MockWHCCClient, :products, fn ->
@@ -51,6 +64,7 @@ defmodule Picsello.WHCCTest do
           %Picsello.WHCC.Product{
             id: "product-id",
             name: "jeans",
+            attribute_categories: [%{id: "flavor", name: "flavor", attributes: []}],
             category: %Picsello.WHCC.Category{id: "category-id", name: "pants"}
           }
         ]
@@ -66,18 +80,28 @@ defmodule Picsello.WHCCTest do
                %Picsello.Product{
                  whcc_id: "product-id",
                  whcc_name: "jeans",
+                 attribute_categories: [%{"id" => "size", "name" => "size", "attributes" => []}],
                  category: %Picsello.Category{whcc_id: "category-id", whcc_name: "pants"}
                }
              ] = Picsello.Product |> Repo.all() |> Repo.preload(:category)
     end
 
     test "updates existing products" do
-      insert(:product, whcc_id: "product-id", whcc_name: "blue jeans")
+      insert(:product,
+        whcc_id: "product-id",
+        whcc_name: "blue jeans",
+        attribute_categories: [%{id: "flavor", name: "flavor", attributes: []}]
+      )
 
       Picsello.WHCC.sync()
 
-      assert [%Picsello.Product{whcc_id: "product-id", whcc_name: "jeans"}] =
-               Repo.all(Picsello.Product)
+      assert [
+               %Picsello.Product{
+                 whcc_id: "product-id",
+                 whcc_name: "jeans",
+                 attribute_categories: [%{"id" => "size", "name" => "size", "attributes" => []}]
+               }
+             ] = Repo.all(Picsello.Product)
     end
 
     test "removes existing products" do

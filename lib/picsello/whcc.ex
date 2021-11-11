@@ -25,9 +25,20 @@ defmodule Picsello.WHCC do
       )
 
     products
-    |> sync_table(Picsello.Product, fn %{category: %{id: category_id}} ->
-      %{category_id: Map.get(category_id_map, category_id)}
-    end)
+    |> Enum.map(&Adapter.product_details/1)
+    |> sync_table(
+      Picsello.Product,
+      fn %{
+           category: %{id: category_id},
+           attribute_categories: attribute_categories
+         } ->
+        %{
+          category_id: Map.get(category_id_map, category_id),
+          attribute_categories: attribute_categories
+        }
+      end,
+      [:category_id, :attribute_categories]
+    )
   end
 
   defp sync_categories(products) do

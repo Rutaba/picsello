@@ -3,9 +3,10 @@ defmodule Picsello.WHCC.Client do
   plug(Tesla.Middleware.JSON)
   plug(Tesla.Middleware.BaseUrl, config() |> Keyword.get(:url))
   plug(Tesla.Middleware.Logger)
+  alias Picsello.WHCC
 
   @moduledoc "client for whcc http api"
-  @behaviour Picsello.WHCC.Adapter
+  @behaviour WHCC.Adapter
 
   defmodule TokenStore do
     use Agent
@@ -31,12 +32,14 @@ defmodule Picsello.WHCC.Client do
 
   def products do
     {:ok, %{body: body}} = new() |> get("/products")
-    body |> Enum.map(&Picsello.WHCC.Product.from_map/1)
+    body |> Enum.map(&WHCC.Product.from_map/1)
   end
 
-  def product_details(%Picsello.WHCC.Product{id: id}) do
-    {:ok, %{body: body}} = new() |> get("/products/#{id}")
-    body
+  def product_details(%WHCC.Product{id: id} = product) do
+    {:ok, %{body: %{"attributeCategories" => attribute_categories}}} =
+      new() |> get("/products/#{id}")
+
+    %{product | attribute_categories: attribute_categories}
   end
 
   def new() do

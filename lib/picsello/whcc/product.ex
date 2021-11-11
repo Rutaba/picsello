@@ -1,12 +1,13 @@
 defmodule Picsello.WHCC.Product do
   alias Picsello.WHCC.Category
   @moduledoc "a product from the whcc api"
-  defstruct [:id, :name, :category]
+  defstruct [:id, :name, :category, :attribute_categories]
 
   @type t :: %__MODULE__{
           id: String.t(),
           name: String.t(),
-          category: Category.t()
+          category: Category.t(),
+          attribute_categories: [%{}]
         }
 
   def from_map(%{"_id" => id, "category" => category, "name" => name}) do
