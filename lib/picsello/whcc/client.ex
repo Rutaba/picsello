@@ -1,6 +1,5 @@
 defmodule Picsello.WHCC.Client do
   use Tesla
-  alias Picsello.WHCC.Category
   plug(Tesla.Middleware.JSON)
   plug(Tesla.Middleware.BaseUrl, config() |> Keyword.get(:url))
   plug(Tesla.Middleware.Logger)
@@ -30,17 +29,14 @@ defmodule Picsello.WHCC.Client do
     end)
   end
 
-  def products() do
+  def products do
     {:ok, %{body: body}} = new() |> get("/products")
-    body
+    body |> Enum.map(&Picsello.WHCC.Product.from_map/1)
   end
 
-  @impl true
-  def categories() do
-    products()
-    |> Enum.map(&Map.get(&1, "category"))
-    |> Enum.uniq()
-    |> Enum.map(&%Category{id: &1["id"], name: &1["name"]})
+  def product_details(%Picsello.WHCC.Product{id: id}) do
+    {:ok, %{body: body}} = new() |> get("/products/#{id}")
+    body
   end
 
   def new() do

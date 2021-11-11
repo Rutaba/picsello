@@ -13,7 +13,7 @@ defmodule Picsello.Category do
     field :whcc_id, :string
     field :whcc_name, :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   def active, do: from(category in __MODULE__, where: is_nil(category.deleted_at))
