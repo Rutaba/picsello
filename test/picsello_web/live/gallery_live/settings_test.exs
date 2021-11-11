@@ -72,39 +72,102 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
     test "render password input", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
       password_input = element(view, "#galleryPasswordInput") |> render
-      
+
       assert password_input =~ "disabled=\"disabled\""
       assert password_input =~ "type=\"password\""
     end
 
     test "shows password when on click", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
-      
-      view 
+
+      view
       |> element("#togglePasswordVisibility")
       |> render_click()
+
       password_input = element(view, "#galleryPasswordInput") |> render
-      
+
       assert password_input =~ "disabled=\"disabled\""
       assert password_input =~ "type=\"text\""
     end
 
     test "regenerates password on click", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
-      
-      view 
+
+      view
       |> element("#togglePasswordVisibility")
       |> render_click()
 
       first_password_input = element(view, "#galleryPasswordInput") |> render
 
-      view 
+      view
       |> element("#regeneratePasswordButton")
       |> render_click()
 
       second_password_input = element(view, "#galleryPasswordInput") |> render
 
       refute first_password_input == second_password_input
+    end
+  end
+
+  describe "custom watermark" do
+    test "opens custom watermark popup", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+
+      view
+      |> element("#openCustomWatermarkPopupButton")
+      |> render_click()
+
+      [popup_view] = live_children(view)
+      assert has_element?(popup_view, "h1", "Custom watermark")
+      assert has_element?(popup_view, ".watermarkTypeBtn", "Image")
+      assert has_element?(popup_view, ".watermarkTypeBtn", "Text")
+      assert has_element?(popup_view, "button", "Cancel")
+      assert has_element?(popup_view, "button", "Save")
+    end
+
+    test "switch betwen watermark type forms", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+
+      view
+      |> element("#openCustomWatermarkPopupButton")
+      |> render_click()
+
+      [popup_view] = live_children(view)
+      assert has_element?(popup_view, ".watermarkTypeBtn.active", "Image")
+      assert has_element?(popup_view, ".watermarkTypeBtn", "Text")
+      assert has_element?(popup_view, "#dragDrop-form")
+
+      popup_view
+      |> element(".watermarkTypeBtn", "Text")
+      |> render_click()
+
+      assert has_element?(popup_view, ".watermarkTypeBtn", "Image")
+      assert has_element?(popup_view, ".watermarkTypeBtn.active", "Text")
+      assert has_element?(popup_view, "#textWatermarkForm")
+    end
+
+    test "set text watermark", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+
+      view
+      |> element("#openCustomWatermarkPopupButton")
+      |> render_click()
+
+      [popup_view] = live_children(view)
+
+      popup_view
+      |> element(".watermarkTypeBtn", "Text")
+      |> render_click()
+
+      rendered =
+        popup_view
+        |> element("#textWatermarkForm")
+        |> render_change(%{watermark: %{text: "007Agency:)"}})
+
+      assert rendered =~
+               "<input class=\"gallerySettingsInput\" id=\"textWatermarkForm_text\" name=\"watermark[text]\" placeholder=\"Enter your watermark text here\" type=\"text\" value=\"007Agency:)\"/>"
+
+      refute has_element?(popup_view, "button.cursor-not-allowed", "Save")
     end
   end
 end
