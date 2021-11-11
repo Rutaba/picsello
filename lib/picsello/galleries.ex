@@ -181,6 +181,12 @@ defmodule Picsello.Galleries do
     Gallery.update_changeset(gallery, attrs)
   end
 
+  def set_expire(%Gallery{} = gallery, attrs) do
+    gallery
+    |> Gallery.expire_changeset(attrs)
+    |> Repo.update()
+  end
+
   @doc """
   Loads the gallery photos.
 

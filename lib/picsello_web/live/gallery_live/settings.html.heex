@@ -50,6 +50,13 @@
 <div class="galleryUpdateName col-start-1 col-end-2 row-start-1 row-end-2">
   <%= live_component PicselloWeb.GalleryLive.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
 </div>
+
+<div class="galleryUpdateName col-start-2 col-end-3 row-start-1 row-end-2">
+    <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
+                id: "expiration-date-#{@gallery.id}",
+                gallery: @gallery %>
+</div>
+
 </div>
 
 <%= live_component PicselloWeb.GalleryLive.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
