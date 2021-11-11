@@ -4,13 +4,11 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
 
   import Phoenix.LiveViewTest
 
-  @gallery_name "Diego Santos Weeding"
+  setup do
+    [gallery: insert(:gallery, %{name: "Diego Santos Weeding"})]
+  end
 
-  describe "render" do
-    setup do
-      [gallery: insert(:gallery, %{name: @gallery_name})]
-    end
-
+  describe "general render" do
     test "connected mount", %{conn: conn, gallery: gallery} do
       {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}/settings")
       assert html |> Floki.text() =~ "Gallery Settings"
@@ -20,12 +18,8 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
     end
   end
 
-  describe "manage settings" do
-    setup do
-      [gallery: insert(:gallery, %{name: @gallery_name})]
-    end
-
-    test "gallery name [updates with valid input]", %{conn: conn, gallery: gallery} do
+  describe "gallery name updates" do
+    test "updates with valid input", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
 
       update_rendered =
@@ -36,7 +30,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
       assert update_rendered =~ "Client Weeding"
     end
 
-    test "gallery name [update disabled with empty value]", %{conn: conn, gallery: gallery} do
+    test "update disabled with empty value", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
 
       update_rendered =
@@ -48,7 +42,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
                "<button class=\"btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
     end
 
-    test "gallery name [update disabled with too long value]", %{conn: conn, gallery: gallery} do
+    test "update disabled with too long value", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
 
       update_rendered =
@@ -62,7 +56,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
                "<button class=\"btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
     end
 
-    test "gallery name [resets gallery name]", %{conn: conn, gallery: gallery} do
+    test "resets gallery name", %{conn: conn, gallery: gallery} do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
 
       update_rendered =
@@ -71,6 +65,46 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
         |> render_click()
 
       refute update_rendered =~ gallery.name
+    end
+  end
+
+  describe "manage password" do
+    test "render password input", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+      password_input = element(view, "#galleryPasswordInput") |> render
+      
+      assert password_input =~ "disabled=\"disabled\""
+      assert password_input =~ "type=\"password\""
+    end
+
+    test "shows password when on click", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+      
+      view 
+      |> element("#togglePasswordVisibility")
+      |> render_click()
+      password_input = element(view, "#galleryPasswordInput") |> render
+      
+      assert password_input =~ "disabled=\"disabled\""
+      assert password_input =~ "type=\"text\""
+    end
+
+    test "regenerates password on click", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+      
+      view 
+      |> element("#togglePasswordVisibility")
+      |> render_click()
+
+      first_password_input = element(view, "#galleryPasswordInput") |> render
+
+      view 
+      |> element("#regeneratePasswordButton")
+      |> render_click()
+
+      second_password_input = element(view, "#galleryPasswordInput") |> render
+
+      refute first_password_input == second_password_input
     end
   end
 end
