@@ -3,6 +3,8 @@ defmodule Picsello.GalleriesTest do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.{Gallery, Watermark}
+  alias Picsello.Repo
+  alias Picsello.Job
 
   @valid_attrs %{name: "MainGallery", status: "active"}
   @update_attrs %{status: "expired"}
@@ -53,6 +55,21 @@ defmodule Picsello.GalleriesTest do
       gallery = gallery_fixture(@valid_attrs)
       assert %Ecto.Changeset{} = Galleries.change_gallery(gallery)
     end
+
+    test "resets gallery name" do
+      gallery = gallery_fixture(@valid_attrs)
+      gallery = Galleries.reset_gallery_name(gallery)
+      %{job: job} = gallery |> Repo.preload(:job)
+
+      assert gallery.name == Job.name(job)
+    end
+
+    test "regenerates gallery password" do
+      gallery = gallery_fixture(@valid_attrs)
+      %{password: password} = Galleries.regenerate_gallery_password(gallery)
+
+      assert gallery.password != password
+    end
   end
 
   describe "gallery watermarks" do
@@ -86,7 +103,7 @@ defmodule Picsello.GalleriesTest do
     test "preloads watermark", %{gallery: gallery} do
       watermark_change = Galleries.gallery_text_watermark_change(nil, %{text: "007 Agency"})
       {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
-      gallery = Galleries.load_gallery_watermark(gallery)
+      gallery = Galleries.load_watermark_in_gallery(gallery)
 
       assert watermark == gallery.watermark
     end
@@ -96,7 +113,7 @@ defmodule Picsello.GalleriesTest do
       {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
 
       Galleries.delete_gallery_watermark(watermark)
-      gallery = Galleries.load_gallery_watermark(gallery)
+      gallery = Galleries.load_watermark_in_gallery(gallery)
 
       assert nil == gallery.watermark
     end

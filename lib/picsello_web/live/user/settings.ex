@@ -150,6 +150,12 @@ defmodule PicselloWeb.Live.User.Settings do
             Package Templates
           </.nav_link>
         </li>
+
+        <li>
+          <.nav_link title="Gallery Store Pricing" to={Routes.pricing_path(@socket, :index)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+            Gallery Store Pricing
+          </.nav_link>
+        </li>
       </ul>
 
       <hr />

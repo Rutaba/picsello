@@ -1,7 +1,7 @@
 <div>
   <h3>Gallery name</h3>
-  <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-    <%= text_input f, :name %>
+  <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
+    <%= text_input f, :name, class: "gallerySettingsInput" %>
 
     <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
   </.form>

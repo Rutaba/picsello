@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
     gallery = Galleries.get_gallery!(id)
 
     socket
-    |> assign(:gallery, Galleries.load_gallery_watermark(gallery))
+    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
     |> noreply()
   end
 
@@ -55,6 +55,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
 
   defp preload_watermark(%{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(:gallery, Galleries.load_gallery_watermark(gallery))
+    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
   end
 end

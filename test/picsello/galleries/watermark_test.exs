@@ -31,8 +31,12 @@ defmodule Picsello.Galleries.WatermarkTest do
     end
 
     test "text changeset is not valid [long text]" do
-      changeset = Watermark.text_changeset(%Watermark{}, %{text: "SuperMegaPhotoAgency:)"})
-      assert %{text: ["should be at most 13 character(s)"]} = errors_on(changeset)
+      changeset =
+        Watermark.text_changeset(%Watermark{}, %{
+          text: "SuperMegaUltraPhotoAgency007#TooFabForYou:)"
+        })
+
+      assert %{text: ["should be at most 30 character(s)"]} = errors_on(changeset)
     end
 
     test "switches the type from image to text" do

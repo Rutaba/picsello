@@ -3,7 +3,7 @@ defmodule Picsello.Galleries.Watermark do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Galleries.Gallery
-  alias __MODULE__
+  alias Picsello.Galleries.Watermark
 
   @types ~w(image text)
   schema "gallery_watermarks" do
@@ -32,7 +32,7 @@ defmodule Picsello.Galleries.Watermark do
     |> cast(attrs, @text_attrs)
     |> put_change(:type, "text")
     |> validate_required(@text_attrs)
-    |> validate_length(:text, min: 3, max: 13)
+    |> validate_length(:text, min: 3, max: 30)
     |> nilify_fields(@image_attrs)
   end
 

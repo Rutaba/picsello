@@ -54,7 +54,9 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
 
   @impl true
   def handle_event("validate_image_input", _params, socket) do
-    socket |> handle_image_validation() |> noreply
+    socket
+    |> handle_image_validation()
+    |> noreply
   end
 
   @impl true

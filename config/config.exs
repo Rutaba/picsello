@@ -60,6 +60,24 @@ config :gcs_sign,
     "type" => "service_account"
   }
 
+config :picsello, :whcc,
+  adapter: Picsello.WHCC.Client,
+  url: System.get_env("WHCC_URL"),
+  key: System.get_env("WHCC_KEY"),
+  secret: System.get_env("WHCC_SECRET")
+
+config :picsello, Oban,
+  repo: Picsello.Repo,
+  queues: [default: 10],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 60 * 60},
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
+       {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
+     ]}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
