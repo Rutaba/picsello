@@ -1,7 +1,20 @@
 <header class="bg-blue-planning-100">
-  <h1 class="p-6 text-3xl font-semibold center-container">
-    Your <%= action_name(@live_action, :plural) %>
-  </h1>
+  <div class="center-container p-6">
+    <div class="flex content-center justify-between md:flex-row">
+      <div class="flex-col">
+        <h1 class="text-3xl font-semibold center-container">
+          Your <%= action_name(@live_action, :plural) %>
+        </h1>
+      </div>
+      <%= if @live_action == :leads and not Enum.empty? @jobs do %>
+          <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+            <a title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+                Create a lead
+            </a>
+          </div>
+      <% end %>
+    </div>
+  </div>
 </header>
 <%= if Enum.empty? @jobs do %>
   <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
