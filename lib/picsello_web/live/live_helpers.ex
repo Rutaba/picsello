@@ -97,7 +97,7 @@ defmodule PicselloWeb.LiveHelpers do
 
     ~H"""
     <svg width={@width} height={@height} class={@class}>
-      <use xlink:href={@path} />
+      <use href={@path} />
     </svg>
     """
   end
