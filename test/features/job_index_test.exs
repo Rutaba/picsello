@@ -38,6 +38,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/jobs")
     |> refute_has(link("Go to your leads"))
+    |> refute_has(Query.link("Create a lead"))
 
     Repo.delete(proposal)
     Repo.delete(shoot)
@@ -53,7 +54,8 @@ defmodule Picsello.JobIndexTest do
   feature "empty leads", %{session: session, lead: lead} do
     session
     |> visit("/leads")
-    |> refute_has(link("Create a lead"))
+    |> click(link("Create a lead"))
+    |> assert_has(css("h1", text: "Create a lead"))
 
     Repo.delete(lead)
 
