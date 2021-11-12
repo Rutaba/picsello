@@ -46,6 +46,14 @@
     margin: 0 auto;
 }
 
+.dragDrop__content .primary {
+    color: #4DAAC6;
+}
+
+.dragDrop__wrapper.tiny {
+    height:90px;
+}
+
 #dragDrop-form, .dragDrop {
     width: 100%;
     height: 100%;
@@ -69,10 +77,6 @@
 .dragDrop__content label {
     color: #4DAAC6;
     cursor: pointer;
-}
-
-.dragDrop__content .primary {
-    color: #4DAAC6;
 }
 
 .uploadingList__wrapper {

@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Galleries.Photo, Job}
+  alias Picsello.{Galleries.Photo, Galleries.Watermark, Job}
 
   @status_options [
     values: ~w(draft active expired),
@@ -21,6 +21,7 @@ defmodule Picsello.Galleries.Gallery do
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
+    has_one(:watermark, Watermark)
 
     timestamps(type: :utc_datetime)
   end
@@ -30,7 +31,6 @@ defmodule Picsello.Galleries.Gallery do
     :job_id,
     :status,
     :expired_at,
-    :password,
     :client_link_hash,
     :total_count,
     :cover_photo_id,
@@ -46,13 +46,15 @@ defmodule Picsello.Galleries.Gallery do
     :cover_photo_id,
     :cover_photo_aspect_ratio
   ]
-  @required_attrs [:name, :job_id, :status]
+  @required_attrs [:name, :job_id, :status, :password]
 
   def create_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, @create_attrs)
+    |> cast_password()
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
+    |> validate_name()
     |> foreign_key_constraint(:job_id)
   end
 
@@ -61,8 +63,23 @@ defmodule Picsello.Galleries.Gallery do
     |> cast(attrs, @update_attrs)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
+    |> validate_name()
   end
+
+  def save_watermark(gallery, watermark_changeset) do
+    gallery
+    |> change
+    |> put_assoc(:watermark, watermark_changeset)
+  end
+
+  def generate_password, do: Enum.random(100_000..999_999) |> to_string
+
+  defp cast_password(changeset),
+    do: put_change(changeset, :password, generate_password())
 
   defp validate_status(changeset, status_formats),
     do: validate_inclusion(changeset, :status, status_formats)
+
+  defp validate_name(changeset),
+    do: validate_length(changeset, :name, max: 50)
 end

@@ -130,7 +130,7 @@ defmodule PicselloWeb.Router do
 
     live "/galleries/:id", GalleryLive.Show, :show
     live "/galleries/:id/upload", GalleryLive.Show, :upload
-    live "/galleries/:id/show/edit", GalleryLive.Show, :edit
+    live "/galleries/:id/settings", GalleryLive.Settings, :settings
   end
 
   scope "/gallery", PicselloWeb do

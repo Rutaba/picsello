@@ -6,7 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   alias Picsello.Repo
 
-  alias Picsello.Galleries.{Gallery, Photo}
+  alias Picsello.Galleries.{Gallery, Photo, Watermark}
 
   @doc """
   Returns the list of galleries.
@@ -125,6 +125,31 @@ defmodule Picsello.Galleries do
     gallery
     |> Gallery.update_changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Set the gallery name as the job type.
+  """
+  def reset_gallery_name(%Gallery{} = gallery) do
+    alias Picsello.Job
+
+    name =
+      gallery
+      |> Repo.preload(:job)
+      |> then(fn %{job: job} -> Job.name(job) end)
+
+    gallery
+    |> Gallery.update_changeset(%{name: name})
+    |> Repo.update!()
+  end
+
+  @doc """
+  Generates new password for the gallery.
+  """
+  def regenerate_gallery_password(%Gallery{} = gallery) do
+    gallery
+    |> Gallery.update_changeset(%{password: Gallery.generate_password()})
+    |> Repo.update!()
   end
 
   @doc """
@@ -366,4 +391,52 @@ defmodule Picsello.Galleries do
       true -> :upload_in_progress
     end)
   end
+
+  @doc """
+  Creates or updates watermark of the gallery.
+  """
+  def save_gallery_watermark(gallery, watermark_change) do
+    gallery
+    |> Repo.preload(:watermark)
+    |> Gallery.save_watermark(watermark_change)
+    |> Repo.update()
+  end
+
+  @doc """
+  Preloads the watermark of the gallery.
+  """
+  def load_watermark_in_gallery(%Gallery{} = gallery) do
+    Repo.preload(gallery, :watermark, force: true)
+  end
+
+  @doc """
+  Removes the watermark.
+  """
+  def delete_gallery_watermark(watermark) do
+    Repo.delete(watermark)
+  end
+
+  @doc """
+  Returns the changeset of watermark struct.
+  """
+  def gallery_watermark_change(nil), do: Ecto.Changeset.change(%Watermark{})
+  def gallery_watermark_change(%Watermark{} = watermark), do: Ecto.Changeset.change(watermark)
+
+  @doc """
+  Returns the changeset of watermark struct with :type => "image".
+  """
+  def gallery_image_watermark_change(%Watermark{} = watermark, attrs),
+    do: Watermark.image_changeset(watermark, attrs)
+
+  def gallery_image_watermark_change(nil, attrs),
+    do: Watermark.image_changeset(%Watermark{}, attrs)
+
+  @doc """
+  Returns the changeset of watermark struct with :type => "text".
+  """
+  def gallery_text_watermark_change(%Watermark{} = watermark, attrs),
+    do: Watermark.text_changeset(watermark, attrs)
+
+  def gallery_text_watermark_change(nil, attrs),
+    do: Watermark.text_changeset(%Watermark{}, attrs)
 end

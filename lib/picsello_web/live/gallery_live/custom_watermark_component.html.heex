@@ -1,0 +1,97 @@
+<div class="customWatermarkPopup py-5 px-10">
+  <div class="flex justify-between">
+    <h1 class="text-2xl font-bold pb-7">Custom watermark</h1>
+    <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><img src="/images/close-icon.png" alt="close icon" width="16" height="15"/></a>
+  </div>
+
+  <%= if @case == :image and watermark_type(@watermark) == :text do  %>
+    <div class="errorWatermarkMessage flex justify-between items-center py-3 px-6 mb-7" role="alert">
+      <.icon name="warning-orange" width="25" height="20" class="inline-block"/>
+      <span class="pl-4"><span style="font-bold">Note:</span> you already have a text watermark saved. If you choose to save an image watermark, this will replace your currently saved text watermark.</span>
+    </div>
+  <% end %>
+  <%= if @case == :text and watermark_type(@watermark) == :image do  %>
+    <div class="errorWatermarkMessage flex justify-between items-center py-3 px-6 mb-7" role="alert">
+      <.icon name="warning-orange" width="25" height="20" class="inline-block"/>
+      <span class="pl-4"><span style="font-bold">Note:</span> you already have an image watermark saved. If you choose to save a text watermark, this will replace your currently saved image watermark.</span>
+    </div>
+  <% end %>
+
+  <div class="flex justify-start mb-2.5">
+    <button class={classes("watermarkTypeBtn", %{"active" => @case == :image})} phx-click="image_case" phx-target={@myself}>
+      <span>Image</span>
+    </button>
+    <button class={classes("watermarkTypeBtn", %{"active" => @case == :text})} phx-click="text_case" phx-target={@myself}>
+      <span>Text</span>
+    </button>
+  </div>
+
+  <%= if @case == :image do %>
+    <%= if watermark_type(@watermark) == :image do  %>
+      <div class="flex justify-between mt-11 mb-8">
+        <p><%= @watermark.name %></p>
+        <div class="flex">
+        <p><%= @watermark.size %></p>
+        <button phx-click="delete" phx-target={@myself} class="pl-7">
+            <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+         </button>
+        </div>
+      </div>
+    <% end %>
+    <div class={classes("dragDrop__wrapper overflow-hidden",%{"tiny" => watermark_type(@watermark) == :image})}>
+      <form id="dragDrop-form" phx-submit="save" phx-change="validate_image_input" phx-target={@myself}>
+       <label>
+        <div
+          id="dropzone"
+          phx-hook="DragDrop"
+          phx-drop-target={@uploads.image.ref}
+          class={classes("flex flex-col items-center justify-center gap-8 dragDrop", %{"active" => watermark_type(@watermark) == :image})}
+          >
+          <img src="/images/drag-drop-img.png" width="76" height="76" class={classes("cursor-pointer", %{"hidden" => watermark_type(@watermark) == :image})}/>
+          <div class="dragDrop__content">
+          <p class="font-bold">
+            <span class="font-bold text-base-300">Drop images or </span>
+            <span class="primary cursor-pointer">Browse
+              <%= live_file_input @uploads.image, class: "dragDropInput" %>
+            </span>
+            </p>
+            <p class="text-center">Supports PNG</p>
+          </div>
+        </div>
+        </label>
+      </form>
+    </div>
+    <%= for entry <- @uploads.image.entries do %>
+      <div class="flex justify-between uploadingList__wrapper pt-7" id={entry.uuid}>
+        <%= if entry.progress == 100 do%>
+          <p class="font-bold">Upload complete!</p>
+        <% else %>
+          <p class="font-bold">Uploading...</p>
+        <% end %>
+        <progress class="grid-cols-1" value={entry.progress} max="100"><%= entry.progress %>%</progress>
+      </div>
+    <% end %>
+  <% else %>
+    <div>
+      <.form let={f} for={@changeset} phx-change="validate_text_input" phx-target={@myself} class="mt-5" id="textWatermarkForm">
+        <%= text_input f, :text , placeholder: "Enter your watermark text here", class: "gallerySettingsInput" %>
+        <%= error_tag f, :text %>
+      </.form>
+    </div>
+  <% end %>
+
+  <div class="flex justify-end mt-16">
+    <button class="mr-3 btn-row border-black w-auto px-9 py-3.5" phx-target={@myself}>
+      <span>Cancel</span>
+    </button>
+    <%= if @ready_to_save do %>
+      <button class="btn-primary px-9 py-3.5" phx-click="save" phx-target={@myself}>
+        Save
+      </button>
+    <% else %>
+      <button class="btn-primary px-9 py-3.5 opacity-50 cursor-not-allowed">
+        Save
+      </button>
+    <% end %>
+  </div>
+</div>
