@@ -5,5 +5,5 @@ include .env
 try:
 	node try.js
 
-zip: index.js package.json stages.js
-	zip -0uo function.zip stages.js index.js package.json
+zip: index.js package.json stages.js context.js
+	zip -0uo function.zip stages.js index.js package.json context.js

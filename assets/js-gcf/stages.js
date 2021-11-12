@@ -205,7 +205,7 @@ export const cleanupStage = context => {
         context.artifacts.original.downloaded = null;
     }
     if (watermark.filename) {
-        fs.unlinkSync(original.filename);
+        fs.unlinkSync(watermark.filename);
 
         context.artifacts.watermark.filename = null;
         context.artifacts.watermark.image = null;

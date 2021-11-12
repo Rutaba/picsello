@@ -8,7 +8,7 @@ import {
     responseStage,
     watermarkStage
 } from "./stages.js";
-
+import { buildContext } from "./context.js";
 
 
 const simpleTask = {
@@ -62,13 +62,13 @@ const context = task => { return {
 
 /*********************************************************************************/
 
-const res = await downloadStage(context(fullTask))
+const res = await downloadStage(buildContext(fullTask))
     .then(aspectStage)
     .then(previewStage)
     .then(downloadWatermarkStage)
     .then(watermarkStage)
     .then(cleanupStage)
-    // .then(responseStage)
+    .then(responseStage)
     // .then(debugStage)
     .catch(error => {
         console.error(error);

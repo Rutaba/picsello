@@ -9,19 +9,7 @@ import {
   responseStage,
   watermarkStage
 } from "./stages.js";
-
-const buildContext = task => { return {
-  task: task,
-  artifacts: {
-    original: {
-      downloaded: false,
-      filename: false,
-      image: false
-    },
-    aspectRatio: false,
-    isPreviewUploaded: false,
-  }};
-}
+import { buildContext } from "./context.js";
 
 
 /**
