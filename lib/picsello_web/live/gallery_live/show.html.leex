@@ -86,8 +86,8 @@
                 id="photo-item-<%= photo.id %>"
                 style="
                         width: 300px;
-                        height: <%= 300 / photo.aspect_ratio %>px;
-                        "
+                        height: <%= if photo.aspect_ratio, do: "#{300 / photo.aspect_ratio}px", else: "auto" %>;
+                "
         >
             <div class="item-content">
                 <%= live_component PicselloWeb.GalleryLive.PhotoComponent,

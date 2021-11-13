@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries
+  alias Picsello.Galleries.Photo
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
@@ -24,6 +25,12 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   # end
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+
+  defp display(%Photo{} = photo) do
+    display(photo.watermarked_preview_url || photo.preview_url)
+  end
+
+  defp display(nil), do: "/images/gallery-icon.png"
 
   defp display(key) do
     sign_opts = [bucket: @bucket, key: key]

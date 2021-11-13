@@ -2,16 +2,16 @@ defmodule Picsello.Galleries.Photo do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Album, Gallery}
+  alias Picsello.Galleries.{Album, Gallery}
 
   schema "photos" do
-    field :client_copy_url, :string
     field :client_liked, :boolean, default: false
     field :name, :string
     field :original_url, :string
     field :position, :float
     field :preview_url, :string
     field :watermarked_url, :string
+    field :watermarked_preview_url, :string
     field :aspect_ratio, :float
 
     belongs_to(:gallery, Gallery)
@@ -26,7 +26,7 @@ defmodule Picsello.Galleries.Photo do
     :original_url,
     :preview_url,
     :watermarked_url,
-    :client_copy_url,
+    :watermarked_preview_url,
     :client_liked,
     :gallery_id,
     :album_id,
@@ -37,7 +37,7 @@ defmodule Picsello.Galleries.Photo do
     :position,
     :preview_url,
     :watermarked_url,
-    :client_copy_url,
+    :watermarked_preview_url,
     :client_liked,
     :aspect_ratio
   ]

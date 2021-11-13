@@ -6,9 +6,18 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
 
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.PhotoProcessing.Context
+  alias Picsello.Galleries.Watermark
 
-  def start_processing(%Photo{} = photo) do
-    task = Context.simple_task_by_photo(photo)
+  def start(photo, watermark \\ nil)
+  def start(%Photo{} = photo, nil), do: Context.simple_task_by_photo(photo) |> send()
+
+  def start(%Photo{} = photo, %Watermark{} = watermark),
+    do: Context.full_task_by_photo(photo, watermark) |> send()
+
+  def update_watermark(%Photo{} = photo, %Watermark{} = watermark),
+    do: Context.watermark_task_by_photo(photo, watermark) |> send()
+
+  defp send(task) do
     topic = Application.get_env(:picsello, :photo_processing_input_topic)
 
     result =
