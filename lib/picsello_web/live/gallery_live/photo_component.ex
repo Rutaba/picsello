@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
@@ -24,8 +25,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   # some removing item logic
   # end
 
-  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
-
   defp display(%Photo{} = photo) do
     display(photo.watermarked_preview_url || photo.preview_url)
   end
@@ -33,12 +32,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   defp display(nil), do: "/images/gallery-icon.png"
 
   defp display(key) do
-    sign_opts = [bucket: @bucket, key: key]
-    GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
-  end
-
-  defp gcp_credentials() do
-    conf = Application.get_env(:gcs_sign, :gcp_credentials)
-    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
+    PhotoStorage.path_to_url(key)
   end
 end

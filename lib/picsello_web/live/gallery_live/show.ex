@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.GalleryLive.DeleteCoverPhoto
@@ -186,7 +187,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
 
-    {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), sign_opts)
+    params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
     {:ok, meta, socket}
@@ -210,14 +211,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
 
-  defp gcp_credentials do
-    conf = Application.get_env(:gcs_sign, :gcp_credentials)
-
-    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
-  end
-
   defp cover_photo(key) do
-    sign_opts = [bucket: @bucket, key: key, expires_in: 600_000]
-    GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
+    PhotoStorage.path_to_url(key)
   end
 end

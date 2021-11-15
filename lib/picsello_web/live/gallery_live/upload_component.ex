@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
@@ -128,7 +129,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
 
-    {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), sign_opts)
+    params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
     {:ok, meta, socket}
@@ -136,12 +137,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
-
-  defp gcp_credentials() do
-    conf = Application.get_env(:gcs_sign, :gcp_credentials)
-
-    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
-  end
 
   defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
     total_progress = GalleryUploadProgress.total_progress(progress)
