@@ -15,6 +15,16 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
     params
   end
 
+  def delete(path, bucket \\ @bucket) do
+    {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
+
+    token.token
+    |> GoogleApi.Storage.V1.Connection.new()
+    |> GoogleApi.Storage.V1.Api.Objects.storage_objects_delete(bucket, path)
+  rescue
+    _ -> :ignored
+  end
+
   defp gcp_credentials() do
     {:ok, private_key} = Goth.Config.get("private_key")
     {:ok, client_id} = Goth.Config.get("client_id")
