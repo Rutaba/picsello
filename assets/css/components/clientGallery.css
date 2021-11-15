@@ -1,287 +1,296 @@
 .clientGallery__coverImg {
-    background-size: cover;
-    background-position: center;
-    background-color: darkgray;
     height: 566px;
     text-shadow: 0 0 10px #222;
+    @apply bg-base-250
+    bg-cover
+    bg-center;
 }
 
 .coverImg__wrapper {
-    background-size: cover;
-    background-position: center;
-    background-color: #EFEFEF;
     height: 566px;
+    @apply bg-base-200
+    bg-cover
+    bg-center;
 }
 
 .gallery__container {
     max-width: 1440px;
-    padding: 0 70px;
-    margin: 0 auto;
-    height: 100%;
+    @apply my-0
+    mx-auto
+    h-full
+    py-0
+    px-16;
 }
 
 .settings__wrapper > div {
+    @apply border-2
+    border-solid
+    border-base-200
+    rounded-lg
+    pt-4
+    pr-6
+    pb-6
+    pl-5;
     max-width: 562px;
-    border: 1px solid #EFEFEF;
-    border-radius: 8px;
     border-left: 17px solid #4DAAC6;
-    padding: 15px 25px 25px 20px;
 }
 
 .settings__wrapper h3 {
-    font-weight: bold;
-    font-size: 28px;
-    line-height: 36px;
-    color: #4DAAC6;
-    padding-bottom: 17px;
+    @apply text-blue-planning-300
+    font-bold
+    text-2xl
+    pb-4;
 }
 
 .gallerySettingsInput {
-    width: 100%;
-    height: 54px;
-    background: #EFEFEF;
-    border: 1px solid #EFEFEF;
-    border-radius: 8px;
-    padding: 15px;
-    font-size: 15px;
-    line-height: 22px;
-    color: #898989;
-}
-
-.settings__wrapper #gallery_name {
-    max-width: 498px;
+    @apply w-full
+    h-14
+    bg-base-200
+    border-2
+    border-solid
+    border-base-200
+    rounded-lg
+    p-4
+    text-base
+    text-base-250;
 }
 
 .gallerySettingsInput:focus {
-    outline: none !important;
-    border: 1px solid #4DAAC6;
+    @apply border-2
+    border-solid
+    border-blue-planning-300
+    text-base-300
+    outline-none;
     box-shadow: 0 0 1px #4DAAC6;
-    color: #1F1C1E;
 }
 
 .watermarkTypeBtn {
-    font-size: 15px;
-    line-height: 22px;
-    color: #4DAAC6;
-    font-weight: bold;
-    padding: 5px 15px;
+    @apply text-blue-planning-300
+    font-bold
+    text-base
+    py-1.5
+    px-4;
 }
 
 .watermarkTypeBtn.active {
-    color: #1F1C1E;
-    background: #F2FDFB;
-    border-radius: 8px;
+    @apply text-base-300
+    bg-blue-planning-100
+    rounded-lg;
 }
 
 .customWatermarkPopup .uploadingList__wrapper progress {
-    width: 382px
+    @apply w-96;
 }
 
 .errorWatermarkMessage {
     background-color: rgba(225, 102, 47, .1);
-    border-radius: 8px;
+    @apply rounded-lg;
 }
 
 .uploadingBlock {
-    width: 334px;
-    height: 285px;
-    background: #FFFFFF;
     box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
-    border-radius: 10px;
-    padding: 13px 26px 36px;
-    color: #231F20;
-    margin-top: 60px;
+    @apply h-80
+    w-80
+    bg-base-100
+    rounded-xl
+    mt-14
+    pt-4
+    px-6
+    pb-9
+    text-base-350;
 }
 
 .reuploadingBlock {
-    width: 334px;
-    height: 50px;
-    background: #FFFFFF;
     box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
-    border-radius: 25px;
-    padding: 13px 26px 36px;
-    color: #231F20;
-    margin-top: 60px;
+    @apply bg-base-100
+    h-12
+    w-80
+    text-base-350
+    mt-14
+    pt-3.5
+    px-6
+    pb-9
+    rounded-3xl;
 }
 
 .uploadingBlock > p {
-    font-size: 24px;
-    line-height: 35px;
+    @apply text-2xl;
 }
 
 .uploadingBlock .dragDrop__wrapper {
-    width: 100%;
-    height: 180px;
-    border: 2px dashed #4DAAC6;
-    border-radius: 8px;
+    @apply border-2
+    border-dashed
+    border-blue-planning-300
+    rounded-lg
+    w-full
+    h-48;
 }
 
 .circleBtn {
-    position: relative;
-    left: 0;
-    text-align: right;
-    font-size: 25px;
-    font-weight: 800;
-    color: #231F20;
+    @apply relative
+    left-0
+    text-2xl
+    font-bold
+    text-right;
 }
 
 .circleBtn ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
     max-width: 75px;
+    @apply pb-0
+    m-0
+    list-none;
 }
 
 .circleBtn ul:after {
     content: "";
-    display: block;
-    clear: both;
+    @apply block
+    clear-both;
 }
 
 .circleBtn img {
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 5) 33%, rgba(255, 255, 255, 1) 33%);
-    box-sizing: border-box;
-    padding: 14px;
-    padding-right: 0;
-    position: relative;
-    margin: -20px;
-    text-decoration: none;
-    position: absolute;
-    z-index: 1;
-    left: 24px;
-    bottom: 21px;
-    font-size: 26px !important;
-    text-align: center;
-    line-height: 28px !important;
+    @apply p-3.5
+    pr-0
+    -m-5
+    text-center
+    absolute
+    z-10
+    no-underline
+    box-border
+    left-6
+    bottom-5;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 5) 33%, rgba(255, 255, 255, 1) 33%);
 }
 
 .circleBtn ul li {
-    background: #fff;
-    padding: 0px;
-    width: auto;
-    border-radius: 50px;
-    text-align: center;
-    overflow: hidden;
-    float: left;
+    @apply bg-base-100
+    p-0
+    w-auto
+    text-center
+    overflow-hidden
+    float-left
+    rounded-full;
     box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
 }
 
 .circleBtn ul li a {
-    position: relative;
-    display: block;
+    @apply relative
+    block
+    py-1.5
+    px-4;
     min-width: 50px;
-    padding: 5px 15px;
 }
 
 .circleBtn ul span {
-    position: relative;
-    z-index: 1;
-    white-space: nowrap;
-    margin-right: 0px;
-    display: inline-block;
-    vertical-align: top;
-    position: relative;
-    visibility: none;
-    width: auto;
-    max-width: 0px;
-    opacity: 0;
-    text-align: center;
-    transition: all .4s;
-    box-sizing: border-box;
-    padding-right: 0px;
-    text-decoration: none;
-    color: black;
-    padding-bottom: 6px;
-    font-size: 24px;
-    line-height: 35px;
+    @apply relative
+    z-10
+    mr-0
+    pr-0
+    whitespace-nowrap
+    inline-block
+    w-auto
+    opacity-0
+    text-base-300
+    text-center
+    text-2xl
+    max-w-0
+    pb-1.5
+    no-underline
+    box-border
+    align-top
+    transition-all
+    duration-300
+    text-base-300;
 }
 
 .circleBtn li:hover {
-    cursor: pointer;
+    @apply cursor-pointer;
 }
 
 .circleBtn li:hover span {
-    margin-right: 0px;
-    opacity: 1;
-    width: auto;
+    @apply mr-0
+    opacity-100
+    w-auto
+    pl-8;
     max-width: 500px;
-    padding-left: 50px;
 }
 
 .bottomBar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 139px;
-    background: #1F1C1E;
-    opacity: 0.96;
+    @apply fixed
+    bottom-0
+    left-0
+    right-0
+    w-full
+    bg-base-300
+    z-10
+    opacity-95
+    h-32;
     box-shadow: 0px -14px 34px rgba(0, 0, 0, 0.15);
-    z-index: 1;
 }
 
 .bottomBar__btn {
-    color: #FFFFFF;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 18px;
-    text-align: center;
-    border: 1px solid #FFFFFF;
-    border-radius: 7px;
-    display: flex;
-    padding: 15px 25px;
-    cursor: pointer;
+    @apply text-base-100
+    font-semibold
+    text-center
+    cursor-pointer
+    flex
+    items-center
+    border-2
+    border-solid
+    border-base-100
+    rounded-lg
+    text-lg
+    px-6
+    py-4;
 }
 
 .bottomBar__btn.primary {
-    background-color: #FFFFFF;
-    color: #1F1C1E;
+    @apply border-base-100;
 }
 
 .galleryItem:hover .removeBtn {
-    opacity: 1;
+    @apply opacity-100;
 }
 
 .galleryItem:hover img {
-    background-color: transparent !important;
+    @apply bg-transparent !important;
 }
 
 .galleryItem img {
-    object-fit: cover;
+    @apply object-cover;
 }
 
 .galleryItem:before {
     content: '';
-    display: block;
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    opacity: 0;
-    transition: all .3s ease-out;
     background: linear-gradient(0deg, rgba(31, 28, 30, 0.65) 0%, rgba(31, 28, 30, 0.065) 100%);
-    border-radius: 8px;
-    z-index: 1;
+    @apply absolute
+    block
+    top-0
+    w-full
+    h-full
+    transition-all
+    duration-300
+    opacity-0
+    z-10
+    rounded-lg;
 }
 
 .galleryItem:hover:before {
-    opacity: 1;
+    @apply opacity-100;
 }
 
 .removeBtn {
-    opacity: 0;
-    left: 15px;
-    bottom: 16px;
-    z-index: 1;
+    @apply opacity-0
+    left-4
+    bottom-4
+    z-10;
 }
 
 .likeBtn {
-    right: 15px;
-    bottom: 13px;
-    z-index: 1;
+    @apply right-4
+    bottom-3
+    z-10;
 }
 
 .likeBtn img {
-    background-color: transparent !important;
+    @apply bg-transparent !important;
 }
