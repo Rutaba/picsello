@@ -99,6 +99,7 @@ defmodule PicselloWeb.Router do
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates", Live.PackageTemplates, :index
+      live "/pricing/categories/:category_id", Live.Pricing.Category, :show
       live "/pricing", Live.Pricing, :index
 
       live "/home", HomeLive.Index, :index, as: :home

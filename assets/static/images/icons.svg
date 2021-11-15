@@ -44,7 +44,7 @@
   </svg>
 
   <svg id="back" viewBox="0 0 10 20">
-    <path d="M9,1l-8,9l8,9" stroke-width="2" fill="none"/>
+    <path d="M9,1l-8,9l8,9" stroke-width="2" fill="none" stroke="currentColor"/>
   </svg>
 
   <svg id="forth" viewBox="0 0 10 20">
