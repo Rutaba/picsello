@@ -1,7 +1,7 @@
 <div>
   <h3>Expiration date</h3>
   <.form let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself}>
-    <div class="flex flex-row">
+    <div class="flex justify-between">
       <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "w-1/3", disabled: @is_never_expires %>
       <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "w-1/4 mx-3", disabled: @is_never_expires %>
       <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "w-1/3", disabled: @is_never_expires %>
