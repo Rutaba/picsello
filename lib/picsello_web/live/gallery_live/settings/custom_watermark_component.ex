@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
+defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
