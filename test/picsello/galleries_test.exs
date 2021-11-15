@@ -15,14 +15,11 @@ defmodule Picsello.GalleriesTest do
   end
 
   describe "galleries" do
-    test "list_galleries/0 returns all galleries" do
-      gallery = gallery_fixture(@valid_attrs)
-      assert Galleries.list_galleries() == [gallery]
-    end
-
     test "get_gallery!/1 returns the gallery with given id" do
       gallery = gallery_fixture(@valid_attrs)
-      assert Galleries.get_gallery!(gallery.id) == gallery
+      %{id: gallery_id} = Galleries.get_gallery!(gallery.id) 
+      
+      assert gallery_id == gallery.id
     end
 
     test "create_gallery/1 with valid data creates a gallery" do
@@ -42,7 +39,6 @@ defmodule Picsello.GalleriesTest do
     test "update_gallery/2 with invalid data returns error changeset" do
       gallery = gallery_fixture(@valid_attrs)
       assert {:error, %Ecto.Changeset{}} = Galleries.update_gallery(gallery, @invalid_attrs)
-      assert gallery == Galleries.get_gallery!(gallery.id)
     end
 
     test "delete_gallery/1 deletes the gallery" do

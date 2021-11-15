@@ -256,15 +256,15 @@ defmodule Picsello.Factory do
   end
 
   def gallery_factory(attrs) do
-    %{id: job_id} = insert(:lead)
-
     %Gallery{
-      job_id: job_id,
+      job: fn -> build(:lead) end,
       password: "123456"
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
+
+  
 
   def category_factory,
     do: %Picsello.Category{
