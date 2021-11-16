@@ -2,18 +2,19 @@ defmodule Picsello.GalleriesTest do
   use Picsello.DataCase
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.{Gallery, Watermark}
+  alias Picsello.Repo
+  alias Picsello.Job
+
+  @valid_attrs %{name: "MainGallery", status: "active"}
+  @update_attrs %{status: "expired"}
+  @invalid_attrs %{status: "inactive"}
+
+  def gallery_fixture(attrs \\ %{}) do
+    insert(:gallery, attrs)
+  end
 
   describe "galleries" do
-    alias Picsello.Galleries.Gallery
-
-    @valid_attrs %{name: "MainGallery", status: "active"}
-    @update_attrs %{status: "expired"}
-    @invalid_attrs %{status: "inactive"}
-
-    def gallery_fixture(attrs \\ %{}) do
-      insert(:gallery, attrs)
-    end
-
     test "list_galleries/0 returns all galleries" do
       gallery = gallery_fixture(@valid_attrs)
       assert Galleries.list_galleries() == [gallery]
@@ -53,6 +54,68 @@ defmodule Picsello.GalleriesTest do
     test "change_gallery/1 returns a gallery changeset" do
       gallery = gallery_fixture(@valid_attrs)
       assert %Ecto.Changeset{} = Galleries.change_gallery(gallery)
+    end
+
+    test "resets gallery name" do
+      gallery = gallery_fixture(@valid_attrs)
+      gallery = Galleries.reset_gallery_name(gallery)
+      %{job: job} = gallery |> Repo.preload(:job)
+
+      assert gallery.name == Job.name(job)
+    end
+
+    test "regenerates gallery password" do
+      gallery = gallery_fixture(@valid_attrs)
+      %{password: password} = Galleries.regenerate_gallery_password(gallery)
+
+      assert gallery.password != password
+    end
+  end
+
+  describe "gallery watermarks" do
+    setup do
+      [gallery: insert(:gallery, @valid_attrs)]
+    end
+
+    test "creates watermark", %{gallery: gallery} do
+      watermark_change = Galleries.gallery_text_watermark_change(nil, %{text: "007 Agency"})
+      {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
+
+      assert %Watermark{} = watermark
+      assert watermark.gallery_id == gallery.id
+    end
+
+    test "updates watermark", %{gallery: gallery} do
+      text_watermark_change = Galleries.gallery_text_watermark_change(nil, %{text: "007 Agency"})
+
+      {:ok, %{watermark: text_watermark}} =
+        Galleries.save_gallery_watermark(gallery, text_watermark_change)
+
+      image_watermark_change =
+        Galleries.gallery_image_watermark_change(text_watermark, %{name: "hex.png", size: 12_345})
+
+      {:ok, %{watermark: image_watermark}} =
+        Galleries.save_gallery_watermark(gallery, image_watermark_change)
+
+      assert text_watermark.id == image_watermark.id
+    end
+
+    test "preloads watermark", %{gallery: gallery} do
+      watermark_change = Galleries.gallery_text_watermark_change(nil, %{text: "007 Agency"})
+      {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
+      gallery = Galleries.load_watermark_in_gallery(gallery)
+
+      assert watermark == gallery.watermark
+    end
+
+    test "deletes watermark", %{gallery: gallery} do
+      watermark_change = Galleries.gallery_text_watermark_change(nil, %{text: "007 Agency"})
+      {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
+
+      Galleries.delete_gallery_watermark(watermark)
+      gallery = Galleries.load_watermark_in_gallery(gallery)
+
+      assert nil == gallery.watermark
     end
   end
 end

@@ -4,8 +4,8 @@
 >
     <img
         width="309"
-        height={309 / @photo.aspect_ratio}
-        src={display(@photo.client_copy_url <> Path.extname(@photo.name))}
+        height={if @photo.aspect_ratio, do: 309 / @photo.aspect_ratio}
+        src={display(@photo)}
         class="relative"
     />
     <button
@@ -15,10 +15,10 @@
         phx-value-id={@id}
     >
         <%= if @photo.client_liked do %>
-           <img src="/images/heart-active-icon.svg" alt="heart">
+           <.icon name="heart-filled" class="w-7 h-7" />
         <% else %>
-           <img src="/images/heart-icon.svg" alt="heart">
-        <% end %>
+            <.icon name="heart" class="w-7 h-7" />
+              <% end %>
     </button>
     <%= if @is_removable do %>
         <button
@@ -27,7 +27,7 @@
             phx-target={@myself}
             phx-value-id={@id}
         >
-            <img src="/images/remove-icon.svg" alt="remove">
+            <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
         </button>
     <% end %>
 </div>

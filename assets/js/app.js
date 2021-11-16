@@ -116,7 +116,7 @@ const Hooks = {
   PlacesAutocomplete,
   AutoHeight,
   MasonryGrid,
-  DragDrop
+  DragDrop,
 };
 
 let Uploaders = {}

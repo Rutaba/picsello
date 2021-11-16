@@ -2,7 +2,13 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
+  import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
+
   alias Picsello.Galleries
+  alias Picsello.Galleries.Photo
+  alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
@@ -12,29 +18,57 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     external: &__MODULE__.presign_entry/2,
     progress: &__MODULE__.handle_progress/3
   ]
-  @bucket "picsello-staging"
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
   def mount(socket) do
     {:ok,
      socket
-     |> assign(:uploaded_files, 0)
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
+     |> assign(:uploaded_files, 0)
+     |> assign(:progress, %GalleryUploadProgress{})
      |> assign(:update_mode, "prepend")
      |> allow_upload(:photo, @upload_options)}
   end
 
   @impl true
-  def handle_event("start", _params, socket) do
+  def update(%{a_photo_processed: photo_id}, %{assigns: %{progress: progress}} = socket) do
+    socket
+    |> assign(:progress, GalleryUploadProgress.complete_processing(progress, photo_id))
+    |> assign_overall_progress()
+    |> ok()
+  end
+
+  @impl true
+  def update(new_assigns, socket) do
+    socket
+    |> assign(new_assigns)
+    |> ok()
+  end
+
+  @impl true
+  def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
+    gallery = Galleries.load_watermark_in_gallery(gallery)
+
     socket =
       Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
         _, socket -> socket
       end)
-      |> assign(:update_mode, "prepend")
 
-    {:noreply, socket}
+    socket
+    |> assign(
+      :progress,
+      Enum.reduce(
+        socket.assigns.uploads.photo.entries,
+        socket.assigns.progress,
+        fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
+      )
+    )
+    |> assign(:update_mode, "prepend")
+    |> assign(:gallery, gallery)
+    |> noreply()
   end
 
   @impl true
@@ -45,49 +79,33 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   end
 
   @impl true
-  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+  def handle_event("cancel-upload", %{"ref" => ref} = entry, socket) do
     socket
     |> assign(:update_mode, "replace")
+    |> assign(:progress, GalleryUploadProgress.remove_entry(socket.assigns.progress, entry))
     |> cancel_upload(:photo, ref)
     |> noreply()
-  end
-
-  defp assign_overall_progress(socket) do
-    total_progress =
-      socket.assigns.uploads.photo.entries
-      |> Enum.map(& &1.progress)
-      |> then(&(Enum.sum(&1) / Enum.count(&1)))
-      |> trunc
-
-    if total_progress == 100 do
-      send(self(), :close_upload_popup)
-      send(self(), {:update_total_count, socket.assigns.uploaded_files})
-      send(self(), :gallery_position_normalize)
-    end
-
-    socket
-    |> assign(:overall_progress, total_progress)
   end
 
   def handle_progress(
         :photo,
         entry,
-        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files}} = socket
+        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
+          socket
       ) do
     if entry.done? do
-      {:ok, _photo} =
-        Galleries.create_photo(%{
-          gallery_id: gallery.id,
-          name: entry.client_name,
-          original_url: entry.uuid,
-          client_copy_url: entry.uuid,
-          preview_url: entry.uuid,
-          position: gallery.total_count + 100,
-          aspect_ratio: 1
-        })
+      {:ok, photo} = create_photo(gallery, entry)
+
+      start_photo_processing(photo, gallery.watermark)
 
       socket
       |> assign(uploaded_files: uploaded_files + 1)
+      |> assign(
+        progress:
+          progress
+          |> GalleryUploadProgress.complete_upload(entry)
+          |> GalleryUploadProgress.link_photo(entry, photo.id)
+      )
       |> assign_overall_progress()
       |> noreply()
     else
@@ -97,8 +115,8 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     end
   end
 
-  def presign_entry(entry, socket) do
-    key = entry.uuid <> Path.extname(entry.client_name)
+  def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
+    key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
 
     sign_opts = [
       expires_in: 600,
@@ -111,7 +129,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
 
-    {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), sign_opts)
+    params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
     {:ok, meta, socket}
@@ -120,15 +138,27 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp overall_progress(assigns) do
-    ~H"""
-    Uploading <%= @uploads %> of <%= total(@entries) %> photos
-    """
+  defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
+    total_progress = GalleryUploadProgress.total_progress(progress)
+
+    if total_progress == 100 do
+      send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
+    end
+
+    socket
+    |> assign(:overall_progress, total_progress)
   end
 
-  defp gcp_credentials() do
-    conf = Application.get_env(:gcs_sign, :gcp_credentials)
+  defp create_photo(gallery, entry) do
+    Galleries.create_photo(%{
+      gallery_id: gallery.id,
+      name: entry.client_name,
+      original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
+      position: (gallery.total_count || 0) + 100
+    })
+  end
 
-    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
+  defp start_photo_processing(photo, watermark) do
+    ProcessingManager.start(photo, watermark)
   end
 end
