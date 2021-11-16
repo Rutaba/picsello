@@ -22,4 +22,6 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 ## Setup Image Processing 
 
-Create PubSub Topic and set PHOTO_PROCESSING_OUTPUT_TOPIC, so images created on your environment will get to you from Cloud Function. https://console.cloud.google.com/cloudpubsub/topic/list?project=celtic-rite-323300 
+1. Create PubSub Topic and Subscription. Set PHOTO_PROCESSING_OUTPUT_TOPIC and GOOGLE_APPLICATION_CREDENTIALS, so images created on your environment will get to you from Cloud Function. https://console.cloud.google.com/cloudpubsub/topic/list?project=celtic-rite-323300 
+
+2. Set Google Credentials json location with GOOGLE_APPLICATION_CREDENTIALS

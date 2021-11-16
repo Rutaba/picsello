@@ -28,7 +28,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
   @impl true
   def handle_event("delete_watermark", _, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.delete_gallery_watermark(gallery.watermark)
-    send(self(), :clean_watermarks)
+    send(self(), :clear_watermarks)
 
     socket
     |> preload_watermark()
@@ -58,7 +58,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
   def handle_info({:photo_processed, _}, socket), do: noreply(socket)
 
   @impl true
-  def handle_info(:clean_watermarks, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(:clear_watermarks, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.clear_watermarks(gallery.id)
     noreply(socket)
   end
