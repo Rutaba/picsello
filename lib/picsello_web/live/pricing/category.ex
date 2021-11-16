@@ -27,7 +27,7 @@ defmodule PicselloWeb.Live.Pricing.Category do
 
         <div class="flex items-end justify-between mt-4">
           <h1 class="text-3xl font-bold">Adjust Pricing: <span class="font-medium"><%= @category.name %></span></h1>
-          <button title="Expand All" type="button" class="flex items-center p-3 border rounded-lg border-base-300" phx-click="toggle-expand-all">
+          <button title="Expand All" type="button" class="items-center hidden p-3 border rounded-lg sm:flex border-base-300" phx-click="toggle-expand-all">
             <%= if all_expanded?(@category.products, @expanded) do %>
               <.icon name="up" class="w-4 h-2 mr-2 stroke-current" /> Collapse All
             <% else %>
