@@ -44,8 +44,8 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
         <.th expanded={@expanded} class="hidden px-4 rounded-r-lg sm:block">Markup</.th>
 
         <%= if @expanded do %>
-          <%= for {variation_id, i} <- @product |> variation_ids() |> Enum.with_index() do %>
-            <.variation product={@product} variation_id={variation_id} expanded={@expanded} index={i} />
+          <%= for variation_id <- variation_ids(@product) do %>
+            <.variation product={@product} variation_id={variation_id} expanded={@expanded} />
           <% end %>
         <% end %>
       </div>
@@ -65,7 +65,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
 
   defp variation(assigns) do
     ~H"""
-      <%= live_component PicselloWeb.Live.Pricing.Category.Variation, id: {@product.id, @variation_id}, product: @product, variation_id: @variation_id, expanded: MapSet.member?(@expanded, @variation_id), index: @index %>
+      <%= live_component PicselloWeb.Live.Pricing.Category.Variation, id: {@product.id, @variation_id}, product: @product, variation_id: @variation_id, expanded: MapSet.member?(@expanded, @variation_id) %>
     """
   end
 
