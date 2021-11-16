@@ -46,6 +46,7 @@ module.exports = {
     extend: {
       colors: {
         base: {
+          350: '#231F20',
           300: '#1F1C1E',
           250: '#898989',
           200: '#EFEFEF',
