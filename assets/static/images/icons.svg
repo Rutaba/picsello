@@ -52,11 +52,11 @@
   </svg>
 
   <svg id="down" viewBox="0 0 20 10">
-    <path d="M1,1l9,8l9,-8" stroke-width="2" fill="none"/>
+    <path d="M1,1l9,8l9,-8" fill="none"/>
   </svg>
 
   <svg id="up" viewBox="0 0 20 10">
-    <path d="M1,9 l9,-8 l9,8" stroke-width="2" fill="none"/>
+    <path d="M1,9 l9,-8 l9,8" fill="none"/>
   </svg>
 
   <svg id="close-x" viewBox="0 0 25 25" fill="none">
