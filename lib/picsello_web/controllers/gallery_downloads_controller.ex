@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   def group(entries) do
     entries
-    |> Enum.map(fn entry -> [source: {:url, entry.client_copy_url}, path: entry.name] end)
+    |> Enum.map(fn entry -> [source: {:url, entry.original_url}, path: entry.name] end)
     |> Enum.group_by(&Keyword.get(&1, :path))
     |> Enum.flat_map(&dublicates(elem(&1, 1)))
   end

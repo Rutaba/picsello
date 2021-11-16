@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   use PicselloWeb, :live_component
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @upload_options [
     accept: ~w(.png),
@@ -102,7 +103,7 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
 
-    {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), sign_opts)
+    params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
     {:ok, meta, socket}
@@ -171,12 +172,6 @@ defmodule PicselloWeb.GalleryLive.CustomWatermarkComponent do
   end
 
   defp clear_uploads(socket), do: socket
-
-  defp gcp_credentials() do
-    conf = Application.get_env(:gcs_sign, :gcp_credentials)
-
-    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
-  end
 
   defp watermark_type(%{type: "image"}), do: :image
   defp watermark_type(%{type: "text"}), do: :text

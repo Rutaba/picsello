@@ -7,6 +7,8 @@ defmodule Picsello.Galleries do
   alias Picsello.Repo
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark}
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @doc """
   Returns the list of galleries.
@@ -250,6 +252,15 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Updates a photo
+  """
+  def update_photo(%Photo{id: _} = photo, %{} = attrs) do
+    photo
+    |> Photo.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
   Gets a single photo by id.
 
   Returns nil if the Photo does not exist.
@@ -391,12 +402,23 @@ defmodule Picsello.Galleries do
 
   @doc """
   Creates or updates watermark of the gallery.
+  And triggers photo watermarking
   """
   def save_gallery_watermark(gallery, watermark_change) do
     gallery
     |> Repo.preload(:watermark)
     |> Gallery.save_watermark(watermark_change)
     |> Repo.update()
+    |> tap(fn
+      {:ok, gallery} ->
+        gallery
+        |> Repo.preload([:watermark, :photos])
+        |> Map.get(:photos)
+        |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
+
+      x ->
+        x
+    end)
   end
 
   @doc """
@@ -411,6 +433,20 @@ defmodule Picsello.Galleries do
   """
   def delete_gallery_watermark(watermark) do
     Repo.delete(watermark)
+  end
+
+  @doc """
+  Clears watermarks of photos and triggers watermarked versions removal
+  """
+  def clear_watermarks(gallery_id) do
+    get_gallery!(gallery_id)
+    |> Repo.preload(:photos)
+    |> Map.get(:photos)
+    |> Enum.each(fn photo ->
+      PhotoStorage.delete(photo.watermarked_preview_url)
+      PhotoStorage.delete(photo.watermarked_url)
+      update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+    end)
   end
 
   @doc """

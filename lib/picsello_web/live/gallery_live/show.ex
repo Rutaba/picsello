@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.GalleryLive.DeleteCoverPhoto
@@ -16,7 +17,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     external: &__MODULE__.presign_cover_entry/2,
     progress: &__MODULE__.handle_cover_progress/3
   ]
-  @bucket "picsello-staging"
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
   def mount(_params, _session, socket) do
@@ -109,6 +110,18 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
+  def handle_info(
+        {:photo_processed, %{"task" => %{"photoId" => photo_id}}},
+        %{assigns: %{modal_pid: modal_pid}} = socket
+      ) do
+    send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
+
+    noreply(socket)
+  end
+
+  def handle_info({:photo_processed, _}, socket), do: noreply(socket)
+
+  @impl true
   def handle_info({:close_delete_cover_photo, params}, %{assigns: %{gallery: gallery}} = socket) do
     socket =
       if params["delete"] do
@@ -135,21 +148,15 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:update_total_count, count}, %{assigns: %{gallery: gallery}} = socket) do
-    {:ok, gallery} =
-      Galleries.update_gallery(gallery, %{total_count: gallery.total_count + count})
+  def handle_info({:photo_upload_completed, count}, %{assigns: %{gallery: gallery}} = socket) do
+    {:ok, _gallery} =
+      Galleries.update_gallery(gallery, %{total_count: (gallery.total_count || 0) + count})
 
-    socket
-    |> assign(:gallery, gallery)
-    |> noreply()
-  end
-
-  def handle_info(:gallery_position_normalize, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.normalize_gallery_photo_positions(gallery.id)
 
     socket
     |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery.id))
-    |> noreply
+    |> noreply()
   end
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
@@ -180,7 +187,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       conditions: [["content-length-range", 0, 104_857_600]]
     ]
 
-    {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), sign_opts)
+    params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
     {:ok, meta, socket}
@@ -204,14 +211,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
 
-  defp gcp_credentials do
-    conf = Application.get_env(:gcs_sign, :gcp_credentials)
-
-    Map.put(conf, "private_key", conf["private_key"] |> Base.decode64!())
-  end
-
   defp cover_photo(key) do
-    sign_opts = [bucket: @bucket, key: key, expires_in: 600_000]
-    GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
+    PhotoStorage.path_to_url(key)
   end
 end

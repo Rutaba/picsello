@@ -45,20 +45,14 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: System.get_env("GOOGLE_CLIENT_ID"),
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
-config :gcs_sign,
-  gcp_credentials: %{
-    "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
-    "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
-    "client_email" => "storage-account@celtic-rite-323300.iam.gserviceaccount.com",
-    "client_id" => "111011783898360383654",
-    "client_x509_cert_url" =>
-      "https://www.googleapis.com/robot/v1/metadata/x509/storage-account%40celtic-rite-323300.iam.gserviceaccount.com",
-    "private_key" => System.get_env("GCP_PRIVATE_KEY"),
-    "private_key_id" => System.get_env("GCP_PRIVATE_KEY_ID"),
-    "project_id" => "celtic-rite-323300",
-    "token_uri" => "https://oauth2.googleapis.com/token",
-    "type" => "service_account"
-  }
+config :picsello,
+  photo_output_subscription: {
+    BroadwayCloudPubSub.Producer,
+    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION")
+  },
+  photo_processing_input_topic: System.get_env("PHOTO_PROCESSING_INPUT_TOPIC"),
+  photo_processing_output_topic: System.get_env("PHOTO_PROCESSING_OUTPUT_TOPIC"),
+  photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET")
 
 config :picsello, :whcc,
   adapter: Picsello.WHCC.Client,

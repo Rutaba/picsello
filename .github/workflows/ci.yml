@@ -14,6 +14,7 @@ env:
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
   SHELL: /usr/bin/bash
 
+
 jobs:
   build:
 
@@ -63,8 +64,18 @@ jobs:
         cache-dependency-path: assets/package-lock.json
     - name: Build js
       run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
+    - name: Dump Google app credentials
+      run: echo $JSON | base64 -d > /tmp/google_app_credentials.json
+      env:
+        JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
     - name: Run tests
       run: mix test --trace --cover
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: '/tmp/google_app_credentials.json'
+        PHOTO_STORAGE_BUCKET: 'picsello-staging'
+        PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
+        PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
+        PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
 
     - name: Archive screenshots
       if: ${{failure()}}
