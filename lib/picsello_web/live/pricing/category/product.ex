@@ -6,16 +6,10 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
   def render(assigns) do
     ~H"""
     <div {testid("product")}>
-      <h2 class="flex items-center justify-between py-6 text-2xl font-bold" title="Expand" type="button" phx-click="toggle-expand" phx-value-product-id={@product.id} >
-        <button class="flex items-center">
-          <div class="flex items-center justify-center w-6 h-6 mr-5 rounded-lg bg-base-300">
-            <div class="stroke-current text-base-100">
-              <%= if @expanded do %>
-              <.icon name="up" class="w-2 h-1" />
-              <% else %>
-              <.icon name="down" class="w-2 h-1" />
-              <% end %>
-            </div>
+      <h2 class="flex items-center justify-between py-6 text-2xl" title="Expand" type="button" phx-click="toggle-expand" phx-value-product-id={@product.id} >
+        <button class="flex items-center font-bold">
+          <div class="w-8 h-8 mr-6 rounded-lg stroke-current sm:w-6 sm:h-6 bg-base-300 text-base-100">
+            <.icon name="up" class={"w-full h-full p-2.5 sm:p-2 stroke-4 #{if(@expanded, do: "rotate-180")}"} />
           </div>
 
           <%= @product.whcc_name %>
@@ -23,21 +17,31 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
 
         <button title="Expand All" type="button" disabled={!@expanded} {if @expanded, do: %{phx_click: "toggle-expand-all"}, else: %{}} phx-value-product-id={@product.id} class={classes("text-sm border rounded-lg border-blue-planning-300 px-2 py-1 items-center hidden sm:flex", %{"opacity-50" => !@expanded})}>
           <%= if all_expanded?(@product, @expanded) do %>
-            <div class="pr-2 stroke-current text-blue-planning-300"><.icon name="up" class="w-3 h-1.5"/></div>
+            <div class="pr-2 stroke-current text-blue-planning-300"><.icon name="up" class="stroke-3 w-3 h-1.5"/></div>
             Collapse All
           <% else %>
-            <div class="pr-2 stroke-current text-blue-planning-300"><.icon name="down" class="w-3 h-1.5"/></div>
+            <div class="pr-2 stroke-current text-blue-planning-300"><.icon name="down" class="stroke-3 w-3 h-1.5"/></div>
             Expand All
           <% end %>
         </button>
       </h2>
 
       <div class="grid grid-cols-2 sm:grid-cols-5">
-        <.th expanded={@expanded} class="rounded-l-lg col-start-1"><span class="pl-8">Variation</span></.th>
-        <.th expanded={@expanded} class="hidden sm:block">Base Cost</.th>
-        <.th expanded={@expanded} class="hidden sm:block">Final Price</.th>
-        <.th expanded={@expanded} class="rounded-r-lg sm:rounded-none col-start-2 sm:col-start-4">Your Profit</.th>
-        <.th expanded={@expanded} class="hidden rounded-r-lg sm:block">Markup</.th>
+        <.th expanded={@expanded} class="flex pl-3 rounded-l-lg col-start-1 sm:pl-12">
+          <%= if @expanded do %>
+            <button title="Expand All" type="button" phx-click="toggle-expand-all" phx-value-product-id={@product.id} class="flex flex-col items-center justify-between block py-1.5 border rounded stroke-current sm:hidden w-7 h-7 border-base-100 stroke-3">
+              <.icon name="up" class="w-3 h-1.5" />
+              <.icon name="down" class="w-3 h-1.5" />
+            </button>
+          <% else %>
+            <div class="block sm:hidden w-7"></div>
+          <% end %>
+          <div class="ml-10 sm:ml-0">Variation</div>
+        </.th>
+        <.th expanded={@expanded} class="hidden px-4 sm:block">Base Cost</.th>
+        <.th expanded={@expanded} class="hidden px-4 sm:block">Final Price</.th>
+        <.th expanded={@expanded} class="rounded-r-lg sm:rounded-none col-start-2 sm:col-start-4 pl-14 sm:pl-4">Your Profit</.th>
+        <.th expanded={@expanded} class="hidden px-4 rounded-r-lg sm:block">Markup</.th>
 
         <%= if @expanded do %>
           <%= for {variation_id, i} <- @product |> variation_ids() |> Enum.with_index() do %>
@@ -71,7 +75,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
       else: "bg-base-200 text-base-250"}"
 
     ~H"""
-    <h3 class={"uppercase py-3 font-bold #{build_class.(@class, @expanded)} px-4" }>
+    <h3 class={"uppercase py-3 font-bold #{build_class.(@class, @expanded)}" }>
       <%= render_slot(@inner_block) %>
     </h3>
     """
