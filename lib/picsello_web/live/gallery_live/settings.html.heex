@@ -3,10 +3,10 @@
    <div class="circleBtn">
             <ul>
                 <li>
-                    <a href="#">
+                    <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
                         <img src="/images/arrow-left.png"/>
                         <span>Back to gallery</span>
-                    </a>
+                    <% end %>
                 </li>
             </ul>
         </div>
