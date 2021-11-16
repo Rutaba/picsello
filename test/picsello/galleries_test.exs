@@ -17,8 +17,8 @@ defmodule Picsello.GalleriesTest do
   describe "galleries" do
     test "get_gallery!/1 returns the gallery with given id" do
       gallery = gallery_fixture(@valid_attrs)
-      %{id: gallery_id} = Galleries.get_gallery!(gallery.id) 
-      
+      %{id: gallery_id} = Galleries.get_gallery!(gallery.id)
+
       assert gallery_id == gallery.id
     end
 

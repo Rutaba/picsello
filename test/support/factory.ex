@@ -264,8 +264,6 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-  
-
   def category_factory,
     do: %Picsello.Category{
       whcc_id: sequence("whcc_id"),
