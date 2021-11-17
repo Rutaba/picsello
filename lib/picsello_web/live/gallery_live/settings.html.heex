@@ -1,5 +1,6 @@
-<div class="w-full bg-base-200 px-16 py-7">
-<div class="flex items-center justify-between" style="width:360px;">
+<div class="w-full bg-base-200 py-7">
+<div class="px-6 sm:px-16 xl:px-28" style="max-width:1440px; margin: 0 auto;">
+<div class="flex items-center justify-between w-72 xl:w-96">
    <div class="circleBtn">
             <ul>
                 <li>
@@ -10,20 +11,21 @@
                 </li>
             </ul>
         </div>
-  <span class="text-4xl font-bold text-base-300">Gallery Settings</span>
+  <span class="text-2xl xl:text-4xl font-bold text-base-300">Gallery Settings</span>
+  </div>
   </div>
 </div>
 
 <div class="gallery__container">
-<nav class="bg-grey-light rounded font-sans w-full pt-11 mx-12 text-blue-planning-300">
+<nav class="hidden md:block bg-grey-light rounded font-sans w-full pt-11 mx-0 xl:mx-12 text-blue-planning-300">
   <ol class="list-reset flex text-grey-dark">
     <li><a href="#">Gallery</a></li>
     <li><span class="mx-2">></span></li>
     <li><a href="#" class="font-bold">Gallery settings</a></li>
   </ol>
 </nav>
-<div class="settings__wrapper py-11 mx-12 grid grid-cols-2 grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
-   <div class="galleryCustomWatermark flex flex-col col-start-2 col-end-3 row-start-2 row-end-3">
+<div class="settings__wrapper py-11 mx-0 xl:mx-12 grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
+   <div class="galleryCustomWatermark flex flex-col xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
    <h3>Custom watermark</h3>
   <%= if @gallery.watermark do %>
     <%= if @gallery.watermark.type == "image" do %>
@@ -55,17 +57,17 @@
   <% end %>
 </div>
 
-<div class="galleryUpdateName col-start-1 col-end-2 row-start-1 row-end-2">
+<div class="galleryUpdateName xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-end-2">
   <%= live_component PicselloWeb.GalleryLive.Settings.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
 </div>
 
-<div class="galleryUpdateName col-start-2 col-end-3 row-start-1 row-end-2">
+<div class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">
     <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
                 id: "expiration-date-#{@gallery.id}",
                 gallery: @gallery %>
 </div>
 
-<div class="galleryManagePassword col-start-1 col-end-2 row-start-2 row-end-3">
+<div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
   <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
 </div>
 
