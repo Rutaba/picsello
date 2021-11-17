@@ -2,7 +2,6 @@ defmodule Picsello.Product do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Query
-  import Ecto.Changeset
 
   schema "products" do
     field :deleted_at, :utc_datetime
