@@ -15,13 +15,22 @@ defmodule Picsello.UserManagesPricingTest do
       }
     end)
 
+    base_path =
+      with "" <> url <- :picsello |> Application.get_env(:whcc) |> Keyword.get(:url),
+           %{path: "" <> base_path} <- URI.parse(url) do
+        base_path
+      else
+        _ -> ""
+      end
+
     Tesla.Mock.mock(fn
       %{method: :get, url: url} ->
-        %{path: "/api/v1/" <> path} = URI.parse(url)
+        %{path: path} = URI.parse(url)
+        file_path = String.split(path, base_path, parts: 2, trim: true)
 
         %Tesla.Env{
           status: 200,
-          body: "test/support/fixtures/#{path}.json" |> File.read!() |> Jason.decode!()
+          body: "test/support/fixtures/#{file_path}.json" |> File.read!() |> Jason.decode!()
         }
     end)
 
