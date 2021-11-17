@@ -3,10 +3,10 @@
    <div class="circleBtn">
             <ul>
                 <li>
-                    <a href="#">
+                    <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
                         <img src="/images/arrow-left.png"/>
-                        <span>Back to job</span>
-                    </a>
+                        <span>Back to gallery</span>
+                    <% end %>
                 </li>
             </ul>
         </div>
@@ -56,12 +56,18 @@
 </div>
 
 <div class="galleryUpdateName col-start-1 col-end-2 row-start-1 row-end-2">
-  <%= live_component PicselloWeb.GalleryLive.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
+  <%= live_component PicselloWeb.GalleryLive.Settings.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
 </div>
 
+<div class="galleryUpdateName col-start-2 col-end-3 row-start-1 row-end-2">
+    <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
+                id: "expiration-date-#{@gallery.id}",
+                gallery: @gallery %>
+</div>
 
 <div class="galleryManagePassword col-start-1 col-end-2 row-start-2 row-end-3">
-<%= live_component PicselloWeb.GalleryLive.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
+  <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
 </div>
+
 </div>
 </div>
