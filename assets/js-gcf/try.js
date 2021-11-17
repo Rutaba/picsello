@@ -3,7 +3,7 @@ import {
     aspectStage,
     cleanupStage,
     debugStage,
-    downloadStage, downloadWatermarkStage,
+    downloadStage, downloadWatermarkStage, generateTextWatermarkStage,
     previewStage,
     responseStage,
     watermarkStage
@@ -12,11 +12,6 @@ import { buildContext } from "./context.js";
 
 
 const simpleTask = {
-    // bucket: "picsello-staging",
-    // originalPath: "0279c71f-802b-4242-96d7-5cb844f17878.jpeg",
-    // previewPath: "preview_5cb844f17878.jpeg",
-    // pubSubTopic: "stagging-processed-photos",
-
     "bucket": "picsello-staging",
     "originalPath": "5e4a288c-ced8-43a8-84f1-a26e9e526675.jpg",
     "photoId": 58,
@@ -36,8 +31,14 @@ const fullTask = {
 }
 
 const watermarkTask = {
-    bucket: "picsello-staging",
-    originalPath: "0279c71f-802b-4242-96d7-5cb844f17878.jpeg",
+    "bucket": "picsello-staging",
+    "originalPath": "galleries/6/original/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
+    "photoId": 156,
+    "previewPath": "galleries/6/preview/5db2b5f5-8e69-41ca-a1a4-beafcad77304.png",
+    "pubSubTopic": "projects/celtic-rite-323300/topics/lukianov-processed-photos",
+    "watermarkText": "Water Mark",
+    "watermarkedOriginalPath": "galleries/6/watermarked/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
+    "watermarkedPreviewPath": "galleries/6/watermarked_preview/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
 }
 
 
@@ -62,10 +63,11 @@ const context = task => { return {
 
 /*********************************************************************************/
 
-const res = await downloadStage(buildContext(fullTask))
+const res = await downloadStage(buildContext(watermarkTask))
     .then(aspectStage)
     .then(previewStage)
     .then(downloadWatermarkStage)
+    .then(generateTextWatermarkStage)
     .then(watermarkStage)
     .then(cleanupStage)
     .then(responseStage)
