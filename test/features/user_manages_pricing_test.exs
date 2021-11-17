@@ -1,6 +1,6 @@
 defmodule Picsello.UserManagesPricingTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Package, JobType}
+  alias Picsello.Repo
 
   setup :onboarded
   setup :authenticated
@@ -17,9 +17,11 @@ defmodule Picsello.UserManagesPricingTest do
 
     Tesla.Mock.mock(fn
       %{method: :get, url: url} ->
+        %{path: "/api/v1/" <> path} = URI.parse(url)
+
         %Tesla.Env{
           status: 200,
-          body: "test/support/fixtures/#{url}.json" |> File.read!() |> Jason.decode!()
+          body: "test/support/fixtures/#{path}.json" |> File.read!() |> Jason.decode!()
         }
     end)
 
