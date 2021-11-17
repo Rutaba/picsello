@@ -1,4 +1,4 @@
-defmodule Picsello.Repo.Migrations.CreateProducts do
+defmodule Picsello.Repo.Migrations.CreateWHCCProducts do
   use Ecto.Migration
 
   def change do
