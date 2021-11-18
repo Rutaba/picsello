@@ -16,21 +16,11 @@ defmodule PicselloWeb.JobLive.Shoot do
     ~H"""
     <header class="bg-blue-planning-100">
       <div class="px-6 py-2 lg:pb-6 center-container">
-        <div class="text-xs text-blue-planning-200">
-          <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
-            <%= action_name(@live_action, :plural) %>
-          <% end %>
-
-          <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
-
-          <%= live_redirect to: Routes.job_path(@socket, @live_action, @job.id) do %>
-            <%= Job.name @job %>
-          <% end %>
-
-          <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
-
-          <span class="font-semibold"><%= @shoot.name %></span>
-        </div>
+        <.crumbs>
+          <:crumb to={Routes.job_path(@socket, @live_action)}><%= action_name(@live_action, :plural) %></:crumb>
+          <:crumb to={Routes.job_path(@socket, @live_action, @job.id)}><%= Job.name @job %></:crumb>
+          <:crumb><%= @shoot.name %></:crumb>
+        </.crumbs>
 
         <hr class="mt-2 border-white" />
 

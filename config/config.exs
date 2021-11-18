@@ -7,6 +7,20 @@
 # General application configuration
 use Mix.Config
 
+with dotenv = "#{__DIR__}/../.env",
+     {:ok, data} <- File.read(dotenv),
+     do:
+       for(
+         "export" <> kv <- String.split(data, "\n"),
+         [k, v] = String.split(kv, "=", parts: 2),
+         do: k |> String.trim() |> System.put_env(v)
+       )
+
+with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"),
+     {:ok, json} <- base64 |> String.trim() |> Base.decode64() do
+  config :goth, json: json
+end
+
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
 config :picsello,

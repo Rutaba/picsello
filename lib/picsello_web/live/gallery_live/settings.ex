@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
-  alias PicselloWeb.GalleryLive.CustomWatermarkComponent
+  alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
 
   @impl true
   def mount(_params, _session, socket) do

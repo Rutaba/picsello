@@ -1,157 +1,170 @@
 .uploadPopup {
     width: 1041px;
     max-height: 950px;
-    padding: 30px 0;
-    background-color: #FFFFFF;
-    margin: 0 auto;
-    overflow-y: scroll;
+    @apply px-0
+    py-8
+    my-0
+    mx-auto
+    bg-base-100
+    overflow-y-scroll;
 }
 
 .uploadOverallStatus {
-    background-color: #EFEFEF;
+    @apply bg-base-200;
 }
 
 .uploadPopup progress {
-    width: 380px;
-    height: 8px;
-    background: #FFFFFF;
-    border-radius: 20px;
+    @apply bg-base-100
+    w-96
+    h-2
+    rounded-2xl;
 }
 
 .uploadPopup progress::-webkit-progress-bar {
-    background-color: #FFFFFF;
+    @apply bg-base-100;
 }
 
 .uploadPopup progress::-webkit-progress-value {
-    background: #4DAAC6;
-    border-radius: 6px;
+    @apply bg-blue-planning-300
+    rounded-lg;
 }
 
 .uploadPopup progress::-moz-progress-bar {
-    background: #4DAAC6;
-    border-radius: 6px;
+    @apply bg-blue-planning-300
+    rounded-lg;
 }
 
 .uploadingProgress__wrapper {
-    color: #898989;
-    font-size: 15px;
+    @apply text-base-250
+    text-base;
 }
 
 .dragDrop__wrapper {
     width: 958px;
-    height: 226px;
-    border: 2px dashed #4DAAC6;
-    border-radius: 8px;
-    background-color: #FFFFFF;
-    margin: 0 auto;
+    @apply border-2
+    border-dashed
+    border-blue-planning-300
+    rounded-lg
+    bg-base-100
+    my-0
+    mx-auto
+    h-56;
 }
 
 .dragDrop__content .primary {
-    color: #4DAAC6;
+    @apply text-blue-planning-300;
 }
 
 .dragDrop__wrapper.tiny {
-    height:90px;
+    @apply h-24;
 }
 
 #dragDrop-form, .dragDrop {
-    width: 100%;
-    height: 100%;
-    transition: 0.3s all ease;
+    @apply h-full
+    w-full
+    transition-all
+    duration-300;
 }
 
 .dragDrop.active {
-    background-color: #F2FDFB;
+    @apply bg-blue-planning-100;
 }
 
 .dragDrop__content input[type='file'] {
-    display: none;
-    visibility: hidden;
+    @apply hidden
+    invisible;
 }
 
 .dragDrop__content .gray {
-    color: #898989;
-    text-align: center;
+    @apply text-base-250
+    text-center;
 }
 
 .dragDrop__content label {
-    color: #4DAAC6;
-    cursor: pointer;
+    @apply text-blue-planning-300
+    cursor-pointer;
 }
 
 .uploadingList__wrapper {
     width: 951px;
-    max-height: 273px;
-    overflow: scroll;
-    margin: 0 auto;
+    @apply my-0
+    mx-auto
+    overflow-scroll
+    max-h-64;
 }
 
 .uploadingList__wrapper progress {
-    width: 150px;
-    height: 8px;
-    background: #F2FDFB;
-    border-radius: 20px;
+    @apply bg-blue-planning-100
+    w-40
+    h-2
+    rounded-2xl;
 }
 
 .uploadingList__wrapper progress::-webkit-progress-bar {
-    background-color: #F2FDFB;
+    @apply bg-blue-planning-100;
 }
 
 .uploadingList__wrapper progress::-webkit-progress-value {
-    background: #4DAAC6;
-    border-radius: 6px;
+    @apply bg-blue-planning-300
+    rounded-lg;
 }
 
 .uploadingList__wrapper progress::-moz-progress-bar {
-    background: #4DAAC6;
-    border-radius: 6px;
+    @apply bg-blue-planning-300
+    rounded-lg;
 }
 
 .uploadEntry:first-of-type {
-    padding-top: 30px
+    @apply pt-7
 }
 
 .uploadEntry .btn {
-    font-size: 12px;
-    border-radius: 4px;
-    padding: 3px 8px;
-    text-align: center;
+    @apply text-xs
+    text-center
+    rounded
+    py-1
+    px-2
+    cursor-pointer;
 }
 
 .uploadEntry .error {
-    border: 1px solid #FDF2F2;
-    color: #E1662F;
-    background: #FDF2F2;
+    @apply border-2
+    border-solid
+    border-red-sales-300
+    bg-red-sales-100
 }
 
 .uploadEntry .retry {
-    border: 1px solid #4DAAC6;
-    color: #1F1C1E;
-    background: #FFFFFF;
+    @apply border-2
+    border-solid
+    border-blue-planning-300
+    bg-base-100
+    text-base-300
 }
 
 .sk-circle {
-    width: 20px;
-    height: 20px;
-    position: relative;
+    @apply relative
+    w-5
+    h-5;
 }
 
 .sk-circle .sk-child {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
+    @apply w-full
+    h-full
+    absolute
+    left-0
+    top-0;
 }
 
 .sk-circle .sk-child:before {
+    @apply block
+    my-0
+    mx-auto
+    bg-blue-planning-300
+    rounded-full;
     content: '';
-    display: block;
-    margin: 0 auto;
     width: 15%;
     height: 15%;
-    background-color: #4DAAC6;
-    border-radius: 100%;
     -webkit-animation: sk-circleBounceDelay 1.2s infinite ease-in-out both;
     animation: sk-circleBounceDelay 1.2s infinite ease-in-out both;
 }
@@ -299,10 +312,8 @@
     }
 }
 
-@media screen and (max-height:950px) {
+@media screen and (max-height: 950px) {
     .uploadPopup {
-        max-height: 100vh;
+        @apply max-h-screen;
     }
 }
-
-
