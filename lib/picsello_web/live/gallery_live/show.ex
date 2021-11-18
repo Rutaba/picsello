@@ -202,6 +202,9 @@ defmodule PicselloWeb.GalleryLive.Show do
            }
          } = socket
        ) do
+        IO.puts"_________________________________"
+        IO.inspect @per_page
+        IO.inspect page
     assign(socket,
       photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
     )

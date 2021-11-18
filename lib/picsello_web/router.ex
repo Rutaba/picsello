@@ -128,6 +128,7 @@ defmodule PicselloWeb.Router do
     live "/galleries/new", GalleryLive.Index, :new
     live "/galleries/:id/edit", GalleryLive.Index, :edit
 
+    live "/galleries/:id/album", GalleryLive.Album
     live "/galleries/:id", GalleryLive.Show, :show
     live "/galleries/:id/upload", GalleryLive.Show, :upload
     live "/galleries/:id/settings", GalleryLive.Settings, :settings
