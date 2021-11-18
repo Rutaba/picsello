@@ -6,12 +6,12 @@ defmodule PicselloWeb.GalleryLive.UpdatePreviewPhoto do
   @impl true
   # def update(data, socket) do
 
-  def update(%{id: _id, gallery: gallery} = data, socket) do
-      IO.puts "_______________"
-    IO.inspect data
+  def update(%{id: _id, gallery: gallery}, socket) do
+      IO.puts "_______!!!!________"
+    IO.inspect gallery.product_preview
     {:ok,
      socket
-    #  |> assign(:, url)
+     |> assign(:product_preview, gallery.product_preview)
      |> assign(:gallery, gallery)
      |> assign_gallery_changeset()}
   end
