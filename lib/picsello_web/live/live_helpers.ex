@@ -92,7 +92,7 @@ defmodule PicselloWeb.LiveHelpers do
         path:
           assigns
           |> Map.get(:socket, PicselloWeb.Endpoint)
-          |> static_path("/images/icons.svg#" <> name)
+          |> static_path(Picsello.Icon.public_path(name))
       })
 
     ~H"""

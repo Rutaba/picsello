@@ -23,6 +23,7 @@ defmodule Picsello.Category do
     category
     |> cast(attrs, [:hidden, :icon, :name, :position])
     |> validate_required([:icon, :name, :position])
+    |> validate_inclusion(:icon, Picsello.Icon.names())
     |> unique_constraint(:position)
   end
 end
