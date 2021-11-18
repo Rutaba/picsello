@@ -46,6 +46,7 @@ module.exports = {
     extend: {
       colors: {
         base: {
+          350: '#231F20',
           300: '#1F1C1E',
           250: '#898989',
           200: '#EFEFEF',
@@ -80,6 +81,7 @@ module.exports = {
         lg: '0px 4px 14px 0px rgba(0, 0, 0, 0.15)',
       },
       zIndex: { '-10': '-10' },
+      strokeWidth: {'3':'3', '4':'4'}
     },
   },
   variants: {

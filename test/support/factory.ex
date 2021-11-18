@@ -256,10 +256,8 @@ defmodule Picsello.Factory do
   end
 
   def gallery_factory(attrs) do
-    %{id: job_id} = insert(:lead)
-
     %Gallery{
-      job_id: job_id,
+      job: fn -> build(:lead) end,
       password: "123456"
     }
     |> merge_attributes(attrs)
@@ -274,4 +272,14 @@ defmodule Picsello.Factory do
       position: 0,
       icon: "book"
     }
+
+  def product_factory,
+    do:
+      %Picsello.Product{
+        whcc_id: sequence("whcc_id"),
+        whcc_name: "polo",
+        position: 0,
+        category: fn -> build(:category) end
+      }
+      |> evaluate_lazy_attributes()
 end

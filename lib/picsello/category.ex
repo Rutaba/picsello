@@ -12,8 +12,9 @@ defmodule Picsello.Category do
     field :position, :integer
     field :whcc_id, :string
     field :whcc_name, :string
+    has_many(:products, Picsello.Product)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   def active, do: from(category in __MODULE__, where: is_nil(category.deleted_at))

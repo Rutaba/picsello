@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Album do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Gallery
+  alias Picsello.Galleries.Gallery
 
   schema "albums" do
     field :name, :string

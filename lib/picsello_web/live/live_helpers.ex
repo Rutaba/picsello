@@ -171,6 +171,28 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def live_link(%{} = assigns) do
+    ~H"""
+    <%= assigns |> Map.drop([:__changed__, :inner_block]) |> Enum.to_list |> live_redirect do %>
+      <%= render_block(@inner_block) %>
+    <% end %>
+    """
+  end
+
+  def crumbs(assigns) do
+    assigns = Enum.into(assigns, %{class: "text-xs text-blue-planning-200"})
+
+    ~H"""
+    <div class={@class}>
+      <%= for crumb <- Enum.slice(@crumb, 0..-2) do %>
+        <.live_link {crumb}><%= render_slot(crumb) %></.live_link>
+        <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
+      <% end %>
+      <span class="font-semibold"><%= render_slot(List.last(@crumb)) %></span>
+    </div>
+    """
+  end
+
   def job_type_option(assigns) do
     ~H"""
       <label class={classes(

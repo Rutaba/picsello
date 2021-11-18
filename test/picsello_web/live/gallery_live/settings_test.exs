@@ -4,8 +4,9 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
 
   import Phoenix.LiveViewTest
 
-  setup do
-    [gallery: insert(:gallery, %{name: "Diego Santos Weeding"})]
+  setup %{conn: conn} do
+    conn = conn |> log_in_user(insert(:user) |> onboard!)
+    %{conn: conn, gallery: insert(:gallery, %{name: "Diego Santos Weeding"})}
   end
 
   describe "general render" do
