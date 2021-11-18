@@ -379,20 +379,30 @@ defmodule Picsello.Galleries do
     )
   end
 
+  def update_gallery_photo_count(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        UPDATE galleries 
+        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer) 
+        WHERE id = $1::integer;
+      """,
+      [gallery_id]
+    )
+  end
+
   def gallery_current_status(nil), do: :none_created
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
   def gallery_current_status(%Gallery{total_count: nil}), do: :upload_in_progress
 
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos])
-    has_watermark = false
 
     gallery
     |> Map.get(:photos, [])
     |> Enum.any?(fn photo ->
       is_nil(photo.aspect_ratio) ||
-        is_nil(photo.preview_url) ||
-        (has_watermark && is_nil(photo.watermarked_url))
+        is_nil(photo.preview_url)
     end)
     |> then(fn
       false -> :ready
