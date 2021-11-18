@@ -130,4 +130,49 @@ defmodule Picsello.WHCCTest do
       assert [^category_one, ^category_two] = Picsello.WHCC.categories()
     end
   end
+
+  describe "category" do
+    test "filters out products without variations" do
+      whcc_category_id = "tfhysKwZafFtmGqpQ"
+
+      read_fixture = &("test/support/fixtures/#{&1}.json" |> File.read!() |> Jason.decode!())
+
+      Mox.stub(Picsello.MockWHCCClient, :products, fn ->
+        for(
+          %{"category" => %{"id" => ^whcc_category_id}} = product <- read_fixture.("products"),
+          do: Picsello.WHCC.Product.from_map(product)
+        )
+      end)
+
+      Mox.stub(Picsello.MockWHCCClient, :product_details, fn %{id: id} = product ->
+        %{
+          product
+          | attribute_categories:
+              "products/#{id}" |> read_fixture.() |> Map.get("attributeCategories")
+        }
+      end)
+
+      Picsello.WHCC.sync()
+      id = Picsello.Category |> Repo.get_by(whcc_id: whcc_category_id) |> Map.get(:id)
+
+      Repo.update_all(Picsello.Category, set: [hidden: false])
+
+      %{products: products} = Picsello.WHCC.category(id)
+
+      assert [
+               "Bamboo Panel",
+               "Standout",
+               "Framed Print",
+               "Float Frame",
+               "Image Block",
+               "Metal Print",
+               "Acrylic Print"
+             ] = products |> Enum.map(& &1.whcc_name)
+    end
+  end
+
+  describe "variations" do
+    test "only returns variations with variations" do
+    end
+  end
 end

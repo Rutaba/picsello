@@ -146,6 +146,6 @@ defmodule PicselloWeb.Live.Pricing.Category do
   end
 
   defp assign_category(socket, id) do
-    socket |> assign(category: Category |> Repo.get!(id) |> Repo.preload(:products))
+    socket |> assign(category: Picsello.WHCC.category(id))
   end
 end
