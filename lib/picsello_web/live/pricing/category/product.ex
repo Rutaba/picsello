@@ -53,7 +53,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
     """
   end
 
-  def variation_ids(product), do: product |> variations |> Enum.map(& &1[:id])
+  def variation_ids(product), do: product |> variations() |> Enum.map(& &1[:id])
 
   def all_expanded?(_, nil), do: false
 

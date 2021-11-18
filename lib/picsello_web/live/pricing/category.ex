@@ -1,7 +1,6 @@
 defmodule PicselloWeb.Live.Pricing.Category do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Repo, Category}
 
   @impl true
   def mount(%{"category_id" => id}, _session, socket) do

@@ -27,7 +27,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Variation do
 
         <%= for %{name: name, category_name: category_name, price: price} <- @variation.attributes do %>
           <div class="contents">
-            <div class="items-center hidden py-8 pl-12 pr-4 font-bold sm:flex"><%= name %></div>
+            <div class="items-center hidden py-8 pl-12 pr-4 font-bold sm:flex capitalize"><%= category_name %> <%= name %></div>
             <div class="items-center hidden px-4 py-8 sm:flex"><%= price %></div>
             <div class="items-center hidden px-4 py-8 sm:flex"><%= final_price(price) %></div>
             <div class="items-center hidden px-4 py-8 sm:flex"><%= profit(price) %></div>

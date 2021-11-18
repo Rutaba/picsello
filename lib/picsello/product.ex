@@ -15,7 +15,7 @@ defmodule Picsello.Product do
         'attribute_id', attributes.id,
         'attribute_name', attributes.name,
         'price', attributes."pricingRefs" -> priced_attributes.id -> 'base' -> 'value'
-      ) order by attributes.id, priced_attributes.metadata -> 'width', priced_attributes.metadata -> 'height'
+      ) order by priced_attributes.metadata -> 'width', priced_attributes.metadata -> 'height', attribute_categories._id, attributes.id
     ) as attributes
   from
     products,
