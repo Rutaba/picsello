@@ -3,11 +3,12 @@ defmodule PicselloWeb.GalleryLive.Album do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
+  alias PicselloWeb.GalleryLive.UpdatePreviewPhoto, as: PreviewForm
 
   @per_page 12
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, socket |> assign(:preview, path(nil))}
   end
 
   @impl true
@@ -17,6 +18,12 @@ defmodule PicselloWeb.GalleryLive.Album do
       %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
       _ -> {:noreply, socket}
     end
+  end
+
+  @impl true
+  def handle_event("set_preview", %{"preview-url" => name}, socket) do
+    PreviewForm.handle_event("validate",name,socket)
+    {:noreply, socket |> assign(:preview, path(name))}
   end
 
   @impl true
@@ -65,16 +72,13 @@ defmodule PicselloWeb.GalleryLive.Album do
     } = socket
   ) do
     IO.puts"_________________________________"
-        IO.inspect @per_page
-        IO.inspect page
-assign(socket,
- photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
-)
-end
-  # def render(assigns) do
-  #   IO.inspect(assigns)
-  #   ~H"""
-  #     ____PRODUCT____
-  #   """
-  # end
+    p = Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
+        IO.inspect p
+    assign(socket,
+      photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
+    )
+  end
+
+  def path(nil), do: "/images/card_blank.png"
+  def path(url), do: PhotoStorage.path_to_url(url)
 end

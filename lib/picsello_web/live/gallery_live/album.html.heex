@@ -27,7 +27,7 @@
 <% end %>
     <div class="preview_vs_descritpion">
         <div class="preview">
-            <img src="/images/card_blank.png">
+            <img src={ @preview }>
         </div>
         <div class="description">
         Lorem Ipsum
@@ -57,7 +57,10 @@
                         height: auto;
                 "
         >
-            <div class="item-content">
+
+            <div class="item-content" 
+                phx-click="set_preview"
+                phx-value-preview-url={photo.original_url}>
                 <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
                     photo: photo,

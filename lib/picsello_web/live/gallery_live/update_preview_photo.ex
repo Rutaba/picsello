@@ -1,25 +1,44 @@
-defmodule PicselloWeb.GalleryLive.UpdatePreviewPhoto do
+defmodule    do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries
+  alias Ecto.Changeset
+  use Ecto.Schema
+
+  schema "preview" do
+    field :preview, :string
+  end
 
   @impl true
   # def update(data, socket) do
 
-  def update(%{id: _id, gallery: gallery}, socket) do
-      IO.puts "_______!!!!________"
-    IO.inspect gallery.product_preview
+  def update(data, socket) do
+      IO.puts "_______!!()!!________"
+    IO.inspect data
     {:ok,
      socket
-     |> assign(:product_preview, gallery.product_preview)
-     |> assign(:gallery, gallery)
-     |> assign_gallery_changeset()}
+     |> assign(:changeset, Ecto.Changeset.cast(%PicselloWeb.GalleryLive.UpdatePreviewPhoto{},%{},[]))}
+    # |> assign(:product_preview, gallery.product_preview)
+    # |> assign(:changeset, )
+    #  |> assign_gallery_changeset()}
   end
 
   @impl true
-  def handle_event("validate", %{"gallery" => %{"name" => name}}, socket) do
+  def handle_event("validate", d, socket) do
+    IO.puts "()()()()()()()()()()("
+    IO.inspect d
     socket
-    |> assign_gallery_changeset(%{name: name})
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("set_preview", _, socket) do
+    IO.inspect "**************************"
+    # %{assigns: %{gallery: gallery}} = socket
+    # {:ok, gallery} = Galleries.update_gallery(gallery, %{name: name})
+
+    socket
+#    |> assign(:gallery, gallery)
     |> noreply
   end
 
