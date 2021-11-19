@@ -148,9 +148,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:photo_upload_completed, count}, %{assigns: %{gallery: gallery}} = socket) do
-    {:ok, _gallery} =
-      Galleries.update_gallery(gallery, %{total_count: (gallery.total_count || 0) + count})
+  def handle_info({:photo_upload_completed, _count}, %{assigns: %{gallery: gallery}} = socket) do
+    Galleries.update_gallery_photo_count(gallery.id)
 
     Galleries.normalize_gallery_photo_positions(gallery.id)
 
