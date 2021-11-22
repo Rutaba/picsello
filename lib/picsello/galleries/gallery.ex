@@ -67,6 +67,14 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_name()
   end
 
+  def update_changesett(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, @update_attrs)
+    #|> validate_required(@required_attrs)
+    |> validate_status(@status_options[:values])
+    |> validate_name()
+  end
+
   def save_watermark(gallery, watermark_changeset) do
     gallery
     |> change

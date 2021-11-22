@@ -3,28 +3,101 @@ defmodule PicselloWeb.GalleryLive.Album do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
-  alias PicselloWeb.GalleryLive.UpdatePreviewPhoto, as: PreviewForm
+  alias Picsello.Galleries.Workers.PositionNormalizer
+  import Ecto.Changeset
+  use Ecto.Schema
+
+  schema "preview" do
+    field :preview, :string
+  end
 
   @per_page 12
 
-  def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:preview, path(nil))}
+  def mount(params, _session, socket) do
+    {:ok,
+      socket
+        |> assign(:preview, path(nil))
+        |> assign(:changeset, changeset(%{},[:preview]))}
+  end
+
+  def update(data, socket) do
+    IO.puts "________&&&&&+________"
+    # IO.inspect socket.changeset
+    {:ok,
+      socket}
+      #  |> assign(:changeset, changeset(%{},[:preview]))}
+end
+
+  def changeset(data, prop) do
+    cast(%__MODULE__{},data,prop)
+      |> validate_required([:preview])
+  end
+
+
+
+  @impl true
+  # def handle_event("validate", d, socket) do
+  #   IO.puts "()()()()()validate album()()()()()("
+  #   IO.inspect socket.changeset
+  #   chngset = socket.changeset |> validate_required([:preview])
+
+  #   socket
+  #   |> assign(:changeset, chngset)
+  #   |> noreply
+  # end
+
+
+  # @impl true
+  # def handle_event("start", _params, socket) do
+  #   socket.assigns.uploads.cover_photo
+  #   |> case do
+  #     %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
+  #     _ -> {:noreply, socket}
+  #   end
+  # end
+
+  @impl true
+  def handle_event("set_preview", %{"preview-url" => name} = d, socket) do
+    IO.puts "*****************"
+    chngst = changeset(%{preview: name},[:preview])
+      |> validate_required([:preview])
+
+     s = socket
+      |> assign(:preview, path(name))
+      |> assign(:changeset, chngst)
+
+      PositionNormalizer.normalize(5)
+      #update([], s)
+    {:noreply, s}
+  end
+
+  def handle_event(_,_,socket) do
+    {:noreply, socket}
+  end
+
+
+  @impl true
+  def handle_event("save",data, socket) do
+    IO.puts "SSSSSSSSSSSSSSSSSS"
+    %{assigns: %{preview: preview}} = socket
+    gallery = Picsello.Galleries.get_gallery!(5)
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{product_preview: preview})
+
+    socket
+    |> assign(:gallery, gallery)
+    |> noreply
   end
 
   @impl true
-  def handle_event("start", _params, socket) do
-    socket.assigns.uploads.cover_photo
-    |> case do
-      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
-      _ -> {:noreply, socket}
-    end
+  def handle_event("reset", _params, socket) do
+    %{assigns: %{gallery: gallery}} = socket
+
+    socket
+    |> assign(:gallery, Galleries.reset_gallery_name(gallery))
+    #|> assign_gallery_changeset()
+    |> noreply
   end
 
-  @impl true
-  def handle_event("set_preview", %{"preview-url" => name}, socket) do
-    PreviewForm.handle_event("validate",name,socket)
-    {:noreply, socket |> assign(:preview, path(name))}
-  end
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do

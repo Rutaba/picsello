@@ -1,6 +1,3 @@
-
-
-
 <div class="w-full bg-base-200 px-16 py-7">
 <div class="flex items-center justify-between" style="width:360px;">
    <div class="circleBtn">
@@ -27,11 +24,20 @@
 <% end %>
     <div class="preview_vs_descritpion">
         <div class="preview">
-            <img src={ @preview }>
+            <img src={@preview}>
         </div>
         <div class="description">
         Lorem Ipsum
-            <%= live_component PicselloWeb.GalleryLive.UpdatePreviewPhoto, id: @gallery.id, gallery: @gallery %>
+
+            <div>
+  <.form let={f} for={@changeset}
+   phx-submit="save" phx-target="#album" id="album">
+    <%= hidden_input f, :url %>
+
+    <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+  </.form>
+  
+</div>
         </div>    
     </div>
         
@@ -49,14 +55,10 @@
 
     
         <%= for photo <- @photos do %>
-        <div
-                class="item"
-                id="photo-item-{ photo.id }"
-                style="
-                        width: 300px;
-                        height: auto;
-                "
-        >
+  
+        <%=   %>
+
+        <div class="item" id={ "photo-item-#{photo.id}" }>
 
             <div class="item-content" 
                 phx-click="set_preview"
@@ -69,6 +71,7 @@
             </div>
         </div>
         <% end %>
+        
     </div>
 </div>
 
