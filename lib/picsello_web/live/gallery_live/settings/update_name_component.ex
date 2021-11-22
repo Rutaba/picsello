@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.UpdateNameComponent do
+defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries

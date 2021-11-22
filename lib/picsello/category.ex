@@ -12,8 +12,9 @@ defmodule Picsello.Category do
     field :position, :integer
     field :whcc_id, :string
     field :whcc_name, :string
+    has_many(:products, Picsello.Product)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   def active, do: from(category in __MODULE__, where: is_nil(category.deleted_at))
@@ -22,6 +23,7 @@ defmodule Picsello.Category do
     category
     |> cast(attrs, [:hidden, :icon, :name, :position])
     |> validate_required([:icon, :name, :position])
+    |> validate_inclusion(:icon, Picsello.Icon.names())
     |> unique_constraint(:position)
   end
 end

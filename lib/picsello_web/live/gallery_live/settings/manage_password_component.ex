@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.ManagePasswordComponent do
+defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries

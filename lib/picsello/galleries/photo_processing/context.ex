@@ -45,7 +45,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       "previewPath" => Photo.preview_path(photo),
       "watermarkedPreviewPath" => Photo.watermarked_preview_path(photo),
       "watermarkedOriginalPath" => Photo.watermarked_path(photo),
-      "watermarkPath" => watermark_path
+      "watermarkPath" => watermark_path,
+      "watermarkText" => watermark.type == "text" && watermark.text
     }
   end
 
