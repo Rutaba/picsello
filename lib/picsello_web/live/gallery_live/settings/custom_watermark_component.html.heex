@@ -6,18 +6,18 @@
 
   <%= if @case == :image and watermark_type(@watermark) == :text do  %>
     <div class="errorWatermarkMessage flex justify-between items-center py-3 px-6 mb-7" role="alert">
-      <.icon name="warning-orange" width="25" height="20" class="inline-block"/>
-      <span class="pl-4"><span style="font-bold">Note:</span> you already have a text watermark saved. If you choose to save an image watermark, this will replace your currently saved text watermark.</span>
+      <.icon name="warning-orange" class="inline-block w-8 md:w-12"/>
+      <span class="pl-4 text-sm md:text-base"><span style="font-bold">Note:</span> you already have a text watermark saved. If you choose to save an image watermark, this will replace your currently saved text watermark.</span>
     </div>
   <% end %>
   <%= if @case == :text and watermark_type(@watermark) == :image do  %>
-    <div class="errorWatermarkMessage flex justify-between items-center py-3 px-6 mb-7" role="alert">
-      <.icon name="warning-orange" width="25" height="20" class="inline-block"/>
-      <span class="pl-4"><span style="font-bold">Note:</span> you already have an image watermark saved. If you choose to save a text watermark, this will replace your currently saved image watermark.</span>
+    <div class="errorWatermarkMessage flex justify-between items-start md:items-center py-3 px-6 mb-7" role="alert">
+      <.icon name="warning-orange" class="inline-block w-12 h-7 sm:h-8"/>
+      <span class="pl-4 text-sm md:text-base"><span style="font-bold">Note:</span> you already have an image watermark saved. If you choose to save a text watermark, this will replace your currently saved image watermark.</span>
     </div>
   <% end %>
 
-  <div class="flex justify-start mb-2.5">
+  <div class="flex justify-start mb-4">
     <button class={classes("watermarkTypeBtn", %{"active" => @case == :image})} phx-click="image_case" phx-target={@myself}>
       <span>Image</span>
     </button>
@@ -38,16 +38,16 @@
         </div>
       </div>
     <% end %>
-    <div class={classes("dragDrop__wrapper overflow-hidden",%{"tiny" => watermark_type(@watermark) == :image})}>
+    <div class="dragDrop__wrapper overflow-hidden">
       <form id="dragDrop-form" phx-submit="save" phx-change="validate_image_input" phx-target={@myself}>
        <label>
         <div
           id="dropzone"
           phx-hook="DragDrop"
           phx-drop-target={@uploads.image.ref}
-          class={classes("flex flex-col items-center justify-center gap-8 dragDrop", %{"active" => watermark_type(@watermark) == :image})}
+          class="flex flex-col items-center justify-center gap-8 dragDrop"
           >
-          <img src="/images/drag-drop-img.png" width="76" height="76" class={classes("cursor-pointer", %{"hidden" => watermark_type(@watermark) == :image})}/>
+          <img src="/images/drag-drop-img.png" width="76" height="76" class="cursor-pointer"/>
           <div class="dragDrop__content">
           <p class="font-bold">
             <span class="font-bold text-base-300">Drop images or </span>
@@ -62,7 +62,7 @@
       </form>
     </div>
     <%= for entry <- @uploads.image.entries do %>
-      <div class="flex items-center justify-between uploadingList__wrapper w-full pt-7" id={entry.uuid}>
+      <div class="flex items-center justify-between uploadingList__wrapper watermarkProgress w-full pt-7" id={entry.uuid}>
         <%= if entry.progress == 100 do%>
           <p class="font-bold">Upload complete!</p>
         <% else %>

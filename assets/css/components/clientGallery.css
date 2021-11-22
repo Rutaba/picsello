@@ -87,7 +87,7 @@
 }
 
 .customWatermarkPopup .uploadingList__wrapper progress {
-    @apply w-40;
+    @apply w-5/12;
 }
 
 .errorWatermarkMessage {
@@ -140,6 +140,7 @@
     text-2xl
     font-bold
     text-right;
+    max-width: 50px;
 }
 
 .circleBtn ul {
@@ -303,13 +304,14 @@
     @apply bg-transparent !important;
 }
 
+.selectBox__wrapper select option{
+    background: white;
+    color: green;
+}
+
 @media screen and (min-width: 1024px){
     .customWatermarkPopup {
          width: 1041px;
-    }
-
-    .customWatermarkPopup .uploadingList__wrapper progress {
-        @apply w-96;
     }
 }
 
