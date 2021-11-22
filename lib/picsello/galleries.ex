@@ -295,6 +295,25 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Removes the photo from DB and all its versions from cloud bucket.  
+  """
+  def delete_photo(%Photo{} = photo) do
+    Repo.delete(photo)
+
+    [
+      photo.original_url,
+      photo.preview_url,
+      photo.watermarked_url,
+      photo.watermarked_preview_url
+    ]
+    |> Enum.each(fn path ->
+      %{path: path}
+      |> CleanStore.new()
+      |> Oban.insert()
+    end)
+  end
+
+  @doc """
   Normalizes photos positions within a gallery
   """
   def normalize_gallery_photo_positions(gallery_id) do
