@@ -1,12 +1,12 @@
 <header class="bg-blue-planning-100">
   <div class="p-6 pb-2 lg:pb-6 center-container">
-    <div class="text-xs text-blue-planning-200">
-      <%= live_redirect to: Routes.job_path(@socket, @live_action) do %>
+    <.crumbs>
+      <:crumb to={Routes.job_path(@socket, @live_action)}>
         <%= action_name(@live_action, :plural) %>
-      <% end %>
-      <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
-      <span class="font-semibold"><%= Job.name @job %></span>
-    </div>
+      </:crumb>
+
+      <:crumb><%= Job.name @job %></:crumb>
+    </.crumbs>
 
     <hr class="mt-2 border-white" />
 

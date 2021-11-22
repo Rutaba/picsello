@@ -7,6 +7,20 @@
 # General application configuration
 use Mix.Config
 
+with dotenv = "#{__DIR__}/../.env",
+     {:ok, data} <- File.read(dotenv),
+     do:
+       for(
+         "export" <> kv <- String.split(data, "\n"),
+         [k, v] = String.split(kv, "=", parts: 2),
+         do: k |> String.trim() |> System.put_env(v)
+       )
+
+with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"),
+     {:ok, json} <- base64 |> String.trim() |> Base.decode64() do
+  config :goth, json: json
+end
+
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
 config :picsello,
@@ -45,20 +59,14 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: System.get_env("GOOGLE_CLIENT_ID"),
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
-config :gcs_sign,
-  gcp_credentials: %{
-    "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
-    "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
-    "client_email" => "storage-account@celtic-rite-323300.iam.gserviceaccount.com",
-    "client_id" => "111011783898360383654",
-    "client_x509_cert_url" =>
-      "https://www.googleapis.com/robot/v1/metadata/x509/storage-account%40celtic-rite-323300.iam.gserviceaccount.com",
-    "private_key" => System.get_env("GCP_PRIVATE_KEY"),
-    "private_key_id" => System.get_env("GCP_PRIVATE_KEY_ID"),
-    "project_id" => "celtic-rite-323300",
-    "token_uri" => "https://oauth2.googleapis.com/token",
-    "type" => "service_account"
-  }
+config :picsello,
+  photo_output_subscription: {
+    BroadwayCloudPubSub.Producer,
+    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION")
+  },
+  photo_processing_input_topic: System.get_env("PHOTO_PROCESSING_INPUT_TOPIC"),
+  photo_processing_output_topic: System.get_env("PHOTO_PROCESSING_OUTPUT_TOPIC"),
+  photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET")
 
 config :picsello, :whcc,
   adapter: Picsello.WHCC.Client,
@@ -68,7 +76,7 @@ config :picsello, :whcc,
 
 config :picsello, Oban,
   repo: Picsello.Repo,
-  queues: [default: 10],
+  queues: [default: 10, storage: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,

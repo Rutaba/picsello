@@ -7,6 +7,8 @@ defmodule Picsello.Galleries do
   alias Picsello.Repo
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark}
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.Workers.CleanStore
 
   @doc """
   Returns the list of galleries.
@@ -250,6 +252,15 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Updates a photo
+  """
+  def update_photo(%Photo{id: _} = photo, %{} = attrs) do
+    photo
+    |> Photo.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
   Gets a single photo by id.
 
   Returns nil if the Photo does not exist.
@@ -368,20 +379,30 @@ defmodule Picsello.Galleries do
     )
   end
 
+  def update_gallery_photo_count(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        UPDATE galleries 
+        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer) 
+        WHERE id = $1::integer;
+      """,
+      [gallery_id]
+    )
+  end
+
   def gallery_current_status(nil), do: :none_created
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
   def gallery_current_status(%Gallery{total_count: nil}), do: :upload_in_progress
 
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos])
-    has_watermark = false
 
     gallery
     |> Map.get(:photos, [])
     |> Enum.any?(fn photo ->
       is_nil(photo.aspect_ratio) ||
-        is_nil(photo.preview_url) ||
-        (has_watermark && is_nil(photo.watermarked_url))
+        is_nil(photo.preview_url)
     end)
     |> then(fn
       false -> :ready
@@ -391,12 +412,23 @@ defmodule Picsello.Galleries do
 
   @doc """
   Creates or updates watermark of the gallery.
+  And triggers photo watermarking
   """
   def save_gallery_watermark(gallery, watermark_change) do
     gallery
     |> Repo.preload(:watermark)
     |> Gallery.save_watermark(watermark_change)
     |> Repo.update()
+    |> tap(fn
+      {:ok, gallery} ->
+        gallery
+        |> Repo.preload([:watermark, :photos])
+        |> Map.get(:photos)
+        |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
+
+      x ->
+        x
+    end)
   end
 
   @doc """
@@ -411,6 +443,25 @@ defmodule Picsello.Galleries do
   """
   def delete_gallery_watermark(watermark) do
     Repo.delete(watermark)
+  end
+
+  @doc """
+  Clears watermarks of photos and triggers watermarked versions removal
+  """
+  def clear_watermarks(gallery_id) do
+    get_gallery!(gallery_id)
+    |> Repo.preload(:photos)
+    |> Map.get(:photos)
+    |> Enum.each(fn photo ->
+      [photo.watermarked_preview_url, photo.watermarked_url]
+      |> Enum.each(fn path ->
+        %{path: path}
+        |> CleanStore.new()
+        |> Oban.insert()
+      end)
+
+      update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+    end)
   end
 
   @doc """

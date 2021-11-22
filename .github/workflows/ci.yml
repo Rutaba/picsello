@@ -14,6 +14,7 @@ env:
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
   SHELL: /usr/bin/bash
 
+
 jobs:
   build:
 
@@ -65,6 +66,12 @@ jobs:
       run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
     - name: Run tests
       run: mix test --trace --cover
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
+        PHOTO_STORAGE_BUCKET: 'picsello-staging'
+        PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
+        PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
+        PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
 
     - name: Archive screenshots
       if: ${{failure()}}

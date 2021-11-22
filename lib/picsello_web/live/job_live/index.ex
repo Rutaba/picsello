@@ -124,8 +124,8 @@ defmodule PicselloWeb.JobLive.Index do
         <% end %>
       </div>
       <span class="text-xs font-semibold"><%= @value %></span>
-      <.icon name="down" class="w-3 h-3 ml-2 stroke-current open-icon text-blue-planning-300" />
-      <.icon name="up" class="hidden w-3 h-3 ml-2 stroke-current close-icon text-blue-planning-300" />
+      <.icon name="down" class="w-3 h-3 ml-2 stroke-current stroke-2 open-icon text-blue-planning-300" />
+      <.icon name="up" class="hidden w-3 h-3 ml-2 stroke-current stroke-2 close-icon text-blue-planning-300" />
     </div>
     """
   end

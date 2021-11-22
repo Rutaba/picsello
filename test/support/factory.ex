@@ -264,8 +264,6 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-  
-
   def category_factory,
     do: %Picsello.Category{
       whcc_id: sequence("whcc_id"),
@@ -274,4 +272,14 @@ defmodule Picsello.Factory do
       position: 0,
       icon: "book"
     }
+
+  def product_factory,
+    do:
+      %Picsello.Product{
+        whcc_id: sequence("whcc_id"),
+        whcc_name: "polo",
+        position: 0,
+        category: fn -> build(:category) end
+      }
+      |> evaluate_lazy_attributes()
 end

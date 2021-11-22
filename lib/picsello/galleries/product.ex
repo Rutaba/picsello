@@ -4,7 +4,7 @@ defmodule Picsello.Galleries.Product do
 
   import Ecto.Changeset
 
-  schema "products" do
+  schema "gallery_products" do
     field :name, :string
     field :corners, {:array, {:array, :integer}}
     field :template_image_url, :string

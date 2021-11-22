@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.ProductPreview do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Product, Photo}
+  alias Picsello.Galleries.{Product, Photo}
 
   schema "product_previews" do
     field :index, :integer, default: 1

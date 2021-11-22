@@ -4,10 +4,10 @@
         <div class="circleBtn">
             <ul>
                 <li>
-                    <a href="#">
+                    <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
                         <img src="/images/arrow-left.png"/>
                         <span>Back to job</span>
-                    </a>
+                    <% end %>
                 </li>
             </ul>
         </div>
@@ -86,8 +86,8 @@
                 id="photo-item-<%= photo.id %>"
                 style="
                         width: 300px;
-                        height: <%= 300 / photo.aspect_ratio %>px;
-                        "
+                        height: <%= if photo.aspect_ratio, do: "#{300 / photo.aspect_ratio}px", else: "auto" %>;
+                "
         >
             <div class="item-content">
                 <%= live_component PicselloWeb.GalleryLive.PhotoComponent,

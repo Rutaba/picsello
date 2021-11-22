@@ -1,8 +1,10 @@
 defmodule Picsello.WHCC.Adapter do
   @moduledoc false
-  @callback categories() :: [Picsello.WHCC.Category.t()]
+  @callback products() :: [Picsello.WHCC.Product.t()]
+  @callback product_details(Picsello.WHCC.Product.t()) :: Picsello.WHCC.Product.t()
 
-  def categories(), do: impl().categories()
+  def products(), do: impl().products()
+  def product_details(product), do: impl().product_details(product)
 
   defp impl, do: Application.get_env(:picsello, :whcc) |> Keyword.get(:adapter)
 end

@@ -7,13 +7,11 @@ defmodule Picsello.Application do
 
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
+    producer_module = Application.get_env(:picsello, :photo_output_subscription)
 
     children = [
       # Start libCluster
       {Cluster.Supervisor, [topologies, [name: Picsello.ClusterSupervisor]]},
-      ImageProcessing.TaskKeeper,
-      ImageProcessing.TaskProxy,
-      ImageProcessing.Flow,
       # Start the Ecto repository
       Picsello.Repo,
       # Start the Telemetry supervisor
@@ -28,7 +26,8 @@ defmodule Picsello.Application do
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
       # Gallery workers
-      Picsello.Galleries.Workers.PositionNormalizer
+      Picsello.Galleries.Workers.PositionNormalizer,
+      {Picsello.Galleries.PhotoProcessing.ProcessedConsumer, [producer_module: producer_module]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
