@@ -1,4 +1,4 @@
-defmodule    do
+defmodule PicselloWeb.GalleryLive.UpdatePreviewPhoto   do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries
