@@ -81,7 +81,6 @@
 .customWatermarkPopup {
     max-height: 950px;
     @apply bg-base-100
-    w-11/12
     mx-auto
     my-0;
 }
