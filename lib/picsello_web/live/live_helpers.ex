@@ -230,4 +230,7 @@ defmodule PicselloWeb.LiveHelpers do
     </span>
     """
   end
+
+  def filesize(byte_size) when is_integer(byte_size),
+    do: Size.humanize!(byte_size, spacer: "")
 end

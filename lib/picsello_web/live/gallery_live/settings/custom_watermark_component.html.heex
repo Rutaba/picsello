@@ -31,7 +31,7 @@
       <div class="flex justify-between mt-11 mb-8">
         <p><%= @watermark.name %></p>
         <div class="flex">
-        <p><%= @watermark.size %> Kb</p>
+        <p><%= filesize(@watermark.size) %></p>
         <button phx-click="delete" phx-target={@myself} class="pl-7">
             <.icon name="remove-icon" class="w-4 h-4 ml-1 text-base-250"/>
          </button>
