@@ -8,7 +8,7 @@ defmodule Picsello.Galleries do
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark}
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Workers.CleanStore
 
   @doc """
   Returns the list of galleries.
@@ -453,8 +453,13 @@ defmodule Picsello.Galleries do
     |> Repo.preload(:photos)
     |> Map.get(:photos)
     |> Enum.each(fn photo ->
-      PhotoStorage.delete(photo.watermarked_preview_url)
-      PhotoStorage.delete(photo.watermarked_url)
+      [photo.watermarked_preview_url, photo.watermarked_url]
+      |> Enum.each(fn path ->
+        %{path: path}
+        |> CleanStore.new()
+        |> Oban.insert()
+      end)
+
       update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
     end)
   end
