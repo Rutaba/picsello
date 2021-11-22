@@ -1,4 +1,5 @@
 defmodule Picsello.Workers.CleanStore do
+  @moduledoc "Background job to clear obsolete files in storage"
   use Oban.Worker, queue: :storage
 
   require Logger
