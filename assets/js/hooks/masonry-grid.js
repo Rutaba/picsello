@@ -159,8 +159,6 @@ export default {
     const itemElement = document.getElementById(`photo-item-${id}`);
     const item = grid.getItem(itemElement);
 
-    console.log(itemElement)
-    console.log(item)
     grid.remove([item], { removeElements: true })
   },
 
