@@ -5,13 +5,13 @@
   </div>
 
   <%= if @case == :image and watermark_type(@watermark) == :text do  %>
-    <div class="errorWatermarkMessage flex justify-between items-center py-3 px-6 mb-7" role="alert">
-      <.icon name="warning-orange" class="inline-block w-8 md:w-12"/>
+    <div class="errorWatermarkMessage flex justify-between items-start sm:items-center py-3 px-6 mb-7" role="alert">
+      <.icon name="warning-orange" class="inline-block w-12 h-7 sm:h-8"/>
       <span class="pl-4 text-sm md:text-base"><span style="font-bold">Note:</span> you already have a text watermark saved. If you choose to save an image watermark, this will replace your currently saved text watermark.</span>
     </div>
   <% end %>
   <%= if @case == :text and watermark_type(@watermark) == :image do  %>
-    <div class="errorWatermarkMessage flex justify-between items-start md:items-center py-3 px-6 mb-7" role="alert">
+    <div class="errorWatermarkMessage flex justify-between items-start sm:items-center py-3 px-6 mb-7" role="alert">
       <.icon name="warning-orange" class="inline-block w-12 h-7 sm:h-8"/>
       <span class="pl-4 text-sm md:text-base"><span style="font-bold">Note:</span> you already have an image watermark saved. If you choose to save a text watermark, this will replace your currently saved image watermark.</span>
     </div>
@@ -31,9 +31,9 @@
       <div class="flex justify-between mt-11 mb-8">
         <p><%= @watermark.name %></p>
         <div class="flex">
-        <p><%= @watermark.size %></p>
+        <p><%= @watermark.size %> Kb</p>
         <button phx-click="delete" phx-target={@myself} class="pl-7">
-            <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+            <.icon name="remove-icon" class="w-4 h-4 ml-1 text-base-250"/>
          </button>
         </div>
       </div>

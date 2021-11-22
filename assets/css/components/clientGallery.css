@@ -304,19 +304,15 @@
     @apply bg-transparent !important;
 }
 
-.selectBox__wrapper select option{
-    background: white;
-    color: green;
-}
 
-@media screen and (min-width: 1024px){
+@media screen and (min-width: 1024px) {
     .customWatermarkPopup {
-         width: 1041px;
+        width: 1041px;
     }
 }
 
 
-@media screen and (max-width: 640px){
+@media screen and (max-width: 640px) {
     .circleBtn ul li a {
         min-width: 40px;
     }
