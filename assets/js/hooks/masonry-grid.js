@@ -165,6 +165,12 @@ export default {
       }
     })
 
+    // init_reload_listener() {
+    //   this.handleEvent("reload_grid", ({}) => console.log("reload_griid"))//this.reload_masonry())
+    // },
+
+    // this.init_reload_listener();
+    this.handleEvent("reload_grid", ({}) => this.reload_masonry())
     this.init_masonry();
   },
 

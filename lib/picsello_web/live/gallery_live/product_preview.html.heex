@@ -27,17 +27,18 @@
             <img src={@preview}>
         </div>
         <div class="description">
-        Lorem Ipsum
+            Lorem Ipsum
 
             <div>
-  <.form let={f} for={@changeset}
-   phx-submit="save" phx-target="#album" id="album">
-    <%= hidden_input f, :url %>
+            <.form let={f} for={@changeset} phx-submit="save" id="product_preview">
+                <%= hidden_input f, :photo_id, value: @photo_id %>
+                <%= hidden_input f, :product_id, value: @product_id %>
 
-    <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
-  </.form>
+                <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+                    disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+            </.form>
   
-</div>
+            </div>
         </div>    
     </div>
         
@@ -55,21 +56,21 @@
 
     
         <%= for photo <- @photos do %>
-  
-        <%=   %>
 
-        <div class="item" id={ "photo-item-#{photo.id}" }>
+            <div class="item" id={ "photo-item-#{photo.id}" }>
 
-            <div class="item-content" 
-                phx-click="set_preview"
-                phx-value-preview-url={photo.original_url}>
-                <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-                    id: photo.id,
-                    photo: photo,
-                    is_likable: false,
-                    is_removable: true %>
+                <div class="item-content" 
+                    phx-click="set_preview"
+                    phx-value-preview-url={photo.original_url}
+                    phx-value-photo_id={photo.id}
+                    phx-value-product_id={@product_id}>
+                    <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                        id: photo.id,
+                        photo: photo,
+                        is_likable: false,
+                        is_removable: true %>
+                </div>
             </div>
-        </div>
         <% end %>
         
     </div>
