@@ -142,39 +142,35 @@ defmodule PicselloWeb.Live.Pricing.Category do
   end
 
   defp update_markup(category, markup) do
-    %{
-      category
-      | products:
-          Enum.map(category.products, fn product ->
-            if product.id == markup.product_id do
-              %{
-                product
-                | variations:
-                    Enum.map(product.variations, fn variation ->
-                      if variation.id == markup.whcc_variation_id do
-                        %{
-                          variation
-                          | attributes:
-                              Enum.map(variation.attributes, fn attribute ->
-                                if attribute.id == markup.whcc_attribute_id &&
-                                     attribute.category_id == markup.whcc_attribute_category_id do
-                                  %{attribute | markup: markup.value}
-                                else
-                                  attribute
-                                end
-                              end)
-                        }
-                      else
-                        variation
-                      end
-                    end)
-              }
-            else
-              product
-            end
-          end)
-    }
+    products =
+      update_enum(category.products, &(&1.id == markup.product_id), fn product ->
+        %{
+          product
+          | variations:
+              update_enum(
+                product.variations,
+                &(&1.id == markup.whcc_variation_id),
+                fn variation ->
+                  %{
+                    variation
+                    | attributes:
+                        update_enum(
+                          variation.attributes,
+                          &(&1.id == markup.whcc_attribute_id &&
+                              &1.category_id == markup.whcc_attribute_category_id),
+                          &%{&1 | markup: markup.value}
+                        )
+                  }
+                end
+              )
+        }
+      end)
+
+    %{category | products: products}
   end
+
+  defp update_enum(enum, predicate, update),
+    do: Enum.map(enum, &if(predicate.(&1), do: update.(&1), else: &1))
 
   defp all_expanded?(products, expanded) do
     [all, expanded] =

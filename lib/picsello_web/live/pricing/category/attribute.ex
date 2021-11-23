@@ -62,7 +62,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
         Map.update(
           params,
           "value",
-          Markup.default_markup(),
+          "",
           &String.trim_trailing(&1, "%")
         )
       )
@@ -106,9 +106,8 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
          whcc_attribute_category_id: whcc_attribute_category_id,
          whcc_variation_id: whcc_variation_id,
          product_id: product_id,
-         value: value || default_markup()
+         value: value
        }
 
   defp markup(changeset), do: Ecto.Changeset.get_field(changeset, :value)
-  defdelegate default_markup, to: Markup
 end

@@ -49,15 +49,12 @@ defmodule PicselloWeb.Live.Pricing.Category.Variation do
     min =
       attributes
       |> Enum.map(&markup/1)
-      |> Enum.min(&default_markup/0)
-      |> trunc()
+      |> Enum.min()
 
     "#{min}%"
   end
 
-  defp markup(%{markup: markup}) do
-    markup || default_markup()
-  end
+  defp markup(%{markup: markup}), do: markup
 
   defp min_base_price(%{attributes: attributes}) do
     attributes |> Enum.map(& &1.price) |> min_money()
@@ -66,6 +63,4 @@ defmodule PicselloWeb.Live.Pricing.Category.Variation do
   defp min_money(prices) do
     prices |> Enum.min(fn -> Money.new(0) end)
   end
-
-  defdelegate default_markup, to: Picsello.Markup
 end

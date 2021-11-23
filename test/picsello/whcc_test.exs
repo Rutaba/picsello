@@ -222,7 +222,7 @@ defmodule Picsello.WHCCTest do
                      price: %Money{amount: 91, currency: :USD},
                      markup: 2
                    }
-                   | [%{category_id: "paper_type", markup: nil} | _]
+                   | [%{category_id: "paper_type", markup: 100} | _]
                  ]
                }
                | _

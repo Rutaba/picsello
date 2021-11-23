@@ -12,6 +12,7 @@ function percentMask(el) {
         normalizeZeros: true,
         scale: 2,
         signed: false,
+        radix: '.',
       },
     },
   });

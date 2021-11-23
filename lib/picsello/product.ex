@@ -44,7 +44,7 @@ defmodule Picsello.Product do
         'price',
         attributes.price,
         'markup',
-        markups.value
+        coalesce(markups.value, ?)
       )
       order by
         attributes.category_id,
@@ -104,10 +104,12 @@ defmodule Picsello.Product do
   def active, do: from(product in __MODULE__, where: is_nil(product.deleted_at))
 
   def with_attributes(query, %{organization_id: organization_id}) do
+    default_markup = Picsello.Markup.default_markup()
+
     query
     |> with_cte("attributes", as: fragment(@attributes_cte))
     |> with_cte("attributes_with_markups",
-      as: fragment(@attributes_with_markups_cte, ^organization_id)
+      as: fragment(@attributes_with_markups_cte, ^default_markup, ^organization_id)
     )
     |> with_cte("variations", as: fragment(@variations_cte))
     |> join(:inner, [product], variation in "variations", on: variation.product_id == product.id)
