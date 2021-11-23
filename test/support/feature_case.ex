@@ -21,14 +21,14 @@ defmodule Picsello.FeatureCase do
 
       unix = DateTime.to_unix(%{date | second: 0})
 
-      with "" <> id <- Wallaby.Element.attr(input, "id") do
-        session
-        |> execute_script(
-          "document.getElementById(arguments[0]).valueAsNumber = arguments[1];",
-          [id, unix * 1000],
-          &send(self(), {:result, &1})
-        )
-      end
+      "" <> id = Wallaby.Element.attr(input, "id")
+
+      execute_script(
+        session,
+        "document.getElementById(arguments[0]).valueAsNumber = arguments[1];",
+        [id, unix * 1000],
+        &send(self(), {:result, &1})
+      )
 
       receive do
         {:result, _} -> nil
