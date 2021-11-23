@@ -23,8 +23,7 @@
     <%= if @is_removable do %>
         <button
             class="removeBtn absolute"
-            phx-click="remove"
-            phx-target={@myself}
+            phx-click="delete_photo_popup"
             phx-value-id={@id}
         >
             <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
