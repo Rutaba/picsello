@@ -1,10 +1,12 @@
 <div class="w-full bg-base-200 px-16 py-7">
 <div class="flex items-center justify-between" style="width:360px;">
-   <div class="circleBtn">
+    <div class="circleBtn">
         <ul>
             <li>
-                <img src="/images/arrow-left.png"/>
-                <span>Back to gallery</span>
+                <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+                    <img src="/images/arrow-left.png"/>
+                    <span>Back to job</span>
+                <% end %>
             </li>
         </ul>
     </div>
