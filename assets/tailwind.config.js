@@ -2,7 +2,7 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 const plugin = require('tailwindcss/plugin');
 const svgToDataUri = require('mini-svg-data-uri');
 
-const safelist = ['border', 'text', 'bg']
+const safelist = ['border', 'text', 'bg', 'hover:border']
   .map((pre) =>
     [
       'red-sales-300',
