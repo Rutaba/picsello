@@ -42,11 +42,14 @@ defmodule PicselloWeb.InboxLive.Index do
     ~H"""
     <div {testid("thread-card")} class="flex justify-between py-6 border-b pl-2 p-8 hover:bg-gray-100 cursor-pointer">
       <div>
-        <div class="text-xl"><%= @title %></div>
-        <div class="font-semibold py-0.5"><%= @subtitle %></div>
+        <div class="text-2xl line-clamp-1"><%= @title %></div>
+        <div class="line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
         <div class="line-clamp-1"><%= @message %></div>
       </div>
-      <div class="flex-shrink-0"><%= @date %></div>
+      <div class="relative flex flex-shrink-0">
+        <%= @date %>
+        <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300" />
+      </div>
     </div>
     """
   end
