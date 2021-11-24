@@ -30,11 +30,6 @@ defmodule Picsello.ManageJobShootTest do
     [job: job, session: session, shoots: shoots]
   end
 
-  def fill_in_date(session, field, opts \\ []) do
-    date = opts |> Keyword.get(:with) |> Calendar.strftime("%m%d%Y\t%I%M%p")
-    fill_in(session, field, with: date)
-  end
-
   def shoot_path(job, shoot_number),
     do: Routes.shoot_path(PicselloWeb.Endpoint, :jobs, job.id, shoot_number)
 

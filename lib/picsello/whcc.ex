@@ -79,13 +79,49 @@ defmodule Picsello.WHCC do
 
   def categories, do: Repo.all(categories_query())
 
-  def category(id) do
+  def category(id, user) do
     products =
       Picsello.Product.active()
-      |> Picsello.Product.with_attributes()
+      |> Picsello.Product.with_attributes(user)
 
-    from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
+    category =
+      from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
+
+    %{
+      category
+      | products:
+          Enum.map(
+            category.products,
+            &%{&1 | variations: variations(&1)}
+          )
+    }
   end
+
+  defp variations(%{variations: variations}),
+    do:
+      for(
+        variation <- variations,
+        do:
+          for(
+            k <- ~w(id name attributes)a,
+            do: {k, variation[Atom.to_string(k)]},
+            into: %{}
+          )
+          |> Map.update!(
+            :attributes,
+            &for(
+              attribute <- &1,
+              do:
+                for(
+                  k <-
+                    ~w(category_name category_id id name price markup)a,
+                  do: {k, attribute[Atom.to_string(k)]},
+                  into: %{}
+                )
+                |> Map.update!(:price, fn dolars -> Money.new(trunc(dolars * 100)) end)
+            )
+          )
+      )
 
   defp categories_query(),
     do:
@@ -93,34 +129,4 @@ defmodule Picsello.WHCC do
         where: not category.hidden,
         order_by: [asc: category.position]
       )
-
-  def variations(%Picsello.Product{attributes: attributes}) do
-    for {%{
-           "variation_id" => id,
-           "variation_name" => name,
-           "price" => price,
-           "category_name" => category_name,
-           "attribute_name" => attribute_name,
-           "attribute_id" => attribute_id
-         }, i} <- Enum.with_index(attributes),
-        reduce: %{} do
-      acc ->
-        attribute = %{
-          price: Money.new(trunc(price * 100)),
-          id: attribute_id,
-          name: attribute_name,
-          category_name: category_name,
-          position: i
-        }
-
-        Map.update(
-          acc,
-          %{id: id, name: name},
-          [attribute],
-          &[attribute | &1]
-        )
-    end
-    |> Enum.map(&Map.put(elem(&1, 0), :attributes, &1 |> elem(1) |> Enum.reverse()))
-    |> Enum.sort_by(&(&1 |> Map.get(:attributes) |> hd |> Map.get(:position)))
-  end
 end

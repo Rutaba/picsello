@@ -60,8 +60,7 @@ defmodule Picsello.CreateBookingProposalTest do
 
     assert [proposal] = Repo.all(BookingProposal)
     assert [client_message] = Repo.all(ClientMessage)
-    assert client_message.proposal_id == proposal.id
-    assert client_message.job_id == nil
+    assert client_message.job_id == proposal.job_id
 
     path =
       email

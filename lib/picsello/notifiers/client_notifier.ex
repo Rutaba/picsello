@@ -1,13 +1,16 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
+  alias Picsello.BookingProposal
 
   @doc """
   Deliver booking proposal email.
   """
   def deliver_booking_proposal(message, to_email) do
+    proposal = BookingProposal.last_for_job(message.job_id)
+
     sendgrid_template(:booking_proposal_template,
-      url: Picsello.BookingProposal.url(message.proposal_id),
+      url: Picsello.BookingProposal.url(proposal.id),
       subject: message.subject,
       body_html: message |> body_html,
       body_text: message.body_text

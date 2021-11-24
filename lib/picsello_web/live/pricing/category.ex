@@ -124,6 +124,54 @@ defmodule PicselloWeb.Live.Pricing.Category do
     socket |> assign(:expanded, expanded) |> noreply()
   end
 
+  @impl true
+  def handle_info(
+        {:markup, markup},
+        %{assigns: %{category: category, current_user: %{organization_id: organization_id}}} =
+          socket
+      ) do
+    case Picsello.Repo.insert(%{markup | organization_id: organization_id},
+           on_conflict: :replace_all,
+           conflict_target:
+             ~w[organization_id product_id whcc_attribute_id whcc_variation_id whcc_attribute_category_id]a,
+           returning: true
+         ) do
+      {:ok, markup} ->
+        socket |> assign(category: update_markup(category, markup)) |> noreply()
+    end
+  end
+
+  defp update_markup(category, markup) do
+    products =
+      update_enum(category.products, &(&1.id == markup.product_id), fn product ->
+        %{
+          product
+          | variations:
+              update_enum(
+                product.variations,
+                &(&1.id == markup.whcc_variation_id),
+                fn variation ->
+                  %{
+                    variation
+                    | attributes:
+                        update_enum(
+                          variation.attributes,
+                          &(&1.id == markup.whcc_attribute_id &&
+                              &1.category_id == markup.whcc_attribute_category_id),
+                          &%{&1 | markup: markup.value}
+                        )
+                  }
+                end
+              )
+        }
+      end)
+
+    %{category | products: products}
+  end
+
+  defp update_enum(enum, predicate, update),
+    do: Enum.map(enum, &if(predicate.(&1), do: update.(&1), else: &1))
+
   defp all_expanded?(products, expanded) do
     [all, expanded] =
       [Enum.map(products, & &1.id), Map.keys(expanded)]
@@ -144,7 +192,7 @@ defmodule PicselloWeb.Live.Pricing.Category do
     """
   end
 
-  defp assign_category(socket, id) do
-    socket |> assign(category: Picsello.WHCC.category(id))
+  defp assign_category(%{assigns: %{current_user: current_user}} = socket, id) do
+    socket |> assign(category: Picsello.WHCC.category(id, current_user))
   end
 end
