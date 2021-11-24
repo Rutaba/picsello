@@ -133,9 +133,10 @@ defmodule PicselloWeb.LeadLive.Show do
         :proposal,
         BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
       )
-      |> Ecto.Multi.insert(:message, fn changes ->
-        message_changeset |> Ecto.Changeset.put_change(:proposal_id, changes.proposal.id)
-      end)
+      |> Ecto.Multi.insert(
+        :message,
+        Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
+      )
       |> Repo.transaction()
 
     case result do
