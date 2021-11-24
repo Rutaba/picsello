@@ -44,7 +44,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
         <.th expanded={@expanded} class="hidden px-4 rounded-r-lg sm:block">Markup</.th>
 
         <%= if @expanded do %>
-          <%= for variation <- variations(@product) do %>
+          <%= for variation <- @product.variations do %>
             <.variation product_id={@product.id} variation={variation} expanded={@expanded} />
           <% end %>
         <% end %>
@@ -53,7 +53,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
     """
   end
 
-  def variation_ids(product), do: product |> variations() |> Enum.map(& &1[:id])
+  def variation_ids(product), do: product.variations |> Enum.map(& &1[:id])
 
   def all_expanded?(_, nil), do: false
 
@@ -77,6 +77,4 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
     </h3>
     """
   end
-
-  defdelegate variations(product), to: Picsello.WHCC
 end

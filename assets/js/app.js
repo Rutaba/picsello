@@ -27,6 +27,7 @@ import Clipboard from './hooks/clipboard';
 import Phone from './hooks/phone';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import PriceMask from './hooks/price-mask';
+import PercentMask from './hooks/percent-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
@@ -109,6 +110,7 @@ const Hooks = {
   Modal,
   Phone,
   PriceMask,
+  PercentMask,
   ToggleContent,
   Quill,
   Select,

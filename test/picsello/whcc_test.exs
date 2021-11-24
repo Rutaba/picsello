@@ -132,7 +132,7 @@ defmodule Picsello.WHCCTest do
   end
 
   describe "category" do
-    test "filters out products without variations" do
+    setup do
       whcc_category_id = "tfhysKwZafFtmGqpQ"
 
       read_fixture = &("test/support/fixtures/#{&1}.json" |> File.read!() |> Jason.decode!())
@@ -156,8 +156,11 @@ defmodule Picsello.WHCCTest do
       id = Picsello.Category |> Repo.get_by(whcc_id: whcc_category_id) |> Map.get(:id)
 
       Repo.update_all(Picsello.Category, set: [hidden: false])
+      [category_id: id, user: insert(:user)]
+    end
 
-      %{products: products} = Picsello.WHCC.category(id)
+    test "filters out products without variations", %{category_id: id, user: user} do
+      %{products: products} = Picsello.WHCC.category(id, user)
 
       assert [
                "Bamboo Panel",
@@ -169,10 +172,61 @@ defmodule Picsello.WHCCTest do
                "Acrylic Print"
              ] = products |> Enum.map(& &1.whcc_name)
     end
-  end
 
-  describe "variations" do
-    test "only returns variations with variations" do
+    test "loads product variations", %{category_id: category_id, user: user} do
+      %{products: [%{variations: variations} | _]} = Picsello.WHCC.category(category_id, user)
+
+      assert [
+               %{
+                 id: "5x5",
+                 name: "5×5",
+                 attributes: [
+                   %{
+                     category_id: "coating",
+                     category_name: "coating",
+                     id: "lustre_coating",
+                     name: "lustre",
+                     price: %Money{amount: 91, currency: :USD}
+                   }
+                   | _
+                 ]
+               }
+               | _
+             ] = variations
+    end
+
+    test "loads markups", %{category_id: category_id, user: user} do
+      %{products: [%{id: product_id} | _]} = Picsello.WHCC.category(category_id, user)
+
+      insert(:markup,
+        organization_id: user.organization_id,
+        whcc_attribute_category_id: "coating",
+        whcc_attribute_id: "lustre_coating",
+        whcc_variation_id: "5x5",
+        product_id: product_id,
+        value: 2.0
+      )
+
+      %{products: [%{variations: variations} | _]} = Picsello.WHCC.category(category_id, user)
+
+      assert [
+               %{
+                 id: "5x5",
+                 name: "5×5",
+                 attributes: [
+                   %{
+                     category_id: "coating",
+                     category_name: "coating",
+                     id: "lustre_coating",
+                     name: "lustre",
+                     price: %Money{amount: 91, currency: :USD},
+                     markup: 2
+                   }
+                   | [%{category_id: "paper_type", markup: 100} | _]
+                 ]
+               }
+               | _
+             ] = variations
     end
   end
 end
