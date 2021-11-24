@@ -180,7 +180,8 @@ defmodule Picsello.Factory do
     %ClientMessage{
       subject: "here is what i propose",
       body_text: "lets take some pictures!",
-      body_html: "lets take <i>some</i> <b>pictures!</b>"
+      body_html: "lets take <i>some</i> <b>pictures!</b>",
+      outbound: true
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

@@ -111,6 +111,7 @@ defmodule PicselloWeb.Router do
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
 
       live "/inbox", InboxLive.Index, :index, as: :inbox
+      live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
