@@ -5,23 +5,38 @@ defmodule Picsello.Product do
 
   @attributes_cte """
   select
-    attribute_categories.name as category_name,
+    products.id as product_id,
     attribute_categories._id as category_id,
+    attribute_categories.name as category_name,
     attributes.id as id,
+    coalesce(ref_keys, 'base') as variation_id,
+    coalesce(priced_attributes ->> 'name', ref_keys, 'base') as variation_name,
+    coalesce(
+      attributes."pricingRefs" -> ref_keys -> 'base' -> 'value',
+      attributes.pricing -> 'base' -> 'value'
+    ) :: float as price,
     attributes.name as name,
-    attributes."pricingRefs" -> priced_attributes.id -> 'base' -> 'value' as price,
-    priced_attributes.id as variation_id,
-    priced_attributes.name as variation_name,
-    cast(priced_attributes.metadata -> 'width' as integer) as width,
-    cast(priced_attributes.metadata -> 'height' as integer) as height,
-    products.id as product_id
+    coalesce((priced_attributes -> 'metadata' -> 'width') :: int, 1000) as width,
+    coalesce((priced_attributes -> 'metadata' -> 'height') :: int, 1000) as height
   from
-    products,
-    jsonb_to_recordset(products.attribute_categories -> 0 -> 'attributes') as priced_attributes(id text, name text, metadata jsonb),
-    jsonb_to_recordset(products.attribute_categories) as attribute_categories(attributes jsonb, name text, _id text),
-    jsonb_to_recordset(attribute_categories.attributes) as attributes("pricingRefs" jsonb, name text, id text)
+    products
+    join jsonb_to_recordset(products.attribute_categories) as attribute_categories(attributes jsonb, name text, _id text) on true
+    join jsonb_to_recordset(attribute_categories.attributes) as attributes(
+      "pricingRefs" jsonb,
+      pricing jsonb,
+      name text,
+      id text,
+      metadata jsonb
+    ) on true
+    left join jsonb_object_keys(attributes."pricingRefs") as ref_keys on true
+    left join jsonb_path_query_first(
+      attribute_categories,
+      '$.attributes[*] \\? (@.id == $id)',
+      jsonb_build_object('id', ref_keys)
+    ) as priced_attributes on true
   where
-    attributes."pricingRefs" -> priced_attributes.id is not null
+    attributes."pricingRefs" is not null
+    or attributes.pricing is not null
   """
 
   @attributes_with_markups_cte """
@@ -79,7 +94,8 @@ defmodule Picsello.Product do
       )
       order by
         width,
-        height
+        height,
+        variation_id
     ) as variations
   from
     attributes_with_markups

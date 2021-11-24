@@ -159,20 +159,6 @@ defmodule Picsello.WHCCTest do
       [category_id: id, user: insert(:user)]
     end
 
-    test "filters out products without variations", %{category_id: id, user: user} do
-      %{products: products} = Picsello.WHCC.category(id, user)
-
-      assert [
-               "Bamboo Panel",
-               "Standout",
-               "Framed Print",
-               "Float Frame",
-               "Image Block",
-               "Metal Print",
-               "Acrylic Print"
-             ] = products |> Enum.map(& &1.whcc_name)
-    end
-
     test "loads product variations", %{category_id: category_id, user: user} do
       %{products: [%{variations: variations} | _]} = Picsello.WHCC.category(category_id, user)
 
