@@ -295,7 +295,7 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
-  Removes the photo from DB and all its versions from cloud bucket.  
+  Removes the photo from DB and all its versions from cloud bucket.
   """
   def delete_photo(%Photo{} = photo) do
     Repo.delete(photo)
@@ -402,8 +402,8 @@ defmodule Picsello.Galleries do
     Ecto.Adapters.SQL.query(
       Repo,
       """
-        UPDATE galleries 
-        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer) 
+        UPDATE galleries
+        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer)
         WHERE id = $1::integer;
       """,
       [gallery_id]
