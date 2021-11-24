@@ -178,7 +178,6 @@ export default {
       }
     })
 
-    this.handleEvent("reload_grid", ({}) => this.reload_masonry())
     this.init_masonry();
     this.init_remove_listener()
   },
