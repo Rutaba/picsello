@@ -1,7 +1,6 @@
 defmodule PicselloWeb.Live.Pricing.Category do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Repo, Category}
 
   @impl true
   def mount(%{"category_id" => id}, _session, socket) do
@@ -146,6 +145,6 @@ defmodule PicselloWeb.Live.Pricing.Category do
   end
 
   defp assign_category(socket, id) do
-    socket |> assign(category: Category |> Repo.get!(id) |> Repo.preload(:products))
+    socket |> assign(category: Picsello.WHCC.category(id))
   end
 end

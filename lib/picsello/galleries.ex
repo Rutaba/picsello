@@ -8,7 +8,7 @@ defmodule Picsello.Galleries do
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark}
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Workers.CleanStore
 
   @doc """
   Returns the list of galleries.
@@ -295,6 +295,25 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Removes the photo from DB and all its versions from cloud bucket.  
+  """
+  def delete_photo(%Photo{} = photo) do
+    Repo.delete(photo)
+
+    [
+      photo.original_url,
+      photo.preview_url,
+      photo.watermarked_url,
+      photo.watermarked_preview_url
+    ]
+    |> Enum.each(fn path ->
+      %{path: path}
+      |> CleanStore.new()
+      |> Oban.insert()
+    end)
+  end
+
+  @doc """
   Normalizes photos positions within a gallery
   """
   def normalize_gallery_photo_positions(gallery_id) do
@@ -379,20 +398,30 @@ defmodule Picsello.Galleries do
     )
   end
 
+  def update_gallery_photo_count(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        UPDATE galleries 
+        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer) 
+        WHERE id = $1::integer;
+      """,
+      [gallery_id]
+    )
+  end
+
   def gallery_current_status(nil), do: :none_created
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
   def gallery_current_status(%Gallery{total_count: nil}), do: :upload_in_progress
 
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos])
-    has_watermark = false
 
     gallery
     |> Map.get(:photos, [])
     |> Enum.any?(fn photo ->
       is_nil(photo.aspect_ratio) ||
-        is_nil(photo.preview_url) ||
-        (has_watermark && is_nil(photo.watermarked_url))
+        is_nil(photo.preview_url)
     end)
     |> then(fn
       false -> :ready
@@ -443,8 +472,13 @@ defmodule Picsello.Galleries do
     |> Repo.preload(:photos)
     |> Map.get(:photos)
     |> Enum.each(fn photo ->
-      PhotoStorage.delete(photo.watermarked_preview_url)
-      PhotoStorage.delete(photo.watermarked_url)
+      [photo.watermarked_preview_url, photo.watermarked_url]
+      |> Enum.each(fn path ->
+        %{path: path}
+        |> CleanStore.new()
+        |> Oban.insert()
+      end)
+
       update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
     end)
   end

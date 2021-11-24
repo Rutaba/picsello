@@ -40,7 +40,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
         |> render_change(%{gallery: %{name: ""}})
 
       assert update_rendered =~
-               "<button class=\"btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
+               "<button class=\"btn-primary px-11 py-3.5 cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
     end
 
     test "update disabled with too long value", %{conn: conn, gallery: gallery} do
@@ -54,7 +54,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
         })
 
       assert update_rendered =~
-               "<button class=\"btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
+               "<button class=\"btn-primary px-11 py-3.5 cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
     end
 
     test "resets gallery name", %{conn: conn, gallery: gallery} do

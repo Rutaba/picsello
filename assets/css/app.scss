@@ -153,17 +153,9 @@ html {
   }
 }
 
-.customWatermarkPopup {
-  width: 1041px;
-  max-height: 950px;
-  background-color: #FFFFFF;
-  margin: 0 auto;
-}
-
 /**
  * only used on photographer settings / gallery pricing
- */
-
+ **/
 .grid {
   h3 + .contents.collapsed > * {
     @apply border-t-0;

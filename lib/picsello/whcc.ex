@@ -2,7 +2,7 @@ defmodule Picsello.WHCC do
   @moduledoc "WHCC context module"
   alias Picsello.{Repo, WHCC.Adapter}
 
-  import Ecto.Query
+  import Ecto.Query, only: [from: 2]
 
   def sync() do
     # fetch latest products from whcc api
@@ -77,11 +77,50 @@ defmodule Picsello.WHCC do
     records
   end
 
-  def categories do
-    from(category in Picsello.Category.active(),
-      where: not category.hidden,
-      order_by: [asc: category.position]
-    )
-    |> Repo.all()
+  def categories, do: Repo.all(categories_query())
+
+  def category(id) do
+    products =
+      Picsello.Product.active()
+      |> Picsello.Product.with_attributes()
+
+    from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
+  end
+
+  defp categories_query(),
+    do:
+      from(category in Picsello.Category.active(),
+        where: not category.hidden,
+        order_by: [asc: category.position]
+      )
+
+  def variations(%Picsello.Product{attributes: attributes}) do
+    for {%{
+           "variation_id" => id,
+           "variation_name" => name,
+           "price" => price,
+           "category_name" => category_name,
+           "attribute_name" => attribute_name,
+           "attribute_id" => attribute_id
+         }, i} <- Enum.with_index(attributes),
+        reduce: %{} do
+      acc ->
+        attribute = %{
+          price: Money.new(trunc(price * 100)),
+          id: attribute_id,
+          name: attribute_name,
+          category_name: category_name,
+          position: i
+        }
+
+        Map.update(
+          acc,
+          %{id: id, name: name},
+          [attribute],
+          &[attribute | &1]
+        )
+    end
+    |> Enum.map(&Map.put(elem(&1, 0), :attributes, &1 |> elem(1) |> Enum.reverse()))
+    |> Enum.sort_by(&(&1 |> Map.get(:attributes) |> hd |> Map.get(:position)))
   end
 end

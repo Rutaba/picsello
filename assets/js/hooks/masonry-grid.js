@@ -149,6 +149,19 @@ export default {
     return amount < totalImagesNumber;
   },
 
+  
+  init_remove_listener() {
+    this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
+  },
+  
+  remove_item(id) {
+    const grid = this.get_grid();
+    const itemElement = document.getElementById(`photo-item-${id}`);
+    const item = grid.getItem(itemElement);
+
+    grid.remove([item], { removeElements: true })
+  },
+
   /**
    * Mount callback
    */
@@ -167,6 +180,7 @@ export default {
 
     this.handleEvent("reload_grid", ({}) => this.reload_masonry())
     this.init_masonry();
+    this.init_remove_listener()
   },
 
   /**
