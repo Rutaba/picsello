@@ -7,6 +7,36 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
+    def fill_in_date(session, field, opts \\ []) do
+      date = Keyword.get(opts, :with)
+      input = find(session, field)
+
+      date =
+        with "date" <- Wallaby.Element.attr(input, "type"),
+             {:ok, date} <- DateTime.new(date, ~T[00:00:00]) do
+          date
+        else
+          _ -> date
+        end
+
+      unix = DateTime.to_unix(%{date | second: 0})
+
+      "" <> id = Wallaby.Element.attr(input, "id")
+
+      execute_script(
+        session,
+        "document.getElementById(arguments[0]).valueAsNumber = arguments[1];",
+        [id, unix * 1000],
+        &send(self(), {:result, &1})
+      )
+
+      receive do
+        {:result, _} -> nil
+      end
+
+      session
+    end
+
     def testid(id, opts \\ []), do: css("*[data-testid='#{id}']", opts)
 
     def wait_for_enabled_submit_button(session, opts \\ []) do
