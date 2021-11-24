@@ -22,26 +22,8 @@
     gallery: @gallery,
     return_to: Routes.gallery_show_path(@socket, :show, @gallery) %>
 <% end %>
-    <div class="preview_vs_descritpion">
-        <div class="preview">
-            <img src={@preview}>
-        </div>
-        <div class="description">
-            Lorem Ipsum
 
-            <div>
-            <.form let={f} for={@changeset} phx-submit="save" id="product_preview">
-                <%= hidden_input f, :photo_id, value: @photo_id %>
-                <%= hidden_input f, :product_id, value: @product_id %>
-
-                <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
-                    disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
-            </.form>
-  
-            </div>
-        </div>    
-    </div>
-        
+<%= live_component PicselloWeb.GalleryLive.PreviewComponent, id: :preview_form, preview: @preview, photo_id: @photo_id, product_id: @product_id %>        
     <div
             phx-hook="MasonryGrid"
             phx-update="{ @update_mode }"

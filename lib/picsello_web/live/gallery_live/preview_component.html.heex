@@ -1,0 +1,19 @@
+<div class="inline-flex">
+    <div class="preview">
+        <img src={@preview}>
+    </div>
+    <div class="description">
+        Lorem Ipsum
+
+        <div>
+        <.form let={f} for={@changeset} phx-submit="save" id="product_preview">
+            <%= hidden_input f, :photo_id, value: @photo_id %>
+            <%= hidden_input f, :product_id, value: @product_id %>
+
+            <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+                disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+        </.form>
+
+        </div>
+    </div>    
+</div>

@@ -13,7 +13,6 @@ defmodule Picsello.Galleries.Gallery do
     field :name, :string
     field(:status, :string, @status_options)
     field :cover_photo_id, :string
-    field :product_preview, :string
     field :cover_photo_aspect_ratio, :float
     field :password, :string
     field :client_link_hash, :string
@@ -63,14 +62,6 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> cast(attrs, @update_attrs)
     |> validate_required(@required_attrs)
-    |> validate_status(@status_options[:values])
-    |> validate_name()
-  end
-
-  def update_changesett(gallery, attrs \\ %{}) do
-    gallery
-    |> cast(attrs, @update_attrs)
-    #|> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
     |> validate_name()
   end

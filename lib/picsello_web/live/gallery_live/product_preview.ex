@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.ProductPreview
+  alias PicselloWeb.GalleryLive.PreviewComponent
   alias Picsello.Repo
   import Ecto.Changeset
   require Logger
@@ -26,7 +27,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
 
     {:ok,
       socket
-        |> assign(:preview, path(url))
+        |> assign(:preview, url)
         |> assign(:photo_id, nil)
         |> assign(:changeset, changeset(%{},[:photo_id]))}
   end
@@ -38,17 +39,10 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
 
   @impl true
   def handle_event("set_preview", data, socket) do
-    name = data["preview-url"]
-    photo_id = data["photo_id"] || nil
-    chngst = changeset(%{photo_id: photo_id, product_id: 777},[:photo_id, :product_id])
-      |> validate_required([:photo_id])
+    send_update(PreviewComponent, id: :preview_form, photo_id: data["photo_id"],
+      preview: data["preview-url"], product_id: data["product_id"])
 
     socket
-      |> assign(:preview, path(name))
-      |> assign(:photo_id, photo_id)
-      |> assign(:product_id, data["product_id"])
-      |> assign(:changeset, chngst)
-      |> push_event("reload_grid", %{})
       |> noreply
   end
 
@@ -80,8 +74,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
       type,
       args
     )
-
-    PositionNormalizer.normalize(gallery_id)
 
     noreply(socket)
   end
@@ -135,7 +127,4 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
       photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
     )
   end
-
-  def path(nil), do: "/images/card_blank.png"
-  def path(url), do: PhotoStorage.path_to_url(url)
 end
