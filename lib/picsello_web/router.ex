@@ -129,8 +129,12 @@ defmodule PicselloWeb.Router do
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
   end
 
+  pipeline :gallery_auth do
+    plug PicselloWeb.Plugs.GalleryAuth
+  end
+
   scope "/gallery", PicselloWeb do
-    pipe_through [:browser]
+    pipe_through [:browser, :gallery_auth]
 
     live "/:hash", GalleryLive.ClientShow, :show
     post "/:hash/downloads", GalleryDownloadsController, :download

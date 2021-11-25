@@ -27,11 +27,16 @@ defmodule PicselloWeb do
     end
   end
 
-  def view(_) do
+  def view(options) do
+    options =
+      case Keyword.get(options, :root, "lib/picsello_web/templates") do
+        false -> []
+        path -> [root: path]
+      end
+      |> Keyword.put(:namespace, PicselloWeb)
+
     quote do
-      use Phoenix.View,
-        root: "lib/picsello_web/templates",
-        namespace: PicselloWeb
+      use Phoenix.View, unquote(options)
 
       # Import convenience functions from controllers
       import Phoenix.Controller,

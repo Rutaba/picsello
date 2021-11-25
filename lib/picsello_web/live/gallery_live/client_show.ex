@@ -3,17 +3,21 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias PicselloWeb.GalleryLive.ClientShowView
 
   @per_page 12
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    IO.inspect("mount")
+
+    {:ok,
+     socket
+     |> assign(:authenticated, false)}
   end
 
   @impl true
-  def handle_params(%{"hash" => hash}, _, socket) do
+  def handle_params(%{"hash" => hash} = params, _, socket) do
     gallery = Galleries.get_gallery_by_hash(hash)
 
     if gallery do
@@ -32,6 +36,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     end
   end
 
+  @impl true
+  def render(%{authenticated: true} = assigns) do
+    ClientShowView.render("show.html", assigns)
+  end
+
+  @impl true
+  def render(assigns) do
+    ClientShowView.render("authenticate.html", assigns)
+  end
+
+  @impl
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)
@@ -66,9 +81,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     assign(socket,
       photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
     )
-  end
-
-  defp cover_photo(key) do
-    PhotoStorage.path_to_url(key)
   end
 end

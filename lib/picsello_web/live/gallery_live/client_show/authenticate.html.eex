@@ -1,0 +1,12 @@
+
+<div class="bg-grey-lighter min-h-screen flex flex-col">
+    <div class="container max-w-sm mx-auto flex-1 flex flex-col items-center justify-center px-2">
+        <div class="bg-white px-6 py-8 rounded shadow-md text-black w-full">
+            <h1 class="mb-4 text-3xl font-medium text-start">Enter the password to view the gallery</h1>
+            <p class="mb-6 text-sm">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>
+            
+            
+        </div>
+    </div>
+</div>
+

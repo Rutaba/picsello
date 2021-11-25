@@ -5,7 +5,7 @@
     <img
         width="300"
         height={if @photo.aspect_ratio, do: 300 / @photo.aspect_ratio}
-        src={display(@photo)}
+        src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
         class="relative"
     />
     <button

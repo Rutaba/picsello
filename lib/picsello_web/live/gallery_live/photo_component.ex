@@ -3,7 +3,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
-  alias Picsello.Galleries.Workers.PhotoStorage
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
@@ -19,19 +18,5 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     send(self(), favorites_update)
 
     {:noreply, assign(socket, :photo, photo)}
-  end
-
-  # def handle_event("remove", %{"id" => id}, socket) do
-  # some removing item logic
-  # end
-
-  defp display(%Photo{} = photo) do
-    display(photo.watermarked_preview_url || photo.preview_url)
-  end
-
-  defp display(nil), do: "/images/gallery-icon.png"
-
-  defp display(key) do
-    PhotoStorage.path_to_url(key)
   end
 end
