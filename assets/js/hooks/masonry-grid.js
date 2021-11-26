@@ -85,14 +85,18 @@ export default {
         }
       };
       const grid = new Muuri(gridElement, opts);
+      grid.on('dragInit', (item) => {
+        this.itemPosition = item.getPosition()
+      });
       grid.on('dragReleaseEnd', (item) => {
         const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
         const movedId = item.getElement().id.slice(11)
         const change = positionChange(movedId, order)
 
-        if (change) {
+        if (change && !this.isPositionEqual(this.itemPosition, item.getPosition())) {
             this.pushEvent("update_photo_position", change)
         }
+        this.itemPosition = false;
       })
 
       window.grid = this.grid = grid;
@@ -149,7 +153,6 @@ export default {
     return amount < totalImagesNumber;
   },
 
-  
   init_remove_listener() {
     this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
   },
@@ -162,6 +165,14 @@ export default {
     grid.remove([item], { removeElements: true })
   },
 
+  /**
+   * Compares position objects
+   */
+  isPositionEqual(previousPosition, nextPosition) {
+    return previousPosition.left === nextPosition.left 
+        && previousPosition.top === nextPosition.top;
+  },
+  
   /**
    * Mount callback
    */

@@ -72,18 +72,18 @@ defmodule Picsello.Galleries do
   Gets paginated photos by gallery id
 
   Optional options:
-    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`
+    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :offset. Defaults to `per_page * page`.
 
   """
   @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
           list(Photo)
   def get_gallery_photos(id, per_page, page, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
+    offset = Keyword.get(opts, :offset, per_page * page)
 
     select_opts =
       if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id)
-
-    offset = per_page * page
 
     Photo
     |> where(^select_opts)
