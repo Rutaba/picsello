@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.GalleriesCovers do
 
   def change do
     create table(:galleries_covers) do
-      add(:category_template_id, references(:category_template, on_delete: :nothing), null: false)
+      add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
       add(:photo_id, references(:photos, on_delete: :nothing), null: false)
       add(:gallery_id, references(:galleries, on_delete: :nothing), null: false)
 

@@ -2,10 +2,10 @@ defmodule Picsello.Galleries.GalleriesCovers do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.{Photo, Gallery}
+  alias Picsello.Galleries.{Photo, Gallery, CategoryTemplate}
 
   schema "galleries_covers" do
-    field :category_template_id, :id
+    belongs_to(:category_template_id, CategoryTemplate)
     belongs_to(:photo, Photo)
     belongs_to(:gallery, Gallery)
 
