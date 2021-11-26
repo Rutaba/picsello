@@ -170,15 +170,11 @@ export default {
   mounted() {
     this.pending = this.page();
     window.addEventListener("scroll", e => {
-      //console.log("out", this.hasMorePhotoToLoad())
-      //console.log("out", this.pending === this.page())
-
       if (
         this.pending === this.page()
         && isScrolledOver(90, 1.5)
         && this.hasMorePhotoToLoad()
       ){
-        console.log("in", this.hasMorePhotoToLoad())
         this.pending = this.page() + 1
         this.pushEvent("load-more", {})
         

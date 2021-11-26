@@ -148,6 +148,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:gallery, gallery)
     |> close_modal()
     |> push_event("remove_item", %{"id" => id})
+    |> drop_photo(String.to_integer(id))
     |> noreply()
   end
 
@@ -230,6 +231,11 @@ defmodule PicselloWeb.GalleryLive.Show do
     socket
     |> assign(:photos, Enum.take(photos, per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
+  end
+
+  defp drop_photo(%{assigns: %{photos: photos}} = socket, id) do
+    socket
+    |> assign(:photos, Enum.filter(photos, fn photo -> photo.id != id end))
   end
 
   defp page_title(:show), do: "Show Gallery"
