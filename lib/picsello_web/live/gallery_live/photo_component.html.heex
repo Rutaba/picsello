@@ -1,32 +1,45 @@
 <div
-    id={"photo-#{@id}"}
-    class={@is_removable && "galleryItem cursor-pointer"}
+    class={!@is_removed && "item" || "hidden"}  
+    id={"photo-item-#{@photo.id}"}            
+    style={"
+        width: 300px;
+        height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
+    "}
 >
-    <img
-        width="309"
-        height={if @photo.aspect_ratio, do: 309 / @photo.aspect_ratio}
-        src={display(@photo)}
-        class="relative"
-    />
-    <button
-        class="likeBtn absolute"
-        phx-click={@is_likable && "like"}
-        phx-target={@myself}
-        phx-value-id={@id}
-    >
-        <%= if @photo.client_liked do %>
-           <.icon name="heart-filled" class="w-7 h-7" />
-        <% else %>
-            <.icon name="heart" class="w-7 h-7" />
-              <% end %>
-    </button>
-    <%= if @is_removable do %>
-        <button
-            class="removeBtn absolute"
-            phx-click="delete_photo_popup"
-            phx-value-id={@id}
+    <div class="item-content">
+        <div
+            id={"photo-#{@id}"}
+            class={@is_removable && "galleryItem cursor-pointer"}
         >
-            <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
-        </button>
-    <% end %>
+            <img
+                width="309"
+                height={if @photo.aspect_ratio, do: 309 / @photo.aspect_ratio}
+                src={display(@photo)}
+                class="relative"
+            />
+            <button
+                class="likeBtn absolute"
+                phx-click={@is_likable && "like"}
+                phx-target={@myself}
+                phx-value-id={@id}
+            >
+                <%= if @photo.client_liked do %>
+                   <.icon name="heart-filled" class="w-7 h-7" />
+                <% else %>
+                    <.icon name="heart" class="w-7 h-7" />
+                      <% end %>
+            </button>
+            <%= if @is_removable do %>
+                <button
+                    class="removeBtn absolute"
+                    phx-click="delete_photo_popup"
+                    phx-value-id={@id}
+                >
+                    <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
+                </button>
+            <% end %>
+        </div>
+    </div>
 </div>
+
+

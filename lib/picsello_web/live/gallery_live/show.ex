@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.GalleryLive.DeletePhoto
+  alias PicselloWeb.GalleryLive.PhotoComponent
 
   @per_page 12
   @upload_options [
@@ -67,7 +68,6 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
-    IO.inspect "load more from page #{page}"
     socket
     |> assign(page: page + 1)
     |> assign(:update_mode, "append")
@@ -144,11 +144,12 @@ defmodule PicselloWeb.GalleryLive.Show do
     Galleries.get_photo(id) |> Galleries.delete_photo()
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
+    send_update(PhotoComponent, id: id, is_removed: true)
+
     socket
     |> assign(:gallery, gallery)
     |> close_modal()
     |> push_event("remove_item", %{"id" => id})
-    |> drop_photo(String.to_integer(id))
     |> noreply()
   end
 
@@ -229,13 +230,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
-    |> assign(:photos, Enum.take(photos, per_page))
+    |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
-  end
-
-  defp drop_photo(%{assigns: %{photos: photos}} = socket, id) do
-    socket
-    |> assign(:photos, Enum.filter(photos, fn photo -> photo.id != id end))
   end
 
   defp page_title(:show), do: "Show Gallery"

@@ -21,10 +21,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     {:noreply, assign(socket, :photo, photo)}
   end
 
-  # def handle_event("remove", %{"id" => id}, socket) do
-  # some removing item logic
-  # end
-
   defp display(%Photo{} = photo) do
     display(photo.watermarked_preview_url || photo.preview_url)
   end

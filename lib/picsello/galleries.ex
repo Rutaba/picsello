@@ -321,8 +321,8 @@ defmodule Picsello.Galleries do
       Repo,
       """
         WITH ranks AS (
-          SELECT id, RANK() OVER (ORDER BY position) AS pos
-          FROM photos
+          SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS pos
+          FROM photos 
           WHERE gallery_id = $1::integer
         )
         UPDATE photos p
