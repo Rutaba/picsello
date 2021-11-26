@@ -67,6 +67,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
+    IO.inspect "load more from page #{page}"
     socket
     |> assign(page: page + 1)
     |> assign(:update_mode, "append")
@@ -220,11 +221,15 @@ defmodule PicselloWeb.GalleryLive.Show do
              page: page,
              favorites_filter: filter
            }
-         } = socket
+         } = socket,
+         per_page \\ @per_page
        ) do
-    assign(socket,
-      photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
-    )
+    opts = [only_favorites: filter, offset: per_page * page]
+    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+
+    socket
+    |> assign(:photos, Enum.take(photos, per_page))
+    |> assign(:has_more_photos, photos |> length > per_page)
   end
 
   defp page_title(:show), do: "Show Gallery"

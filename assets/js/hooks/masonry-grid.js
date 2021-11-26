@@ -139,19 +139,10 @@ export default {
   },
 
   /**
-   * Returns true if there are more photos to load. Based on total counter
+   * Returns true if there are more photos to load. 
    * @returns {boolean}
    */
-  hasMorePhotoToLoad() {
-    const { isFavoritesShown, favoritesCount, total } = this.el.dataset;
-    const amount = this.get_grid().getItems().length;
-
-    const totalImagesNumber = isFavoritesShown === 'true'
-      ? parseInt(favoritesCount)
-      : parseInt(total);
-
-    return amount < totalImagesNumber;
-  },
+  hasMorePhotoToLoad() { return this.el.dataset.hasMorePhotos === 'true' },
 
   init_remove_listener() {
     this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
@@ -179,13 +170,18 @@ export default {
   mounted() {
     this.pending = this.page();
     window.addEventListener("scroll", e => {
+      //console.log("out", this.hasMorePhotoToLoad())
+      //console.log("out", this.pending === this.page())
+
       if (
         this.pending === this.page()
         && isScrolledOver(90, 1.5)
         && this.hasMorePhotoToLoad()
       ){
+        console.log("in", this.hasMorePhotoToLoad())
         this.pending = this.page() + 1
         this.pushEvent("load-more", {})
+        
       }
     })
 
