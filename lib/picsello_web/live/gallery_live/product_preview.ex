@@ -42,16 +42,29 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
     cast(%Picsello.Galleries.GalleriesCovers{}, data, prop)
   end
 
-  def handle_event("set_preview", %{"preview" => preview, "photo_id" => photo_id}, socket) do
+  @impl true
+  def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
-    |> assign(:photo_id, photo_id)
-    |> noreply
+    |> assign(page: page + 1)
+    |> assign(:update_mode, "append")
+    |> assign_photos()
+    |> noreply()
   end
 
-  def handle_event("save", %{"galleries_covers" => %{"photo_id" => photo_id}}, socket) do
+  def handle_event("set_preview", %{"photo_id" => photo_id}, socket) do
+    socket
+      |> assign(:photo_id, photo_id)
+      |> noreply
+  end
+
+  def handle_event("save", %{"galleries_covers" => %{"photo_id" => photo_id}},
+    %{assigns:
+      %{gallery_cover_id: cover_id,
+        gallery: %{id: gallery_id}}} = socket) do
+
     [photo_id, cover_id, gallery_id] =
       Enum.map(
-        [photo_id, socket.assigns.id, socket.assigns.gallery_id],
+        [photo_id, cover_id, gallery_id],
         fn x ->
           (is_binary(x) && String.to_integer(x)) || x
         end
@@ -67,6 +80,11 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
       |> Repo.insert_or_update()
     end
 
+    {:noreply, socket}
+  end
+
+  def handle_event(ev, data, socket) do
+    Logger.error("unhandled event #{ev} in #{__MODULE__} with #{data} data")
     {:noreply, socket}
   end
 
@@ -88,9 +106,41 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
       |> assign(:favorites_filter, false)
       |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
       |> assign_photos()
+      |> then(fn
+        %{assigns: %{live_action: :upload}} = socket ->
+          send(self(), :open_modal)
+          socket
+
+        socket ->
+          socket
+      end)
       |> noreply()
     end
   end
+
+  # @impl true
+  # def handle_info(
+  #       {:photo_processed, %{"task" => %{"photoId" => photo_id}}},
+  #       %{assigns: %{modal_pid: modal_pid}} = socket
+  #     ) do
+  #   send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
+
+  #   noreply(socket)
+  # end
+
+  # def handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
+  #   if entry.done? do
+  #     {:ok, gallery} =
+  #       Galleries.update_gallery(assigns.gallery, %{
+  #         cover_photo_id: entry.uuid,
+  #         cover_photo_aspect_ratio: 1
+  #       })
+
+  #     {:noreply, socket |> assign(:gallery, gallery)}
+  #   else
+  #     {:noreply, socket}
+  #   end
+  # end
 
   defp assign_photos(
          %{
@@ -105,4 +155,24 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
       photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
     )
   end
+
+  # def presign_cover_entry(entry, socket) do
+  #   key = entry.uuid
+
+  #   sign_opts = [
+  #     expires_in: 600,
+  #     bucket: socket.assigns.upload_bucket,
+  #     key: key,
+  #     fields: %{
+  #       "content-type" => entry.client_type,
+  #       "cache-control" => "public, max-age=@upload_options"
+  #     },
+  #     conditions: [["content-length-range", 0, 104_857_600]]
+  #   ]
+
+  #   params = PhotoStorage.params_for_upload(sign_opts)
+  #   meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+
+  #   {:ok, meta, socket}
+  # end
 end

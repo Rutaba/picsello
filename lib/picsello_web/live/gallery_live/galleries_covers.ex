@@ -3,8 +3,6 @@ defmodule PicselloWeb.GalleryLive.GalleriesCovers do
   use PicselloWeb, :live_component
   require Logger
   import Ecto.Changeset
-  alias Picsello.Repo
-  alias Picsello.Galleries.GalleriesCovers
   alias Picsello.Galleries.Workers.PhotoStorage
 
   def update(%{preview: preview}, socket) do
