@@ -9,3 +9,17 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+alias Picsello.Galleries.CategoryTemplate
+alias Picsello.Repo
+
+frames = [
+  "card_blank.png",
+  "album_transparency.png",
+  "card_envelope.png",
+  "frame_transperancy.png"
+]
+
+Enum.each(frames, fn f_name ->
+  Repo.insert!(%CategoryTemplate{frame_url: f_name})
+end)

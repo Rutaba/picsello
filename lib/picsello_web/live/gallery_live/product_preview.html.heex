@@ -13,9 +13,9 @@
   <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
   </div>
 </div>
-<div class="gallery__container pb-32">
+<div id="cover" class="gallery__container pb-32">
+<%= live_component PicselloWeb.GalleryLive.GalleriesCovers, id: "cover", preview: @preview %>
 
-<%= live_component PicselloWeb.GalleryLive.PreviewComponent, id: :preview_form, preview: @preview, photo_id: @photo_id, product_id: @product_id %>
     <div
         phx-hook="MasonryGrid"
         phx-update="{ @update_mode }"
@@ -32,9 +32,9 @@
             <div class="item" id={ "photo-item-#{photo.id}" }>
                 <div class="item-content"
                     phx-click="set_preview"
-                    phx-value-preview_url={photo.original_url}
+                    phx-value-preview={photo.preview_url}
                     phx-value-photo_id={photo.id}
-                    phx-value-product_id={@product_id}
+                    phx-target="#cover, #preview"
                 >
                     <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                         id: photo.id,

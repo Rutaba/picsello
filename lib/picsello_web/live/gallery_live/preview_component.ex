@@ -1,37 +1,49 @@
-defmodule PicselloWeb.GalleryLive.PreviewComponent do
+defmodule PicselloWeb.GalleryLive.GalleriesCovers do
   @moduledoc false
   use PicselloWeb, :live_component
   require Logger
   import Ecto.Changeset
-  alias Picsello.Galleries.Workers.PhotoStorage
-  alias Picsello.Galleries.ProductPreview
   alias Picsello.Repo
+  alias Picsello.Galleries.GalleriesCovers
+  alias Picsello.Galleries.Workers.PhotoStorage
 
-  def update(%{preview: nil, product_id: product_id} = params, socket) do
-    preview =
-      Repo.get_by(ProductPreview, %{:product_id => product_id})
-      |> Repo.preload([:photo])
-
-    data = Map.put(params, :preview, preview.photo.preview_url)
-    data = Map.put(data, :photo, preview.photo)
-    set_assign(data, socket)
-  end
-
-  def update(%{product_id: nil} = params, socket), do: set_assign(params, socket)
-  def update(params, socket), do: set_assign(params, socket)
-
-  def set_assign(%{preview: url, photo_id: photo_id, product_id: product_id}, socket) do
-    {:ok,
-     socket
-     |> assign(:preview, path(url))
-     |> assign(:photo_id, photo_id)
-     |> assign(:product_id, product_id)
-     |> assign(:changeset, changeset(%{photo_id: photo_id, product_id: product_id}, [:photo_id]))}
+  def update(%{preview: preview}, socket) do
+    socket
+    |> assign(:preview, path(preview))
+    |> assign(:photo_id, nil)
+    |> assign(:changeset, changeset(%{}, []))
+    |> ok
   end
 
   def changeset(data, prop) do
-    cast(%Picsello.Galleries.ProductPreview{}, data, prop)
+    cast(%Picsello.Galleries.GalleriesCovers{}, data, prop)
     |> validate_required([:photo_id])
+  end
+
+  def handle_event("set_preview", %{"preview" => preview, "photo_id" => photo_id}, socket) do
+    socket
+    |> assign(:photo_id, photo_id)
+    |> assign(:preview, path(preview))
+    |> assign(:changeset, changeset(%{photo_id: photo_id}, [:photo_id]))
+    |> noreply
+  end
+
+  def render(assigns) do
+    ~H"""
+    <div class="inline-flex">
+        <div class="preview" id="preview-photo">
+          <img src={@preview} id="preview">
+        </div>
+        <div class="description">
+        Lorem Ipsum
+            <.form let={f} for={@changeset} action="#" phx-submit="save" id="preview_component">
+                <%= hidden_input f, :photo_id, value: @photo_id %>
+                <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+                    disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+            </.form>
+        </div>
+    </div>
+    """
   end
 
   def path(nil), do: "/images/card_blank.png"

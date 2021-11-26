@@ -3,21 +3,22 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
   import Ecto.Changeset
+  alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.Galleries.Gallery
-  alias Picsello.Galleries.ProductPreview
-  alias PicselloWeb.GalleryLive.PreviewComponent
-  alias Picsello.Repo
+  alias Picsello.Galleries.GalleriesCovers
 
   @per_page 12
 
   @impl true
-  def mount(%{"id" => gallery_id, "product_id" => product_id}, _session, socket) do
+  def mount(%{"id" => gallery_id, "gallery_cover_id" => gallery_cover_id}, _session, socket) do
     gallery = Repo.get_by(Gallery, %{id: gallery_id})
-    product_id = (is_binary(product_id) && String.to_integer(product_id)) || product_id
+
+    gallery_cover_id =
+      (is_binary(gallery_cover_id) && String.to_integer(gallery_cover_id)) || gallery_cover_id
 
     preview =
-      Repo.get_by(ProductPreview, %{:product_id => product_id})
+      Repo.get_by(GalleriesCovers, %{:gallery_id => gallery_id, :id => gallery_cover_id})
       |> Repo.preload([:photo])
 
     if nil in [preview, gallery] do
@@ -25,83 +26,63 @@ defmodule PicselloWeb.GalleryLive.ProductPreview do
         Logger.error("not found row with gallery_id: #{gallery_id} in galleries table")
 
       preview == nil &&
-        Logger.error("not found row with product_id: #{product_id} in product_previews table")
+        Logger.error(
+          "not found row with gallery_cover_id: #{gallery_cover_id} in galleries_covers table"
+        )
 
       {:ok, redirect(socket, to: "/")}
     else
       url = preview.photo.preview_url || nil
 
-      {:ok,
-       socket
-       |> assign(:preview, url)
-       |> assign(:photo_id, nil)
-       |> assign(:changeset, changeset(%{}, [:photo_id]))}
+      {:ok, socket |> assign(:preview, url)}
     end
   end
 
   def changeset(data, prop) do
-    cast(%Picsello.Galleries.ProductPreview{}, data, prop)
-    |> validate_required([:photo_id])
+    cast(%Picsello.Galleries.GalleriesCovers{}, data, prop)
   end
 
-  @impl true
-  def handle_event(
-        "set_preview",
-        %{
-          "photo_id" => photo_id,
-          "preview_url" => preview_url,
-          "product_id" => product_id
-        },
-        socket
-      ) do
-    send_update(PreviewComponent,
-      id: :preview_form,
-      photo_id: photo_id,
-      preview: preview_url,
-      product_id: product_id
-    )
-
+  def handle_event("set_preview", %{"preview" => preview, "photo_id" => photo_id}, socket) do
     socket
+    |> assign(:photo_id, photo_id)
     |> noreply
   end
 
-  def handle_event(
-        "save",
-        %{
-          "product_preview" => %{
-            "photo_id" => photo_id,
-            "product_id" => product_id
-          }
-        },
-        socket
-      ) do
-    photo_id = (is_binary(photo_id) && String.to_integer(photo_id)) || photo_id
-    fields = %{photo_id: photo_id, product_id: product_id}
+  def handle_event("save", %{"galleries_covers" => %{"photo_id" => photo_id}}, socket) do
+    [photo_id, cover_id, gallery_id] =
+      Enum.map(
+        [photo_id, socket.assigns.id, socket.assigns.gallery_id],
+        fn x ->
+          (is_binary(x) && String.to_integer(x)) || x
+        end
+      )
 
-    case Repo.get_by(ProductPreview, %{:product_id => product_id}) do
-      nil ->
-        Logger.error("not found product_preview row with id #{product_id}")
+    fields = %{gallery_id: gallery_id, id: cover_id}
 
-      %Picsello.Galleries.ProductPreview{} = result ->
-        result
-        |> cast(fields, [:photo_id, :product_id])
-        |> Repo.insert_or_update()
+    result = Repo.get_by(GalleriesCovers, fields)
+
+    if result != nil do
+      result
+      |> cast(%{photo_id: photo_id}, [:photo_id])
+      |> Repo.insert_or_update()
     end
 
-    {:noreply, socket |> push_event("reload_grid", %{})}
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_params(%{"id" => id, "product_id" => product_id}, _, socket) do
+  def handle_params(%{"id" => id, "gallery_cover_id" => gallery_cover_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
-    product_id = (is_binary(product_id) && String.to_integer(product_id)) || product_id
 
-    if Repo.get_by(ProductPreview, %{:product_id => product_id}) == nil do
+    gallery_cover_id =
+      (is_binary(gallery_cover_id) && String.to_integer(gallery_cover_id)) || gallery_cover_id
+
+    if Repo.get_by(GalleriesCovers, %{:id => gallery_cover_id}) == nil do
       {:noreply, redirect(socket, to: "/")}
     else
       socket
       |> assign(:gallery, gallery)
-      |> assign(:product_id, product_id)
+      |> assign(:gallery_cover_id, gallery_cover_id)
       |> assign(:page, 0)
       |> assign(:update_mode, "append")
       |> assign(:favorites_filter, false)
