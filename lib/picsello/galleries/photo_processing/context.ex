@@ -66,6 +66,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
         "artifacts" => %{
           "isPreviewUploaded" => true,
           "aspectRatio" => aspect_ratio,
+          "height" => height,
+          "width" => width,
           "isWatermarkedUploaded" => true
         }
       }) do
@@ -74,6 +76,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     {:ok, _} =
       Galleries.update_photo(photo, %{
         aspect_ratio: aspect_ratio,
+        height: height,
+        width: width,
         preview_url: preview_url,
         watermarked_url: watermark_path,
         watermarked_preview_url: watermarked_preview_path
@@ -82,13 +86,20 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def save_processed(%{
         "task" => %{"photoId" => photo_id, "previewPath" => preview_url},
-        "artifacts" => %{"isPreviewUploaded" => true, "aspectRatio" => aspect_ratio}
+        "artifacts" => %{
+          "isPreviewUploaded" => true,
+          "aspectRatio" => aspect_ratio,
+          "height" => height,
+          "width" => width
+        }
       }) do
     photo = Galleries.get_photo(photo_id)
 
     {:ok, _} =
       Galleries.update_photo(photo, %{
         aspect_ratio: aspect_ratio,
+        height: height,
+        width: width,
         preview_url: preview_url
       })
   end
