@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
 
@@ -13,7 +14,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   @impl true
   def handle_params(%{"hash" => hash}, _, socket) do
-    gallery = Galleries.get_detailed_gallery_by_hash(hash)
+    gallery = Galleries.get_gallery_by_hash(hash)
 
     if gallery do
       socket
@@ -65,5 +66,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     assign(socket,
       photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
     )
+  end
+
+  defp cover_photo(key) do
+    PhotoStorage.path_to_url(key)
   end
 end
