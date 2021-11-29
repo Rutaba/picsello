@@ -66,8 +66,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       %{gallery_category_id: cover_id,
         gallery: %{id: gallery_id}}} = socket) do
 
-          IO.puts "SAVE ____"
-  IO.inspect photo_id
     [photo_id, cover_id, gallery_id] =
       Enum.map(
         [photo_id, cover_id, gallery_id],
