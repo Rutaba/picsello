@@ -98,7 +98,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       |> assign(:update_mode, "append")
       |> assign(:favorites_filter, false)
       |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-      |> assign_photos()
+      |> PicselloWeb.GalleryLive.Show.assign_photos()
       |> noreply()
     end
   end

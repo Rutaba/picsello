@@ -1,11 +1,11 @@
-<div class="w-full bg-base-200 px-16 py-7">
-<div class="flex items-center justify-between" style="width:360px;">
+<div class="gallery__container py-11 flex justify-between">
+<div>
     <div class="circleBtn">
         <ul>
             <li>
                 <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
                     <img src="/images/arrow-left.png"/>
-                    <span>Back to <%= @photo_id %> job</span>
+                    <span>Back to job</span>
                 <% end %>
             </li>
         </ul>
@@ -28,9 +28,18 @@
         </div>
     </div>
 
-    
+
 <div id="cover" class="gallery__container pb-32">
 
+   <div class="py-16">
+        <div class="font-bold text-3xl">
+            <%= @gallery.name %> Gallery
+        </div>
+        <div class="text-xl text-gray-400">
+            <%= @gallery.total_count %>
+            photos
+        </div>
+    </div>
     <div
         phx-hook="MasonryGrid"
         phx-update={ @update_mode }
@@ -41,6 +50,7 @@
         data-favorites-count={ @favorites_count }
         data-is-favorites-shown={ @favorites_filter }
         data-is-sortable="false"
+        data-has-more-photos={ @has_more_photos }
     >
 
         <%= for photo <- @photos do %>
