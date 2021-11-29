@@ -156,7 +156,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     Galleries.get_photo(id) |> Galleries.delete_photo()
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
-    send_update(PhotoComponent, id: id, is_removed: true)
+    send_update(PhotoComponent, id: String.to_integer(id), is_removed: true)
 
     socket
     |> assign(:gallery, gallery)
