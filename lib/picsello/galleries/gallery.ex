@@ -78,6 +78,12 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_required([:expired_at])
   end
 
+  def client_link_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [:client_link_hash])
+    |> validate_required([:client_link_hash])
+  end
+
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),

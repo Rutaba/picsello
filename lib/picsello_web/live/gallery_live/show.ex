@@ -117,6 +117,18 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
+  def handle_event("client-link", _, %{assigns: %{gallery: gallery}} = socket) do
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    socket
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:photo_processed, %{"task" => %{"photoId" => photo_id}}},
         %{assigns: %{modal_pid: modal_pid}} = socket
