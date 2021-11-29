@@ -98,7 +98,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       |> assign(:update_mode, "append")
       |> assign(:favorites_filter, false)
       |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-      |> PicselloWeb.GalleryLive.Show.assign_photos()
+      |> assign_photos()
       |> noreply()
     end
   end
@@ -110,11 +110,15 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
              page: page,
              favorites_filter: filter
            }
-         } = socket
+         } = socket,
+         per_page \\ @per_page
        ) do
-    assign(socket,
-      photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
-    )
+    opts = [only_favorites: filter, offset: per_page * page]
+    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+
+    socket
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, photos |> length > per_page)
   end
 
   def path(nil), do: "/images/card_blank.png"

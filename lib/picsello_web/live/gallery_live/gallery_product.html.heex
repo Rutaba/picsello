@@ -28,18 +28,9 @@
         </div>
     </div>
 
-
 <div id="cover" class="gallery__container pb-32">
 
-   <div class="py-16">
-        <div class="font-bold text-3xl">
-            <%= @gallery.name %> Gallery
-        </div>
-        <div class="text-xl text-gray-400">
-            <%= @gallery.total_count %>
-            photos
-        </div>
-    </div>
+
     <div
         phx-hook="MasonryGrid"
         phx-update={ @update_mode }
@@ -54,25 +45,16 @@
     >
 
         <%= for photo <- @photos do %>
-            <div class="item" id={ "photo-item-#{photo.id}" }>
-                <div class={"item-content" <> if @photo_id == photo.id do " border-4 border-blue-300 rounded-xl" else ""  end}
-                    phx-click="set_preview"
-                    phx-value-preview={photo.preview_url}
-                    phx-value-photo_id={photo.id}
-                    phx-target="#cover"
-                >
-                <%= if @photo_id == photo.id do %>
-                <div class="bg-blue-300 w-5 h-5 rounded-sm right-0 z-10 absolute">
-                    <.icon name="checkmark" class="w-4 h-4 stroke-current" />
-                </div>
-                <%= end %>
-                    <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-                        id: photo.id,
-                        photo: photo,
-                        is_likable: false,
-                        is_removable: false %>
-                </div>
-            </div>
+
+                <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo,
+                    is_likable: false,
+                    is_removable: true,
+                    is_removed: false,
+                    is_gallery_category_page: true,
+                    id_checked_for_preview: PicselloWeb.LiveHelpers.to_integer @photo_id %>
+
         <% end %>
 
     </div>
