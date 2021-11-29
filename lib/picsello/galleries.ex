@@ -72,18 +72,18 @@ defmodule Picsello.Galleries do
   Gets paginated photos by gallery id
 
   Optional options:
-    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`
+    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :offset. Defaults to `per_page * page`.
 
   """
   @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
           list(Photo)
   def get_gallery_photos(id, per_page, page, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
+    offset = Keyword.get(opts, :offset, per_page * page)
 
     select_opts =
       if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id)
-
-    offset = per_page * page
 
     Photo
     |> where(^select_opts)
@@ -188,6 +188,14 @@ defmodule Picsello.Galleries do
     |> Gallery.expire_changeset(attrs)
     |> Repo.update()
   end
+
+  def set_gallery_hash(%Gallery{client_link_hash: nil} = gallery) do
+    gallery
+    |> Gallery.client_link_changeset(%{client_link_hash: UUID.uuid4()})
+    |> Repo.update!()
+  end
+
+  def set_gallery_hash(%Gallery{} = gallery), do: gallery
 
   @doc """
   Loads the gallery photos.
@@ -321,8 +329,8 @@ defmodule Picsello.Galleries do
       Repo,
       """
         WITH ranks AS (
-          SELECT id, RANK() OVER (ORDER BY position) AS pos
-          FROM photos
+          SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS pos
+          FROM photos 
           WHERE gallery_id = $1::integer
         )
         UPDATE photos p
