@@ -14,23 +14,21 @@
   </div>
 </div>
 
-    <div class="inline-flex">
-        <div class="preview">
-          <img src={@preview} id="previewTagImg">
-        </div>
-        <div class="description">
-        Lorem Ipsum
-            <.form let={f} for={@changeset} action="#" phx-submit="save">
-                <%= hidden_input f, :photo_id, value: @photo_id %>
-                <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
-                    disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
-            </.form>
-        </div>
+<div class="inline-flex">
+    <div class="preview">
+        <img src={@preview} id="previewTagImg">
     </div>
+    <div class="description">
+    Lorem Ipsum
+        <.form let={f} for={@changeset} action="#" phx-submit="save">
+            <%= hidden_input f, :photo_id, value: @photo_id %>
+            <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+                disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+        </.form>
+    </div>
+</div>
 
-<div id="cover" class="gallery__container pb-32">
-
-
+<div id="gallery_product_form" class="gallery__container pb-32">
     <div
         phx-hook="MasonryGrid"
         phx-update={ @update_mode }
@@ -43,20 +41,16 @@
         data-is-sortable="false"
         data-has-more-photos={ @has_more_photos }
     >
-
         <%= for photo <- @photos do %>
-
-                <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-                    id: photo.id,
-                    photo: photo,
-                    is_likable: false,
-                    is_removable: true,
-                    is_removed: false,
-                    is_gallery_category_page: true,
-                    id_checked_for_preview: PicselloWeb.LiveHelpers.to_integer @photo_id %>
-
+            <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                id: photo.id,
+                photo: photo,
+                is_likable: false,
+                is_removable: true,
+                is_removed: false,
+                is_gallery_category_page: true,
+                id_checked_for_preview: PicselloWeb.LiveHelpers.to_integer @photo_id %>
         <% end %>
-
     </div>
 </div>
 
