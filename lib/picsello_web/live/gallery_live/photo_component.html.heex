@@ -1,4 +1,13 @@
 <div
+    class={!@is_removed && "item" || "hidden"}
+    id={"photo-item-#{@photo.id}"}
+    style={"
+        width: 300px;
+        height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
+    "}
+>
+ <div class="item-content">
+<div
     id={"photo-#{@id}"}
     class="galleryItem"
 >
@@ -33,4 +42,6 @@
             <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
         </button>
     <% end %>
+</div>
+ </div>
 </div>
