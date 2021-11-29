@@ -50,7 +50,112 @@
     </div>
   </div>
 </div>
+<div class="gallery__container pb-14">
+  <div class="pt-14 pb-7">
+    <div class="font-bold text-3xl">Showcase photos your clients will love
 
+      <svg width="22" height="22" class="stroke-current inline-block mr-2 rounded-full fill-current bg-blue-planning-300 text-white-planning-300" >
+       <use href="/images/icons.svg#gallery-info"></use>
+      </svg>
+    </div>
+  </div>
+  <div class="flex justify-between">
+    <ul class="grid gap-6 grid-cols-2 lg:grid-cols-4">
+      <li class="galleryImage__wrapper flex flex-col justify-between   rounded-lg">
+        <a href="#">
+          <div class="photos__rect rounded-lg justify-center items-center">
+            <img class="frame" src="/images/frame_transparency.png">
+          </div>
+        </a>
+        <div class="grid grid-cols-2 text-xl">
+          <div class="flex flex-col">
+            <div class="pt-3 pb-1.5 font-bold ">Prints</div>
+            <div class="photos__price text-base" style="color: #898989;">From $0.89</div>
+          </div>
+            <div class="flex flex-col">
+              <div class="flex justify-end pt-7">
+                <button type="button" class="flex items-center text-sm py-2 pr-3.5 pl-3 border border-blue-planning-300 rounded-lg">
+                  <svg class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300">
+                   <use href="/images/icons.svg#pencil"></use>
+                  </svg>
+                  <span>Edit this</span>
+                </button>
+             </div>
+            </div>
+        </div>
+      </li>
+      <li class="galleryImage__wrapper flex flex-col justify-between   rounded-lg">
+        <a href="#">
+          <div class="photos__rect rounded-lg justify-center items-center">
+            <img class="frame" src="/images/frame_transparency.png">
+          </div>
+        </a>
+        <div class="grid grid-cols-2  text-xl">
+          <div class="flex flex-col">
+            <div class="pt-3 pb-1.5 font-bold">Framed Prints</div>
+            <div class="photos__price text-base" style="color: #898989;">From $12.00</div>
+          </div>
+            <div class="flex flex-col">
+              <div class="flex justify-end pt-7">
+                <button type="button" class="flex items-center text-sm py-2 pr-3.5 pl-3 border border-blue-planning-300 rounded-lg">
+                  <svg class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300">
+                   <use href="/images/icons.svg#pencil"></use>
+                  </svg>
+                  <span>Edit this</span>
+                </button>
+             </div>
+            </div>
+        </div>
+      </li>
+      <li class="galleryImage__wrapper flex flex-col justify-between   rounded-lg">
+        <a href="#">
+          <div class="photos__rect rounded-lg justify-center items-center">
+            <img class="frame" src="/images/frame_transparency.png">
+          </div>
+        </a>
+        <div class="grid grid-cols-2  text-xl">
+          <div class="flex flex-col">
+            <div class="pt-3 pb-1.5 font-bold">Greeting Cards</div>
+            <div class="photos__price text-base" style="color: #898989;">From $34.00</div>
+          </div>
+            <div class="flex flex-col">
+              <div class="flex justify-end pt-7">
+                <button type="button" class="flex items-center text-sm py-2 pr-3.5 pl-3 border border-blue-planning-300 rounded-lg">
+                  <svg class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300">
+                   <use href="/images/icons.svg#pencil"></use>
+                  </svg>
+                  <span>Edit this</span>
+                </button>
+             </div>
+            </div>
+        </div>
+      </li>
+      <li class="galleryImage__wrapper flex flex-col justify-between   rounded-lg">
+        <a href="#">
+          <div class="photos__rect rounded-lg justify-center items-center">
+            <img class="frame" src="/images/frame_transparency.png">
+          </div>
+        </a>
+        <div class="grid grid-cols-2 text-xl">
+          <div class="flex flex-col">
+            <div class="pt-3 pb-1.5 font-bold ">Custom Albums</div>
+            <div class="photos__price text-base" style="color: #898989;">From $70.00</div>
+          </div>
+            <div class="flex flex-col">
+              <div class="flex justify-end pt-7">
+                <button type="button" class="flex items-center text-sm py-2 pr-3.5 pl-3 border border-blue-planning-300 rounded-lg">
+                  <svg class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300">
+                   <use href="/images/icons.svg#pencil"></use>
+                  </svg>
+                  <span>Edit this</span>
+                </button>
+             </div>
+            </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
 <div class="gallery__container pb-32">
     <%= if @live_action in [:edit] do %>
     <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
@@ -60,7 +165,7 @@
     gallery: @gallery,
     return_to: Routes.gallery_show_path(@socket, :show, @gallery) %>
 <% end %>
-    <div class="py-16">
+    <div class="py-16 border-t">
         <div class="font-bold text-3xl">
             <%= @gallery.name %> Gallery
         </div>
