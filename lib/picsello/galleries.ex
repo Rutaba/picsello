@@ -189,6 +189,14 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
+  def set_gallery_hash(%Gallery{client_link_hash: nil} = gallery) do
+    gallery
+    |> Gallery.client_link_changeset(%{client_link_hash: UUID.uuid4()})
+    |> Repo.update!()
+  end
+
+  def set_gallery_hash(%Gallery{} = gallery), do: gallery
+
   @doc """
   Loads the gallery photos.
 
