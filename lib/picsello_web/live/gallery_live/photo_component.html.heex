@@ -1,6 +1,6 @@
 <div
     id={"photo-#{@id}"}
-    class={@is_removable && "galleryItem cursor-pointer"}
+    class="galleryItem"
 >
     <img
         width="300"
@@ -9,16 +9,20 @@
         class="relative"
     />
     <button
-        class="likeBtn absolute"
+        class="likeBtn"
         phx-click={@is_likable && "like"}
         phx-target={@myself}
         phx-value-id={@id}
     >
-        <%= if @photo.client_liked do %>
-           <.icon name="heart-filled" class="w-7 h-7" />
-        <% else %>
-            <.icon name="heart" class="w-7 h-7" />
-        <% end %>
+         <%= if @photo.client_liked do %>
+              <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
+         <% else %>
+             <%= if @is_likable do %>
+                   <.icon name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
+              <% else %>
+                   <.icon name="heart" class="w-7 h-7 text-gray-200" />
+               <% end %>
+         <% end %>
     </button>
     <%= if @is_removable do %>
         <button
