@@ -5,7 +5,7 @@
             <li>
                 <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
                     <img src="/images/arrow-left.png"/>
-                    <span>Back to job</span>
+                    <span>Back to <%= @photo_id %> job</span>
                 <% end %>
             </li>
         </ul>
@@ -13,7 +13,22 @@
   <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
   </div>
 </div>
-<%= live_component PicselloWeb.GalleryLive.GalleriesCovers, id: "cover", preview: @preview %>
+
+    <div class="inline-flex">
+        <div class="preview">
+          <img src={@preview} id="previewTagImg">
+        </div>
+        <div class="description">
+        Lorem Ipsum
+            <.form let={f} for={@changeset} action="#" phx-submit="save">
+                <%= hidden_input f, :photo_id, value: @photo_id %>
+                <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+                    disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+            </.form>
+        </div>
+    </div>
+
+    
 <div id="cover" class="gallery__container pb-32">
 
     <div
@@ -30,12 +45,17 @@
 
         <%= for photo <- @photos do %>
             <div class="item" id={ "photo-item-#{photo.id}" }>
-                <div class="item-content"
+                <div class={"item-content" <> if @photo_id == photo.id do " border-4 border-blue-300 rounded-xl" else ""  end}
                     phx-click="set_preview"
                     phx-value-preview={photo.preview_url}
                     phx-value-photo_id={photo.id}
-                    phx-target="#cover, #preview"
+                    phx-target="#cover"
                 >
+                <%= if @photo_id == photo.id do %>
+                <div class="bg-blue-300 w-5 h-5 rounded-sm right-0 z-10 absolute">
+                    <.icon name="checkmark" class="w-4 h-4 stroke-current" />
+                </div>
+                <%= end %>
                     <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                         id: photo.id,
                         photo: photo,

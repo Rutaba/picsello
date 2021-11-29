@@ -5,6 +5,7 @@ defmodule Picsello.Repo.Migrations.CategoryTemplates do
     create table(:category_templates) do
       add(:frame_url, :string)
       add(:price, :integer, default: 0)
+      add(:category_id, references(:category_templates, on_delete: :nothing))
 
       timestamps()
     end

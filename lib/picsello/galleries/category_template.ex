@@ -3,9 +3,10 @@ defmodule Picsello.Galleries.CategoryTemplate do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "category_template" do
+  schema "category_templates" do
     field :frame_url, :string
     field :price, :integer
+    belongs_to(:category, Picsello.Category)
 
     timestamps()
   end

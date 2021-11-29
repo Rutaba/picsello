@@ -233,4 +233,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def filesize(byte_size) when is_integer(byte_size),
     do: Size.humanize!(byte_size, spacer: "")
+
+  def to_integer(int) when is_integer(int), do: int
+  def to_integer(bin) when is_binary(bin), do: String.to_integer(bin)
 end
