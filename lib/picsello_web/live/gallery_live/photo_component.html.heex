@@ -12,8 +12,8 @@
             class={@is_removable && "galleryItem cursor-pointer"}
         >
             <img
-                width="309"
-                height={if @photo.aspect_ratio, do: 309 / @photo.aspect_ratio}
+                width="300"
+                height={if @photo.aspect_ratio, do: 300 / @photo.aspect_ratio}
                 src={display(@photo)}
                 class="relative"
             />
