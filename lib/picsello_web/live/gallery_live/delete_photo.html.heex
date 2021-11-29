@@ -6,13 +6,12 @@
             <h1 class="mb-4 text-3xl font-medium text-start">Delete this photo?</h1>
             <p class="mb-6 text-sm">Are you sure you wish to permanently delete this photo from <%= @gallery_name %>?</p>
 
-            <a href="#" phx-click="close" phx-target={@myself} phx-value-delete="true" class="flex justify-center text-base btn-warning">
+            <a href="#" phx-click="confirm" phx-target={@myself} class="flex justify-center text-base btn-warning">
               Yes, delete
             </a>
 
              &nbsp; 
-            <a href="#" phx-click="close" phx-target={@myself} class="flex btn-secondary justify-center text-base ">
-
+            <a href="#" phx-click="cancel" phx-target={@myself} class="flex btn-secondary justify-center text-base ">
               No, go back
             </a>
         </div>

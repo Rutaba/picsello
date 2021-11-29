@@ -3,8 +3,8 @@
     class={@is_removable && "galleryItem cursor-pointer"}
 >
     <img
-        width="309"
-        height={if @photo.aspect_ratio, do: 309 / @photo.aspect_ratio}
+        width="300"
+        height={if @photo.aspect_ratio, do: 300 / @photo.aspect_ratio}
         src={display(@photo)}
         class="relative"
     />
@@ -18,13 +18,12 @@
            <.icon name="heart-filled" class="w-7 h-7" />
         <% else %>
             <.icon name="heart" class="w-7 h-7" />
-              <% end %>
+        <% end %>
     </button>
     <%= if @is_removable do %>
         <button
             class="removeBtn absolute"
-            phx-click="remove"
-            phx-target={@myself}
+            phx-click="delete_photo_popup"
             phx-value-id={@id}
         >
             <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />

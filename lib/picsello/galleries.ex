@@ -189,6 +189,14 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
+  def set_gallery_hash(%Gallery{client_link_hash: nil} = gallery) do
+    gallery
+    |> Gallery.client_link_changeset(%{client_link_hash: UUID.uuid4()})
+    |> Repo.update!()
+  end
+
+  def set_gallery_hash(%Gallery{} = gallery), do: gallery
+
   @doc """
   Loads the gallery photos.
 
@@ -295,6 +303,25 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Removes the photo from DB and all its versions from cloud bucket.
+  """
+  def delete_photo(%Photo{} = photo) do
+    Repo.delete(photo)
+
+    [
+      photo.original_url,
+      photo.preview_url,
+      photo.watermarked_url,
+      photo.watermarked_preview_url
+    ]
+    |> Enum.each(fn path ->
+      %{path: path}
+      |> CleanStore.new()
+      |> Oban.insert()
+    end)
+  end
+
+  @doc """
   Normalizes photos positions within a gallery
   """
   def normalize_gallery_photo_positions(gallery_id) do
@@ -383,8 +410,8 @@ defmodule Picsello.Galleries do
     Ecto.Adapters.SQL.query(
       Repo,
       """
-        UPDATE galleries 
-        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer) 
+        UPDATE galleries
+        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer)
         WHERE id = $1::integer;
       """,
       [gallery_id]
