@@ -79,24 +79,15 @@
             data-favorites-count="<%= @favorites_count %>"
             data-is-favorites-shown="<%= @favorites_filter %>"
             data-is-sortable="true"
+            data-has-more-photos="<%= @has_more_photos %>"
     >
         <%= for photo <- @photos do %>
-        <div
-                class="item"
-                id="photo-item-<%= photo.id %>"
-                style="
-                        width: 300px;
-                        height: <%= if photo.aspect_ratio, do: "#{300 / photo.aspect_ratio}px", else: "auto" %>;
-                "
-        >
-            <div class="item-content">
                 <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
                     photo: photo,
                     is_likable: false,
-                    is_removable: true %>
-            </div>
-        </div>
+                    is_removable: true, 
+                    is_removed: false %>
         <% end %>
     </div>
 </div>

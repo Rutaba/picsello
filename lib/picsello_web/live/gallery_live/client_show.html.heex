@@ -64,6 +64,7 @@
               data-total={@gallery.total_count}
               data-favorites-count={@favorites_count}
               data-is-favorites-shown={@favorites_filter}
+              data-has-more-photos={@has_more_photos}
         >
             <%= for photo <- @photos do %>
                 <div
