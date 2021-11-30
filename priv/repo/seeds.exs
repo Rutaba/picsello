@@ -10,7 +10,7 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-alias Picsello.Galleries.CategoryTemplate
+alias Picsello.Galleries.Category
 alias Picsello.Repo
 alias Picsello.Category
 
@@ -22,8 +22,12 @@ frames = [
 ]
 
 Picsello.Repo.insert!(%Category{
-  name: "test_cat", icon: "test.png",
-  position: 1, whcc_id: "1", whcc_name: "whcc_test"})
+  name: "test_cat",
+  icon: "test.png",
+  position: 1,
+  whcc_id: "1",
+  whcc_name: "whcc_test"
+})
 
 Enum.each(frames, fn f_name ->
   Repo.insert!(%CategoryTemplate{frame_url: f_name})

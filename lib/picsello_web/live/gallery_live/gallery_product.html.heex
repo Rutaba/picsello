@@ -3,9 +3,9 @@
     <div class="circleBtn">
         <ul>
             <li>
-                <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+                <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
                     <img src="/images/arrow-left.png"/>
-                    <span>Back to job</span>
+                    <span>Back to gallery</span>
                 <% end %>
             </li>
         </ul>

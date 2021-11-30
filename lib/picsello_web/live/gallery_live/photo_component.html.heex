@@ -6,7 +6,9 @@
         height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
     "}
 >
-    <div class={"item-content" <> if (@id_checked_for_preview == @photo.id) do " border-4 border-blue-300 rounded-xl" else ""  end}
+    <div class={"item-content" <> if assigns[:id_checked_for_preview] != nil do 
+            if @id_checked_for_preview == @photo.id do " border-4 border-blue-300 rounded-xl" else "" end
+        else "" end}
         phx-click="set_preview"
         phx-value-preview={@photo.preview_url}
         phx-value-photo_id={@photo.id}
@@ -42,11 +44,13 @@
                     <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
                 </button>
             <% end %>
-            <%= if(@id_checked_for_preview == @photo.id) do %>
+            <%= if assigns[:id_checked_for_preview] != nil do %>
+                <%= if @id_checked_for_preview == @photo.id do %>
                 <div class="bg-blue-300 w-5 h-5 rounded-sm right-0 top-0 z-10 absolute">
                     <.icon name="checkmark" class="w-4 h-4 stroke-current" />
                 </div>
-            <%= end %>
+                <% end %>
+            <% end %>
         </div>
     </div>
 </div>

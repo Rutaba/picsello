@@ -7,7 +7,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.Galleries.Gallery
-  alias Picsello.Galleries.GalleryCategory
+  alias Picsello.Galleries.GalleryProduct
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
@@ -17,7 +17,10 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     gallery = Repo.get_by(Gallery, %{id: gallery_id})
 
     preview =
-      Repo.get_by(GalleryCategory, %{:gallery_id => gallery_id, :id => to_integer(gallery_category_id)})
+      Repo.get_by(GalleryProduct, %{
+        :gallery_id => gallery_id,
+        :id => to_integer(gallery_category_id)
+      })
       |> Repo.preload([:photo])
 
     if nil in [preview, gallery] do
@@ -33,14 +36,16 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     else
       url = preview.photo.preview_url || nil
 
-      {:ok, socket |> assign(:preview, path(url))
-      |> assign(:changeset, changeset(%{}, []))
-        |> assign(:photo_id, nil)}
+      {:ok,
+       socket
+       |> assign(:preview, path(url))
+       |> assign(:changeset, changeset(%{}, []))
+       |> assign(:photo_id, nil)}
     end
   end
 
   def changeset(data, prop) do
-    cast(%Picsello.Galleries.GalleryCategory{}, data, prop)
+    cast(%Picsello.Galleries.GalleryProduct{}, data, prop)
     |> validate_required([:photo_id])
   end
 
@@ -61,19 +66,20 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> noreply
   end
 
-  def handle_event("save", %{"gallery_category" => %{"photo_id" => photo_id}},
-    %{assigns:
-      %{gallery_category_id: cover_id,
-        gallery: %{id: gallery_id}}} = socket) do
-
+  def handle_event(
+        "save",
+        %{"gallery_product" => %{"photo_id" => photo_id}},
+        %{assigns: %{gallery_category_id: cover_id, gallery: %{id: gallery_id}}} = socket
+      ) do
     [photo_id, cover_id, gallery_id] =
       Enum.map(
         [photo_id, cover_id, gallery_id],
-        fn x -> to_integer(x) end)
+        fn x -> to_integer(x) end
+      )
 
     fields = %{gallery_id: gallery_id, id: cover_id}
 
-    result = Repo.get_by(GalleryCategory, fields)
+    result = Repo.get_by(GalleryProduct, fields)
 
     if result != nil do
       result
@@ -88,7 +94,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def handle_params(%{"id" => id, "gallery_category_id" => gallery_category_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    if Repo.get_by(GalleryCategory, %{:id => to_integer(gallery_category_id)}) == nil do
+    if Repo.get_by(GalleryProduct, %{:id => to_integer(gallery_category_id)}) == nil do
       {:noreply, redirect(socket, to: "/")}
     else
       socket
