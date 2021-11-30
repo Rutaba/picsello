@@ -132,7 +132,7 @@ defmodule Picsello.WHCCTest do
     end
   end
 
-  describe "category" do
+  describe "preload_products" do
     setup do
       whcc_category_id = "tfhysKwZafFtmGqpQ"
 
@@ -151,14 +151,15 @@ defmodule Picsello.WHCCTest do
       end)
 
       Picsello.WHCC.sync()
-      id = Picsello.Category |> Repo.get_by(whcc_id: whcc_category_id) |> Map.get(:id)
 
-      Repo.update_all(Picsello.Category, set: [hidden: false])
-      [category_id: id, user: insert(:user)]
+      product_ids = from(product in Picsello.Product, select: product.id) |> Repo.all()
+
+      [product_ids: product_ids, user: insert(:user)]
     end
 
-    test "loads product variations", %{category_id: category_id, user: user} do
-      %{products: [%{variations: variations} | _]} = Picsello.WHCC.category(category_id, user)
+    test "loads product variations", %{product_ids: product_ids, user: user} do
+      [%{variations: variations} | _] =
+        product_ids |> Picsello.WHCC.preload_products(user) |> Map.values()
 
       assert %{
                attributes: [
@@ -176,8 +177,8 @@ defmodule Picsello.WHCCTest do
              } = hd(variations)
     end
 
-    test "loads markups", %{category_id: category_id, user: user} do
-      %{products: [%{id: product_id} | _]} = Picsello.WHCC.category(category_id, user)
+    test "loads markups", %{product_ids: product_ids, user: user} do
+      [product_id | _] = product_ids
 
       insert(:markup,
         organization_id: user.organization_id,
@@ -188,7 +189,8 @@ defmodule Picsello.WHCCTest do
         value: 2.0
       )
 
-      %{products: [%{variations: variations} | _]} = Picsello.WHCC.category(category_id, user)
+      [%{variations: variations} | _] =
+        product_ids |> Picsello.WHCC.preload_products(user) |> Map.values()
 
       assert [
                %{

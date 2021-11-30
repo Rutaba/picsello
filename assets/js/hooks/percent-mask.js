@@ -13,6 +13,7 @@ function percentMask(el) {
         scale: 2,
         signed: false,
         radix: '.',
+        lazy: false,
       },
     },
   });
@@ -23,8 +24,7 @@ export default {
     this.mask = percentMask(this.el);
   },
   updated() {
-    this.mask?.destroy();
-    this.mask = percentMask(this.el);
+    this.mask?.updateValue();
   },
   destroyed() {
     this.mask?.destroy();
