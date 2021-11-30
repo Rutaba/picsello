@@ -10,7 +10,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
-      |> Picsello.ClientMessage.create_changeset()
+      |> Picsello.ClientMessage.create_outbound_changeset()
     end)
     |> ok()
   end
@@ -117,7 +117,8 @@ defmodule PicselloWeb.ClientMessageComponent do
          action,
          params
        ) do
-    changeset = params |> Picsello.ClientMessage.create_changeset() |> Map.put(:action, action)
+    changeset =
+      params |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end
