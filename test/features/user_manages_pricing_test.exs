@@ -6,36 +6,20 @@ defmodule Picsello.UserManagesPricingTest do
   setup :authenticated
 
   setup do
-    Mox.stub_with(Picsello.MockWHCCClient, Picsello.WHCC.Client)
+    read_fixture =
+      &("test/support/fixtures/whcc/api/v1/#{&1}.json" |> File.read!() |> Jason.decode!())
 
-    Agent.update(Picsello.WHCC.Client.TokenStore, fn _ ->
-      %{
-        token: "abc",
-        expires_at: DateTime.utc_now() |> DateTime.add(1000, :second)
-      }
+    Picsello.MockWHCCClient
+    |> Mox.stub(:products, fn ->
+      for(product <- read_fixture.("products"), do: Picsello.WHCC.Product.from_map(product))
     end)
-
-    base_path =
-      with "" <> url <- :picsello |> Application.get_env(:whcc) |> Keyword.get(:url),
-           %{path: "" <> base_path} <- URI.parse(url) do
-        base_path
-      else
-        _ -> ""
-      end
-
-    Tesla.Mock.mock(fn
-      %{method: :get, url: url} ->
-        %{path: path} = URI.parse(url)
-        file_path = String.split(path, base_path, parts: 2, trim: true)
-
-        %Tesla.Env{
-          status: 200,
-          body: "test/support/fixtures/#{file_path}.json" |> File.read!() |> Jason.decode!()
-        }
+    |> Mox.stub(:product_details, fn %{id: id} = product ->
+      Picsello.WHCC.Product.add_details(product, read_fixture.("products/#{id}"))
     end)
 
     Picsello.WHCC.sync()
-    Picsello.Category |> Repo.update_all(set: [hidden: false])
+
+    Repo.update_all(Picsello.Category, set: [hidden: false])
 
     :ok
   end
@@ -60,7 +44,7 @@ defmodule Picsello.UserManagesPricingTest do
     do: find(session, css(".contents", text: attribute_name), f)
 
   feature "modify pricing", %{session: session} do
-    lustre_attribute = "Surface Fuji Lustre"
+    lustre_attribute = "Surface Lustre"
 
     session
     |> click(link("Settings"))
@@ -95,7 +79,7 @@ defmodule Picsello.UserManagesPricingTest do
         |> fill_in(testid("markup"), with: "")
         |> assert_has(css(".text-input-invalid"))
       end)
-      |> find_attribute_row("Surface Fuji Pearl", fn attribute ->
+      |> find_attribute_row("Surface Glossy", fn attribute ->
         attribute
         |> fill_in(testid("markup"), with: "2%")
         |> assert_has(css("input:not(.text-input-invalid)"))
