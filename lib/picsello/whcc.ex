@@ -2,7 +2,7 @@ defmodule Picsello.WHCC do
   @moduledoc "WHCC context module"
   alias Picsello.{Repo, WHCC.Adapter}
 
-  import Ecto.Query
+  import Ecto.Query, only: [from: 2]
 
   def sync() do
     # fetch latest products from whcc api
@@ -77,11 +77,56 @@ defmodule Picsello.WHCC do
     records
   end
 
-  def categories do
-    from(category in Picsello.Category.active(),
-      where: not category.hidden,
-      order_by: [asc: category.position]
-    )
-    |> Repo.all()
+  def categories, do: Repo.all(categories_query())
+
+  def category(id, user) do
+    products =
+      Picsello.Product.active()
+      |> Picsello.Product.with_attributes(user)
+
+    category =
+      from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
+
+    %{
+      category
+      | products:
+          Enum.map(
+            category.products,
+            &%{&1 | variations: variations(&1)}
+          )
+    }
   end
+
+  defp variations(%{variations: variations}),
+    do:
+      for(
+        variation <- variations,
+        do:
+          for(
+            k <- ~w(id name attributes)a,
+            do: {k, variation[Atom.to_string(k)]},
+            into: %{}
+          )
+          |> Map.update!(
+            :attributes,
+            &for(
+              attribute <- &1,
+              do:
+                for(
+                  k <-
+                    ~w(category_name category_id id name price markup)a,
+                  do: {k, attribute[Atom.to_string(k)]},
+                  into: %{}
+                )
+                |> Map.update!(:price, fn dolars -> Money.new(trunc(dolars * 100)) end)
+            )
+          )
+      )
+
+  defp categories_query(),
+    do:
+      from(category in Picsello.Category.active(),
+        where: not category.hidden,
+        order_by: [asc: category.position]
+      )
 end

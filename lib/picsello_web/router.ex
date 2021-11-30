@@ -110,9 +110,11 @@ defmodule PicselloWeb.Router do
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
 
+      live "/inbox", InboxLive.Index, :index, as: :inbox
+
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
-      live "/galleries/:id/album", GalleryLive.Album
+      live "/galleries/:id/product/:gallery_category_id", GalleryLive.GalleryProduct
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id/settings", GalleryLive.Settings, :settings

@@ -314,7 +314,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("why?"), with: "it's the best.")
     |> click(css("label", text: "Of course"))
     |> fill_in(text_field("Describe it"), with: "it's great.")
-    |> fill_in(text_field("When"), with: "10/10/2021")
+    |> fill_in_date(text_field("When"), with: ~D[2021-10-10])
     |> fill_in(text_field("Email"), with: "email@example.com")
     |> fill_in(text_field("Phone"), with: "(255) 123-1234")
     |> wait_for_enabled_submit_button()

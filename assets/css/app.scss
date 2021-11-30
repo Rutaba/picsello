@@ -3,7 +3,6 @@
 @import "tailwindcss/utilities";
 
 @import "./components/buttons.css";
-@import "./components/album.css";
 @import "./components/clientGallery.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
@@ -154,22 +153,27 @@ html {
   }
 }
 
-.customWatermarkPopup {
-  width: 1041px;
-  max-height: 950px;
-  background-color: #FFFFFF;
-  margin: 0 auto;
-}
-
 /**
  * only used on photographer settings / gallery pricing
- */
-
+ **/
 .grid {
+
+  // all the variation cells get a top boarder...
+  .contents.collapsed > * {
+    @apply border-t;
+  }
+
+  // except the first one (after the headers)
   h3 + .contents.collapsed > * {
     @apply border-t-0;
   }
 
+  // or the first one after an expanded one, on mobile
+  .contents.expanded + .contents.collapsed > * {
+    @apply border-t-0 sm:border-t;
+  }
+
+  // every other attribute row is blue in desktop
   .contents .contents:nth-child(odd) div {
     @apply sm:bg-blue-planning-100;
   }

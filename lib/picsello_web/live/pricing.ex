@@ -24,9 +24,9 @@ defmodule PicselloWeb.Live.Pricing do
 
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
       <%= for %{name: name, icon: icon, id: id} <- @categories do %>
-        <.live_link to={Routes.pricing_category_path(@socket, :show, id)} class="p-5 border rounded block">
+        <.live_link to={Routes.pricing_category_path(@socket, :show, id)} class="block p-5 border rounded">
           <div class="w-full rounded aspect-w-1 aspect-h-1 bg-base-200">
-            <.icon name={icon} class="text-blue-planning-300" />
+            <div class="flex items-center justify-center"><.icon name={icon} class="w-1/3 text-blue-planning-300" /></div>
           </div>
 
           <h2 class="pt-3 text-2xl font-bold"><%= name %></h2>

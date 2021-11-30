@@ -44,8 +44,8 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
         <.th expanded={@expanded} class="hidden px-4 rounded-r-lg sm:block">Markup</.th>
 
         <%= if @expanded do %>
-          <%= for variation_id <- variation_ids(@product) do %>
-            <.variation product={@product} variation_id={variation_id} expanded={@expanded} />
+          <%= for variation <- @product.variations do %>
+            <.variation product_id={@product.id} variation={variation} expanded={@expanded} />
           <% end %>
         <% end %>
       </div>
@@ -53,19 +53,16 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
     """
   end
 
+  def variation_ids(product), do: product.variations |> Enum.map(& &1[:id])
+
   def all_expanded?(_, nil), do: false
 
-  def all_expanded?(product, expanded) do
-    product |> variation_ids() |> MapSet.new() |> MapSet.equal?(expanded)
-  end
-
-  def variation_ids(%{attribute_categories: attribute_categories}) do
-    attribute_categories |> hd |> Map.get("attributes") |> Enum.map(& &1["id"])
-  end
+  def all_expanded?(product, expanded),
+    do: product |> variation_ids() |> MapSet.new() |> MapSet.equal?(expanded)
 
   defp variation(assigns) do
     ~H"""
-      <%= live_component PicselloWeb.Live.Pricing.Category.Variation, id: {@product.id, @variation_id}, product: @product, variation_id: @variation_id, expanded: MapSet.member?(@expanded, @variation_id) %>
+      <%= live_component PicselloWeb.Live.Pricing.Category.Variation, product_id: @product_id, variation: @variation, expanded: MapSet.member?(@expanded, @variation.id) %>
     """
   end
 

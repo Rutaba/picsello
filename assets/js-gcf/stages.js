@@ -4,7 +4,7 @@ import Path from "path";
 import {tmpdir} from "os";
 import {Storage} from "@google-cloud/storage";
 import {PubSub} from "@google-cloud/pubsub";
-
+import {loadFont, convert} from "./font.js"
 
 const previewWidth = 760;
 
@@ -120,6 +120,27 @@ export const downloadWatermarkStage = context => {
     }
 
     return context;
+}
+
+export const generateTextWatermarkStage = async context => {
+    
+    if (context.task && context.task.watermarkText) {
+        const text = context.task.watermarkText;
+        const font = loadFont('BeVietnam-Bold')
+        const watermarkFile = tmpFileName(text + ".textWatermark.png")
+        
+        await convert(font, text, 0, -60, 100, {padding: 0}).then(buffer => {
+            fs.writeFileSync(watermarkFile, buffer)
+        })
+        
+        context.artifacts.watermark.downloaded = true;
+        context.artifacts.watermark.filename = watermarkFile;
+        context.artifacts.watermark.image = sharp(watermarkFile);
+
+        return context;
+    }
+
+    return context
 }
 
 

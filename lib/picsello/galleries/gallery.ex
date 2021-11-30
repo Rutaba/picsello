@@ -13,7 +13,6 @@ defmodule Picsello.Galleries.Gallery do
     field :name, :string
     field(:status, :string, @status_options)
     field :cover_photo_id, :string
-    field :product_preview, :string
     field :cover_photo_aspect_ratio, :float
     field :password, :string
     field :client_link_hash, :string
@@ -67,14 +66,6 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_name()
   end
 
-  def update_changesett(gallery, attrs \\ %{}) do
-    gallery
-    |> cast(attrs, @update_attrs)
-    #|> validate_required(@required_attrs)
-    |> validate_status(@status_options[:values])
-    |> validate_name()
-  end
-
   def save_watermark(gallery, watermark_changeset) do
     gallery
     |> change
@@ -85,6 +76,12 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> cast(attrs, [:expired_at])
     |> validate_required([:expired_at])
+  end
+
+  def client_link_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [:client_link_hash])
+    |> validate_required([:client_link_hash])
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string

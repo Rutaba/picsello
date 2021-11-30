@@ -50,9 +50,9 @@
     pt-4
     pr-6
     pb-6
-    pl-5;
+    pl-9;
     max-width: 562px;
-    border-left: 17px solid #4DAAC6;
+    background: linear-gradient(to right, #4DAAC6 17px, #EFEFEF 17px, #EFEFEF 19px, #FFFFFF 19px);
 }
 
 .settings__wrapper h3 {
@@ -98,8 +98,15 @@
     rounded-lg;
 }
 
+.customWatermarkPopup {
+    max-height: 950px;
+    @apply bg-base-100
+    mx-auto
+    my-0;
+}
+
 .customWatermarkPopup .uploadingList__wrapper progress {
-    @apply w-96;
+    @apply w-5/12;
 }
 
 .errorWatermarkMessage {
@@ -152,6 +159,7 @@
     text-2xl
     font-bold
     text-right;
+    max-width: 50px;
 }
 
 .circleBtn ul {
@@ -313,5 +321,26 @@
 
 .likeBtn img {
     @apply bg-transparent !important;
+}
+
+
+@media screen and (max-width: 640px) {
+    .circleBtn ul li a {
+        min-width: 40px;
+    }
+
+    .circleBtn img {
+        @apply pl-2.5;
+    }
+
+    .gallery__container {
+        @apply px-6;
+    }
+
+    .settings__wrapper > div {
+        background: linear-gradient(to right, #4DAAC6 12px, #EFEFEF 12px, #EFEFEF 15px, #FFFFFF 15px);
+        @apply pl-8
+        pr-4;
+    }
 }
 

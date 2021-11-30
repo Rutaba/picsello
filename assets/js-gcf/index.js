@@ -5,6 +5,7 @@ import {
   debugStage,
   downloadStage,
   downloadWatermarkStage,
+  generateTextWatermarkStage,
   previewStage,
   responseStage,
   watermarkStage
@@ -24,12 +25,12 @@ export const doProcessing = async (event, meta) => {
       : event.data;
 
   const context = buildContext(JSON.parse(message));
-  console.log('context', context)
 
   await downloadStage(context)
       .then(aspectStage)
       .then(previewStage)
       .then(downloadWatermarkStage)
+      .then(generateTextWatermarkStage)
       .then(watermarkStage)
       .then(cleanupStage)
       .then(responseStage)

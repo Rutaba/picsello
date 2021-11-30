@@ -282,4 +282,7 @@ defmodule Picsello.Factory do
         category: fn -> build(:category) end
       }
       |> evaluate_lazy_attributes()
+
+  def markup_factory,
+    do: %Picsello.Markup{}
 end

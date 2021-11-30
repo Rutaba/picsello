@@ -69,7 +69,7 @@
 
             <%# entry.progress will update automatically for in-flight entries %>
             <%= if progress_for_entry(@progress, entry) == 100 do%>
-                <p class="grid-cols-1"><%= entry.client_size %> Kb</p>
+                <p class="grid-cols-1"><%= filesize(entry.client_size) %></p>
             <% else %>
                 <progress class="grid-cols-1" value={progress_for_entry(@progress, entry)} max="100">
                     <%= progress_for_entry(@progress, entry) %>%

@@ -8,7 +8,7 @@ defmodule Picsello.Galleries do
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark}
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Workers.CleanStore
 
   @doc """
   Returns the list of galleries.
@@ -72,18 +72,18 @@ defmodule Picsello.Galleries do
   Gets paginated photos by gallery id
 
   Optional options:
-    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`
+    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :offset. Defaults to `per_page * page`.
 
   """
   @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
           list(Photo)
   def get_gallery_photos(id, per_page, page, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
+    offset = Keyword.get(opts, :offset, per_page * page)
 
     select_opts =
       if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id)
-
-    offset = per_page * page
 
     Photo
     |> where(^select_opts)
@@ -188,6 +188,14 @@ defmodule Picsello.Galleries do
     |> Gallery.expire_changeset(attrs)
     |> Repo.update()
   end
+
+  def set_gallery_hash(%Gallery{client_link_hash: nil} = gallery) do
+    gallery
+    |> Gallery.client_link_changeset(%{client_link_hash: UUID.uuid4()})
+    |> Repo.update!()
+  end
+
+  def set_gallery_hash(%Gallery{} = gallery), do: gallery
 
   @doc """
   Loads the gallery photos.
@@ -295,6 +303,25 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Removes the photo from DB and all its versions from cloud bucket.
+  """
+  def delete_photo(%Photo{} = photo) do
+    Repo.delete(photo)
+
+    [
+      photo.original_url,
+      photo.preview_url,
+      photo.watermarked_url,
+      photo.watermarked_preview_url
+    ]
+    |> Enum.each(fn path ->
+      %{path: path}
+      |> CleanStore.new()
+      |> Oban.insert()
+    end)
+  end
+
+  @doc """
   Normalizes photos positions within a gallery
   """
   def normalize_gallery_photo_positions(gallery_id) do
@@ -302,8 +329,8 @@ defmodule Picsello.Galleries do
       Repo,
       """
         WITH ranks AS (
-          SELECT id, RANK() OVER (ORDER BY position) AS pos
-          FROM photos
+          SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS pos
+          FROM photos 
           WHERE gallery_id = $1::integer
         )
         UPDATE photos p
@@ -379,20 +406,30 @@ defmodule Picsello.Galleries do
     )
   end
 
+  def update_gallery_photo_count(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        UPDATE galleries
+        SET total_count = (SELECT count(*) FROM photos WHERE gallery_id = $1::integer)
+        WHERE id = $1::integer;
+      """,
+      [gallery_id]
+    )
+  end
+
   def gallery_current_status(nil), do: :none_created
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
   def gallery_current_status(%Gallery{total_count: nil}), do: :upload_in_progress
 
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos])
-    has_watermark = false
 
     gallery
     |> Map.get(:photos, [])
     |> Enum.any?(fn photo ->
       is_nil(photo.aspect_ratio) ||
-        is_nil(photo.preview_url) ||
-        (has_watermark && is_nil(photo.watermarked_url))
+        is_nil(photo.preview_url)
     end)
     |> then(fn
       false -> :ready
@@ -443,8 +480,13 @@ defmodule Picsello.Galleries do
     |> Repo.preload(:photos)
     |> Map.get(:photos)
     |> Enum.each(fn photo ->
-      PhotoStorage.delete(photo.watermarked_preview_url)
-      PhotoStorage.delete(photo.watermarked_url)
+      [photo.watermarked_preview_url, photo.watermarked_url]
+      |> Enum.each(fn path ->
+        %{path: path}
+        |> CleanStore.new()
+        |> Oban.insert()
+      end)
+
       update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
     end)
   end
