@@ -2,7 +2,8 @@ defmodule Picsello.WHCCTest do
   use Picsello.DataCase
 
   setup do
-    Mox.stub(Picsello.MockWHCCClient, :product_details, fn product ->
+    Picsello.MockWHCCClient
+    |> Mox.stub(:product_details, fn product ->
       %{
         product
         | attribute_categories: [
@@ -135,16 +136,17 @@ defmodule Picsello.WHCCTest do
     setup do
       whcc_category_id = "tfhysKwZafFtmGqpQ"
 
-      read_fixture = &("test/support/fixtures/#{&1}.json" |> File.read!() |> Jason.decode!())
+      read_fixture =
+        &("test/support/fixtures/whcc/api/v1/#{&1}.json" |> File.read!() |> Jason.decode!())
 
-      Mox.stub(Picsello.MockWHCCClient, :products, fn ->
+      Picsello.MockWHCCClient
+      |> Mox.stub(:products, fn ->
         for(
           %{"category" => %{"id" => ^whcc_category_id}} = product <- read_fixture.("products"),
           do: Picsello.WHCC.Product.from_map(product)
         )
       end)
-
-      Mox.stub(Picsello.MockWHCCClient, :product_details, fn %{id: id} = product ->
+      |> Mox.stub(:product_details, fn %{id: id} = product ->
         %{
           product
           | attribute_categories:
