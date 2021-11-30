@@ -37,11 +37,6 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/stripe" do
-    pipeline :webhooks do
-      plug PicselloWeb.Plugs.StripeWebhooks
-    end
-
-    pipe_through :webhooks
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
