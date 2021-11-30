@@ -5,15 +5,19 @@ defmodule Picsello.WHCC do
   import Ecto.Query, only: [from: 2]
 
   def sync() do
-    # fetch latest products from whcc api
+    # fetch latest from whcc api
     # upsert changes into db records
-    # mark unmentioned products as deleted
-    products = Adapter.products()
+    # mark unmentioned as deleted
+    products = async_stream(Adapter.products(), &Adapter.product_details/1)
 
     Repo.transaction(fn ->
       categories = sync_categories(products)
-      sync_products(products, categories)
+      _products = sync_products(products, categories)
     end)
+
+    Ecto.Adapters.SQL.query!(Repo, "refresh materialized view product_attributes")
+
+    :ok
   end
 
   defp sync_products(products, categories) do
@@ -25,7 +29,6 @@ defmodule Picsello.WHCC do
       )
 
     products
-    |> Enum.map(&Adapter.product_details/1)
     |> sync_table(
       Picsello.Product,
       fn %{
@@ -118,7 +121,7 @@ defmodule Picsello.WHCC do
                   do: {k, attribute[Atom.to_string(k)]},
                   into: %{}
                 )
-                |> Map.update!(:price, fn dolars -> Money.new(trunc(dolars * 100)) end)
+                |> Map.update!(:price, fn dolars -> Money.new(dolars) end)
             )
           )
       )
@@ -129,4 +132,11 @@ defmodule Picsello.WHCC do
         where: not category.hidden,
         order_by: [asc: category.position]
       )
+
+  defp async_stream(enum, f) do
+    enum
+    |> Task.async_stream(f)
+    |> Enum.to_list()
+    |> Keyword.get_values(:ok)
+  end
 end

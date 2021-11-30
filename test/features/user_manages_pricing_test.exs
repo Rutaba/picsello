@@ -44,7 +44,7 @@ defmodule Picsello.UserManagesPricingTest do
     do: find(session, css(".contents", text: attribute_name), f)
 
   feature "modify pricing", %{session: session} do
-    lustre_attribute = "Surface Fuji Lustre"
+    lustre_attribute = "Surface Lustre"
 
     session
     |> click(link("Settings"))
@@ -79,7 +79,7 @@ defmodule Picsello.UserManagesPricingTest do
         |> fill_in(testid("markup"), with: "")
         |> assert_has(css(".text-input-invalid"))
       end)
-      |> find_attribute_row("Surface Fuji Pearl", fn attribute ->
+      |> find_attribute_row("Surface Glossy", fn attribute ->
         attribute
         |> fill_in(testid("markup"), with: "2%")
         |> assert_has(css("input:not(.text-input-invalid)"))

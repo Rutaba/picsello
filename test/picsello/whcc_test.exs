@@ -147,11 +147,7 @@ defmodule Picsello.WHCCTest do
         )
       end)
       |> Mox.stub(:product_details, fn %{id: id} = product ->
-        %{
-          product
-          | attribute_categories:
-              "products/#{id}" |> read_fixture.() |> Map.get("attributeCategories")
-        }
+        Picsello.WHCC.Product.add_details(product, read_fixture.("products/#{id}"))
       end)
 
       Picsello.WHCC.sync()
@@ -164,23 +160,20 @@ defmodule Picsello.WHCCTest do
     test "loads product variations", %{category_id: category_id, user: user} do
       %{products: [%{variations: variations} | _]} = Picsello.WHCC.category(category_id, user)
 
-      assert [
-               %{
-                 id: "5x5",
-                 name: "5×5",
-                 attributes: [
-                   %{
-                     category_id: "coating",
-                     category_name: "coating",
-                     id: "lustre_coating",
-                     name: "lustre",
-                     price: %Money{amount: 91, currency: :USD}
-                   }
-                   | _
-                 ]
-               }
-               | _
-             ] = variations
+      assert %{
+               attributes: [
+                 %{
+                   category_id: "size",
+                   category_name: "size",
+                   id: "5x5",
+                   markup: 100,
+                   name: "5×5",
+                   price: %Money{amount: 2050, currency: :USD}
+                 }
+               ],
+               id: "size",
+               name: "size"
+             } = hd(variations)
     end
 
     test "loads markups", %{category_id: category_id, user: user} do
@@ -188,9 +181,9 @@ defmodule Picsello.WHCCTest do
 
       insert(:markup,
         organization_id: user.organization_id,
-        whcc_attribute_category_id: "coating",
-        whcc_attribute_id: "lustre_coating",
-        whcc_variation_id: "5x5",
+        whcc_attribute_category_id: "size",
+        whcc_attribute_id: "5x5",
+        whcc_variation_id: "size",
         product_id: product_id,
         value: 2.0
       )
@@ -199,18 +192,13 @@ defmodule Picsello.WHCCTest do
 
       assert [
                %{
-                 id: "5x5",
-                 name: "5×5",
+                 id: "size",
                  attributes: [
                    %{
-                     category_id: "coating",
-                     category_name: "coating",
-                     id: "lustre_coating",
-                     name: "lustre",
-                     price: %Money{amount: 91, currency: :USD},
+                     id: "5x5",
                      markup: 2
                    }
-                   | [%{category_id: "paper_type", markup: 100} | _]
+                   | _
                  ]
                }
                | _
