@@ -79,6 +79,7 @@ config :picsello, Picsello.Mailer,
   booking_proposal_template: System.get_env("SENDGRID_BOOKING_PROPOSAL_TEMPLATE"),
   lead_to_job_template: System.get_env("SENDGRID_LEAD_TO_JOB_TEMPLATE"),
   email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
+  reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]

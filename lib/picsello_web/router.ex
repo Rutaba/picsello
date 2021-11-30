@@ -36,6 +36,10 @@ defmodule PicselloWeb.Router do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
 
+  scope "/sendgrid" do
+    post "/inbound-parse", PicselloWeb.SendgridInboundParseController, :parse
+  end
+
   scope "/stripe" do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end

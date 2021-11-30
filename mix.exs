@@ -43,6 +43,7 @@ defmodule Picsello.MixProject do
         {:bcrypt_elixir, "~> 2.3"},
         {:ecto_psql_extras, "~> 0.7.2"},
         {:ecto_sql, "~> 3.7"},
+        {:elixir_email_reply_parser, "~> 0.1.2"},
         {:gettext, "~> 0.18"},
         {:flow, "~> 1.1"},
         {:jason, "~> 1.2.2"},
