@@ -5,6 +5,10 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.Workers.PhotoStorage
 
+  def mount(socket) do
+    socket |> assign(:id_checked_for_preview, nil) |> ok
+  end
+
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
     {:ok, photo} =

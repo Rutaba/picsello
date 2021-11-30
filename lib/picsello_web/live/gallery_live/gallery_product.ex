@@ -60,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
   def handle_event("set_preview", %{"preview" => preview, "photo_id" => photo_id}, socket) do
     socket
-    |> assign(:photo_id, photo_id)
+    |> assign(:photo_id, to_integer(photo_id))
     |> assign(:preview, path(preview))
     |> assign(:changeset, changeset(%{photo_id: photo_id}, [:photo_id]))
     |> noreply
