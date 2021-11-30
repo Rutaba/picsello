@@ -255,7 +255,13 @@
     @apply border-base-100;
 }
 
-.galleryItem:hover .removeBtn {
+.galleryItem .likeBtn{
+    @apply opacity-0
+    absolute;
+}
+
+.galleryItem:hover .removeBtn,
+.galleryItem:hover .likeBtn {
     @apply opacity-100;
 }
 
