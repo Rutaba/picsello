@@ -180,6 +180,10 @@ html {
   }
 }
 
+.phx-click-loading {
+  @apply animate-pulse cursor-wait;
+}
+
 @media (min-width: 640px){
   .muuri.grid {
     .item {

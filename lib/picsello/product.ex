@@ -7,7 +7,7 @@ defmodule Picsello.Product do
   select
     height,
     attributes.product_id,
-    variation_id,
+    concat(attributes.product_id, height, variation_id, variation_name, width) as variation_id,
     variation_name,
     width,
     jsonb_agg(
