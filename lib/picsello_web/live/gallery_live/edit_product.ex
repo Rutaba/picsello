@@ -16,9 +16,7 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
   end
 
  #@impl true
-  #def handle_event("update-print-type", _, %{assigns: %{product: :print, product_type: type}} = socket) do
-   # send(self(), {:confirm_updating-print-type, product_type})
-   # {:noreply, socket}
+  #def handle_event("update-print-type", _, %{} = socket) do
  # end
 
 end

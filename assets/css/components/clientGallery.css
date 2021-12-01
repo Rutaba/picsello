@@ -304,16 +304,10 @@
 }
 
 .editProductPopup{
-    box-sizing: border-box;
-    max-width: 1440px;
-    width:95vw;
-    height:95vh;
-    max-height: 894px;
     @apply
-    p-4
-    my-0
-    mx-auto
-    bg-base-100;
+    box-border
+    h-full
+    w-full;
 }
 
 .editProductPopup__img{
@@ -322,6 +316,15 @@
 
 .productType:first-letter {
     text-transform: uppercase;
+}
+
+@media screen and (min-width: 1040px) {
+    .editProductPopup {
+        width: 95vw;
+        max-width: 1440px;
+        height: 95vh;
+        max-height: 894px;
+    }
 }
 
 @media screen and (max-width: 640px) {
