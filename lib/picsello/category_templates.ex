@@ -1,4 +1,4 @@
-defmodule Picsello.Picsello.CategoryTemplates do
+defmodule Picsello.CategoryTemplates do
   use Ecto.Schema
   import Ecto.Changeset
 
