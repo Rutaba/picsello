@@ -9,13 +9,18 @@ defmodule Picsello.WHCC do
     # upsert changes into db records
     # mark unmentioned as deleted
     products = async_stream(Adapter.products(), &Adapter.product_details/1)
+    designs = async_stream(Adapter.designs(), &Adapter.design_details/1)
 
-    Repo.transaction(fn ->
-      categories = sync_categories(products)
-      _products = sync_products(products, categories)
-    end)
+    Repo.transaction(
+      fn ->
+        categories = sync_categories(products)
+        products = sync_products(products, categories)
+        sync_designs(designs, products)
 
-    Ecto.Adapters.SQL.query!(Repo, "refresh materialized view product_attributes")
+        Ecto.Adapters.SQL.query!(Repo, "refresh materialized view product_attributes")
+      end,
+      timeout: :infinity
+    )
 
     :ok
   end
@@ -33,14 +38,42 @@ defmodule Picsello.WHCC do
       Picsello.Product,
       fn %{
            category: %{id: category_id},
-           attribute_categories: attribute_categories
+           attribute_categories: attribute_categories,
+           api: api
          } ->
         %{
           category_id: Map.get(category_id_map, category_id),
-          attribute_categories: attribute_categories
+          attribute_categories: attribute_categories,
+          api: api
         }
       end,
-      [:category_id, :attribute_categories]
+      [:category_id, :attribute_categories, :api]
+    )
+  end
+
+  defp sync_designs(designs, products) do
+    product_id_map =
+      for(
+        %{whcc_id: whcc_id, id: database_id} <- products,
+        do: {whcc_id, database_id},
+        into: %{}
+      )
+
+    designs
+    |> sync_table(
+      Picsello.Design,
+      fn %{
+           product_id: product_id,
+           attribute_categories: attribute_categories,
+           api: api
+         } ->
+        %{
+          product_id: Map.get(product_id_map, product_id),
+          attribute_categories: attribute_categories,
+          api: api
+        }
+      end,
+      [:product_id, :attribute_categories, :api]
     )
   end
 

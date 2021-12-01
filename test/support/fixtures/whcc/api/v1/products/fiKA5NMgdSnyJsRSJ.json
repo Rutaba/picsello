@@ -2,75 +2,152 @@
   "category": { "id": "RC2tJEBruJNcK68B6", "name": "Display Products" },
   "attributeCategories": [
     {
-      "_id": "size",
-      "name": "size",
-      "multipleValuesAllowed": false,
-      "required": true,
-      "attributes": [
-        {
-          "id": "4x6",
-          "name": "4×6",
-          "enabled": true,
-          "metadata": { "height": 6.25, "width": 4.25 },
-          "pricing": {
-            "base": { "type": "ACTUAL", "value": 39, "code": "USD" }
-          },
-          "rules": [],
-          "ruleCount": 0
-        },
-        {
-          "id": "5x7",
-          "name": "5×7",
-          "enabled": true,
-          "metadata": { "height": 7.25, "width": 5.25 },
-          "pricing": {
-            "base": { "type": "ACTUAL", "value": 45, "code": "USD" }
-          },
-          "rules": [],
-          "ruleCount": 0
-        },
-        {
-          "id": "8x8",
-          "name": "8×8",
-          "enabled": true,
-          "metadata": { "height": 8.25, "width": 8.25 },
-          "pricing": {
-            "base": { "type": "ACTUAL", "value": 89, "code": "USD" }
-          },
-          "rules": [],
-          "ruleCount": 0
-        },
-        {
-          "id": "8x10",
-          "name": "8×10",
-          "enabled": true,
-          "metadata": { "height": 10.25, "width": 8.25 },
-          "pricing": {
-            "base": { "type": "ACTUAL", "value": 93, "code": "USD" }
-          },
-          "rules": [],
-          "ruleCount": 0
-        }
-      ],
-      "default": "5x7"
-    },
-    {
-      "_id": "surface",
+      "_id": "paper_types",
       "name": "surface",
       "multipleValuesAllowed": false,
       "required": true,
       "default": "1in_acrylic_block",
       "description": "",
-      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
       "attributes": [
         {
           "id": "1in_acrylic_block",
           "name": "Glossy Paper",
           "enabled": true,
-          "image": {
-            "type": "RASTER",
-            "value": "https://s3.amazonaws.com/cdn.dragdrop.design/assets/attribute-icons/surface/acrylic_surface.jpg"
+          "externalIds": [943, 2715],
+          "pricing": {
+            "base": { "value": 45, "type": "ACTUAL", "code": "USD" },
+            "image": {
+              "type": "RASTER",
+              "value": "https://s3.amazonaws.com/cdn.dragdrop.design/assets/attribute-icons/surface/acrylic_surface.jpg"
+            }
           }
+        }
+      ]
+    },
+    {
+      "_id": "foil_pressed_designs",
+      "name": "engraving",
+      "required": false,
+      "multipleValuesAllowed": false,
+      "attributes": [
+        {
+          "id": "no",
+          "name": "none",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000+0000",
+          "expiration": "2099-12-31T00:00:00.000+0000",
+          "enabled": true,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "a_wonderful_life",
+          "name": "a wonderful life",
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          },
+          "effective": 1605497955445,
+          "expiration": "2099-12-31T00:00:00.000+0000",
+          "enabled": true,
+          "tags": []
+        },
+        {
+          "id": "joyful",
+          "name": "joyful",
+          "enabled": true,
+          "tags": [],
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          }
+        },
+        {
+          "id": "merry_new_year",
+          "name": "merry new year",
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          },
+          "effective": 1603423517438,
+          "expiration": "2099-12-31T00:00:00.000+0000",
+          "enabled": true,
+          "tags": []
+        },
+        {
+          "id": "merry_formal",
+          "name": "merry formal",
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          },
+          "effective": 1636147327783,
+          "expiration": "2099-12-31T00:00:00.000+0000",
+          "enabled": true
+        },
+        {
+          "id": "merry_outline",
+          "name": "merry outline",
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          },
+          "effective": 1636147327783,
+          "expiration": "2099-12-31T00:00:00.000+0000",
+          "enabled": true
+        },
+        {
+          "id": "very_merry_christmas",
+          "name": "Very Merry Christmas",
+          "enabled": true,
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          },
+          "tags": []
+        }
+      ],
+      "default": null,
+      "description": "Foil Pressing uses a special process to apply real foil to your card. Stand out with a variety of colors paired with our designs.",
+      "sortOrder": 1
+    },
+    {
+      "_id": "foil_pressed_foil_color",
+      "name": "engraving color",
+      "required": false,
+      "multipleValuesAllowed": false,
+      "attributes": [
+        {
+          "id": "engraving",
+          "name": "engraving",
+          "externalIds": [2822],
+          "enabled": true,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        }
+      ],
+      "default": "engraving"
+    },
+    {
+      "_id": "shapes",
+      "name": "shapes",
+      "attributes": [
+        {
+          "id": "no",
+          "name": "none",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true,
+          "image": {
+            "type": "SVG",
+            "value": "M1537.5,2137.5H37.5V37.5h1500V2137.5z"
+          },
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
         }
       ]
     }
@@ -200,15 +277,37 @@
       ]
     }
   ],
-  "editorType": "simpleEditor",
+  "editorType": "cardEditor",
   "productRules": [],
-  "_id": "h2HwdSuLJ9WHyMtc6",
-  "description": "Your image is printed on a Fine Art paper and then face mounted to 1 inch acrylic",
-  "globalProductId": "HKYBCw6ud4H2cKN8m",
-  "metadata": { "resolution": 300 },
-  "name": "Acrylic Block",
-  "nodes": [{ "name": "Main", "nodeId": 10000, "dimensionKeys": ["size"] }],
+  "_id": "fiKA5NMgdSnyJsRSJ",
+  "description": "Your design is printed on a Fine Art paper and then face mounted to 1 inch acrylic",
+  "globalProductId": "HB7GfDZCAWh639wB3",
+  "metadata": {
+    "width": 5,
+    "height": 7,
+    "bleed": 0.25,
+    "resolution": 300,
+    "quantity": {
+      "name": "quantity",
+      "minVal": 1,
+      "maxVal": 100,
+      "intervalAmt": 1,
+      "default": 1
+    }
+  },
+  "name": "5x7 Vertical Designer Acrylic Block",
+  "nodes": [
+    {
+      "name": "Main",
+      "nodeId": 10000,
+      "height": 7.25,
+      "width": 5.25,
+      "x": 0,
+      "y": 0
+    }
+  ],
   "orgId": "5LsoooWuHGYFMaqbb",
-  "editorCompatibility": "simpleEditor",
-  "checksum": "e126af20d2eda6ae2cc99809119c8645"
+  "editorCompatibility": "cardEditor",
+  "default": true,
+  "checksum": "c6d8bd58baf7ec54982fbd706f6961d4"
 }

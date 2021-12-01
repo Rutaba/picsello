@@ -284,6 +284,16 @@ defmodule Picsello.Factory do
       }
       |> evaluate_lazy_attributes()
 
+  def design_factory,
+    do:
+      %Picsello.Design{
+        whcc_id: sequence("whcc_id"),
+        whcc_name: "birthday",
+        position: 0,
+        product: fn -> build(:product) end
+      }
+      |> evaluate_lazy_attributes()
+
   def markup_factory,
     do: %Picsello.Markup{}
 end
