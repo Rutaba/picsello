@@ -5,9 +5,9 @@ defmodule Picsello.CategoryTemplates do
   alias Picsello.Category
 
   schema "category_templates" do
-    field :corners, :string
+    field :corners, {:array, :integer}
     field :name, :string
-    field :price, :integer
+    field :price, :float
     belongs_to(:category, Category)
 
     timestamps()
