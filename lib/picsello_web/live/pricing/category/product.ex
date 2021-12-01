@@ -81,7 +81,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
       <h2 class="flex items-center justify-between py-6 text-2xl" title="Expand" phx-click="toggle-expand" phx-value-product-id={@product.id} >
         <button class="flex items-center font-bold">
           <div class="w-8 h-8 mr-6 rounded-lg stroke-current sm:w-6 sm:h-6 bg-base-300 text-base-100">
-            <.icon name="up" class={"w-full h-full p-2.5 sm:p-2 stroke-4 #{if(@expanded, do: "rotate-180")}"} />
+            <.icon name="down" class={"w-full h-full p-2.5 sm:p-2 stroke-4 #{if(@expanded, do: "rotate-180")}"} />
           </div>
 
           <%= @product.whcc_name %>

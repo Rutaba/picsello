@@ -42,6 +42,14 @@ defmodule PicselloWeb.Live.Pricing.Category do
         <.product product={product} user={@current_user} expanded={MapSet.member?(@expanded, product.id)} />
       <% end %>
     </div>
+
+    <button title="Expand All" type="button" class="flex items-center justify-center p-3 mx-6 mt-12 font-semibold border rounded-lg sm:hidden border-base-300" phx-click="toggle-expand-all">
+      <%= if all_expanded?(@category.products, @expanded) do %>
+        <.icon name="up" class="w-4 h-2 mr-2 stroke-current stroke-2" /> Collapse All
+      <% else %>
+        <.icon name="down" class="w-4 h-2 mr-2 stroke-current stroke-2" /> Expand All
+      <% end %>
+    </button>
     """
   end
 

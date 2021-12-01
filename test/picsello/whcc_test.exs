@@ -269,22 +269,25 @@ defmodule Picsello.WHCCTest do
         value: 2.0
       )
 
-      [%{variations: variations} | _] =
-        products |> Enum.map(& &1.id) |> Picsello.WHCC.preload_products(user) |> Map.values()
-
-      assert [
-               %{
-                 id: "size",
-                 attributes: [
-                   %{
-                     id: "5x5",
-                     markup: 2
-                   }
-                   | _
-                 ]
-               }
-               | _
-             ] = variations
+      assert %{markup: 2} =
+               products
+               |> Enum.map(& &1.id)
+               |> Picsello.WHCC.preload_products(user)
+               |> Map.values()
+               |> Enum.find_value(fn %{variations: variations} ->
+                 variations
+                 |> Enum.find(&(&1.id == "size"))
+                 |> Map.get(:attributes)
+                 |> Enum.find_value(fn attribute ->
+                   match?(
+                     %{
+                       category_id: "size",
+                       id: "5x5"
+                     },
+                     attribute
+                   ) && attribute
+                 end)
+               end)
     end
   end
 end
