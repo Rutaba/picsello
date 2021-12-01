@@ -50,6 +50,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
+  def handle_event("open_edit_product_popup", _, socket) do
+    socket
+    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{product_type: "prints"})
+    |> noreply()
+  end
+
   @impl true
   def handle_info(:increase_favorites_count, %{assigns: %{favorites_count: count}} = socket) do
     socket |> assign(:count, count + 1) |> noreply()

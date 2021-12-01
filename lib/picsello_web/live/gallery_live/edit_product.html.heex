@@ -1,0 +1,38 @@
+<div class="editProductPopup" id="edit-product-component">
+  <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer float-right">
+    <img src="/images/close-icon.png" alt="close icon" width="20" height="20" />
+  </a>
+  <div class="flex items-center mt-14 w-full h-full overflow-y-auto" style="height: 754px; max-height:90%;">
+    <div class="editProductPopup__img w-2/4 rounded-2xl bg-base-250 flex items-center justify-center h-full ml-12">
+      <img src="/images/print.png" class="drop-shadow-2xl h-auto w-10/12" />
+    </div>
+    <div class="w-2/4 pl-16 pr-12 h-full flex flex-col pt-14 flex-start">
+      <h3 class="text-4xl font-bold productType"><%= @product_type %></h3>
+      <%= if @product_type === "prints" do %>
+     <div>
+        <h6 class="text-base font-bold pt-7 pb-3.5">Type</h6>
+        <div class="flex flex-wrap">
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} >Photo prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Fine art prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Acrylic prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Metal prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Gallery wraps</button>
+        </div>
+      </div>
+      <div>
+        <h6 class="text-base font-bold pt-9 pb-3.5">Description</h6>
+        <p class="text-base 2xl:text-lg">Professional quality photo prints with multiple finish and mounting options.</p>
+      </div>
+      <%= end %>
+      <div>
+        <h6 class="text-base font-bold pt-9 pb-3.5">Size</h6>
+        <p style="border:1px solid grey; display: inline-block; padding : 9px; width:100%;">place for select size input</p>
+      </div>
+      <div>
+        <h6 class="text-base font-bold pt-9 pb-3.5">Paper</h6>
+        <p style="border:1px solid grey; display: inline-block; padding : 9px; width:100%;">place for select paper input</p>
+      </div>
+      <button class="btn-primary mt-12">Customize & buy</button>
+    </div>
+  </div>
+</div>

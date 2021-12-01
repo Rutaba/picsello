@@ -11,7 +11,7 @@
                 </li>
             </ul>
         </div>
-      <%= if is_nil(@gallery.cover_photo_id) do %>
+        <%= if is_nil(@gallery.cover_photo_id) do %>
         <div class="uploadingBlock">
           <p class="font-bold mb-8">Upload cover photo</p>
           <div class="dragDrop__wrapper">
@@ -86,7 +86,7 @@
                     id: photo.id,
                     photo: photo,
                     is_likable: false,
-                    is_removable: true, 
+                    is_removable: true,
                     is_removed: false %>
         <% end %>
     </div>
