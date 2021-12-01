@@ -12,6 +12,7 @@ defmodule Picsello.ClientMessage do
     field(:body_html, :string)
     field(:scheduled, :boolean)
     field(:outbound, :boolean)
+    field(:read_at, :utc_datetime)
 
     timestamps(type: :utc_datetime)
   end
@@ -22,6 +23,7 @@ defmodule Picsello.ClientMessage do
     |> validate_required([:subject, :body_text])
     |> validate_email_format(:cc_email)
     |> put_change(:outbound, true)
+    |> put_change(:read_at, DateTime.utc_now() |> DateTime.truncate(:second))
   end
 
   def create_inbound_changeset(attrs) do

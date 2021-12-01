@@ -181,6 +181,7 @@ defmodule Picsello.Factory do
       subject: "here is what i propose",
       body_text: "lets take some pictures!",
       body_html: "lets take <i>some</i> <b>pictures!</b>",
+      read_at: DateTime.utc_now() |> DateTime.truncate(:second),
       outbound: true
     }
     |> merge_attributes(attrs)
