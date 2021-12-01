@@ -6,7 +6,7 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
     create table(:gallery_products) do
       add :name, :string
       add :price, :integer
-      add(:category_id, references(:category_templates, on_delete: :nothing), null: false)
+      add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
 
       add(:preview_photo_id, references(:photos, on_delete: :nothing), null: false)
       add(:gallery_id, references(:galleries, on_delete: :nothing), null: false)
@@ -14,7 +14,7 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
       timestamps()
     end
 
-    create index(:gallery_products, [:category_id])
+    create index(:gallery_products, [:category_template_id])
     create index(:gallery_products, [:preview_photo_id])
     create index(:gallery_products, [:gallery_id])
   end

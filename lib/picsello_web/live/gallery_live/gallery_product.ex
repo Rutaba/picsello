@@ -22,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         :id => to_integer(gallery_product_id)
       })
       |> Repo.preload([:preview_photo])
+      |> Repo.preload([:category_template])
 
     if nil in [preview, gallery] do
       gallery == nil &&

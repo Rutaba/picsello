@@ -2,12 +2,13 @@ defmodule Picsello.CategoryTemplates do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Picsello.Category
 
   schema "category_templates" do
     field :corners, :string
     field :name, :string
     field :price, :integer
-    field :category_id, :id
+    belongs_to(:category, Category)
 
     timestamps()
   end
