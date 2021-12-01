@@ -7,17 +7,17 @@ defmodule PicselloWeb.Live.Pricing.Category.Variation do
     ~H"""
     <div class={"contents #{if @expanded, do: "expanded", else: "collapsed"}"}>
       <%= if @expanded do %>
-        <button type="button" title="Expand" class="flex items-center p-4 text-xl font-bold rounded-lg sm:text-base sm:col-span-5 col-span-2 pointer bg-blue-planning-300 text-base-100" phx-click="toggle-expand" phx-value-product-id={@product_id} phx-value-variation-id={@variation.id}>
+        <button type="button" title="Expand" class="flex items-center p-4 text-xl font-bold rounded-lg sm:text-base sm:col-span-5 col-span-2 pointer bg-blue-planning-300 text-base-100" phx-click="toggle-expand" phx-target={@myself}>
           <.icon name="up" class="w-4 h-2 mr-12 stroke-current sm:mr-4 stroke-3" />
           <%= @variation.name %>
         </button>
 
         <%= for attribute <- @variation.attributes do %>
-          <.attribute attribute={attribute} product_id={@product_id} variation_id={@variation.id} />
+          <.attribute attribute={attribute} variation_id={@variation.id} update={@update} />
         <% end %>
 
       <% else %>
-        <button type="button" title="Expand" class="flex items-center p-4 text-xl font-bold col-start-1 sm:text-base" phx-click="toggle-expand" phx-value-product-id={@product_id} phx-value-variation-id={@variation.id}>
+        <button type="button" title="Expand" class="flex items-center p-4 text-xl font-bold col-start-1 sm:text-base" phx-click="toggle-expand" phx-target={@myself}>
           <.icon name="down" class="w-4 h-2 mr-12 stroke-current sm:mr-4 stroke-3 text-blue-planning-300" />
           <%= @variation.name %>
         </button>
@@ -31,9 +31,19 @@ defmodule PicselloWeb.Live.Pricing.Category.Variation do
     """
   end
 
+  @impl true
+  def handle_event(
+        "toggle-expand",
+        %{},
+        %{assigns: %{variation: %{id: variation_id}, update: {component, id}}} = socket
+      ) do
+    send_update(component, id: id, toggle_expand_variation: variation_id)
+    socket |> noreply()
+  end
+
   defp attribute(assigns) do
     ~H"""
-    <%= live_component PicselloWeb.Live.Pricing.Category.Attribute, attribute: @attribute, product_id: @product_id, variation_id: @variation_id, id: Enum.join([@product_id, @variation_id, @attribute.category_id, @attribute.id], "-") %>
+    <%= live_component PicselloWeb.Live.Pricing.Category.Attribute, attribute: @attribute, variation_id: @variation_id, id: Enum.join([@variation_id, @attribute.category_id, @attribute.id], "-"), update: @update %>
     """
   end
 

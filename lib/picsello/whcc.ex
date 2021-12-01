@@ -82,22 +82,21 @@ defmodule Picsello.WHCC do
 
   def categories, do: Repo.all(categories_query())
 
-  def category(id, user) do
+  def preload_products(ids, user) do
+    Picsello.Product.active()
+    |> Picsello.Product.with_attributes(user)
+    |> Ecto.Query.where([product], product.id in ^ids)
+    |> Repo.all()
+    |> Enum.map(&{&1.id, %{&1 | variations: variations(&1)}})
+    |> Map.new()
+  end
+
+  def category(id) do
     products =
       Picsello.Product.active()
-      |> Picsello.Product.with_attributes(user)
+      |> Ecto.Query.select([product], struct(product, [:whcc_name, :id]))
 
-    category =
-      from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
-
-    %{
-      category
-      | products:
-          Enum.map(
-            category.products,
-            &%{&1 | variations: variations(&1)}
-          )
-    }
+    from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
   end
 
   defp variations(%{variations: variations}),

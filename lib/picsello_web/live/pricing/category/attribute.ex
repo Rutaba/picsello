@@ -54,7 +54,11 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
   end
 
   @impl true
-  def handle_event("change", %{"markup" => params}, %{assigns: assigns} = socket) do
+  def handle_event(
+        "change",
+        %{"markup" => params},
+        %{assigns: %{update: {update_component, update_id}} = assigns} = socket
+      ) do
     changeset =
       assigns
       |> build_markup()
@@ -69,7 +73,11 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
       |> Map.put(:action, :validate)
 
     unless Keyword.has_key?(changeset.errors, :value),
-      do: send(self(), {:markup, changeset |> Ecto.Changeset.apply_changes()})
+      do:
+        send_update(update_component,
+          id: update_id,
+          markup: Ecto.Changeset.apply_changes(changeset)
+        )
 
     socket
     |> assign(changeset: changeset)
@@ -79,7 +87,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
   defp markup_form(assigns) do
     ~H"""
     <.form for={@changeset} let={f} phx-submit="change" phx-change="change" phx-target={@myself} id={"form-#{@id}"}>
-    <%= input f, :value, "markup" |> testid() |> Map.to_list() |> Enum.concat(class: @class, id: "input-#{@id}", phx_hook: "PercentMask", phx_debounce: 300) %>
+    <%= input f, :value, "markup" |> testid() |> Map.to_list() |> Enum.concat(class: @class, id: "input-#{@id}", phx_hook: "PercentMask", phx_debounce: 300, phx_update: "ignore") %>
     </.form>
     """
   end
@@ -93,7 +101,6 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
   end
 
   defp build_markup(%{
-         product_id: product_id,
          variation_id: whcc_variation_id,
          attribute: %{
            category_id: whcc_attribute_category_id,
@@ -105,7 +112,6 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
          whcc_attribute_id: whcc_attribute_id,
          whcc_attribute_category_id: whcc_attribute_category_id,
          whcc_variation_id: whcc_variation_id,
-         product_id: product_id,
          value: value
        }
 
