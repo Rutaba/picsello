@@ -271,7 +271,7 @@ defmodule Picsello.Factory do
       whcc_id: sequence("whcc_id"),
       whcc_name: "shirts",
       name: "cool shirts",
-      position: 0,
+      position: sequence(:category_position, & &1),
       icon: "book"
     }
 
@@ -280,7 +280,7 @@ defmodule Picsello.Factory do
       %Picsello.Product{
         whcc_id: sequence("whcc_id"),
         whcc_name: "polo",
-        position: 0,
+        position: sequence(:product_position, & &1),
         category: fn -> build(:category) end
       }
       |> evaluate_lazy_attributes()
@@ -296,5 +296,12 @@ defmodule Picsello.Factory do
       |> evaluate_lazy_attributes()
 
   def markup_factory,
-    do: %Picsello.Markup{}
+    do: %Picsello.Markup{
+      organization: fn -> build(:organization) end,
+      product: fn -> build(:product) end,
+      whcc_attribute_category_id: "surface",
+      whcc_attribute_id: "matte",
+      whcc_variation_id: "4x4",
+      value: 100.0
+    }
 end

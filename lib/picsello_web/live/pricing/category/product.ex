@@ -30,7 +30,12 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
       ) do
     assigns =
       case Picsello.Repo.insert(
-             %{markup | organization_id: user.organization_id, product_id: product.id},
+             %{
+               markup
+               | organization_id: user.organization_id,
+                 product_id: product.id,
+                 value: markup.value / 1
+             },
              on_conflict: :replace_all,
              conflict_target:
                ~w[organization_id product_id whcc_attribute_id whcc_variation_id whcc_attribute_category_id]a,

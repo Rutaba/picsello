@@ -20,7 +20,7 @@ defmodule Picsello.Markup do
   def changeset(markup, attrs) do
     markup
     |> cast(
-      attrs,
+      prepare_value(attrs),
       ~w[organization_id product_id whcc_attribute_category_id whcc_variation_id whcc_attribute_id value]a
     )
     |> validate_required(
@@ -30,4 +30,9 @@ defmodule Picsello.Markup do
   end
 
   def default_markup, do: @default_markup
+
+  defp prepare_value(%{"value" => "" <> value} = params),
+    do: %{params | "value" => String.trim_trailing(value, "%")}
+
+  defp prepare_value(value), do: value
 end

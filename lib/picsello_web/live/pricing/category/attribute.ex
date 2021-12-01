@@ -62,14 +62,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
     changeset =
       assigns
       |> build_markup()
-      |> Markup.changeset(
-        Map.update(
-          params,
-          "value",
-          "",
-          &String.trim_trailing(&1, "%")
-        )
-      )
+      |> Markup.changeset(params)
       |> Map.put(:action, :validate)
 
     unless Keyword.has_key?(changeset.errors, :value),
