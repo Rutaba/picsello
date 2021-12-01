@@ -41,7 +41,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
         <dl class="py-2 border-b border-r rounded-br-lg pl-14 row-span-2 sm:hidden">
           <dt class="mb-4 font-bold">Markup</dt>
           <dd>
-            <.markup_form id={"mobile-#{@id}"} changeset={@changeset} myself={@myself} class="w-20 p-4 text-right text-input" />
+            <.markup_form id={"mobile-#{@id}"} changeset={@changeset} myself={@myself} class="w-20 px-3 py-4 text-center text-input" />
           </dd>
         </dl>
 

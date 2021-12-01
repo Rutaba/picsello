@@ -7,7 +7,7 @@ function percentMask(el) {
     blocks: {
       num: {
         mask: Number,
-        max: 1000,
+        max: 9999,
         min: 0,
         normalizeZeros: true,
         scale: 2,
