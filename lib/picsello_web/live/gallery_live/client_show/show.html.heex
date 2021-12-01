@@ -37,8 +37,8 @@
         </div>
         <div class="flex items-center justify-between flex-wrap mb-16">
             <div class="mt-6">
-                <%= button "Download all", to: "/gallery/#{@hash}/downloads?type=all", method: :post, class: "cursor-pointer inline-block btn-primary px-8 mb-4" %>
-                <%= button "Download favorites", to: "/gallery/#{@hash}/downloads?type=favorites", method: :post, class: "cursor-pointer inline-block btn-primary px-8 mb-4" %>
+                <%= button "Download all", to: "/gallery/#{@gallery.client_link_hash}/downloads?type=all", method: :post, class: "cursor-pointer inline-block btn-primary px-8 mb-4" %>
+                <%= button "Download favorites", to: "/gallery/#{@gallery.client_link_hash}/downloads?type=favorites", method: :post, class: "cursor-pointer inline-block btn-primary px-8 mb-4" %>
             </div>
             <label class="flex items-center cursor-pointer">
                 <div>Show favorites only</div>

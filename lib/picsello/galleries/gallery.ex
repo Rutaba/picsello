@@ -2,7 +2,8 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Galleries.Photo, Galleries.Watermark, Job}
+  alias Picsello.Galleries.{Photo, Watermark, SessionToken}
+  alias Picsello.Job
 
   @status_options [
     values: ~w(draft active expired),
@@ -22,6 +23,7 @@ defmodule Picsello.Galleries.Gallery do
     belongs_to(:job, Job)
     has_many(:photos, Photo)
     has_one(:watermark, Watermark)
+    has_many(:session_tokens, SessionToken)
 
     timestamps(type: :utc_datetime)
   end
@@ -76,6 +78,23 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> cast(attrs, [:expired_at])
     |> validate_required([:expired_at])
+  end
+
+  def client_session_changeset(gallery, attrs \\ %{}) do
+    {%{}, %{password: :string}}
+    |> cast(attrs, [:password])
+    |> validate_required([:password])
+    |> validate_password(gallery.password)
+  end
+
+  defp validate_password(changeset, gallery_password) do
+    validate_change(changeset, :password, fn :password, password ->
+      if password != gallery_password do
+        [password: "not recognized"]
+      else
+        []
+      end
+    end)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string

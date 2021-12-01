@@ -2,7 +2,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries
-  alias Picsello.Galleries.Photo
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do

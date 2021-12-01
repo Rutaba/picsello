@@ -6,7 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   alias Picsello.Repo
 
-  alias Picsello.Galleries.{Gallery, Photo, Watermark}
+  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken}
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Workers.CleanStore
 
@@ -149,9 +149,20 @@ defmodule Picsello.Galleries do
   Generates new password for the gallery.
   """
   def regenerate_gallery_password(%Gallery{} = gallery) do
-    gallery
-    |> Gallery.update_changeset(%{password: Gallery.generate_password()})
-    |> Repo.update!()
+    changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:gallery, changeset)
+    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{gallery: gallery}} -> gallery
+      {:error, reason} -> reason
+    end)
+  end
+
+  defp gallery_session_tokens_query(gallery) do
+    from(st in SessionToken, where: st.gallery_id == ^gallery.id)
   end
 
   @doc """
@@ -506,4 +517,35 @@ defmodule Picsello.Galleries do
 
   def gallery_text_watermark_change(nil, attrs),
     do: Watermark.text_changeset(%Watermark{}, attrs)
+
+  @doc """
+  Creates session token for the gallery client.
+  """
+  def build_gallery_session_token(%Gallery{id: id}) do
+    %{gallery_id: id}
+    |> SessionToken.changeset()
+    |> Repo.insert()
+  end
+
+  @doc """
+  Check if the client session token is suitable for the gallery.
+  """
+  def session_exists_with_token?(_gallery_id, nil), do: false
+
+  def session_exists_with_token?(gallery_id, token) do
+    from(SessionToken,
+      where: [gallery_id: ^gallery_id, token: ^token]
+    )
+    |> Repo.one()
+    |> then(fn
+      nil -> false
+      _ -> true
+    end)
+  end
+
+  @doc """
+  Builds new session changeset for password validation  
+  """
+  def client_session_change_for_gallery(%Gallery{id: _} = gallery, attrs),
+    do: Gallery.client_session_changeset(gallery, attrs)
 end

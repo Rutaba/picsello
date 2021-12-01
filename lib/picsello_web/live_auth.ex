@@ -3,9 +3,22 @@ defmodule PicselloWeb.LiveAuth do
   import Phoenix.LiveView
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{Accounts, Accounts.User}
+  alias Picsello.Galleries
 
   def on_mount(:default, _params, session, socket) do
     socket |> allow_sandbox() |> mount(session)
+  end
+
+  def on_mount(:gallery_client, %{"hash" => hash}, params, socket) do
+    gallery = Galleries.get_gallery_by_hash(hash)
+
+    socket
+    |> assign(gallery: gallery)
+    |> assign(
+      authenticated:
+        Galleries.session_exists_with_token?(gallery.id, params["gallery_session_token"])
+    )
+    |> cont()
   end
 
   defp mount(socket, %{"user_token" => user_token}) do

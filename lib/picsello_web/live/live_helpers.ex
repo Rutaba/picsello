@@ -234,7 +234,7 @@ defmodule PicselloWeb.LiveHelpers do
   def filesize(byte_size) when is_integer(byte_size),
     do: Size.humanize!(byte_size, spacer: "")
 
-  def display_photo(key), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
-
   def display_photo(nil), do: "/images/gallery-icon.png"
+
+  def display_photo(key), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
 end

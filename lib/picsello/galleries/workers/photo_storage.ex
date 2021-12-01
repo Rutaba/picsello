@@ -5,14 +5,10 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
-  def path_to_url(path, bucket \\ @bucket)
-
-  def path_to_url(path, bucket) when is_binary(path) do
+  def path_to_url(path, bucket \\ @bucket) when is_binary(path) do
     sign_opts = [bucket: bucket, key: path]
     GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
   end
-
-  def path_to_url(_, _), do: :ignored
 
   def params_for_upload(options) do
     {:ok, params} = GCSSign.sign_post_policy_v4(gcp_credentials(), options)

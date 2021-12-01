@@ -129,14 +129,17 @@ defmodule PicselloWeb.Router do
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
   end
 
-  pipeline :gallery_auth do
+  pipeline :require_authenticated_gallery do
     plug PicselloWeb.Plugs.GalleryAuth
   end
 
   scope "/gallery", PicselloWeb do
-    pipe_through [:browser, :gallery_auth]
+    live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
+      pipe_through [:browser, :require_authenticated_gallery]
 
-    live "/:hash", GalleryLive.ClientShow, :show
-    post "/:hash/downloads", GalleryDownloadsController, :download
+      live "/:hash", GalleryLive.ClientShow, :show
+      post "/:hash/downloads", GalleryDownloadsController, :download
+      post "/:hash/log_in", GallerySessionController, :create
+    end
   end
 end

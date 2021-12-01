@@ -4,36 +4,32 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.ClientShowView
+  alias PicselloWeb.GalleryLive.ClientShow.Login
 
   @per_page 12
 
   @impl true
-  def mount(_params, _session, socket) do
-    IO.inspect("mount")
+  def mount(_params, _session, socket), do: socket |> ok()
 
-    {:ok,
-     socket
-     |> assign(:authenticated, false)}
+  @impl true
+  def handle_params(_params, _, %{assigns: %{authenticated: true}} = socket) do
+    socket
+    |> assign(:page_title, "Show Gallery")
+    |> assign(:page, 0)
+    |> assign(:update_mode, "append")
+    |> assign(:favorites_filter, false)
+    |> assign(:favorites_count, Galleries.gallery_favorites_count(socket.assigns.gallery))
+    |> assign_photos()
+    |> noreply()
   end
 
   @impl true
-  def handle_params(%{"hash" => hash} = params, _, socket) do
-    gallery = Galleries.get_gallery_by_hash(hash)
-
-    if gallery do
-      socket
-      |> assign(:hash, hash)
-      |> assign(:gallery, gallery)
-      |> assign(:page_title, "Show Gallery")
-      |> assign(:page, 0)
-      |> assign(:update_mode, "append")
-      |> assign(:favorites_filter, false)
-      |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-      |> assign_photos()
-      |> noreply()
-    else
-      {:noreply, socket}
-    end
+  def handle_params(_params, _, socket) do
+    socket
+    |> assign(:error_message, false)
+    |> assign(:password_is_correct, false)
+    |> open_modal(Login, %{gallery: socket.assigns.gallery})
+    |> noreply()
   end
 
   @impl true
@@ -43,10 +39,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   @impl true
   def render(assigns) do
-    ClientShowView.render("authenticate.html", assigns)
+    ClientShowView.render("unauthenticated.html", assigns)
   end
 
-  @impl
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)
