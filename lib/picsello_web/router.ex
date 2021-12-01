@@ -37,11 +37,6 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/stripe" do
-    pipeline :webhooks do
-      plug PicselloWeb.Plugs.StripeWebhooks
-    end
-
-    pipe_through :webhooks
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
@@ -111,6 +106,7 @@ defmodule PicselloWeb.Router do
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
 
       live "/inbox", InboxLive.Index, :index, as: :inbox
+      live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 

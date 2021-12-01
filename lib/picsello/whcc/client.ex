@@ -36,10 +36,9 @@ defmodule Picsello.WHCC.Client do
   end
 
   def product_details(%WHCC.Product{id: id} = product) do
-    {:ok, %{body: %{"attributeCategories" => attribute_categories}}} =
-      new() |> get("/products/#{id}")
+    {:ok, %{body: api}} = new() |> get("/products/#{id}")
 
-    %{product | attribute_categories: attribute_categories}
+    WHCC.Product.add_details(product, api)
   end
 
   def new() do

@@ -11,15 +11,17 @@ defmodule Picsello.ClientMessage do
     field(:body_text, :string)
     field(:body_html, :string)
     field(:scheduled, :boolean)
+    field(:outbound, :boolean)
 
     timestamps(type: :utc_datetime)
   end
 
-  def create_changeset(attrs) do
+  def create_outbound_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:subject, :body_text, :body_html, :cc_email])
     |> validate_required([:subject, :body_text])
     |> validate_email_format(:cc_email)
+    |> put_change(:outbound, true)
   end
 
   defp validate_email_format(changeset, field) do
