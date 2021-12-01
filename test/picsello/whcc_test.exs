@@ -1,23 +1,27 @@
 defmodule Picsello.WHCCTest do
   use Picsello.DataCase
 
+  def read_fixture(path) do
+    "test/support/fixtures/whcc/api/v1"
+    |> Path.join("#{path}.json")
+    |> File.read!()
+    |> Jason.decode!()
+  end
+
   setup do
     Picsello.MockWHCCClient
-    |> Mox.stub(:product_details, fn product ->
-      %{
-        product
-        | attribute_categories: [
-            %{"id" => "size", "name" => "size", "attributes" => []}
-          ]
-      }
-    end)
+    |> Mox.stub(:products, fn -> [] end)
+    |> Mox.stub(:product_details, &%{&1 | attribute_categories: [], api: %{}})
+    |> Mox.stub(:designs, fn -> [] end)
+    |> Mox.stub(:design_details, & &1)
 
     :ok
   end
 
   describe "sync() - categories" do
     setup do
-      Mox.stub(Picsello.MockWHCCClient, :products, fn ->
+      Picsello.MockWHCCClient
+      |> Mox.stub(:products, fn ->
         [
           %Picsello.WHCC.Product{
             id: "product-id",
@@ -58,18 +62,95 @@ defmodule Picsello.WHCCTest do
     end
   end
 
+  describe "sync() - designs" do
+    def whcc_product_id(), do: "product-with-designs"
+
+    setup do
+      Picsello.MockWHCCClient
+      |> Mox.stub(:designs, fn ->
+        "designs" |> read_fixture() |> Enum.map(&Picsello.WHCC.Design.from_map/1)
+      end)
+      |> Mox.stub(:design_details, fn %{id: id} = design ->
+        Picsello.WHCC.Design.add_details(
+          design,
+          "designs"
+          |> Path.join(id)
+          |> read_fixture()
+          |> put_in(["product", "_id"], whcc_product_id())
+        )
+      end)
+      |> Mox.stub(:products, fn ->
+        [
+          %Picsello.WHCC.Product{
+            category: %Picsello.WHCC.Category{id: "category-id", name: "cards"},
+            name: "little cards",
+            id: whcc_product_id()
+          }
+        ]
+      end)
+
+      :ok
+    end
+
+    test "adds new" do
+      Picsello.WHCC.sync()
+      all = Picsello.Design |> Repo.all()
+      assert 5 = Enum.count(all)
+
+      assert %Picsello.Design{
+               whcc_id: "SjhvrFtjMP7FHy6Qa",
+               whcc_name: "warm joyful wishes",
+               api: %{"occasion" => %{}},
+               attribute_categories: [%{} | _]
+             } = hd(all)
+    end
+
+    test "updates included existing" do
+      %{id: design_id} =
+        insert(:design, whcc_id: "SjhvrFtjMP7FHy6Qa", whcc_name: "cold sad wishes")
+
+      Picsello.WHCC.sync()
+
+      assert %Picsello.Design{
+               whcc_id: "SjhvrFtjMP7FHy6Qa",
+               whcc_name: "warm joyful wishes"
+             } = Picsello.Design |> Repo.get(design_id)
+    end
+
+    test "removes omitted existing" do
+      %{id: design_id} = insert(:design)
+
+      Picsello.WHCC.sync()
+
+      assert [
+               [
+                 %Picsello.Design{id: ^design_id, deleted_at: %DateTime{}}
+               ],
+               [_ | _]
+             ] =
+               Picsello.Design
+               |> Repo.all()
+               |> Enum.group_by(& &1.deleted_at)
+               |> Map.values()
+               |> Enum.sort_by(&Enum.count/1)
+    end
+  end
+
   describe "sync() - products" do
     setup do
-      Mox.stub(Picsello.MockWHCCClient, :products, fn ->
+      Picsello.MockWHCCClient
+      |> Mox.stub(:products, fn ->
         [
           %Picsello.WHCC.Product{
             id: "product-id",
             name: "jeans",
-            attribute_categories: [%{id: "flavor", name: "flavor", attributes: []}],
+            api: %{"other" => "keys"},
+            attribute_categories: [%{"id" => "size", "name" => "size", "attributes" => []}],
             category: %Picsello.WHCC.Category{id: "category-id", name: "pants"}
           }
         ]
       end)
+      |> Mox.stub(:product_details, & &1)
 
       :ok
     end
@@ -81,6 +162,7 @@ defmodule Picsello.WHCCTest do
                %Picsello.Product{
                  whcc_id: "product-id",
                  whcc_name: "jeans",
+                 api: %{"other" => "keys"},
                  attribute_categories: [%{"id" => "size", "name" => "size", "attributes" => []}],
                  category: %Picsello.Category{whcc_id: "category-id", whcc_name: "pants"}
                }
@@ -136,19 +218,17 @@ defmodule Picsello.WHCCTest do
     setup do
       whcc_category_id = "tfhysKwZafFtmGqpQ"
 
-      read_fixture =
-        &("test/support/fixtures/whcc/api/v1/#{&1}.json" |> File.read!() |> Jason.decode!())
-
       Picsello.MockWHCCClient
       |> Mox.stub(:products, fn ->
         for(
-          %{"category" => %{"id" => ^whcc_category_id}} = product <- read_fixture.("products"),
+          %{"category" => %{"id" => ^whcc_category_id}} = product <- read_fixture("products"),
           do: Picsello.WHCC.Product.from_map(product)
         )
       end)
       |> Mox.stub(:product_details, fn %{id: id} = product ->
-        Picsello.WHCC.Product.add_details(product, read_fixture.("products/#{id}"))
+        Picsello.WHCC.Product.add_details(product, read_fixture("products/#{id}"))
       end)
+      |> Mox.stub(:designs, fn -> [] end)
 
       Picsello.WHCC.sync()
 
