@@ -93,7 +93,7 @@ defmodule Picsello.UserManagesPricingTest do
       |> find_attribute_row(lustre_attribute, fn attribute ->
         # error ignored
         attribute
-        |> assert_value(css("input:not(.text-input-invalid)"), "%")
+        |> assert_value(css("input:not(.text-input-invalid)"), "200%")
       end)
     end)
   end

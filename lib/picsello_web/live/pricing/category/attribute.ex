@@ -80,7 +80,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
   defp markup_form(assigns) do
     ~H"""
     <.form for={@changeset} let={f} phx-submit="change" phx-change="change" phx-target={@myself} id={"form-#{@id}"}>
-    <%= input f, :value, "markup" |> testid() |> Map.to_list() |> Enum.concat(class: @class, id: "input-#{@id}", phx_hook: "PercentMask", phx_debounce: 300, phx_update: "ignore") %>
+    <%= input f, :value, "markup" |> testid() |> Map.to_list() |> Enum.concat(value: markup(@changeset), class: @class, id: "input-#{@id}", phx_hook: "PercentMask", phx_debounce: 300, phx_update: "ignore") %>
     </.form>
     """
   end
