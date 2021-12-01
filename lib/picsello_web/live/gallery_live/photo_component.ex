@@ -5,8 +5,9 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.Workers.PhotoStorage
 
+  @impl true
   def mount(socket) do
-    socket |> assign(:id_checked_for_preview, nil) |> ok
+    socket |> assign(:preview_photo_id, nil) |> ok
   end
 
   @impl true

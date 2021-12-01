@@ -21,7 +21,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         :gallery_id => gallery_id,
         :id => to_integer(gallery_product_id)
       })
-      |> Repo.preload([:photo])
+      |> Repo.preload([:preview_photo])
 
     if nil in [preview, gallery] do
       gallery == nil &&
@@ -34,19 +34,19 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
       {:ok, redirect(socket, to: "/")}
     else
-      url = preview.photo.preview_url || nil
+      url = preview.preview_photo.preview_url || nil
 
       {:ok,
        socket
        |> assign(:preview, path(url))
        |> assign(:changeset, changeset(%{}, []))
-       |> assign(:photo_id, nil)}
+       |> assign(:preview_photo_id, nil)}
     end
   end
 
   def changeset(data, prop) do
     cast(%Picsello.Galleries.GalleryProduct{}, data, prop)
-    |> validate_required([:photo_id])
+    |> validate_required([:preview_photo_id])
   end
 
   @impl true
@@ -58,22 +58,22 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> noreply()
   end
 
-  def handle_event("set_preview", %{"preview" => preview, "photo_id" => photo_id}, socket) do
+  def handle_event("set_preview", %{"preview" => preview, "preview_photo_id" => preview_photo_id}, socket) do
     socket
-    |> assign(:photo_id, to_integer(photo_id))
+    |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
-    |> assign(:changeset, changeset(%{photo_id: photo_id}, [:photo_id]))
+    |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
     |> noreply
   end
 
   def handle_event(
         "save",
-        %{"gallery_product" => %{"photo_id" => photo_id}},
+        %{"gallery_product" => %{"preview_photo_id" => preview_photo_id}},
         %{assigns: %{gallery_product_id: product_id, gallery: %{id: gallery_id}}} = socket
       ) do
-    [photo_id, product_id, gallery_id] =
+    [preview_photo_id, product_id, gallery_id] =
       Enum.map(
-        [photo_id, product_id, gallery_id],
+        [preview_photo_id, product_id, gallery_id],
         fn x -> to_integer(x) end
       )
 
@@ -83,7 +83,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
     if result != nil do
       result
-      |> cast(%{photo_id: photo_id}, [:photo_id])
+      |> cast(%{preview_photo_id: preview_photo_id}, [:preview_photo_id])
       |> Repo.insert_or_update()
     end
 

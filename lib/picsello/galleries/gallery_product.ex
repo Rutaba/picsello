@@ -7,7 +7,7 @@ defmodule Picsello.Galleries.GalleryProduct do
 
   schema "gallery_products" do
     belongs_to(:category, Category)
-    belongs_to(:photo, Photo)
+    belongs_to(:preview_photo, Photo)
     belongs_to(:gallery, Gallery)
 
     timestamps()
