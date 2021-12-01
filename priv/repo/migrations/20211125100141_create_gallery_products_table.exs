@@ -5,7 +5,7 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
     drop_if_exists table(:gallery_products), mode: :cascade
     create table(:gallery_products) do
       add :name, :string
-      add :price, :integer
+      add :price, :float
       add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
 
       add(:preview_photo_id, references(:photos, on_delete: :nothing), null: false)
