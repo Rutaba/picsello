@@ -38,8 +38,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       url = preview.preview_photo.preview_url || nil
       frame = preview.category_template.name || nil
       frame_corners = preview.category_template.corners || nil
-      IO.puts("#####")
-      IO.inspect(frame_corners)
 
       {:ok,
        socket
