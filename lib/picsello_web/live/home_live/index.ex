@@ -224,13 +224,8 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp inbox_count(user) do
-    job_query = Job.for_user(user)
-
-    from(message in ClientMessage,
-      join: jobs in subquery(job_query),
-      on: jobs.id == message.job_id,
-      where: is_nil(message.read_at)
-    )
+    Job.for_user(user)
+    |> ClientMessage.unread_messages()
     |> Repo.aggregate(:count)
   end
 

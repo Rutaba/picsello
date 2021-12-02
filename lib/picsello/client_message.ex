@@ -1,7 +1,7 @@
 defmodule Picsello.ClientMessage do
   @moduledoc false
   use Ecto.Schema
-  import Ecto.Changeset
+  import Ecto.{Changeset, Query}
   alias Picsello.Job
 
   schema "client_messages" do
@@ -37,5 +37,13 @@ defmodule Picsello.ClientMessage do
     changeset
     |> validate_format(field, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(field, max: 160)
+  end
+
+  def unread_messages(jobs_query) do
+    from(message in __MODULE__,
+      join: jobs in subquery(jobs_query),
+      on: jobs.id == message.job_id,
+      where: is_nil(message.read_at)
+    )
   end
 end

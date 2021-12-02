@@ -57,7 +57,7 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} class={classes("flex justify-between py-6 border-b pl-2 p-8 hover:bg-gray-100 cursor-pointer", %{"bg-gray-100" => @selected})}>
+    <div {testid("thread-card")} {scroll_to_thread(@selected, @id)} phx-click="open-thread" phx-value-id={@id} class={classes("flex justify-between py-6 border-b pl-2 p-8 hover:bg-gray-100 cursor-pointer", %{"bg-gray-100" => @selected})}>
       <div class="px-4">
         <div class="flex items-center">
           <div class="text-2xl line-clamp-1"><%= @title %></div>
@@ -132,6 +132,14 @@ defmodule PicselloWeb.InboxLive.Index do
     end
   end
 
+  def scroll_to_thread(selected, id) do
+    if selected do
+      %{phx_hook: "ScrollIntoView", id: "thread-#{id}"}
+    else
+      %{}
+    end
+  end
+
   @impl true
   def handle_event("open-thread", %{"id" => id}, socket) do
     socket
@@ -174,14 +182,13 @@ defmodule PicselloWeb.InboxLive.Index do
   end
 
   defp assign_unread(%{assigns: %{current_user: current_user}} = socket) do
-    job_query = Job.for_user(current_user)
+    query =
+      Job.for_user(current_user)
+      |> ClientMessage.unread_messages()
 
     unread_messages_by_job =
-      from(message in ClientMessage,
+      from(message in query,
         distinct: message.job_id,
-        join: jobs in subquery(job_query),
-        on: jobs.id == message.job_id,
-        where: is_nil(message.read_at),
         order_by: [asc: message.inserted_at],
         select: {message.job_id, message.id}
       )
