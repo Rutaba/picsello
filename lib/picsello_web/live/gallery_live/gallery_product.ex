@@ -43,7 +43,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
       {:ok,
        socket
-       |> assign(:frame, "#{frame}")
+       |> assign(:frame, frame)
        |> assign(:preview, path(url))
        |> assign(:frame_corners,  "#{inspect frame_corners}")
        |> assign(:changeset, changeset(%{}, []))
