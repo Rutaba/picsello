@@ -1,7 +1,7 @@
 defmodule PicselloWeb.InboxLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, ClientMessage}
+  alias Picsello.{Job, Repo, ClientMessage, Notifiers.ClientNotifier}
   import Ecto.Query
 
   @impl true
@@ -33,7 +33,7 @@ defmodule PicselloWeb.InboxLive.Index do
     <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
-      <div class="flex h-[calc(100vh-18rem)]">
+      <div class="flex sm:h-[calc(100vh-18rem)]">
         <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread})}>
           <%= for thread <- @threads do %>
             <.thread_card {thread} unread={Enum.member?(@unread_job_ids, thread.id)} selected={@current_thread && thread.id == @current_thread.id} />
@@ -97,7 +97,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <div class="flex-1 h-px bg-orange-inbox-300"></div>
               </div>
             <% end %>
-            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-sm sm:max-w-xl", %{"self-end" => message.outbound, "self-start" => !message.outbound})}>
+            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-sm sm:max-w-xl", %{"self-end" => message.outbound, "self-start" => !message.outbound})} style="scroll-margin-bottom: 7rem">
               <div class={classes("mb-3 flex justify-between items-end text-base-250", %{"flex-row-reverse" => !message.outbound})}>
                 <div class="text-xs"><%= message.date %></div>
                 <div class="mx-1">
@@ -110,18 +110,22 @@ defmodule PicselloWeb.InboxLive.Index do
                 <%= if message.unread do %>
                   <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
                 <% end %>
-                <%= message.body %>
+                <span class="whitespace-pre-line"><%= message.body %></span>
               </div>
             </div>
           <% end %>
         </div>
-        <div phx-hook="ScrollIntoView" id={"thread-#{@id}"} />
+        <div class="sticky bottom-0 bg-white flex flex-col p-6 bg-white sm:flex-row-reverse">
+          <button class="btn-primary" phx-click="compose-message">
+            Reply
+          </button>
+        </div>
       </div>
     """
   end
 
   def scroll_to_message(message) do
-    if message.is_first_unread do
+    if message.scroll do
       %{phx_hook: "ScrollIntoView", id: "message-#{message.id}"}
     else
       %{}
@@ -133,6 +137,11 @@ defmodule PicselloWeb.InboxLive.Index do
     socket
     |> push_patch(to: Routes.inbox_path(socket, :show, id))
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("compose-message", %{}, %{assigns: %{job: job}} = socket) do
+    socket |> PicselloWeb.ClientMessageComponent.open(%{subject: Job.name(job)}) |> noreply()
   end
 
   defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
@@ -187,17 +196,23 @@ defmodule PicselloWeb.InboxLive.Index do
   defp assign_current_thread(
          %{assigns: %{current_user: current_user, unread_message_ids: unread_message_ids}} =
            socket,
-         thread_id
+         thread_id,
+         message_id_to_scroll \\ nil
        ) do
     job = Job.for_user(current_user) |> Repo.get!(thread_id) |> Repo.preload(:client)
 
-    thread_messages =
+    client_messages =
       from(message in ClientMessage,
         where: message.job_id == ^job.id,
         order_by: [asc: message.inserted_at]
       )
       |> Repo.all()
-      |> Enum.reduce(%{last: nil, messages: []}, fn message, %{last: last, messages: messages} ->
+
+    thread_messages =
+      client_messages
+      |> Enum.with_index()
+      |> Enum.reduce(%{last: nil, messages: []}, fn {message, index},
+                                                    %{last: last, messages: messages} ->
         sender = if message.outbound, do: "You", else: job.client.name
         same_sender = last && last.outbound == message.outbound
 
@@ -215,6 +230,8 @@ defmodule PicselloWeb.InboxLive.Index do
                   sender: sender,
                   same_sender: same_sender,
                   is_first_unread: Enum.member?(unread_message_ids, message.id),
+                  scroll:
+                    message.id == message_id_to_scroll || index == length(client_messages) - 1,
                   unread: message.read_at == nil
                 }
               ]
@@ -229,6 +246,7 @@ defmodule PicselloWeb.InboxLive.Index do
       title: job.client.name,
       subtitle: Job.name(job)
     })
+    |> assign(:job, job)
     |> mark_current_thread_as_read()
   end
 
@@ -250,17 +268,39 @@ defmodule PicselloWeb.InboxLive.Index do
     socket
   end
 
-  def handle_info({:inbound_messages, _message}, socket) do
+  def handle_info({:inbound_messages, message}, socket) do
     socket
     |> assign_threads()
     |> assign_unread()
     |> then(fn socket ->
       if socket.assigns.current_thread do
-        assign_current_thread(socket, socket.assigns.current_thread.id)
+        assign_current_thread(socket, socket.assigns.current_thread.id, message.id)
       else
         socket
       end
     end)
     |> noreply()
+  end
+
+  def handle_info(
+        {:message_composed, message_changeset},
+        %{assigns: %{job: job}} = socket
+      ) do
+    client = job |> Repo.preload(:client) |> Map.get(:client)
+
+    with {:ok, message} <-
+           message_changeset
+           |> Ecto.Changeset.put_change(:job_id, job.id)
+           |> Repo.insert(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
+      socket
+      |> close_modal()
+      |> assign_threads()
+      |> assign_current_thread(job.id, message.id)
+      |> noreply()
+    else
+      _error ->
+        socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
+    end
   end
 end
