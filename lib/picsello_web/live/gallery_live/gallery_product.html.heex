@@ -14,33 +14,76 @@
   </div>
 </div>
   <script type="application/javascript">
-    function draw() {
-      var coord =<%= @frame_corners %>;
-      var frame ="<%= @frame %>";
-      var canvas = document.getElementById("canvas");
-      if (canvas.getContext) {
-        var ctx = canvas.getContext("2d");
-        ctx.fillStyle = "rgb(200,0,0)";
-        ctx.fillRect (10, 10, 55, 50);
+        photo = "<%= @preview %>";
+        frame = "<%= @frame %>";
 
-        ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
-        ctx.fillRect (30, 30, 55, 50);
-        base_image = new Image();
-        base_image.src = '/images/album_transparency.png';
-        base_image.onload = function(){
-            ctx.drawImage(base_image, 0, 0);
+        img1 = document.createElement('img');
+        img1.id = 'frImgSize';
+        img1.src = '/images/' + frame;
+        document.body.appendChild(img1);
+
+    function draw() {
+        frH = document.getElementById("frImgSize").offsetHeight;
+        frW = document.getElementById("frImgSize").offsetWidth;
+        prH = document.getElementById("previewTagImg").offsetHeight;
+        prW = document.getElementById("previewTagImg").offsetWidth;
+        prSrc = document.getElementById("previewTagImg").src;
+
+        console.log([frH,frW,prH,prW]);
+        console.log([frH/frW,prH/prW]);
+        var coord =<%= @frame_corners %>;
+        
+        
+        var previewH = document.getElementById("previewTagImg").offsetHeight;
+        var previewW = document.getElementById("previewTagImg").offsetWidth;
+        var canvas = document.getElementById("canvas");
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d");
+            
+            ctx.fillStyle = "rgb(200,0,0)";
+            ctx.fillRect (10, 10, 55, 50);
+
+            ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
+            ctx.fillRect (30, 30, 55, 50);
+            base_image = new Image();
+            base_image.src = "/images/" + frame;//'/images/album_transparency.png';
+
+            cw = canvas.width;//document.getElementById("canvas").width();
+            ch = canvas.height;//document.getElementById("canvas").height();
+            
+            base_image.onload = function(){
+                frameW = base_image.width;
+                frameH = base_image.height;
+                kfw = coord[0]/frameW;
+                kfh = coord[1]/frameH;
+                w = coord[2] - coord[0] + 1;
+                h = coord[3] - coord[1] + 1;
+                kw = (cw/frameW) + 1;
+                kh = (ch/frameH) + 1;
+                ctx.drawImage(base_image, 0, 0, cw, ch);
+                    width = (w * kw) < 10 && cw || (w * kw)
+                    height = (h * kh) < 10 && ch || (h * kh)
+                    base_image1 = new Image();
+                    base_image1.src = prSrc;
+                    base_image1.onload = function(){
+console.log([prSrc,cw * kfw, ch * kfh, w * kw, h * kh, frameH, h, coord]);
+                        ctx.drawImage(base_image1, cw * kfw, ch * kfh, width, height);
+                    }
+
+            }
+
         }
-      }
     }
 
     window.onload = function initPage() {
         draw();
     }
   </script>
-  <canvas id="canvas" class="absolute" width="150" height="150"></canvas>
+  <canvas id="canvas" width="500" height="500"></canvas>
 <div class="inline-flex">
     <div class="preview">
         <img src={@preview} id="previewTagImg">
+        <img style="position: absolute; right: 999999px;" src='/images/album_transparency.png' id="frame">
     </div>
     <div class="description">
     Lorem Ipsum
