@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.{Photo, Watermark, SessionToken}
+  alias Picsello.Galleries.{Photo, Watermark}
   alias Picsello.Job
 
   @status_options [
@@ -23,8 +23,7 @@ defmodule Picsello.Galleries.Gallery do
     belongs_to(:job, Job)
     has_many(:photos, Photo)
     has_one(:watermark, Watermark)
-    has_many(:session_tokens, SessionToken)
-
+    
     timestamps(type: :utc_datetime)
   end
 
@@ -87,16 +86,6 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_password(gallery.password)
   end
 
-  defp validate_password(changeset, gallery_password) do
-    validate_change(changeset, :password, fn :password, password ->
-      if password != gallery_password do
-        [password: "not recognized"]
-      else
-        []
-      end
-    end)
-  end
-
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),
@@ -107,4 +96,14 @@ defmodule Picsello.Galleries.Gallery do
 
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 50)
+
+  defp validate_password(changeset, gallery_password) do
+    validate_change(changeset, :password, fn :password, password ->
+      if password != gallery_password do
+        [password: "not recognized"]
+      else
+        []
+      end
+    end)
+  end
 end

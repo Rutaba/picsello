@@ -10,5 +10,6 @@ defmodule Picsello.Repo.Migrations.AddGallerySessionTokens do
     end
 
     create index(:gallery_session_tokens, [:gallery_id])
+    create unique_index(:gallery_session_tokens, [:gallery_id, :token])
   end
 end
