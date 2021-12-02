@@ -24,23 +24,11 @@ defmodule PicselloWeb.ClientMessageComponent do
       <div class="pt-5 input-label">
         Client's email
       </div>
-      <div class="relative text-input">
+      <div class="relative text-input text-base-250">
         <%= client_email @job %>
-        <a class="absolute cursor-pointer bottom-2 right-2 text-blue-planning-300" phx-click="toggle-cc" phx-target={@myself}>cc</a>
       </div>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <%= if @show_cc do %>
-          <div class="relative">
-            <%= labeled_input f, :cc_email, label: "CC Email", wrapper_class: "mt-4", phx_debounce: "500" %>
-            <a class="absolute cursor-pointer top-2 right-2 text-blue-planning-300" phx-click="toggle-cc" phx-target={@myself}>
-              <.icon name="close-x" class="w-3 h-3 stroke-current"/>
-            </a>
-            <%= if input_value(f, :cc_email) && input_value(f, :cc_email) != "" do %>
-              <a id="cc-clear" class="absolute cursor-pointer bottom-2 right-2 text-blue-planning-300" phx-hook="ClearInput" data-input-name="cc_email">clear</a>
-            <% end %>
-          </div>
-        <% end %>
         <%= labeled_input f, :subject, label: "Subject line", wrapper_class: "mt-4", phx_debounce: "500" %>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
@@ -69,11 +57,6 @@ defmodule PicselloWeb.ClientMessageComponent do
       </.form>
     </div>
     """
-  end
-
-  @impl true
-  def handle_event("toggle-cc", _, %{assigns: %{show_cc: show_cc}} = socket) do
-    socket |> assign(:show_cc, !show_cc) |> noreply()
   end
 
   @impl true
