@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User}
+  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
   import Ecto.Query
 
   @impl true
@@ -11,6 +11,7 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:page_title, "Work Hub")
     |> assign_counts()
     |> assign_attention_items()
+    |> subscribe_inbound_messages()
     |> ok()
   end
 
@@ -94,7 +95,8 @@ defmodule PicselloWeb.HomeLive.Index do
       lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
       leads_empty?: Enum.empty?(job_count_by_status),
       jobs_empty?: !Enum.any?(job_count_by_status, &(!&1.lead?)),
-      job_count: job_count
+      job_count: job_count,
+      inbox_count: inbox_count(current_user)
     )
   end
 
@@ -170,10 +172,10 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   def card(assigns) do
-    attrs = Map.drop(assigns, ~w(class icon color inner_block badge)a)
+    assigns = Map.put(assigns, :attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
 
     ~H"""
-    <li class={"relative #{Map.get(assigns, :class)}"} {attrs}>
+    <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
       <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
         <%= if @badge > 0, do: @badge %>
       </div>
@@ -221,8 +223,25 @@ defmodule PicselloWeb.HomeLive.Index do
     )
   end
 
+  defp inbox_count(user) do
+    job_query = Job.for_user(user)
+
+    from(message in ClientMessage,
+      join: jobs in subquery(job_query),
+      on: jobs.id == message.job_id,
+      where: is_nil(message.read_at)
+    )
+    |> Repo.aggregate(:count)
+  end
+
   def handle_info({:stripe_status, status}, socket) do
     socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
+  end
+
+  def handle_info({:inbound_messages, _message}, %{assigns: %{inbox_count: count}} = socket) do
+    socket
+    |> assign(:inbox_count, count + 1)
+    |> noreply()
   end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
@@ -230,4 +249,13 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp payments, do: Application.get_env(:picsello, :payments)
+
+  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "inbound_messages:#{current_user.organization_id}"
+    )
+
+    socket
+  end
 end
