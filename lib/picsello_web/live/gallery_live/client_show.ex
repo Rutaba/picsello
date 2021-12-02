@@ -71,10 +71,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   defp assign_photos(
-         %{assigns: %{gallery: %{id: id}, page: page, favorites_filter: filter}} = socket
+         %{
+           assigns: %{
+             gallery: %{id: id},
+             page: page,
+             favorites_filter: filter
+           }
+         } = socket,
+         per_page \\ @per_page
        ) do
-    assign(socket,
-      photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
-    )
+    opts = [only_favorites: filter, offset: per_page * page]
+    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+
+    socket
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, photos |> length > per_page)
   end
 end

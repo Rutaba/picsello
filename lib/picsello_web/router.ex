@@ -36,12 +36,11 @@ defmodule PicselloWeb.Router do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
 
-  scope "/stripe" do
-    pipeline :webhooks do
-      plug PicselloWeb.Plugs.StripeWebhooks
-    end
+  scope "/sendgrid" do
+    post "/inbound-parse", PicselloWeb.SendgridInboundParseController, :parse
+  end
 
-    pipe_through :webhooks
+  scope "/stripe" do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
@@ -109,6 +108,9 @@ defmodule PicselloWeb.Router do
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
+
+      live "/inbox", InboxLive.Index, :index, as: :inbox
+      live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 

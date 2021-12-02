@@ -1,7 +1,7 @@
 <div style={"background-image: url('#{display_photo(@gallery.cover_photo_id)}')"}
      class="flex flex-nowrap text-left clientGallery__coverImg">
     <div class="w-2/3"></div>
-    <div class="w-5/12 h-full flex flex-wrap content-center text-white">
+    <div class="w-5/12 h-full flex flex-wrap content-center text-white pr-2 md:pr-0">
         <div class="w-full text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></div>
         <div class="font-bold text-4xl w-full py-1"><%= @gallery.name %></div>
         <div class="w-full text-xl">
@@ -64,6 +64,7 @@
               data-total={@gallery.total_count}
               data-favorites-count={@favorites_count}
               data-is-favorites-shown={@favorites_filter}
+              data-has-more-photos={@has_more_photos}
         >
             <%= for photo <- @photos do %>
                 <div
@@ -78,8 +79,9 @@
                         <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                             id: photo.id,
                             photo: photo,
-                            is_likable: false,
-                            is_removable: false %>
+                            is_likable: true,
+                            is_removable: false,
+                            is_removed: false %>
                     </div>
                 </div>
           <% end %>

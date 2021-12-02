@@ -5,15 +5,24 @@ defmodule Picsello.WHCC do
   import Ecto.Query, only: [from: 2]
 
   def sync() do
-    # fetch latest products from whcc api
+    # fetch latest from whcc api
     # upsert changes into db records
-    # mark unmentioned products as deleted
-    products = Adapter.products()
+    # mark unmentioned as deleted
+    products = async_stream(Adapter.products(), &Adapter.product_details/1)
+    designs = async_stream(Adapter.designs(), &Adapter.design_details/1)
 
-    Repo.transaction(fn ->
-      categories = sync_categories(products)
-      sync_products(products, categories)
-    end)
+    Repo.transaction(
+      fn ->
+        categories = sync_categories(products)
+        products = sync_products(products, categories)
+        sync_designs(designs, products)
+
+        Ecto.Adapters.SQL.query!(Repo, "refresh materialized view product_attributes")
+      end,
+      timeout: :infinity
+    )
+
+    :ok
   end
 
   defp sync_products(products, categories) do
@@ -25,19 +34,46 @@ defmodule Picsello.WHCC do
       )
 
     products
-    |> Enum.map(&Adapter.product_details/1)
     |> sync_table(
       Picsello.Product,
       fn %{
            category: %{id: category_id},
-           attribute_categories: attribute_categories
+           attribute_categories: attribute_categories,
+           api: api
          } ->
         %{
           category_id: Map.get(category_id_map, category_id),
-          attribute_categories: attribute_categories
+          attribute_categories: attribute_categories,
+          api: api
         }
       end,
-      [:category_id, :attribute_categories]
+      [:category_id, :attribute_categories, :api]
+    )
+  end
+
+  defp sync_designs(designs, products) do
+    product_id_map =
+      for(
+        %{whcc_id: whcc_id, id: database_id} <- products,
+        do: {whcc_id, database_id},
+        into: %{}
+      )
+
+    designs
+    |> sync_table(
+      Picsello.Design,
+      fn %{
+           product_id: product_id,
+           attribute_categories: attribute_categories,
+           api: api
+         } ->
+        %{
+          product_id: Map.get(product_id_map, product_id),
+          attribute_categories: attribute_categories,
+          api: api
+        }
+      end,
+      [:product_id, :attribute_categories, :api]
     )
   end
 
@@ -79,13 +115,48 @@ defmodule Picsello.WHCC do
 
   def categories, do: Repo.all(categories_query())
 
+  def preload_products(ids, user) do
+    Picsello.Product.active()
+    |> Picsello.Product.with_attributes(user)
+    |> Ecto.Query.where([product], product.id in ^ids)
+    |> Repo.all()
+    |> Enum.map(&{&1.id, %{&1 | variations: variations(&1)}})
+    |> Map.new()
+  end
+
   def category(id) do
     products =
       Picsello.Product.active()
-      |> Picsello.Product.with_attributes()
+      |> Ecto.Query.select([product], struct(product, [:whcc_name, :id]))
 
     from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
   end
+
+  defp variations(%{variations: variations}),
+    do:
+      for(
+        variation <- variations,
+        do:
+          for(
+            k <- ~w(id name attributes)a,
+            do: {k, variation[Atom.to_string(k)]},
+            into: %{}
+          )
+          |> Map.update!(
+            :attributes,
+            &for(
+              attribute <- &1,
+              do:
+                for(
+                  k <-
+                    ~w(category_name category_id id name price markup)a,
+                  do: {k, attribute[Atom.to_string(k)]},
+                  into: %{}
+                )
+                |> Map.update!(:price, fn dolars -> Money.new(dolars) end)
+            )
+          )
+      )
 
   defp categories_query(),
     do:
@@ -94,33 +165,10 @@ defmodule Picsello.WHCC do
         order_by: [asc: category.position]
       )
 
-  def variations(%Picsello.Product{attributes: attributes}) do
-    for {%{
-           "variation_id" => id,
-           "variation_name" => name,
-           "price" => price,
-           "category_name" => category_name,
-           "attribute_name" => attribute_name,
-           "attribute_id" => attribute_id
-         }, i} <- Enum.with_index(attributes),
-        reduce: %{} do
-      acc ->
-        attribute = %{
-          price: Money.new(trunc(price * 100)),
-          id: attribute_id,
-          name: attribute_name,
-          category_name: category_name,
-          position: i
-        }
-
-        Map.update(
-          acc,
-          %{id: id, name: name},
-          [attribute],
-          &[attribute | &1]
-        )
-    end
-    |> Enum.map(&Map.put(elem(&1, 0), :attributes, &1 |> elem(1) |> Enum.reverse()))
-    |> Enum.sort_by(&(&1 |> Map.get(:attributes) |> hd |> Map.get(:position)))
+  defp async_stream(enum, f) do
+    enum
+    |> Task.async_stream(f)
+    |> Enum.to_list()
+    |> Keyword.get_values(:ok)
   end
 end

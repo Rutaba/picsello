@@ -27,7 +27,10 @@ defmodule Picsello.MixProject do
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(:dev), do: ["lib", "test/support/factory.ex"]
+
+  defp elixirc_paths(:dev),
+    do: ["lib", "test/support/factory.ex", "test/support/save_fixtures.ex"]
+
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
@@ -40,6 +43,7 @@ defmodule Picsello.MixProject do
         {:bcrypt_elixir, "~> 2.3"},
         {:ecto_psql_extras, "~> 0.7.2"},
         {:ecto_sql, "~> 3.7"},
+        {:elixir_email_reply_parser, "~> 0.1.2"},
         {:gettext, "~> 0.18"},
         {:flow, "~> 1.1"},
         {:jason, "~> 1.2.2"},

@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.GalleryLive.DeletePhoto
+  alias PicselloWeb.GalleryLive.PhotoComponent
 
   @per_page 12
   @upload_options [
@@ -117,6 +118,18 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
+  def handle_event("client-link", _, %{assigns: %{gallery: gallery}} = socket) do
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    socket
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:photo_processed, %{"task" => %{"photoId" => photo_id}}},
         %{assigns: %{modal_pid: modal_pid}} = socket
@@ -142,6 +155,8 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_info({:confirm_photo_deletion, id}, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.get_photo(id) |> Galleries.delete_photo()
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
+
+    send_update(PhotoComponent, id: String.to_integer(id), is_removed: true)
 
     socket
     |> assign(:gallery, gallery)
@@ -220,11 +235,15 @@ defmodule PicselloWeb.GalleryLive.Show do
              page: page,
              favorites_filter: filter
            }
-         } = socket
+         } = socket,
+         per_page \\ @per_page
        ) do
-    assign(socket,
-      photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
-    )
+    opts = [only_favorites: filter, offset: per_page * page]
+    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+
+    socket
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, photos |> length > per_page)
   end
 
   defp page_title(:show), do: "Show Gallery"

@@ -79,6 +79,12 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_required([:expired_at])
   end
 
+  def client_link_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [:client_link_hash])
+    |> validate_required([:client_link_hash])
+  end
+
   def client_session_changeset(gallery, attrs \\ %{}) do
     {%{}, %{password: :string}}
     |> cast(attrs, [:password])
