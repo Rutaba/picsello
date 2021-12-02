@@ -86,7 +86,7 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp current_thread(assigns) do
     ~H"""
-      <div class="w-full sm:overflow-y-auto sm:border">
+      <div class="flex flex-col w-full sm:overflow-y-auto sm:border">
         <div class="sticky z-10 top-0 bg-white px-6 sm:px-2 py-2 flex shadow-sm sm:shadow-none">
           <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
             <.icon name="left-arrow" class="w-6 h-6" />
@@ -99,7 +99,7 @@ defmodule PicselloWeb.InboxLive.Index do
             <.icon name="trash" class="w-4 h-4 mr-3" />
           </button>
         </div>
-        <div class="flex flex-col p-6">
+        <div class="flex flex-1 flex-col p-6">
           <%= for message <- @messages do %>
             <%= if message.is_first_unread do %>
               <div class="flex items-center my-1">
