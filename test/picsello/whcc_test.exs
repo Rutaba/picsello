@@ -68,7 +68,13 @@ defmodule Picsello.WHCCTest do
     setup do
       Picsello.MockWHCCClient
       |> Mox.stub(:designs, fn ->
-        "designs" |> read_fixture() |> Enum.map(&Picsello.WHCC.Design.from_map/1)
+        "designs"
+        |> read_fixture()
+        |> Enum.map(
+          &(&1
+            |> put_in(["product", "_id"], whcc_product_id())
+            |> Picsello.WHCC.Design.from_map())
+        )
       end)
       |> Mox.stub(:design_details, fn %{id: id} = design ->
         Picsello.WHCC.Design.add_details(
