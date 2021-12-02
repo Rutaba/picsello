@@ -36,10 +36,16 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       {:ok, redirect(socket, to: "/")}
     else
       url = preview.preview_photo.preview_url || nil
+      frame = preview.category_template.name || nil
+      frame_corners = preview.category_template.corners || nil
+      IO.puts("#####")
+      IO.inspect(frame_corners)
 
       {:ok,
        socket
+       |> assign(:frame, frame)
        |> assign(:preview, path(url))
+       |> assign(:frame_corners,  "#{inspect frame_corners}")
        |> assign(:changeset, changeset(%{}, []))
        |> assign(:preview_photo_id, nil)}
     end
@@ -59,7 +65,11 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> noreply()
   end
 
-  def handle_event("set_preview", %{"preview" => preview, "preview_photo_id" => preview_photo_id}, socket) do
+  def handle_event(
+        "set_preview",
+        %{"preview" => preview, "preview_photo_id" => preview_photo_id},
+        socket
+      ) do
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
