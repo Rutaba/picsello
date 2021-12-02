@@ -36,6 +36,11 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       {:ok, redirect(socket, to: "/")}
     else
       url = preview.preview_photo.preview_url || nil
+<<<<<<< HEAD
+=======
+      frame = preview.category_template.name || nil
+      frame_corners = preview.category_template.corners || nil
+>>>>>>> e8d6bc5 (added frames for gallery preview)
 
       {:ok,
        socket
