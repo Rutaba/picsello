@@ -29,13 +29,8 @@
         prW = document.getElementById("previewTagImg").offsetWidth;
         prSrc = document.getElementById("previewTagImg").src;
 
-        console.log([frH,frW,prH,prW]);
-        console.log([frH/frW,prH/prW]);
         var coord =<%= @frame_corners %>;
-        
-        
-        var previewH = document.getElementById("previewTagImg").offsetHeight;
-        var previewW = document.getElementById("previewTagImg").offsetWidth;
+
         var canvas = document.getElementById("canvas");
         if (canvas.getContext) {
             var ctx = canvas.getContext("2d");
@@ -46,10 +41,10 @@
             ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
             ctx.fillRect (30, 30, 55, 50);
             base_image = new Image();
-            base_image.src = "/images/" + frame;//'/images/album_transparency.png';
+            base_image.src = "/images/" + frame;
 
-            cw = canvas.width;//document.getElementById("canvas").width();
-            ch = canvas.height;//document.getElementById("canvas").height();
+            cw = canvas.width;
+            ch = canvas.height;
             
             base_image.onload = function(){
                 frameW = base_image.width;
@@ -58,20 +53,48 @@
                 kfh = coord[1]/frameH;
                 w = coord[2] - coord[0] + 1;
                 h = coord[3] - coord[1] + 1;
-                kw = (cw/frameW) + 1;
-                kh = (ch/frameH) + 1;
+                //insideFrameKoef = w/h;
+
+                kw = cw / frameW;
+                console.log([kw,cw,frameW,"!!!"]);
+                kh = ch / frameH;//######   ??? соотношение канвас и рамка высота
                 ctx.drawImage(base_image, 0, 0, cw, ch);
-                    width = (w * kw) < 10 && cw || (w * kw)
-                    height = (h * kh) < 10 && ch || (h * kh)
-                    base_image1 = new Image();
-                    base_image1.src = prSrc;
-                    base_image1.onload = function(){
-console.log([prSrc,cw * kfw, ch * kfh, w * kw, h * kh, frameH, h, coord]);
-                        ctx.drawImage(base_image1, cw * kfw, ch * kfh, width, height);
-                    }
+                    
+                width = (w * kw) < 10 && cw || (w * kw);
+                height = (h * kh) < 10 && ch || (h * kh);
+                base_image1 = new Image();
+                base_image1.src = prSrc;
+                base_image1.onload = function(){
+                    prvW = base_image1.width;
+                    prvH = base_image1.height;
 
+                    pkw = (cw/prvW) + 1;
+
+                    gk = w/h;   //general koef
+                    sk = prvW/prvH; // sub koef, preview koef
+                    if (sk < gk){
+                        console.log(["sk", sk, "<", "gk",gk]);
+                        // when height ia max
+                        preview_width = width * sk;
+                        preview_height = height;
+                        ltx = (cw * kfw) + (width - (preview_width))/2;
+                        lty = ch * kfh;
+                        }
+                    else if(gk < sk){
+                        // when width ia max
+                        preview_height = height * (prvH/prvW);
+                        preview_width = width;
+                        lty = (ch * kfh) + (height - (preview_height))/2;
+                        ltx = cw * kfw;
+                        }
+                    
+                    
+                    
+console.log([height ,prvH, prvW, w, kw, pkw]);
+console.log([ltx, lty, preview_width, preview_height, frameW]);
+                    ctx.drawImage(base_image1, ltx, lty, preview_width, preview_height);
+                }
             }
-
         }
     }
 
