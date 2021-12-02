@@ -26,7 +26,7 @@
 
 <div class="p-6 center-container">
   <ul class="grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder">
+    <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder" button_click="open-compose" >
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
         <dd class="font-bold row-start-2" style="color: #429467">$500</dd>
@@ -34,8 +34,12 @@
         <dd class="font-bold row-start-2" style="color: #E1662F">$500</dd>
       </dl>
     </.overview_card>
-    <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox">
-      You are free as a bird!
+    <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox" button_click="open-inbox">
+      <%= if @inbox_count > 0 do %>
+        <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+      <% else %>
+        You are free as a bird!
+      <% end %>
     </.overview_card>
     <.overview_card title="Orders" icon="cart-outline" button_text="Learn how">
       You need to upload photos to allow orders.
