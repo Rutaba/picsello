@@ -16,6 +16,7 @@
   <script type="application/javascript">
     function draw() {
       var coord =<%= @frame_corners %>;
+      var frame ="<%= @frame %>";
       var canvas = document.getElementById("canvas");
       if (canvas.getContext) {
         var ctx = canvas.getContext("2d");
