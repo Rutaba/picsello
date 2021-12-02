@@ -40,6 +40,9 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 =======
       frame = preview.category_template.name || nil
       frame_corners = preview.category_template.corners || nil
+<<<<<<< HEAD
+>>>>>>> e8d6bc5 (added frames for gallery preview)
+=======
 >>>>>>> e8d6bc5 (added frames for gallery preview)
 
       {:ok,
