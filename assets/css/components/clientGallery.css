@@ -9,7 +9,7 @@
 .unauthenticatedGalleryClient{
   width:2560;
   height:1600px;
-  background-color: black;
+  background-color: #000000;
 }
 
 .coverImg__wrapper {
