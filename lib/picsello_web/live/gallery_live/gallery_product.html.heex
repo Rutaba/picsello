@@ -3,9 +3,9 @@
     <div class="circleBtn">
         <ul>
             <li>
-                <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+                <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
                     <img src="/images/arrow-left.png"/>
-                    <span>Back to job</span>
+                    <span>Back to gallery</span>
                 <% end %>
             </li>
         </ul>
@@ -21,7 +21,7 @@
     <div class="description">
     Lorem Ipsum
         <.form let={f} for={@changeset} action="#" phx-submit="save">
-            <%= hidden_input f, :photo_id, value: @photo_id %>
+            <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
             <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
                 disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
@@ -49,7 +49,7 @@
                 is_removable: true,
                 is_removed: false,
                 is_gallery_category_page: true,
-                id_checked_for_preview: PicselloWeb.LiveHelpers.to_integer @photo_id %>
+                id_checked_for_preview: @preview_photo_id %>
         <% end %>
     </div>
 </div>

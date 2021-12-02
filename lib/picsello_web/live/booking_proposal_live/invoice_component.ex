@@ -100,10 +100,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
     case payments().checkout_link(proposal, line_items,
            success_url:
-             BookingProposal.url(proposal.id,
-               success: payment_type,
-               session_id: "{CHECKOUT_SESSION_ID}"
-             ),
+             "#{BookingProposal.url(proposal.id, success: payment_type)}&session_id={CHECKOUT_SESSION_ID}",
            cancel_url: BookingProposal.url(proposal.id),
            metadata: %{"paying_for" => payment_type}
          ) do

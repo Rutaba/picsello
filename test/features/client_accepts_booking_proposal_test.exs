@@ -93,14 +93,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       end)
 
       Picsello.MockPayments
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
            metadata: %{"paying_for" => "deposit"}
          }}
       end)
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
@@ -247,7 +247,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal_id}",

@@ -41,10 +41,15 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     do: socket |> assign(answer: answer, proposal: %{proposal | answer: answer}) |> noreply()
 
   @impl true
-  def handle_info({:confetti, stripe_session_id}, socket) do
+  def handle_info(
+        {:confetti, stripe_session_id},
+        %{assigns: %{organization: organization}} = socket
+      ) do
     {payment_type, socket} =
       with {:ok, %{metadata: %{"paying_for" => payment_type}} = session} <-
-             payments().retrieve_session(stripe_session_id),
+             payments().retrieve_session(stripe_session_id,
+               connect_account: organization.stripe_account_id
+             ),
            {:ok, proposal} <- Picsello.Payments.handle_payment(session) do
         {String.to_existing_atom(payment_type), socket |> assign(proposal: proposal)}
       else

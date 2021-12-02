@@ -65,7 +65,7 @@ defmodule Picsello.ProposalReminder do
       body = EEx.eval_string(copy, organization_name: organization_name, client_name: client_name)
 
       %{subject: "Proposal reminder", body_text: body}
-      |> ClientMessage.create_changeset()
+      |> ClientMessage.create_outbound_changeset()
       |> Ecto.Changeset.put_change(:job_id, job_id)
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Repo.insert!()

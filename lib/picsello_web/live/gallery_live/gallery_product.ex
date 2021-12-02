@@ -7,18 +7,22 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.Galleries.Gallery
-  alias Picsello.Galleries.GalleryCategory
+  alias Picsello.Galleries.GalleryProduct
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
 
   @impl true
-  def mount(%{"id" => gallery_id, "gallery_category_id" => gallery_category_id}, _session, socket) do
+  def mount(%{"id" => gallery_id, "gallery_product_id" => gallery_product_id}, _session, socket) do
     gallery = Repo.get_by(Gallery, %{id: gallery_id})
 
     preview =
-      Repo.get_by(GalleryCategory, %{:gallery_id => gallery_id, :id => to_integer(gallery_category_id)})
-      |> Repo.preload([:photo])
+      Repo.get_by(GalleryProduct, %{
+        :gallery_id => gallery_id,
+        :id => to_integer(gallery_product_id)
+      })
+      |> Repo.preload([:preview_photo])
+      |> Repo.preload([:category_template])
 
     if nil in [preview, gallery] do
       gallery == nil &&
@@ -26,22 +30,24 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
       preview == nil &&
         Logger.error(
-          "not found row with gallery_category_id: #{gallery_category_id} in galleries_covers table"
+          "not found row with gallery_product_id: #{gallery_product_id} in galleries_product table"
         )
 
       {:ok, redirect(socket, to: "/")}
     else
-      url = preview.photo.preview_url || nil
+      url = preview.preview_photo.preview_url || nil
 
-      {:ok, socket |> assign(:preview, path(url))
-      |> assign(:changeset, changeset(%{}, []))
-        |> assign(:photo_id, nil)}
+      {:ok,
+       socket
+       |> assign(:preview, path(url))
+       |> assign(:changeset, changeset(%{}, []))
+       |> assign(:preview_photo_id, nil)}
     end
   end
 
   def changeset(data, prop) do
-    cast(%Picsello.Galleries.GalleryCategory{}, data, prop)
-    |> validate_required([:photo_id])
+    cast(%Picsello.Galleries.GalleryProduct{}, data, prop)
+    |> validate_required([:preview_photo_id])
   end
 
   @impl true
@@ -53,31 +59,32 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> noreply()
   end
 
-  def handle_event("set_preview", %{"preview" => preview, "photo_id" => photo_id}, socket) do
+  def handle_event("set_preview", %{"preview" => preview, "preview_photo_id" => preview_photo_id}, socket) do
     socket
-    |> assign(:photo_id, photo_id)
+    |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
-    |> assign(:changeset, changeset(%{photo_id: photo_id}, [:photo_id]))
+    |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
     |> noreply
   end
 
-  def handle_event("save", %{"gallery_category" => %{"photo_id" => photo_id}},
-    %{assigns:
-      %{gallery_category_id: cover_id,
-        gallery: %{id: gallery_id}}} = socket) do
-
-    [photo_id, cover_id, gallery_id] =
+  def handle_event(
+        "save",
+        %{"gallery_product" => %{"preview_photo_id" => preview_photo_id}},
+        %{assigns: %{gallery_product_id: product_id, gallery: %{id: gallery_id}}} = socket
+      ) do
+    [preview_photo_id, product_id, gallery_id] =
       Enum.map(
-        [photo_id, cover_id, gallery_id],
-        fn x -> to_integer(x) end)
+        [preview_photo_id, product_id, gallery_id],
+        fn x -> to_integer(x) end
+      )
 
-    fields = %{gallery_id: gallery_id, id: cover_id}
+    fields = %{gallery_id: gallery_id, id: product_id}
 
-    result = Repo.get_by(GalleryCategory, fields)
+    result = Repo.get_by(GalleryProduct, fields)
 
     if result != nil do
       result
-      |> cast(%{photo_id: photo_id}, [:photo_id])
+      |> cast(%{preview_photo_id: preview_photo_id}, [:preview_photo_id])
       |> Repo.insert_or_update()
     end
 
@@ -85,15 +92,15 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   end
 
   @impl true
-  def handle_params(%{"id" => id, "gallery_category_id" => gallery_category_id}, _, socket) do
+  def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    if Repo.get_by(GalleryCategory, %{:id => to_integer(gallery_category_id)}) == nil do
+    if Repo.get_by(GalleryProduct, %{:id => to_integer(gallery_product_id)}) == nil do
       {:noreply, redirect(socket, to: "/")}
     else
       socket
       |> assign(:gallery, gallery)
-      |> assign(:gallery_category_id, gallery_category_id)
+      |> assign(:gallery_product_id, gallery_product_id)
       |> assign(:page, 0)
       |> assign(:update_mode, "append")
       |> assign(:favorites_filter, false)

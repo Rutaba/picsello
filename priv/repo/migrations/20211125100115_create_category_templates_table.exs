@@ -3,11 +3,14 @@ defmodule Picsello.Repo.Migrations.CategoryTemplates do
 
   def change do
     create table(:category_templates) do
-      add(:frame_url, :string)
-      add(:price, :integer, default: 0)
-      add(:category_id, references(:category_templates, on_delete: :nothing))
+      add(:name, :string)
+      add(:corners, {:array, :integer})
+      add(:price, :float, default: 0)
+      add(:category_id, references(:categories, on_delete: :nothing))
 
       timestamps()
     end
+
+    create index(:category_templates, [:category_id])
   end
 end
