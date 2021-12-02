@@ -37,6 +37,28 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def post(session, path, body, headers \\ []) do
+      HTTPoison.post(
+        PicselloWeb.Endpoint.url() <> path,
+        body,
+        headers ++
+          [
+            {"user-agent", user_agent(session)}
+          ]
+      )
+
+      session
+    end
+
+    def user_agent(session) do
+      session
+      |> execute_script("return navigator.userAgent;", [], &send(self(), {:user_agent, &1}))
+
+      receive do
+        {:user_agent, agent} -> agent
+      end
+    end
+
     def testid(id, opts \\ []), do: css("*[data-testid='#{id}']", opts)
 
     def wait_for_enabled_submit_button(session, opts \\ []) do

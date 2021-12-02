@@ -78,4 +78,16 @@ defmodule Picsello.Job do
   def not_leads(query \\ __MODULE__) do
     from(job in query, join: status in assoc(job, :job_status), where: not status.is_lead)
   end
+
+  def token(%__MODULE__{id: id, inserted_at: inserted_at}),
+    do:
+      PicselloWeb.Endpoint
+      |> Phoenix.Token.sign("JOB_ID", id, signed_at: DateTime.to_unix(inserted_at))
+
+  def find_by_token("" <> token) do
+    case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
+      {:ok, job_id} -> Repo.get(__MODULE__, job_id)
+      _ -> nil
+    end
+  end
 end
