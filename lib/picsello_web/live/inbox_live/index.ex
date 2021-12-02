@@ -177,7 +177,7 @@ defmodule PicselloWeb.InboxLive.Index do
         select: {message.job_id, message.id}
       )
       |> Repo.all()
-      |> Enum.into(%{})
+      |> Map.new()
 
     socket
     |> assign(:unread_message_ids, Map.values(unread_messages_by_job))

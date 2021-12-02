@@ -1,5 +1,5 @@
 defmodule PicselloWeb.SendgridInboundParseControllerTest do
-  use PicselloWeb.ConnCase, async: false
+  use PicselloWeb.ConnCase, async: true
   alias Picsello.{Repo, ClientMessage, Job}
 
   test "parses the response", %{conn: conn} do
