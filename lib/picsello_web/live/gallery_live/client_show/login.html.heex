@@ -7,7 +7,7 @@
             <.form let={f} for={@session_changeset} as={:client_session} action={"/gallery/#{@gallery.client_link_hash}/log_in"} phx-target={@myself} phx-submit="check" phx_trigger_action={@submit} >      
               
               <%= if @password_is_correct do %>
-                <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "", input_vaalue: "hhh" %>
+                <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "" %>
               <% else %>
                 <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "Unfortunately, we do not recognize this password." %>
               <% end %>
