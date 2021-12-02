@@ -41,7 +41,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
         <dl class="py-2 border-b border-r rounded-br-lg pl-14 row-span-2 sm:hidden">
           <dt class="mb-4 font-bold">Markup</dt>
           <dd>
-            <.markup_form id={"mobile-#{@id}"} changeset={@changeset} myself={@myself} class="w-20 p-4 text-right text-input" />
+            <.markup_form id={"mobile-#{@id}"} changeset={@changeset} myself={@myself} class="w-20 px-3 py-4 text-center text-input" />
           </dd>
         </dl>
 
@@ -62,14 +62,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
     changeset =
       assigns
       |> build_markup()
-      |> Markup.changeset(
-        Map.update(
-          params,
-          "value",
-          "",
-          &String.trim_trailing(&1, "%")
-        )
-      )
+      |> Markup.changeset(params)
       |> Map.put(:action, :validate)
 
     unless Keyword.has_key?(changeset.errors, :value),
@@ -87,7 +80,7 @@ defmodule PicselloWeb.Live.Pricing.Category.Attribute do
   defp markup_form(assigns) do
     ~H"""
     <.form for={@changeset} let={f} phx-submit="change" phx-change="change" phx-target={@myself} id={"form-#{@id}"}>
-    <%= input f, :value, "markup" |> testid() |> Map.to_list() |> Enum.concat(class: @class, id: "input-#{@id}", phx_hook: "PercentMask", phx_debounce: 300, phx_update: "ignore") %>
+    <%= input f, :value, "markup" |> testid() |> Map.to_list() |> Enum.concat(value: markup(@changeset), class: @class, id: "input-#{@id}", phx_hook: "PercentMask", phx_debounce: 300, phx_update: "ignore") %>
     </.form>
     """
   end

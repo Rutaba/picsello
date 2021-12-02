@@ -205,8 +205,8 @@ defmodule Picsello.WHCCTest do
 
   describe "categories" do
     test "hides hiddens and deleteds and sorts by position" do
-      insert(:category, hidden: false, deleted_at: DateTime.utc_now())
-      insert(:category, hidden: true)
+      insert(:category, hidden: false, deleted_at: DateTime.utc_now(), position: 4)
+      insert(:category, hidden: true, position: 3)
       category_two = insert(:category, hidden: false, position: 2)
       category_one = insert(:category, hidden: false, position: 1)
 
@@ -232,14 +232,14 @@ defmodule Picsello.WHCCTest do
 
       Picsello.WHCC.sync()
 
-      product_ids = from(product in Picsello.Product, select: product.id) |> Repo.all()
+      products = Picsello.Product |> Repo.all()
 
-      [product_ids: product_ids, user: insert(:user)]
+      [products: products, user: insert(:user)]
     end
 
-    test "loads product variations", %{product_ids: product_ids, user: user} do
+    test "loads product variations", %{products: products, user: user} do
       [%{variations: variations} | _] =
-        product_ids |> Picsello.WHCC.preload_products(user) |> Map.values()
+        products |> Enum.map(& &1.id) |> Picsello.WHCC.preload_products(user) |> Map.values()
 
       assert %{
                attributes: [
@@ -257,34 +257,37 @@ defmodule Picsello.WHCCTest do
              } = hd(variations)
     end
 
-    test "loads markups", %{product_ids: product_ids, user: user} do
-      [product_id | _] = product_ids
+    test "loads markups", %{products: products, user: user} do
+      [product | _] = products
 
       insert(:markup,
-        organization_id: user.organization_id,
+        organization: user.organization,
         whcc_attribute_category_id: "size",
         whcc_attribute_id: "5x5",
         whcc_variation_id: "size",
-        product_id: product_id,
+        product: product,
         value: 2.0
       )
 
-      [%{variations: variations} | _] =
-        product_ids |> Picsello.WHCC.preload_products(user) |> Map.values()
-
-      assert [
-               %{
-                 id: "size",
-                 attributes: [
-                   %{
-                     id: "5x5",
-                     markup: 2
-                   }
-                   | _
-                 ]
-               }
-               | _
-             ] = variations
+      assert %{markup: 2} =
+               products
+               |> Enum.map(& &1.id)
+               |> Picsello.WHCC.preload_products(user)
+               |> Map.values()
+               |> Enum.find_value(fn %{variations: variations} ->
+                 variations
+                 |> Enum.find(&(&1.id == "size"))
+                 |> Map.get(:attributes)
+                 |> Enum.find_value(fn attribute ->
+                   match?(
+                     %{
+                       category_id: "size",
+                       id: "5x5"
+                     },
+                     attribute
+                   ) && attribute
+                 end)
+               end)
     end
   end
 end
