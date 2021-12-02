@@ -121,4 +121,18 @@ defmodule Picsello.InboxTest do
     |> find(testid("thread-message", count: 3, at: 2))
     |> assert_text("This is my response")
   end
+
+  feature "user deletes thread", %{session: session} do
+    session
+    |> click(testid("inbox-card"))
+    |> click(testid("thread-card", count: 2, at: 0))
+    |> click(button("Delete"))
+    |> click(button("Yes, delete"))
+    |> assert_has(testid("thread-card", count: 1))
+    |> click(testid("thread-card", count: 1, at: 0))
+    |> click(button("Delete"))
+    |> click(button("Yes, delete"))
+    |> assert_has(testid("thread-card", count: 0))
+    |> assert_text("You don’t have any new messages")
+  end
 end

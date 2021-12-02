@@ -34,7 +34,7 @@ defmodule PicselloWeb.InboxLive.Index do
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
       <div class="flex sm:h-[calc(100vh-18rem)]">
-        <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread})}>
+        <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
           <%= for thread <- @threads do %>
             <.thread_card {thread} unread={Enum.member?(@unread_job_ids, thread.id)} selected={@current_thread && thread.id == @current_thread.id} />
           <% end %>
@@ -42,6 +42,14 @@ defmodule PicselloWeb.InboxLive.Index do
         <%= cond do %>
           <% @current_thread != nil -> %>
             <.current_thread {@current_thread} socket={@socket} />
+          <% Enum.empty?(@threads) -> %>
+            <div class="flex w-full bg-orange-inbox-100 items-center justify-center p-6">
+              <div class="flex items-center flex-col text-orange-inbox-300 text-xl">
+                <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
+                <p>You don’t have any new messages.</p>
+                <p>Go to a job or lead to send a new message.</p>
+              </div>
+            </div>
           <% true -> %>
             <div class="hidden sm:flex w-2/3 bg-orange-inbox-100 items-center justify-center">
               <div class="flex items-center">
@@ -87,6 +95,9 @@ defmodule PicselloWeb.InboxLive.Index do
             <div class="sm:font-semibold sm:pb-1 text-2xl line-clamp-1"><%= @title %></div>
             <div class="sm:hidden line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
           </div>
+          <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
+            <.icon name="trash" class="w-4 h-4 mr-3" />
+          </button>
         </div>
         <div class="flex flex-col p-6">
           <%= for message <- @messages do %>
@@ -152,6 +163,21 @@ defmodule PicselloWeb.InboxLive.Index do
     socket |> PicselloWeb.ClientMessageComponent.open(%{subject: Job.name(job)}) |> noreply()
   end
 
+  @impl true
+  def handle_event("confirm-delete", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete Conversation?",
+      subtitle:
+        "Are you sure you wish to permanently delete this conversation? This action cannot be undone."
+    })
+    |> noreply()
+  end
+
   defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
     job_query = Job.for_user(current_user)
 
@@ -160,6 +186,7 @@ defmodule PicselloWeb.InboxLive.Index do
         distinct: message.job_id,
         join: jobs in subquery(job_query),
         on: jobs.id == message.job_id,
+        where: is_nil(message.deleted_at),
         order_by: [desc: message.inserted_at]
       )
 
@@ -309,5 +336,16 @@ defmodule PicselloWeb.InboxLive.Index do
       _error ->
         socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
     end
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "delete"}, %{assigns: %{job: job}} = socket) do
+    from(m in ClientMessage, where: m.job_id == ^job.id and is_nil(m.deleted_at))
+    |> Repo.update_all(set: [deleted_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+
+    socket
+    |> close_modal()
+    |> push_redirect(to: Routes.inbox_path(socket, :index), replace: true)
+    |> noreply()
   end
 end

@@ -13,6 +13,7 @@ defmodule Picsello.ClientMessage do
     field(:scheduled, :boolean)
     field(:outbound, :boolean)
     field(:read_at, :utc_datetime)
+    field(:deleted_at, :utc_datetime)
 
     timestamps(type: :utc_datetime)
   end
@@ -43,7 +44,7 @@ defmodule Picsello.ClientMessage do
     from(message in __MODULE__,
       join: jobs in subquery(jobs_query),
       on: jobs.id == message.job_id,
-      where: is_nil(message.read_at)
+      where: is_nil(message.read_at) and is_nil(message.deleted_at)
     )
   end
 end
