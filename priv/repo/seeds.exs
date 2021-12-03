@@ -17,9 +17,9 @@ alias Picsello.Category
 
 frames = [
   %{name: "card_blank.png", corners: [0, 0, 0, 0]},
-  %{name: "album_transparency.png", corners: [800, 700, 1700, 1600]},
+  %{name: "album_transparency.png", corners: [800, 715, 1720, 1620]},
   %{name: "card_envelope.png", corners: [0, 0, 0, 0]},
-  %{name: "frame_transparency.png", corners: [550, 550, 2090, 1600]}
+  %{name: "frame_transperancy.png", corners: [550, 550, 2110, 1600]}
 ]
 
 length = Repo.aggregate(Category, :count)

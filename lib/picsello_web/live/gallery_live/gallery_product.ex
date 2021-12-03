@@ -71,7 +71,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
     |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
-    |> push_event("set_preview", %{})
+    |> push_event("set_preview", %{preview: path(preview)})
     |> noreply
   end
 
