@@ -141,7 +141,7 @@ defmodule PicselloWeb.Router do
 
       live "/:hash", GalleryLive.ClientShow, :show
       post "/:hash/downloads", GalleryDownloadsController, :download
-      post "/:hash/log_in", GallerySessionController, :create
+      post "/:hash/login", GallerySessionController, :put
     end
   end
 end

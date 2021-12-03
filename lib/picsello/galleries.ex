@@ -541,8 +541,12 @@ defmodule Picsello.Galleries do
   def session_exists_with_token?(_gallery_id, nil), do: false
 
   def session_exists_with_token?(gallery_id, token) do
-    from(SessionToken,
-      where: [gallery_id: ^gallery_id, token: ^token]
+    session_validity_in_days = SessionToken.session_validity_in_days()
+
+    from(token in SessionToken,
+      where:
+        token.gallery_id == ^gallery_id and token.token == ^token and
+          token.inserted_at > ago(^session_validity_in_days, "day")
     )
     |> Repo.one()
     |> then(fn
@@ -550,10 +554,4 @@ defmodule Picsello.Galleries do
       _ -> true
     end)
   end
-
-  @doc """
-  Builds new session changeset for password validation  
-  """
-  def client_session_change_for_gallery(%Gallery{id: _} = gallery, attrs),
-    do: Gallery.client_session_changeset(gallery, attrs)
 end

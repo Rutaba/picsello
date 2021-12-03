@@ -4,8 +4,11 @@ defmodule Picsello.Galleries.SessionToken do
   import Ecto.Changeset
   alias Picsello.Galleries.SessionToken
 
+  @rand_size 64
+  @session_validity_in_days 7
+
   schema "gallery_session_tokens" do
-    field :token, :binary
+    field :token, :string
     belongs_to :gallery, Picsello.Galleries.Gallery
 
     timestamps(updated_at: false)
@@ -19,8 +22,9 @@ defmodule Picsello.Galleries.SessionToken do
     |> foreign_key_constraint(:gallery_id)
   end
 
-  @rand_size 32
-  def put_token(changeset) do
-    put_change(changeset, :token, :crypto.strong_rand_bytes(@rand_size))
+  def session_validity_in_days, do: @session_validity_in_days
+
+  defp put_token(changeset) do
+    put_change(changeset, :token, :crypto.strong_rand_bytes(@rand_size) |> Base.url_encode64())
   end
 end

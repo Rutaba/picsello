@@ -3,15 +3,15 @@
     <div class="container max-w-sm mx-auto flex-1 flex flex-col items-center justify-center px-2">
         <div class="bg-white px-6 py-8 rounded shadow-md text-black w-full">
             <h1 class="mb-4 text-3xl font-medium text-start">Enter the password to view the gallery</h1>
-            <p class="mb-6 text-sm">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>
-            <.form let={f} for={@session_changeset} as={:client_session} action={"/gallery/#{@gallery.client_link_hash}/log_in"} phx-target={@myself} phx-submit="check" phx_trigger_action={@submit} >      
-              
+            <p class="mb-6 text-sm">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>            
+            <.form let={f} for={:login} action={Routes.gallery_session_path(@socket, :put, @gallery.client_link_hash)} phx-target={@myself} phx-submit="check" phx_trigger_action={@submit} >
+              <%= hidden_input f, :session_token, value: @session_token %>
               <%= if @password_is_correct do %>
                 <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "" %>
               <% else %>
                 <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "Unfortunately, we do not recognize this password." %>
               <% end %>
-              
+
               <div class="mt-5 text-center">
                 <%= submit "Submit", class: "btn-primary mx-1" %>
               </div>

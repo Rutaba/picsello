@@ -3,27 +3,30 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Login do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
 
-  def update(%{gallery: gallery}, socket) do
-    {:ok,
-     socket
-     |> assign(:gallery, gallery)
-     |> assign(:password_is_correct, true)
-     |> assign(:submit, false)
-     |> assign(:session_changeset, Galleries.client_session_change_for_gallery(gallery, %{}))}
+  def mount(socket) do
+    socket
+    |> assign(:password_is_correct, true)
+    |> assign(:submit, false)
+    |> assign(:session_token, nil)
+    |> ok()
   end
 
   def handle_event(
         "check",
-        %{"client_session" => %{"password" => password}},
+        %{"login" => %{"password" => password}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    session_changeset =
-      Galleries.client_session_change_for_gallery(gallery, %{password: password})
+    if gallery.password == password do
+      {:ok, token} = Galleries.build_gallery_session_token(gallery)
 
-    socket
-    |> assign(:session_changeset, session_changeset)
-    |> assign(:password_is_correct, session_changeset.valid?)
-    |> assign(:submit, session_changeset.valid?)
-    |> noreply()
+      socket
+      |> assign(:submit, true)
+      |> assign(:session_token, token.token)
+      |> noreply()
+    else
+      socket
+      |> assign(:password_is_correct, false)
+      |> noreply()
+    end
   end
 end

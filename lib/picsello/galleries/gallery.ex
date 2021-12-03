@@ -23,7 +23,7 @@ defmodule Picsello.Galleries.Gallery do
     belongs_to(:job, Job)
     has_many(:photos, Photo)
     has_one(:watermark, Watermark)
-    
+
     timestamps(type: :utc_datetime)
   end
 
@@ -85,13 +85,6 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_required([:client_link_hash])
   end
 
-  def client_session_changeset(gallery, attrs \\ %{}) do
-    {%{}, %{password: :string}}
-    |> cast(attrs, [:password])
-    |> validate_required([:password])
-    |> validate_password(gallery.password)
-  end
-
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),
@@ -102,14 +95,4 @@ defmodule Picsello.Galleries.Gallery do
 
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 50)
-
-  defp validate_password(changeset, gallery_password) do
-    validate_change(changeset, :password, fn :password, password ->
-      if password != gallery_password do
-        [password: "not recognized"]
-      else
-        []
-      end
-    end)
-  end
 end
