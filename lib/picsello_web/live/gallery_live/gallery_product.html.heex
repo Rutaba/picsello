@@ -36,8 +36,8 @@
                 frameH = base_image.height;
                 kfw = coord[0]/frameW;
                 kfh = coord[1]/frameH;
-                w = coord[2] - coord[0] + 1;
-                h = coord[3] - coord[1] + 1;
+                w = coord[6] - coord[0] + 1;
+                h = coord[7] - coord[1] + 1;
 
                 kw = cw / frameW;
                 kh = ch / frameH;
@@ -52,20 +52,26 @@
 
                     gk = w/h;                   //general koef
                     sk = prvW/prvH;             // sub koef, preview koef
-                    if (sk < gk){               // when height ia max
+                    if (sk <= gk){               // when height ia max
                         preview_width = width * sk;
                         preview_height = height;
                         ltx = (cw * kfw) + (width - (preview_width))/2;
                         lty = ch * kfh;
-                    } else if(gk < sk){         // when width ia max
+                    } else if(gk <= sk){         // when width ia max
                         preview_height = height * (prvH/prvW);
                         preview_width = width;
                         lty = (ch * kfh) + (height - (preview_height))/2;
                         ltx = cw * kfw;
                     }
 
-                    ctx.drawImage(base_image1, ltx, lty, preview_width, preview_height);
-                    ctx.drawImage(base_image, 0, 0, cw, ch); // upload frame
+                    if(coord.every(x => x == 0)){
+                        ctx.drawImage(base_image, 0, 0, cw, ch);
+                        ctx.drawImage(base_image1, ltx, lty, preview_width, preview_height);
+                    } else {
+                        ctx.drawImage(base_image1, ltx, lty, preview_width, preview_height);
+                        ctx.drawImage(base_image, 0, 0, cw, ch);
+                    }
+                    
                 }
             }
         }

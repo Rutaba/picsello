@@ -42,7 +42,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
        socket
        |> assign(:frame, frame)
        |> assign(:preview, path(url))
-       |> assign(:frame_corners,  "#{inspect frame_corners}")
+       |> assign(:frame_corners, "#{inspect(frame_corners)}")
        |> assign(:changeset, changeset(%{}, []))
        |> assign(:preview_photo_id, nil)}
     end
