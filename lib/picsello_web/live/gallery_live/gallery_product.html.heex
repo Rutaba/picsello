@@ -23,6 +23,7 @@
         document.body.appendChild(img1);
 
     function draw() {
+        console.log("fffffff");
         var coord =<%= @frame_corners %>;
 
         var canvas = document.getElementById("canvas");
@@ -140,7 +141,7 @@
                 is_removable: true,
                 is_removed: false,
                 is_gallery_category_page: true,
-                id_checked_for_preview: @preview_photo_id %>
+                preview_photo_id: @preview_photo_id %>
         <% end %>
     </div>
 </div>
