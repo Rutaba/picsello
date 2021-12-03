@@ -6,7 +6,7 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
 
     create table(:gallery_products) do
       add :name, :string
-      add :price, Money.Ecto.Amount.Type
+      add :price, :float
 
       add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
 

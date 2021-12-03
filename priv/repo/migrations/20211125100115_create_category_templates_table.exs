@@ -5,7 +5,7 @@ defmodule Picsello.Repo.Migrations.CategoryTemplates do
     create table(:category_templates) do
       add(:name, :string)
       add(:corners, {:array, :integer})
-      add(:price, Money.Ecto.Amount.Type, default: 0)
+      add(:price, :float, default: 0)
       add(:category_id, references(:categories, on_delete: :nothing))
 
       timestamps()
