@@ -10,6 +10,7 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   def on_mount(:gallery_client, %{"hash" => hash}, params, socket) do
+    socket = allow_sandbox(socket)
     gallery = Galleries.get_gallery_by_hash(hash)
 
     socket

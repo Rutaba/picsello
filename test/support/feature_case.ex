@@ -190,6 +190,11 @@ defmodule Picsello.FeatureCase do
       |> click(css("a", text: "Log In"))
       |> click(css("a", text: "Forgot Password"))
     end
+
+    def timeout(session) do
+      :timer.sleep(100)
+      session
+    end
   end
 
   use ExUnit.CaseTemplate

@@ -260,7 +260,8 @@ defmodule Picsello.Factory do
   def gallery_factory(attrs) do
     %Gallery{
       job: fn -> build(:lead) end,
-      password: "123456"
+      password: "123456",
+      client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
