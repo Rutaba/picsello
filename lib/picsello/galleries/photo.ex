@@ -41,7 +41,9 @@ defmodule Picsello.Galleries.Photo do
     :watermarked_url,
     :watermarked_preview_url,
     :client_liked,
-    :aspect_ratio
+    :aspect_ratio,
+    :height,
+    :width
   ]
   @required_attrs [:name, :position, :gallery_id, :original_url]
 
