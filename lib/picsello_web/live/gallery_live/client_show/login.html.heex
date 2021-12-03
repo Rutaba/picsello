@@ -6,12 +6,13 @@
             <p class="mb-6 text-sm">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>            
             <.form let={f} for={:login} action={Routes.gallery_session_path(@socket, :put, @gallery.client_link_hash)} phx-target={@myself} phx-submit="check" phx_trigger_action={@submit} >
               <%= hidden_input f, :session_token, value: @session_token %>
-              <%= if @password_is_correct do %>
-                <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "" %>
-              <% else %>
-                <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "Unfortunately, we do not recognize this password." %>
+              
+              <%= unless @password_is_correct do %>
+                <p class="text-red-sales-300">Unfortunately, we do not recognize this password.</p>
               <% end %>
-
+              
+              <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "" %>
+              
               <div class="mt-5 text-center">
                 <%= submit "Submit", class: "btn-primary mx-1" %>
               </div>
