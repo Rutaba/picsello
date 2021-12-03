@@ -110,11 +110,12 @@ html {
 
 .muuri.grid {
   position: relative;
-
+  width: 100%;
+  box-sizing: border-box;
   .item {
     display: block;
     position: absolute;
-    margin: 10px;
+    margin: 10px 0;
     z-index: 1;
   }
   .item.muuri-item-dragging {
@@ -176,5 +177,17 @@ html {
   // every other attribute row is blue in desktop
   .contents .contents:nth-child(odd) div {
     @apply sm:bg-blue-planning-100;
+  }
+}
+
+.phx-click-loading {
+  @apply animate-pulse cursor-wait;
+}
+
+@media (min-width: 640px){
+  .muuri.grid {
+    .item {
+      margin: 10px;
+    }
   }
 }

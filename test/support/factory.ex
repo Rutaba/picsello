@@ -180,7 +180,9 @@ defmodule Picsello.Factory do
     %ClientMessage{
       subject: "here is what i propose",
       body_text: "lets take some pictures!",
-      body_html: "lets take <i>some</i> <b>pictures!</b>"
+      body_html: "lets take <i>some</i> <b>pictures!</b>",
+      read_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      outbound: true
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -269,7 +271,7 @@ defmodule Picsello.Factory do
       whcc_id: sequence("whcc_id"),
       whcc_name: "shirts",
       name: "cool shirts",
-      position: 0,
+      position: sequence(:category_position, & &1),
       icon: "book"
     }
 
@@ -278,11 +280,28 @@ defmodule Picsello.Factory do
       %Picsello.Product{
         whcc_id: sequence("whcc_id"),
         whcc_name: "polo",
-        position: 0,
+        position: sequence(:product_position, & &1),
         category: fn -> build(:category) end
       }
       |> evaluate_lazy_attributes()
 
+  def design_factory,
+    do:
+      %Picsello.Design{
+        whcc_id: sequence("whcc_id"),
+        whcc_name: "birthday",
+        position: 0,
+        product: fn -> build(:product) end
+      }
+      |> evaluate_lazy_attributes()
+
   def markup_factory,
-    do: %Picsello.Markup{}
+    do: %Picsello.Markup{
+      organization: fn -> build(:organization) end,
+      product: fn -> build(:product) end,
+      whcc_attribute_category_id: "surface",
+      whcc_attribute_id: "matte",
+      whcc_variation_id: "4x4",
+      value: 100.0
+    }
 end

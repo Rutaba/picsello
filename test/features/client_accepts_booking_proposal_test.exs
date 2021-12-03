@@ -93,14 +93,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       end)
 
       Picsello.MockPayments
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
            metadata: %{"paying_for" => "deposit"}
          }}
       end)
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
@@ -247,7 +247,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal_id}",
@@ -343,27 +343,5 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> assert_flash(:error, text: "not available")
-  end
-
-  defp post(session, path, body, headers) do
-    HTTPoison.post(
-      PicselloWeb.Endpoint.url() <> path,
-      body,
-      headers ++
-        [
-          {"user-agent", user_agent(session)}
-        ]
-    )
-
-    session
-  end
-
-  defp user_agent(session) do
-    session
-    |> execute_script("return navigator.userAgent;", [], &send(self(), {:user_agent, &1}))
-
-    receive do
-      {:user_agent, agent} -> agent
-    end
   end
 end

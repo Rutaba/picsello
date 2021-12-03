@@ -33,6 +33,7 @@ import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import MasonryGrid from './hooks/masonry-grid';
 import DragDrop from './hooks/drag-drop';
+import ScrollIntoView from './hooks/scroll-into-view';
 
 const Modal = {
   mounted() {
@@ -119,6 +120,7 @@ const Hooks = {
   AutoHeight,
   MasonryGrid,
   DragDrop,
+  ScrollIntoView,
 };
 
 let Uploaders = {}
