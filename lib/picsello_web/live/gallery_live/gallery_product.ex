@@ -21,8 +21,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         :gallery_id => gallery_id,
         :id => to_integer(gallery_product_id)
       })
-      |> Repo.preload([:preview_photo])
-      |> Repo.preload([:category_template])
+      |> Repo.preload([:preview_photo, :category_template])
 
     if nil in [preview, gallery] do
       gallery == nil &&
@@ -38,7 +37,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       url = preview.preview_photo.preview_url || nil
       frame = preview.category_template.name || nil
       frame_corners = preview.category_template.corners || nil
-
+IO.inspect frame_corners
       {:ok,
        socket
        |> assign(:frame, frame)
@@ -72,6 +71,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
     |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
+    |> push_event("set_preview", %{})
     |> noreply
   end
 

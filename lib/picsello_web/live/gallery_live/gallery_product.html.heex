@@ -13,7 +13,7 @@
   <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
   </div>
 </div>
-  <script type="application/javascript">
+    <script type="application/javascript">
         photo = "<%= @preview %>";
         frame = "<%= @frame %>";
 
@@ -23,48 +23,35 @@
         document.body.appendChild(img1);
 
     function draw() {
-        frH = document.getElementById("frImgSize").offsetHeight;
-        frW = document.getElementById("frImgSize").offsetWidth;
-        prH = document.getElementById("previewTagImg").offsetHeight;
-        prW = document.getElementById("previewTagImg").offsetWidth;
-        prSrc = document.getElementById("previewTagImg").src;
-
         var coord =<%= @frame_corners %>;
 
         var canvas = document.getElementById("canvas");
         if (canvas.getContext) {
-            var ctx = canvas.getContext("2d");
-            
-            ctx.fillStyle = "rgb(200,0,0)";
-            ctx.fillRect (10, 10, 55, 50);
+            ctx = canvas.getContext("2d");
 
-            ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
-            ctx.fillRect (30, 30, 55, 50);
             base_image = new Image();
             base_image.src = "/images/" + frame;
 
             cw = canvas.width;
             ch = canvas.height;
             
-            base_image.onload = function(){
+            base_image.onload = function(){ //upload frame
                 frameW = base_image.width;
                 frameH = base_image.height;
                 kfw = coord[0]/frameW;
                 kfh = coord[1]/frameH;
                 w = coord[2] - coord[0] + 1;
                 h = coord[3] - coord[1] + 1;
-                //insideFrameKoef = w/h;
 
                 kw = cw / frameW;
-                console.log([kw,cw,frameW,"!!!"]);
-                kh = ch / frameH;//######   ??? соотношение канвас и рамка высота
+                kh = ch / frameH;
                 ctx.drawImage(base_image, 0, 0, cw, ch);
-                    
-                width = (w * kw) < 10 && cw || (w * kw);
-                height = (h * kh) < 10 && ch || (h * kh);
+
                 base_image1 = new Image();
-                base_image1.src = prSrc;
-                base_image1.onload = function(){
+                base_image1.src = unescape(photo);
+                base_image1.onload = function(){ //upload preview
+                    width = (w * kw) < 10 && cw || (w * kw);
+                    height = (h * kh) < 10 && ch || (h * kh);
                     prvW = base_image1.width;
                     prvH = base_image1.height;
 
@@ -73,7 +60,6 @@
                     gk = w/h;   //general koef
                     sk = prvW/prvH; // sub koef, preview koef
                     if (sk < gk){
-                        console.log(["sk", sk, "<", "gk",gk]);
                         // when height ia max
                         preview_width = width * sk;
                         preview_height = height;
@@ -87,11 +73,7 @@
                         lty = (ch * kfh) + (height - (preview_height))/2;
                         ltx = cw * kfw;
                         }
-                    
-                    
-                    
-console.log([height ,prvH, prvW, w, kw, pkw]);
-console.log([ltx, lty, preview_width, preview_height, frameW]);
+
                     ctx.drawImage(base_image1, ltx, lty, preview_width, preview_height);
                 }
             }
@@ -101,12 +83,31 @@ console.log([ltx, lty, preview_width, preview_height, frameW]);
     window.onload = function initPage() {
         draw();
     }
+
+    this.handleEvent("set_preview", function(data){console.log(["EVENT@@@@", data]);})
+
+    function unescape(s) {
+        var re = /&(?:amp|#38|lt|#60|gt|#62|apos|#39|quot|#34);/g;
+        var unescaped = {
+            '&amp;': '&',
+            '&#38;': '&',
+            '&lt;': '<',
+            '&#60;': '<',
+            '&gt;': '>',
+            '&#62;': '>',
+            '&apos;': "'",
+            '&#39;': "'",
+            '&quot;': '"',
+            '&#34;': '"'
+        };
+            return s.replace(re, function (m) {
+            return unescaped[m];
+        });
+    }
   </script>
-  <canvas id="canvas" width="500" height="500"></canvas>
 <div class="inline-flex">
     <div class="preview">
-        <img src={@preview} id="previewTagImg">
-        <img style="position: absolute; right: 999999px;" src='/images/album_transparency.png' id="frame">
+        <canvas id="canvas" width="500" height="500"></canvas>
     </div>
     <div class="description">
     Lorem Ipsum
