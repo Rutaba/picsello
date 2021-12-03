@@ -36,6 +36,10 @@ defmodule PicselloWeb.Router do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
 
+  scope "/sendgrid" do
+    post "/inbound-parse", PicselloWeb.SendgridInboundParseController, :parse
+  end
+
   scope "/stripe" do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
@@ -70,7 +74,7 @@ defmodule PicselloWeb.Router do
     live "/", PageLive, :index
     live "/users/register", UserRegisterLive, :new, as: :user_registration
     post "/users/register", UserRegistrationController, :create
-    live "/users/log_in", UserSessionNewLive, :new, as: :user_session
+    live "/users/log_in", Live.Session.New, :new, as: :user_session
     post "/users/log_in", UserSessionController, :create
     live "/users/reset_password", UserResetPasswordNewLive, :new, as: :user_reset_password
 

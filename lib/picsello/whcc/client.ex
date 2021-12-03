@@ -30,9 +30,27 @@ defmodule Picsello.WHCC.Client do
     end)
   end
 
+  def designs do
+    {:ok, %{body: body}} = new() |> get("/designs")
+    body |> Enum.map(&WHCC.Design.from_map/1)
+  end
+
   def products do
     {:ok, %{body: body}} = new() |> get("/products")
     body |> Enum.map(&WHCC.Product.from_map/1)
+  end
+
+  def design_details(%WHCC.Design{id: id} = design) do
+    if Keyword.get(config(), :skip_design_details) do
+      design
+    else
+      {:ok,
+       %{
+         body: api
+       }} = new() |> get("/designs/#{id}")
+
+      WHCC.Design.add_details(design, api)
+    end
   end
 
   def product_details(%WHCC.Product{id: id} = product) do

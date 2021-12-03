@@ -24,6 +24,14 @@ To start the dev server:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
+## Sendgrid inbound parse for development
+
+1. Start ngrok: `ngrok http 4000`
+1. Go to [Sendgrid Settings](https://app.sendgrid.com/settings/parse)
+1. Remove the entry `dev-inbox.picsello.com` if present
+1. Click Add Host & URL and set subdomain as `dev-inbox`, select `picsello.com` and on Destination url use the ngrok url followed by the path: `http://___.ngrok.io/sendgrid/inbound-parse`
+1. You might want to update the Mailer settings on `config/dev.exs` if you want to also send outbound emails to sendgrid.
+
 ## Deploy to staging
 
 Push to master to deploy to [staging](https://picsello-staging.onrender.com/). If [CI](https://github.com/Picsello/picsello-app/actions/workflows/ci.yml) passes it will automatically deploy.

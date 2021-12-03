@@ -1,1 +1,3296 @@
-{"category":{"id":"7sXPek95CQ6f6N5Hu","name":"Press Printed Cards"},"attributeCategories":[{"_id":"envelopes","name":"envelopes","attributes":[{"id":"5x7_white","name":"white","externalIds":[1145],"pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true,"description":"A white envelope.","metadata":{"bgcolor":"227,227,232","pointed":1,"height":5,"width":7},"image":{"type":"RASTER","value":"https://cdn.dragdrop.design/assets/envelopes/white.jpg"}},{"id":"5x7_white_euro_flap","name":"White","externalIds":[2626],"pricing":{"base":{"value":0.17,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true,"description":"A premium white envelope with euro-flap.","metadata":{"bgcolor":"241,242,246","euro":1,"grouping":"Premium Euro-Flap Envelopes","height":5,"width":7},"image":{"type":"RASTER","value":"https://cdn.dragdrop.design/assets/envelopes/white_tile_5x5.jpg"}},{"id":"5x7_craft","name":"kraft","externalIds":[1148],"pricing":{"base":{"value":0.17,"type":"ACTUAL","code":"USD"}},"sortOrder":6,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true,"metadata":{"bgcolor":"206, 171, 141","grouping":"Premium Euro-Flap Envelopes","euro":1,"height":5,"width":7},"image":{"type":"RASTER","value":"https://cdn.dragdrop.design/assets/envelopes/craft.jpg"}},{"id":"5x7_gray","name":"gray cloud","externalIds":[2373],"sortOrder":7,"effective":"2019-10-10T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true,"metadata":{"bgcolor":"152, 153, 157","grouping":"Premium Euro-Flap Envelopes","euro":1,"height":5,"width":7},"description":"A gray envelope.","image":{"type":"RASTER","value":"https://s3.amazonaws.com/cdn.dragdrop.design/assets/envelopes/gray.jpg"},"pricing":{"base":{"value":0.17,"type":"ACTUAL","code":"USD"}}},{"id":"5x7_black","name":"Black","externalIds":[2627],"pricing":{"base":{"value":0.17,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true,"description":"A premium black envelope with euro-flap.","metadata":{"bgcolor":"56,54,55","euro":1,"grouping":"Premium Euro-Flap Envelopes","height":5,"width":7},"image":{"type":"RASTER","value":"https://cdn.dragdrop.design/assets/envelopes/black.jpg"}},{"id":"no","name":"none","externalIds":[1163],"enabled":true,"sortOrder":15,"tags":[],"rules":[{"id":"fCB574yfLiefwT7Xw","trigger":"SELECTED","actions":[{"type":"DISABLE","recipient":"c=printed_envelopes;a=5x7_printed"}],"locked":true}],"ruleCount":1,"pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}}}],"multipleValuesAllowed":false,"required":true,"default":"5x7_white","rules":[],"ruleCount":0,"sortOrder":0},{"_id":"shapes","name":"shapes","attributes":[{"id":"no","name":"none","pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","enabled":true,"image":{"type":"SVG","value":"M37.5,1537.5l0-1500l2100,0v1500H37.5z"},"tags":[],"rules":[],"ruleCount":0},{"id":"a2","name":"A2","pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","enabled":true,"image":{"type":"SVG","value":"M37.5,341.7c0-124.3,100.7-225,225-225h1650c124.3,0,225,100.7,225,225v2700H37.5Z"}},{"id":"a2-tab","name":"A2 Tab","pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","enabled":true,"image":{"type":"SVG","value":"M2141.2,3036.5H41.2V636.5c0-124.2,100.7-225,225-225h1650c124.3,0,225,100.8,225,225Z"}}]},{"_id":"foil_pressed_designs","name":"foil designs","required":false,"multipleValuesAllowed":false,"attributes":[{"id":"no","name":"none","pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","enabled":true,"tags":[],"rules":[],"ruleCount":0}],"default":null,"rules":[{"id":"J8bq7dRN2zQetijpn","trigger":"CHILD_ATTRIBUTE_SELECTED","actions":[{"type":"DISABLE","recipient":"c=paper_types;a=art_linen"}],"locked":true}],"ruleCount":1,"description":"Foil Pressing uses a special process to apply real foil to your card. Stand out with a variety of colors paired with our designs.","sortOrder":1},{"_id":"foil_pressed_foil_color","name":"foil colors","required":false,"multipleValuesAllowed":false,"attributes":[{"id":"gold","name":"gold","externalIds":[1673],"enabled":true,"sortOrder":0,"tags":[],"rules":[],"ruleCount":0},{"id":"red","name":"red","externalIds":[1674],"enabled":true,"sortOrder":1,"tags":[],"rules":[],"ruleCount":0},{"id":"silver","name":"silver","externalIds":[1675],"enabled":true,"sortOrder":2,"tags":[],"rules":[],"ruleCount":0},{"id":"rose_gold","name":"rose gold","externalIds":[1696],"enabled":true,"sortOrder":3,"tags":[],"rules":[],"ruleCount":0},{"id":"evergreen","name":"evergreen","externalIds":[2625],"enabled":true,"sortOrder":4,"tags":[],"rules":[],"ruleCount":0},{"id":"pink","name":"pink","externalIds":[2306],"enabled":true,"sortOrder":5,"tags":[],"rules":[],"ruleCount":0},{"id":"blue","name":"blue","externalIds":[2307],"enabled":true,"sortOrder":6,"tags":[],"rules":[],"ruleCount":0},{"id":"iridescent","name":"iridescent","externalIds":[2308],"enabled":true,"sortOrder":7,"tags":[],"rules":[{"trigger":"SELECTED","actions":[{"type":"DISABLE","recipient":"c=paper_types;a=soft_touch_matte_cover;"}],"id":"7LoXZ5BWX5dEkTxPY","locked":true}],"ruleCount":1}],"default":null,"rules":[],"ruleCount":0,"sortOrder":2},{"_id":"gloss_coating","name":"gloss coating","parentId":"paper_types","attributes":[{"id":"no","name":"none","pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"effective":"2014-05-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","enabled":true,"tags":[],"rules":[],"ruleCount":0},{"id":"front_only","name":"front only","externalIds":[1098],"enabled":true,"pricing":{"base":{"value":0.14,"type":"ACTUAL","code":"USD"}},"sortOrder":1,"tags":[],"rules":[{"trigger":"SELECTED","actions":[{"type":"DISABLE","recipient":"c=paper_types;a=smooth_matte_cover,soft_touch_matte_cover,bamboo,art_linen,art_watercolor,art_recycled"}],"id":"wnzQPntjmvambSC2A","locked":true}],"ruleCount":1},{"id":"front_back","name":"front and back","externalIds":[1099],"enabled":true,"pricing":{"base":{"value":0.14,"type":"ACTUAL","code":"USD"}},"sortOrder":2,"tags":[],"rules":[{"trigger":"SELECTED","actions":[{"type":"DISABLE","recipient":"c=paper_types;a=smooth_matte_cover,soft_touch_matte_cover,bamboo,art_linen,art_watercolor,art_recycled"}],"id":"FWXaPksjwe69PJ9qz","locked":true}],"ruleCount":1}],"multipleValuesAllowed":false,"required":false,"default":null,"rules":[],"ruleCount":0,"sortOrder":3},{"_id":"paper_types","name":"paper types","attributes":[{"id":"standard_semi_gloss_cover","name":"standard semi-gloss","childCategories":[{"id":"gloss_coating","externalIds":[1369,1371],"enabled":true}],"externalIds":[1370,1374],"enabled":true,"tags":[{"label":"tier1","locked":true}],"pricing":{"base":{"value":0.77,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.66,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.63,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.56,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.53,"type":"ACTUAL","code":"USD"}}]},"sortOrder":0,"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":1,"description":"Our most popular card paper with a semi-gloss surface.\r\n(0.24mm thick)","metadata":null},{"metadata":null,"id":"smooth_matte_cover","name":"smooth matte","externalIds":[1370,1803],"pricing":{"base":{"value":0.77,"type":"ACTUAL","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.66,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.63,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.56,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.53,"type":"ACTUAL","code":"USD"}}]},"sortOrder":1,"effective":"2017-10-11T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=gloss_coating"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":2,"enabled":true},{"id":"premium_matte_cover","name":"premium semi-gloss","childCategories":[{"id":"gloss_coating","externalIds":[1369,1092],"enabled":true}],"externalIds":[1370,1338],"enabled":true,"tags":[{"label":"tier2","locked":true}],"pricing":{"base":{"value":0.86,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.65,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.62,"type":"ACTUAL","code":"USD"}}]},"sortOrder":2,"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":1,"description":"Thicker than standard paper, has a matte surface.\r\n(0.40mm thick)","metadata":null},{"id":"soft_touch_matte_cover","name":"soft touch matte","externalIds":[1370,1384],"enabled":true,"tags":[{"label":"tier2","locked":true}],"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=gloss_coating"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"DISABLE","recipient":"c=foil_pressed_foil_color;a=iridescent"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":3,"pricing":{"base":{"value":0.86,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.65,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.62,"type":"ACTUAL","code":"USD"}}]},"sortOrder":3,"description":"A rich matte appearance with a soft suede-like finish.\r\n(0.40mm thick)","metadata":null},{"id":"pearl","name":"pearl","childCategories":[{"id":"gloss_coating","externalIds":[1369,1373],"enabled":true}],"externalIds":[1370,1377],"enabled":true,"tags":[{"label":"tier3","locked":true}],"pricing":{"base":{"value":0.94,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.92,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.8,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}}]},"sortOrder":4,"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":1,"description":"A champagne, pearlescent base. Expect a warm, shimmery look.\r\n(0.35mm thick)","metadata":null},{"id":"bamboo","name":"bamboo","externalIds":[1370,1378],"enabled":true,"tags":[{"label":"tier3","locked":true}],"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=gloss_coating"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":2,"pricing":{"base":{"value":0.94,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.92,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.8,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}}]},"sortOrder":5,"description":"A matte, eco-friendly paper with a light texture.\r\n(0.41mm thick)","metadata":null},{"id":"art_linen","name":"art linen","externalIds":[1370,1379],"enabled":true,"tags":[{"label":"tier2","locked":true}],"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=foil_pressed_designs"}],"id":"WhHgLvP7J3xgyZYww","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=gloss_coating"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":3,"pricing":{"base":{"value":0.86,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.65,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.62,"type":"ACTUAL","code":"USD"}}]},"sortOrder":6,"description":"An artistic matte paper with a classic linen texture.\r\n(0.34mm thick)","metadata":null},{"id":"art_watercolor","name":"art watercolor","externalIds":[1370,1380],"enabled":true,"tags":[{"label":"tier2","locked":true}],"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=gloss_coating"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":2,"pricing":{"base":{"value":0.86,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.65,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.62,"type":"ACTUAL","code":"USD"}}]},"sortOrder":7,"description":"An artistic matte paper with a watercolor texture.\r\n(0.35mm thick)","metadata":null},{"id":"art_recycled","name":"art recycled","externalIds":[1370,1381],"enabled":true,"tags":[{"label":"tier2","locked":true}],"rules":[{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=gloss_coating"}],"id":"uuTHo8KbSJRxqkTBj","locked":true},{"trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=triple_thick_matte_inserts"}],"id":"uuTHo8KbSJRxqkTBj","locked":true}],"ruleCount":2,"pricing":{"base":{"value":0.86,"type":"ACTUAL","code":"USD"},"markup":{"value":0,"type":"AMOUNT_ADJ","code":"USD"},"discountVolume":[{"min":51,"price":{"value":0.83,"type":"ACTUAL","code":"USD"}},{"min":126,"price":{"value":0.74,"type":"ACTUAL","code":"USD"}},{"min":226,"price":{"value":0.71,"type":"ACTUAL","code":"USD"}},{"min":476,"price":{"value":0.65,"type":"ACTUAL","code":"USD"}},{"min":1126,"price":{"value":0.62,"type":"ACTUAL","code":"USD"}}]},"sortOrder":8,"description":"A smooth, matte paper made from 100% post-consumer waste.\r\n(0.28mm thick)","metadata":null}],"multipleValuesAllowed":false,"required":true,"default":"smooth_matte_cover","rules":[],"ruleCount":0,"sortOrder":4},{"_id":"printed_envelopes","name":"printed envelopes","multipleValuesAllowed":false,"required":false,"attributes":[{"enabled":true,"pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":0,"tags":[],"rules":[{"id":"mX3t5BgvMfEqB6Ky5","trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=printed_envelopes_font"}],"locked":true},{"id":"3qzWhHxvb8PTsWrwT","trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=printed_envelopes_return_address"}],"locked":true},{"id":"zz3YNxC7uPiSn2dJS","trigger":"SELECTED","actions":[{"type":"HIDE","recipient":"c=printed_envelopes_style"}],"locked":true}],"ruleCount":3,"id":"no","name":"none"},{"id":"5x7_printed","name":"5×7 printed","externalIds":[1883],"pricing":{"base":{"value":0.2,"type":"ACTUAL","code":"USD"},"discountVolume":[{"min":101,"price":{"value":0.12,"type":"ACTUAL","code":"USD"}}]},"sortOrder":1,"effective":"2017-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[{"id":"bYki6eSdJbe4H4in9","trigger":"SELECTED","actions":[{"type":"DISABLE","recipient":"c=envelopes;a=[pearl,parchment]"}],"locked":true}],"ruleCount":1,"enabled":true},{"id":"5x7_printed_recipient_addressing","name":"5×7 printed with recipient addressing","externalIds":[1883,2713],"pricing":{"base":{"value":0.34,"type":"ACTUAL","code":"USD"},"discountVolume":[{"min":101,"price":{"value":0.26,"type":"ACTUAL","code":"USD"}}]},"sortOrder":1,"effective":"2020-07-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"enabled":true}],"effective":"2017-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","rules":[],"ruleCount":0,"sortOrder":5},{"_id":"printed_envelopes_font","name":"printed envelopes font","multipleValuesAllowed":false,"required":false,"attributes":[{"metadata":{"fontsize":10,"lineheight":1.2,"font":"quicksand","style":"regular","recipientNameSize":16,"recipientAddressSize":13,"recipientAddressLeading":15},"id":"quicksand","name":"quicksand","externalIds":[1900],"sortOrder":0,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"metadata":{"fontsize":10,"lineheight":1.2,"font":"playfair display","style":"regular","recipientNameSize":16,"recipientAddressSize":13,"recipientAddressLeading":15},"id":"playfair","name":"playfair","externalIds":[1901],"sortOrder":1,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"metadata":{"fontsize":14,"lineheight":1.2,"font":"sacramento","style":"regular"},"id":"sacramento","name":"sacramento","externalIds":[1902],"sortOrder":2,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"metadata":{"fontsize":14,"lineheight":1.2,"font":"pinyon script","style":"regular"},"id":"pinyon_script","name":"pinyon script","externalIds":[1903],"sortOrder":3,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"metadata":{"fontsize":14,"lineheight":1.2,"font":"grand hotel","style":"regular"},"id":"grand_hotel","name":"grand hotel","externalIds":[1905],"sortOrder":5,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"enabled":true,"pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"}},"sortOrder":6,"tags":[],"rules":[],"ruleCount":0,"id":"no","name":"none"},{"metadata":{"fontsize":11,"lineheight":1.2,"font":"copse","style":"regular","recipientFontsize":11,"recipientNameSize":16,"recipientAddressSize":13,"recipientAddressLeading":15.5},"id":"copse","name":"copse","externalIds":[2449],"sortOrder":10,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"metadata":{"fontsize":14,"lineheight":1.2,"font":"covered by your grace","style":"regular"},"id":"covered_by_your_grace","name":"covered by your grace","externalIds":[2451],"sortOrder":10,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"metadata":{"fontsize":14,"lineheight":1,"font":"parisienne","style":"regular","recipientNameSize":17,"recipientAddressSize":14,"recipientAddressLeading":16},"id":"parisienne","name":"parisienne","externalIds":[2450],"sortOrder":10,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"cardo_italic","name":"cardo italic","externalIds":[2630],"metadata":{"fontsize":12,"lineheight":1.2,"recipientNameSize":17,"recipientAddressSize":14,"font":"cardo","style":"italic","recipientAddressLeading":16.75},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"cardo_regular","name":"cardo regular","externalIds":[2631],"metadata":{"fontsize":12,"lineheight":1.2,"recipientNameSize":17,"recipientAddressSize":14,"font":"cardo","style":"regular","recipientAddressLeading":16.75},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"dm_serif_display","name":"DM serif display","externalIds":[2632],"metadata":{"fontsize":11,"lineheight":1.2,"recipientNameSize":16,"recipientAddressSize":12,"font":"DMSerifDisplay","style":"regular","recipientAddressLeading":14.4},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"rouge_script","name":"rouge script","externalIds":[2633],"metadata":{"fontsize":14,"lineheight":1.1,"recipientNameSize":20,"recipientAddressSize":17,"font":"rouge script","style":"regular","recipientAddressLeading":17},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"shadows_into_light","name":"shadows into light","externalIds":[2634],"metadata":{"fontsize":12,"lineheight":1.2,"recipientNameSize":16,"recipientAddressSize":13,"recipientAddressLeading":15,"font":"shadows into light","style":"regular"},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"tenor_sans","name":"tenor sans","externalIds":[2635],"metadata":{"fontsize":10,"lineheight":1.2,"recipientNameSize":16,"recipientAddressSize":12,"recipientAddressLeading":14,"font":"tenor sans","style":"regular"},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true},{"id":"bebas_neue","name":"bebas neue","externalIds":[2629],"metadata":{"fontsize":13,"lineheight":1.2,"recipientNameSize":17,"recipientAddressSize":14,"recipientAddressLeading":16.75,"font":"bebas neue","style":"book"},"sortOrder":0,"effective":"2019-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","enabled":true}],"effective":"2017-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","rules":[],"ruleCount":0,"sortOrder":6},{"_id":"printed_envelopes_return_address","name":"printed envelopes return address","multipleValuesAllowed":false,"required":false,"attributes":[{"id":"return_address_multiline","name":"return address multiline","externalIds":[1906],"sortOrder":0,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"rules":[],"ruleCount":0,"enabled":true}],"effective":"2017-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","rules":[],"ruleCount":0,"sortOrder":7},{"_id":"printed_envelopes_style","name":"printed envelopes style","multipleValuesAllowed":false,"required":false,"attributes":[{"id":"black","name":"black","externalIds":[1884],"sortOrder":0,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.46,"top":0.4,"recipientTop":2.299,"image":"0","grouping":"Simple"},"tags":[],"enabled":true},{"id":"blue","name":"blue","externalIds":[1888],"sortOrder":4,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(24,86,156,1)","left":0.46,"top":0.4,"recipientTop":2.299,"image":"0","grouping":"Simple"},"tags":[],"enabled":true},{"id":"gray","name":"gray","externalIds":[1887],"sortOrder":3,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(76,76,76,1)","left":0.46,"top":0.4,"recipientTop":2.299,"image":"0","grouping":"Simple"},"tags":[],"enabled":true,"deprecated":true},{"id":"green","name":"green","externalIds":[1886],"sortOrder":2,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(109,137,55,1)","left":0.46,"top":0.4,"recipientTop":2.299,"image":"0","grouping":"Simple"},"tags":[],"enabled":true},{"id":"red","name":"red","externalIds":[1885],"sortOrder":1,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(206,33,33,1)","left":0.46,"top":0.4,"recipientTop":2.299,"image":"0","grouping":"Simple"},"tags":[],"enabled":true},{"id":"bright_holiday_wreath","name":"Bright Holiday Wreath","externalIds":[2216],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.75,"top":0.4,"recipientTop":2.568,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"christmas_holly","name":"christmas holly","externalIds":[1890],"sortOrder":6,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":1.013,"top":0.573,"recipientTop":2.299,"image":1,"grouping":"Holiday"},"tags":[],"enabled":true},{"id":"christmas_holly_whiteink","name":"christmas holly white","externalIds":[2654],"sortOrder":6,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":1.013,"top":0.573,"recipientTop":2.299,"image":1},"tags":[],"enabled":true},{"id":"christmas_tree_car","name":"christmas tree car","externalIds":[1891],"sortOrder":7,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.46,"top":0.4,"recipientTop":2.968,"image":1,"grouping":"Holiday"},"tags":[],"enabled":true},{"id":"deliver_to_stars","name":"Deliver To Stars","externalIds":[2636],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.7,"top":0.4,"recipientTop":2.708,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"deliver_to_stars_whiteink","name":"Deliver To Stars white","externalIds":[2656],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.7,"top":0.4,"recipientTop":2.708,"image":1},"enabled":true},{"id":"handwritten_delivery","name":"handwritten delivery","externalIds":[1892],"sortOrder":8,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.482,"top":0.416,"image":1,"recipientTop":2.608,"grouping":"Holiday"},"tags":[],"enabled":true},{"id":"handwritten_delivery_whiteink","name":"handwritten delivery white","externalIds":[2660],"sortOrder":8,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.482,"top":0.416,"image":1,"recipientTop":2.608},"tags":[],"enabled":true},{"id":"have_a_holly_jolly_christmas","name":"Have a Holly Jolly Christmas","externalIds":[2206],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.928,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"have_a_holly_jolly_christmas_whiteink","name":"Have a Holly Jolly Christmas white","externalIds":[2661],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.928,"image":1},"enabled":true},{"id":"ho_ho_ho","name":"Ho Ho Ho","externalIds":[2638],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.7,"top":0.4,"recipientTop":2.45,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"ho_ho_ho_whiteink","name":"Ho Ho Ho white","externalIds":[2662],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.7,"top":0.4,"recipientTop":2.45,"image":1},"enabled":true},{"id":"holiday_lights","name":"holiday lights","externalIds":[1895],"sortOrder":11,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.88,"top":0.306,"recipientTop":2.299,"image":1,"grouping":"Holiday"},"tags":[],"enabled":true},{"id":"jolly_christmas","name":"Jolly Christmas","externalIds":[2205],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.68,"top":0.417,"recipientTop":2.558,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"jolly_christmas_whiteink","name":"Jolly Christmas white","externalIds":[2665],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.68,"top":0.417,"recipientTop":2.558,"image":1},"enabled":true},{"id":"jolly_good_fun","name":"Jolly Good Fun","externalIds":[2204],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.56,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"jolly_good_fun_whiteink","name":"Jolly Good Fun white","externalIds":[2666],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.56,"image":1},"enabled":true},{"id":"love_peace_joy","name":"Love Peace Joy","externalIds":[2640],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientLeft":2.64,"recipientTop":2.289,"recipientAlignment":"left","image":1,"grouping":"Holiday"},"enabled":true},{"id":"love_peace_joy_whiteink","name":"Love Peace Joy white","externalIds":[2669],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.4,"top":0.4,"recipientLeft":2.64,"recipientTop":2.289,"recipientAlignment":"left","image":1},"enabled":true},{"id":"merriest_wishes","name":"Merriest Wishes","externalIds":[2433],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.299,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"merry_christmas_greens","name":"Merry Christmas Greens","externalIds":[2203],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.988,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"merry_christmas_greens_whiteink","name":"Merry Christmas Greens white","externalIds":[2672],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.988,"image":1},"enabled":true},{"id":"merry_christmas_magic","name":"Merry Christmas Magic","externalIds":[2202],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.482,"top":0.417,"recipientTop":2.711,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"merry_christmas_magic_whiteink","name":"Merry Christmas Magic white","externalIds":[2673],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.482,"top":0.417,"recipientTop":2.711,"image":1},"enabled":true},{"id":"merry_memories","name":"Merry Memories","externalIds":[2201],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.627,"top":0.417,"recipientTop":2.627,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"merry_memories_whiteink","name":"Merry Memories white","externalIds":[2674],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.627,"top":0.417,"recipientTop":2.627,"image":1},"enabled":true},{"id":"merry_trees","name":"Merry Trees","externalIds":[2434],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.552,"top":0.417,"recipientTop":2.598,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"merry_trees_whiteink","name":"Merry Trees white","externalIds":[2675],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.552,"top":0.417,"recipientTop":2.598,"image":1},"enabled":true},{"id":"seasons_greetings","name":"Seasons Greetings","externalIds":[2435],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.504,"top":0.417,"recipientTop":2.733,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"snowy","name":"Snowy","externalIds":[2642],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.66,"top":0.4,"recipientTop":2.299,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"snowy_whiteink","name":"Snowy white","externalIds":[2680],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.66,"top":0.4,"recipientTop":2.299,"image":1},"enabled":true},{"id":"sweater_weather","name":"Sweater Weather","externalIds":[2643],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.5,"top":0.4,"recipientTop":2.544,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"tis_the_season_to_be_jolly","name":"Tis the Season to be Jolly","externalIds":[2437],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.888,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"tis_the_season_to_be_jolly_whiteink","name":"Tis the Season to be Jolly white","externalIds":[2681],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.888,"image":1},"enabled":true},{"id":"warm_greetings","name":"Warm Greetings","externalIds":[2644],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.9,"top":0.4,"recipientTop":2.731,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"warm_greetings_whiteink","name":"Warm Greetings white","externalIds":[2682],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.9,"top":0.4,"recipientTop":2.731,"image":1},"enabled":true},{"id":"warmly_deliver_to_mittens","name":"Warmly Deliver To Mittens","externalIds":[2645],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.957,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"warmly_deliver_to_mittens_whiteink","name":"Warmly Deliver To Mittens white","externalIds":[2683],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.4,"top":0.4,"recipientTop":2.957,"image":1},"enabled":true},{"id":"winter_storm","name":"Winter Storm","externalIds":[2646],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.46,"top":0.4,"recipientTop":2.883,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"winter_storm_whiteink","name":"Winter Storm white","externalIds":[2684],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.46,"top":0.4,"recipientTop":2.883,"image":1},"enabled":true},{"id":"wintry_greetings","name":"Wintry Greetings","externalIds":[2647],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.7,"top":0.4,"recipientTop":2.623,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"wintry_greetings_whiteink","name":"Wintry Greetings white","externalIds":[2685],"metadata":{"grouping":"Holiday","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.7,"top":0.4,"recipientTop":2.623,"image":1},"enabled":true},{"id":"april_showers","name":"April Showers","externalIds":[2438],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.88,"top":0.4,"recipientTop":2.299,"image":1,"grouping":"General"},"enabled":true},{"id":"best_year_with_love","name":"Best Year with Love","externalIds":[2207],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":3.017,"image":1,"grouping":"General"},"enabled":true},{"id":"blooms","name":"Blooms","externalIds":[2440],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.973,"top":0.4,"recipientTop":2.299,"image":1,"grouping":"General"},"enabled":true},{"id":"bright_future","name":"Bright Future","externalIds":[2443],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.775,"image":1,"grouping":"General"},"enabled":true},{"id":"celestial","name":"Celestial","externalIds":[2444],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.493,"top":0.433,"recipientTop":2.77,"image":1,"grouping":"General"},"enabled":true},{"id":"delivery_for_formal","name":"delivery for formal","externalIds":[1938],"sortOrder":16,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.47,"top":0.47,"recipientTop":2.663,"image":1,"grouping":"General"},"tags":[],"enabled":true},{"id":"delivery_for_formal_whiteink","name":"delivery for formal white","externalIds":[2657],"sortOrder":16,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.47,"top":0.47,"recipientTop":2.663,"image":1},"tags":[],"enabled":true},{"id":"grateful","name":"Grateful","externalIds":[2637],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.696,"image":1,"grouping":"General"},"enabled":true},{"id":"grateful_whiteink","name":"Grateful white","externalIds":[2659],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.4,"top":0.4,"recipientTop":2.696,"image":1},"enabled":true},{"id":"kindly_classic","name":"Kindly Classic","externalIds":[2639],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.633,"image":1,"grouping":"General"},"enabled":true},{"id":"kindly_classic_whiteink","name":"Kindly Classic white","externalIds":[2667],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.4,"top":0.4,"recipientTop":2.633,"image":1},"enabled":true},{"id":"love_letter","name":"Love Letter","externalIds":[2432],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.738,"image":1,"grouping":"General"},"enabled":true},{"id":"love_letter_whiteink","name":"Love Letter white","externalIds":[2668],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.738,"image":1},"enabled":true},{"id":"mail_to_arrow","name":"mail to arrow","externalIds":[1940],"sortOrder":18,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.693,"image":1,"grouping":"General"},"tags":[],"enabled":true},{"id":"mail_to_arrow_whiteink","name":"mail to arrow white","externalIds":[2670],"sortOrder":18,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.693,"image":1},"tags":[],"enabled":true},{"id":"mail_to_stamped","name":"mail to stamped","externalIds":[1941],"sortOrder":19,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.568,"image":1,"grouping":"General"},"tags":[],"enabled":true},{"id":"mail_to_stamped_whiteink","name":"mail to stamped white","externalIds":[2671],"sortOrder":19,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.568,"image":1},"tags":[],"enabled":true},{"id":"send_to_botanical","name":"Send To Botanical","externalIds":[2641],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientLeft":2.48,"recipientTop":2.728,"recipientAlignment":"left","image":1,"grouping":"General"},"enabled":true},{"id":"send_to_script","name":"Send To Script","externalIds":[2436],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.508,"image":1,"grouping":"General"},"enabled":true},{"id":"send_to_script_whiteink","name":"Send To Script white","externalIds":[2679],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.508,"image":1},"enabled":true},{"id":"woodland_trees","name":"woodland trees","externalIds":[1946],"sortOrder":24,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.477,"top":0.417,"recipientTop":2.628,"image":1,"grouping":"General"},"tags":[],"enabled":true},{"id":"woodland_trees_whiteink","name":"woodland trees white","externalIds":[2686],"sortOrder":24,"effective":"2018-03-06T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":2.628,"image":1},"tags":[],"enabled":true},{"id":"iconic_grad","name":"Iconic Grad","externalIds":[2446],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.417,"top":0.477,"recipientTop":2.299,"image":1,"grouping":"Graduates"},"enabled":true},{"id":"painted_grad_badge","name":"Painted Grad Badge","externalIds":[2447],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":1.673,"top":0.477,"recipientTop":2.299,"image":1,"grouping":"Graduates"},"enabled":true},{"id":"painted_grad_badge_whiteink","name":"Painted Grad Badge white","externalIds":[2676],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(255, 255, 255,1)","left":1.673,"top":0.477,"recipientTop":2.299,"image":1},"enabled":true},{"id":"blast_off","name":"Blast Off","externalIds":[2439],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.946,"top":0.417,"recipientTop":2.299,"image":1,"grouping":"Baby"},"enabled":true},{"id":"flying_kites","name":"Flying Kites","externalIds":[2445],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.92,"top":0.417,"recipientTop":2.299,"image":1,"grouping":"Baby"},"enabled":true},{"id":"robot_gears","name":"Robot Gears","externalIds":[2441],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":1.167,"top":0.417,"recipientTop":2.542,"image":1,"grouping":"Baby"},"enabled":true},{"id":"robot_gears_whiteink","name":"Robot Gears white ","externalIds":[2677],"metadata":{"grouping":"Baby","font":"quicksand","color":"rgba(255, 255, 255,1)","left":1.167,"top":0.417,"recipientTop":2.542,"image":1},"enabled":true},{"id":"wishing_you_merry_christmas","name":"Wishing You a Merry Christmas","externalIds":[2218],"metadata":{"font":"quicksand","color":"rgba(0,0,0,1)","left":0.49,"top":0.417,"recipientTop":2.299,"image":1,"grouping":"Holiday"},"enabled":true},{"id":"white_whiteink","name":"white","externalIds":[2648],"sortOrder":4,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","metadata":{"grouping":"Simple","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.46,"top":0.4,"recipientTop":2.299,"image":"0"},"tags":[],"enabled":true},{"id":"best_year_with_love_whiteink","name":"Best Year with Love white","externalIds":[2649],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255,1)","left":0.477,"top":0.417,"recipientTop":3.017,"image":1},"enabled":true},{"id":"celebrate_scripty","name":"Celebrate Scripty","externalIds":[2741],"metadata":{"grouping":"General","font":"cardo","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"celebrate_scripty_whiteink","name":"Celebrate Scripty White","externalIds":[2750],"metadata":{"grouping":"General","font":"cardo","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"grad_degree","name":"Grad Degree","externalIds":[2738],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.4,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"grad_degree_whiteink","name":"Grad Degree White","externalIds":[2747],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.4,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"graduate_pattern","name":"Graduate Pattern","externalIds":[2739],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"graduate_pattern_whiteink","name":"Graduate Pattern White","externalIds":[2748],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"lets_party","name":"Lets Party","externalIds":[2736],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"lets_party_whiteink","name":"Lets Party White","externalIds":[2746],"metadata":{"grouping":"General","font":"quicksand","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"modern_grad","name":"Modern Grad","externalIds":[2740],"metadata":{"grouping":"Graduates","font":"tenor_sans","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.6,"recipientLeft":3.1,"recipientAlignment":"left","image":1},"enabled":true},{"id":"modern_grad_whiteink","name":"Modern Grad White","externalIds":[2749],"metadata":{"grouping":"Graduates","font":"tenor_sans","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.6,"recipientLeft":3.1,"recipientAlignment":"left","image":1},"enabled":true},{"id":"over_the_rainbow","name":"Over The Rainbow","externalIds":[2744],"metadata":{"grouping":"Baby","font":"quicksand","color":"rgba(0,0,0,1)","left":0.8,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"passport_grad","name":"Passport Grad","externalIds":[2743],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"passport_grad_whiteink","name":"Passport Grad White","externalIds":[2752],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"stamped_grad","name":"Stamped Grad","externalIds":[2742],"metadata":{"grouping":"Graduates","font":"tenor_sans","color":"rgba(0,0,0,1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true},{"id":"stamped_grad_whiteink","name":"Stamped Grad White","externalIds":[2751],"metadata":{"grouping":"Graduates","font":"quicksand","color":"rgba(255, 255, 255, 1)","left":0.4,"top":0.4,"recipientTop":2.7,"recipientLeft":null,"recipientAlignment":"center","image":1},"enabled":true}],"effective":"2017-11-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","rules":[],"ruleCount":0,"sortOrder":8},{"_id":"printed_envelopes_recipient_address","name":"printed envelopes recipient address","multipleValuesAllowed":false,"required":false,"attributes":[{"id":"recipient_address_list","name":"recipient address list","sortOrder":0,"effective":"2017-11-28T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","tags":[],"enabled":true}],"effective":"2020-07-01T00:00:00.000Z","expiration":"2099-12-31T00:00:00.000Z","sortOrder":7}],"orderAttributeCategories":[{"_id":"shipping_options","name":"Shipping Options","requiredLevel":0,"attributes":[{"id":"studio","externalId":547,"name":"Ship to Studio"},{"id":"dropship","externalId":548,"name":"Ship Directly to Client"}]},{"_id":"studio_shipping_options","name":"Studio Shipping Options","requiredLevel":547,"attributes":[{"id":"studio_two_day","parentId":547,"externalId":147,"name":"Two-Day Shipping (Includes Peak Surcharge)","pricing":{"base":{"value":0,"type":"ACTUAL","code":"USD"},"markup":{"value":5,"type":"PERCENT","code":"USD"}}},{"id":"studio_one_day_standard","parentId":547,"externalId":150,"name":"One Day Shipping, Standard - USA only (Includes Peak Surcharge)","technical":"(200001 Standard NDS) $3.95 + 12% of $3.95","pricing":{"base":{"value":4.424,"type":"ACTUAL","code":"USD"},"markup":{"value":17,"type":"PERCENT","code":"USD"}}},{"id":"studio_one_day_priority","parentId":547,"externalId":149,"name":"One Day Shipping, Priority - USA only (Includes Peak Surcharge)","technical":"(210001 Standard NDA) $6.95 + 18% of $6.95","pricing":{"base":{"value":8.201,"type":"ACTUAL","code":"USD"},"markup":{"value":23,"type":"PERCENT","code":"USD"}}}]},{"_id":"drop_ship_shipping_options","name":"Drop Ship Shipping Options","requiredLevel":548,"attributes":[{"id":"dropship_lowest_cost","parentId":548,"externalId":553,"name":"USA Drop Ship – Lowest Cost (Includes Peak Surcharge)","pricing":{"base":{"value":9.45,"type":"ACTUAL","code":"USD"},"markup":{"value":5,"type":"PERCENT","code":"USD"}}},{"id":"dropship_two_day","parentId":548,"externalId":554,"name":"USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)","technical":"Normally $9.95, SEASONAL: $10.95 + 5% of $10.95","pricing":{"base":{"value":11.4975,"type":"ACTUAL","code":"USD"},"markup":{"value":5,"type":"PERCENT","code":"USD"}}},{"id":"dropship_one_day_standard","parentId":548,"externalId":555,"name":"USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)","technical":"(200001 Standard NDS) $7.50 + 12% of $7.50 + $3.95 + 12% of $3.95, SEASONAL: $9 + 17% of $9 + $3.95 + 12% of $3.95","pricing":{"base":{"value":14.954,"type":"ACTUAL","code":"USD"},"markup":{"value":17,"type":"PERCENT","code":"USD"}}},{"id":"dropship_one_day_priority","parentId":548,"externalId":556,"name":"USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)","technical":"(210001 Standard NDA) $7.50 + 18% of $7.50 + $6.95 + 18% of $6.95, SEASONAL: $9 + 23% of $9 + $6.95 + 18% of $6.95","pricing":{"base":{"value":19.271,"type":"ACTUAL","code":"USD"},"markup":{"value":23,"type":"PERCENT","code":"USD"}}},{"id":"dropship_canada","parentId":548,"externalId":557,"name":"Canada Drop Ship – UPS Standard (Includes Peak Surcharge)","technical":"(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50","pricing":{"base":{"value":10.35,"type":"ACTUAL","code":"USD"},"markup":{"value":15,"type":"PERCENT","code":"USD"}}},{"id":"dropship_international","parentId":548,"externalId":558,"name":"International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)","pricing":{"base":{"value":9.45,"type":"ACTUAL","code":"USD"},"markup":{"value":5,"type":"PERCENT","code":"USD"}}}]},{"_id":"order_packaging_options","name":"Order Packaging Options","requiredLevel":-1,"attributes":[{"id":"pkg_brown","externalId":{"547":551,"548":552},"name":"Brown with Cream"},{"id":"pkg_charcoal","externalId":{"547":1701,"548":1704},"name":"Charcoal with Gray"},{"id":"pkg_kraft_cream","externalId":{"547":1702,"548":1705},"name":"Kraft with Cream"},{"id":"pkg_kraft_black","externalId":{"547":1703,"548":1706},"name":"Kraft with Black"}],"pricingRefsKey":{"keys":["shipping.shipping_options"],"separator":"-"},"pricingRefs":{"studio":{"base":{"value":7.75,"type":"ACTUAL","code":"USD"}},"dropship":{"base":{"value":4.95,"type":"ACTUAL","code":"USD"}}}}],"editorType":"cardEditor","productRules":[{"id":"no_foil_disables_foil_color","name":"no foil selection disables foil color options","effective":"Thu Apr 09 2020 15:55:38 GMT-0500 (CDT)","expiration":"Thu Apr 09 2100 15:55:38 GMT-0500 (CDT)","enabled":true,"comments":"if no foil design is selected, foil color options are disabled","description":"if no foil design is selected, foil color options are disabled","criteria":{"selected":{"foil_pressed_designs":{"match":"no","field":"id"}}},"actions":[{"categories":["foil_pressed_foil_color"],"modify":{"disable":true,"enabled":false}}]},{"id":"no_dark_ink_on_dark_envelopes","enabled":true,"description":"no dark inks on darkest envelopes colors","criteria":{"selected":{"envelopes":{"match":["5x7_olive","5x7_maroon","5x7_black","5x7_navy"]}}},"actions":[{"attributes":{"printed_envelopes_style":{"exclude":"/.*whiteink.*/"}},"modify":{"hidden":true,"enabled":false}}]},{"id":"no_white_ink_on_light_envelopes","enabled":true,"description":"no white inks on light envelopes","criteria":{"selected":{"envelopes":{"match":["5x7_white","5x7_white_euro_flap","5x7_dusty_rose","5x7_misty_blue"]}}},"actions":[{"attributes":{"printed_envelopes_style":{"match":"/.*whiteink.*/"}},"modify":{"hidden":true,"enabled":false}}]},{"id":"no_printing_when_no_envelope_selected","enabled":true,"description":"no printing when no envelope is selected","criteria":{"selected":{"envelopes":{"match":"no"}}},"actions":[{"categories":["printed_envelopes_style","printed_envelopes_recipient"],"modify":{"hidden":true,"enabled":false}},{"categories":["printed_envelopes"],"modify":{"hidden":true,"enabled":false}}]},{"id":"hide_5x7_envelope_recipient_address_uploading_if_no_printed_envelopes_selected","name":"Hides 5x7 recipient address uploading if no printed envelopes is selected","effective":"Wed July 01 2020 15:55:38 GMT-0500 (CDT)","expiration":"Wed July 01 2100 15:55:38 GMT-0500 (CDT)","enabled":true,"comments":"if no printed envelope is selected, hide address uploading","description":"if no print envelope is selected, hide address uploading","criteria":{"selected":{"printed_envelopes":{"match":"no","field":"id"}}},"actions":[{"categories":["printed_envelopes_recipient_address"],"modify":{"hidden":true,"enabled":false}}]},{"id":"hide_5x7_envelope_recipient_address_uploading_if_5x7_printed_printed_envelopes_selected","name":"Hides 5x7 recipient address uploading if 5x7 printed printed envelopes is selected","effective":"Wed July 01 2020 15:55:38 GMT-0500 (CDT)","expiration":"Wed July 01 2100 15:55:38 GMT-0500 (CDT)","enabled":true,"comments":"if 5x7_printed envelope is selected, hide address uploading","description":"if 5x7_printed envelope is selected, hide address uploading","criteria":{"selected":{"printed_envelopes":{"match":"5x7_printed","field":"id"}}},"actions":[{"categories":["printed_envelopes_recipient_address"],"modify":{"hidden":true,"enabled":false}}]}],"_id":"qabT3msGReetKQx9P","externalId":0,"globalProductId":"Y2MCMindej85meBx6","metadata":{"width":7,"height":5,"bleed":0.25,"resolution":300},"name":"5x7 Folded Card Horizontal","nodes":[{"name":"Front","nodeId":10000,"height":5.125,"width":7.25,"x":0,"y":0,"noBleed":["top"]},{"name":"Inside","nodeId":10001,"height":10.25,"width":7.25,"x":0,"y":0,"folds":[{"location":5,"type":"horizontal"}]},{"name":"Back","nodeId":10002,"height":5.125,"width":7.25,"x":0,"y":0,"noBleed":["top"]}],"orgId":"5LsoooWuHGYFMaqbb","editorCompatibility":"cardEditor","customized":[],"default":true}
+{
+  "category": { "id": "7sXPek95CQ6f6N5Hu", "name": "Press Printed Cards" },
+  "attributeCategories": [
+    {
+      "_id": "envelopes",
+      "name": "envelopes",
+      "attributes": [
+        {
+          "id": "5x7_white",
+          "name": "white",
+          "externalIds": [1145],
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true,
+          "description": "A white envelope.",
+          "metadata": {
+            "bgcolor": "227,227,232",
+            "pointed": 1,
+            "height": 5,
+            "width": 7
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/envelopes/white.jpg"
+          }
+        },
+        {
+          "id": "5x7_white_euro_flap",
+          "name": "White",
+          "externalIds": [2626],
+          "pricing": {
+            "base": { "value": 0.17, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true,
+          "description": "A premium white envelope with euro-flap.",
+          "metadata": {
+            "bgcolor": "241,242,246",
+            "euro": 1,
+            "grouping": "Premium Euro-Flap Envelopes",
+            "height": 5,
+            "width": 7
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/envelopes/white_tile_5x5.jpg"
+          }
+        },
+        {
+          "id": "5x7_craft",
+          "name": "kraft",
+          "externalIds": [1148],
+          "pricing": {
+            "base": { "value": 0.17, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 6,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true,
+          "metadata": {
+            "bgcolor": "206, 171, 141",
+            "grouping": "Premium Euro-Flap Envelopes",
+            "euro": 1,
+            "height": 5,
+            "width": 7
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/envelopes/craft.jpg"
+          }
+        },
+        {
+          "id": "5x7_gray",
+          "name": "gray cloud",
+          "externalIds": [2373],
+          "sortOrder": 7,
+          "effective": "2019-10-10T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true,
+          "metadata": {
+            "bgcolor": "152, 153, 157",
+            "grouping": "Premium Euro-Flap Envelopes",
+            "euro": 1,
+            "height": 5,
+            "width": 7
+          },
+          "description": "A gray envelope.",
+          "image": {
+            "type": "RASTER",
+            "value": "https://s3.amazonaws.com/cdn.dragdrop.design/assets/envelopes/gray.jpg"
+          },
+          "pricing": {
+            "base": { "value": 0.17, "type": "ACTUAL", "code": "USD" }
+          }
+        },
+        {
+          "id": "5x7_black",
+          "name": "Black",
+          "externalIds": [2627],
+          "pricing": {
+            "base": { "value": 0.17, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true,
+          "description": "A premium black envelope with euro-flap.",
+          "metadata": {
+            "bgcolor": "56,54,55",
+            "euro": 1,
+            "grouping": "Premium Euro-Flap Envelopes",
+            "height": 5,
+            "width": 7
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/envelopes/black.jpg"
+          }
+        },
+        {
+          "id": "no",
+          "name": "none",
+          "externalIds": [1163],
+          "enabled": true,
+          "sortOrder": 15,
+          "tags": [],
+          "rules": [
+            {
+              "id": "fCB574yfLiefwT7Xw",
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=printed_envelopes;a=5x7_printed"
+                }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "pricing": { "base": { "value": 0, "type": "ACTUAL", "code": "USD" } }
+        }
+      ],
+      "multipleValuesAllowed": false,
+      "required": true,
+      "default": "5x7_white",
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 0
+    },
+    {
+      "_id": "shapes",
+      "name": "shapes",
+      "attributes": [
+        {
+          "id": "no",
+          "name": "none",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true,
+          "image": {
+            "type": "SVG",
+            "value": "M37.5,1537.5l0-1500l2100,0v1500H37.5z"
+          },
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "a2",
+          "name": "A2",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true,
+          "image": {
+            "type": "SVG",
+            "value": "M37.5,341.7c0-124.3,100.7-225,225-225h1650c124.3,0,225,100.7,225,225v2700H37.5Z"
+          }
+        },
+        {
+          "id": "a2-tab",
+          "name": "A2 Tab",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true,
+          "image": {
+            "type": "SVG",
+            "value": "M2141.2,3036.5H41.2V636.5c0-124.2,100.7-225,225-225h1650c124.3,0,225,100.8,225,225Z"
+          }
+        }
+      ]
+    },
+    {
+      "_id": "foil_pressed_designs",
+      "name": "foil designs",
+      "required": false,
+      "multipleValuesAllowed": false,
+      "attributes": [
+        {
+          "id": "no",
+          "name": "none",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        }
+      ],
+      "default": null,
+      "rules": [
+        {
+          "id": "J8bq7dRN2zQetijpn",
+          "trigger": "CHILD_ATTRIBUTE_SELECTED",
+          "actions": [
+            { "type": "DISABLE", "recipient": "c=paper_types;a=art_linen" }
+          ],
+          "locked": true
+        }
+      ],
+      "ruleCount": 1,
+      "description": "Foil Pressing uses a special process to apply real foil to your card. Stand out with a variety of colors paired with our designs.",
+      "sortOrder": 1
+    },
+    {
+      "_id": "foil_pressed_foil_color",
+      "name": "foil colors",
+      "required": false,
+      "multipleValuesAllowed": false,
+      "attributes": [
+        {
+          "id": "gold",
+          "name": "gold",
+          "externalIds": [1673],
+          "enabled": true,
+          "sortOrder": 0,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "red",
+          "name": "red",
+          "externalIds": [1674],
+          "enabled": true,
+          "sortOrder": 1,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "silver",
+          "name": "silver",
+          "externalIds": [1675],
+          "enabled": true,
+          "sortOrder": 2,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "rose_gold",
+          "name": "rose gold",
+          "externalIds": [1696],
+          "enabled": true,
+          "sortOrder": 3,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "evergreen",
+          "name": "evergreen",
+          "externalIds": [2625],
+          "enabled": true,
+          "sortOrder": 4,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "pink",
+          "name": "pink",
+          "externalIds": [2306],
+          "enabled": true,
+          "sortOrder": 5,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "blue",
+          "name": "blue",
+          "externalIds": [2307],
+          "enabled": true,
+          "sortOrder": 6,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "iridescent",
+          "name": "iridescent",
+          "externalIds": [2308],
+          "enabled": true,
+          "sortOrder": 7,
+          "tags": [],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=paper_types;a=soft_touch_matte_cover;"
+                }
+              ],
+              "id": "7LoXZ5BWX5dEkTxPY",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        }
+      ],
+      "default": null,
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 2
+    },
+    {
+      "_id": "gloss_coating",
+      "name": "gloss coating",
+      "parentId": "paper_types",
+      "attributes": [
+        {
+          "id": "no",
+          "name": "none",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "effective": "2014-05-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0
+        },
+        {
+          "id": "front_only",
+          "name": "front only",
+          "externalIds": [1098],
+          "enabled": true,
+          "pricing": {
+            "base": { "value": 0.14, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 1,
+          "tags": [],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=paper_types;a=smooth_matte_cover,soft_touch_matte_cover,bamboo,art_linen,art_watercolor,art_recycled"
+                }
+              ],
+              "id": "wnzQPntjmvambSC2A",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "front_back",
+          "name": "front and back",
+          "externalIds": [1099],
+          "enabled": true,
+          "pricing": {
+            "base": { "value": 0.14, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 2,
+          "tags": [],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=paper_types;a=smooth_matte_cover,soft_touch_matte_cover,bamboo,art_linen,art_watercolor,art_recycled"
+                }
+              ],
+              "id": "FWXaPksjwe69PJ9qz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        }
+      ],
+      "multipleValuesAllowed": false,
+      "required": false,
+      "default": null,
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 3
+    },
+    {
+      "_id": "paper_types",
+      "name": "paper types",
+      "attributes": [
+        {
+          "id": "standard_semi_gloss_cover",
+          "name": "standard semi-gloss",
+          "childCategories": [
+            {
+              "id": "gloss_coating",
+              "externalIds": [1369, 1371],
+              "enabled": true
+            }
+          ],
+          "externalIds": [1370, 1374],
+          "enabled": true,
+          "tags": [{ "label": "tier1", "locked": true }],
+          "pricing": {
+            "base": { "value": 0.77, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.66, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.63, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.56, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.53, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 0,
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "description": "Our most popular card paper with a semi-gloss surface.\r\n(0.24mm thick)",
+          "metadata": null
+        },
+        {
+          "metadata": null,
+          "id": "smooth_matte_cover",
+          "name": "smooth matte",
+          "externalIds": [1370, 1803],
+          "pricing": {
+            "base": { "value": 0.77, "type": "ACTUAL", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.66, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.63, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.56, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.53, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 1,
+          "effective": "2017-10-11T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=gloss_coating" }],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 2,
+          "enabled": true
+        },
+        {
+          "id": "premium_matte_cover",
+          "name": "premium semi-gloss",
+          "childCategories": [
+            {
+              "id": "gloss_coating",
+              "externalIds": [1369, 1092],
+              "enabled": true
+            }
+          ],
+          "externalIds": [1370, 1338],
+          "enabled": true,
+          "tags": [{ "label": "tier2", "locked": true }],
+          "pricing": {
+            "base": { "value": 0.86, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.65, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.62, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 2,
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "description": "Thicker than standard paper, has a matte surface.\r\n(0.40mm thick)",
+          "metadata": null
+        },
+        {
+          "id": "soft_touch_matte_cover",
+          "name": "soft touch matte",
+          "externalIds": [1370, 1384],
+          "enabled": true,
+          "tags": [{ "label": "tier2", "locked": true }],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=gloss_coating" }],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=foil_pressed_foil_color;a=iridescent"
+                }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 3,
+          "pricing": {
+            "base": { "value": 0.86, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.65, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.62, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 3,
+          "description": "A rich matte appearance with a soft suede-like finish.\r\n(0.40mm thick)",
+          "metadata": null
+        },
+        {
+          "id": "pearl",
+          "name": "pearl",
+          "childCategories": [
+            {
+              "id": "gloss_coating",
+              "externalIds": [1369, 1373],
+              "enabled": true
+            }
+          ],
+          "externalIds": [1370, 1377],
+          "enabled": true,
+          "tags": [{ "label": "tier3", "locked": true }],
+          "pricing": {
+            "base": { "value": 0.94, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.92, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.8, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 4,
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "description": "A champagne, pearlescent base. Expect a warm, shimmery look.\r\n(0.35mm thick)",
+          "metadata": null
+        },
+        {
+          "id": "bamboo",
+          "name": "bamboo",
+          "externalIds": [1370, 1378],
+          "enabled": true,
+          "tags": [{ "label": "tier3", "locked": true }],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=gloss_coating" }],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 2,
+          "pricing": {
+            "base": { "value": 0.94, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.92, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.8, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 5,
+          "description": "A matte, eco-friendly paper with a light texture.\r\n(0.41mm thick)",
+          "metadata": null
+        },
+        {
+          "id": "art_linen",
+          "name": "art linen",
+          "externalIds": [1370, 1379],
+          "enabled": true,
+          "tags": [{ "label": "tier2", "locked": true }],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=foil_pressed_designs" }
+              ],
+              "id": "WhHgLvP7J3xgyZYww",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=gloss_coating" }],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 3,
+          "pricing": {
+            "base": { "value": 0.86, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.65, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.62, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 6,
+          "description": "An artistic matte paper with a classic linen texture.\r\n(0.34mm thick)",
+          "metadata": null
+        },
+        {
+          "id": "art_watercolor",
+          "name": "art watercolor",
+          "externalIds": [1370, 1380],
+          "enabled": true,
+          "tags": [{ "label": "tier2", "locked": true }],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=gloss_coating" }],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 2,
+          "pricing": {
+            "base": { "value": 0.86, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.65, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.62, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 7,
+          "description": "An artistic matte paper with a watercolor texture.\r\n(0.35mm thick)",
+          "metadata": null
+        },
+        {
+          "id": "art_recycled",
+          "name": "art recycled",
+          "externalIds": [1370, 1381],
+          "enabled": true,
+          "tags": [{ "label": "tier2", "locked": true }],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=gloss_coating" }],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=triple_thick_matte_inserts" }
+              ],
+              "id": "uuTHo8KbSJRxqkTBj",
+              "locked": true
+            }
+          ],
+          "ruleCount": 2,
+          "pricing": {
+            "base": { "value": 0.86, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 0, "type": "AMOUNT_ADJ", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 51,
+                "price": { "value": 0.83, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 126,
+                "price": { "value": 0.74, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 226,
+                "price": { "value": 0.71, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 476,
+                "price": { "value": 0.65, "type": "ACTUAL", "code": "USD" }
+              },
+              {
+                "min": 1126,
+                "price": { "value": 0.62, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 8,
+          "description": "A smooth, matte paper made from 100% post-consumer waste.\r\n(0.28mm thick)",
+          "metadata": null
+        }
+      ],
+      "multipleValuesAllowed": false,
+      "required": true,
+      "default": "smooth_matte_cover",
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 4
+    },
+    {
+      "_id": "printed_envelopes",
+      "name": "printed envelopes",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "enabled": true,
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 0,
+          "tags": [],
+          "rules": [
+            {
+              "id": "mX3t5BgvMfEqB6Ky5",
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=printed_envelopes_font" }
+              ],
+              "locked": true
+            },
+            {
+              "id": "3qzWhHxvb8PTsWrwT",
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "HIDE",
+                  "recipient": "c=printed_envelopes_return_address"
+                }
+              ],
+              "locked": true
+            },
+            {
+              "id": "zz3YNxC7uPiSn2dJS",
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=printed_envelopes_style" }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 3,
+          "id": "no",
+          "name": "none"
+        },
+        {
+          "id": "5x7_printed",
+          "name": "5×7 printed",
+          "externalIds": [1883],
+          "pricing": {
+            "base": { "value": 0.2, "type": "ACTUAL", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 101,
+                "price": { "value": 0.12, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 1,
+          "effective": "2017-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [
+            {
+              "id": "bYki6eSdJbe4H4in9",
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=envelopes;a=[pearl,parchment]"
+                }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "enabled": true
+        },
+        {
+          "id": "5x7_printed_recipient_addressing",
+          "name": "5×7 printed with recipient addressing",
+          "externalIds": [1883, 2713],
+          "pricing": {
+            "base": { "value": 0.34, "type": "ACTUAL", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 101,
+                "price": { "value": 0.26, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "sortOrder": 1,
+          "effective": "2020-07-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "enabled": true
+        }
+      ],
+      "effective": "2017-11-01T00:00:00.000Z",
+      "expiration": "2099-12-31T00:00:00.000Z",
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 5
+    },
+    {
+      "_id": "printed_envelopes_font",
+      "name": "printed envelopes font",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "metadata": {
+            "fontsize": 10,
+            "lineheight": 1.2,
+            "font": "quicksand",
+            "style": "regular",
+            "recipientNameSize": 16,
+            "recipientAddressSize": 13,
+            "recipientAddressLeading": 15
+          },
+          "id": "quicksand",
+          "name": "quicksand",
+          "externalIds": [1900],
+          "sortOrder": 0,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "fontsize": 10,
+            "lineheight": 1.2,
+            "font": "playfair display",
+            "style": "regular",
+            "recipientNameSize": 16,
+            "recipientAddressSize": 13,
+            "recipientAddressLeading": 15
+          },
+          "id": "playfair",
+          "name": "playfair",
+          "externalIds": [1901],
+          "sortOrder": 1,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "fontsize": 14,
+            "lineheight": 1.2,
+            "font": "sacramento",
+            "style": "regular"
+          },
+          "id": "sacramento",
+          "name": "sacramento",
+          "externalIds": [1902],
+          "sortOrder": 2,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "fontsize": 14,
+            "lineheight": 1.2,
+            "font": "pinyon script",
+            "style": "regular"
+          },
+          "id": "pinyon_script",
+          "name": "pinyon script",
+          "externalIds": [1903],
+          "sortOrder": 3,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "fontsize": 14,
+            "lineheight": 1.2,
+            "font": "grand hotel",
+            "style": "regular"
+          },
+          "id": "grand_hotel",
+          "name": "grand hotel",
+          "externalIds": [1905],
+          "sortOrder": 5,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "enabled": true,
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" }
+          },
+          "sortOrder": 6,
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "id": "no",
+          "name": "none"
+        },
+        {
+          "metadata": {
+            "fontsize": 11,
+            "lineheight": 1.2,
+            "font": "copse",
+            "style": "regular",
+            "recipientFontsize": 11,
+            "recipientNameSize": 16,
+            "recipientAddressSize": 13,
+            "recipientAddressLeading": 15.5
+          },
+          "id": "copse",
+          "name": "copse",
+          "externalIds": [2449],
+          "sortOrder": 10,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "fontsize": 14,
+            "lineheight": 1.2,
+            "font": "covered by your grace",
+            "style": "regular"
+          },
+          "id": "covered_by_your_grace",
+          "name": "covered by your grace",
+          "externalIds": [2451],
+          "sortOrder": 10,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "fontsize": 14,
+            "lineheight": 1,
+            "font": "parisienne",
+            "style": "regular",
+            "recipientNameSize": 17,
+            "recipientAddressSize": 14,
+            "recipientAddressLeading": 16
+          },
+          "id": "parisienne",
+          "name": "parisienne",
+          "externalIds": [2450],
+          "sortOrder": 10,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "cardo_italic",
+          "name": "cardo italic",
+          "externalIds": [2630],
+          "metadata": {
+            "fontsize": 12,
+            "lineheight": 1.2,
+            "recipientNameSize": 17,
+            "recipientAddressSize": 14,
+            "font": "cardo",
+            "style": "italic",
+            "recipientAddressLeading": 16.75
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "cardo_regular",
+          "name": "cardo regular",
+          "externalIds": [2631],
+          "metadata": {
+            "fontsize": 12,
+            "lineheight": 1.2,
+            "recipientNameSize": 17,
+            "recipientAddressSize": 14,
+            "font": "cardo",
+            "style": "regular",
+            "recipientAddressLeading": 16.75
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "dm_serif_display",
+          "name": "DM serif display",
+          "externalIds": [2632],
+          "metadata": {
+            "fontsize": 11,
+            "lineheight": 1.2,
+            "recipientNameSize": 16,
+            "recipientAddressSize": 12,
+            "font": "DMSerifDisplay",
+            "style": "regular",
+            "recipientAddressLeading": 14.4
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "rouge_script",
+          "name": "rouge script",
+          "externalIds": [2633],
+          "metadata": {
+            "fontsize": 14,
+            "lineheight": 1.1,
+            "recipientNameSize": 20,
+            "recipientAddressSize": 17,
+            "font": "rouge script",
+            "style": "regular",
+            "recipientAddressLeading": 17
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "shadows_into_light",
+          "name": "shadows into light",
+          "externalIds": [2634],
+          "metadata": {
+            "fontsize": 12,
+            "lineheight": 1.2,
+            "recipientNameSize": 16,
+            "recipientAddressSize": 13,
+            "recipientAddressLeading": 15,
+            "font": "shadows into light",
+            "style": "regular"
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "tenor_sans",
+          "name": "tenor sans",
+          "externalIds": [2635],
+          "metadata": {
+            "fontsize": 10,
+            "lineheight": 1.2,
+            "recipientNameSize": 16,
+            "recipientAddressSize": 12,
+            "recipientAddressLeading": 14,
+            "font": "tenor sans",
+            "style": "regular"
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        },
+        {
+          "id": "bebas_neue",
+          "name": "bebas neue",
+          "externalIds": [2629],
+          "metadata": {
+            "fontsize": 13,
+            "lineheight": 1.2,
+            "recipientNameSize": 17,
+            "recipientAddressSize": 14,
+            "recipientAddressLeading": 16.75,
+            "font": "bebas neue",
+            "style": "book"
+          },
+          "sortOrder": 0,
+          "effective": "2019-11-01T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "enabled": true
+        }
+      ],
+      "effective": "2017-11-01T00:00:00.000Z",
+      "expiration": "2099-12-31T00:00:00.000Z",
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 6
+    },
+    {
+      "_id": "printed_envelopes_return_address",
+      "name": "printed envelopes return address",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "id": "return_address_multiline",
+          "name": "return address multiline",
+          "externalIds": [1906],
+          "sortOrder": 0,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "rules": [],
+          "ruleCount": 0,
+          "enabled": true
+        }
+      ],
+      "effective": "2017-11-01T00:00:00.000Z",
+      "expiration": "2099-12-31T00:00:00.000Z",
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 7
+    },
+    {
+      "_id": "printed_envelopes_style",
+      "name": "printed envelopes style",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "id": "black",
+          "name": "black",
+          "externalIds": [1884],
+          "sortOrder": 0,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": "0",
+            "grouping": "Simple"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "blue",
+          "name": "blue",
+          "externalIds": [1888],
+          "sortOrder": 4,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(24,86,156,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": "0",
+            "grouping": "Simple"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "gray",
+          "name": "gray",
+          "externalIds": [1887],
+          "sortOrder": 3,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(76,76,76,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": "0",
+            "grouping": "Simple"
+          },
+          "tags": [],
+          "enabled": true,
+          "deprecated": true
+        },
+        {
+          "id": "green",
+          "name": "green",
+          "externalIds": [1886],
+          "sortOrder": 2,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(109,137,55,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": "0",
+            "grouping": "Simple"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "red",
+          "name": "red",
+          "externalIds": [1885],
+          "sortOrder": 1,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(206,33,33,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": "0",
+            "grouping": "Simple"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "bright_holiday_wreath",
+          "name": "Bright Holiday Wreath",
+          "externalIds": [2216],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.75,
+            "top": 0.4,
+            "recipientTop": 2.568,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "christmas_holly",
+          "name": "christmas holly",
+          "externalIds": [1890],
+          "sortOrder": 6,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 1.013,
+            "top": 0.573,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "christmas_holly_whiteink",
+          "name": "christmas holly white",
+          "externalIds": [2654],
+          "sortOrder": 6,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 1.013,
+            "top": 0.573,
+            "recipientTop": 2.299,
+            "image": 1
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "christmas_tree_car",
+          "name": "christmas tree car",
+          "externalIds": [1891],
+          "sortOrder": 7,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.968,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "deliver_to_stars",
+          "name": "Deliver To Stars",
+          "externalIds": [2636],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.7,
+            "top": 0.4,
+            "recipientTop": 2.708,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "deliver_to_stars_whiteink",
+          "name": "Deliver To Stars white",
+          "externalIds": [2656],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.7,
+            "top": 0.4,
+            "recipientTop": 2.708,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "handwritten_delivery",
+          "name": "handwritten delivery",
+          "externalIds": [1892],
+          "sortOrder": 8,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.482,
+            "top": 0.416,
+            "image": 1,
+            "recipientTop": 2.608,
+            "grouping": "Holiday"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "handwritten_delivery_whiteink",
+          "name": "handwritten delivery white",
+          "externalIds": [2660],
+          "sortOrder": 8,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.482,
+            "top": 0.416,
+            "image": 1,
+            "recipientTop": 2.608
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "have_a_holly_jolly_christmas",
+          "name": "Have a Holly Jolly Christmas",
+          "externalIds": [2206],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.928,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "have_a_holly_jolly_christmas_whiteink",
+          "name": "Have a Holly Jolly Christmas white",
+          "externalIds": [2661],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.928,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "ho_ho_ho",
+          "name": "Ho Ho Ho",
+          "externalIds": [2638],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.7,
+            "top": 0.4,
+            "recipientTop": 2.45,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "ho_ho_ho_whiteink",
+          "name": "Ho Ho Ho white",
+          "externalIds": [2662],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.7,
+            "top": 0.4,
+            "recipientTop": 2.45,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "holiday_lights",
+          "name": "holiday lights",
+          "externalIds": [1895],
+          "sortOrder": 11,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.88,
+            "top": 0.306,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "jolly_christmas",
+          "name": "Jolly Christmas",
+          "externalIds": [2205],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.68,
+            "top": 0.417,
+            "recipientTop": 2.558,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "jolly_christmas_whiteink",
+          "name": "Jolly Christmas white",
+          "externalIds": [2665],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.68,
+            "top": 0.417,
+            "recipientTop": 2.558,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "jolly_good_fun",
+          "name": "Jolly Good Fun",
+          "externalIds": [2204],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.56,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "jolly_good_fun_whiteink",
+          "name": "Jolly Good Fun white",
+          "externalIds": [2666],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.56,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "love_peace_joy",
+          "name": "Love Peace Joy",
+          "externalIds": [2640],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientLeft": 2.64,
+            "recipientTop": 2.289,
+            "recipientAlignment": "left",
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "love_peace_joy_whiteink",
+          "name": "Love Peace Joy white",
+          "externalIds": [2669],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientLeft": 2.64,
+            "recipientTop": 2.289,
+            "recipientAlignment": "left",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "merriest_wishes",
+          "name": "Merriest Wishes",
+          "externalIds": [2433],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_christmas_greens",
+          "name": "Merry Christmas Greens",
+          "externalIds": [2203],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.988,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_christmas_greens_whiteink",
+          "name": "Merry Christmas Greens white",
+          "externalIds": [2672],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.988,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_christmas_magic",
+          "name": "Merry Christmas Magic",
+          "externalIds": [2202],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.482,
+            "top": 0.417,
+            "recipientTop": 2.711,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_christmas_magic_whiteink",
+          "name": "Merry Christmas Magic white",
+          "externalIds": [2673],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.482,
+            "top": 0.417,
+            "recipientTop": 2.711,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_memories",
+          "name": "Merry Memories",
+          "externalIds": [2201],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.627,
+            "top": 0.417,
+            "recipientTop": 2.627,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_memories_whiteink",
+          "name": "Merry Memories white",
+          "externalIds": [2674],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.627,
+            "top": 0.417,
+            "recipientTop": 2.627,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_trees",
+          "name": "Merry Trees",
+          "externalIds": [2434],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.552,
+            "top": 0.417,
+            "recipientTop": 2.598,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "merry_trees_whiteink",
+          "name": "Merry Trees white",
+          "externalIds": [2675],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.552,
+            "top": 0.417,
+            "recipientTop": 2.598,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "seasons_greetings",
+          "name": "Seasons Greetings",
+          "externalIds": [2435],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.504,
+            "top": 0.417,
+            "recipientTop": 2.733,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "snowy",
+          "name": "Snowy",
+          "externalIds": [2642],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.66,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "snowy_whiteink",
+          "name": "Snowy white",
+          "externalIds": [2680],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.66,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "sweater_weather",
+          "name": "Sweater Weather",
+          "externalIds": [2643],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.5,
+            "top": 0.4,
+            "recipientTop": 2.544,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "tis_the_season_to_be_jolly",
+          "name": "Tis the Season to be Jolly",
+          "externalIds": [2437],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.888,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "tis_the_season_to_be_jolly_whiteink",
+          "name": "Tis the Season to be Jolly white",
+          "externalIds": [2681],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.888,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "warm_greetings",
+          "name": "Warm Greetings",
+          "externalIds": [2644],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.9,
+            "top": 0.4,
+            "recipientTop": 2.731,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "warm_greetings_whiteink",
+          "name": "Warm Greetings white",
+          "externalIds": [2682],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.9,
+            "top": 0.4,
+            "recipientTop": 2.731,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "warmly_deliver_to_mittens",
+          "name": "Warmly Deliver To Mittens",
+          "externalIds": [2645],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.957,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "warmly_deliver_to_mittens_whiteink",
+          "name": "Warmly Deliver To Mittens white",
+          "externalIds": [2683],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.957,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "winter_storm",
+          "name": "Winter Storm",
+          "externalIds": [2646],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.883,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "winter_storm_whiteink",
+          "name": "Winter Storm white",
+          "externalIds": [2684],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.883,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "wintry_greetings",
+          "name": "Wintry Greetings",
+          "externalIds": [2647],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.7,
+            "top": 0.4,
+            "recipientTop": 2.623,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "wintry_greetings_whiteink",
+          "name": "Wintry Greetings white",
+          "externalIds": [2685],
+          "metadata": {
+            "grouping": "Holiday",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.7,
+            "top": 0.4,
+            "recipientTop": 2.623,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "april_showers",
+          "name": "April Showers",
+          "externalIds": [2438],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.88,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "best_year_with_love",
+          "name": "Best Year with Love",
+          "externalIds": [2207],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 3.017,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "blooms",
+          "name": "Blooms",
+          "externalIds": [2440],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.973,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "bright_future",
+          "name": "Bright Future",
+          "externalIds": [2443],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.775,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "celestial",
+          "name": "Celestial",
+          "externalIds": [2444],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.493,
+            "top": 0.433,
+            "recipientTop": 2.77,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "delivery_for_formal",
+          "name": "delivery for formal",
+          "externalIds": [1938],
+          "sortOrder": 16,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.47,
+            "top": 0.47,
+            "recipientTop": 2.663,
+            "image": 1,
+            "grouping": "General"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "delivery_for_formal_whiteink",
+          "name": "delivery for formal white",
+          "externalIds": [2657],
+          "sortOrder": 16,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.47,
+            "top": 0.47,
+            "recipientTop": 2.663,
+            "image": 1
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "grateful",
+          "name": "Grateful",
+          "externalIds": [2637],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.696,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "grateful_whiteink",
+          "name": "Grateful white",
+          "externalIds": [2659],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.696,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "kindly_classic",
+          "name": "Kindly Classic",
+          "externalIds": [2639],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.633,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "kindly_classic_whiteink",
+          "name": "Kindly Classic white",
+          "externalIds": [2667],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.633,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "love_letter",
+          "name": "Love Letter",
+          "externalIds": [2432],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.738,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "love_letter_whiteink",
+          "name": "Love Letter white",
+          "externalIds": [2668],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.738,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "mail_to_arrow",
+          "name": "mail to arrow",
+          "externalIds": [1940],
+          "sortOrder": 18,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.693,
+            "image": 1,
+            "grouping": "General"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "mail_to_arrow_whiteink",
+          "name": "mail to arrow white",
+          "externalIds": [2670],
+          "sortOrder": 18,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.693,
+            "image": 1
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "mail_to_stamped",
+          "name": "mail to stamped",
+          "externalIds": [1941],
+          "sortOrder": 19,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.568,
+            "image": 1,
+            "grouping": "General"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "mail_to_stamped_whiteink",
+          "name": "mail to stamped white",
+          "externalIds": [2671],
+          "sortOrder": 19,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.568,
+            "image": 1
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "send_to_botanical",
+          "name": "Send To Botanical",
+          "externalIds": [2641],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientLeft": 2.48,
+            "recipientTop": 2.728,
+            "recipientAlignment": "left",
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "send_to_script",
+          "name": "Send To Script",
+          "externalIds": [2436],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.508,
+            "image": 1,
+            "grouping": "General"
+          },
+          "enabled": true
+        },
+        {
+          "id": "send_to_script_whiteink",
+          "name": "Send To Script white",
+          "externalIds": [2679],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.508,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "woodland_trees",
+          "name": "woodland trees",
+          "externalIds": [1946],
+          "sortOrder": 24,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.628,
+            "image": 1,
+            "grouping": "General"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "woodland_trees_whiteink",
+          "name": "woodland trees white",
+          "externalIds": [2686],
+          "sortOrder": 24,
+          "effective": "2018-03-06T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 2.628,
+            "image": 1
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "iconic_grad",
+          "name": "Iconic Grad",
+          "externalIds": [2446],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.417,
+            "top": 0.477,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Graduates"
+          },
+          "enabled": true
+        },
+        {
+          "id": "painted_grad_badge",
+          "name": "Painted Grad Badge",
+          "externalIds": [2447],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 1.673,
+            "top": 0.477,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Graduates"
+          },
+          "enabled": true
+        },
+        {
+          "id": "painted_grad_badge_whiteink",
+          "name": "Painted Grad Badge white",
+          "externalIds": [2676],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 1.673,
+            "top": 0.477,
+            "recipientTop": 2.299,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "blast_off",
+          "name": "Blast Off",
+          "externalIds": [2439],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.946,
+            "top": 0.417,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Baby"
+          },
+          "enabled": true
+        },
+        {
+          "id": "flying_kites",
+          "name": "Flying Kites",
+          "externalIds": [2445],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.92,
+            "top": 0.417,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Baby"
+          },
+          "enabled": true
+        },
+        {
+          "id": "robot_gears",
+          "name": "Robot Gears",
+          "externalIds": [2441],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 1.167,
+            "top": 0.417,
+            "recipientTop": 2.542,
+            "image": 1,
+            "grouping": "Baby"
+          },
+          "enabled": true
+        },
+        {
+          "id": "robot_gears_whiteink",
+          "name": "Robot Gears white ",
+          "externalIds": [2677],
+          "metadata": {
+            "grouping": "Baby",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 1.167,
+            "top": 0.417,
+            "recipientTop": 2.542,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "wishing_you_merry_christmas",
+          "name": "Wishing You a Merry Christmas",
+          "externalIds": [2218],
+          "metadata": {
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.49,
+            "top": 0.417,
+            "recipientTop": 2.299,
+            "image": 1,
+            "grouping": "Holiday"
+          },
+          "enabled": true
+        },
+        {
+          "id": "white_whiteink",
+          "name": "white",
+          "externalIds": [2648],
+          "sortOrder": 4,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "metadata": {
+            "grouping": "Simple",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.46,
+            "top": 0.4,
+            "recipientTop": 2.299,
+            "image": "0"
+          },
+          "tags": [],
+          "enabled": true
+        },
+        {
+          "id": "best_year_with_love_whiteink",
+          "name": "Best Year with Love white",
+          "externalIds": [2649],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255,1)",
+            "left": 0.477,
+            "top": 0.417,
+            "recipientTop": 3.017,
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "celebrate_scripty",
+          "name": "Celebrate Scripty",
+          "externalIds": [2741],
+          "metadata": {
+            "grouping": "General",
+            "font": "cardo",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "celebrate_scripty_whiteink",
+          "name": "Celebrate Scripty White",
+          "externalIds": [2750],
+          "metadata": {
+            "grouping": "General",
+            "font": "cardo",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "grad_degree",
+          "name": "Grad Degree",
+          "externalIds": [2738],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.4,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "grad_degree_whiteink",
+          "name": "Grad Degree White",
+          "externalIds": [2747],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.4,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "graduate_pattern",
+          "name": "Graduate Pattern",
+          "externalIds": [2739],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "graduate_pattern_whiteink",
+          "name": "Graduate Pattern White",
+          "externalIds": [2748],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "lets_party",
+          "name": "Lets Party",
+          "externalIds": [2736],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "lets_party_whiteink",
+          "name": "Lets Party White",
+          "externalIds": [2746],
+          "metadata": {
+            "grouping": "General",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "modern_grad",
+          "name": "Modern Grad",
+          "externalIds": [2740],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "tenor_sans",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.6,
+            "recipientLeft": 3.1,
+            "recipientAlignment": "left",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "modern_grad_whiteink",
+          "name": "Modern Grad White",
+          "externalIds": [2749],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "tenor_sans",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.6,
+            "recipientLeft": 3.1,
+            "recipientAlignment": "left",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "over_the_rainbow",
+          "name": "Over The Rainbow",
+          "externalIds": [2744],
+          "metadata": {
+            "grouping": "Baby",
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.8,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "passport_grad",
+          "name": "Passport Grad",
+          "externalIds": [2743],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "passport_grad_whiteink",
+          "name": "Passport Grad White",
+          "externalIds": [2752],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "stamped_grad",
+          "name": "Stamped Grad",
+          "externalIds": [2742],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "tenor_sans",
+            "color": "rgba(0,0,0,1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        },
+        {
+          "id": "stamped_grad_whiteink",
+          "name": "Stamped Grad White",
+          "externalIds": [2751],
+          "metadata": {
+            "grouping": "Graduates",
+            "font": "quicksand",
+            "color": "rgba(255, 255, 255, 1)",
+            "left": 0.4,
+            "top": 0.4,
+            "recipientTop": 2.7,
+            "recipientLeft": null,
+            "recipientAlignment": "center",
+            "image": 1
+          },
+          "enabled": true
+        }
+      ],
+      "effective": "2017-11-01T00:00:00.000Z",
+      "expiration": "2099-12-31T00:00:00.000Z",
+      "rules": [],
+      "ruleCount": 0,
+      "sortOrder": 8
+    },
+    {
+      "_id": "printed_envelopes_recipient_address",
+      "name": "printed envelopes recipient address",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "id": "recipient_address_list",
+          "name": "recipient address list",
+          "sortOrder": 0,
+          "effective": "2017-11-28T00:00:00.000Z",
+          "expiration": "2099-12-31T00:00:00.000Z",
+          "tags": [],
+          "enabled": true
+        }
+      ],
+      "effective": "2020-07-01T00:00:00.000Z",
+      "expiration": "2099-12-31T00:00:00.000Z",
+      "sortOrder": 7
+    }
+  ],
+  "orderAttributeCategories": [
+    {
+      "_id": "shipping_options",
+      "name": "Shipping Options",
+      "requiredLevel": 0,
+      "attributes": [
+        { "id": "studio", "externalId": 547, "name": "Ship to Studio" },
+        {
+          "id": "dropship",
+          "externalId": 548,
+          "name": "Ship Directly to Client"
+        }
+      ]
+    },
+    {
+      "_id": "studio_shipping_options",
+      "name": "Studio Shipping Options",
+      "requiredLevel": 547,
+      "attributes": [
+        {
+          "id": "studio_two_day",
+          "parentId": 547,
+          "externalId": 147,
+          "name": "Two-Day Shipping (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_standard",
+          "parentId": 547,
+          "externalId": 150,
+          "name": "One Day Shipping, Standard - USA only (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 4.424, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_priority",
+          "parentId": 547,
+          "externalId": 149,
+          "name": "One Day Shipping, Priority - USA only (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 8.201, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "drop_ship_shipping_options",
+      "name": "Drop Ship Shipping Options",
+      "requiredLevel": 548,
+      "attributes": [
+        {
+          "id": "dropship_lowest_cost",
+          "parentId": 548,
+          "externalId": 553,
+          "name": "USA Drop Ship – Lowest Cost (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_two_day",
+          "parentId": 548,
+          "externalId": 554,
+          "name": "USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)",
+          "technical": "Normally $9.95, SEASONAL: $10.95 + 5% of $10.95",
+          "pricing": {
+            "base": { "value": 11.4975, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_standard",
+          "parentId": 548,
+          "externalId": 555,
+          "name": "USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $7.50 + 12% of $7.50 + $3.95 + 12% of $3.95, SEASONAL: $9 + 17% of $9 + $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 14.954, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_priority",
+          "parentId": 548,
+          "externalId": 556,
+          "name": "USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $7.50 + 18% of $7.50 + $6.95 + 18% of $6.95, SEASONAL: $9 + 23% of $9 + $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 19.271, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_canada",
+          "parentId": 548,
+          "externalId": 557,
+          "name": "Canada Drop Ship – UPS Standard (Includes Peak Surcharge)",
+          "technical": "(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50",
+          "pricing": {
+            "base": { "value": 10.35, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 15, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_international",
+          "parentId": 548,
+          "externalId": 558,
+          "name": "International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "order_packaging_options",
+      "name": "Order Packaging Options",
+      "requiredLevel": -1,
+      "attributes": [
+        {
+          "id": "pkg_brown",
+          "externalId": { "547": 551, "548": 552 },
+          "name": "Brown with Cream"
+        },
+        {
+          "id": "pkg_charcoal",
+          "externalId": { "547": 1701, "548": 1704 },
+          "name": "Charcoal with Gray"
+        },
+        {
+          "id": "pkg_kraft_cream",
+          "externalId": { "547": 1702, "548": 1705 },
+          "name": "Kraft with Cream"
+        },
+        {
+          "id": "pkg_kraft_black",
+          "externalId": { "547": 1703, "548": 1706 },
+          "name": "Kraft with Black"
+        }
+      ],
+      "pricingRefsKey": {
+        "keys": ["shipping.shipping_options"],
+        "separator": "-"
+      },
+      "pricingRefs": {
+        "studio": {
+          "base": { "value": 7.75, "type": "ACTUAL", "code": "USD" }
+        },
+        "dropship": {
+          "base": { "value": 4.95, "type": "ACTUAL", "code": "USD" }
+        }
+      }
+    }
+  ],
+  "editorType": "cardEditor",
+  "productRules": [
+    {
+      "id": "no_foil_disables_foil_color",
+      "name": "no foil selection disables foil color options",
+      "effective": "Thu Apr 09 2020 15:55:38 GMT-0500 (CDT)",
+      "expiration": "Thu Apr 09 2100 15:55:38 GMT-0500 (CDT)",
+      "enabled": true,
+      "comments": "if no foil design is selected, foil color options are disabled",
+      "description": "if no foil design is selected, foil color options are disabled",
+      "criteria": {
+        "selected": { "foil_pressed_designs": { "match": "no", "field": "id" } }
+      },
+      "actions": [
+        {
+          "categories": ["foil_pressed_foil_color"],
+          "modify": { "disable": true, "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "no_dark_ink_on_dark_envelopes",
+      "enabled": true,
+      "description": "no dark inks on darkest envelopes colors",
+      "criteria": {
+        "selected": {
+          "envelopes": {
+            "match": ["5x7_olive", "5x7_maroon", "5x7_black", "5x7_navy"]
+          }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "printed_envelopes_style": { "exclude": "/.*whiteink.*/" }
+          },
+          "modify": { "hidden": true, "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "no_white_ink_on_light_envelopes",
+      "enabled": true,
+      "description": "no white inks on light envelopes",
+      "criteria": {
+        "selected": {
+          "envelopes": {
+            "match": [
+              "5x7_white",
+              "5x7_white_euro_flap",
+              "5x7_dusty_rose",
+              "5x7_misty_blue"
+            ]
+          }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "printed_envelopes_style": { "match": "/.*whiteink.*/" }
+          },
+          "modify": { "hidden": true, "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "no_printing_when_no_envelope_selected",
+      "enabled": true,
+      "description": "no printing when no envelope is selected",
+      "criteria": { "selected": { "envelopes": { "match": "no" } } },
+      "actions": [
+        {
+          "categories": [
+            "printed_envelopes_style",
+            "printed_envelopes_recipient"
+          ],
+          "modify": { "hidden": true, "enabled": false }
+        },
+        {
+          "categories": ["printed_envelopes"],
+          "modify": { "hidden": true, "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "hide_5x7_envelope_recipient_address_uploading_if_no_printed_envelopes_selected",
+      "name": "Hides 5x7 recipient address uploading if no printed envelopes is selected",
+      "effective": "Wed July 01 2020 15:55:38 GMT-0500 (CDT)",
+      "expiration": "Wed July 01 2100 15:55:38 GMT-0500 (CDT)",
+      "enabled": true,
+      "comments": "if no printed envelope is selected, hide address uploading",
+      "description": "if no print envelope is selected, hide address uploading",
+      "criteria": {
+        "selected": { "printed_envelopes": { "match": "no", "field": "id" } }
+      },
+      "actions": [
+        {
+          "categories": ["printed_envelopes_recipient_address"],
+          "modify": { "hidden": true, "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "hide_5x7_envelope_recipient_address_uploading_if_5x7_printed_printed_envelopes_selected",
+      "name": "Hides 5x7 recipient address uploading if 5x7 printed printed envelopes is selected",
+      "effective": "Wed July 01 2020 15:55:38 GMT-0500 (CDT)",
+      "expiration": "Wed July 01 2100 15:55:38 GMT-0500 (CDT)",
+      "enabled": true,
+      "comments": "if 5x7_printed envelope is selected, hide address uploading",
+      "description": "if 5x7_printed envelope is selected, hide address uploading",
+      "criteria": {
+        "selected": {
+          "printed_envelopes": { "match": "5x7_printed", "field": "id" }
+        }
+      },
+      "actions": [
+        {
+          "categories": ["printed_envelopes_recipient_address"],
+          "modify": { "hidden": true, "enabled": false }
+        }
+      ]
+    }
+  ],
+  "_id": "qabT3msGReetKQx9P",
+  "externalId": 0,
+  "globalProductId": "Y2MCMindej85meBx6",
+  "metadata": { "width": 7, "height": 5, "bleed": 0.25, "resolution": 300 },
+  "name": "5x7 Folded Card Horizontal",
+  "nodes": [
+    {
+      "name": "Front",
+      "nodeId": 10000,
+      "height": 5.125,
+      "width": 7.25,
+      "x": 0,
+      "y": 0,
+      "noBleed": ["top"]
+    },
+    {
+      "name": "Inside",
+      "nodeId": 10001,
+      "height": 10.25,
+      "width": 7.25,
+      "x": 0,
+      "y": 0,
+      "folds": [{ "location": 5, "type": "horizontal" }]
+    },
+    {
+      "name": "Back",
+      "nodeId": 10002,
+      "height": 5.125,
+      "width": 7.25,
+      "x": 0,
+      "y": 0,
+      "noBleed": ["top"]
+    }
+  ],
+  "orgId": "5LsoooWuHGYFMaqbb",
+  "editorCompatibility": "cardEditor",
+  "customized": [],
+  "default": true
+}
