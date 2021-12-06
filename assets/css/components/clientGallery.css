@@ -6,12 +6,6 @@
     bg-center;
 }
 
-.unauthenticatedGalleryClient{
-  width:2560;
-  height:1600px;
-  background-color: #000000;
-}
-
 .coverImg__wrapper {
     height: 566px;
     @apply bg-base-200
