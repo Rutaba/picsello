@@ -81,11 +81,13 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
 
     {:ok, gallery} = Galleries.set_expire(gallery, %{expired_at: datetime})
 
+    send(self(), :expiration_saved)
+
     socket
     |> assign(:gallery, gallery)
-    |> assign_controls
-    |> put_flash(:sucess, "The expiration date has been saved.")
-    |> react_form
+    |> assign_controls()
+    |> assign_valid()
+    |> react_form()
   end
 
   defp react_form(socket),
@@ -190,7 +192,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
       (is_never_expires and Date.compare(gallery_date, never_date) != :eq) or
         (Enum.all?([year, month, day]) and
            Date.compare(Date.new!(year, month, day), tomorrow()) != :lt and
-           Date.compare(Date.new!(year, month, day), never_date) != :eq)
+           Date.compare(Date.new!(year, month, day), gallery_date) != :eq)
 
     socket
     |> assign(:is_valid, is_valid)
