@@ -100,12 +100,12 @@
         });
     }
   </script>
+
 <div class="inline-flex">
     <div class="preview">
         <canvas id="canvas" width="500" height="500"></canvas>
     </div>
     <div class="description">
-    Lorem Ipsum
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
             <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
@@ -117,7 +117,7 @@
 <div id="gallery_product_form" class="gallery__container pb-32">
     <div
         phx-hook="MasonryGrid"
-        phx-update={ @update_mode }
+        phx-update="append"
         id="muuri-grid"
         class="muuri grid"
         data-page={ @page }
