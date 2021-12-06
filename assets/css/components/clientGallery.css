@@ -314,16 +314,28 @@
     background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
 }
 
+.editProductPopup__content{
+    max-height:90%;
+}
+
 .productType:first-letter {
     text-transform: uppercase;
 }
 
-@media screen and (min-width: 1040px) {
+@media screen and (min-width: 1280px) {
     .editProductPopup {
         width: 95vw;
         max-width: 1440px;
         height: 95vh;
         max-height: 894px;
+    }
+}
+
+
+@media screen and (min-width: 1024px) {
+    .editProductPopup__content {
+        height: 754px;
+        max-height: 89%;
     }
 }
 

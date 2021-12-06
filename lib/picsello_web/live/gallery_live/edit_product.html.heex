@@ -1,8 +1,13 @@
-<div class="editProductPopup z-50 p-4 my-0 mx-auto bg-base-100 lg:px-7 fixed left-0 top-0 right-0 xl:static" id="edit-product-component">
-  <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer float-right mb-4 lg:mb-9">
-    <img src="/images/close-icon.png" alt="close icon" style="w-4 h-4 lg:w-5 lg:h-5" />
-  </a>
-  <div class="flex flex-col lg:flex-row items-start w-full h-full overflow-y-auto" style="height: 754px; max-height:89%;">
+<div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-7 fixed left-0 top-0 right-0 xl:static" id="edit-product-component">
+  <div class="flex justify-between pt-4 mb-4">
+    <a href="#" phx-click="back" phx-target={@myself} class="inline-block xl:hidden cursor-pointer">
+       <.icon name="arrow-left" class="w-4 h-4 lg:w-5 lg:h-5" />
+    </a>
+    <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer ml-auto">
+       <.icon name="close-x" class="w-4 h-4 lg:w-5 lg:h-5 stroke-current stroke-3" />
+    </a>
+  </div>
+  <div class="editProductPopup__content flex flex-col lg:flex-row pt-2 items-start w-full h-full overflow-y-auto">
     <div class="editProductPopup__img lg:w-2/4 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full max-h-80 xl:max-h-full lg:ml-12 ml-0">
       <img src="/images/print.png" class="drop-shadow-2xl h-auto w-10/12 object-contain" style="max-height:60%;"/>
     </div>
@@ -11,12 +16,12 @@
       <%= if @product_type === "prints" do %>
      <div>
         <h6 class="text-base font-bold pt-7 pb-3.5">Type</h6>
-        <div class="flex flex-wrap">
-          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} >Photo prints</button>
-          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Fine art prints</button>
-          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Acrylic prints</button>
-          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Metal prints</button>
-          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Gallery wraps</button>
+        <div class="flex grid gap-4 grid-cols-2 lg:grid-cols-3">
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-auto py-3.5 max-h-10 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} >Photo prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-auto py-3.5 max-h-10 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Fine art prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-auto py-3.5 max-h-10 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Acrylic prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-auto py-3.5 max-h-10 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Metal prints</button>
+          <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-auto py-3.5 max-h-10 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}>Gallery wraps</button>
         </div>
       </div>
       <div>
