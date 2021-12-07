@@ -344,26 +344,4 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit(url)
     |> assert_flash(:error, text: "not available")
   end
-
-  defp post(session, path, body, headers) do
-    HTTPoison.post(
-      PicselloWeb.Endpoint.url() <> path,
-      body,
-      headers ++
-        [
-          {"user-agent", user_agent(session)}
-        ]
-    )
-
-    session
-  end
-
-  defp user_agent(session) do
-    session
-    |> execute_script("return navigator.userAgent;", [], &send(self(), {:user_agent, &1}))
-
-    receive do
-      {:user_agent, agent} -> agent
-    end
-  end
 end

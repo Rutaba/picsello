@@ -16,6 +16,12 @@ defmodule Picsello.UserManagesPricingTest do
     |> Mox.stub(:product_details, fn %{id: id} = product ->
       Picsello.WHCC.Product.add_details(product, read_fixture.("products/#{id}"))
     end)
+    |> Mox.stub(:designs, fn ->
+      for(design <- read_fixture.("designs"), do: Picsello.WHCC.Design.from_map(design))
+    end)
+    |> Mox.stub(:design_details, fn %{id: id} = design ->
+      Picsello.WHCC.Design.add_details(design, read_fixture.("designs/#{id}"))
+    end)
 
     Picsello.WHCC.sync()
 
