@@ -250,7 +250,7 @@
     py-4;
 }
 
-.bottomBar__btn.primary {
+.bottomBar__btn.btn-secondary {
     @apply border-base-100;
 }
 
@@ -306,6 +306,12 @@
 
 .likeBtn img {
     @apply bg-transparent !important;
+}
+
+.mobileGalleryButtons a {
+   @apply inline-block
+    w-full
+    h-full;
 }
 
 @media screen and (max-width: 640px) {
