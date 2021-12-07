@@ -33,7 +33,7 @@
           <p><%= @gallery.watermark.name %></p>
           <div class="flex">
           <p><%= filesize(@gallery.watermark.size) %></p>
-          <button phx-click="delete_watermark" class="pl-14">
+          <button phx-click="open_watermark_deletion_popup" class="pl-14">
              <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
           </button>
            </div>
@@ -43,7 +43,7 @@
         <p><%= @gallery.watermark.text %></p>
         <div class="flex items-center">
           <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
-          <button phx-click="delete_watermark" class="pl-14">
+          <button phx-click="open_watermark_deletion_popup" class="pl-14">
              <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
           </button>
         </div>
