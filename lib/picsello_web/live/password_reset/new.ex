@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.PasswordReset.New do
 
   alias Picsello.{Accounts, Accounts.User}
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(_params, session, socket) do
     changeset = User.reset_password_changeset()
 
@@ -15,6 +15,7 @@ defmodule PicselloWeb.Live.PasswordReset.New do
     |> ok()
   end
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
       <div class="flex flex-col items-center justify-start w-screen min-h-screen p-5 sm:justify-center bg-blue-planning-200">
