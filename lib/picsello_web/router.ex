@@ -76,7 +76,7 @@ defmodule PicselloWeb.Router do
     post "/users/register", UserRegistrationController, :create
     live "/users/log_in", Live.Session.New, :new, as: :user_session
     post "/users/log_in", UserSessionController, :create
-    live "/users/reset_password", UserResetPasswordNewLive, :new, as: :user_reset_password
+    live "/users/reset_password", Live.PasswordReset.New, :new, as: :user_reset_password
 
     live "/users/reset_password/:token", UserResetPasswordEditLive, :edit,
       as: :user_reset_password
