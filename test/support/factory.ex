@@ -65,7 +65,10 @@ defmodule Picsello.Factory do
   def unique_user_email(), do: valid_user_attributes() |> Map.get(:email)
 
   def organization_factory do
-    %Organization{name: "Camera User Group"}
+    %Organization{
+      name: "Camera User Group",
+      slug: sequence(:slug, &"camera-user-group-#{&1}")
+    }
   end
 
   def package_factory(attrs) do
@@ -100,11 +103,11 @@ defmodule Picsello.Factory do
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
-          _ -> build(:organization)
+          _ -> build(:organization, Map.get(attrs, :organization, %{}))
         end
       end
     }
-    |> merge_attributes(Map.drop(attrs, [:user]))
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
     |> evaluate_lazy_attributes()
   end
 

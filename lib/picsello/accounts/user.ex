@@ -119,14 +119,14 @@ defmodule Picsello.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :name, :password, :time_zone])
+    |> cast(put_new_attr(attrs, :organization, %{}), [:email, :name, :password, :time_zone])
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
     |> then(
-      &put_assoc(&1, :organization, %Picsello.Organization{
-        name: "#{get_field(&1, :name)} Photography"
-      })
+      &cast_assoc(&1, :organization,
+        with: {Picsello.Organization, :registration_changeset, [get_field(&1, :name)]}
+      )
     )
   end
 
@@ -307,4 +307,14 @@ defmodule Picsello.Accounts.User do
 
   def confirmed?(%__MODULE__{confirmed_at: nil, sign_up_auth_provider: :password}), do: false
   def confirmed?(%__MODULE__{}), do: true
+
+  defp put_new_attr(map, atom, value) do
+    key =
+      case Map.keys(map) do
+        [first_key | _] when is_atom(first_key) -> atom
+        _ -> Atom.to_string(atom)
+      end
+
+    Map.put_new(map, key, value)
+  end
 end
