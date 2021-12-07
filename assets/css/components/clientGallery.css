@@ -250,7 +250,7 @@
     py-4;
 }
 
-.bottomBar__btn.primary {
+.bottomBar__btn.btn-secondary {
     @apply border-base-100;
 }
 
