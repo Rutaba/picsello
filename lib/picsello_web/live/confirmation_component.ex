@@ -59,6 +59,7 @@ defmodule PicselloWeb.ConfirmationComponent do
   end
 
   @spec open(%Phoenix.LiveView.Socket{}, %{
+          optional(:center) => boolean,
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:confirm_event) => any,
