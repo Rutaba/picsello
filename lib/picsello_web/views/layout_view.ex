@@ -1,7 +1,7 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
   alias Picsello.Accounts.User
-  import PicselloWeb.LiveHelpers, only: [icon: 1, nav_link: 1, classes: 1]
+  import PicselloWeb.LiveHelpers, only: [icon: 1, nav_link: 1, classes: 1, initials_circle: 1]
 
   use Phoenix.Component
 
