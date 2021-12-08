@@ -180,17 +180,20 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
 
       [popup_view] = live_children(view)
 
-      watermark = file_input(popup_view, "#dragDrop-form", :image, [
-        %{
-          last_modified: 1_594_171_879_000,
-          name: "phoenix.png",
-          content: File.read!(Path.join(:code.priv_dir(:picsello), "/static/images/phoenix.png")),
-          size: 1_396_009,
-          type: "image/png"
-        }
-      ])
+      watermark =
+        file_input(popup_view, "#dragDrop-form", :image, [
+          %{
+            last_modified: 1_594_171_879_000,
+            name: "phoenix.png",
+            content:
+              File.read!(Path.join(:code.priv_dir(:picsello), "/static/images/phoenix.png")),
+            size: 1_396_009,
+            type: "image/png"
+          }
+        ])
+
       upload_rendered = render_upload(watermark, "phoenix.png")
-      
+
       assert upload_rendered =~ "Upload complete!"
       assert upload_rendered =~ "100%"
     end

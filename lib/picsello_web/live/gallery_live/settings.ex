@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
 
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
-  alias PicselloWeb.GalleryLive.DeletionConfirmation
+  alias PicselloWeb.ConfirmationComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -29,10 +29,16 @@ defmodule PicselloWeb.GalleryLive.Settings do
   @impl true
   def handle_event("open_watermark_deletion_popup", _, socket) do
     socket
-    |> open_modal(DeletionConfirmation, %{
-      subject: :watermark,
-      confirmation_topic: :confirm_watermark_deletion,
-      cancelation_topic: :cancel_watermark_deletion
+    |> ConfirmationComponent.open(%{
+      center: true,
+      close_label: "No, go back",
+      confirm_event: "delete_watermark",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete watermark?",
+      subtitle: "Are you sure you wish to permanently delete your
+        custom watermark? You can always add another
+        one later."
     })
     |> noreply()
   end
@@ -45,7 +51,7 @@ defmodule PicselloWeb.GalleryLive.Settings do
   end
 
   @impl true
-  def handle_info({:confirm_watermark_deletion, _}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info({:confirm_event, "delete_watermark"}, %{assigns: %{gallery: gallery}} = socket) do
     Galleries.delete_gallery_watermark(gallery.watermark)
     send(self(), :clear_watermarks)
 
@@ -57,11 +63,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
 
   @impl true
   def handle_info(:close_watermark_popup, socket) do
-    socket |> close_modal() |> noreply()
-  end
-
-  @impl true
-  def handle_info(:cancel_watermark_deletion, socket) do
     socket |> close_modal() |> noreply()
   end
 
