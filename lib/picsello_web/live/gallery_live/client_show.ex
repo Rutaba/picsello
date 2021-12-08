@@ -60,6 +60,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket |> assign(:count, count - 1) |> noreply()
   end
 
+  def get_menu_items(socket),
+      do: [
+        %{title: "Home", icon: "#", path: "#"},
+        %{title: "Shop", icon: "#", path: "#"},
+        %{title: "My orders", icon: "#", path: "#"},
+        %{title: "Help", icon: "#", path: "#"},
+      ]
+
   defp assign_photos(
          %{
            assigns: %{
