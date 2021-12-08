@@ -96,7 +96,7 @@ defmodule PicselloWeb.InboxLive.Index do
             <div class="sm:hidden line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
           </div>
           <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
-            <.icon name="trash" class="w-4 h-4 mr-3" />
+            <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3" />
           </button>
         </div>
         <div class="flex flex-1 flex-col p-6">
@@ -167,6 +167,7 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event("confirm-delete", %{}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
+      center: true,
       close_label: "No, go back",
       confirm_event: "delete",
       confirm_label: "Yes, delete",
