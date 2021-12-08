@@ -19,7 +19,7 @@
                     <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
                 </div>
                 <nav class="flex flex-col pt-1">
-                    <%= for %{title: title, icon: icon, path: path} <- get_menu_items(@socket) do %>
+                    <%= for %{title: title, path: path} <- get_menu_items(@socket) do %>
                         <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center text-lg pt-6 font-medium" active_class="bg-blue-planning-100 font-bold">
                             <%= title %>
                         </.nav_link>
