@@ -17,7 +17,8 @@ defmodule Picsello.Factory do
     Accounts.User,
     Questionnaire,
     Questionnaire.Answer,
-    Galleries.Gallery
+    Galleries.Gallery,
+    Galleries.Watermark
   }
 
   def valid_user_password(), do: "hello world!"
@@ -262,6 +263,15 @@ defmodule Picsello.Factory do
       job: fn -> build(:lead) end,
       password: "123456"
     }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def text_watermark_factory(attrs) do
+    %Watermark{
+      type: "text",
+      text: "007Agency:)"
+    } 
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
