@@ -17,7 +17,8 @@ defmodule Picsello.Factory do
     Accounts.User,
     Questionnaire,
     Questionnaire.Answer,
-    Galleries.Gallery
+    Galleries.Gallery,
+    Galleries.Photo
   }
 
   def valid_user_password(), do: "hello world!"
@@ -261,6 +262,17 @@ defmodule Picsello.Factory do
     %Gallery{
       job: fn -> build(:lead) end,
       password: "123456"
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def photo_factory(attrs) do
+    %Photo{
+      gallery: fn -> build(:gallery) end,
+      name: "name.jpg",
+      position: 1.0,
+      original_url: Photo.original_path("name", 333, "4444")
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

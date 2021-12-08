@@ -20,8 +20,8 @@ defmodule Picsello.WHCC.Editor.PhotoParams do
     %{
       "id" => "photo-#{photo.id}",
       "name" => photo.name,
-      "url" => photo.preview_url |> PhotoStorage.path_to_url(),
-      "printUrl" => photo.original_url |> PhotoStorage.path_to_url(),
+      "url" => photo.preview_url |> storage_service().path_to_url(),
+      "printUrl" => photo.original_url |> storage_service().path_to_url(),
       "size" => %{
         "original" => %{
           "width" => photo.width,
@@ -29,5 +29,9 @@ defmodule Picsello.WHCC.Editor.PhotoParams do
         }
       }
     }
+  end
+
+  defp storage_service() do
+    Application.get_env(:picsello, :photo_storage_service, PhotoStorage)
   end
 end
