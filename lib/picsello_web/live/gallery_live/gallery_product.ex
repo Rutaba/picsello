@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
+  import Ecto.Query
   import Ecto.Changeset
   import PicselloWeb.LiveHelpers
   alias Picsello.Repo
@@ -13,7 +14,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   @per_page 12
 
   @impl true
-  def mount(%{"id" => gallery_id, "gallery_product_id" => gallery_product_id}, _session, socket) do
+  def mount(%{"id" => gallery_id, "gallery_product_id" => gallery_product_id} = params, _session, socket) do
     gallery = Repo.get_by(Gallery, %{id: gallery_id})
 
     preview =
@@ -34,15 +35,26 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
       {:ok, redirect(socket, to: "/")}
     else
+      template = preview.category_template
+      [frame_id, frame_name, coords] = [template.id, template.name, template.corners]
       url = preview.preview_photo.preview_url || nil
-      frame = preview.category_template.name || nil
+
+      [frame_id, frame_name, coords] = cond do
+        Map.has_key?(params, "frame_id") ->
+          templ = Repo.get_by(Picsello.CategoryTemplates, %{id: params["frame_id"]})
+          if templ != nil, do: [templ.id, templ.name, templ.corners],
+          else: [frame_id, frame_name, coords]
+        true -> [frame_id, frame_name, coords]
+      end
 
       {:ok,
        socket
-       |> assign(:frame, frame)
+       |> assign(:frame_id, frame_id)
+       |> assign(:frame, frame_name)
        |> assign(:preview, path(url))
-       |> assign(:frame_corners, "#{inspect(frame_corners)}")
+       |> assign(:coords, "#{inspect(coords)}")
        |> assign(:changeset, changeset(%{}, []))
+       |> push_event("set_preview", %{preview: path(url)})
        |> assign(:preview_photo_id, nil)}
     end
   end
@@ -62,7 +74,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
   def handle_event(
         "set_preview",
-        %{"preview" => preview, "preview_photo_id" => preview_photo_id},
+        %{"preview" => preview, "preview_photo_id" => preview_photo_id, "frame" => f},
         socket
       ) do
     socket
@@ -76,11 +88,11 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def handle_event(
         "save",
         %{"gallery_product" => %{"preview_photo_id" => preview_photo_id}},
-        %{assigns: %{gallery_product_id: product_id, gallery: %{id: gallery_id}}} = socket
+        %{assigns: %{frame_id: frame_id, gallery_product_id: product_id, gallery: %{id: gallery_id}}} = socket
       ) do
-    [preview_photo_id, product_id, gallery_id] =
+    [frame_id, preview_photo_id, product_id, gallery_id] =
       Enum.map(
-        [preview_photo_id, product_id, gallery_id],
+        [frame_id, preview_photo_id, product_id, gallery_id],
         fn x -> to_integer(x) end
       )
 
@@ -90,7 +102,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
     if result != nil do
       result
-      |> cast(%{preview_photo_id: preview_photo_id}, [:preview_photo_id])
+      |> cast(%{preview_photo_id: preview_photo_id, category_template_id: frame_id}, [:preview_photo_id, :category_template_id])
       |> Repo.insert_or_update()
     end
 
@@ -100,7 +112,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   @impl true
   def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
-
+    preview = socket |> Map.get(:assigns) |> Map.get(:preview)
     if Repo.get_by(GalleryProduct, %{:id => to_integer(gallery_product_id)}) == nil do
       {:noreply, redirect(socket, to: "/")}
     else

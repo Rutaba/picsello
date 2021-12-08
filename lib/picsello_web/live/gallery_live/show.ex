@@ -1,10 +1,11 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-
+  alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Galleries.GalleryProduct
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.GalleryLive.DeletePhoto
   alias PicselloWeb.GalleryLive.PhotoComponent
@@ -31,8 +32,33 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
+    preview =
+      Repo.get_by(GalleryProduct, %{
+        :gallery_id => id
+      })
+      |> Repo.preload([:preview_photo, :category_template])
+
+    data = Repo.all(Picsello.CategoryTemplates)
+
+    template_name2 = Enum.at(data, 1) |> Map.get(:name)
+    template_name3 = Enum.at(data, 2) |> Map.get(:name)
+    template_name4 = Enum.at(data, 3) |> Map.get(:name)
+    template_coords = Enum.map(data, fn x -> Map.get(x, :corners) end)
+
+    url = if preview != nil do
+      preview_photo = preview.preview_photo.preview_url
+      PicselloWeb.GalleryLive.GalleryProduct.path(preview_photo)
+    else "card_blank.png" end
 
     socket
+    |> assign(:templates, Enum.with_index(data))
+    |> assign(:gallery_product_id, preview.id)
+    |> assign(:preview, url)
+    |> assign(:frame_name1, "#{inspect(Map.get(hd(data), :name))}")
+    |> assign(:frame_name2, "#{inspect(template_name2)}")
+    |> assign(:frame_name3, "#{inspect(template_name3)}")
+    |> assign(:frame_name4, "#{inspect(template_name4)}")
+    |> assign(:coords, "#{inspect(template_coords)}")
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:gallery, gallery)
     |> assign(:page, 0)

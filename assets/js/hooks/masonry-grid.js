@@ -149,7 +149,9 @@ export default {
   },
 
   init_set_preview_listener(){
-    this.handleEvent("set_preview", ({preview: preview}) => draw(preview))
+    this.handleEvent("set_preview", 
+      ({preview: preview}) => 
+        liveSocket.hooks.Preview.draw(frame, preview, coord, "canvas"))
   },
   
   remove_item(id) {
