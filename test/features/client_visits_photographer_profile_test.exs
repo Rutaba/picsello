@@ -24,6 +24,8 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_text("What we offer:")
     |> assert_text("Portrait")
     |> assert_text("Event")
+    |> assert_has(radio_button("Portrait", visible: false))
+    |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
   end
 end
