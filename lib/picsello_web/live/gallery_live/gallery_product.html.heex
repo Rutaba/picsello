@@ -16,7 +16,7 @@
     <script type="application/javascript">
     let preview = "<%= @preview %>";
     let frame = "<%= @frame %>";
-    let coord = <%= @coords %>;
+    let coord = "<%= @coords %>";
 
     window.onload = function initPage() {
         liveSocket.hooks.Preview.draw(frame, preview, coord, "canvas");

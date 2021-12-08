@@ -54,7 +54,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
        |> assign(:preview, path(url))
        |> assign(:coords, "#{inspect(coords)}")
        |> assign(:changeset, changeset(%{}, []))
-       |> push_event("set_preview", %{preview: path(url)})
        |> assign(:preview_photo_id, nil)}
     end
   end
@@ -74,14 +73,18 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
   def handle_event(
         "set_preview",
-        %{"preview" => preview, "preview_photo_id" => preview_photo_id, "frame" => f},
+        %{"preview" => preview, "preview_photo_id" => preview_photo_id},
         socket
       ) do
+
+    frame = Map.get(socket.assigns, :frame)
+    coords = Map.get(socket.assigns, :coords)
+
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
     |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
-    |> push_event("set_preview", %{preview: path(preview)})
+    |> push_event("set_preview", %{preview: path(preview), frame: frame, coords: coords})
     |> noreply
   end
 
@@ -110,9 +113,10 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   end
 
   @impl true
-  def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
+  def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id} = params, _, socket) do
     gallery = Galleries.get_gallery!(id)
     preview = socket |> Map.get(:assigns) |> Map.get(:preview)
+
     if Repo.get_by(GalleryProduct, %{:id => to_integer(gallery_product_id)}) == nil do
       {:noreply, redirect(socket, to: "/")}
     else
