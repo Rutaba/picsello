@@ -1,5 +1,6 @@
 defmodule Picsello.ClientVisitsPhotographerProfileTest do
   use Picsello.FeatureCase, async: true
+  alias Picsello.{Job, Repo}
 
   setup do
     user =
@@ -33,7 +34,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_has(link("See our full portfolio"))
   end
 
-  feature "contact", %{session: session, profile_url: profile_url} do
+  feature "contact", %{session: session, profile_url: profile_url, photographer: photographer} do
     session
     |> visit(profile_url)
     |> click(button("Submit"))
@@ -50,5 +51,25 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> click(button("Submit"))
     |> assert_text("Message sent")
     |> assert_text("We'll contact you soon!")
+
+    assert %{
+             type: "portrait",
+             client: %{name: "Chad Smith", email: "chad@example.com", phone: "(987) 123-4567"},
+             client_messages: [
+               %{
+                 body_text: """
+                     name: Chad Smith
+                    email: chad@example.com
+                    phone: (987) 123-4567
+                 job type: Portrait
+                  message: May you take some pictures of our family?
+                 """
+               }
+             ]
+           } =
+             photographer
+             |> Job.for_user()
+             |> Repo.one()
+             |> Repo.preload([:client, :client_messages])
   end
 end

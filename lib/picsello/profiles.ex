@@ -9,6 +9,7 @@ defmodule Picsello.Profiles do
     import Ecto.Changeset
     import Picsello.Client, only: [valid_phone: 2]
     import Picsello.Accounts.User, only: [validate_email_format: 1]
+    import PicselloWeb.Gettext
 
     @fields ~w[name email phone job_type message]a
 
@@ -24,6 +25,16 @@ defmodule Picsello.Profiles do
       |> validate_email_format()
       |> validate_required(@fields)
       |> validate_change(:phone, &valid_phone/2)
+    end
+
+    def to_string(%__MODULE__{} = contact) do
+      """
+          name: #{contact.name}
+         email: #{contact.email}
+         phone: #{contact.phone}
+      job type: #{dyn_gettext(contact.job_type)}
+       message: #{contact.message}
+      """
     end
   end
 
@@ -63,7 +74,7 @@ defmodule Picsello.Profiles do
             &ClientMessage.create_inbound_changeset(%{
               job_id: &1.lead.id,
               subject: "New lead from profile",
-              body_text: contact.message
+              body_text: Contact.to_string(contact)
             })
           )
           |> Repo.transaction()
