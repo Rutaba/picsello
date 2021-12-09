@@ -13,6 +13,8 @@ defmodule Picsello.Galleries.Photo do
     field :watermarked_url, :string
     field :watermarked_preview_url, :string
     field :aspect_ratio, :float
+    field :height, :integer
+    field :width, :integer
 
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
@@ -39,7 +41,9 @@ defmodule Picsello.Galleries.Photo do
     :watermarked_url,
     :watermarked_preview_url,
     :client_liked,
-    :aspect_ratio
+    :aspect_ratio,
+    :height,
+    :width
   ]
   @required_attrs [:name, :position, :gallery_id, :original_url]
 

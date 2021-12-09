@@ -60,6 +60,34 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket |> assign(:count, count - 1) |> noreply()
   end
 
+  def handle_info(
+        {:photo_click, photo},
+        %{assigns: %{gallery: gallery, favorites_filter: favorites?}} = socket
+      ) do
+    created_editor =
+      Picsello.WHCC.create_editor(
+        get_some_product(),
+        photo,
+        complete_url: Routes.gallery_dump_editor_url(socket, :show) <> "?editorId=%EDITOR_ID%",
+        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
+        only_favorites: favorites?
+      )
+
+    socket
+    |> redirect(external: created_editor.url)
+    |> noreply()
+  end
+
+  # This should be removed as soon as product selection will be implemented
+  defp get_some_product() do
+    Picsello.Category
+    |> Picsello.Repo.all()
+    |> Enum.at(0)
+    |> Picsello.Repo.preload(:products)
+    |> then(& &1.products)
+    |> Enum.at(0)
+  end
+
   defp assign_photos(
          %{
            assigns: %{

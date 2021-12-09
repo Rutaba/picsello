@@ -136,6 +136,8 @@ defmodule PicselloWeb.Router do
   scope "/gallery", PicselloWeb do
     pipe_through [:browser]
 
+    live "/dump", GalleryLive.DumpEditor, :show
+
     live "/:hash", GalleryLive.ClientShow, :show
     post "/:hash/downloads", GalleryDownloadsController, :download
   end
