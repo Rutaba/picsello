@@ -48,11 +48,14 @@ defmodule PicselloWeb.ConfirmationComponent do
   end
 
   @impl true
-  def handle_event(
-        event,
-        %{},
-        %{assigns: %{parent_pid: parent_pid}} = socket
-      ) do
+  def handle_event(event, %{}, %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket) do
+    send(parent_pid, {:confirm_event, event, payload})
+
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_event(event, %{}, %{assigns: %{parent_pid: parent_pid}} = socket) do
     send(parent_pid, {:confirm_event, event})
 
     socket |> noreply()
@@ -67,6 +70,7 @@ defmodule PicselloWeb.ConfirmationComponent do
           optional(:confirm_class) => binary,
           optional(:icon) => binary,
           optional(:subtitle) => binary,
+          optional(:payload) => map,
           title: binary
         }) :: %Phoenix.LiveView.Socket{}
   def open(socket, assigns) do

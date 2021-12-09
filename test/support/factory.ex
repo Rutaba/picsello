@@ -18,6 +18,7 @@ defmodule Picsello.Factory do
     Questionnaire,
     Questionnaire.Answer,
     Galleries.Gallery,
+    Galleries.Watermark,
     Galleries.Photo
   }
 
@@ -265,6 +266,16 @@ defmodule Picsello.Factory do
     %Gallery{
       job: fn -> build(:lead) end,
       password: "123456"
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+
+  def text_watermark_factory(attrs) do
+    %Watermark{
+      type: "text",
+      text: "007Agency:)"
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
