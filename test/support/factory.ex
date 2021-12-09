@@ -271,7 +271,6 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-
   def text_watermark_factory(attrs) do
     %Watermark{
       type: "text",
