@@ -1,6 +1,7 @@
 defmodule Picsello.ClientVisitsPhotographerProfileTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo}
+  require Ecto.Query
 
   setup do
     user =
@@ -20,6 +21,15 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       photographer: user,
       profile_url: Routes.profile_path(PicselloWeb.Endpoint, :index, user.organization.slug)
     ]
+  end
+
+  def latest_job(user) do
+    user
+    |> Job.for_user()
+    |> Ecto.Query.order_by(desc: :inserted_at)
+    |> Ecto.Query.limit(1)
+    |> Repo.one()
+    |> Repo.preload([:client, :client_messages])
   end
 
   feature "check it out", %{session: session, profile_url: profile_url} do
@@ -54,7 +64,12 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
 
     assert %{
              type: "portrait",
-             client: %{name: "Chad Smith", email: "chad@example.com", phone: "(987) 123-4567"},
+             client: %{
+               name: "Chad Smith",
+               email: "chad@example.com",
+               phone: "(987) 123-4567",
+               id: client_id
+             },
              client_messages: [
                %{
                  body_text: """
@@ -66,10 +81,37 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
                  """
                }
              ]
-           } =
-             photographer
-             |> Job.for_user()
-             |> Repo.one()
-             |> Repo.preload([:client, :client_messages])
+           } = photographer |> latest_job()
+
+    session
+    |> visit(profile_url)
+    |> fill_in(text_field("Your email"), with: "chad@example.com")
+    |> fill_in(text_field("Your name"), with: "Not Chad")
+    |> fill_in(text_field("Your phone number"), with: "918 123 4567")
+    |> click(css("label", text: "Event"))
+    |> fill_in(text_field("Your message"), with: "May you take some pictures of our party?")
+    |> click(button("Submit"))
+    |> assert_text("Message sent")
+
+    assert %{
+             type: "event",
+             client: %{
+               name: "Chad Smith",
+               email: "chad@example.com",
+               phone: "(987) 123-4567",
+               id: ^client_id
+             },
+             client_messages: [
+               %{
+                 body_text: """
+                     name: Not Chad
+                    email: chad@example.com
+                    phone: (918) 123-4567
+                 job type: Event
+                  message: May you take some pictures of our party?
+                 """
+               }
+             ]
+           } = photographer |> latest_job()
   end
 end

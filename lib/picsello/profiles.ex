@@ -1,7 +1,7 @@
 defmodule Picsello.Profiles do
   @moduledoc "context module for public photographer profile"
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Repo, Organization, Job, ClientMessage}
+  alias Picsello.{Repo, Organization, Job, ClientMessage, Client}
 
   defmodule Contact do
     @moduledoc "container for the contact form data"
@@ -60,14 +60,18 @@ defmodule Picsello.Profiles do
         {:ok, _} =
           Ecto.Multi.new()
           |> Ecto.Multi.insert(
+            :client,
+            contact
+            |> Map.take([:name, :email, :phone])
+            |> Map.put(:organization_id, organization_id)
+            |> Client.create_changeset(),
+            on_conflict: {:replace, [:email]},
+            conflict_target: [:organization_id, :email],
+            returning: [:id]
+          )
+          |> Ecto.Multi.insert(
             :lead,
-            Job.create_changeset(%{
-              type: contact.job_type,
-              client:
-                contact
-                |> Map.take([:name, :email, :phone])
-                |> Map.put(:organization_id, organization_id)
-            })
+            &Job.create_changeset(%{type: contact.job_type, client_id: &1.client.id})
           )
           |> Ecto.Multi.insert(
             :message,

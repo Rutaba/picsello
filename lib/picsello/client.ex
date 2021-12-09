@@ -2,7 +2,7 @@ defmodule Picsello.Client do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, Organization, Repo}
+  alias Picsello.{Accounts.User, Organization}
 
   schema "clients" do
     field :email, :string
@@ -20,7 +20,6 @@ defmodule Picsello.Client do
     |> User.validate_email_format()
     |> validate_required([:name, :organization_id, :phone])
     |> validate_change(:phone, &valid_phone/2)
-    |> unsafe_validate_unique([:email, :organization_id], Repo)
     |> unique_constraint([:email, :organization_id])
   end
 
