@@ -43,13 +43,18 @@ server: ## Start the App server.
 	mix phx.server
 
 test: ## Run the test suite.
-test: setup check
-	killall chrome | true
+test: setup check test-clear
 	rm -f screenshots/*.png
 	mix test
 
+test-clear: 
+	killall chrome | true
+	ps ax | grep Chrome | grep headless | cut -c -6 | xargs kill -9 | true
+
 test-watch: ## Run tests in watch mode
 	git ls-files | entr mix test $(FILE)
+
+
 
 update-mix: ## Update mix packages.
 	mix deps.update --all

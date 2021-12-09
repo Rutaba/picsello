@@ -158,6 +158,8 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   def handle_info({:photo_processed, _}, socket), do: noreply(socket)
 
+  def handle_info({:photo_click, _}, socket), do: noreply(socket)
+
   @impl true
   def handle_info(
         {:confirm_event, "delete_cover_photo"},
