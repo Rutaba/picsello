@@ -156,6 +156,12 @@ defmodule PicselloWeb.Live.User.Settings do
             Gallery Store Pricing
           </.nav_link>
         </li>
+
+        <li>
+          <.nav_link title="Public Profile" to={Routes.profile_settings_path(@socket, :index)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+            Public Profile
+          </.nav_link>
+        </li>
       </ul>
 
       <hr />
