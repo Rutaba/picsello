@@ -8,7 +8,7 @@ defmodule PicselloWeb.Live.Profile do
     socket
     |> assign_defaults(session)
     |> assign_organization(slug)
-    |> assign(:contact_changeset, Profiles.contact_changeset())
+    |> assign_contact_changeset()
     |> ok()
   end
 
@@ -31,7 +31,7 @@ defmodule PicselloWeb.Live.Profile do
           <div class="w-1/4 h-2" style={"background-color: #{@color}"}></div>
 
           <div class="w-auto md:w-min">
-            <%= for job_type <- @organization.user.onboarding.job_types do %>
+            <%= for job_type <- @job_types do %>
               <div class="flex my-4 p-4 items-center font-semibold rounded-lg bg-[#fafafa]">
                 <.icon name={job_type} style={"color: #{@color};"} class="mr-6 fill-current w-9 h-9" />
 
@@ -76,7 +76,7 @@ defmodule PicselloWeb.Live.Profile do
                 <div class="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <%= label_for f, :job_type, label: "What photography type are you interested in?", class: "py-2 font-bold col-span-1 lg:col-span-2" %>
 
-                  <%= for job_type <- @organization.user.onboarding.job_types do %>
+                  <%= for job_type <- @job_types do %>
                     <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} />
                   <% end %>
                 </div>
@@ -156,7 +156,18 @@ defmodule PicselloWeb.Live.Profile do
       organization: organization,
       color: onboarding.color,
       website: onboarding.website,
-      photographer: user
+      photographer: user,
+      job_types: onboarding.job_types
     )
+  end
+
+  defp assign_contact_changeset(%{assigns: %{job_types: types}} = socket) do
+    params =
+      case types do
+        [job_type] -> %{job_type: job_type}
+        _ -> %{}
+      end
+
+    assign(socket, :contact_changeset, Profiles.contact_changeset(params))
   end
 end

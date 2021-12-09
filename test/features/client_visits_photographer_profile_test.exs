@@ -26,7 +26,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
   def latest_job(user) do
     user
     |> Job.for_user()
-    |> Ecto.Query.order_by(desc: :inserted_at)
+    |> Ecto.Query.order_by(desc: :id)
     |> Ecto.Query.limit(1)
     |> Repo.one()
     |> Repo.preload([:client, :client_messages])
@@ -42,6 +42,22 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_has(radio_button("Portrait", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
+  end
+
+  feature "selects job type if there is only one", %{
+    photographer: photographer,
+    session: session,
+    profile_url: profile_url
+  } do
+    photographer
+    |> Picsello.Accounts.User.onboarding_changeset(%{
+      onboarding: %{job_types: [:event]}
+    })
+    |> Repo.update()
+
+    session
+    |> visit(profile_url)
+    |> assert_has(radio_button("Event", visible: false, checked: true))
   end
 
   feature "contact", %{session: session, profile_url: profile_url, photographer: photographer} do
