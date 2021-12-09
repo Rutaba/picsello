@@ -86,7 +86,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       }) do
     photo = Galleries.get_photo(photo_id)
 
-    {:ok, _} =
+    #{:ok, _} =
       Galleries.update_photo(photo, %{
         aspect_ratio: aspect_ratio,
         preview_url: preview_url

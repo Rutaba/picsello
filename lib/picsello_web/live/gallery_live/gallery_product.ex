@@ -113,9 +113,8 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   end
 
   @impl true
-  def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id} = params, _, socket) do
+  def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
-    preview = socket |> Map.get(:assigns) |> Map.get(:preview)
 
     if Repo.get_by(GalleryProduct, %{:id => to_integer(gallery_product_id)}) == nil do
       {:noreply, redirect(socket, to: "/")}

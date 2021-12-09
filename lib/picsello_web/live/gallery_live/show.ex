@@ -33,9 +33,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
     preview =
-      Repo.get_by(GalleryProduct, %{
-        :gallery_id => id
-      })
+      Repo.get_by(GalleryProduct, %{:gallery_id => id})
       |> Repo.preload([:preview_photo, :category_template])
 
     data = Repo.all(Picsello.CategoryTemplates)
@@ -45,14 +43,15 @@ defmodule PicselloWeb.GalleryLive.Show do
     template_name4 = Enum.at(data, 3) |> Map.get(:name)
     template_coords = Enum.map(data, fn x -> Map.get(x, :corners) end)
 
-    url = if preview != nil do
-      preview_photo = preview.preview_photo.preview_url
-      PicselloWeb.GalleryLive.GalleryProduct.path(preview_photo)
-    else "card_blank.png" end
+    url = if preview != nil and Map.has_key?(preview, :preview_photo) and Map.has_key?(preview.preview_photo, :preview_url) do
+      PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url)
+    else "/images/card_blank.png" end
+
+    preview_id = if preview == nil do 1 else preview.id end
 
     socket
     |> assign(:templates, Enum.with_index(data))
-    |> assign(:gallery_product_id, preview.id)
+    |> assign(:gallery_product_id, preview_id)
     |> assign(:preview, url)
     |> assign(:frame_name1, "#{inspect(Map.get(hd(data), :name))}")
     |> assign(:frame_name2, "#{inspect(template_name2)}")

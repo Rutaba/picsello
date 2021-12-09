@@ -262,6 +262,7 @@ defmodule Picsello.Galleries do
   @doc """
   Updates a photo
   """
+  def update_photo(nil, %{} = attrs), do: []
   def update_photo(%Photo{id: _} = photo, %{} = attrs) do
     photo
     |> Photo.update_changeset(attrs)
@@ -330,7 +331,7 @@ defmodule Picsello.Galleries do
       """
         WITH ranks AS (
           SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS pos
-          FROM photos 
+          FROM photos
           WHERE gallery_id = $1::integer
         )
         UPDATE photos p

@@ -21,34 +21,34 @@ frames = [
   %{name: "card_blank.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
   %{name: "album_transparency.png", corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]},
   %{name: "card_envelope.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
-  %{name: "frame_transperancy.png", corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
+  %{name: "frame_transparency.png", corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
 ]
 
-Repo.query("TRUNCATE category_templates CASCADE", []);
-Repo.query("TRUNCATE categories CASCADE", []);
+unless Repo.aggregate(Category, :count) == 4 do
 
-Enum.each(frames, fn row ->
-  length = Repo.aggregate(Category, :count)
+  Enum.each(frames, fn row ->
+    length = Repo.aggregate(Category, :count)
 
-  result =
-    Repo.insert(%Category{
-      name: "example_category",
-      icon: "example_icon",
-      position: length,
-      whcc_id: Integer.to_string(length),
-      whcc_name: "example_name"
-    })
+    result =
+      Repo.insert(%Category{
+        name: "example_category",
+        icon: "example_icon",
+        position: length,
+        whcc_id: Integer.to_string(length),
+        whcc_name: "example_name"
+      })
 
-    case result do
-    {:ok, %{id: category_id}} ->
+      case result do
+      {:ok, %{id: category_id}} ->
 
-        Repo.insert!(%CategoryTemplates{
-          name: row.name,
-          corners: row.corners,
-          category_id: category_id
-        })
-    x ->
-      Logger.error("category_template seed was not inserted. #{x}")
-  end
+          Repo.insert!(%CategoryTemplates{
+            name: row.name,
+            corners: row.corners,
+            category_id: category_id
+          })
+      x ->
+        Logger.error("category_template seed was not inserted. #{x}")
+    end
 
-end)
+  end)
+end

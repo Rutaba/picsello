@@ -9,7 +9,7 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
 
       add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
 
-      add(:preview_photo_id, references(:photos, on_delete: :nothing), null: false)
+      add(:preview_photo_id, references(:photos, on_delete: :nothing))
       add(:gallery_id, references(:galleries, on_delete: :nothing), null: false)
 
       timestamps()

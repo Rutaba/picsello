@@ -54,7 +54,7 @@
       let preview_name = "<%= @preview %>";
       let coords = <%= @coords %>;
 
-      window.addEventListener('load', function() {
+      window.addEventListener('onload', function() {
         let frames = [
           liveSocket.hooks.Preview.unescape("<%= @frame_name1 %>"),
           liveSocket.hooks.Preview.unescape("<%= @frame_name2 %>"),
