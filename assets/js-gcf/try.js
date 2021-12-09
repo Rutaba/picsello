@@ -42,28 +42,10 @@ const watermarkTask = {
 }
 
 
-
-const context = task => { return {
-    task: task,
-    artifacts: {
-        original: {
-            downloaded: false,
-            filename: false,
-            image: false
-        },
-        watermark: {
-            downloaded: false,
-            filename: false,
-            image: false
-        },
-        aspectRatio: false,
-        isPreviewUploaded: false,
-    }};
-}
-
 /*********************************************************************************/
 
-const res = await downloadStage(buildContext(watermarkTask))
+const runTask = async task =>
+    await downloadStage(buildContext(task))
     .then(aspectStage)
     .then(previewStage)
     .then(downloadWatermarkStage)
@@ -75,6 +57,13 @@ const res = await downloadStage(buildContext(watermarkTask))
     .catch(error => {
         console.error(error);
         Process.exit(-1);
-    })
+    });
 
-console.log(res)
+for (let i = 0; i < 1; i++){
+  console.log(await runTask(watermarkTask))
+  console.log(
+    process.memoryUsage().rss / 1024 / 1024,
+    process.memoryUsage().heapUsed / 1024 / 1024,
+
+  );
+}

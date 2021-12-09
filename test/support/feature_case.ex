@@ -97,7 +97,7 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Email"), with: email)
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
-      |> click(button("Log In"))
+      |> click(button("Login"))
     end
 
     def maybe_visit_log_in(session) do
@@ -188,7 +188,7 @@ defmodule Picsello.FeatureCase do
       session
       |> visit("/")
       |> click(css("a", text: "Log In"))
-      |> click(css("a", text: "Forgot Password"))
+      |> click(css("a", text: "Forgot your password?"))
     end
 
     def timeout(session) do

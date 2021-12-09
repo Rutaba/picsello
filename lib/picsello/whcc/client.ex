@@ -41,12 +41,29 @@ defmodule Picsello.WHCC.Client do
   end
 
   def design_details(%WHCC.Design{id: id} = design) do
-    {:ok,
-     %{
-       body: api
-     }} = new() |> get("/designs/#{id}")
+    if Keyword.get(config(), :skip_design_details) do
+      design
+    else
+      {:ok,
+       %{
+         body: api
+       }} = new() |> get("/designs/#{id}")
 
-    WHCC.Design.add_details(design, api)
+      WHCC.Design.add_details(design, api)
+    end
+  end
+
+  def editor(params) do
+    {:ok, %{body: body}} =
+      new()
+      |> post("/editors", params)
+
+    body |> WHCC.CreatedEditor.from_map()
+  end
+
+  def editor_details(id) do
+    {:ok, %{body: body}} = new() |> get("/editors/#{id}")
+    body
   end
 
   def product_details(%WHCC.Product{id: id} = product) do

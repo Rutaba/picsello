@@ -7,7 +7,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
   setup %{sessions: [photographer_session | _]} do
     user =
-      insert(:user, email: "photographer@example.com", organization: %{name: "Photography LLC"})
+      insert(:user,
+        email: "photographer@example.com",
+        organization: params_for(:organization, name: "Photography LLC")
+      )
       |> onboard!
 
     photographer_session |> sign_in(user)

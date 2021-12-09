@@ -10,17 +10,21 @@ defmodule Picsello.WHCC.Design do
           api: %{}
         }
 
-  def from_map(%{"_id" => id}) do
-    %__MODULE__{id: id}
+  def from_map(%{"_id" => id, "name" => name, "product" => %{"_id" => product_id}} = design) do
+    %__MODULE__{
+      id: id,
+      name: name,
+      product_id: product_id,
+      attribute_categories: [],
+      api: Map.drop(design, ["product", "name", "_id"])
+    }
   end
 
   def add_details(%__MODULE__{} = design, details) do
     %{
       design
       | attribute_categories: Map.get(details, "attributeCategories"),
-        product_id: get_in(details, ["product", "_id"]),
-        name: Map.get(details, "name"),
-        api: Map.drop(details, ["attributeCategories", "product", "name"])
+        api: Map.drop(details, ["attributeCategories", "product", "name", "_id"])
     }
   end
 end

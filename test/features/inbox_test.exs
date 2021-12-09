@@ -105,4 +105,34 @@ defmodule Picsello.InboxTest do
     |> find(testid("thread-card", count: 2, at: 0))
     |> assert_has(testid("new-badge", count: 0))
   end
+
+  feature "user replies to message", %{session: session} do
+    session
+    |> click(testid("inbox-card"))
+    |> click(testid("thread-card", count: 2, at: 0))
+    |> click(button("Reply"))
+    |> click(css("div[data-placeholder='Compose message...']"))
+    |> send_keys(["This is my response"])
+    |> within_modal(&wait_for_enabled_submit_button/1)
+    |> click(button("Send Email"))
+    |> assert_has(testid("thread-message", count: 3))
+
+    session
+    |> find(testid("thread-message", count: 3, at: 2))
+    |> assert_text("This is my response")
+  end
+
+  feature "user deletes thread", %{session: session} do
+    session
+    |> click(testid("inbox-card"))
+    |> click(testid("thread-card", count: 2, at: 0))
+    |> click(button("Delete"))
+    |> click(button("Yes, delete"))
+    |> assert_has(testid("thread-card", count: 1))
+    |> click(testid("thread-card", count: 1, at: 0))
+    |> click(button("Delete"))
+    |> click(button("Yes, delete"))
+    |> assert_has(testid("thread-card", count: 0))
+    |> assert_text("You don’t have any new messages")
+  end
 end

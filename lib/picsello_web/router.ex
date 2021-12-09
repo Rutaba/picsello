@@ -74,9 +74,9 @@ defmodule PicselloWeb.Router do
     live "/", PageLive, :index
     live "/users/register", UserRegisterLive, :new, as: :user_registration
     post "/users/register", UserRegistrationController, :create
-    live "/users/log_in", UserSessionNewLive, :new, as: :user_session
+    live "/users/log_in", Live.Session.New, :new, as: :user_session
     post "/users/log_in", UserSessionController, :create
-    live "/users/reset_password", UserResetPasswordNewLive, :new, as: :user_reset_password
+    live "/users/reset_password", Live.PasswordReset.New, :new, as: :user_reset_password
 
     live "/users/reset_password/:token", UserResetPasswordEditLive, :edit,
       as: :user_reset_password
@@ -129,6 +129,8 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
+
+    live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
   end
 
   pipeline :require_authenticated_gallery do
@@ -136,6 +138,7 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/gallery", PicselloWeb do
+    live "/dump", GalleryLive.DumpEditor, :show
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
       pipe_through [:browser, :require_authenticated_gallery]
 
