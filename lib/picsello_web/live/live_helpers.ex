@@ -89,6 +89,7 @@ defmodule PicselloWeb.LiveHelpers do
         width: nil,
         height: nil,
         class: nil,
+        style: nil,
         path:
           assigns
           |> Map.get(:socket, PicselloWeb.Endpoint)
@@ -96,7 +97,7 @@ defmodule PicselloWeb.LiveHelpers do
       })
 
     ~H"""
-    <svg width={@width} height={@height} class={@class}>
+    <svg width={@width} height={@height} class={@class} style={@style}>
       <use href={@path} />
     </svg>
     """

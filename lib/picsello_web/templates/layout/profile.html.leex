@@ -1,3 +1,4 @@
-<main role="main" class="inline-flex flex-col min-h-screen">
+<%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
+<main role="main" class="inline-flex flex-col w-full min-h-screen">
   <%= @inner_content %>
 </main>
