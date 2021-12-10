@@ -20,7 +20,7 @@
     <div class="description">
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-            <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+            <%= submit "Save", title: "Save", class: "save-button btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
                 disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
     </div>

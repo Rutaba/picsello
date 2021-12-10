@@ -43,8 +43,9 @@ defmodule PicselloWeb.GalleryLive.Show do
     template_name4 = Enum.at(data, 3) |> Map.get(:name)
     template_coords = Enum.map(data, fn x -> Map.get(x, :corners) end)
 
-    url = if preview != nil and Map.has_key?(preview, :preview_photo) and Map.has_key?(preview.preview_photo, :preview_url) do
-      PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url)
+    url = if preview != nil and Map.has_key?(preview, :preview_photo) do
+      preview.preview_photo != nil &&
+      PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url) || "/images/card_blank.png"
     else "/images/card_blank.png" end
 
     event_datas = Enum.map(0..3, fn x -> %{

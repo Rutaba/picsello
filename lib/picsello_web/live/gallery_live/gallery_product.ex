@@ -37,7 +37,11 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     else
       template = preview.category_template
       [frame_id, frame_name, coords] = [template.id, template.name, template.corners]
-      url = preview.preview_photo.preview_url || nil
+
+      url = if preview != nil and Map.has_key?(preview, :preview_photo) do
+        preview.preview_photo != nil &&
+        PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url) || "/images/card_blank.png"
+      else "/images/card_blank.png" end
 
       [frame_id, frame_name, coords] = cond do
         Map.has_key?(params, "frame_id") ->
@@ -52,7 +56,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
        |> assign(:frame_id, frame_id)
        |> assign(:frame, frame_name)
        |> assign(:coords, "#{inspect(coords)}")
-       |> push_event("set_preview", %{preview: path(url), frame: frame_name, coords: coords, target: "canvas"})
+       |> push_event("set_preview", %{preview: url, frame: frame_name, coords: coords, target: "canvas"})
        |> assign(:changeset, changeset(%{}, []))
        |> assign(:preview_photo_id, nil)}
     end
