@@ -11,62 +11,12 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   alias Picsello.CategoryTemplates
   require Logger
 
-  setup :onboarded
-  setup :authenticated
-
-  test "redirect from galleries", %{session: session} do
-    %{gallery_id: id} = set_gallery_product()
-
-    session |> visit("/galleries/#{id}")
-    |> click(css(".prod-link0"))
-    |> find(css(".item-content"))
-  end
-
-  test "save preview gallery product", %{session: session} do
-    %{id: g_product_id, gallery_id: gallery_id} = set_gallery_product()
-
-    session
-      |> visit("/galleries/#{gallery_id}/product/#{g_product_id}")
-      |> click(css(".item-content"))
-      |> click(css(".save-button"))
-
-    %{preview_photo: %{name: url}} = Repo.get_by(GalleryProduct, %{id: g_product_id}) |> Repo.preload([:preview_photo])
-
-    assert "card_blank.png" == url
-  end
-
-  def print_page_text(session) do
-    session |> Wallaby.Browser.text() |> IO.inspect()
-    session
-  end
-  def print_page_source(session) do
-    session |> Wallaby.Browser.page_source() |> IO.inspect()
-    session
-  end
-
-  def set_gallery_product() do
-    seed_category_teplate()
-
-    %{id: job_id} = insert(:lead)
-    %{id: id} = insert(%Gallery{name: "testGalleryName", job_id: job_id})
-    photo_url = "card_blank.png"
-    insert(%Photo{gallery_id: id, preview_url: photo_url, original_url: photo_url, name: photo_url, position: 1})
-    insert(%GalleryProduct{gallery_id: id, category_template_id: 1})
-  end
-
-  def seed_category_teplate() do
-    frames = [
-      %{name: "card_blank.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
-      %{name: "album_transparency.png", corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]},
-      %{name: "card_envelop.png", corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]},
-      %{name: "frame_transperancy.png", corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
-    ]
-
+  setup do
     unless Repo.aggregate(Category, :count) == 4 do
-      Enum.each(frames, fn row ->
+      Enum.each(frames(), fn row ->
         length = Repo.aggregate(Category, :count)
 
-        result =
+        category =
           Repo.insert(%Category{
             name: "example_category",
             icon: "example_icon",
@@ -75,19 +25,71 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
             whcc_name: "example_name"
           })
 
-          case result do
+        case category do
           {:ok, %{id: category_id}} ->
+            Repo.insert!(%CategoryTemplates{
+              name: row.name,
+              corners: row.corners,
+              category_id: category_id
+            })
 
-              Repo.insert!(%CategoryTemplates{
-                name: row.name,
-                corners: row.corners,
-                category_id: category_id
-              })
           x ->
             Logger.error("category_template seed was not inserted. #{x}")
         end
-
       end)
     end
+
+    :ok
+  end
+
+  setup :onboarded
+  setup :authenticated
+
+  test "redirect from galleries", %{session: session} do
+    %{gallery_id: id} = set_gallery_product()
+
+    session
+    |> visit("/galleries/#{id}")
+    |> click(css(".prod-link0"))
+    |> find(css(".item-content"))
+  end
+
+  test "save preview gallery product", %{session: session} do
+    %{id: g_product_id, gallery_id: gallery_id} = set_gallery_product()
+
+    session
+    |> visit("/galleries/#{gallery_id}/product/#{g_product_id}")
+    |> click(css(".item-content"))
+    |> click(css(".save-button"))
+
+    %{preview_photo: %{name: url}} =
+      Repo.get_by(GalleryProduct, %{id: g_product_id}) |> Repo.preload([:preview_photo])
+
+    assert "card_blank.png" == url
+  end
+
+  def set_gallery_product() do
+    %{id: job_id} = insert(:lead)
+    %{id: id} = insert(%Gallery{name: "testGalleryName", job_id: job_id})
+    photo_url = "card_blank.png"
+
+    insert(%Photo{
+      gallery_id: id,
+      preview_url: photo_url,
+      original_url: photo_url,
+      name: photo_url,
+      position: 1
+    })
+
+    insert(%GalleryProduct{gallery_id: id, category_template_id: 1})
+  end
+
+  def frames() do
+    [
+      %{name: "card_blank.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
+      %{name: "album_transparency.png", corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]},
+      %{name: "card_envelop.png", corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]},
+      %{name: "frame_transperancy.png", corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
+    ]
   end
 end

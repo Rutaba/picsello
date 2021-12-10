@@ -1,8 +1,7 @@
 defmodule Picsello.WHCC do
   @moduledoc "WHCC context module"
-  alias Picsello.{Repo, WHCC.Adapter}
-
   import Ecto.Query, only: [from: 2]
+  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor.Params}
 
   def sync() do
     # fetch latest from whcc api
@@ -130,6 +129,16 @@ defmodule Picsello.WHCC do
       |> Ecto.Query.select([product], struct(product, [:whcc_name, :id]))
 
     from(category in categories_query(), preload: [products: ^products]) |> Repo.get!(id)
+  end
+
+  def create_editor(
+        %Picsello.Product{} = product,
+        %Picsello.Galleries.Photo{} = photo,
+        opts \\ []
+      ) do
+    product
+    |> Params.build(photo, opts)
+    |> Adapter.editor()
   end
 
   defp variations(%{variations: variations}),

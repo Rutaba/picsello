@@ -68,12 +68,13 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   end
 
   @impl true
-  def handle_event("save", _, socket) do
-    socket
-    |> assign_watermark()
-    |> assign(:ready_to_save, false)
-    |> clear_uploads()
-    |> noreply()
+  def handle_event("save", _, %{assigns: %{gallery: gallery, changeset: changeset}} = socket) do
+    {:ok, _gallery} = Galleries.save_gallery_watermark(gallery, changeset)
+
+    send(self(), :close_watermark_popup)
+    send(self(), :preload_watermark)
+
+    socket |> noreply()
   end
 
   @impl true
@@ -151,27 +152,12 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     |> assign(:ready_to_save, changeset.valid?)
   end
 
-  defp assign_watermark(%{assigns: %{gallery: gallery, changeset: changeset}} = socket) do
-    {:ok, gallery} = Galleries.save_gallery_watermark(gallery, changeset)
-    send(self(), :preload_watermark)
-
-    socket |> assign(:watermark, gallery.watermark)
-  end
-
   defp delete_watermark(%{assigns: %{watermark: watermark}} = socket) do
     Galleries.delete_gallery_watermark(watermark)
     send(self(), :preload_watermark)
 
     socket |> assign(watermark: nil)
   end
-
-  defp clear_uploads(%{assigns: %{case: :image}} = socket) do
-    [image] = socket.assigns.uploads.image.entries
-
-    socket |> cancel_upload(:image, image.ref)
-  end
-
-  defp clear_uploads(socket), do: socket
 
   defp watermark_type(%{type: "image"}), do: :image
   defp watermark_type(%{type: "text"}), do: :text

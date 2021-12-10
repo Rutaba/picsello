@@ -22,7 +22,7 @@ config :picsello, PicselloWeb.Endpoint,
   http: [port: 4002],
   server: true
 
-#config :picsello, :sql_sandbox, true
+# config :picsello, :sql_sandbox, true
 
 # Print only warnings and errors during test
 config :logger, level: :warn

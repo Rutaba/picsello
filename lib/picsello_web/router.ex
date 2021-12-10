@@ -114,8 +114,14 @@ defmodule PicselloWeb.Router do
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
-      live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview, as: :preview
-      live "/galleries/:id/product/:gallery_product_id/:frame_id", GalleryLive.GalleryProduct, :preview, as: :preview
+      live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
+        as: :preview
+
+      live "/galleries/:id/product/:gallery_product_id/:frame_id",
+           GalleryLive.GalleryProduct,
+           :preview,
+           as: :preview
+
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id/settings", GalleryLive.Settings, :settings
@@ -131,10 +137,14 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
+
+    live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
   end
 
   scope "/gallery", PicselloWeb do
     pipe_through [:browser]
+
+    live "/dump", GalleryLive.DumpEditor, :show
 
     live "/:hash", GalleryLive.ClientShow, :show
     post "/:hash/downloads", GalleryDownloadsController, :download

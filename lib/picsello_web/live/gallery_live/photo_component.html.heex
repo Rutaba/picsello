@@ -8,13 +8,15 @@
     "}
 >
  <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-4 border-blue-300 rounded-xl" else "" end}
-        phx-click="set_preview"
-        phx-value-preview={@photo.preview_url}
-        phx-value-preview_photo_id={@photo.id}
         >
+        
 <div
     id={"photo-#{@id}"}
     class="galleryItem"
+    phx-value-preview={@photo.preview_url}
+    phx-value-preview_photo_id={@photo.id}
+    phx-click={  if @preview_photo_id == "" do "click" else "set_preview" end }
+    phx-target={  if @preview_photo_id == "" do @myself else "" end }
 >
     <img
         width="300"
@@ -52,6 +54,6 @@
             <.icon name="checkmark" class="w-4 h-4 stroke-current" />
         </div>
     <% end %>
-</div>
+ </div> 
  </div>
 </div>

@@ -14,8 +14,6 @@ require Logger
 alias Picsello.CategoryTemplates
 alias Picsello.Repo
 alias Picsello.Category
-alias Picsello.Galleries
-alias Picsello.Galleries.GalleryProduct
 
 frames = [
   %{name: "card_blank.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
@@ -25,7 +23,6 @@ frames = [
 ]
 
 unless Repo.aggregate(Category, :count) == 4 do
-
   Enum.each(frames, fn row ->
     length = Repo.aggregate(Category, :count)
 
@@ -38,17 +35,16 @@ unless Repo.aggregate(Category, :count) == 4 do
         whcc_name: "example_name"
       })
 
-      case result do
+    case result do
       {:ok, %{id: category_id}} ->
+        Repo.insert!(%CategoryTemplates{
+          name: row.name,
+          corners: row.corners,
+          category_id: category_id
+        })
 
-          Repo.insert!(%CategoryTemplates{
-            name: row.name,
-            corners: row.corners,
-            category_id: category_id
-          })
       x ->
         Logger.error("category_template seed was not inserted. #{x}")
     end
-
   end)
 end

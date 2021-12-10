@@ -4,6 +4,7 @@ defmodule PicselloWeb.Endpoint do
   if Application.get_env(:picsello, :sql_sandbox) do
     plug Phoenix.Ecto.SQL.Sandbox
   end
+
   with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox) do
     plug Phoenix.Ecto.SQL.Sandbox, sandbox: sandbox
   end

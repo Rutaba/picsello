@@ -216,12 +216,14 @@ defmodule Picsello.Galleries do
   defp load_gallery_photos_by_type(gallery, "all") do
     Photo
     |> where(gallery_id: ^gallery.id)
+    |> order_by(asc: :position)
     |> Repo.all()
   end
 
   defp load_gallery_photos_by_type(gallery, "favorites") do
     Photo
     |> where(gallery_id: ^gallery.id, client_liked: true)
+    |> order_by(asc: :position)
     |> Repo.all()
   end
 
@@ -263,6 +265,7 @@ defmodule Picsello.Galleries do
   Updates a photo
   """
   def update_photo(nil, %{} = attrs), do: []
+
   def update_photo(%Photo{id: _} = photo, %{} = attrs) do
     photo
     |> Photo.update_changeset(attrs)
