@@ -88,7 +88,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
     [
       %{name: "card_blank.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
       %{name: "album_transparency.png", corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]},
-      %{name: "card_envelop.png", corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]},
+      %{name: "card_envelope.png", corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]},
       %{name: "frame_transperancy.png", corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
     ]
   end
