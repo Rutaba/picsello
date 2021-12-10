@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
-  alias PicselloWeb.GalleryLive.DeletePhoto
+  alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.PhotoComponent
 
   @per_page 12
@@ -106,14 +106,31 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_event("delete_cover_photo_popup", _, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> open_modal(DeletePhoto, %{gallery_name: gallery.name, type: :cover})
+    |> ConfirmationComponent.open(%{
+      center: true,
+      close_label: "No, go back",
+      confirm_event: "delete_cover_photo",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this photo?",
+      subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
+    })
     |> noreply()
   end
 
   @impl true
   def handle_event("delete_photo_popup", %{"id" => id}, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> open_modal(DeletePhoto, %{gallery_name: gallery.name, type: :plain, photo_id: id})
+    |> ConfirmationComponent.open(%{
+      center: true,
+      close_label: "No, go back",
+      confirm_event: "delete_photo",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this photo?",
+      subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?",
+      payload: %{photo_id: id}
+    })
     |> noreply()
   end
 
@@ -141,8 +158,13 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   def handle_info({:photo_processed, _}, socket), do: noreply(socket)
 
+  def handle_info({:photo_click, _}, socket), do: noreply(socket)
+
   @impl true
-  def handle_info(:confirm_cover_photo_deletion, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        {:confirm_event, "delete_cover_photo"},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     {:ok, gallery} = Galleries.update_gallery(gallery, %{cover_photo_id: nil})
 
     socket
@@ -152,7 +174,10 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_info({:confirm_photo_deletion, id}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        {:confirm_event, "delete_photo", %{photo_id: id}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     Galleries.get_photo(id) |> Galleries.delete_photo()
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
@@ -162,13 +187,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:gallery, gallery)
     |> close_modal()
     |> push_event("remove_item", %{"id" => id})
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(:cancel_photo_deletion, socket) do
-    socket
-    |> close_modal()
     |> noreply()
   end
 

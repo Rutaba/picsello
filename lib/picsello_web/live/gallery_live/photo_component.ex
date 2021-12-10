@@ -21,6 +21,14 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     {:noreply, assign(socket, :photo, photo)}
   end
 
+  @impl true
+  def handle_event("click", _, %{assigns: %{photo: photo}} = socket) do
+    send(self(), {:photo_click, photo})
+
+    socket
+    |> noreply()
+  end
+
   defp display(%Photo{} = photo) do
     display(photo.watermarked_preview_url || photo.preview_url)
   end
