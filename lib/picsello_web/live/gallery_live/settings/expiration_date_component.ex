@@ -185,18 +185,26 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
            }
          } = socket
        ) do
-    gallery_date = DateTime.to_date(expires)
-    never_date = never_date() |> DateTime.to_date()
-
     is_valid =
-      (is_never_expires and Date.compare(gallery_date, never_date) != :eq) or
-        (Enum.all?([year, month, day]) and
-           Date.compare(Date.new!(year, month, day), tomorrow()) != :lt and
-           Date.compare(Date.new!(year, month, day), gallery_date) != :eq)
+      valid_checkbox?(is_never_expires, expires) or
+        valid_date_controls?([year, month, day], expires)
 
     socket
     |> assign(:is_valid, is_valid)
   end
+
+  defp valid_checkbox?(false, _), do: false
+  defp valid_checkbox?(true, nil), do: true
+
+  defp valid_checkbox?(true, expires),
+    do: :eq != Date.compare(DateTime.to_date(never_date()), DateTime.to_date(expires))
+
+  defp valid_date_controls?([year, month, day] = date, expires),
+    do:
+      Enum.all?(date) and
+        Date.compare(Date.new!(year, month, day), tomorrow()) != :lt and
+        (is_nil(expires) or
+           Date.compare(Date.new!(year, month, day), DateTime.to_date(expires)) != :eq)
 
   defp month_names(),
     do: %{
