@@ -89,6 +89,7 @@ defmodule PicselloWeb.LiveHelpers do
         width: nil,
         height: nil,
         class: nil,
+        style: nil,
         path:
           assigns
           |> Map.get(:socket, PicselloWeb.Endpoint)
@@ -96,7 +97,7 @@ defmodule PicselloWeb.LiveHelpers do
       })
 
     ~H"""
-    <svg width={@width} height={@height} class={@class}>
+    <svg width={@width} height={@height} class={@class} style={@style}>
       <use href={@path} />
     </svg>
     """
@@ -233,4 +234,14 @@ defmodule PicselloWeb.LiveHelpers do
 
   def filesize(byte_size) when is_integer(byte_size),
     do: Size.humanize!(byte_size, spacer: "")
+
+  def initials_circle(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{class: "text-sm text-base-300 bg-gray-100 w-9 h-9 pb-0.5", style: nil})
+
+    ~H"""
+      <div style={@style} class={"#{@class} flex flex-col items-center justify-center rounded-full"}><%= Picsello.Accounts.User.initials @user %></div>
+    """
+  end
 end

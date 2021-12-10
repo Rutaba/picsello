@@ -1,0 +1,1815 @@
+{
+  "category": { "id": "h3GrtaTf5ipFicdrJ", "name": "Loose Prints" },
+  "attributeCategories": [
+    {
+      "_id": "size",
+      "name": "size",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "4x5",
+          "name": "4×5",
+          "enabled": true,
+          "metadata": { "height": 5, "width": 4 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "4x6",
+          "name": "4×6",
+          "enabled": true,
+          "metadata": { "height": 6, "width": 4 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "5x5",
+          "name": "5×5",
+          "enabled": true,
+          "metadata": { "height": 5, "width": 5 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "5x7",
+          "name": "5×7",
+          "enabled": true,
+          "metadata": { "height": 7, "width": 5 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_4in_foamboard,1_8in_masonite"
+                }
+              ],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "6x6",
+          "name": "6×6",
+          "enabled": true,
+          "metadata": { "height": 6, "width": 6 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "6x8",
+          "name": "6×8",
+          "enabled": true,
+          "metadata": { "height": 6, "width": 8 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "8x8",
+          "name": "8×8",
+          "enabled": true,
+          "metadata": { "height": 8, "width": 8 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "yPWCb2wnuy5fGt86X",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "7x10",
+          "name": "7×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 7 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "yPWCb2wnuy5fGt86X",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "8x10",
+          "name": "8×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 8 }
+        },
+        {
+          "id": "8x12",
+          "name": "8×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 8 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "QxS6unYCGBdLjqMku",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "9x12",
+          "name": "9×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 9 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "QxS6unYCGBdLjqMku",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "10x10",
+          "name": "10×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 10 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "z4e6wpd3eRM4opQn6",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "10x13",
+          "name": "10×13",
+          "enabled": true,
+          "metadata": { "height": 13, "width": 10 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "z4e6wpd3eRM4opQn6",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "10x15",
+          "name": "10×15",
+          "enabled": true,
+          "metadata": { "height": 15, "width": 10 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "z4e6wpd3eRM4opQn6",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "10x20",
+          "name": "10×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 10 }
+        },
+        {
+          "id": "10x30",
+          "name": "10×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 10 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=matboard,1_8in_masonite"
+                }
+              ],
+              "id": "FWHQEqEHcyqkc5QG6",
+              "locked": true
+            }
+          ]
+        },
+        {
+          "id": "11x14",
+          "name": "11×14",
+          "enabled": true,
+          "metadata": { "height": 14, "width": 11 }
+        },
+        {
+          "id": "11x16",
+          "name": "11×16",
+          "enabled": true,
+          "metadata": { "height": 16, "width": 11 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "FWHQEqEHcyqkc5QG6",
+              "locked": true
+            }
+          ]
+        },
+        {
+          "id": "11x17",
+          "name": "11×17",
+          "enabled": true,
+          "metadata": { "height": 17, "width": 11 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "FWHQEqEHcyqkc5QG6",
+              "locked": true
+            }
+          ]
+        },
+        {
+          "id": "12x12",
+          "name": "12×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 12 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "FWHQEqEHcyqkc5QG6",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "12x18",
+          "name": "12×18",
+          "enabled": true,
+          "metadata": { "height": 18, "width": 12 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=1_8in_masonite"
+                }
+              ],
+              "id": "NeyGAc6YHSSyF5a7q",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "12x24",
+          "name": "12×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 12 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=matboard,1_8in_masonite"
+                }
+              ],
+              "id": "NeyGAc6YHSSyF5a7q",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "15x30",
+          "name": "15×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 15 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=mounting;a=matboard,1_8in_masonite"
+                }
+              ],
+              "id": "X8bs55wXkqtNcsSyB",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "16x16",
+          "name": "16×16",
+          "enabled": true,
+          "metadata": { "height": 16, "width": 16 }
+        },
+        {
+          "id": "16x20",
+          "name": "16×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 16 }
+        },
+        {
+          "id": "16x24",
+          "name": "16×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 16 }
+        },
+        {
+          "id": "20x20",
+          "name": "20×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 20 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "vZhX4ya7nkXDFFyWy",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "20x24",
+          "name": "20×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 20 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "sNrbEWBqN33qJbxS8",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "20x30",
+          "name": "20×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 20 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "raDMKRrAKuMBaaScQ",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "20x40",
+          "name": "20×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 20 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "raDMKRrAKuMBaaScQ",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "20x60",
+          "name": "20×60",
+          "enabled": true,
+          "metadata": { "height": 60, "width": 20 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "raDMKRrAKuMBaaScQ",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "24x24",
+          "name": "24×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 24 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "3emzKtqGduPaXDj5s",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "24x30",
+          "name": "24×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 24 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "3emzKtqGduPaXDj5s",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "24x36",
+          "name": "24×36",
+          "enabled": true,
+          "metadata": { "height": 36, "width": 24 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "cW5PrZqKFRmFzpMe7",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "30x30",
+          "name": "30×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "hLNfxxaPA7Xpqr6PE",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "30x40",
+          "name": "30×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=mounting;a=matboard" }
+              ],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "30x45",
+          "name": "30×45",
+          "enabled": true,
+          "metadata": { "height": 45, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "30x50",
+          "name": "30×50",
+          "enabled": true,
+          "metadata": { "height": 50, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "30x60",
+          "name": "30×60",
+          "enabled": true,
+          "metadata": { "height": 60, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "36x36",
+          "name": "36×36",
+          "enabled": true,
+          "metadata": { "height": 36, "width": 36 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "40x40",
+          "name": "40×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 40 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "40x50",
+          "name": "40×50",
+          "enabled": true,
+          "metadata": { "height": 50, "width": 40 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "40x60",
+          "name": "40×60",
+          "enabled": true,
+          "metadata": { "height": 60, "width": 40 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=mounting;" }],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        }
+      ],
+      "default": "10x10"
+    },
+    {
+      "_id": "paper",
+      "name": "paper",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "torchon",
+          "name": "torchon",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/paper/torchon.jpg"
+          },
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 1.99, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 2.12, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 2.81, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 3.45, "type": "ACTUAL", "code": "USD" }
+            },
+            "6x6": {
+              "base": { "value": 3.45, "type": "ACTUAL", "code": "USD" }
+            },
+            "6x8": {
+              "base": { "value": 6.51, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 6.51, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 5.87, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 5.87, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 10.33, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 10.33, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 7.91, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 10.59, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 11.99, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 25.38, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x30": {
+              "base": { "value": 47.82, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 11.99, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 17.98, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x17": {
+              "base": { "value": 17.98, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 11.86, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 17.98, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x24": {
+              "base": { "value": 41.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 72.55, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 41.31, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 41.31, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 60.44, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 61.84, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 62.48, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 78.16, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 112.97, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x60": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x24": {
+              "base": { "value": 95.88, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 95.88, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 129.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 129.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 132.09, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x45": {
+              "base": { "value": 154.79, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x50": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x60": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "36x36": {
+              "base": { "value": 205.53, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x40": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x50": {
+              "base": { "value": 251.43, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x60": {
+              "base": { "value": 270.3, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "smooth_matte",
+          "name": "smooth matte",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/paper/smooth_matte.jpg"
+          },
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 1.21, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 1.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 1.71, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 2.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "6x6": {
+              "base": { "value": 2.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "6x8": {
+              "base": { "value": 3.96, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 3.96, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 3.57, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 3.57, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 6.28, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 6.28, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 4.81, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 6.44, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 7.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 15.43, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x30": {
+              "base": { "value": 29.07, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 7.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 10.93, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x17": {
+              "base": { "value": 10.93, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 7.21, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 10.93, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x24": {
+              "base": { "value": 25.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 44.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 25.11, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 25.11, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 36.74, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 37.59, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 37.98, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 47.51, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 68.67, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x60": {
+              "base": { "value": 139.66, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x24": {
+              "base": { "value": 58.28, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 58.28, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 78.59, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 78.59, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 80.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x45": {
+              "base": { "value": 94.09, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x50": {
+              "base": { "value": 139.66, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x60": {
+              "base": { "value": 139.66, "type": "ACTUAL", "code": "USD" }
+            },
+            "36x36": {
+              "base": { "value": 124.93, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x40": {
+              "base": { "value": 139.66, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x50": {
+              "base": { "value": 152.83, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x60": {
+              "base": { "value": 164.3, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "rag_baryta",
+          "name": "Photo Rag Baryta",
+          "enabled": true,
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 1.99, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 2.12, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 2.81, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 3.45, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 6.51, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 5.87, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 10.33, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 7.91, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 25.38, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 11.99, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 11.86, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 17.98, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 72.55, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 41.31, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 41.31, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 60.44, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 61.84, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 62.48, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 78.16, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 112.97, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x60": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x24": {
+              "base": { "value": 95.88, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 95.88, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 129.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 129.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 132.09, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x45": {
+              "base": { "value": 154.79, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x50": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x60": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "36x36": {
+              "base": { "value": 205.53, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x40": {
+              "base": { "value": 229.76, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x50": {
+              "base": { "value": 251.43, "type": "ACTUAL", "code": "USD" }
+            },
+            "40x60": {
+              "base": { "value": 270.3, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        }
+      ],
+      "default": "smooth_matte"
+    },
+    {
+      "_id": "mounting",
+      "name": "mounting",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "no",
+          "name": "Print Only",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://s3.amazonaws.com/cdn.dragdrop.design/assets/attribute-icons/mounting/fine_art_print_no_mounting.jpg"
+          }
+        },
+        {
+          "id": "matboard",
+          "name": "matboard",
+          "enabled": true,
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 7.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 7.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 7.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 7.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 7.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 10.85, "type": "ACTUAL", "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=size;a=!4x5,4x6,5x5,5x7,8x8,7x10,8x10,8x12,9x12,10x10,10x13,10x15,10x20,11x14,11x16,12x12,12x18,16x16,16x20"
+                }
+              ],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/mounting/matboard.jpg"
+          }
+        },
+        {
+          "id": "1_4in_white_foamboard",
+          "name": "¼″ white foamboard",
+          "enabled": true,
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 3.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 3.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 5.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 5.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 6.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 6.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 6.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 10.25, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 10.25, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x30": {
+              "base": { "value": 23.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x24": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 19.45, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 19.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 37.55, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 23.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 29.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 37.55, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 37.55, "type": "ACTUAL", "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=size;a=6x6,6x8,11x17,20x60,24x24,30x45,30x50,30x60,36x36,40x40,40x50,50x60"
+                }
+              ],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/mounting/1_4in_white_foamboard.jpg"
+          }
+        },
+        {
+          "id": "1_4in_black_foamboard",
+          "name": "¼″ black foamboard",
+          "enabled": true,
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 3.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 3.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 5.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 5.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 6.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 6.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 6.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 10.25, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 10.25, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x30": {
+              "base": { "value": 23.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 8.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x24": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 19.45, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 12.65, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 18.85, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 19.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 37.55, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 23.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 29.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 37.55, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 37.55, "type": "ACTUAL", "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=size;a=6x6,6x8,11x17,20x60,24x24,30x45,30x50,30x60,36x36,40x40,40x50,50x60"
+                }
+              ],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/mounting/1_4in_black_foamboard.jpg"
+          }
+        },
+        {
+          "id": "3mm_white_styrene",
+          "name": "3mm white styrene",
+          "enabled": true,
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 3.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 3.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 9.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 9.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x30": {
+              "base": { "value": 19.35, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 11.35, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x24": {
+              "base": { "value": 15.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 20.3, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 15.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 18.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 18.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 19.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 39, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 24.2, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 33.15, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 39, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 39, "type": "ACTUAL", "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=size;a=6x6,6x8,11x17,20x60,24x24,30x45,30x50,30x60,36x36,40x40,40x50,40x60"
+                }
+              ],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/mounting/3mm_white_styrene.jpg"
+          }
+        },
+        {
+          "id": "3mm_black_styrene",
+          "name": "3mm black styrene",
+          "enabled": true,
+          "pricingRefs": {
+            "4x5": {
+              "base": { "value": 3.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "4x6": {
+              "base": { "value": 3.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x5": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x8": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "7x10": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x10": {
+              "base": { "value": 5.8, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "9x12": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x13": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x15": {
+              "base": { "value": 9.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 9.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x30": {
+              "base": { "value": 19.35, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 8.6, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x16": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 11.35, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x24": {
+              "base": { "value": 15.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "15x30": {
+              "base": { "value": 20.3, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 12.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 15.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 18.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 18.95, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 19.9, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 39, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 24.2, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 33.15, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 39, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 39, "type": "ACTUAL", "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                {
+                  "type": "DISABLE",
+                  "recipient": "c=size;a=6x6,6x8,11x17,20x60,24x24,30x45,30x50,30x60,36x36,40x40,40x50,40x60"
+                }
+              ],
+              "id": "znLos5YauRd82Bhfh",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/mounting/3mm_black_styrene.jpg"
+          }
+        }
+      ],
+      "default": null
+    },
+    {
+      "_id": "dynamic_borders",
+      "name": "border",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "metadata": { "defaultPercent": 0.05 },
+      "attributes": [
+        { "id": "no", "name": "no border", "enabled": true },
+        { "id": "border", "name": "border", "enabled": true }
+      ],
+      "default": "no"
+    }
+  ],
+  "orderAttributeCategories": [
+    {
+      "_id": "shipping_options",
+      "name": "Shipping Options",
+      "requiredLevel": 0,
+      "attributes": [
+        { "id": "studio", "externalId": 547, "name": "Ship to Studio" },
+        {
+          "id": "dropship",
+          "externalId": 548,
+          "name": "Ship Directly to Client"
+        }
+      ]
+    },
+    {
+      "_id": "studio_shipping_options",
+      "name": "Studio Shipping Options",
+      "requiredLevel": 547,
+      "attributes": [
+        {
+          "id": "studio_two_day",
+          "parentId": 547,
+          "externalId": 147,
+          "name": "Two-Day Shipping (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_standard",
+          "parentId": 547,
+          "externalId": 150,
+          "name": "One Day Shipping, Standard - USA only (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 4.424, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_priority",
+          "parentId": 547,
+          "externalId": 149,
+          "name": "One Day Shipping, Priority - USA only (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 8.201, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ],
+      "default": "studio_two_day"
+    },
+    {
+      "_id": "drop_ship_shipping_options",
+      "name": "Drop Ship Shipping Options",
+      "requiredLevel": 548,
+      "attributes": [
+        {
+          "id": "dropship_lowest_cost",
+          "parentId": 548,
+          "externalId": 553,
+          "name": "USA Drop Ship – Lowest Cost (Includes Peak Surcharge)",
+          "technical": "If minimum is met and Prospector subtracts $7.50 IGNORING the 5% being compounded, Prospector will need to knock off 5% of that $7.50 too! We can't 'fix' that HERE!",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_two_day",
+          "parentId": 548,
+          "externalId": 554,
+          "name": "USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)",
+          "technical": "Normally $9.95, SEASONAL: $10.95 + 5% of $10.95",
+          "pricing": {
+            "base": { "value": 11.4975, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_standard",
+          "parentId": 548,
+          "externalId": 555,
+          "name": "USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $7.50 + 12% of $7.50 + $3.95 + 12% of $3.95, SEASONAL: $9 + 17% of $9 + $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 14.954, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_priority",
+          "parentId": 548,
+          "externalId": 556,
+          "name": "USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $7.50 + 18% of $7.50 + $6.95 + 18% of $6.95, SEASONAL: $9 + 23% of $9 + $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 19.271, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_canada",
+          "parentId": 548,
+          "externalId": 557,
+          "name": "Canada Drop Ship – UPS Standard (Includes Peak Surcharge)",
+          "technical": "(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50",
+          "pricing": {
+            "base": { "value": 10.35, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 15, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_international",
+          "parentId": 548,
+          "externalId": 558,
+          "name": "International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    }
+  ],
+  "editorType": "simpleEditor",
+  "_id": "HY4FdhaSuCKFLA3ME",
+  "description": "High-quality archival papers to enhance any image",
+  "globalProductId": "veRQQMjd82hxLvcWH",
+  "metadata": { "resolution": 300 },
+  "name": "Fine Art Print",
+  "nodes": [{ "name": "Main", "nodeId": 10000, "dimensionKeys": ["size"] }],
+  "orgId": "5LsoooWuHGYFMaqbb",
+  "editorCompatibility": "simpleEditor",
+  "checksum": "2224d2cc8b9cf3e40945b75821a579b8"
+}

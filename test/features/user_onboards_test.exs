@@ -15,9 +15,11 @@ defmodule Picsello.UserOnboardsTest do
     phone_field = text_field("user_onboarding_phone")
     switching_from_field = select("user_onboarding_switching_from_software")
 
+    user = Repo.preload(user, :organization)
+
     session
     |> assert_path(@onboarding_path)
-    |> assert_value(@org_name_field, "#{user.name} Photography")
+    |> assert_value(@org_name_field, user.organization.name)
     |> fill_in(@org_name_field, with: "")
     |> assert_has(css("span.invalid-feedback", text: "Photography business name can't be blank"))
     |> fill_in(@org_name_field, with: "Photogenious")

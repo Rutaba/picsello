@@ -13,7 +13,11 @@ env:
   SLACK_ICON_EMOJI: ':camera:'
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
   SHELL: /usr/bin/bash
-
+  GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
+  PHOTO_STORAGE_BUCKET: 'picsello-staging'
+  PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
+  PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
+  PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
 
 jobs:
   build:
@@ -53,6 +57,10 @@ jobs:
     - name: Install dependencies
       if: steps.cache-mix.outputs.cache-hit != 'true'
       run: mix deps.get
+    - name: Compile deps for tests
+      run: MIX_ENV=test mix deps.compile
+    - name: Compile code for tests
+      run: MIX_ENV=test mix compile --warnings-as-errors
     - name: Run Credo
       run: MIX_ENV=test mix credo
     - name: Run Dialyzer
@@ -65,14 +73,7 @@ jobs:
     - name: Build js
       run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
     - name: Run tests
-      run: mix test --trace --cover
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
-        PHOTO_STORAGE_BUCKET: 'picsello-staging'
-        PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
-        PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
-        PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
-
+      run: mix test --trace --cover --warnings-as-errors
     - name: Archive screenshots
       if: ${{failure()}}
       uses: actions/upload-artifact@v2

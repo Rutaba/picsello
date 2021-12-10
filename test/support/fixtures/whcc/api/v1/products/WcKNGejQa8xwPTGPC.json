@@ -1,0 +1,3614 @@
+{
+  "category": { "id": "B9FcAHDH5T63yvvgX", "name": "Books" },
+  "attributeCategories": [
+    {
+      "_id": "size",
+      "name": "size",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "6x6",
+          "name": "6x6",
+          "enabled": true,
+          "metadata": {
+            "width": 6,
+            "height": 6,
+            "name": "6x6",
+            "aspectRatio": "1:1"
+          }
+        },
+        {
+          "id": "8x8",
+          "name": "8x8",
+          "enabled": true,
+          "metadata": {
+            "width": 8,
+            "height": 8,
+            "name": "8x8",
+            "aspectRatio": "1:1"
+          }
+        },
+        {
+          "id": "10x10",
+          "name": "10x10",
+          "enabled": true,
+          "metadata": {
+            "width": 10,
+            "height": 10,
+            "name": "10x10",
+            "aspectRatio": "1:1"
+          }
+        },
+        {
+          "id": "12x12",
+          "name": "12x12",
+          "enabled": true,
+          "metadata": {
+            "width": 12,
+            "height": 12,
+            "name": "12x12",
+            "aspectRatio": "1:1"
+          }
+        }
+      ],
+      "default": "10x10"
+    },
+    {
+      "_id": "cover_material",
+      "name": "material",
+      "description": "Colors and patterns may vary from representation.",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "premium_leather_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1011",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1011",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1011",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1011",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "premium_leather_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1012",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1012",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1012",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1012",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "premium_leather_steel",
+          "name": "steel",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1011",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1011",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1011",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1011",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "premium_leather_fog",
+          "name": "fog",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1011",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1011",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1011",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1011",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "premium_leather_white",
+          "name": "white",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1012",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1012",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1012",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1012",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "distressed_leather_coal",
+          "name": "coal",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1012",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1012",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1012",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1012",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "distressed_leather_stone",
+          "name": "stone",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1012",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1012",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1012",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1012",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "distressed_leather_walnut",
+          "name": "walnut",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1012",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1012",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1012",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1012",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "distressed_leather_honey",
+          "name": "honey",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1012",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1012",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1012",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1012",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "vegan_leather_black_onyx",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "leatherette" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1014",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1014",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1014",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1014",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "vegan_leather_slate",
+          "name": "slate",
+          "enabled": true,
+          "metadata": { "collection": "leatherette" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1014",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1014",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1014",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1014",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "vintage_leather_aviator",
+          "name": "aviator",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-934",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-934",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-934",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-934",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "vintage_leather_charcoal",
+          "name": "charcoal",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-956",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-956",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-956",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-956",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "vintage_leather_saddle",
+          "name": "saddle",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-954",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-954",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-954",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-954",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "vintage_leather_camel",
+          "name": "camel",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-955",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-955",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-955",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-955",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1014",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1014",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1014",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1014",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_brown",
+          "name": "brown",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1015",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1015",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1015",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1015",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_red",
+          "name": "red",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1018",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1018",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1018",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1018",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_lime_green",
+          "name": "lime green",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1022",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1022",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1022",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1022",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_aqua",
+          "name": "aqua",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1020",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1020",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1020",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1020",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_navy_blue",
+          "name": "navy blue",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1017",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1017",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1017",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1017",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "faux_leather_purple",
+          "name": "purple",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1024",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1024",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1024",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1024",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "alligator_leather_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "alligator leather" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-1026",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-1026",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-1026",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-1026",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "linen_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_mauve",
+          "name": "mauve",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_slate",
+          "name": "slate",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_sage",
+          "name": "sage",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_blush",
+          "name": "blush",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_fog",
+          "name": "fog",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2131",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2131",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 80, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2131",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 110, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2131",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "silk_pewter",
+          "name": "pewter",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2142",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2142",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2142",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2142",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "silk_ruby",
+          "name": "ruby",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2146",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2146",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2146",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2146",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "silk_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2141",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2141",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2141",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2141",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "silk_eggplant",
+          "name": "eggplant",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2139",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2139",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2139",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2139",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-923",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-923",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-923",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-923",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_grey",
+          "name": "gray",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-922",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-922",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-922",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-922",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_chocolate_brown",
+          "name": "chocolate brown",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-925",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-925",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-925",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-925",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_tan",
+          "name": "tan",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-927",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-927",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-927",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-927",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_misty_blue",
+          "name": "misty blue",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-923",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-923",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-923",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-923",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "linen_natural",
+          "name": "oatmeal",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2132",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2132",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2132",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2132",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_cream",
+          "name": "cream",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-923",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-923",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-923",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-923",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "fabric_sage",
+          "name": "sage",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-928",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-928",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-928",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-928",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_teal",
+          "name": "teal",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-931",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-931",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-931",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-931",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_baby_blue",
+          "name": "baby blue",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-912",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-912",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-912",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-912",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_dusty_pink",
+          "name": "dusty pink",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-923",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-923",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-923",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-923",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "fabric_baby_pink",
+          "name": "baby pink",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-913",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-913",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-913",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-913",
+              "discountVolume": []
+            }
+          },
+          "parentCategory": "material_cover"
+        },
+        {
+          "id": "fabric_gray_twill",
+          "name": "gray twill",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-923",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-923",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-923",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-923",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "chrome_fabric_platinum",
+          "name": "flint",
+          "enabled": true,
+          "metadata": { "collection": "chrome fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2129",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2129",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2129",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2129",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "chrome_fabric_champagne",
+          "name": "champagne",
+          "enabled": true,
+          "metadata": { "collection": "chrome fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2129",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2129",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2129",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2129",
+              "discountVolume": []
+            }
+          }
+        },
+        {
+          "id": "chrome_fabric_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "chrome fabric" },
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 30, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2129",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 35, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2129",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2129",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2129",
+              "discountVolume": []
+            }
+          }
+        }
+      ],
+      "default": "premium_leather_black",
+      "metadata": {
+        "groupings": [
+          {
+            "name": "premium leathers",
+            "collections": [
+              {
+                "name": "premier leather",
+                "ids": [
+                  "premium_leather_black",
+                  "premium_leather_navy",
+                  "premium_leather_steel",
+                  "premium_leather_fog",
+                  "premium_leather_white"
+                ]
+              },
+              {
+                "name": "distressed leather",
+                "ids": [
+                  "distressed_leather_coal",
+                  "distressed_leather_stone",
+                  "distressed_leather_walnut",
+                  "distressed_leather_honey"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "leathers",
+            "collections": [
+              {
+                "name": "vintage leather",
+                "ids": [
+                  "vintage_leather_aviator",
+                  "vintage_leather_charcoal",
+                  "vintage_leather_saddle",
+                  "vintage_leather_camel"
+                ]
+              },
+              {
+                "name": "alligator leather",
+                "ids": ["alligator_leather_black"]
+              },
+              {
+                "name": "leatherette",
+                "ids": ["vegan_leather_black_onyx", "vegan_leather_slate"]
+              },
+              {
+                "name": "faux leather",
+                "ids": [
+                  "faux_leather_black",
+                  "faux_leather_brown",
+                  "faux_leather_red",
+                  "faux_leather_lime_green",
+                  "faux_leather_aqua",
+                  "faux_leather_navy_blue",
+                  "faux_leather_purple"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "linens",
+            "collections": [
+              {
+                "name": "linen",
+                "ids": [
+                  "linen_black",
+                  "linen_navy",
+                  "linen_mauve",
+                  "linen_slate",
+                  "linen_sage",
+                  "linen_blush",
+                  "linen_fog"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "bookcloth",
+            "collections": [
+              {
+                "name": "silk",
+                "ids": [
+                  "silk_pewter",
+                  "silk_ruby",
+                  "silk_navy",
+                  "silk_eggplant"
+                ]
+              },
+              {
+                "name": "fabric",
+                "ids": [
+                  "fabric_black",
+                  "fabric_grey",
+                  "fabric_chocolate_brown",
+                  "fabric_tan",
+                  "fabric_misty_blue",
+                  "linen_natural",
+                  "fabric_cream",
+                  "fabric_sage",
+                  "fabric_teal",
+                  "fabric_baby_blue",
+                  "fabric_dusty_pink",
+                  "fabric_baby_pink",
+                  "fabric_gray_twill"
+                ]
+              },
+              {
+                "name": "chrome",
+                "ids": [
+                  "chrome_fabric_platinum",
+                  "chrome_fabric_champagne",
+                  "chrome_fabric_navy"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "_id": "cover_type",
+      "name": "Cover Type",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "material_cover",
+          "name": "Material Cover",
+          "enabled": true,
+          "metadata": {},
+          "childCategories": ["cover_material"]
+        },
+        {
+          "id": "combo_cover",
+          "name": "Combo Cover",
+          "enabled": true,
+          "pricing": {
+            "base": { "value": 20, "type": "ACTUAL", "code": "USD" }
+          },
+          "metadata": {
+            "6x6": {
+              "width": 4.875,
+              "height": 7,
+              "visibleWidth": 4.125,
+              "visibleHeight": 6,
+              "fuseBleed": 0.25,
+              "coverBleed": 0.5,
+              "overlapRadius": 0.0625
+            },
+            "8x8": {
+              "width": 6.375,
+              "height": 9,
+              "visibleWidth": 5.625,
+              "visibleHeight": 8,
+              "fuseBleed": 0.25,
+              "coverBleed": 0.5,
+              "overlapRadius": 0.0625
+            },
+            "10x10": {
+              "width": 7.75,
+              "height": 11,
+              "visibleWidth": 7,
+              "visibleHeight": 10,
+              "fuseBleed": 0.25,
+              "coverBleed": 0.5,
+              "overlapRadius": 0.0625
+            },
+            "12x12": {
+              "width": 9.125,
+              "height": 13,
+              "visibleWidth": 8.375,
+              "visibleHeight": 12,
+              "fuseBleed": 0.25,
+              "coverBleed": 0.5,
+              "overlapRadius": 0.0625
+            }
+          },
+          "childCategories": [
+            "combo_cover_spine_material",
+            "combo_cover_stitching",
+            "combo_cover"
+          ]
+        }
+      ],
+      "default": "material_cover"
+    },
+    {
+      "_id": "spread_style",
+      "name": "Spread Style",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "2_page_spread",
+          "name": "2 Page Spread",
+          "enabled": true,
+          "metadata": {}
+        }
+      ],
+      "default": "2_page_spread"
+    },
+    {
+      "_id": "endleaf_style",
+      "name": "Endleaf Style",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "description": "Endleaves are the protective paper that separate the inside spreads from the cover.",
+      "attributes": [
+        {
+          "id": "black_smooth_endleaves",
+          "name": "Smooth Black",
+          "enabled": true,
+          "metadata": {}
+        }
+      ],
+      "default": "black_smooth_endleaves"
+    },
+    {
+      "_id": "asset_type",
+      "name": "Asset Type",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "individual_page_jpg",
+          "name": "Individual Page JPG",
+          "enabled": true,
+          "metadata": {}
+        }
+      ],
+      "default": "individual_page_jpg"
+    },
+    {
+      "_id": "insert_boards",
+      "name": "Insert Boards",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "no_inserts",
+          "name": "No Inserts",
+          "enabled": true,
+          "metadata": { "minPages": 20, "maxPages": 80, "defaultPageCount": 20 }
+        }
+      ],
+      "default": "no_inserts"
+    },
+    {
+      "_id": "ba_paper_type",
+      "name": "Paper Type",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "ba_photo_lustre",
+          "name": "photo lustre",
+          "enabled": true,
+          "description": "A true photographic lustre paper, ideal for skin tones.",
+          "metadata": {},
+          "pricingRefs": {
+            "6x6": { "base": { "value": 2, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 3, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": { "base": { "value": 5, "type": "ACTUAL", "code": "USD" } }
+          }
+        },
+        {
+          "id": "ba_smooth_matte",
+          "name": "smooth matte",
+          "enabled": true,
+          "description": "A soft, uncoated paper with great color accuracy.",
+          "metadata": {},
+          "pricingRefs": {
+            "6x6": { "base": { "value": 2, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 3, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 4.5, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": { "base": { "value": 5, "type": "ACTUAL", "code": "USD" } }
+          }
+        }
+      ],
+      "default": "ba_photo_lustre"
+    },
+    {
+      "_id": "cover_cameo",
+      "name": "cameo",
+      "description": "",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "square_square_cameo",
+          "name": "Square Cameo",
+          "enabled": true,
+          "metadata": {
+            "8x8": {
+              "bleed": 0.125,
+              "width": 3.25,
+              "height": 3.25,
+              "cx": 0.5,
+              "cy": 0.5,
+              "radius": 0.0625
+            },
+            "10x10": {
+              "bleed": 0.125,
+              "width": 4.25,
+              "height": 4.25,
+              "cx": 0.5,
+              "cy": 0.5,
+              "radius": 0.0625
+            },
+            "12x12": {
+              "bleed": 0.125,
+              "width": 5.25,
+              "height": 5.25,
+              "cx": 0.5,
+              "cy": 0.5,
+              "radius": 0.0625
+            }
+          },
+          "pricingRefs": {
+            "8x8": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2309",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2309",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2309",
+              "discountVolume": []
+            }
+          }
+        }
+      ],
+      "parentCategory": "cover_type"
+    },
+    {
+      "_id": "debossing_cover_front",
+      "name": "front cover debossing",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "front_cover_debossing_text",
+          "name": "front cover debossing text",
+          "metadata": {
+            "margins": { "6x6": 0.5, "8x8": 0.75, "10x10": 1, "12x12": 1 }
+          },
+          "enabled": true,
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2268",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2268",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2268",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2268",
+              "discountVolume": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "debossing_cover_back",
+      "name": "back cover debossing",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "back_cover_debossing_text",
+          "name": "back cover debossing text",
+          "metadata": {
+            "margins": { "6x6": 0.5, "8x8": 0.75, "10x10": 1, "12x12": 1 }
+          },
+          "enabled": true,
+          "pricingRefs": {
+            "6x6": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "424-2269",
+              "discountVolume": []
+            },
+            "8x8": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "425-2269",
+              "discountVolume": []
+            },
+            "10x10": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "426-2269",
+              "discountVolume": []
+            },
+            "12x12": {
+              "base": { "value": 15, "type": "ACTUAL", "code": "USD" },
+              "billingKey": "427-2269",
+              "discountVolume": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "debossing_front_cover_color",
+      "name": "color",
+      "description": "",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        { "id": "black", "name": "black", "enabled": true },
+        { "id": "white", "name": "white", "enabled": true },
+        { "id": "blind", "name": "no color", "enabled": true },
+        { "id": "gold_foil", "name": "gold", "enabled": true },
+        { "id": "rose_gold_foil", "name": "rose gold", "enabled": true },
+        { "id": "silver_foil", "name": "silver", "enabled": true }
+      ],
+      "parentCategory": "debossing_cover_front"
+    },
+    {
+      "_id": "debossing_front_cover_font",
+      "name": "font",
+      "description": "",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "id": "quicksand",
+          "name": "quicksand",
+          "enabled": true,
+          "metadata": { "fontFamily": "Quicksand-Regular", "fontSizePts": 30 }
+        },
+        {
+          "id": "oswald",
+          "name": "oswald",
+          "enabled": true,
+          "metadata": { "fontFamily": "Oswald-Medium", "fontSizePts": 42 }
+        }
+      ],
+      "parentCategory": "debossing_cover_front"
+    },
+    {
+      "_id": "debossing_front_cover_location",
+      "name": "location",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        { "id": "center_center", "name": "center center", "enabled": true },
+        { "id": "lower_center", "name": "lower center", "enabled": true },
+        { "id": "lower_right", "name": "lower right", "enabled": true }
+      ],
+      "parentCategory": "debossing_cover_front"
+    },
+    {
+      "_id": "debossing_back_cover_color",
+      "name": "color",
+      "description": "",
+      "multipleValuesAllowed": false,
+      "default": "black",
+      "required": false,
+      "attributes": [
+        { "id": "black", "name": "black", "enabled": true },
+        { "id": "white", "name": "white", "enabled": true },
+        { "id": "blind", "name": "no color", "enabled": true },
+        { "id": "gold_foil", "name": "gold", "enabled": true },
+        { "id": "rose_gold_foil", "name": "rose gold", "enabled": true },
+        { "id": "silver_foil", "name": "silver", "enabled": true }
+      ],
+      "parentCategory": "debossing_cover_back"
+    },
+    {
+      "_id": "debossing_back_cover_font",
+      "name": "font",
+      "description": "",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "id": "quicksand",
+          "name": "quicksand",
+          "enabled": true,
+          "metadata": { "fontFamily": "Quicksand-Regular", "fontSizePts": 30 }
+        },
+        {
+          "id": "oswald",
+          "name": "oswald",
+          "enabled": true,
+          "metadata": { "fontFamily": "Oswald-Medium", "fontSizePts": 42 }
+        }
+      ],
+      "parentCategory": "debossing_cover_back"
+    },
+    {
+      "_id": "debossing_back_cover_location",
+      "name": "location",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        { "id": "lower_center", "name": "lower center", "enabled": true }
+      ],
+      "parentCategory": "debossing_cover_back"
+    },
+    {
+      "_id": "sample_product",
+      "name": "Sample Product",
+      "description": "Sample products include a \"Sample, Not for Resale\" silver foil stamp on both the inside front cover and inside back cover.",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        { "id": "sample_product", "name": "Sample Product", "enabled": true }
+      ]
+    },
+    {
+      "_id": "page_corner_style",
+      "name": "Page Corner Style",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "square_corners",
+          "name": "Square Corners",
+          "enabled": true,
+          "metadata": { "size": 0 },
+          "pricing": { "base": { "value": 0, "type": "ACTUAL", "code": "USD" } }
+        },
+        {
+          "id": "rounded_corners",
+          "name": "Rounded Corners",
+          "enabled": true,
+          "metadata": { "size": 0.375 },
+          "pricing": {
+            "base": { "value": 15, "type": "ACTUAL", "code": "USD" }
+          }
+        }
+      ],
+      "default": "square_corners"
+    },
+    {
+      "_id": "combo_cover",
+      "name": "Combo Cover",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "default": "front_only",
+      "parentCategory": "cover_type",
+      "attributes": [
+        {
+          "id": "front_only",
+          "name": "Front",
+          "enabled": true,
+          "metadata": {}
+        },
+        {
+          "id": "front_and_back",
+          "name": "Front and Back",
+          "enabled": true,
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "_id": "combo_cover_stitching",
+      "name": "Stitching",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "combo_cover",
+      "attributes": [
+        {
+          "id": "combo_cover_no_stitching_fusion_style",
+          "name": "None",
+          "enabled": true
+        },
+        {
+          "id": "combo_cover_white_stitching",
+          "name": "White",
+          "enabled": true
+        },
+        {
+          "id": "combo_cover_black_stitching",
+          "name": "Black",
+          "enabled": true
+        }
+      ],
+      "default": "combo_cover_no_stitching_fusion_style"
+    },
+    {
+      "_id": "combo_cover_photo_surface",
+      "name": "Photo Surface",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "combo_cover",
+      "attributes": [
+        { "id": "photo_lustre", "name": "Photo Lustre", "enabled": true }
+      ],
+      "default": "photo_lustre"
+    },
+    {
+      "_id": "combo_cover_spine_material",
+      "name": "spine material",
+      "description": "Colors and patterns may vary from representation.",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "combo_cover",
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "premium_leather_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "premium_leather_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "premium_leather_steel",
+          "name": "steel",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "premium_leather_fog",
+          "name": "fog",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "premium_leather_white",
+          "name": "white",
+          "enabled": true,
+          "metadata": { "collection": "premium leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "distressed_leather_coal",
+          "name": "coal",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "distressed_leather_stone",
+          "name": "stone",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "distressed_leather_walnut",
+          "name": "walnut",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "distressed_leather_honey",
+          "name": "honey",
+          "enabled": true,
+          "metadata": { "collection": "distressed leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "vegan_leather_black_onyx",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "leatherette" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "vegan_leather_slate",
+          "name": "slate",
+          "enabled": true,
+          "metadata": { "collection": "leatherette" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "vintage_leather_aviator",
+          "name": "aviator",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "vintage_leather_charcoal",
+          "name": "charcoal",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "vintage_leather_saddle",
+          "name": "saddle",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "vintage_leather_camel",
+          "name": "camel",
+          "enabled": true,
+          "metadata": { "collection": "vintage leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_brown",
+          "name": "brown",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_red",
+          "name": "red",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_lime_green",
+          "name": "lime green",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_aqua",
+          "name": "aqua",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_navy_blue",
+          "name": "navy blue",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "faux_leather_purple",
+          "name": "purple",
+          "enabled": true,
+          "metadata": { "collection": "faux leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "alligator_leather_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "alligator leather" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_mauve",
+          "name": "mauve",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_slate",
+          "name": "slate",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_sage",
+          "name": "sage",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_blush",
+          "name": "blush",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_fog",
+          "name": "fog",
+          "enabled": true,
+          "metadata": { "collection": "linen" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 40, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 60, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 90, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "silk_pewter",
+          "name": "pewter",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "silk_ruby",
+          "name": "ruby",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "silk_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "silk_eggplant",
+          "name": "eggplant",
+          "enabled": true,
+          "metadata": { "collection": "silk" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_black",
+          "name": "black",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_grey",
+          "name": "gray",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_chocolate_brown",
+          "name": "chocolate brown",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_tan",
+          "name": "tan",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_misty_blue",
+          "name": "misty blue",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "linen_natural",
+          "name": "oatmeal",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_cream",
+          "name": "cream",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_sage",
+          "name": "sage",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_teal",
+          "name": "teal",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_baby_blue",
+          "name": "baby blue",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_dusty_pink",
+          "name": "dusty pink",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_baby_pink",
+          "name": "baby pink",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "fabric_gray_twill",
+          "name": "gray twill",
+          "enabled": true,
+          "metadata": { "collection": "fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "chrome_fabric_platinum",
+          "name": "flint",
+          "enabled": true,
+          "metadata": { "collection": "chrome fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "chrome_fabric_champagne",
+          "name": "champagne",
+          "enabled": true,
+          "metadata": { "collection": "chrome fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        },
+        {
+          "id": "chrome_fabric_navy",
+          "name": "navy",
+          "enabled": true,
+          "metadata": { "collection": "chrome fabric" },
+          "pricingRefs": {
+            "6x6": { "base": { "value": 30, "type": "ACTUAL", "code": "USD" } },
+            "8x8": { "base": { "value": 35, "type": "ACTUAL", "code": "USD" } },
+            "10x10": {
+              "base": { "value": 40, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 50, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        }
+      ],
+      "default": "premium_leather_black",
+      "metadata": {
+        "groupings": [
+          {
+            "name": "premium leathers",
+            "collections": [
+              {
+                "name": "premier leather",
+                "ids": [
+                  "premium_leather_black",
+                  "premium_leather_navy",
+                  "premium_leather_steel",
+                  "premium_leather_fog",
+                  "premium_leather_white"
+                ]
+              },
+              {
+                "name": "distressed leather",
+                "ids": [
+                  "distressed_leather_coal",
+                  "distressed_leather_stone",
+                  "distressed_leather_walnut",
+                  "distressed_leather_honey"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "linens",
+            "collections": [
+              {
+                "name": "linen",
+                "ids": [
+                  "linen_black",
+                  "linen_navy",
+                  "linen_mauve",
+                  "linen_slate",
+                  "linen_sage",
+                  "linen_blush",
+                  "linen_fog"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "leathers",
+            "collections": [
+              {
+                "name": "vintage leather",
+                "ids": [
+                  "vintage_leather_aviator",
+                  "vintage_leather_charcoal",
+                  "vintage_leather_saddle",
+                  "vintage_leather_camel"
+                ]
+              },
+              {
+                "name": "alligator leather",
+                "ids": ["alligator_leather_black"]
+              },
+              {
+                "name": "leatherette",
+                "ids": ["vegan_leather_black_onyx", "vegan_leather_slate"]
+              },
+              {
+                "name": "faux leather",
+                "ids": [
+                  "faux_leather_black",
+                  "faux_leather_brown",
+                  "faux_leather_red",
+                  "faux_leather_lime_green",
+                  "faux_leather_aqua",
+                  "faux_leather_navy_blue",
+                  "faux_leather_purple"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "bookcloth",
+            "collections": [
+              {
+                "name": "silk",
+                "ids": [
+                  "silk_pewter",
+                  "silk_ruby",
+                  "silk_navy",
+                  "silk_eggplant"
+                ]
+              },
+              {
+                "name": "fabric",
+                "ids": [
+                  "fabric_black",
+                  "fabric_grey",
+                  "fabric_chocolate_brown",
+                  "fabric_tan",
+                  "fabric_misty_blue",
+                  "linen_natural",
+                  "fabric_cream",
+                  "fabric_sage",
+                  "fabric_teal",
+                  "fabric_baby_blue",
+                  "fabric_dusty_pink",
+                  "fabric_baby_pink",
+                  "fabric_gray_twill"
+                ]
+              },
+              {
+                "name": "chrome",
+                "ids": [
+                  "chrome_fabric_platinum",
+                  "chrome_fabric_champagne",
+                  "chrome_fabric_navy"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "orderAttributeCategories": [
+    {
+      "_id": "shipping_options",
+      "name": "Shipping Options",
+      "requiredLevel": 0,
+      "attributes": [
+        { "id": "studio", "externalId": 547, "name": "Ship to Studio" },
+        {
+          "id": "dropship",
+          "externalId": 548,
+          "name": "Ship Directly to Client"
+        }
+      ]
+    },
+    {
+      "_id": "studio_shipping_options",
+      "name": "Studio Shipping Options",
+      "requiredLevel": 547,
+      "attributes": [
+        {
+          "id": "studio_two_day",
+          "parentId": 547,
+          "externalId": 147,
+          "name": "Two-Day Shipping (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_standard",
+          "parentId": 547,
+          "externalId": 150,
+          "name": "One Day Shipping, Standard - USA only (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 4.424, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_priority",
+          "parentId": 547,
+          "externalId": 149,
+          "name": "One Day Shipping, Priority - USA only (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 8.201, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ],
+      "default": "studio_two_day"
+    },
+    {
+      "_id": "drop_ship_shipping_options",
+      "name": "Drop Ship Shipping Options",
+      "requiredLevel": 548,
+      "attributes": [
+        {
+          "id": "dropship_lowest_cost",
+          "parentId": 548,
+          "externalId": 553,
+          "name": "USA Drop Ship – Lowest Cost (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_two_day",
+          "parentId": 548,
+          "externalId": 554,
+          "name": "USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)",
+          "technical": "Normally $9.95, SEASONAL: $10.95 + 5% of $10.95",
+          "pricing": {
+            "base": { "value": 11.4975, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_standard",
+          "parentId": 548,
+          "externalId": 555,
+          "name": "USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $7.50 + 12% of $7.50 + $3.95 + 12% of $3.95, SEASONAL: $9 + 17% of $9 + $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 14.954, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_priority",
+          "parentId": 548,
+          "externalId": 556,
+          "name": "USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $7.50 + 18% of $7.50 + $6.95 + 18% of $6.95, SEASONAL: $9 + 23% of $9 + $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 19.271, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_canada",
+          "parentId": 548,
+          "externalId": 557,
+          "name": "Canada Drop Ship – UPS Standard (Includes Peak Surcharge)",
+          "technical": "(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50",
+          "pricing": {
+            "base": { "value": 10.35, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 15, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_international",
+          "parentId": 548,
+          "externalId": 558,
+          "name": "International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "order_packaging_options",
+      "name": "Order Packaging Options",
+      "requiredLevel": -1,
+      "attributes": [
+        {
+          "id": "pkg_brown",
+          "externalId": { "547": 551, "548": 552 },
+          "name": "Brown with Cream"
+        },
+        {
+          "id": "pkg_charcoal",
+          "externalId": { "547": 1701, "548": 1704 },
+          "name": "Charcoal with Gray"
+        },
+        {
+          "id": "pkg_kraft_cream",
+          "externalId": { "547": 1702, "548": 1705 },
+          "name": "Kraft with Cream"
+        },
+        {
+          "id": "pkg_kraft_black",
+          "externalId": { "547": 1703, "548": 1706 },
+          "name": "Kraft with Black"
+        }
+      ],
+      "pricingRefsKey": {
+        "keys": ["shipping.shipping_options"],
+        "separator": "-"
+      },
+      "pricingRefs": {
+        "studio": {
+          "base": { "value": 7.75, "type": "ACTUAL", "code": "USD" }
+        },
+        "dropship": {
+          "base": { "value": 4.95, "type": "ACTUAL", "code": "USD" }
+        }
+      }
+    }
+  ],
+  "editorType": "albumEditor",
+  "productRules": [
+    {
+      "id": "no_cameo_6x6",
+      "description": "Cameos are not allowed on 6x6 size",
+      "enabled": true,
+      "criteria": { "selected": { "size": { "match": "6x6" } } },
+      "actions": [
+        {
+          "categories": ["cover_cameo"],
+          "modify": { "hidden": true, "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "no_debossing_for_combo_front_and_back",
+      "description": "Debossing is not allowed on either cover if both are combo covers",
+      "enabled": true,
+      "criteria": {
+        "selected": { "combo_cover": { "match": "front_and_back" } }
+      },
+      "actions": [
+        {
+          "categories": ["debossing_cover_front", "debossing_cover_back"],
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "no_front_debossing_for_combo_front_only",
+      "description": "Debossing is not allowed on the front if the front is a combo cover",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "combo_cover": { "match": ["front_only", "front_and_back"] }
+        }
+      },
+      "actions": [
+        {
+          "categories": ["debossing_cover_front"],
+          "modify": { "enabled": false, "hidden": true }
+        }
+      ]
+    },
+    {
+      "id": "disable_combo_cover_side",
+      "description": "Disable the combo_cover category UNLESS cover_combo is chosen as the cover type",
+      "enabled": true,
+      "criteria": {
+        "selected": { "cover_type": { "exclude": "combo_cover" } }
+      },
+      "actions": [
+        { "categories": ["combo_cover"], "modify": { "enabled": false } }
+      ]
+    },
+    {
+      "id": "non_combo_actions",
+      "description": "When non-combo covers are chosen, make cover_material required",
+      "enabled": true,
+      "criteria": {
+        "selected": { "cover_type": { "exclude": "combo_cover" } }
+      },
+      "actions": [
+        { "categories": ["cover_material"], "modify": { "required": true } }
+      ]
+    },
+    {
+      "id": "combo_actions",
+      "description": "When combo covers are chosen, make combo subcategories required, disable cameos",
+      "enabled": true,
+      "criteria": { "selected": { "cover_type": { "match": "combo_cover" } } },
+      "actions": [
+        {
+          "categories": [
+            "combo_cover",
+            "combo_cover_stitching",
+            "combo_cover_photo_surface",
+            "combo_cover_spine_material"
+          ],
+          "modify": { "required": true }
+        },
+        {
+          "categories": ["cover_cameo", "cover_material"],
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "quicksand_front_colors",
+      "description": "Blind debossing is not allowed with Quicksand font (front)",
+      "enabled": true,
+      "criteria": {
+        "selected": { "debossing_front_cover_font": { "match": "quicksand" } }
+      },
+      "actions": [
+        {
+          "attributes": { "debossing_front_cover_color": { "match": "blind" } },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "quicksand_back_colors",
+      "description": "Blind debossing is not allowed with Quicksand font (back)",
+      "enabled": true,
+      "criteria": {
+        "selected": { "debossing_back_cover_font": { "match": "quicksand" } }
+      },
+      "actions": [
+        {
+          "attributes": { "debossing_back_cover_color": { "match": "blind" } },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "oswald_colors_front",
+      "description": "Foil debossing colors are not allowed with Oswald font (front)",
+      "enabled": true,
+      "criteria": {
+        "selected": { "debossing_front_cover_font": { "match": "oswald" } }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_front_cover_color": {
+              "match": ["rose_gold_foil", "gold_foil", "silver_foil"]
+            }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "oswald_colors_back",
+      "description": "Foil debossing colors are not allowed with Oswald font (back)",
+      "enabled": true,
+      "criteria": {
+        "selected": { "debossing_back_cover_font": { "match": "oswald" } }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_back_cover_color": {
+              "match": ["rose_gold_foil", "gold_foil", "silver_foil"]
+            }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "deboss_front_reqs",
+      "description": "Make all debossing subcategories required when debossing is enabled (front)",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "debossing_cover_front": { "match": "front_cover_debossing_text" }
+        }
+      },
+      "actions": [
+        {
+          "categories": [
+            "debossing_front_cover_font",
+            "debossing_front_cover_color",
+            "debossing_front_cover_location"
+          ],
+          "modify": { "required": true }
+        }
+      ]
+    },
+    {
+      "id": "deboss_back_reqs",
+      "description": "Make all debossing subcategories required when debossing is enabled (back)",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "debossing_cover_back": { "match": "back_cover_debossing_text" }
+        }
+      },
+      "actions": [
+        {
+          "categories": [
+            "debossing_back_cover_font",
+            "debossing_back_cover_color",
+            "debossing_back_cover_location"
+          ],
+          "modify": { "required": true }
+        }
+      ]
+    },
+    {
+      "id": "disable_debossing_pad",
+      "description": "Debossing is not allowed on padded covers",
+      "enabled": true,
+      "criteria": {
+        "selected": { "cover_padding": { "match": "padded_cover" } }
+      },
+      "actions": [
+        {
+          "categories": ["debossing_cover_back", "debossing_cover_front"],
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "disable_oswald",
+      "description": "Oswald debossing font is not allowed on silk or fabric materials",
+      "enabled": true,
+      "criteria": {
+        "selected": { "cover_material": { "match": "/^silk_.+$|^fabric_.+$/" } }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_front_cover_font": { "match": "oswald" },
+            "debossing_back_cover_font": { "match": "oswald" }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "disable_oswald_spine",
+      "description": "Oswald debossing font is not allowed on silk or fabric spine materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "combo_cover_spine_material": { "match": "/^silk_.+$|^fabric_.+$/" }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_front_cover_font": { "match": "oswald" },
+            "debossing_back_cover_font": { "match": "oswald" }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "deboss_opts_for_prem_black_navy",
+      "description": "Oswald debossing font and most debossing colors are not allowed on the very dark premium leather materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "cover_material": {
+            "match": ["premium_leather_black", "premium_leather_navy"]
+          }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_back_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_color": {
+              "exclude": ["black", "white", "blind"]
+            },
+            "debossing_back_cover_color": {
+              "exclude": ["black", "white", "blind"]
+            }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "deboss_opts_for_prem_black_navy_spine",
+      "description": "Oswald debossing font and most debossing colors are not allowed on the very dark premium leather spine materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "combo_cover_spine_material": {
+            "match": ["premium_leather_black", "premium_leather_navy"]
+          }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_back_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_color": {
+              "exclude": ["black", "white", "blind"]
+            },
+            "debossing_back_cover_color": {
+              "exclude": ["black", "white", "blind"]
+            }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "deboss_opts_for_other_prem_leathers",
+      "description": "Oswald debossing font and most debossing colors (including blind) are not allowed on the lighter-shade premium leather materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "cover_material": {
+            "match": [
+              "premium_leather_steel",
+              "premium_leather_fog",
+              "premium_leather_white"
+            ]
+          }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_back_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_color": { "exclude": ["black", "white"] },
+            "debossing_back_cover_color": { "exclude": ["black", "white"] }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "deboss_opts_for_other_prem_leathers_spine",
+      "description": "Oswald debossing font and most debossing colors (including blind) are not allowed on the lighter-shade premium leather spine materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "combo_cover_spine_material": {
+            "match": [
+              "premium_leather_steel",
+              "premium_leather_fog",
+              "premium_leather_white"
+            ]
+          }
+        }
+      },
+      "actions": [
+        {
+          "attributes": {
+            "debossing_back_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_font": { "match": ["oswald"] },
+            "debossing_front_cover_color": { "exclude": ["black", "white"] },
+            "debossing_back_cover_color": { "exclude": ["black", "white"] }
+          },
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "disable_debossing_for_materials",
+      "description": "No debossing is allowed on linen, floral fabric, or black alligator leather materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "cover_material": {
+            "match": "/alligator_leather_black|^linen_.+$|^floral_fabric_.+/"
+          }
+        }
+      },
+      "actions": [
+        {
+          "categories": ["debossing_cover_back", "debossing_cover_front"],
+          "modify": { "enabled": false }
+        }
+      ]
+    },
+    {
+      "id": "disable_debossing_for_spine_materials",
+      "description": "No debossing is allowed on linen, floral fabric, or black alligator leather spine materials",
+      "enabled": true,
+      "criteria": {
+        "selected": {
+          "combo_cover_spine_material": {
+            "match": "/alligator_leather_black|^linen_.+$|^floral_fabric_.+/"
+          }
+        }
+      },
+      "actions": [
+        {
+          "categories": ["debossing_cover_back", "debossing_cover_front"],
+          "modify": { "enabled": false }
+        }
+      ]
+    }
+  ],
+  "_id": "WcKNGejQa8xwPTGPC",
+  "globalProductId": "LWTKdsxTQjJR2FWqb",
+  "metadata": {
+    "resolution": 300,
+    "cover_overhang": 0.125,
+    "spread_bleed": 0.125
+  },
+  "name": "Layflat Book",
+  "nodes": [{ "name": "Spread", "nodeId": 10000, "dimensionKeys": ["size"] }],
+  "orgId": "5LsoooWuHGYFMaqbb",
+  "editorCompatibility": "albumEditor",
+  "checksum": "01edc588edaf5d07d3146decee9fb0aa"
+}

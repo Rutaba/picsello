@@ -3,27 +3,6 @@ defmodule Picsello.Product do
   use Ecto.Schema
   import Ecto.Query, only: [from: 2, join: 5, with_cte: 3, order_by: 3, select: 3]
 
-  @attributes_cte """
-  select
-    attribute_categories.name as category_name,
-    attribute_categories._id as category_id,
-    attributes.id as id,
-    attributes.name as name,
-    attributes."pricingRefs" -> priced_attributes.id -> 'base' -> 'value' as price,
-    priced_attributes.id as variation_id,
-    priced_attributes.name as variation_name,
-    cast(priced_attributes.metadata -> 'width' as integer) as width,
-    cast(priced_attributes.metadata -> 'height' as integer) as height,
-    products.id as product_id
-  from
-    products,
-    jsonb_to_recordset(products.attribute_categories -> 0 -> 'attributes') as priced_attributes(id text, name text, metadata jsonb),
-    jsonb_to_recordset(products.attribute_categories) as attribute_categories(attributes jsonb, name text, _id text),
-    jsonb_to_recordset(attribute_categories.attributes) as attributes("pricingRefs" jsonb, name text, id text)
-  where
-    attributes."pricingRefs" -> priced_attributes.id is not null
-  """
-
   @attributes_with_markups_cte """
   select
     height,
@@ -51,7 +30,7 @@ defmodule Picsello.Product do
         attributes.id
     ) as attributes
   from
-    attributes
+    product_attributes as attributes
     left outer join markups on markups.product_id = attributes.product_id
     and markups.whcc_attribute_category_id = category_id
     and markups.whcc_variation_id = attributes.variation_id
@@ -79,7 +58,8 @@ defmodule Picsello.Product do
       )
       order by
         width,
-        height
+        height,
+        variation_id
     ) as variations
   from
     attributes_with_markups
@@ -88,12 +68,13 @@ defmodule Picsello.Product do
   """
 
   schema "products" do
+    field :api, :map
+    field :attribute_categories, {:array, :map}
     field :deleted_at, :utc_datetime
     field :position, :integer
+    field :variations, {:array, :map}, virtual: true
     field :whcc_id, :string
     field :whcc_name, :string
-    field :attribute_categories, {:array, :map}
-    field :variations, {:array, :map}, virtual: true
 
     belongs_to(:category, Picsello.Category)
     has_many(:markups, Picsello.Markup)
@@ -107,7 +88,6 @@ defmodule Picsello.Product do
     default_markup = Picsello.Markup.default_markup()
 
     query
-    |> with_cte("attributes", as: fragment(@attributes_cte))
     |> with_cte("attributes_with_markups",
       as: fragment(@attributes_with_markups_cte, ^default_markup, ^organization_id)
     )

@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Pricing.Category do
 
   @impl true
   def mount(%{"category_id" => id}, _session, socket) do
-    socket |> assign_category(id) |> assign(expanded: %{}) |> ok()
+    socket |> assign_category(id) |> assign(expanded: MapSet.new()) |> ok()
   end
 
   @impl true
@@ -39,33 +39,18 @@ defmodule PicselloWeb.Live.Pricing.Category do
 
     <div class="px-6 pt-8 center-container">
       <%= for product <- @category.products do %>
-        <.product product={product} expanded={Map.get(@expanded, product.id)} />
+        <.product product={product} user={@current_user} expanded={MapSet.member?(@expanded, product.id)} />
       <% end %>
     </div>
+
+    <button title="Expand All" type="button" class="flex items-center justify-center p-3 mx-6 mt-12 font-semibold border rounded-lg sm:hidden border-base-300" phx-click="toggle-expand-all">
+      <%= if all_expanded?(@category.products, @expanded) do %>
+        <.icon name="up" class="w-4 h-2 mr-2 stroke-current stroke-2" /> Collapse All
+      <% else %>
+        <.icon name="down" class="w-4 h-2 mr-2 stroke-current stroke-2" /> Expand All
+      <% end %>
+    </button>
     """
-  end
-
-  @impl true
-  def handle_event(
-        "toggle-expand-all",
-        %{"product-id" => product_id},
-        %{assigns: %{expanded: expanded, category: %{products: products}}} = socket
-      ) do
-    product_id = String.to_integer(product_id)
-    product = Enum.find(products, &(&1.id == product_id))
-
-    if all_variations_expanded?(product, Map.get(expanded, product_id)) do
-      assign(socket, :expanded, Map.put(expanded, product_id, MapSet.new()))
-    else
-      assign(
-        socket,
-        :expanded,
-        Enum.reduce(variation_ids(product), expanded, fn variation_id, expanded ->
-          Map.update(expanded, product_id, MapSet.new(), &MapSet.put(&1, variation_id))
-        end)
-      )
-    end
-    |> noreply()
   end
 
   @impl true
@@ -75,37 +60,15 @@ defmodule PicselloWeb.Live.Pricing.Category do
         %{assigns: %{expanded: expanded, category: %{products: products}}} = socket
       ) do
     if all_expanded?(products, expanded) do
-      assign(socket, :expanded, %{})
+      assign(socket, :expanded, MapSet.new())
     else
       assign(
         socket,
         :expanded,
-        Enum.reduce(products, expanded, &Map.put_new(&2, &1.id, MapSet.new()))
+        id_set(products)
       )
     end
     |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "toggle-expand",
-        %{"product-id" => product_id, "variation-id" => variation_id},
-        %{assigns: %{expanded: expanded}} = socket
-      ) do
-    product_id = String.to_integer(product_id)
-
-    expanded =
-      Map.update(
-        expanded,
-        product_id,
-        MapSet.new(),
-        &if(MapSet.member?(&1, variation_id),
-          do: MapSet.delete(&1, variation_id),
-          else: MapSet.put(&1, variation_id)
-        )
-      )
-
-    socket |> assign(:expanded, expanded) |> noreply()
   end
 
   @impl true
@@ -117,82 +80,25 @@ defmodule PicselloWeb.Live.Pricing.Category do
     product_id = String.to_integer(product_id)
 
     expanded =
-      if Map.has_key?(expanded, product_id),
-        do: Map.drop(expanded, [product_id]),
-        else: Map.put(expanded, product_id, MapSet.new())
+      if(MapSet.member?(expanded, product_id),
+        do: MapSet.delete(expanded, product_id),
+        else: MapSet.put(expanded, product_id)
+      )
 
     socket |> assign(:expanded, expanded) |> noreply()
   end
 
-  @impl true
-  def handle_info(
-        {:markup, markup},
-        %{assigns: %{category: category, current_user: %{organization_id: organization_id}}} =
-          socket
-      ) do
-    case Picsello.Repo.insert(%{markup | organization_id: organization_id},
-           on_conflict: :replace_all,
-           conflict_target:
-             ~w[organization_id product_id whcc_attribute_id whcc_variation_id whcc_attribute_category_id]a,
-           returning: true
-         ) do
-      {:ok, markup} ->
-        socket |> assign(category: update_markup(category, markup)) |> noreply()
-    end
-  end
+  defp all_expanded?(products, expanded), do: products |> id_set() |> MapSet.equal?(expanded)
 
-  defp update_markup(category, markup) do
-    products =
-      update_enum(category.products, &(&1.id == markup.product_id), fn product ->
-        %{
-          product
-          | variations:
-              update_enum(
-                product.variations,
-                &(&1.id == markup.whcc_variation_id),
-                fn variation ->
-                  %{
-                    variation
-                    | attributes:
-                        update_enum(
-                          variation.attributes,
-                          &(&1.id == markup.whcc_attribute_id &&
-                              &1.category_id == markup.whcc_attribute_category_id),
-                          &%{&1 | markup: markup.value}
-                        )
-                  }
-                end
-              )
-        }
-      end)
-
-    %{category | products: products}
-  end
-
-  defp update_enum(enum, predicate, update),
-    do: Enum.map(enum, &if(predicate.(&1), do: update.(&1), else: &1))
-
-  defp all_expanded?(products, expanded) do
-    [all, expanded] =
-      [Enum.map(products, & &1.id), Map.keys(expanded)]
-      |> Enum.map(&MapSet.new/1)
-
-    MapSet.equal?(all, expanded)
-  end
-
-  defdelegate all_variations_expanded?(product, expanded),
-    to: __MODULE__.Product,
-    as: :all_expanded?
-
-  defdelegate variation_ids(product), to: __MODULE__.Product
+  defp id_set(products), do: products |> Enum.map(& &1.id) |> MapSet.new()
 
   defp product(assigns) do
     ~H"""
-    <%= live_component(__MODULE__.Product, product: @product, id: @product.id, expanded: @expanded) %>
+    <%= live_component(__MODULE__.Product, product: @product, id: @product.id, expanded: @expanded, user: @user) %>
     """
   end
 
-  defp assign_category(%{assigns: %{current_user: current_user}} = socket, id) do
-    socket |> assign(category: Picsello.WHCC.category(id, current_user))
+  defp assign_category(socket, id) do
+    assign(socket, category: Picsello.WHCC.category(id))
   end
 end

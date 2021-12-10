@@ -1,45 +1,49 @@
 <div
-    class={!@is_removed && "item" || "hidden"}  
-    id={"photo-item-#{@photo.id}"}            
+    class={!@is_removed && "item" || "hidden"}
+    id={"photo-item-#{@photo.id}"}
     style={"
         width: 300px;
         height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
     "}
 >
-    <div class="item-content">
-        <div
-            id={"photo-#{@id}"}
-            class={@is_removable && "galleryItem cursor-pointer"}
+ <div class="item-content">
+<div
+    id={"photo-#{@id}"}
+    class="galleryItem"
+        phx-click="click"
+        phx-target={@myself}
+>
+    <img
+        width="300"
+        height={if @photo.aspect_ratio, do: 300 / @photo.aspect_ratio}
+        src={display(@photo)}
+        class="relative"
+    />
+    <button
+        class="likeBtn"
+        phx-click={@is_likable && "like"}
+        phx-target={@myself}
+        phx-value-id={@id}
+    >
+         <%= if @photo.client_liked do %>
+              <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
+         <% else %>
+             <%= if @is_likable do %>
+                   <.icon name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
+              <% else %>
+                   <.icon name="heart" class="w-7 h-7 text-gray-200" />
+               <% end %>
+         <% end %>
+    </button>
+    <%= if @is_removable do %>
+        <button
+            class="removeBtn absolute"
+            phx-click="delete_photo_popup"
+            phx-value-id={@id}
         >
-            <img
-                width="300"
-                height={if @photo.aspect_ratio, do: 300 / @photo.aspect_ratio}
-                src={display(@photo)}
-                class="relative"
-            />
-            <button
-                class="likeBtn absolute"
-                phx-click={@is_likable && "like"}
-                phx-target={@myself}
-                phx-value-id={@id}
-            >
-                <%= if @photo.client_liked do %>
-                   <.icon name="heart-filled" class="w-7 h-7" />
-                <% else %>
-                    <.icon name="heart" class="w-7 h-7" />
-                      <% end %>
-            </button>
-            <%= if @is_removable do %>
-                <button
-                    class="removeBtn absolute"
-                    phx-click="delete_photo_popup"
-                    phx-value-id={@id}
-                >
-                    <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
-                </button>
-            <% end %>
-        </div>
-    </div>
+            <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
+        </button>
+    <% end %>
 </div>
-
-
+ </div>
+</div>

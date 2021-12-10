@@ -3,7 +3,7 @@ defmodule Picsello.Job do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Client, JobStatus, Package, Shoot, BookingProposal, Repo}
+  alias Picsello.{Client, JobStatus, Package, Shoot, BookingProposal, Repo, ClientMessage}
   alias Picsello.Galleries.Gallery
 
   schema "jobs" do
@@ -17,6 +17,7 @@ defmodule Picsello.Job do
     has_one(:gallery, Gallery)
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
+    has_many(:client_messages, ClientMessage)
 
     timestamps(type: :utc_datetime)
   end
@@ -63,6 +64,10 @@ defmodule Picsello.Job do
     )
   end
 
+  def by_id(id) do
+    from(job in __MODULE__, where: job.id == ^id)
+  end
+
   def lead?(%__MODULE__{} = job) do
     %{job_status: %{is_lead: is_lead}} =
       job
@@ -77,5 +82,17 @@ defmodule Picsello.Job do
 
   def not_leads(query \\ __MODULE__) do
     from(job in query, join: status in assoc(job, :job_status), where: not status.is_lead)
+  end
+
+  def token(%__MODULE__{id: id, inserted_at: inserted_at}),
+    do:
+      PicselloWeb.Endpoint
+      |> Phoenix.Token.sign("JOB_ID", id, signed_at: DateTime.to_unix(inserted_at))
+
+  def find_by_token("" <> token) do
+    case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
+      {:ok, job_id} -> Repo.get(__MODULE__, job_id)
+      _ -> nil
+    end
   end
 end

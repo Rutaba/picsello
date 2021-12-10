@@ -1,0 +1,261 @@
+{
+  "category": { "id": "5NcX5MjyPKtrGDEE4", "name": "Ornaments" },
+  "attributeCategories": [
+    {
+      "_id": "shapes",
+      "name": "shapes",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        {
+          "id": "no",
+          "name": "none",
+          "image": { "type": "SVG", "value": "M37,863V37H863V863H37Z" },
+          "enabled": true
+        }
+      ],
+      "effective": "2014-07-07T00:00:00.000Z",
+      "expiration": "2099-12-31T00:00:00.000Z"
+    },
+    {
+      "_id": "paper_types",
+      "name": "surface",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "lustre",
+          "name": "Lustre Photographic",
+          "tags": [],
+          "pricing": {
+            "base": { "value": 20, "type": "ACTUAL", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 3,
+                "price": { "value": 16, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "id": "deepmatte",
+          "name": "Deep Matte Photographic",
+          "tags": [],
+          "pricing": {
+            "base": { "value": 20, "type": "ACTUAL", "code": "USD" },
+            "discountVolume": [
+              {
+                "min": 3,
+                "price": { "value": 16, "type": "ACTUAL", "code": "USD" }
+              }
+            ]
+          },
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "_id": "ribbon_color",
+      "name": "ribbon color",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "attributes": [
+        { "id": "gold", "name": "gold", "enabled": true },
+        { "id": "red", "name": "red", "enabled": true },
+        { "id": "green", "name": "green", "enabled": true },
+        { "id": "black", "name": "black", "enabled": true },
+        { "id": "white", "name": "white", "enabled": true }
+      ]
+    }
+  ],
+  "orderAttributeCategories": [
+    {
+      "_id": "shipping_options",
+      "name": "Shipping Options",
+      "requiredLevel": 0,
+      "attributes": [
+        { "id": "studio", "externalId": 547, "name": "Ship to Studio" },
+        {
+          "id": "dropship",
+          "externalId": 548,
+          "name": "Ship Directly to Client"
+        }
+      ]
+    },
+    {
+      "_id": "studio_shipping_options",
+      "name": "Studio Shipping Options",
+      "requiredLevel": 547,
+      "attributes": [
+        {
+          "id": "studio_two_day",
+          "parentId": 547,
+          "externalId": 147,
+          "name": "Two-Day Shipping (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_standard",
+          "parentId": 547,
+          "externalId": 150,
+          "name": "One Day Shipping, Standard - USA only (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 4.424, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_priority",
+          "parentId": 547,
+          "externalId": 149,
+          "name": "One Day Shipping, Priority - USA only (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 8.201, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "drop_ship_shipping_options",
+      "name": "Drop Ship Shipping Options",
+      "requiredLevel": 548,
+      "attributes": [
+        {
+          "id": "dropship_lowest_cost",
+          "parentId": 548,
+          "externalId": 553,
+          "name": "USA Drop Ship – Lowest Cost (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_two_day",
+          "parentId": 548,
+          "externalId": 554,
+          "name": "USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)",
+          "technical": "Normally $9.95, SEASONAL: $10.95 + 5% of $10.95",
+          "pricing": {
+            "base": { "value": 11.4975, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_standard",
+          "parentId": 548,
+          "externalId": 555,
+          "name": "USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)",
+          "technical": "(200001 Standard NDS) $7.50 + 12% of $7.50 + $3.95 + 12% of $3.95, SEASONAL: $9 + 17% of $9 + $3.95 + 12% of $3.95",
+          "pricing": {
+            "base": { "value": 14.954, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 17, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_priority",
+          "parentId": 548,
+          "externalId": 556,
+          "name": "USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)",
+          "technical": "(210001 Standard NDA) $7.50 + 18% of $7.50 + $6.95 + 18% of $6.95, SEASONAL: $9 + 23% of $9 + $6.95 + 18% of $6.95",
+          "pricing": {
+            "base": { "value": 19.271, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 23, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_canada",
+          "parentId": 548,
+          "externalId": 557,
+          "name": "Canada Drop Ship – UPS Standard (Includes Peak Surcharge)",
+          "technical": "(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50",
+          "pricing": {
+            "base": { "value": 10.35, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 15, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_international",
+          "parentId": 548,
+          "externalId": 558,
+          "name": "International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "order_packaging_options",
+      "name": "Order Packaging Options",
+      "requiredLevel": -1,
+      "attributes": [
+        {
+          "id": "pkg_brown",
+          "externalId": { "547": 551, "548": 552 },
+          "name": "Brown with Cream"
+        },
+        {
+          "id": "pkg_charcoal",
+          "externalId": { "547": 1701, "548": 1704 },
+          "name": "Charcoal with Gray"
+        },
+        {
+          "id": "pkg_kraft_cream",
+          "externalId": { "547": 1702, "548": 1705 },
+          "name": "Kraft with Cream"
+        },
+        {
+          "id": "pkg_kraft_black",
+          "externalId": { "547": 1703, "548": 1706 },
+          "name": "Kraft with Black"
+        }
+      ],
+      "pricingRefsKey": {
+        "keys": ["shipping.shipping_options"],
+        "separator": "-"
+      },
+      "pricingRefs": {
+        "studio": {
+          "base": { "value": 7.75, "type": "ACTUAL", "code": "USD" }
+        },
+        "dropship": {
+          "base": { "value": 4.95, "type": "ACTUAL", "code": "USD" }
+        }
+      }
+    }
+  ],
+  "editorType": "cardEditor",
+  "_id": "YcMECbEJMNqNZSYNX",
+  "globalProductId": "5ru354r9XMWbgFvMr",
+  "metadata": {
+    "width": 2.75,
+    "height": 2.75,
+    "bleed": 0.25,
+    "resolution": 300,
+    "quantity": {
+      "name": "quantity",
+      "minVal": 1,
+      "maxVal": 100,
+      "intervalAmt": 1,
+      "default": 1
+    }
+  },
+  "name": "Bamboo Ornament",
+  "nodes": [
+    { "name": "Front", "nodeId": 10000, "height": 3, "width": 3 },
+    { "name": "Back", "nodeId": 10001, "height": 3, "width": 3 }
+  ],
+  "orgId": "5LsoooWuHGYFMaqbb",
+  "default": true,
+  "editorCompatibility": "cardEditor",
+  "enabled": true
+}

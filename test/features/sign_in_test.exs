@@ -18,7 +18,7 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
     |> wait_for_enabled_submit_button()
-    |> click(button("Log In"))
+    |> click(button("Login"))
     |> assert_has(css("p.text-red-sales-300", text: "Invalid email or password"))
   end
 
@@ -31,7 +31,7 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Email"), with: user.email)
     |> fill_in(text_field("Password"), with: valid_user_password())
     |> wait_for_enabled_submit_button()
-    |> click(button("Log In"))
+    |> click(button("Login"))
     |> assert_path("/onboarding")
   end
 
@@ -44,7 +44,7 @@ defmodule Picsello.SignInTest do
     |> fill_in(text_field("Email"), with: user.email)
     |> fill_in(text_field("Password"), with: valid_user_password())
     |> wait_for_enabled_submit_button()
-    |> click(button("Log In"))
+    |> click(button("Login"))
     |> assert_has(css("h1", text: ", #{User.first_name(user)}!"))
     |> assert_path("/home")
   end
