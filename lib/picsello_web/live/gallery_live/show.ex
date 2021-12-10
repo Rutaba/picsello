@@ -38,11 +38,6 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     data = Repo.all(Picsello.CategoryTemplates)
 
-    template_name2 = Enum.at(data, 1) |> Map.get(:name)
-    template_name3 = Enum.at(data, 2) |> Map.get(:name)
-    template_name4 = Enum.at(data, 3) |> Map.get(:name)
-    template_coords = Enum.map(data, fn x -> Map.get(x, :corners) end)
-
     url = if preview != nil and Map.has_key?(preview, :preview_photo) do
       preview.preview_photo != nil &&
       PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url) || "/images/card_blank.png"

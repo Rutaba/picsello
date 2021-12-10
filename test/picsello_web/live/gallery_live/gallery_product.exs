@@ -1,6 +1,5 @@
 defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   @moduledoc false
-  #use PicselloWeb.ConnCase, async: true
 
   use Picsello.FeatureCase, async: true
 
@@ -15,43 +14,25 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   setup :onboarded
   setup :authenticated
 
-  # setup %{user: user, session: session} do
-  #   %{booking_proposals: [proposal]} =
-  #     job =
-  #     insert(:lead, user: user)
-  #     |> promote_to_job()
-  #     |> Repo.preload(:booking_proposals)
+  test "redirect from galleries", %{session: session} do
+    %{gallery_id: id} = set_gallery_product()
 
-  #   #proposal |> with_completed_questionnaire()
+    session |> visit("/galleries/#{id}")
+    |> click(css(".prod-link0"))
+    |> find(css(".item-content"))
+  end
 
-  #   session
-  #   |> visit("/jobs/#{job.id}")
+  test "save preview gallery product", %{session: session} do
+    %{id: g_product_id, gallery_id: gallery_id} = set_gallery_product()
 
-  #   [user: user]
-  # end
+    session
+      |> visit("/galleries/#{gallery_id}/product/#{g_product_id}")
+      |> click(css(".item-content"))
+      |> click(css(".save-button"))
 
-  test "connected mount", %{session: session} do
-    seed_category_teplate()
-    #insert(:user)
+    %{preview_photo: %{name: url}} = Repo.get_by(GalleryProduct, %{id: g_product_id}) |> Repo.preload([:preview_photo])
 
-    %{id: job_id} = insert(:lead)
-    %{id: id} = insert(%Gallery{name: "testGalleryName", job_id: job_id})
-    photo_url = "card_blank.png"
-    %{id: _p_id} = insert(%Photo{gallery_id: id, preview_url: photo_url, original_url: photo_url, name: photo_url, position: 1})
-    %{id: g_id} = insert(%GalleryProduct{gallery_id: id, category_template_id: 1})
-
-    session |> visit("/galleries/#{id}") |> click(css(".prod-link0"))
-
-
-    # session |> visit("/galleries/#{id}/product/#{g_id}") |> click(css(".item-content"))
-    # session |> click(css(".save-button"))
-
-    take_screenshot(session)
-    print_page_source(session)
-    # %{preview_photo: %{name: url}} = Repo.get_by(GalleryProduct, %{id: g_id}) |> Repo.preload([:preview_photo])
-
-    # # IO.inspect r
-    # assert photo_url == url
+    assert "card_blank.png" == url
   end
 
   def print_page_text(session) do
@@ -61,6 +42,16 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   def print_page_source(session) do
     session |> Wallaby.Browser.page_source() |> IO.inspect()
     session
+  end
+
+  def set_gallery_product() do
+    seed_category_teplate()
+
+    %{id: job_id} = insert(:lead)
+    %{id: id} = insert(%Gallery{name: "testGalleryName", job_id: job_id})
+    photo_url = "card_blank.png"
+    insert(%Photo{gallery_id: id, preview_url: photo_url, original_url: photo_url, name: photo_url, position: 1})
+    insert(%GalleryProduct{gallery_id: id, category_template_id: 1})
   end
 
   def seed_category_teplate() do

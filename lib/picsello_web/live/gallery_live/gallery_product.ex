@@ -2,7 +2,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
-  import Ecto.Query
   import Ecto.Changeset
   import PicselloWeb.LiveHelpers
   alias Picsello.Repo
