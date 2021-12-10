@@ -51,8 +51,8 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
        socket
        |> assign(:frame_id, frame_id)
        |> assign(:frame, frame_name)
-       |> assign(:preview, path(url))
        |> assign(:coords, "#{inspect(coords)}")
+       |> push_event("set_preview", %{preview: path(url), frame: frame_name, coords: coords, target: "canvas"})
        |> assign(:changeset, changeset(%{}, []))
        |> assign(:preview_photo_id, nil)}
     end
@@ -84,7 +84,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
     |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
-    |> push_event("set_preview", %{preview: path(preview), frame: frame, coords: coords})
+    |> push_event("set_preview", %{preview: path(preview), frame: frame, coords: coords, target: "canvas"})
     |> noreply
   end
 

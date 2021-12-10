@@ -50,23 +50,6 @@
     </div>
   </div>
 </div>
-    <script type="application/javascript">
-      let preview_name = "<%= @preview %>";
-      let coords = <%= @coords %>;
-
-      window.addEventListener('onload', function() {
-        let frames = [
-          liveSocket.hooks.Preview.unescape("<%= @frame_name1 %>"),
-          liveSocket.hooks.Preview.unescape("<%= @frame_name2 %>"),
-          liveSocket.hooks.Preview.unescape("<%= @frame_name3 %>"),
-          liveSocket.hooks.Preview.unescape("<%= @frame_name4 %>")
-        ];
-
-        for(var i = 0; i < frames.length; i++){
-          liveSocket.hooks.Preview.draw(frames[i], preview_name, coords[i], "canvas" + i);
-        }
-      })
-    </script>
 <div class="gallery__container pb-14">
   <div class="pt-14 pb-7">
     <div class="font-bold text-3xl">Showcase photos your clients will love

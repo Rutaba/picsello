@@ -47,17 +47,23 @@ defmodule PicselloWeb.GalleryLive.Show do
       PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url)
     else "/images/card_blank.png" end
 
+    event_datas = Enum.map(0..3, fn x -> %{
+      preview: url,
+      frame: Map.get(Enum.at(data, x), :name),
+      coords: Map.get(Enum.at(data, x), :corners),
+      target: "canvas#{x}"}
+    end)
+
     preview_id = if preview == nil do 1 else preview.id end
 
     socket
     |> assign(:templates, Enum.with_index(data))
     |> assign(:gallery_product_id, preview_id)
-    |> assign(:preview, url)
-    |> assign(:frame_name1, "#{inspect(Map.get(hd(data), :name))}")
-    |> assign(:frame_name2, "#{inspect(template_name2)}")
-    |> assign(:frame_name3, "#{inspect(template_name3)}")
-    |> assign(:frame_name4, "#{inspect(template_name4)}")
-    |> assign(:coords, "#{inspect(template_coords)}")
+    |> assign(:preview, cover_photo(url))
+    |> push_event("set_preview", Enum.at(event_datas, 0))
+    |> push_event("set_preview", Enum.at(event_datas, 1))
+    |> push_event("set_preview", Enum.at(event_datas, 2))
+    |> push_event("set_preview", Enum.at(event_datas, 3))
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:gallery, gallery)
     |> assign(:page, 0)
