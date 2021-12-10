@@ -82,6 +82,13 @@ defmodule PicselloWeb.GalleryLive.Settings do
     noreply(socket)
   end
 
+  @impl true
+  def handle_info(:expiration_saved, socket) do
+    socket
+    |> put_flash(:success, "The expiration date has been saved.")
+    |> noreply()
+  end
+
   defp preload_watermark(%{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
