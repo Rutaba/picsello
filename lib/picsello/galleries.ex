@@ -264,7 +264,7 @@ defmodule Picsello.Galleries do
   @doc """
   Updates a photo
   """
-  def update_photo(nil, %{} = attrs), do: []
+  def update_photo(nil, %{} = _attrs), do: []
 
   def update_photo(%Photo{id: _} = photo, %{} = attrs) do
     photo
