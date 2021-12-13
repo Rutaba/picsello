@@ -5,7 +5,7 @@ defmodule Picsello.UserOnboardsTest do
 
   setup :authenticated
 
-  @website_field text_field("user_onboarding_website")
+  @website_field text_field("user_organization_profile_website")
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
   @home_path Routes.home_path(PicselloWeb.Endpoint, :index)
   @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
@@ -51,20 +51,24 @@ defmodule Picsello.UserOnboardsTest do
       |> Repo.reload()
       |> Repo.preload(:organization)
 
-    second_color = User.Onboarding.colors() |> tl |> hd
+    second_color = Picsello.Profiles.colors() |> tl |> hd
 
     assert %User{
              onboarding: %{
                schedule: :full_time,
-               website: "example.com",
                phone: "(123) 456-7890",
-               no_website: false,
-               color: ^second_color,
-               job_types: ~w(event portrait),
                photographer_years: 5,
                used_software_before: true,
                switching_from_software: "shoot_proof",
                completed_at: completed_at
+             },
+             organization: %{
+               profile: %{
+                 website: "example.com",
+                 no_website: false,
+                 color: ^second_color,
+                 job_types: ~w(event portrait)
+               }
              }
            } = user
 
@@ -81,7 +85,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(button("Skip"))
     |> assert_has(@second_color_field)
 
-    assert %User{organization: %{name: "best pictures"}, onboarding: %{website: nil}} =
+    assert %User{organization: %{name: "best pictures", profile: %{website: nil}}} =
              user |> Repo.reload() |> Repo.preload(:organization)
   end
 
@@ -101,9 +105,11 @@ defmodule Picsello.UserOnboardsTest do
       |> Repo.preload(:organization)
 
     assert %User{
-             onboarding: %{
-               website: nil,
-               no_website: true
+             organization: %{
+               profile: %{
+                 website: nil,
+                 no_website: true
+               }
              }
            } = user
   end
