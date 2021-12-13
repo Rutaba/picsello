@@ -1,6 +1,6 @@
 #!make
 include .env
-.PHONY: help console outdated setup server test update-mix check iex
+.PHONY: help console outdated setup server test test-clear update-mix check iex
 
 HELP_PADDING = 20
 
@@ -43,10 +43,12 @@ server: ## Start the App server.
 	mix phx.server
 
 test: ## Run the test suite.
-test: setup check
-	killall chrome | true
+test: setup check test-clear
 	rm -f screenshots/*.png
 	mix test
+
+test-clear:
+	ps ax | grep '[Cc]hrome.*--headless' | cut -f1 -d ' ' | xargs kill -9 | true
 
 test-watch: ## Run tests in watch mode
 	git ls-files | entr mix test $(FILE)

@@ -129,10 +129,14 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
+
+    live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
   end
 
   scope "/gallery", PicselloWeb do
     pipe_through [:browser]
+
+    live "/dump", GalleryLive.DumpEditor, :show
 
     live "/:hash", GalleryLive.ClientShow, :show
     post "/:hash/downloads", GalleryDownloadsController, :download

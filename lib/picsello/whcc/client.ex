@@ -53,6 +53,19 @@ defmodule Picsello.WHCC.Client do
     end
   end
 
+  def editor(params) do
+    {:ok, %{body: body}} =
+      new()
+      |> post("/editors", params)
+
+    body |> WHCC.CreatedEditor.from_map()
+  end
+
+  def editor_details(id) do
+    {:ok, %{body: body}} = new() |> get("/editors/#{id}")
+    body
+  end
+
   def product_details(%WHCC.Product{id: id} = product) do
     {:ok, %{body: api}} = new() |> get("/products/#{id}")
 

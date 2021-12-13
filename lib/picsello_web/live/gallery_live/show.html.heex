@@ -44,7 +44,7 @@
             <div class="dragDrop__wrapper">
                <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
                   <label>
-                     <div class="flex flex-col items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop">
+                     <div class="flex flex-col items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
                         <.icon name="add-photos" class="w-20 h-20 text-blue-planning-300 cursor-pointer" />
                         <div class="dragDrop__content">
                            <p class="font-bold"><span>Drop images or </span><span class="primary cursor-pointer">Browse</span></p>
