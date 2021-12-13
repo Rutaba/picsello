@@ -45,6 +45,21 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_has(link("See our full portfolio"))
   end
 
+  feature "404", %{session: session, photographer: user} do
+    session
+    |> sign_in(user)
+    |> click(link("Settings"))
+    |> click(link("Public Profile"))
+    |> click(css("label", text: "Enabled"))
+    |> assert_has(css("label", text: "Disabled"))
+
+    refute user.organization |> Repo.reload!() |> Picsello.Profiles.enabled?()
+
+    session
+    |> visit(session |> find(text_field("url")) |> Element.value())
+    |> assert_text("Not Found")
+  end
+
   feature "selects job type if there is only one", %{
     photographer: photographer,
     session: session,

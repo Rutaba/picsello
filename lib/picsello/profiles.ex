@@ -163,10 +163,18 @@ defmodule Picsello.Profiles do
   def find_organization_by(slug: slug) do
     from(
       o in Organization,
-      where: o.slug == ^slug,
+      where: o.slug == ^slug and fragment("coalesce((profile -> 'is_enabled')::boolean, true)"),
       preload: [:user]
     )
     |> Repo.one!()
+  end
+
+  def enabled?(%Organization{profile: profile}), do: Profile.enabled?(profile)
+
+  def toggle(%Organization{} = organization) do
+    organization
+    |> Ecto.Changeset.change(%{profile: %{is_enabled: !enabled?(organization)}})
+    |> Repo.update!()
   end
 
   defdelegate colors(), to: Profile

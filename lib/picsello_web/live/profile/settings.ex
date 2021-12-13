@@ -20,23 +20,53 @@ defmodule PicselloWeb.Live.Profile.Settings do
       <hr class="mt-12">
 
       <div class="mx-0 mt-14 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
-        <div class="flex overflow-hidden border rounded-lg">
-          <div class="w-4 border-r bg-blue-planning-300" />
+        <.card title="Share your profile">
+          <input readonly value={@profile_url} name="url" class="mt-4 font-bold text-input" />
 
-          <div class="flex flex-col w-full p-4">
-            <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300">Share your profile</h1>
+          <button type="button" class="self-auto w-auto py-3 mt-4 text-lg font-semibold border rounded-lg sm:self-end border-base-300 sm:w-36" id="copy-public-profile-link" data-clipboard-text={@profile_url} phx-hook="Clipboard">
+            <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100" role="tooltip">Copied!</div>
 
-            <input readonly value={@profile_url} class="mt-4 font-bold text-input" />
+            Copy Link
+          </button>
+        </.card>
 
-            <button type="button" class="self-auto w-auto py-3 mt-4 text-lg font-semibold border rounded-lg sm:self-end border-base-300 sm:w-36" id="copy-public-profile-link" data-clipboard-text={@profile_url} phx-hook="Clipboard">
-              <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100" role="tooltip">Copied!</div>
+        <.card title="Enable/disable your public profile">
+          <p class="mt-4">If for whatever reason you want to hide your public profile, you can disable it here!</p>
 
-              Copy Link
-            </button>
-          </div>
-        </div>
+          <.form for={:toggle} phx-change="toggle">
+            <label class="mt-4 text-2xl flex">
+              <input type="checkbox" class="peer hidden" checked={Profiles.enabled?(@organization)} />
+
+              <div class="rounded-full bg-blue-planning-300 w-16 p-1 flex peer-checked:justify-end mr-4">
+                <div class="rounded-full h-7 w-7 bg-base-100"></div>
+              </div>
+
+              <span class="block peer-checked:hidden">Disabled</span>
+              <span class="hidden peer-checked:block">Enabled</span>
+            </label>
+          </.form>
+        </.card>
       </div>
     </.settings_nav>
+    """
+  end
+
+  @impl true
+  def handle_event("toggle", %{}, %{assigns: %{organization: organization}} = socket) do
+    socket |> assign(organization: Profiles.toggle(organization)) |> noreply()
+  end
+
+  defp card(assigns) do
+    ~H"""
+    <div class="flex overflow-hidden border rounded-lg">
+      <div class="w-4 border-r bg-blue-planning-300" />
+
+      <div class="flex flex-col w-full p-4">
+        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
+
+        <%= render_slot(@inner_block) %>
+      </div>
+    </div>
     """
   end
 end
