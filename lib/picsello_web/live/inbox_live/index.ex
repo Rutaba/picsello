@@ -167,7 +167,6 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event("confirm-delete", %{}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      center: true,
       close_label: "No, go back",
       confirm_event: "delete",
       confirm_label: "Yes, delete",
