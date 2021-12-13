@@ -37,10 +37,12 @@
         />
 
         <ul class="sm:flex items-center py-4 hidden">
-            <li><a class="mr-8 whitespace-nowrap" href="">Home</a></li>
-            <li><a class="mr-8 whitespace-nowrap" href="">Shop</a></li>
-            <li><a class="mr-8 whitespace-nowrap" href="">My orders</a></li>
-            <li><a class="whitespace-nowrap" href="">Help</a></li>
+            <%= for %{title: title, path: path} <- get_menu_items(@socket) do %>
+                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action}
+                class="mr-8 whitespace-nowrap last:mr-0" active_class="bg-blue-planning-100 font-bold">
+                    <%= title %>
+                </.nav_link>
+            <% end %>
         </ul>
 
         <.icon name="shopping-cart" class="h-6 w-6 text-base-300 sm:hidden" />
