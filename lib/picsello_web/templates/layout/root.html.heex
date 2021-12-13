@@ -14,7 +14,7 @@
     <% end %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn,"/css/app.css")}/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/js/app.js")}></script>
-    <%= if Mix.env() == :prod do %>
+    <%= if Application.get_env(:picsello, :environment) == :prod do %>
     <PicselloWeb.LayoutView.analytics gaId="UA-207947964-1" gtmId="GTM-5MCXJ6T" />
     <% end %>
   </head>
