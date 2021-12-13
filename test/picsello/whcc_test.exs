@@ -264,25 +264,26 @@ defmodule Picsello.WHCCTest do
     end
 
     test "loads markups", %{products: products, user: user} do
-      [product | _] = products
+      [product | _] = products |> Enum.sort_by(& &1.whcc_id)
 
       insert(:markup,
         organization: user.organization,
-        whcc_attribute_category_id: "size",
-        whcc_attribute_id: "5x5",
-        whcc_variation_id: "size",
+        whcc_attribute_category_id: "canvas_type",
+        whcc_attribute_id: "fine_art",
+        whcc_variation_id: "1_1_2in5x7",
         product: product,
         value: 2.0
       )
 
       assert [%{markup: 2}] =
-               [product.id]
+               products
+               |> Enum.map(& &1.id)
                |> Picsello.WHCC.preload_products(user)
-               |> Map.values()
-               |> Enum.flat_map(& &1.variations)
-               |> Enum.filter(&(&1.id == "size"))
+               |> Map.get(product.id)
+               |> Map.get(:variations)
+               |> Enum.filter(&(&1.id == "1_1_2in5x7"))
                |> Enum.flat_map(& &1.attributes)
-               |> Enum.filter(&(&1.category_id == "size" && &1.id == "5x5"))
+               |> Enum.filter(&(&1.category_id == "canvas_type" && &1.id == "fine_art"))
     end
   end
 end
