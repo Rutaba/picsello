@@ -60,14 +60,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket |> assign(:count, count - 1) |> noreply()
   end
 
-  def get_menu_items(_socket),
-      do: [
-        %{title: "Home", path: "#"},
-        %{title: "Shop", path: "#"},
-        %{title: "My orders", path: "#"},
-        %{title: "Help", path: "#"},
-      ]
-
   def handle_info(
         {:photo_click, photo},
         %{assigns: %{gallery: gallery, favorites_filter: favorites?}} = socket
@@ -95,6 +87,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> then(& &1.products)
     |> Enum.at(0)
   end
+  
+  def get_menu_items(_socket),
+    do: [
+      %{title: "Home", path: "#"},
+      %{title: "Shop", path: "#"},
+      %{title: "My orders", path: "#"},
+      %{title: "Help", path: "#"},
+    ]
 
   defp assign_photos(
          %{
