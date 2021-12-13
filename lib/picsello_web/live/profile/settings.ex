@@ -2,13 +2,13 @@ defmodule PicselloWeb.Live.Profile.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
-  alias Picsello.Repo
+  alias Picsello.{Repo, Profiles}
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
-    %{organization: %{slug: slug}} = user |> Repo.preload(:organization)
+    %{organization: %{slug: slug} = organization} = Repo.preload(user, :organization)
     url = Routes.profile_url(socket, :index, slug)
-    socket |> assign(profile_url: url) |> ok()
+    socket |> assign(profile_url: url, organization: organization) |> ok()
   end
 
   @impl true

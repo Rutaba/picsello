@@ -96,29 +96,31 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <%= input o, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: "p-4" %>
           <%= error_tag o, :name, prefix: "Photography business name", class: "text-red-sales-300 text-sm" %>
         </label>
+
+        <%= for p <- inputs_for(o, :profile) do %>
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">What is your website URL? <i class="italic font-light">(No worries if you don’t have one)</i></p>
+
+            <div class="relative flex flex-col">
+              <%= input p, :website,
+                  phx_debounce: "500",
+                disabled: input_value(p, :no_website) == true,
+                  placeholder: "www.mystudio.com",
+                  class: "p-4 sm:pr-48" %>
+              <%= error_tag p, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
+
+              <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
+                <%= checkbox p, :no_website, class: "w-5 h-5 checkbox" %>
+
+                <p class="ml-2">I don't have one</p>
+              </label>
+            </div>
+          </label>
+        <% end %>
       <% end %>
 
       <%= for o <- inputs_for(@f, :onboarding) do %>
         <%= hidden_inputs_for o %>
-
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your website URL? <i class="italic font-light">(No worries if you don’t have one)</i></p>
-
-          <div class="relative flex flex-col">
-            <%= input o, :website,
-                phx_debounce: "500",
-              disabled: input_value(o, :no_website) == true,
-                placeholder: "www.mystudio.com",
-                class: "p-4 sm:pr-48" %>
-            <%= error_tag o, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
-
-            <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
-              <%= checkbox o, :no_website, class: "w-5 h-5 checkbox" %>
-
-              <p class="ml-2">I don't have one</p>
-            </label>
-          </div>
-        </label>
 
         <label class="flex flex-col mt-4">
           <p class="py-2 font-extrabold">What's your phone number?</p>
@@ -138,48 +140,56 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   def step(%{step: 3} = assigns) do
     ~H"""
-      <%= for o <- inputs_for(@f, :onboarding) do %>
-        <label class="flex flex-col">
-          <p class="py-2 font-extrabold">Color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
-          <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
-            <%= for(color <- colors()) do %>
-              <li class="aspect-h-1 aspect-w-1">
-                <label>
-                  <%= radio_button o, :color, color, class: "hidden" %>
-                  <div class={classes(
-                    "flex cursor-pointer items-center hover:border-base-300 justify-center w-full h-full border rounded", %{
-                    "border-base-300" => input_value(o, :color) == color,
-                    "hover:border-opacity-40" => input_value(o, :color) != color
-                  })}>
-                    <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
-                  </div>
-                </label>
-              </li>
-            <% end %>
-          </ul>
-        </label>
+      <%= for o <- inputs_for(@f, :organization) do %>
+        <%= hidden_inputs_for o %>
+
+        <%= for p <- inputs_for(o, :profile) do %>
+          <label class="flex flex-col">
+            <p class="py-2 font-extrabold">Color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
+            <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
+              <%= for(color <- colors()) do %>
+                <li class="aspect-h-1 aspect-w-1">
+                  <label>
+                    <%= radio_button p, :color, color, class: "hidden" %>
+                    <div class={classes(
+                      "flex cursor-pointer items-center hover:border-base-300 justify-center w-full h-full border rounded", %{
+                      "border-base-300" => input_value(p, :color) == color,
+                      "hover:border-opacity-40" => input_value(p, :color) != color
+                    })}>
+                      <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
+                    </div>
+                  </label>
+                </li>
+              <% end %>
+            </ul>
+          </label>
+        <% end %>
       <% end %>
     """
   end
 
   def step(%{step: 4} = assigns) do
     ~H"""
-      <%= for o <- inputs_for(@f, :onboarding) do %>
-        <% input_name = input_name(o,:job_types) <> "[]" %>
-        <div class="flex flex-col pb-1">
-          <p class="py-2 font-extrabold">
-            What types of photography do you shoot?
-            <i class="italic font-light">(Select one or more)</i>
-          </p>
+      <%= for o <- inputs_for(@f, :organization) do %>
+        <%= hidden_inputs_for o %>
 
-          <input type="hidden" name={input_name} value="">
+        <%= for p <- inputs_for(o, :profile) do %>
+          <% input_name = input_name(p, :job_types) <> "[]" %>
+          <div class="flex flex-col pb-1">
+            <p class="py-2 font-extrabold">
+              What types of photography do you shoot?
+              <i class="italic font-light">(Select one or more)</i>
+            </p>
 
-          <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-            <%= for(job_type <- job_types()) do %>
-              <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={input_value(o, :job_types) |> Enum.member?(job_type)} />
-            <% end %>
+            <input type="hidden" name={input_name} value="">
+
+            <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
+              <%= for(job_type <- job_types()) do %>
+                <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={input_value(p, :job_types) |> Enum.member?(job_type)} />
+              <% end %>
+            </div>
           </div>
-        </div>
+        <% end %>
       <% end %>
     """
   end
@@ -310,5 +320,5 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defdelegate job_types(), to: JobType, as: :all
-  defdelegate colors(), to: User.Onboarding
+  defdelegate colors(), to: Picsello.Profiles
 end
