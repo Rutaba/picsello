@@ -21,13 +21,17 @@ defmodule PicselloWeb.Live.Profile.Settings do
 
       <div class="mx-0 mt-14 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
         <.card title="Share your profile">
-          <input readonly value={@profile_url} name="url" class="mt-4 font-bold text-input" />
+          <fieldset class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
+            <div {testid("url")} class={"mt-4 font-bold text-input #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
+              <%= @profile_url %>
+            </div>
 
-          <button type="button" class="self-auto w-auto py-3 mt-4 text-lg font-semibold border rounded-lg sm:self-end border-base-300 sm:w-36" id="copy-public-profile-link" data-clipboard-text={@profile_url} phx-hook="Clipboard">
-            <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100" role="tooltip">Copied!</div>
+            <button disabled={!Profiles.enabled?(@organization)} type="button" class={"self-auto w-auto py-3 mt-4 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36"} id="copy-public-profile-link" data-clipboard-text={@profile_url} phx-hook="Clipboard">
+              <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100" role="tooltip">Copied!</div>
 
-            Copy Link
-          </button>
+              Copy Link
+            </button>
+          </fieldset>
         </.card>
 
         <.card title="Enable/disable your public profile">
@@ -37,12 +41,19 @@ defmodule PicselloWeb.Live.Profile.Settings do
             <label class="mt-4 text-2xl flex">
               <input type="checkbox" class="peer hidden" checked={Profiles.enabled?(@organization)} />
 
-              <div class="rounded-full bg-blue-planning-300 w-16 p-1 flex peer-checked:justify-end mr-4">
-                <div class="rounded-full h-7 w-7 bg-base-100"></div>
+              <div class="hidden peer-checked:flex">
+                <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
+                  <div class="rounded-full h-7 w-7 bg-base-100"></div>
+                </div>
+                Enabled
               </div>
 
-              <span class="block peer-checked:hidden">Disabled</span>
-              <span class="hidden peer-checked:block">Enabled</span>
+              <div class="flex peer-checked:hidden">
+                <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
+                  <div class="rounded-full h-7 w-7 bg-blue-planning-300"></div>
+                </div>
+                Disabled
+              </div>
             </label>
           </.form>
         </.card>

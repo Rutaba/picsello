@@ -45,18 +45,19 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_has(link("See our full portfolio"))
   end
 
-  feature "404", %{session: session, photographer: user} do
+  feature "404", %{session: session, photographer: user, profile_url: profile_url} do
     session
     |> sign_in(user)
     |> click(link("Settings"))
     |> click(link("Public Profile"))
+    |> assert_has(testid("url", text: profile_url))
     |> click(css("label", text: "Enabled"))
     |> assert_has(css("label", text: "Disabled"))
 
     refute user.organization |> Repo.reload!() |> Picsello.Profiles.enabled?()
 
     session
-    |> visit(session |> find(text_field("url")) |> Element.value())
+    |> visit(session |> find(testid("url")) |> Element.text())
     |> assert_text("Not Found")
   end
 
