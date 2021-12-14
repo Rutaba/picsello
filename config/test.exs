@@ -54,4 +54,3 @@ config :picsello, :whcc, adapter: Picsello.MockWHCCClient
 config :picsello, Oban, queues: false, plugins: false
 
 config :tesla, adapter: Tesla.Mock
-config :picsello, :environment, :test
