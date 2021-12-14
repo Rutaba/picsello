@@ -329,14 +329,13 @@
     @apply bg-transparent !important;
 }
 
-<<<<<<< HEAD
+
 .mobileGalleryButtons a {
    @apply inline-block
     w-full
     h-full;
 }
-=======
->>>>>>> preview_product
+
 
 @media screen and (max-width: 640px) {
     .circleBtn ul li a {
