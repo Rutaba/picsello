@@ -37,13 +37,20 @@ defmodule PicselloWeb.Live.Profile do
         <div class="mb-10 mr-0 md:mr-10">
           <h1 class="text-5xl font-bold text-center lg:text-6xl md:text-left"><%= @organization.name %></h1>
 
-          <h2 class="mt-12 text-lg font-bold">What we offer:</h2>
+          <div class="flex items-center mt-12">
+            <h2 class="text-lg font-bold">What we offer:</h2>
+            <%= if @edit do %>
+              <.icon_button class="ml-5 shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
+                Edit Photography Types
+              </.icon_button>
+            <% end %>
+          </div>
 
           <div class="w-1/4 h-2" style={"background-color: #{@color}"}></div>
 
           <div class="w-auto md:w-min">
             <%= for job_type <- @job_types do %>
-              <div class="flex my-4 p-4 items-center font-semibold rounded-lg bg-[#fafafa]">
+              <div {testid("job-type")} class="flex my-4 p-4 items-center font-semibold rounded-lg bg-[#fafafa]">
                 <.icon name={job_type} style={"color: #{@color};"} class="mr-6 fill-current w-9 h-9" />
 
                 <span class="whitespace-nowrap"><%= dyn_gettext job_type %></span>
@@ -166,6 +173,11 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def handle_event("edit-color", %{}, socket) do
     socket |> PicselloWeb.Live.Profile.EditColorComponent.open() |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-job-types", %{}, socket) do
+    socket |> PicselloWeb.Live.Profile.EditJobTypeComponent.open() |> noreply()
   end
 
   @impl true

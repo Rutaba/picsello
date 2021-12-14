@@ -54,4 +54,21 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(css("svg[style*='color: #3376FF']", count: 0))
     |> assert_has(css("svg[style*='color: #3AE7C7']", count: 2))
   end
+
+  feature "user edits job types", %{session: session} do
+    session
+    |> assert_has(link("Settings"))
+    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
+    |> assert_text("What we offer:")
+    |> assert_has(testid("job-type", count: 2))
+    |> assert_has(testid("job-type", text: "Portrait"))
+    |> assert_has(testid("job-type", text: "Event"))
+    |> click(button("Edit Photography Types"))
+    |> within_modal(&click(&1, css("label", text: "Event")))
+    |> within_modal(&click(&1, css("label", text: "Family")))
+    |> click(button("Save"))
+    |> assert_has(testid("job-type", count: 2))
+    |> assert_has(testid("job-type", text: "Portrait"))
+    |> assert_has(testid("job-type", text: "Family"))
+  end
 end
