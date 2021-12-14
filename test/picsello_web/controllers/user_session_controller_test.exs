@@ -8,8 +8,11 @@ defmodule PicselloWeb.UserSessionControllerTest do
   describe "GET /users/log_in" do
     test "renders log in page", %{conn: conn} do
       conn = get(conn, Routes.user_session_path(conn, :new))
-      response = html_response(conn, 200)
-      assert response =~ "<h1 class=\"title\">Log in</h1>"
+
+      response =
+        conn |> html_response(200) |> Floki.parse_document!() |> Floki.find("h1") |> Floki.text()
+
+      assert response == "Log in"
     end
 
     test "redirects if already logged in", %{conn: conn, user: user} do

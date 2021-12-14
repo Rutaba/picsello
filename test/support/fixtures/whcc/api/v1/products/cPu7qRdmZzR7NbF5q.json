@@ -1,0 +1,492 @@
+{
+  "category": { "id": "tfhysKwZafFtmGqpQ", "name": "Wall Displays" },
+  "attributeCategories": [
+    {
+      "_id": "size",
+      "name": "size",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "5x5",
+          "name": "5×5",
+          "enabled": true,
+          "metadata": { "height": 5, "width": 5 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 20.5, "code": "USD" }
+          }
+        },
+        {
+          "id": "5x7",
+          "name": "5×7",
+          "enabled": true,
+          "metadata": { "height": 7, "width": 5 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 23.5, "code": "USD" }
+          }
+        },
+        {
+          "id": "6x6",
+          "name": "6×6",
+          "enabled": true,
+          "metadata": { "height": 6, "width": 6 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 23.7, "code": "USD" }
+          }
+        },
+        {
+          "id": "8x8",
+          "name": "8×8",
+          "enabled": true,
+          "metadata": { "height": 8, "width": 8 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 31.15, "code": "USD" }
+          }
+        },
+        {
+          "id": "8x10",
+          "name": "8×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 8 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 35.2, "code": "USD" }
+          }
+        },
+        {
+          "id": "8x12",
+          "name": "8×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 8 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 39.3, "code": "USD" }
+          }
+        },
+        {
+          "id": "10x10",
+          "name": "10×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 10 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 40, "code": "USD" }
+          }
+        },
+        {
+          "id": "10x15",
+          "name": "10×15",
+          "enabled": true,
+          "metadata": { "height": 15, "width": 10 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 52, "code": "USD" }
+          }
+        },
+        {
+          "id": "10x20",
+          "name": "10×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 10 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 64, "code": "USD" }
+          }
+        },
+        {
+          "id": "10x30",
+          "name": "10×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 10 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 88, "code": "USD" }
+          }
+        },
+        {
+          "id": "11x14",
+          "name": "11×14",
+          "enabled": true,
+          "metadata": { "height": 14, "width": 11 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 52.75, "code": "USD" }
+          }
+        },
+        {
+          "id": "12x12",
+          "name": "12×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 12 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 50.35, "code": "USD" }
+          }
+        },
+        {
+          "id": "12x18",
+          "name": "12×18",
+          "enabled": true,
+          "metadata": { "height": 18, "width": 12 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 66.9, "code": "USD" }
+          }
+        },
+        {
+          "id": "12x24",
+          "name": "12×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 12 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 83.45, "code": "USD" }
+          }
+        },
+        {
+          "id": "16x16",
+          "name": "16×16",
+          "enabled": true,
+          "metadata": { "height": 16, "width": 16 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 75.3, "code": "USD" }
+          }
+        },
+        {
+          "id": "16x20",
+          "name": "16×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 16 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 89.2, "code": "USD" }
+          }
+        },
+        {
+          "id": "16x24",
+          "name": "16×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 16 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 103.15, "code": "USD" }
+          }
+        },
+        {
+          "id": "20x20",
+          "name": "20×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 20 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 106, "code": "USD" }
+          }
+        },
+        {
+          "id": "20x24",
+          "name": "20×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 20 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 122.8, "code": "USD" }
+          }
+        },
+        {
+          "id": "20x30",
+          "name": "20×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 20 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 148, "code": "USD" }
+          }
+        },
+        {
+          "id": "20x40",
+          "name": "20×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 20 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 190, "code": "USD" }
+          }
+        },
+        {
+          "id": "20x60",
+          "name": "20×60",
+          "enabled": true,
+          "metadata": { "height": 60, "width": 20 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 319, "code": "USD" }
+          }
+        },
+        {
+          "id": "24x24",
+          "name": "24×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 24 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 142.5, "code": "USD" }
+          }
+        },
+        {
+          "id": "24x30",
+          "name": "24×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 24 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 172, "code": "USD" }
+          }
+        },
+        {
+          "id": "24x36",
+          "name": "24×36",
+          "enabled": true,
+          "metadata": { "height": 36, "width": 24 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 201.55, "code": "USD" }
+          }
+        },
+        {
+          "id": "30x30",
+          "name": "30×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 30 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 208, "code": "USD" }
+          }
+        },
+        {
+          "id": "30x40",
+          "name": "30×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 30 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 268, "code": "USD" }
+          }
+        },
+        {
+          "id": "30x45",
+          "name": "30×45",
+          "enabled": true,
+          "metadata": { "height": 45, "width": 30 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 343, "code": "USD" }
+          }
+        },
+        {
+          "id": "30x50",
+          "name": "30×50",
+          "enabled": true,
+          "metadata": { "height": 50, "width": 30 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 373, "code": "USD" }
+          }
+        },
+        {
+          "id": "30x60",
+          "name": "30×60",
+          "enabled": true,
+          "metadata": { "height": 60, "width": 30 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 468, "code": "USD" }
+          }
+        },
+        {
+          "id": "36x36",
+          "name": "36×36",
+          "enabled": true,
+          "metadata": { "height": 36, "width": 36 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 331, "code": "USD" }
+          }
+        },
+        {
+          "id": "40x40",
+          "name": "40×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 40 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 426, "code": "USD" }
+          }
+        },
+        {
+          "id": "40x50",
+          "name": "40×50",
+          "enabled": true,
+          "metadata": { "height": 50, "width": 40 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 504, "code": "USD" }
+          }
+        },
+        {
+          "id": "40x60",
+          "name": "40×60",
+          "enabled": true,
+          "metadata": { "height": 60, "width": 40 },
+          "pricing": {
+            "base": { "type": "ACTUAL", "value": 582, "code": "USD" }
+          }
+        }
+      ],
+      "default": "10x10"
+    },
+    {
+      "_id": "surface",
+      "name": "surface",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "1_2in_maple_wood_panel",
+          "name": "½″ maple wood panel",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/1_2in_maple_wood_panel.jpg"
+          }
+        }
+      ],
+      "default": "1_2in_maple_wood_panel",
+      "description": "Printed directly on a ½″ Maple Wood Panel."
+    },
+    {
+      "_id": "hanging",
+      "name": "hanging",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "keyhole",
+          "name": "keyhole",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/hanging/keyhole.jpg"
+          }
+        }
+      ],
+      "default": "keyhole",
+      "description": "Ready to hang with pre-cut keyholes."
+    }
+  ],
+  "orderAttributeCategories": [
+    {
+      "_id": "shipping_options",
+      "name": "Shipping Options",
+      "requiredLevel": 0,
+      "attributes": [
+        { "id": "studio", "externalId": 547, "name": "Ship to Studio" },
+        {
+          "id": "dropship",
+          "externalId": 548,
+          "name": "Ship Directly to Client"
+        }
+      ]
+    },
+    {
+      "_id": "studio_shipping_options",
+      "name": "Studio Shipping Options",
+      "requiredLevel": 547,
+      "attributes": [
+        {
+          "id": "studio_two_day",
+          "parentId": 547,
+          "externalId": 147,
+          "name": "Ground Shipping (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_standard",
+          "parentId": 547,
+          "externalId": 150,
+          "name": "One Day Shipping, Standard - USA only (Includes Peak Surcharge)",
+          "technical": "(200002 Ground to NDS) $3.95 + 22% of $3.95",
+          "pricing": {
+            "base": { "value": 4.819, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 27, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_priority",
+          "parentId": 547,
+          "externalId": 149,
+          "name": "One Day Shipping, Priority - USA only (Includes Peak Surcharge)",
+          "technical": "(210002 Ground to NDA) $6.95 + 28% of $6.95",
+          "pricing": {
+            "base": { "value": 8.896, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 33, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "drop_ship_shipping_options",
+      "name": "Drop Ship Shipping Options",
+      "requiredLevel": 548,
+      "attributes": [
+        {
+          "id": "dropship_lowest_cost",
+          "parentId": 548,
+          "externalId": 553,
+          "name": "USA Drop Ship – Lowest Cost (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_two_day",
+          "parentId": 548,
+          "externalId": 554,
+          "name": "USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)",
+          "technical": "(200003 Ground to 2DY) $7.50 + 15% of $7.50, SEASONAL: $9 + 20% of $9",
+          "pricing": {
+            "base": { "value": 10.8, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 20, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_standard",
+          "parentId": 548,
+          "externalId": 555,
+          "name": "USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)",
+          "technical": "(200002 Ground to NDS) $7.50 + 22% of $7.50 + $3.95 + 22% of $3.95, SEASONAL: $9 + 27% of $9 + $3.95 + 22% of $3.95",
+          "pricing": {
+            "base": { "value": 16.249, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 27, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_priority",
+          "parentId": 548,
+          "externalId": 556,
+          "name": "USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)",
+          "technical": "(210002 Ground to NDA) $7.50 + 28% of $7.50 + $6.95 + 28% of $6.95, SEASONAL: $9 + 33% of $9 + $6.95 + 28% of $6.95",
+          "pricing": {
+            "base": { "value": 20.866, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 33, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_canada",
+          "parentId": 548,
+          "externalId": 557,
+          "name": "Canada Drop Ship – UPS Standard (Includes Peak Surcharge)",
+          "technical": "(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50",
+          "pricing": {
+            "base": { "value": 10.35, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 15, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_international",
+          "parentId": 548,
+          "externalId": 558,
+          "name": "International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    }
+  ],
+  "editorType": "simpleEditor",
+  "_id": "cPu7qRdmZzR7NbF5q",
+  "description": "Reveal softer tones through the natural wood grain",
+  "globalProductId": "dkArwjS4ehvNMbd4d",
+  "metadata": { "resolution": 300 },
+  "name": "Wood Print",
+  "nodes": [{ "name": "Main", "nodeId": 10000, "dimensionKeys": ["size"] }],
+  "orgId": "5LsoooWuHGYFMaqbb",
+  "editorCompatibility": "simpleEditor"
+}

@@ -2,8 +2,9 @@
   <h3>Gallery name</h3>
   <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
     <%= text_input f, :name, class: "gallerySettingsInput" %>
-
-    <%= submit "Save", class: "btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+     <div class="flex items-center lg:items-start justify-between w-full mt-5">
+      <button type="button" phx-click="reset" phx-target={@myself} class="text-blue-planning-300 p-4 lg:pt-0 font-bold cursor-pointer">Reset</button>
+      <%= submit "Save", class: "btn-primary px-11 py-3.5 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+      </div>
   </.form>
-  <button phx-click="reset" phx-target={@myself} class="text-blue-planning-300 p-4 font-bold cursor-pointer">Reset</button>
 </div>

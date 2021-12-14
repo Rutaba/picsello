@@ -28,9 +28,9 @@ defmodule Picsello.Accounts.UserTest do
                  ],
                  do:
                    %User{}
-                   |> User.onboarding_changeset(%{onboarding: %{website: url}})
+                   |> User.onboarding_changeset(%{organization: %{profile: %{website: url}}})
                    |> errors_on()
-                   |> get_in([:onboarding, :website])
+                   |> get_in([:organization, :profile, :website])
                )
     end
 

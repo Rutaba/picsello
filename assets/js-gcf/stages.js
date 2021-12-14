@@ -75,6 +75,8 @@ export const aspectStage = context => {
             .metadata()
             .then(data => {
                 context.artifacts.aspectRatio = data.width / data.height;
+                context.artifacts.width = data.width;
+                context.artifacts.height = data.height;
 
                 return context;
             })

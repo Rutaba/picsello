@@ -27,11 +27,13 @@ import Clipboard from './hooks/clipboard';
 import Phone from './hooks/phone';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import PriceMask from './hooks/price-mask';
+import PercentMask from './hooks/percent-mask';
 import Quill from './hooks/quill';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import MasonryGrid from './hooks/masonry-grid';
 import DragDrop from './hooks/drag-drop';
+import ScrollIntoView from './hooks/scroll-into-view';
 
 const Modal = {
   mounted() {
@@ -47,26 +49,20 @@ const Modal = {
       }
     };
 
-    this.scrollListener = () => {
-      document.body.classList.add('overflow-hidden');
-    };
-
     document.addEventListener('keydown', this.keydownListener);
 
     this.handleEvent('modal:open', () => {
-      window.addEventListener('scroll', this.scrollListener);
+      document.body.classList.add('overflow-hidden');
     });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
       document.body.classList.remove('overflow-hidden');
-      window.removeEventListener('scroll', this.scrollListener);
     });
   },
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
-    window.removeEventListener('scroll', this.scrollListener);
     document.body.classList.remove('overflow-hidden');
   },
 };
@@ -109,6 +105,7 @@ const Hooks = {
   Modal,
   Phone,
   PriceMask,
+  PercentMask,
   ToggleContent,
   Quill,
   Select,
@@ -117,6 +114,7 @@ const Hooks = {
   AutoHeight,
   MasonryGrid,
   DragDrop,
+  ScrollIntoView,
 };
 
 let Uploaders = {}

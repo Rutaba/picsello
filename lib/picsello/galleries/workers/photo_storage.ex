@@ -2,9 +2,12 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
   @moduledoc """
   Manages URL signing to store photos on GCS
   """
+  @callback path_to_url(String.t()) :: String.t()
+  @callback path_to_url(String.t(), String.t()) :: String.t()
+  @callback params_for_upload(keyword()) :: map()
+  @callback delete(String.t(), String.t()) :: atom()
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
-
   def path_to_url(path, bucket \\ @bucket) do
     sign_opts = [bucket: bucket, key: path]
     GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
@@ -15,7 +18,11 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
     params
   end
 
-  def delete(path, bucket \\ @bucket) do
+  def delete(path, bucket \\ @bucket)
+
+  def delete(nil, _), do: :ignored
+
+  def delete(path, bucket) do
     {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
 
     token.token

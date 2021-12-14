@@ -23,6 +23,10 @@ defmodule Picsello.ViewJobTest do
     proposal
   end
 
+  def with_remainder_paid(proposal) do
+    proposal |> BookingProposal.remainder_paid_changeset() |> Repo.update!()
+  end
+
   setup :onboarded
   setup :authenticated
 
@@ -38,7 +42,7 @@ defmodule Picsello.ViewJobTest do
     session
     |> visit("/jobs/#{job.id}")
 
-    [user: user]
+    [user: user, proposal: proposal, job: job]
   end
 
   feature "user views proposal details", %{session: session} do
@@ -85,5 +89,20 @@ defmodule Picsello.ViewJobTest do
     |> fill_in(text_field("Private Notes"), with: "here are my 2nd private notes")
     |> click(button("Save"))
     |> assert_has(definition("Private Notes", text: "here are my 2nd private notes"))
+  end
+
+  feature "user views finances card", %{session: session, job: job, proposal: proposal} do
+    session
+    |> find(testid("overview-Finances"))
+    |> assert_has(definition("Paid", text: "$5"))
+    |> assert_has(definition("Owed", text: "$5"))
+
+    proposal |> with_remainder_paid()
+
+    session
+    |> visit("/jobs/#{job.id}")
+    |> find(testid("overview-Finances"))
+    |> assert_has(definition("Paid", text: "$10"))
+    |> assert_has(css("dt", count: 1))
   end
 end

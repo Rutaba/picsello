@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   use PicselloWeb, live_view: [layout: "live_client"]
 
   alias Picsello.Galleries
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
 
@@ -13,7 +14,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   @impl true
   def handle_params(%{"hash" => hash}, _, socket) do
-    gallery = Galleries.get_detailed_gallery_by_hash(hash)
+    gallery = Galleries.get_gallery_by_hash(hash)
 
     if gallery do
       socket
@@ -59,11 +60,53 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket |> assign(:count, count - 1) |> noreply()
   end
 
+  def handle_info(
+        {:photo_click, photo},
+        %{assigns: %{gallery: gallery, favorites_filter: favorites?}} = socket
+      ) do
+    created_editor =
+      Picsello.WHCC.create_editor(
+        get_some_product(),
+        photo,
+        complete_url: Routes.gallery_dump_editor_url(socket, :show) <> "?editorId=%EDITOR_ID%",
+        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
+        only_favorites: favorites?
+      )
+
+    socket
+    |> redirect(external: created_editor.url)
+    |> noreply()
+  end
+
+  # This should be removed as soon as product selection will be implemented
+  defp get_some_product() do
+    Picsello.Category
+    |> Picsello.Repo.all()
+    |> Enum.at(0)
+    |> Picsello.Repo.preload(:products)
+    |> then(& &1.products)
+    |> Enum.at(0)
+  end
+
   defp assign_photos(
-         %{assigns: %{gallery: %{id: id}, page: page, favorites_filter: filter}} = socket
+         %{
+           assigns: %{
+             gallery: %{id: id},
+             page: page,
+             favorites_filter: filter
+           }
+         } = socket,
+         per_page \\ @per_page
        ) do
-    assign(socket,
-      photos: Galleries.get_gallery_photos(id, @per_page, page, only_favorites: filter)
-    )
+    opts = [only_favorites: filter, offset: per_page * page]
+    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+
+    socket
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, photos |> length > per_page)
+  end
+
+  defp cover_photo(key) do
+    PhotoStorage.path_to_url(key)
   end
 end

@@ -40,7 +40,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
         |> render_change(%{gallery: %{name: ""}})
 
       assert update_rendered =~
-               "<button class=\"btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
+               "<button class=\"btn-primary px-11 py-3.5 cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
     end
 
     test "update disabled with too long value", %{conn: conn, gallery: gallery} do
@@ -54,7 +54,7 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
         })
 
       assert update_rendered =~
-               "<button class=\"btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
+               "<button class=\"btn-primary px-11 py-3.5 cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button><"
     end
 
     test "resets gallery name", %{conn: conn, gallery: gallery} do
@@ -169,6 +169,33 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
                "<input class=\"gallerySettingsInput\" id=\"textWatermarkForm_text\" name=\"watermark[text]\" placeholder=\"Enter your watermark text here\" type=\"text\" value=\"007Agency:)\"/>"
 
       refute has_element?(popup_view, "button.cursor-not-allowed", "Save")
+    end
+
+    test "set image watermark", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+
+      view
+      |> element("#openCustomWatermarkPopupButton")
+      |> render_click()
+
+      [popup_view] = live_children(view)
+
+      watermark =
+        file_input(popup_view, "#dragDrop-form", :image, [
+          %{
+            last_modified: 1_594_171_879_000,
+            name: "phoenix.png",
+            content:
+              File.read!(Path.join(:code.priv_dir(:picsello), "/static/images/phoenix.png")),
+            size: 1_396_009,
+            type: "image/png"
+          }
+        ])
+
+      upload_rendered = render_upload(watermark, "phoenix.png")
+
+      assert upload_rendered =~ "Upload complete!"
+      assert upload_rendered =~ "100%"
     end
   end
 end

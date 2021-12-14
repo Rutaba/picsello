@@ -37,7 +37,6 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
     assert [client_message] = Repo.all(ClientMessage)
     assert client_message.job_id == job.id
-    assert client_message.proposal_id == nil
 
     session
   end

@@ -84,7 +84,7 @@ html {
 
 @layer components {
   .bare-modal {
-    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg px-4 py-3 sm:p-8;
+    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg p-6 sm:p-8;
   }
 }
 
@@ -110,11 +110,12 @@ html {
 
 .muuri.grid {
   position: relative;
-
+  width: 100%;
+  box-sizing: border-box;
   .item {
     display: block;
     position: absolute;
-    margin: 10px;
+    margin: 10px 0;
     z-index: 1;
   }
   .item.muuri-item-dragging {
@@ -153,23 +154,40 @@ html {
   }
 }
 
-.customWatermarkPopup {
-  width: 1041px;
-  max-height: 950px;
-  background-color: #FFFFFF;
-  margin: 0 auto;
-}
-
 /**
  * only used on photographer settings / gallery pricing
- */
-
+ **/
 .grid {
+
+  // all the variation cells get a top boarder...
+  .contents.collapsed > * {
+    @apply border-t;
+  }
+
+  // except the first one (after the headers)
   h3 + .contents.collapsed > * {
     @apply border-t-0;
   }
 
+  // or the first one after an expanded one, on mobile
+  .contents.expanded + .contents.collapsed > * {
+    @apply border-t-0 sm:border-t;
+  }
+
+  // every other attribute row is blue in desktop
   .contents .contents:nth-child(odd) div {
     @apply sm:bg-blue-planning-100;
+  }
+}
+
+.phx-click-loading {
+  @apply animate-pulse cursor-wait;
+}
+
+@media (min-width: 640px){
+  .muuri.grid {
+    .item {
+      margin: 10px;
+    }
   }
 }

@@ -85,9 +85,13 @@
   <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
 
   <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    <.card color="orange-inbox-300" icon="envelope" title="Inbox" badge={0}>
+    <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer">
       <p class="my-2">
-        Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+        <%= if @inbox_count > 0 do %>
+          <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+        <% else %>
+          Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+        <% end %>
       </p>
     </.card>
 

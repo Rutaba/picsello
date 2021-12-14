@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, ClientMessage, BookingProposal, Package}
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -18,7 +18,9 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id}, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign_inbox_count()
     |> assign_proposal()
+    |> subscribe_inbound_messages()
     |> ok()
   end
 
@@ -26,7 +28,7 @@ defmodule PicselloWeb.JobLive.Show do
     button_click = assigns[:button_click]
 
     ~H"""
-      <li class="flex flex-col justify-between p-4 border rounded-lg">
+      <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
           <div class="mb-6 font-bold">
             <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
@@ -119,6 +121,13 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
+  def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
+    socket
+    |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
@@ -155,6 +164,35 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
+  def handle_info(
+        {:inbound_messages, message},
+        %{assigns: %{inbox_count: count, job: job}} = socket
+      ) do
+    count = if message.job_id == job.id, do: count + 1, else: count
+
+    socket
+    |> assign(:inbox_count, count)
+    |> noreply()
+  end
+
   @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+
+  defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
+    count =
+      Job.by_id(job.id)
+      |> ClientMessage.unread_messages()
+      |> Repo.aggregate(:count)
+
+    socket |> assign(:inbox_count, count)
+  end
+
+  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "inbound_messages:#{current_user.organization_id}"
+    )
+
+    socket
+  end
 end

@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
   <div class="flex items-center justify-between w-full px-12 pb-4">
     <p class="font-bold text-xl">Upload photos to <%= @gallery.name %></p>
-    <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><img src="/images/close-icon.png" alt="close icon" width="16" height="15"/></a>
+    <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/></a>
   </div>
     <%= if total(@uploads.photo.entries) > 0 do %>
     <div class="flex items-center justify-between p-12 uploadOverallStatus mb-12 w-full">
@@ -69,7 +69,7 @@
 
             <%# entry.progress will update automatically for in-flight entries %>
             <%= if progress_for_entry(@progress, entry) == 100 do%>
-                <p class="grid-cols-1"><%= entry.client_size %> Kb</p>
+                <p class="grid-cols-1"><%= filesize(entry.client_size) %></p>
             <% else %>
                 <progress class="grid-cols-1" value={progress_for_entry(@progress, entry)} max="100">
                     <%= progress_for_entry(@progress, entry) %>%

@@ -7,7 +7,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
   setup %{sessions: [photographer_session | _]} do
     user =
-      insert(:user, email: "photographer@example.com", organization: %{name: "Photography LLC"})
+      insert(:user,
+        email: "photographer@example.com",
+        organization: params_for(:organization, name: "Photography LLC")
+      )
       |> onboard!
 
     photographer_session |> sign_in(user)
@@ -93,14 +96,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       end)
 
       Picsello.MockPayments
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
            metadata: %{"paying_for" => "deposit"}
          }}
       end)
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
@@ -247,7 +250,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}" ->
+      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal_id}",
@@ -314,7 +317,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("why?"), with: "it's the best.")
     |> click(css("label", text: "Of course"))
     |> fill_in(text_field("Describe it"), with: "it's great.")
-    |> fill_in(text_field("When"), with: "10/10/2021")
+    |> fill_in_date(text_field("When"), with: ~D[2021-10-10])
     |> fill_in(text_field("Email"), with: "email@example.com")
     |> fill_in(text_field("Phone"), with: "(255) 123-1234")
     |> wait_for_enabled_submit_button()
@@ -343,27 +346,5 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> assert_flash(:error, text: "not available")
-  end
-
-  defp post(session, path, body, headers) do
-    HTTPoison.post(
-      PicselloWeb.Endpoint.url() <> path,
-      body,
-      headers ++
-        [
-          {"user-agent", user_agent(session)}
-        ]
-    )
-
-    session
-  end
-
-  defp user_agent(session) do
-    session
-    |> execute_script("return navigator.userAgent;", [], &send(self(), {:user_agent, &1}))
-
-    receive do
-      {:user_agent, agent} -> agent
-    end
   end
 end

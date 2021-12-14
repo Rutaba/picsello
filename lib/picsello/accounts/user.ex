@@ -8,14 +8,8 @@ defmodule Picsello.Accounts.User do
 
     use Ecto.Schema
 
-    @colors ~w(#5C6578 #3376FF #3AE7C7 #E466F8 #1AD0DC #FFD80D #F8AC66 #9566F8)
-
     @primary_key false
     embedded_schema do
-      field(:website, :string)
-      field(:color, :string, default: @colors |> hd)
-      field(:job_types, {:array, :string}, default: [])
-      field(:no_website, :boolean, default: false)
       field(:phone, :string)
       field(:photographer_years, :integer)
       field(:used_software_before, :boolean)
@@ -24,63 +18,25 @@ defmodule Picsello.Accounts.User do
       field(:completed_at, :utc_datetime)
     end
 
-    def colors(), do: @colors
-
     def changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
       |> cast(attrs, [
-        :no_website,
-        :website,
         :phone,
         :schedule,
-        :color,
-        :job_types,
         :photographer_years,
         :used_software_before,
         :switching_from_software
       ])
       |> then(
-        &if get_field(&1, :no_website),
-          do: put_change(&1, :website, nil),
-          else: &1
-      )
-      |> then(
         &if get_field(&1, :used_software_before),
           do: validate_required(&1, :switching_from_software),
           else: &1
       )
-      |> prepare_changes(&clean_job_types/1)
-      |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
       |> validate_change(:phone, &valid_phone/2)
     end
 
     def completed?(%__MODULE__{completed_at: nil}), do: false
     def completed?(%__MODULE__{}), do: true
-
-    defp url_validation_errors(url) do
-      case URI.parse(url) do
-        %{scheme: nil} ->
-          ("https://" <> url) |> url_validation_errors()
-
-        %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
-          label = "[a-z0-9\\-]{1,63}+"
-
-          if Regex.compile!("^(?:(?:#{label})\\.)+(?:#{label})$")
-             |> Regex.match?(host),
-             do: [],
-             else: ["is invalid"]
-
-        %{scheme: _scheme} ->
-          ["is invalid"]
-      end
-    end
-
-    defp clean_job_types(changeset) do
-      update_change(changeset, :job_types, fn
-        list -> list |> Enum.filter(&(&1 != "")) |> Enum.uniq() |> Enum.sort()
-      end)
-    end
-
     defdelegate valid_phone(field, value), to: Picsello.Client
   end
 
@@ -119,14 +75,14 @@ defmodule Picsello.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :name, :password, :time_zone])
+    |> cast(put_new_attr(attrs, :organization, %{}), [:email, :name, :password, :time_zone])
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
     |> then(
-      &put_assoc(&1, :organization, %Picsello.Organization{
-        name: "#{get_field(&1, :name)} Photography"
-      })
+      &cast_assoc(&1, :organization,
+        with: {Picsello.Organization, :registration_changeset, [get_field(&1, :name)]}
+      )
     )
   end
 
@@ -307,4 +263,14 @@ defmodule Picsello.Accounts.User do
 
   def confirmed?(%__MODULE__{confirmed_at: nil, sign_up_auth_provider: :password}), do: false
   def confirmed?(%__MODULE__{}), do: true
+
+  defp put_new_attr(map, atom, value) do
+    key =
+      case Map.keys(map) do
+        [first_key | _] when is_atom(first_key) -> atom
+        _ -> Atom.to_string(atom)
+      end
+
+    Map.put_new(map, key, value)
+  end
 end

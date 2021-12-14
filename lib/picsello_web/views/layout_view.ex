@@ -1,7 +1,7 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
   alias Picsello.Accounts.User
-  import PicselloWeb.LiveHelpers, only: [icon: 1, nav_link: 1, classes: 1]
+  import PicselloWeb.LiveHelpers, only: [icon: 1, nav_link: 1, classes: 1, initials_circle: 1]
 
   use Phoenix.Component
 
@@ -61,7 +61,7 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{title: "Orders", icon: "cart", path: "#"},
       %{title: "Calendar", icon: "calendar", path: "#"},
-      %{title: "Inbox", icon: "envelope", path: "#"},
+      %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: "#"},
       %{title: "Contacts", icon: "phone", path: "#"},
       %{title: "Finances", icon: "money-bags", path: "#"},

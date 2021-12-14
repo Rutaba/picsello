@@ -85,14 +85,18 @@ export default {
         }
       };
       const grid = new Muuri(gridElement, opts);
+      grid.on('dragInit', (item) => {
+        this.itemPosition = item.getPosition()
+      });
       grid.on('dragReleaseEnd', (item) => {
         const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
         const movedId = item.getElement().id.slice(11)
         const change = positionChange(movedId, order)
 
-        if (change) {
+        if (change && !this.isPositionEqual(this.itemPosition, item.getPosition())) {
             this.pushEvent("update_photo_position", change)
         }
+        this.itemPosition = false;
       })
 
       window.grid = this.grid = grid;
@@ -135,20 +139,31 @@ export default {
   },
 
   /**
-   * Returns true if there are more photos to load. Based on total counter
+   * Returns true if there are more photos to load. 
    * @returns {boolean}
    */
-  hasMorePhotoToLoad() {
-    const { isFavoritesShown, favoritesCount, total } = this.el.dataset;
-    const amount = this.get_grid().getItems().length;
+  hasMorePhotoToLoad() { return this.el.dataset.hasMorePhotos === 'true' },
 
-    const totalImagesNumber = isFavoritesShown === 'true'
-      ? parseInt(favoritesCount)
-      : parseInt(total);
+  init_remove_listener() {
+    this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
+  },
+  
+  remove_item(id) {
+    const grid = this.get_grid();
+    const itemElement = document.getElementById(`photo-item-${id}`);
+    const item = grid.getItem(itemElement);
 
-    return amount < totalImagesNumber;
+    grid.remove([item], { removeElements: true })
   },
 
+  /**
+   * Compares position objects
+   */
+  isPositionEqual(previousPosition, nextPosition) {
+    return previousPosition.left === nextPosition.left 
+        && previousPosition.top === nextPosition.top;
+  },
+  
   /**
    * Mount callback
    */
@@ -162,10 +177,12 @@ export default {
       ){
         this.pending = this.page() + 1
         this.pushEvent("load-more", {})
+        
       }
     })
 
     this.init_masonry();
+    this.init_remove_listener()
   },
 
   /**
