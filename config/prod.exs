@@ -89,4 +89,3 @@ config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_AP
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
 
 config :picsello, :whcc, skip_design_details: true
-config :picsello, :environment, :prod
