@@ -36,7 +36,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     else
       url = preview.preview_photo.preview_url || nil
       frame = preview.category_template.name || nil
-      frame_corners = preview.category_template.corners || nil
 
       frame = preview.category_template.name || nil
       frame_corners = preview.category_template.corners || nil
@@ -60,7 +59,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)
-    |> assign(:update_mode, "append")
     |> assign_photos()
     |> noreply()
   end
@@ -113,7 +111,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       |> assign(:gallery, gallery)
       |> assign(:gallery_product_id, gallery_product_id)
       |> assign(:page, 0)
-      |> assign(:update_mode, "append")
       |> assign(:favorites_filter, false)
       |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
       |> assign_photos()
