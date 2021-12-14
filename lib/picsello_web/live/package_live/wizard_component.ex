@@ -6,6 +6,55 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
+  defmodule Multiplier do
+    @moduledoc false
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @percent_options for(amount <- 10..100//10, do: {"#{amount}%", amount})
+    @sign_options [{"Discount", "-"}, {"Surcharge", "+"}]
+
+    @primary_key false
+    embedded_schema do
+      field(:percent, :integer, default: @percent_options |> hd |> elem(1))
+      field(:sign, :string, default: @sign_options |> hd |> elem(1))
+      field(:is_enabled, :boolean)
+    end
+
+    def changeset(multiplier \\ %__MODULE__{}, attrs) do
+      multiplier
+      |> cast(attrs, [:percent, :sign, :is_enabled])
+      |> validate_required([:percent, :sign, :is_enabled])
+    end
+
+    def percent_options(), do: @percent_options
+    def sign_options(), do: @sign_options
+
+    def from_decimal(d) do
+      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_integer() do
+        0 ->
+          %__MODULE__{is_enabled: false}
+
+        percent when percent < 0 ->
+          %__MODULE__{percent: abs(percent), sign: "-", is_enabled: true}
+
+        percent when percent > 0 ->
+          %__MODULE__{percent: percent, sign: "+", is_enabled: true}
+      end
+    end
+
+    def to_decimal(%__MODULE__{is_enabled: false}), do: Decimal.new(1)
+
+    def to_decimal(%__MODULE__{sign: sign, percent: percent}) do
+      case sign do
+        "+" -> percent
+        "-" -> Decimal.negate(percent)
+      end
+      |> Decimal.div(100)
+      |> Decimal.add(1)
+    end
+  end
+
   @all_fields Package.__schema__(:fields)
 
   @impl true
@@ -74,7 +123,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.wizard_state form={f} />
 
-        <.step name={@step} f={f} is_template={@is_template} templates={@templates} />
+        <.step name={@step} f={f} is_template={@is_template} templates={@templates} multiplier_changeset={@multiplier} />
 
         <.footer>
           <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
@@ -221,8 +270,34 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :pricing} = assigns) do
     ~H"""
       <div class="items-center mt-6 justify-items-end grid grid-cols-1 sm:grid-cols-[max-content,3fr,1fr] gap-6">
-        <label class="font-bold justify-self-start sm:justify-self-end" for={input_id(@f, :base_price)}>Base Price</label>
-        <div class="w-full sm:w-auto sm:col-span-2"><%= input @f, :base_price, placeholder: "$0.00", class: "w-full px-4 font-bold sm:w-28 sm:text-right text-center", phx_hook: "PriceMask" %></div>
+        <label class="justify-self-start sm:justify-self-end" for={input_id(@f, :base_price)}>
+          <h2 class="mb-1 text-xl font-bold">Base Price</h2>
+          Your cost in labor, travel, etc.
+        </label>
+
+        <div class="w-full sm:w-auto sm:col-span-2">
+          <%= input @f, :base_price, placeholder: "$0.00", class: "w-full px-4 text-lg font-bold sm:w-28 sm:text-right text-center", phx_hook: "PriceMask" %>
+        </div>
+
+        <% m = form_for(@multiplier_changeset, "#") %>
+        <label class="flex items-center justify-self-start">
+          <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox" ) %>
+          Apply a discount or surcharge
+        </label>
+
+        <%= if input_value(m, :is_enabled) do %>
+          <h2 class="text-xl font-bold justify-self-start">Apply a</h2>
+
+          <div class="flex w-full">
+            <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-center py-4 w-1/4 mr-6", phx_debounce: 100) %>
+            <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center w-3/4 py-4", phx_debounce: 100) %>
+          </div>
+
+          <div class="self-end">
+            <%= base_adjustment(@f) %>
+          </div>
+        <% end %>
+
         <hr class="w-full sm:col-span-3"/>
 
         <label for={input_id(@f, :gallery_credit)} class="font-bold justify-self-start sm:justify-self-end">Add</label>
@@ -266,7 +341,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"package" => params}, socket) do
+  def handle_event("validate", params, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
@@ -285,7 +360,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def handle_event("submit", %{"package" => params, "step" => "details"}, socket) do
+  def handle_event("submit", %{"step" => "details"} = params, socket) do
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
         socket |> assign(step: :pricing) |> assign_changeset(params)
@@ -334,14 +409,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{},
         %{assigns: %{changeset: changeset}} = socket
       ) do
-    package = current_package(%{source: changeset})
+    package = current(%{source: changeset})
     changeset = socket |> changeset_from_template(package.package_template_id)
 
     socket |> assign(step: :details, changeset: changeset) |> noreply()
   end
 
   defp template_selected?(form),
-    do: form |> current_package() |> Map.get(:package_template_id) != nil
+    do: form |> current() |> Map.get(:package_template_id) != nil
 
   # takes the current changeset off the socket and returns a new changeset with the same data but new_opts
   # this is for special cases like "back." mostly we want to use params when we create a changset, not
@@ -411,22 +486,46 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     )
   end
 
-  defp assign_changeset(socket, params, action \\ nil) do
-    changeset = build_changeset(socket, params) |> Map.put(:action, action)
+  defp assign_changeset(
+         socket,
+         params,
+         action \\ nil
+       ) do
+    multiplier_changeset =
+      socket.assigns.package.base_multiplier
+      |> Multiplier.from_decimal()
+      |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
-    assign(socket, changeset: changeset)
+    package_params =
+      Map.get(params, "package", %{})
+      |> Map.put(
+        "base_multiplier",
+        multiplier_changeset |> Ecto.Changeset.apply_changes() |> Multiplier.to_decimal()
+      )
+
+    changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
+
+    assign(socket, changeset: changeset, multiplier: multiplier_changeset)
   end
 
-  defp current_package(form) do
+  defp current(form) do
     Ecto.Changeset.apply_changes(form.source)
   end
 
+  defp base_adjustment(package_form) do
+    adjustment = package_form |> current() |> Package.base_adjustment()
+
+    sign = if Money.negative?(adjustment), do: "-", else: "+"
+
+    Enum.join([sign, Money.abs(adjustment)])
+  end
+
   defp gallery_credit(form),
-    do: form |> current_package() |> Package.gallery_credit()
+    do: form |> current() |> Package.gallery_credit()
 
-  defp downloads_total(form), do: form |> current_package() |> Package.downloads_price()
+  defp downloads_total(form), do: form |> current() |> Package.downloads_price()
 
-  defp total_price(form), do: form |> current_package() |> Package.price()
+  defp total_price(form), do: form |> current() |> Package.price()
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
