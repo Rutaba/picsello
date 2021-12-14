@@ -22,6 +22,27 @@
     px-16;
 }
 
+.galleryImage__wrapper {
+    width: 309px;
+    
+}
+
+.photos__rect{
+   background-color: #F5F6F8;
+   @apply rounded-lg 
+
+}
+
+.frame {
+    width: 219px;
+    height: 178px;
+
+}
+
+.preview {
+    height: 650px
+}
+
 .settings__wrapper > div {
     @apply border-2
     border-solid
@@ -308,11 +329,14 @@
     @apply bg-transparent !important;
 }
 
+<<<<<<< HEAD
 .mobileGalleryButtons a {
    @apply inline-block
     w-full
     h-full;
 }
+=======
+>>>>>>> preview_product
 
 @media screen and (max-width: 640px) {
     .circleBtn ul li a {
@@ -333,3 +357,4 @@
         pr-4;
     }
 }
+
