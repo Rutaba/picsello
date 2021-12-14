@@ -1,13 +1,24 @@
 defmodule PicselloWeb.Live.Profile do
   @moduledoc "photographers public profile"
   use PicselloWeb, live_view: [layout: "profile"]
-  alias Picsello.Profiles
+  alias Picsello.{Profiles, Repo}
 
   @impl true
   def mount(%{"organization_slug" => slug}, session, socket) do
     socket
+    |> assign(:edit, false)
     |> assign_defaults(session)
     |> assign_organization(slug)
+    |> assign_contact_changeset()
+    |> ok()
+  end
+
+  @impl true
+  def mount(params, session, socket) when map_size(params) == 0 do
+    socket
+    |> assign(:edit, true)
+    |> assign_defaults(session)
+    |> assign_current_organization()
     |> assign_contact_changeset()
     |> ok()
   end
@@ -112,6 +123,10 @@ defmodule PicselloWeb.Live.Profile do
         <span class="mt-2 md:mt-0">Powered By Picsello</span>
       </div>
     </footer>
+
+    <%= if @edit do %>
+      <.edit_footer />
+    <% end %>
     """
   end
 
@@ -141,10 +156,30 @@ defmodule PicselloWeb.Live.Profile do
     end
   end
 
+  @impl true
+  def handle_event("close", %{}, socket) do
+    socket
+    |> push_redirect(to: Routes.profile_settings_path(socket, :index))
+    |> noreply()
+  end
+
   defp default_logo(assigns) do
     ~H"""
       <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
 
+    """
+  end
+
+  defp edit_footer(assigns) do
+    ~H"""
+    <div class="mt-32"></div>
+    <div class="fixed bottom-0 left-0 right-0 bg-base-300 z-20">
+      <div class="center-container px-6 md:px-16 py-6">
+        <button class="btn-primary border-white w-full sm:w-auto" title="close" type="button" phx-click="close">
+          Close
+        </button>
+      </div>
+    </div>
     """
   end
 
@@ -158,6 +193,11 @@ defmodule PicselloWeb.Live.Profile do
       photographer: user,
       job_types: profile.job_types
     )
+  end
+
+  defp assign_current_organization(%{assigns: %{current_user: current_user}} = socket) do
+    organization = current_user |> Repo.preload(:organization) |> Map.get(:organization)
+    assign_organization(socket, organization.slug)
   end
 
   defp assign_contact_changeset(%{assigns: %{job_types: types}} = socket) do
