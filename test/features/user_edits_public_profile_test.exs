@@ -37,6 +37,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(radio_button("Portrait", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
+    |> assert_has(css("a[href*='/photographer/mary-jane-photos']", text: "View"))
     |> click(button("Close"))
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
   end

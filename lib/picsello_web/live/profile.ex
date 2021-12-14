@@ -125,7 +125,7 @@ defmodule PicselloWeb.Live.Profile do
     </footer>
 
     <%= if @edit do %>
-      <.edit_footer />
+      <.edit_footer url={@url} />
     <% end %>
     """
   end
@@ -174,10 +174,13 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <div class="mt-32"></div>
     <div class="fixed bottom-0 left-0 right-0 bg-base-300 z-20">
-      <div class="center-container px-6 md:px-16 py-6">
-        <button class="btn-primary border-white w-full sm:w-auto" title="close" type="button" phx-click="close">
+      <div class="center-container px-6 md:px-16 py-2 sm:py-4 flex flex-col-reverse sm:flex-row justify-between">
+        <button class="btn-primary my-2 border-white w-full sm:w-auto" title="close" type="button" phx-click="close">
           Close
         </button>
+        <a href={@url} class="btn-secondary my-2 w-full sm:w-auto hover:bg-base-200 text-center" target="_blank" rel="noopener noreferrer">
+          View
+        </a>
       </div>
     </div>
     """
@@ -191,7 +194,8 @@ defmodule PicselloWeb.Live.Profile do
       color: profile.color,
       website: profile.website,
       photographer: user,
-      job_types: profile.job_types
+      job_types: profile.job_types,
+      url: Routes.profile_url(socket, :index, slug)
     )
   end
 
