@@ -8,7 +8,7 @@ defmodule PicselloWeb.Live.Profile do
     socket
     |> assign(:edit, false)
     |> assign_defaults(session)
-    |> assign_organization(slug)
+    |> assign_organization_by_slug(slug)
     |> assign_contact_changeset()
     |> ok()
   end
@@ -163,6 +163,18 @@ defmodule PicselloWeb.Live.Profile do
     |> noreply()
   end
 
+  @impl true
+  def handle_event("edit-color", %{}, socket) do
+    socket |> PicselloWeb.Live.Profile.EditColorComponent.open() |> noreply()
+  end
+
+  @impl true
+  def handle_info({:update, organization}, socket) do
+    socket
+    |> assign_organization(organization)
+    |> noreply()
+  end
+
   defp default_logo(assigns) do
     ~H"""
       <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
@@ -178,16 +190,31 @@ defmodule PicselloWeb.Live.Profile do
         <button class="btn-primary my-2 border-white w-full sm:w-auto" title="close" type="button" phx-click="close">
           Close
         </button>
-        <a href={@url} class="btn-secondary my-2 w-full sm:w-auto hover:bg-base-200 text-center" target="_blank" rel="noopener noreferrer">
-          View
-        </a>
+        <div class="flex flex-row-reverse gap-4 sm:flex-row justify-between">
+          <button class="btn-primary my-2 border-white ml-auto w-full sm:w-auto" title="change color" type="button" phx-click="edit-color">
+            Change color
+          </button>
+          <a href={@url} class="btn-secondary my-2 w-full sm:w-auto hover:bg-base-200 text-center" target="_blank" rel="noopener noreferrer">
+            View
+          </a>
+        </div>
       </div>
     </div>
     """
   end
 
-  defp assign_organization(socket, slug) do
-    %{profile: profile, user: user} = organization = Profiles.find_organization_by(slug: slug)
+  defp assign_organization_by_slug(socket, slug) do
+    organization = Profiles.find_organization_by(slug: slug)
+    assign_organization(socket, organization)
+  end
+
+  defp assign_current_organization(%{assigns: %{current_user: current_user}} = socket) do
+    organization = current_user |> Repo.preload(:organization) |> Map.get(:organization)
+    assign_organization(socket, organization)
+  end
+
+  defp assign_organization(socket, organization) do
+    %{profile: profile, user: user, slug: slug} = organization |> Repo.preload(:user)
 
     assign(socket,
       organization: organization,
@@ -197,11 +224,6 @@ defmodule PicselloWeb.Live.Profile do
       job_types: profile.job_types,
       url: Routes.profile_url(socket, :index, slug)
     )
-  end
-
-  defp assign_current_organization(%{assigns: %{current_user: current_user}} = socket) do
-    organization = current_user |> Repo.preload(:organization) |> Map.get(:organization)
-    assign_organization(socket, organization.slug)
   end
 
   defp assign_contact_changeset(%{assigns: %{job_types: types}} = socket) do

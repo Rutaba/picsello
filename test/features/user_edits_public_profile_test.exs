@@ -9,7 +9,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
           name: "Mary Jane Photography",
           slug: "mary-jane-photos",
           profile: %{
-            color: "3376FF",
+            color: "#3376FF",
             job_types: ~w(portrait event),
             website: "http://photos.example.com"
           }
@@ -40,5 +40,18 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(css("a[href*='/photographer/mary-jane-photos']", text: "View"))
     |> click(button("Close"))
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
+  end
+
+  feature "user edits color", %{session: session} do
+    session
+    |> assert_has(link("Settings"))
+    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
+    |> assert_text("What we offer:")
+    |> assert_has(css("svg[style*='color: #3376FF']", count: 2))
+    |> click(button("Change color"))
+    |> within_modal(&click(&1, css("li.aspect-h-1.aspect-w-1:nth-child(3)")))
+    |> click(button("Save"))
+    |> assert_has(css("svg[style*='color: #3376FF']", count: 0))
+    |> assert_has(css("svg[style*='color: #3AE7C7']", count: 2))
   end
 end
