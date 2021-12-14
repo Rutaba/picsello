@@ -55,7 +55,7 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def analytics(assigns) do
+  def google_analytics(assigns) do
     ~H"""
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src={"https://www.googletagmanager.com/gtag/js?id=#{@gaId}"}></script>
@@ -66,7 +66,11 @@ defmodule PicselloWeb.LayoutView do
 
       gtag('config', '<%= @gaId %>');
     </script>
+    """
+  end
 
+  def google_tag_manager(assigns) do
+    ~H"""
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

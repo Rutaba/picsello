@@ -85,6 +85,8 @@ config :picsello, Picsello.Mailer,
   ]
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
+config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
+config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
 
 config :picsello, :whcc, skip_design_details: true
 config :picsello, :environment, :prod
