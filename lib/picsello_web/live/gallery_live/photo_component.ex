@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     socket |> assign(:preview_photo_id, nil) |> ok
   end
 
+  @impl true
   def preload(list_of_assigns) do
     Enum.map(list_of_assigns, fn assigns ->
       if Map.has_key?(assigns, :preview_photo_id) do
