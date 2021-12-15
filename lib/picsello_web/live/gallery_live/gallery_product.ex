@@ -51,11 +51,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     end
   end
 
-  @spec check_preview(%{:gallery_id => any, :id => any, optional(any) => any}, any) ::
-          nil
-          | [%{optional(atom) => any}]
-          | {:ok, Phoenix.LiveView.Socket.t()}
-          | %{optional(atom) => any}
   def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
     gallery = Galleries.get_gallery!(gallery_id)
 
