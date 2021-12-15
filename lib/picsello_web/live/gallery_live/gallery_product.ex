@@ -17,7 +17,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         _session,
         socket
       ) do
-    case check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}, socket) do
+    case check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
       nil ->
         {:ok, redirect(socket, to: "/")}
 
@@ -56,7 +56,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
           | [%{optional(atom) => any}]
           | {:ok, Phoenix.LiveView.Socket.t()}
           | %{optional(atom) => any}
-  def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}, socket) do
+  def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
     gallery = Galleries.get_gallery!(gallery_id)
 
     preview = GalleriesProduct.get(%{id: gallery_product_id, gallery_id: gallery_id})
