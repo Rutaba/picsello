@@ -270,7 +270,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :pricing} = assigns) do
     ~H"""
       <div class="items-center mt-6 justify-items-end grid grid-cols-1 sm:grid-cols-[max-content,3fr,1fr] gap-6">
-        <label class="justify-self-start sm:justify-self-end" for={input_id(@f, :base_price)}>
+        <label class="justify-self-start" for={input_id(@f, :base_price)}>
           <h2 class="mb-1 text-xl font-bold">Base Price</h2>
           Your cost in labor, travel, etc.
         </label>
@@ -280,22 +280,25 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         </div>
 
         <% m = form_for(@multiplier_changeset, "#") %>
-        <label class="flex items-center justify-self-start">
-          <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox" ) %>
+        <label class="flex items-center justify-self-start sm:col-span-3">
+          <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
           Apply a discount or surcharge
         </label>
 
         <%= if input_value(m, :is_enabled) do %>
-          <h2 class="text-xl font-bold justify-self-start">Apply a</h2>
+          <div class="contents sm:flex sm:col-span-3 sm:justify-self-start sm:items-center sm:w-full pl-9 pr-4">
+            <h2 class="text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
-          <div class="flex w-full">
-            <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-center py-4 w-1/4 mr-6", phx_debounce: 100) %>
-            <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center w-3/4 py-4", phx_debounce: 100) %>
+            <div class="flex w-full">
+              <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
+              <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
+            </div>
+
+            <div class="self-end sm:self-auto">
+              <%= base_adjustment(@f) %>
+            </div>
           </div>
 
-          <div class="self-end">
-            <%= base_adjustment(@f) %>
-          </div>
         <% end %>
 
         <hr class="w-full sm:col-span-3"/>
