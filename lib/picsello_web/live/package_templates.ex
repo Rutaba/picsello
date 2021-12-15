@@ -11,6 +11,32 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
+  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket) do
+    socket
+    |> open_wizard()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_params(
+        %{"id" => package_id},
+        _,
+        %{assigns: %{live_action: :edit, templates: templates}} = socket
+      ) do
+    package_id = String.to_integer(package_id)
+    package = Enum.find(templates, &(&1.id == package_id))
+
+    socket
+    |> open_wizard(%{package: package})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_params(_, _, %{assigns: %{live_action: :index}} = socket) do
+    socket |> noreply()
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <.settings_nav socket={@socket} live_action={@live_action} container_class="sm:pb-0 pb-28">
@@ -70,29 +96,22 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
-  def handle_event("add-package", %{}, %{assigns: assigns} = socket),
+  def handle_event("add-package", %{}, socket),
     do:
       socket
-      |> open_modal(PicselloWeb.PackageLive.WizardComponent, assigns |> Map.take([:current_user]))
+      |> push_patch(to: Routes.package_templates_path(socket, :new))
       |> noreply()
 
   @impl true
   def handle_event(
         "edit-package",
         %{"package-id" => package_id},
-        %{assigns: %{current_user: current_user, templates: templates}} = socket
-      ) do
-    package_id = String.to_integer(package_id)
-
-    package = Enum.find(templates, &(&1.id == package_id))
-
-    socket
-    |> open_modal(PicselloWeb.PackageLive.WizardComponent, %{
-      current_user: current_user,
-      package: package
-    })
-    |> noreply()
-  end
+        socket
+      ),
+      do:
+        socket
+        |> push_patch(to: Routes.package_templates_path(socket, :edit, package_id))
+        |> noreply()
 
   @impl true
   def handle_event("confirm-archive-package", %{"package-id" => package_id}, socket),
@@ -138,7 +157,24 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> noreply()
   end
 
+  @impl true
+  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.get(:flash, %{})
+    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+    |> push_patch(to: Routes.package_templates_path(socket, :index))
+    |> noreply()
+  end
+
   defp assign_templates(%{assigns: %{current_user: user}} = socket) do
     socket |> assign(templates: user |> Package.templates_for_user() |> Repo.all())
+  end
+
+  defp open_wizard(socket, assigns \\ %{}) do
+    socket
+    |> open_modal(PicselloWeb.PackageLive.WizardComponent, %{
+      close_event: :wizard_closed,
+      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
+    })
   end
 end

@@ -28,6 +28,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Package Templates"))
     |> click(button("Add a package"))
     |> assert_text("Add a Package: Provide Details")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
@@ -50,6 +51,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_flash(:success, text: "The package has been successfully saved")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
     base_price = Money.new(10_000)
     gallery_credit = Money.new(1000)
@@ -79,6 +81,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Edit"))
 
     session
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
     |> assert_text("Edit Package: Provide Details")
     |> assert_value(text_field("Title"), template.name)
     |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
@@ -89,6 +92,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Save"))
     |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> assert_flash(:success, text: "The package has been successfully saved")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
     form_fields =
       ~w(base_price description job_type name gallery_credit download_count download_each_price shoot_count)a
