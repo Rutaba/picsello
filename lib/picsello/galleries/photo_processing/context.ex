@@ -95,13 +95,13 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       }) do
     photo = Galleries.get_photo(photo_id)
 
-    # {:ok, _} =
-    Galleries.update_photo(photo, %{
-      aspect_ratio: aspect_ratio,
-      height: height,
-      width: width,
-      preview_url: preview_url
-    })
+    {:ok, _} =
+      Galleries.update_photo(photo, %{
+        aspect_ratio: aspect_ratio,
+        height: height,
+        width: width,
+        preview_url: preview_url
+      })
   end
 
   def save_processed(%{

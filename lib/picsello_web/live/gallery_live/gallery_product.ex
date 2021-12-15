@@ -7,8 +7,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.GalleriesProduct
-  alias Picsello.Galleries.Gallery
-  alias Picsello.Galleries.GalleryProduct
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
@@ -19,36 +17,45 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         _session,
         socket
       ) do
-    preview = check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}, socket)
-    template = preview.category_template
-    [frame_id, frame_name, coords] = [template.id, template.name, template.corners]
+    case check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}, socket) do
+      nil ->
+        {:ok, redirect(socket, to: "/")}
 
-    url = get_preview(preview)
+      preview ->
+        template = preview.category_template
 
-    {frame_id, frame_name, coords} =
-      with id when id != nil <- params["frame_id"],
-           templ when templ != nil <- Repo.get(Picsello.CategoryTemplates, id) do
-        templ
-      else
-        _ -> template
-      end
-      |> then(fn x -> {x.id, x.name, x.corners} end)
+        url = get_preview(preview)
 
-    {:ok,
-     socket
-     |> assign(:frame_id, frame_id)
-     |> assign(:frame, frame_name)
-     |> assign(:coords, inspect(coords))
-     |> push_event("set_preview", %{
-       preview: url,
-       frame: frame_name,
-       coords: coords,
-       target: "canvas"
-     })
-     |> assign(:changeset, changeset(%{}, []))
-     |> assign(:preview_photo_id, nil)}
+        {frame_id, frame_name, coords} =
+          with id when id != nil <- params["frame_id"],
+               templ when templ != nil <- Repo.get(Picsello.CategoryTemplates, id) do
+            templ
+          else
+            _ -> template
+          end
+          |> then(fn x -> {x.id, x.name, x.corners} end)
+
+        {:ok,
+         socket
+         |> assign(:frame_id, frame_id)
+         |> assign(:frame, frame_name)
+         |> assign(:coords, inspect(coords))
+         |> push_event("set_preview", %{
+           preview: url,
+           frame: frame_name,
+           coords: coords,
+           target: "canvas"
+         })
+         |> assign(:changeset, changeset(%{}, []))
+         |> assign(:preview_photo_id, nil)}
+    end
   end
 
+  @spec check_preview(%{:gallery_id => any, :id => any, optional(any) => any}, any) ::
+          nil
+          | [%{optional(atom) => any}]
+          | {:ok, Phoenix.LiveView.Socket.t()}
+          | %{optional(atom) => any}
   def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}, socket) do
     gallery = Galleries.get_gallery!(gallery_id)
 
@@ -63,7 +70,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
           "not found row with gallery_product_id: #{gallery_product_id} in galleries_product table"
         )
 
-      {:ok, redirect(socket, to: "/")}
+      nil
     else
       preview
     end

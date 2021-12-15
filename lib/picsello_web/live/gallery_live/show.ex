@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.GalleriesProduct
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
-  alias Picsello.Galleries.GalleryProduct
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.PhotoComponent

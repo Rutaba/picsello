@@ -80,6 +80,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   def create_templates(_session) do
     unless Repo.aggregate(Category, :count) == 4 do
       frames = frames()
+
       Enum.each(frames, fn row ->
         length = Repo.aggregate(Category, :count)
 
