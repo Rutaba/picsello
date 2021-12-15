@@ -25,7 +25,6 @@ defmodule Picsello.GalleriesProduct do
 
     unless Repo.aggregate(CategoryTemplates, :count) > 4 do
       Enum.each(frames, fn row ->
-        length = Repo.aggregate(Category, :count)
 
         result = Repo.get_by(Category, %{name: row.category_name})
 
