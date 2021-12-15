@@ -87,6 +87,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> then(& &1.products)
     |> Enum.at(0)
   end
+  
+  def get_menu_items(_socket),
+    do: [
+      %{title: "Home", path: "#"},
+      %{title: "Shop", path: "#"},
+      %{title: "My orders", path: "#"},
+      %{title: "Help", path: "#"},
+    ]
 
   defp assign_photos(
          %{

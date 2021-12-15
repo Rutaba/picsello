@@ -3,6 +3,76 @@ defmodule Picsello.Profiles do
   import Ecto.Query, only: [from: 2]
   alias Picsello.{Repo, Organization, Job, ClientMessage, Client}
 
+  defmodule Profile do
+    @moduledoc "used to render the organization public profile"
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @colors ~w(#5C6578 #3376FF #3AE7C7 #E466F8 #1AD0DC #FFD80D #F8AC66 #9566F8)
+    @default_color hd(@colors)
+
+    def colors(), do: @colors
+
+    def default_color(), do: @default_color
+
+    @primary_key false
+    embedded_schema do
+      field :is_enabled, :boolean, default: true
+      field(:color, :string, default: @default_color)
+      field(:job_types, {:array, :string}, default: [])
+      field(:no_website, :boolean, default: false)
+      field(:website, :string)
+    end
+
+    def enabled?(%__MODULE__{is_enabled: is_enabled}), do: is_enabled
+
+    def changeset(%__MODULE__{} = profile, attrs) do
+      profile
+      |> cast(attrs, [
+        :no_website,
+        :website,
+        :color,
+        :job_types
+      ])
+      |> then(
+        &if get_field(&1, :no_website),
+          do: put_change(&1, :website, nil),
+          else: &1
+      )
+      |> then(
+        &if get_field(&1, :used_software_before),
+          do: validate_required(&1, :switching_from_software),
+          else: &1
+      )
+      |> prepare_changes(&clean_job_types/1)
+      |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
+    end
+
+    defp url_validation_errors(url) do
+      case URI.parse(url) do
+        %{scheme: nil} ->
+          ("https://" <> url) |> url_validation_errors()
+
+        %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
+          label = "[a-z0-9\\-]{1,63}+"
+
+          if Regex.compile!("^(?:(?:#{label})\\.)+(?:#{label})$")
+             |> Regex.match?(host),
+             do: [],
+             else: ["is invalid"]
+
+        %{scheme: _scheme} ->
+          ["is invalid"]
+      end
+    end
+
+    defp clean_job_types(changeset) do
+      update_change(changeset, :job_types, fn
+        list -> list |> Enum.filter(&(&1 != "")) |> Enum.uniq() |> Enum.sort()
+      end)
+    end
+  end
+
   defmodule Contact do
     @moduledoc "container for the contact form data"
     use Ecto.Schema
@@ -93,9 +163,22 @@ defmodule Picsello.Profiles do
   def find_organization_by(slug: slug) do
     from(
       o in Organization,
-      where: o.slug == ^slug,
+      where: o.slug == ^slug and fragment("coalesce((profile -> 'is_enabled')::boolean, true)"),
       preload: [:user]
     )
     |> Repo.one!()
   end
+
+  def enabled?(%Organization{profile: profile}), do: Profile.enabled?(profile)
+
+  def toggle(%Organization{} = organization) do
+    organization
+    |> Ecto.Changeset.change(%{profile: %{is_enabled: !enabled?(organization)}})
+    |> Repo.update!()
+  end
+
+  defdelegate colors(), to: Profile
+
+  def color(%Organization{profile: %{color: color}}), do: color
+  def color(_), do: Profile.default_color()
 end

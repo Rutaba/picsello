@@ -29,9 +29,13 @@
     <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder" button_click="open-compose" >
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
-        <dd class="font-bold row-start-2" style="color: #429467">$500</dd>
-        <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Owed</dt>
-        <dd class="font-bold row-start-2" style="color: #E1662F">$500</dd>
+        <%= if BookingProposal.remainder_paid?(@proposal) do %>
+          <dd class="font-bold row-start-2 text-green-finances-300"><%= Package.price(@package) |> Money.to_string(fractional_unit: false) %></dd>
+        <% else %>
+          <dd class="font-bold row-start-2 text-green-finances-300"><%= Package.deposit_price(@package) |> Money.to_string(fractional_unit: false) %></dd>
+          <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Owed</dt>
+          <dd class="font-bold row-start-2 text-red-sales-300"><%= Package.remainder_price(@package) |> Money.to_string(fractional_unit: false) %></dd>
+        <% end %>
       </dl>
     </.overview_card>
     <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox" button_click="open-inbox">

@@ -148,27 +148,35 @@ defmodule PicselloWeb.LiveHelpers do
     |> Enum.join(" ")
   end
 
-  def path_active?(
-        %{
-          view: socket_view,
-          router: router,
-          host_uri: %{host: host}
-        },
-        socket_live_action,
-        path
-      ),
-      do:
-        match?(
-          %{phoenix_live_view: {view, live_action, _, _}}
-          when view == socket_view and live_action == socket_live_action,
-          Phoenix.Router.route_info(router, "GET", path, host)
-        )
+  defp path_active?(
+         %{
+           view: socket_view,
+           router: router,
+           host_uri: %{host: host}
+         },
+         socket_live_action,
+         path
+       ),
+       do:
+         match?(
+           %{phoenix_live_view: {view, live_action, _, _}}
+           when view == socket_view and live_action == socket_live_action,
+           Phoenix.Router.route_info(router, "GET", path, host)
+         )
+
+  defp is_active(assigns) do
+    ~H"""
+      <%= render_slot(@inner_block, path_active?(@socket, @live_action, @path)) %>
+    """
+  end
 
   def nav_link(assigns) do
     ~H"""
-      <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => path_active?(@socket, @live_action, @to)}) do %>
-        <%= render_block(@inner_block) %>
-      <% end %>
+      <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
+        <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
+          <%= render_slot(@inner_block, active) %>
+        <% end %>
+      </.is_active>
     """
   end
 

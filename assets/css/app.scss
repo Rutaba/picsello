@@ -84,7 +84,7 @@ html {
 
 @layer components {
   .bare-modal {
-    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg px-4 py-3 sm:p-8;
+    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg p-6 sm:p-8;
   }
 }
 

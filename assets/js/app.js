@@ -50,26 +50,20 @@ const Modal = {
       }
     };
 
-    this.scrollListener = () => {
-      document.body.classList.add('overflow-hidden');
-    };
-
     document.addEventListener('keydown', this.keydownListener);
 
     this.handleEvent('modal:open', () => {
-      window.addEventListener('scroll', this.scrollListener);
+      document.body.classList.add('overflow-hidden');
     });
 
     this.handleEvent('modal:close', () => {
       this.el.classList.add('opacity-0');
       document.body.classList.remove('overflow-hidden');
-      window.removeEventListener('scroll', this.scrollListener);
     });
   },
 
   destroyed() {
     document.removeEventListener('keydown', this.keydownListener);
-    window.removeEventListener('scroll', this.scrollListener);
     document.body.classList.remove('overflow-hidden');
   },
 };

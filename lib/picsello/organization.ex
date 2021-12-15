@@ -3,12 +3,13 @@ defmodule Picsello.Organization do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Package, Client, Accounts.User, Repo}
+  alias Picsello.{Package, Client, Accounts.User, Repo, Profiles.Profile}
 
   schema "organizations" do
     field(:name, :string)
     field(:stripe_account_id, :string)
     field(:slug, :string)
+    embeds_one(:profile, Profile, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:clients, Client)
@@ -30,6 +31,7 @@ defmodule Picsello.Organization do
   def registration_changeset(organization, attrs) do
     organization
     |> cast(attrs, [:name, :slug])
+    |> cast_embed(:profile)
     |> validate_required([:name])
     |> prepare_changes(fn changeset ->
       case get_field(changeset, :slug) do

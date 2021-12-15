@@ -138,30 +138,32 @@ defmodule PicselloWeb.Live.User.Settings do
     <div class="bg-blue-planning-100"><h1 class="px-6 py-8 text-3xl font-bold center-container">Your Settings</h1></div>
 
     <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"}>
-      <ul class="flex my-4 font-bold text-blue-planning-300">
-        <li>
-          <.nav_link title="Profile" to={Routes.user_settings_path(@socket, :edit)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
-            Profile
-          </.nav_link>
-        </li>
-
-        <li>
-          <.nav_link title="Package Templates" to={Routes.package_templates_path(@socket, :index)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
-            Package Templates
-          </.nav_link>
-        </li>
-
-        <li>
-          <.nav_link title="Gallery Store Pricing" to={Routes.pricing_path(@socket, :index)} class="block px-4 py-3 rounded-lg" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
-            Gallery Store Pricing
-          </.nav_link>
-        </li>
-      </ul>
-
+      <._settings_nav socket={@socket} live_action={@live_action}>
+        <:link to={{:user_settings, :edit}} >Profile</:link>
+        <:link to={{:package_templates, :index}} >Package Templates</:link>
+        <:link to={{:pricing, :index}} >Gallery Store Pricing</:link>
+        <:link to={{:profile_settings, :index}} >Public Profile</:link>
+      </._settings_nav>
       <hr />
 
       <%= render_block @inner_block %>
     </div>
+    """
+  end
+
+  defp _settings_nav(assigns) do
+    ~H"""
+    <ul class="flex py-4 -ml-4 overflow-auto font-bold text-blue-planning-300">
+      <%= for %{to: {path, action}} = link <- @link do %>
+        <li>
+          <.nav_link title={path} let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+            <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-4 py-3">
+              <%= render_slot(link) %>
+            </div>
+          </.nav_link>
+        </li>
+      <% end %>
+    </ul>
     """
   end
 end

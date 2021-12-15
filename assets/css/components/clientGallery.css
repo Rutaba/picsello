@@ -261,7 +261,7 @@
     cursor-pointer
     flex
     items-center
-    border-2
+    border
     border-solid
     border-base-100
     rounded-lg
@@ -272,6 +272,10 @@
 
 .bottomBar__btn.btn-secondary {
     @apply border-base-100;
+}
+
+.bottomBar__btn.btn-secondary:hover {
+    @apply text-base-100;
 }
 
 .galleryItem .likeBtn{

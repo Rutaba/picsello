@@ -149,15 +149,14 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   defp assign_organization(socket, slug) do
-    %{user: %{onboarding: onboarding} = user} =
-      organization = Profiles.find_organization_by(slug: slug)
+    %{profile: profile, user: user} = organization = Profiles.find_organization_by(slug: slug)
 
     assign(socket,
       organization: organization,
-      color: onboarding.color,
-      website: onboarding.website,
+      color: profile.color,
+      website: profile.website,
       photographer: user,
-      job_types: onboarding.job_types
+      job_types: profile.job_types
     )
   end
 

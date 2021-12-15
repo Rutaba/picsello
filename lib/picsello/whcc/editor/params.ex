@@ -14,7 +14,7 @@ defmodule Picsello.WHCC.Editor.Params do
 
     gallery =
       Galleries.get_gallery!(photo.gallery_id)
-      |> Repo.preload(job: [client: [organization: :user]])
+      |> Repo.preload(job: [client: :organization])
 
     gallery_photos =
       if product.category.whcc_name in @multi_photo_categories do
@@ -24,9 +24,8 @@ defmodule Picsello.WHCC.Editor.Params do
       end
 
     organization = gallery.job.client.organization
-    user = organization.user
 
-    color = user.onboarding.color
+    color = Picsello.Profiles.color(organization)
 
     %{
       "userId" => "{{accountId}}",
