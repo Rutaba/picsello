@@ -15,7 +15,7 @@ defmodule Picsello.CategoryTemplates do
   @doc false
   def changeset(category_templates, attrs) do
     category_templates
-    |> cast(attrs, [:name, :corners, :price])
-    |> validate_required([:name, :corners, :price])
+    |> cast(attrs, [:name, :corners])
+    |> validate_required([:name, :corners])
   end
 end

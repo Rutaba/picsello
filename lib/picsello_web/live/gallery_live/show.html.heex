@@ -81,12 +81,9 @@
   <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto">
     <%= for {template, t_id} <- @templates do %>
       <li class="galleryImage__wrapper flex flex-col justify-between   rounded-lg">
-        <%= live_redirect to: Routes.preview_path(@socket,
-          :preview, @gallery.id, @gallery_product_id, template.id) do %>
-          <div class="photos__rect rounded-lg justify-center items-center">
+         <div class="photos__rect rounded-lg justify-center items-center">
             <canvas id={"canvas#{t_id}"} width="220" height="180"></canvas>
-          </div>
-        <% end %>
+         </div>
         <div class="grid grid-cols-2 text-xl">
           <div class="flex flex-col">
             <div class="pt-3 pb-1.5 font-bold ">Prints</div>

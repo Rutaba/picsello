@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Repo
   alias Picsello.Galleries
+  alias Picsello.GalleriesProduct
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.GalleryProduct
@@ -33,20 +34,22 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    preview =
-      Repo.get_by(GalleryProduct, %{:gallery_id => id})
-      |> Repo.preload([:preview_photo, :category_template])
+    preview = GalleriesProduct.get(%{gallery_id: id})
+
+    preview = if preview == nil do
+      GalleriesProduct.seed_templates()
+      %{id: category_template_id} = GalleriesProduct.get_template(%{corners: [0,0,0,0,0,0,0,0]})
+      product = PicselloWeb.GalleryLive.GalleryProduct.changeset(
+        %{gallery_id: id, category_template_id: category_template_id},
+        [:gallery_id, :category_template_id])
+      GalleriesProduct.insert(product)
+    else
+      preview
+    end
 
     data = Repo.all(Picsello.CategoryTemplates)
 
-    url =
-      if preview != nil and Map.has_key?(preview, :preview_photo) do
-        (preview.preview_photo != nil &&
-           PicselloWeb.GalleryLive.GalleryProduct.path(preview.preview_photo.preview_url)) ||
-          "/images/card_blank.png"
-      else
-        "/images/card_blank.png"
-      end
+    url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
 
     event_datas =
       Enum.map(0..3, fn x ->
@@ -58,16 +61,9 @@ defmodule PicselloWeb.GalleryLive.Show do
         }
       end)
 
-    preview_id =
-      if preview == nil do
-        1
-      else
-        preview.id
-      end
-
     socket
     |> assign(:templates, Enum.with_index(data))
-    |> assign(:gallery_product_id, preview_id)
+    |> assign(:gallery_product_id, preview.id)
     |> assign(:preview, cover_photo(url))
     |> push_event("set_preview", Enum.at(event_datas, 0))
     |> push_event("set_preview", Enum.at(event_datas, 1))

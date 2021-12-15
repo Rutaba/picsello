@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   alias Picsello.CategoryTemplates
   require Logger
 
+
   setup do
     unless Repo.aggregate(Category, :count) == 4 do
       Enum.each(frames(), fn row ->
