@@ -11,37 +11,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   alias Picsello.CategoryTemplates
   require Logger
 
-  setup do
-    unless Repo.aggregate(Category, :count) == 4 do
-      Enum.each(frames(), fn row ->
-        length = Repo.aggregate(Category, :count)
-
-        category =
-          Repo.insert(%Category{
-            name: "example_category",
-            icon: "example_icon",
-            position: length,
-            whcc_id: Integer.to_string(length),
-            whcc_name: "example_name"
-          })
-
-        case category do
-          {:ok, %{id: category_id}} ->
-            Repo.insert!(%CategoryTemplates{
-              name: row.name,
-              corners: row.corners,
-              category_id: category_id
-            })
-
-          x ->
-            Logger.error("category_template seed was not inserted. #{x}")
-        end
-      end)
-    end
-
-    :ok
-  end
-
+  setup :create_templates
   setup :onboarded
   setup :authenticated
 
@@ -81,15 +51,61 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
       position: 1
     })
 
-    insert(%GalleryProduct{gallery_id: id, category_template_id: 1})
+    template = Repo.all(CategoryTemplates) |> hd
+
+    insert(%GalleryProduct{gallery_id: id, category_template_id: template.id})
   end
 
   def frames() do
     [
-      %{name: "card_blank.png", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
-      %{name: "album_transparency.png", corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]},
-      %{name: "card_envelope.png", corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]},
-      %{name: "frame_transperancy.png", corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
+      %{name: "card_blank.png", category_name: "Loose Prints", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
+      %{
+        name: "album_transparency.png",
+        category_name: "Albums",
+        corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
+      },
+      %{
+        name: "card_envelope.png",
+        category_name: "Press Printed Cards",
+        corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
+      },
+      %{
+        name: "frame_transparency.png",
+        category_name: "Books",
+        corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
+      }
     ]
+  end
+
+  def create_templates(_session) do
+    unless Repo.aggregate(Category, :count) == 4 do
+      frames = frames()
+      Enum.each(frames, fn row ->
+        length = Repo.aggregate(Category, :count)
+
+        category =
+          Repo.insert(%Category{
+            name: row.category_name,
+            icon: "example_icon",
+            position: length,
+            whcc_id: Integer.to_string(length),
+            whcc_name: "example_name"
+          })
+
+        case category do
+          {:ok, %{id: category_id}} ->
+            Repo.insert(%CategoryTemplates{
+              name: row.name,
+              corners: row.corners,
+              category_id: category_id
+            })
+
+          x ->
+            Logger.error("category_template seed was not inserted. #{x}")
+        end
+      end)
+    end
+
+    :ok
   end
 end

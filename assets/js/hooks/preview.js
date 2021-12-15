@@ -1,6 +1,5 @@
 var Preview = { 
   draw: function(frame_name, preview_name, coord, canvasId) {
-    console.log(coord);
     if(typeof(coord) == 'string'){coord = JSON.parse(coord)};
     
     let canvas = document.getElementById(canvasId);
