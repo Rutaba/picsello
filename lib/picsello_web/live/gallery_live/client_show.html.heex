@@ -101,26 +101,47 @@
         <h2 class="text-3xl font-bold pt-14 pb-10">Enter digital delivery information</h2>
 
         <form class="flex">
-            <div class="border border-gray-200 rounded-lg w-2/3 p-6 mr-6">
+            <div class="border border-gray-200 rounded-lg w-2/3 px-6 py-8 mr-6">
                 <div class="flex">
                   <div class="flex flex-col flex-1 mr-4">
-                    <label for="email" class="text-sm font-bold pb-2">Email address</label>
-                    <input type="text" id="email" name="email" class="border border-gray-200 rounded  focus:outline-none
+                    <label for="email" class="text-sm font-bold pb-2 leading-8">Email address</label>
+                    <input type="text" id="email" name="email" class="border border-gray-200 rounded focus:outline-none
                     focus:border-blue-planning-300 h-12 px-3" required>
                   </div>
                   <div class="flex flex-col flex-1">
-                    <label for="name" class="text-sm font-bold pb-2">Name</label>
-                    <input type="text" id="name" name="name" class="border border-gray-200 rounded  focus:outline-none
+                    <label for="name" class="text-sm font-bold pb-2 leading-8">Name</label>
+                    <input type="text" id="name" name="name" class="border border-gray-200 rounded focus:outline-none
                     focus:border-blue-planning-300 h-12 px-3" required>
                   </div>
                 </div>
-                <p class="text-sm pt-7">We’ll email you a link for your digital products! This link will never expire.</p>
+                <p class="text-sm pt-7 leading-8">We’ll email you a link for your digital products! This link will never expire.</p>
+                <div class="mt-6"> <!-- this block should be hidden in case non physical products-->
+                <p class="text-sm font-bold">Shipping address</p>
+                <div class="flex flex-col flex-1 pt-4">
+                     <input type="text" id="email" name="email" placeholder="Address line 1" class="border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" required />
+                </div>
+                <div class="flex flex-col flex-1 pt-4">
+                    <input type="text" id="email" name="email" placeholder="Address line 2" class="border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" required />
+                </div>
+                <div class="flex pt-4">
+                    <div class="flex flex-col flex-1 mr-4">
+                        <input type="text" id="email" name="email" placeholder="City" class="border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" required />
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <input type="text" id="name" name="name" placeholder="ZIP" class="border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" required />
+                    </div>
+                </div>
+                <div class="flex flex-col flex-1 pt-4">
+                    <input type="text" id="email" name="email" placeholder="State" class="border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" required />
+                </div>
+
+                </div>
             </div>
-            <div class="border border-gray-200 rounded-lg w-1/3 p-4 flex flex-col justify-between">
-                <p class="text-black text-opacity-80">Products (<span>3</span>): <span>$28.05</span></p>
-                <hr>
-                <p>Total: <span class="font-bold">$35.55</span></p>
-                <button class="btn-primary w-full" type="submit" disabled>Continue</button>
+            <div class="border border-gray-200 rounded-lg w-1/3 px-4 py-6 self-start">
+                <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span>$28.05</span></p>
+                <hr class="my-4">
+                <p class="text-xl">Total: <span class="font-bold">$35.55</span></p>
+                <button class="btn-primary w-full mt-8" type="submit" disabled>Continue</button>
             </div>
         </form>
     </div>
