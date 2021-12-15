@@ -11,7 +11,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
           profile: %{
             color: "#3376FF",
             job_types: ~w(portrait event),
-            website: "http://photos.example.com"
+            website: "photos.example.com"
           }
         }
       )
@@ -70,5 +70,21 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(testid("job-type", count: 2))
     |> assert_has(testid("job-type", text: "Portrait"))
     |> assert_has(testid("job-type", text: "Family"))
+  end
+
+  feature "user edits website", %{session: session} do
+    session
+    |> assert_has(link("Settings"))
+    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
+    |> assert_text("What we offer:")
+    |> assert_has(css("a[href='https://photos.example.com']", text: "See our full portfolio"))
+    |> click(button("Edit Link"))
+    |> fill_in(text_field("organization_profile_website"), with: "http://google.com")
+    |> click(button("Save"))
+    |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
+    |> click(button("Edit Link"))
+    |> click(checkbox("I don't have one"))
+    |> click(button("Save"))
+    |> assert_has(css("a[href='#']", text: "See our full portfolio"))
   end
 end

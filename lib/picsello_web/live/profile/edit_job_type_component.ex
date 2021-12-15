@@ -8,7 +8,7 @@ defmodule PicselloWeb.Live.Profile.EditJobTypeComponent do
     socket
     |> assign(assigns)
     |> assign_organization()
-    |> assign_changeset(Map.take(assigns, [:job_types]))
+    |> assign_changeset()
     |> ok()
   end
 
@@ -75,13 +75,13 @@ defmodule PicselloWeb.Live.Profile.EditJobTypeComponent do
         socket,
         __MODULE__,
         %{
-          assigns: Enum.into(opts, Map.take(assigns, [:current_user, :job_types]))
+          assigns: Enum.into(opts, Map.take(assigns, [:current_user]))
         }
       )
 
   defp assign_changeset(
          %{assigns: %{organization: organization}} = socket,
-         params,
+         params \\ %{},
          action \\ :validate
        ) do
     changeset =

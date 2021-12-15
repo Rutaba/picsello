@@ -58,8 +58,15 @@ defmodule PicselloWeb.Live.Profile do
             <% end %>
           </div>
 
-          <%= if @website do %>
-            <a href={@website} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1" href="#">See our full portfolio</a>
+          <%= if @website || @edit do %>
+            <div class="flex items-center">
+              <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
+              <%= if @edit do %>
+                <.icon_button class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
+                  Edit Link
+                </.icon_button>
+              <% end %>
+            </div>
           <% end %>
         </div>
 
@@ -181,11 +188,20 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   @impl true
+  def handle_event("edit-website", %{}, socket) do
+    socket |> PicselloWeb.Live.Profile.EditWebsiteComponent.open() |> noreply()
+  end
+
+  @impl true
   def handle_info({:update, organization}, socket) do
     socket
     |> assign_organization(organization)
     |> noreply()
   end
+
+  defp website_url(nil), do: "#"
+  defp website_url("http" <> _domain = url), do: url
+  defp website_url(domain), do: "https://#{domain}"
 
   defp default_logo(assigns) do
     ~H"""

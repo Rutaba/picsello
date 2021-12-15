@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Profile.EditColorComponent do
+defmodule PicselloWeb.Live.Profile.EditWebsiteComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Profiles}
@@ -15,28 +15,13 @@ defmodule PicselloWeb.Live.Profile.EditColorComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="modal !max-w-sm ">
-      <h1 class="text-3xl font-bold">Edit color</h1>
+    <div class="modal !max-w-xl">
+      <h1 class="text-3xl font-bold">Edit Link</h1>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
         <%= for p <- inputs_for(f, :profile) do %>
-          <ul class="mt-4 grid grid-cols-4 gap-5 sm:gap-3 max-w-sm">
-            <%= for(color <- colors()) do %>
-              <li class="aspect-h-1 aspect-w-1">
-                <label>
-                  <%= radio_button p, :color, color, class: "hidden" %>
-                  <div class={classes(
-                    "flex cursor-pointer items-center hover:border-base-300 justify-center w-full h-full border rounded", %{
-                    "border-base-300" => input_value(p, :color) == color,
-                    "hover:border-opacity-40" => input_value(p, :color) != color
-                  })}>
-                    <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
-                  </div>
-                </label>
-              </li>
-            <% end %>
-          </ul>
+          <.website_field form={p} class="mt-4" placeholder="Add your website…" />
         <% end %>
 
         <PicselloWeb.LiveModal.footer>
@@ -101,6 +86,4 @@ defmodule PicselloWeb.Live.Profile.EditColorComponent do
     organization = Profiles.find_organization_by(user: current_user)
     socket |> assign(:organization, organization)
   end
-
-  defdelegate colors(), to: Picsello.Profiles
 end
