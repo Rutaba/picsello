@@ -1,7 +1,7 @@
 defmodule Picsello.Profiles do
   @moduledoc "context module for public photographer profile"
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Repo, Organization, Job, ClientMessage, Client}
+  alias Picsello.{Repo, Organization, Job, JobType, ClientMessage, Client, Accounts.User}
 
   defmodule Profile do
     @moduledoc "used to render the organization public profile"
@@ -120,6 +120,14 @@ defmodule Picsello.Profiles do
     Contact.changeset(%Contact{}, %{})
   end
 
+  def edit_organization_profile_changeset(%Organization{} = organization, attrs) do
+    Organization.edit_profile_changeset(organization, attrs)
+  end
+
+  def update_organization_profile(%Organization{} = organization, attrs) do
+    organization |> edit_organization_profile_changeset(attrs) |> Repo.update()
+  end
+
   def handle_contact(%{id: organization_id} = _organization, params) do
     changeset = contact_changeset(params)
 
@@ -169,6 +177,10 @@ defmodule Picsello.Profiles do
     |> Repo.one!()
   end
 
+  def find_organization_by(user: %User{} = user) do
+    user |> Repo.preload(organization: :user) |> Map.get(:organization)
+  end
+
   def enabled?(%Organization{profile: profile}), do: Profile.enabled?(profile)
 
   def toggle(%Organization{} = organization) do
@@ -178,6 +190,7 @@ defmodule Picsello.Profiles do
   end
 
   defdelegate colors(), to: Profile
+  defdelegate job_types(), to: JobType, as: :all
 
   def color(%Organization{profile: %{color: color}}), do: color
   def color(_), do: Profile.default_color()

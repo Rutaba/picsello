@@ -1,12 +1,13 @@
 defmodule PicselloWeb.Live.Profile.EditJobTypeComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Organization, Repo, JobType}
+  alias Picsello.{Profiles}
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_organization()
     |> assign_changeset(Map.take(assigns, [:job_types]))
     |> ok()
   end
@@ -53,11 +54,12 @@ defmodule PicselloWeb.Live.Profile.EditJobTypeComponent do
   end
 
   @impl true
-  def handle_event("save", %{"organization" => params}, socket) do
-    socket = socket |> assign_changeset(params, nil)
-    %{assigns: %{changeset: changeset}} = socket
-
-    case Repo.update(changeset) do
+  def handle_event(
+        "save",
+        %{"organization" => params},
+        %{assigns: %{organization: organization}} = socket
+      ) do
+    case Profiles.update_organization_profile(organization, params) do
       {:ok, organization} ->
         send(socket.parent_pid, {:update, organization})
         socket |> close_modal() |> noreply()
@@ -78,17 +80,22 @@ defmodule PicselloWeb.Live.Profile.EditJobTypeComponent do
       )
 
   defp assign_changeset(
-         %{assigns: %{current_user: current_user}} = socket,
+         %{assigns: %{organization: organization}} = socket,
          params,
          action \\ :validate
        ) do
-    organization = current_user |> Repo.preload(:organization) |> Map.get(:organization)
-
     changeset =
-      organization |> Organization.edit_profile_changeset(params) |> Map.put(:action, action)
+      organization
+      |> Profiles.edit_organization_profile_changeset(params)
+      |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end
 
-  defdelegate job_types(), to: JobType, as: :all
+  defp assign_organization(%{assigns: %{current_user: current_user}} = socket) do
+    organization = Profiles.find_organization_by(user: current_user)
+    socket |> assign(:organization, organization)
+  end
+
+  defdelegate job_types(), to: Picsello.Profiles
 end

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Profile do
   @moduledoc "photographers public profile"
   use PicselloWeb, live_view: [layout: "profile"]
-  alias Picsello.{Profiles, Repo}
+  alias Picsello.{Profiles}
 
   @impl true
   def mount(%{"organization_slug" => slug}, session, socket) do
@@ -221,12 +221,12 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   defp assign_current_organization(%{assigns: %{current_user: current_user}} = socket) do
-    organization = current_user |> Repo.preload(:organization) |> Map.get(:organization)
+    organization = Profiles.find_organization_by(user: current_user)
     assign_organization(socket, organization)
   end
 
   defp assign_organization(socket, organization) do
-    %{profile: profile, user: user, slug: slug} = organization |> Repo.preload(:user)
+    %{profile: profile, user: user, slug: slug} = organization
 
     assign(socket,
       organization: organization,
