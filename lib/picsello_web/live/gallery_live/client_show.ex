@@ -52,7 +52,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   def handle_event("open_edit_product_popup", _, socket) do
     socket
-    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{product_type: "prints"})
+    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{product: %{}})
     |> noreply()
   end
 

@@ -141,6 +141,49 @@ defmodule Picsello.WHCC do
     |> Adapter.editor()
   end
 
+  def print_products() do
+    :print
+    |> products_query()
+    |> Repo.all()
+  end
+
+  def framed_print_product() do
+    :framed_print
+    |> products_query()
+    |> Repo.one()
+  end
+
+  def album_product() do
+    :album
+    |> products_query()
+    |> Repo.one()
+  end
+
+  @products_select_attributes [:id, :whcc_name, :attribute_categories]
+  defp products_query(:print) do
+    from(category in Picsello.Category,
+      where: category.name in ["Wall Displays", "Loose Prints"],
+      join: product in Picsello.Product,
+      on: product.category_id == category.id,
+      order_by: [asc: product.position],
+      select: struct(product, @products_select_attributes)
+    )
+  end
+
+  defp products_query(:framed_print) do
+    from(product in Picsello.Product,
+      where: product.whcc_name == "Framed Print",
+      select: struct(product, @products_select_attributes)
+    )
+  end
+
+  defp products_query(:album) do
+    from(product in Picsello.Product,
+      where: product.whcc_name == "Album",
+      select: struct(product, @products_select_attributes)
+    )
+  end
+
   defp variations(%{variations: variations}),
     do:
       for(
