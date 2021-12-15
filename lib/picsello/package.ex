@@ -12,7 +12,6 @@ defmodule Picsello.Package do
     field :description, :string
     field :download_count, :integer
     field :download_each_price, Money.Ecto.Amount.Type
-    field :gallery_credit, Money.Ecto.Amount.Type
     field :job_type, :string
     field :name, :string
     field :shoot_count, :integer
@@ -88,14 +87,12 @@ defmodule Picsello.Package do
       :base_price,
       :download_count,
       :download_each_price,
-      :gallery_credit,
       :base_multiplier
     ])
     |> validate_required([:base_price, :download_count, :download_each_price])
     |> validate_money(:base_price)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
-    |> validate_money(:gallery_credit)
   end
 
   def downloads_price(%__MODULE__{download_each_price: price, download_count: count})
@@ -104,9 +101,6 @@ defmodule Picsello.Package do
 
   def downloads_price(%__MODULE__{download_each_price: each_price, download_count: count}),
     do: Money.multiply(each_price, count)
-
-  def gallery_credit(%__MODULE__{gallery_credit: nil}), do: Money.new(0)
-  def gallery_credit(%__MODULE__{gallery_credit: credit}), do: credit
 
   def base_price(%__MODULE__{base_price: nil}), do: Money.new(0)
   def base_price(%__MODULE__{base_price: base}), do: base
@@ -119,7 +113,7 @@ defmodule Picsello.Package do
 
   def price(%__MODULE__{} = package) do
     Enum.reduce(
-      [&adjusted_base_price/1, &gallery_credit/1, &downloads_price/1],
+      [&adjusted_base_price/1, &downloads_price/1],
       Money.new(0),
       &(package |> &1.() |> Money.add(&2))
     )

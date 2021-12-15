@@ -291,6 +291,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
             <div class="flex w-full">
               <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
+
               <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
             </div>
 
@@ -298,17 +299,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <%= base_adjustment(@f) %>
             </div>
           </div>
-
         <% end %>
 
         <hr class="w-full sm:col-span-3"/>
-
-        <label for={input_id(@f, :gallery_credit)} class="font-bold justify-self-start sm:justify-self-end">Add</label>
-        <div class="flex items-center justify-self-start">
-          <%= input @f, :gallery_credit, class: "w-20 px-2 inline mr-6 text-center", placeholder: "$0.00", phx_hook: "PriceMask" %> optional Gallery store credit
-        </div>
-        <div class="pr-4">+<%= gallery_credit(@f) %></div>
-        <hr class="w-full sm:hidden"/>
 
         <label for={input_id(@f, :download_count)} class="font-bold justify-self-start sm:justify-self-end">Download</label>
         <div class="flex items-center justify-self-start">
@@ -522,9 +515,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     Enum.join([sign, Money.abs(adjustment)])
   end
-
-  defp gallery_credit(form),
-    do: form |> current() |> Package.gallery_credit()
 
   defp downloads_total(form), do: form |> current() |> Package.downloads_price()
 
