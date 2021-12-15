@@ -1,47 +1,24 @@
 defmodule PicselloWeb.GalleryLive.ClientShow do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
 
+  use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Galleries
-  alias PicselloWeb.GalleryLive.ClientShowView
-  alias PicselloWeb.GalleryLive.ClientShow.Login
 
   @per_page 12
 
   @impl true
-  def mount(_params, _session, socket), do: socket |> ok()
-
-  @impl true
-  def handle_params(_params, _, %{assigns: %{authenticated: true}} = socket) do
+  def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:page_title, "Show Gallery")
     |> assign(:page, 0)
     |> assign(:update_mode, "append")
     |> assign(:favorites_filter, false)
-    |> assign(:favorites_count, Galleries.gallery_favorites_count(socket.assigns.gallery))
+    |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
     |> noreply()
   end
 
   @impl true
-  def handle_params(_params, _, socket) do
-    socket
-    |> assign(:error_message, false)
-    |> assign(:password_is_correct, false)
-    |> open_modal(Login, %{gallery: socket.assigns.gallery})
-    |> noreply()
-  end
-
-  @impl true
-  def render(%{authenticated: true} = assigns) do
-    ClientShowView.render("show.html", assigns)
-  end
-
-  @impl true
-  def render(assigns) do
-    ClientShowView.render("unauthenticated.html", assigns)
-  end
-
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)

@@ -148,4 +148,12 @@ defmodule PicselloWeb.Router do
       post "/:hash/login", GallerySessionController, :put
     end
   end
+
+  scope "/gallery", PicselloWeb do
+    live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
+      pipe_through [:browser, :require_authenticated_gallery]
+
+      live "/:hash/login", GalleryLive.ClientShow.Login, :login
+    end
+  end
 end

@@ -1,32 +1,13 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Login do
   @moduledoc false
-  use PicselloWeb, :live_component
+  use PicselloWeb, live_view: [layout: "live_client"]
+  alias PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent
   alias Picsello.Galleries
 
-  def mount(socket) do
+  @impl true
+  def handle_params(%{"hash" => hash}, _, socket) do
     socket
-    |> assign(:password_is_correct, true)
-    |> assign(:submit, false)
-    |> assign(:session_token, nil)
-    |> ok()
-  end
-
-  def handle_event(
-        "check",
-        %{"login" => %{"password" => password}},
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    if gallery.password == password do
-      {:ok, token} = Galleries.build_gallery_session_token(gallery)
-
-      socket
-      |> assign(:submit, true)
-      |> assign(:session_token, token.token)
-      |> noreply()
-    else
-      socket
-      |> assign(:password_is_correct, false)
-      |> noreply()
-    end
+    |> open_modal(AuthenticationComponent, %{gallery: Galleries.get_gallery_by_hash(hash)})
+    |> noreply()
   end
 end
