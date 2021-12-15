@@ -36,16 +36,23 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     preview = GalleriesProduct.get(%{gallery_id: id})
 
-    preview = if preview == nil do
-      GalleriesProduct.seed_templates()
-      %{id: category_template_id} = GalleriesProduct.get_template(%{corners: [0,0,0,0,0,0,0,0]})
-      product = PicselloWeb.GalleryLive.GalleryProduct.changeset(
-        %{gallery_id: id, category_template_id: category_template_id},
-        [:gallery_id, :category_template_id])
-      GalleriesProduct.insert(product)
-    else
-      preview
-    end
+    preview =
+      if preview == nil do
+        GalleriesProduct.seed_templates()
+
+        %{id: category_template_id} =
+          GalleriesProduct.get_template(%{corners: [0, 0, 0, 0, 0, 0, 0, 0]})
+
+        product =
+          PicselloWeb.GalleryLive.GalleryProduct.changeset(
+            %{gallery_id: id, category_template_id: category_template_id},
+            [:gallery_id, :category_template_id]
+          )
+
+        GalleriesProduct.insert(product)
+      else
+        preview
+      end
 
     data = Repo.all(Picsello.CategoryTemplates)
 

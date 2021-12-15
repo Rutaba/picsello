@@ -27,8 +27,7 @@ defmodule Picsello.GalleriesProduct do
       Enum.each(frames, fn row ->
         length = Repo.aggregate(Category, :count)
 
-        result =
-          Repo.get_by(Category, %{name: row.category_name})
+        result = Repo.get_by(Category, %{name: row.category_name})
 
         case result do
           %{id: category_id} ->
@@ -39,7 +38,9 @@ defmodule Picsello.GalleriesProduct do
             })
 
           x ->
-            Logger.error("category_template seed was not inserted. Probably Category table is empty. #{x}")
+            Logger.error(
+              "category_template seed was not inserted. Probably Category table is empty. #{x}"
+            )
         end
       end)
     end
@@ -47,14 +48,22 @@ defmodule Picsello.GalleriesProduct do
 
   def frames() do
     [
-      %{name: "card_blank.png", category_name: "Loose Prints",
-        corners: [0, 0, 0, 0, 0, 0, 0, 0]},
-      %{name: "album_transparency.png", category_name: "Albums",
-        corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]},
-      %{name: "card_envelope.png", category_name: "Press Printed Cards",
-        corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]},
-      %{name: "frame_transparency.png", category_name: "Books",
-        corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]}
+      %{name: "card_blank.png", category_name: "Loose Prints", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
+      %{
+        name: "album_transparency.png",
+        category_name: "Albums",
+        corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
+      },
+      %{
+        name: "card_envelope.png",
+        category_name: "Press Printed Cards",
+        corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
+      },
+      %{
+        name: "frame_transparency.png",
+        category_name: "Books",
+        corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
+      }
     ]
   end
 end

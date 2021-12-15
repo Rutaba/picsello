@@ -27,13 +27,12 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
     {frame_id, frame_name, coords} =
       with id when id != nil <- params["frame_id"],
-        templ when templ != nil <- Repo.get(Picsello.CategoryTemplates, id)
-      do
+           templ when templ != nil <- Repo.get(Picsello.CategoryTemplates, id) do
         templ
       else
         _ -> template
       end
-      |> then(fn x ->  {x.id, x.name, x.corners} end)
+      |> then(fn x -> {x.id, x.name, x.corners} end)
 
     {:ok,
      socket
@@ -121,9 +120,11 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         fn x -> to_integer(x) end
       )
 
-    result = GalleriesProduct.get(%{
-      id: to_integer(product_id),
-      gallery_id: to_integer(gallery_id)})
+    result =
+      GalleriesProduct.get(%{
+        id: to_integer(product_id),
+        gallery_id: to_integer(gallery_id)
+      })
 
     if result != nil do
       result
