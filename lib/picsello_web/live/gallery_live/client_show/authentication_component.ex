@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
       ) do
     if gallery.password == password do
       {:ok, token} = Galleries.build_gallery_session_token(gallery)
-      
+
       socket
       |> assign(:submit, true)
       |> assign(:session_token, token.token)
