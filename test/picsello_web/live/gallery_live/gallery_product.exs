@@ -11,7 +11,39 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   alias Picsello.CategoryTemplates
   require Logger
 
-  setup :create_templates
+  setup do
+    unless Repo.aggregate(Category, :count) == 4 do
+      frames = frames()
+
+      Enum.each(frames, fn row ->
+        length = Repo.aggregate(Category, :count)
+
+        category =
+          Repo.insert(%Category{
+            name: row.category_name,
+            icon: "example_icon",
+            position: length,
+            whcc_id: Integer.to_string(length),
+            whcc_name: "example_name"
+          })
+
+        case category do
+          {:ok, %{id: category_id}} ->
+            Repo.insert(%CategoryTemplates{
+              name: row.name,
+              corners: row.corners,
+              category_id: category_id
+            })
+
+          x ->
+            Logger.error("category_template seed was not inserted. #{x}")
+        end
+      end)
+    end
+
+    :ok
+  end
+
   setup :onboarded
   setup :authenticated
 
@@ -75,38 +107,5 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
         corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
       }
     ]
-  end
-
-  def create_templates(_session) do
-    unless Repo.aggregate(Category, :count) == 4 do
-      frames = frames()
-
-      Enum.each(frames, fn row ->
-        length = Repo.aggregate(Category, :count)
-
-        category =
-          Repo.insert(%Category{
-            name: row.category_name,
-            icon: "example_icon",
-            position: length,
-            whcc_id: Integer.to_string(length),
-            whcc_name: "example_name"
-          })
-
-        case category do
-          {:ok, %{id: category_id}} ->
-            Repo.insert(%CategoryTemplates{
-              name: row.name,
-              corners: row.corners,
-              category_id: category_id
-            })
-
-          x ->
-            Logger.error("category_template seed was not inserted. #{x}")
-        end
-      end)
-    end
-
-    :ok
   end
 end

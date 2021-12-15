@@ -25,24 +25,25 @@ defmodule Picsello.GalleriesProduct do
 
     unless Repo.aggregate(CategoryTemplates, :count) > 4 do
       Enum.each(frames, fn row ->
-
         result = Repo.get_by(Category, %{name: row.category_name})
 
-        case result do
-          %{id: category_id} ->
-            Repo.insert!(%CategoryTemplates{
-              name: row.name,
-              corners: row.corners,
-              category_id: category_id
-            })
-
-          x ->
-            Logger.error(
-              "category_template seed was not inserted. Probably Category table is empty. #{x}"
-            )
-        end
+        insert_template(result, row)
       end)
     end
+  end
+
+  def insert_template(%{id: category_id}, row) do
+    Repo.insert!(%CategoryTemplates{
+      name: row.name,
+      corners: row.corners,
+      category_id: category_id
+    })
+  end
+
+  def insert_category(return, _) do
+    Logger.error(
+      "category_template seed was not inserted. Probably Category table is empty. #{return}"
+    )
   end
 
   def frames() do
