@@ -158,10 +158,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     end
   end
 
-  def handle_info(ev, _socket) do
-    Logger.info("unhandled event #{ev}")
-  end
-
   defp assign_photos(
          %{
            assigns: %{

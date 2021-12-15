@@ -15,8 +15,8 @@
     class="galleryItem"
     phx-value-preview={@photo.preview_url}
     phx-value-preview_photo_id={@photo.id}
-    phx-click={  if @preview_photo_id == "" do "click" else "set_preview" end }
-    phx-target={  if @preview_photo_id == "" do @myself else "" end }
+    phx-click={ @action }
+    phx-target={ @targett }
 >
     <img
         width="300"

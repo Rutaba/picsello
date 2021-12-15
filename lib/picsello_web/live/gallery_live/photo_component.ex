@@ -10,6 +10,18 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     socket |> assign(:preview_photo_id, nil) |> ok
   end
 
+  def preload(list_of_assigns) do
+    Enum.map(list_of_assigns, fn assigns ->
+      if Map.has_key?(assigns, :preview_photo_id) do
+        assigns = Map.put(assigns, :targett, "")
+        Map.put(assigns, :action, "set_preview")
+      else
+        assigns = Map.put(assigns, :targett, "#")
+        Map.put(assigns, :action, "click")
+      end
+    end)
+  end
+
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
     {:ok, photo} =
