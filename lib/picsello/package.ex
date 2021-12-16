@@ -140,10 +140,14 @@ defmodule Picsello.Package do
     from(template in templates_for_user(user), where: template.job_type == ^type)
   end
 
-  defp validate_money(changeset, field) do
+  def validate_money(changeset, field, validate_number_opts \\ [greater_than_or_equal_to: 0]) do
     validate_change(changeset, field, fn
-      _, %Money{amount: amount} when amount >= 0 -> []
-      _, _ -> [{field, "must be greater than or equal to 0"}]
+      field, %Money{amount: amount} ->
+        {%{field => nil}, %{field => :integer}}
+        |> change(%{field => amount})
+        |> validate_number(field, validate_number_opts)
+        |> Map.get(:errors)
+        |> Keyword.take([field])
     end)
   end
 
