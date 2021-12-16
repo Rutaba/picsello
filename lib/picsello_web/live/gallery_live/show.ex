@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Repo
   alias Picsello.Galleries
-  alias Picsello.GalleriesProduct
+  alias Picsello.GalleryProducts
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.UploadComponent
@@ -33,11 +33,11 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    preview = GalleriesProduct.get(%{gallery_id: id})
+    preview = GalleryProducts.get(%{gallery_id: id})
 
     preview =
       if preview == nil do
-        Picsello.GalleriesProduct.create_gallery_product(id)
+        GalleryProducts.create_gallery_product(id)
       else
         preview
       end

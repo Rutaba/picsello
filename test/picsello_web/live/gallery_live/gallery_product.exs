@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   setup do
     unless Repo.aggregate(Category, :count) == 4 do
-      frames = Picsello.GalleriesProduct.frames()
+      frames = Picsello.GalleryProducts.frames()
 
       Enum.each(frames, fn row ->
         length = Repo.aggregate(Category, :count)

@@ -1,4 +1,4 @@
-defmodule Picsello.GalleriesProduct do
+defmodule Picsello.GalleryProducts do
   @moduledoc false
 
   require Logger

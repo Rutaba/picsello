@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   import PicselloWeb.LiveHelpers
   alias Picsello.Repo
   alias Picsello.Galleries
-  alias Picsello.GalleriesProduct
+  alias Picsello.GalleryProducts
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
@@ -54,7 +54,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
     gallery = Galleries.get_gallery!(gallery_id)
 
-    preview = GalleriesProduct.get(%{id: gallery_product_id, gallery_id: gallery_id})
+    preview = GalleryProducts.get(%{id: gallery_product_id, gallery_id: gallery_id})
 
     if nil in [preview, gallery] do
       gallery == nil &&
@@ -123,7 +123,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       )
 
     result =
-      GalleriesProduct.get(%{
+      GalleryProducts.get(%{
         id: to_integer(product_id),
         gallery_id: to_integer(gallery_id)
       })
@@ -144,7 +144,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    if GalleriesProduct.get(%{:id => to_integer(gallery_product_id)}) == nil do
+    if GalleryProducts.get(%{:id => to_integer(gallery_product_id)}) == nil do
       {:noreply, redirect(socket, to: "/")}
     else
       socket
