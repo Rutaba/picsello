@@ -1,7 +1,7 @@
 defmodule PicselloWeb.InboxLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, ClientMessage, Notifiers.ClientNotifier}
+  alias Picsello.{Job, Repo, ClientMessage, Messages, Notifiers.ClientNotifier}
   import Ecto.Query
 
   @impl true
@@ -323,10 +323,7 @@ defmodule PicselloWeb.InboxLive.Index do
       ) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
 
-    with {:ok, message} <-
-           message_changeset
-           |> Ecto.Changeset.put_change(:job_id, job.id)
-           |> Repo.insert(),
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
       socket
       |> close_modal()
