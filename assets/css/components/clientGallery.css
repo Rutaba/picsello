@@ -79,8 +79,9 @@
 }
 
 .customWatermarkPopup {
-    max-height: 950px;
+    max-height: 95vh;
     @apply bg-base-100
+    overflow-y-auto
     mx-auto
     my-0;
 }
@@ -335,5 +336,11 @@
         background: linear-gradient(to right, #4DAAC6 12px, #EFEFEF 12px, #EFEFEF 15px, #FFFFFF 15px);
         @apply pl-8
         pr-4;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .customWatermarkPopup {
+        max-height: 950px;
     }
 }
