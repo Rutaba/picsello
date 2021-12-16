@@ -14,10 +14,10 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   def preload(list_of_assigns) do
     Enum.map(list_of_assigns, fn assigns ->
       if Map.has_key?(assigns, :preview_photo_id) do
-        assigns = Map.put(assigns, :targett, "")
+        assigns = Map.put(assigns, :to, "")
         Map.put(assigns, :action, "set_preview")
       else
-        assigns = Map.put(assigns, :targett, "#")
+        assigns = Map.put(assigns, :to, "#")
         Map.put(assigns, :action, "click")
       end
     end)

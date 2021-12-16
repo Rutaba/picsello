@@ -49,6 +49,21 @@ defmodule Picsello.GalleriesProduct do
     )
   end
 
+  def create_gallery_product(gallery_id) do
+    seed_templates()
+
+    %{id: category_template_id} =
+      get_template(%{corners: [0, 0, 0, 0, 0, 0, 0, 0]})
+
+    product =
+      PicselloWeb.GalleryLive.GalleryProduct.changeset(
+        %{gallery_id: gallery_id, category_template_id: category_template_id},
+        [:gallery_id, :category_template_id]
+      )
+
+    insert(product)
+  end
+
   def frames() do
     [
       %{name: "card_blank.png", category_name: "Loose Prints", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
@@ -64,7 +79,7 @@ defmodule Picsello.GalleriesProduct do
       },
       %{
         name: "frame_transparency.png",
-        category_name: "Books",
+        category_name: "Wall Displays",
         corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
       }
     ]

@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   setup do
     unless Repo.aggregate(Category, :count) == 4 do
-      frames = frames()
+      frames = Picsello.GalleriesProduct.frames()
 
       Enum.each(frames, fn row ->
         length = Repo.aggregate(Category, :count)
@@ -86,26 +86,5 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
     template = Repo.all(CategoryTemplates) |> hd
 
     insert(%GalleryProduct{gallery_id: id, category_template_id: template.id})
-  end
-
-  def frames() do
-    [
-      %{name: "card_blank.png", category_name: "Loose Prints", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
-      %{
-        name: "album_transparency.png",
-        category_name: "Albums",
-        corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
-      },
-      %{
-        name: "card_envelope.png",
-        category_name: "Press Printed Cards",
-        corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
-      },
-      %{
-        name: "frame_transparency.png",
-        category_name: "Books",
-        corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
-      }
-    ]
   end
 end
