@@ -177,7 +177,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   end
 
   def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
-  def get_preview(_), do: "/images/card_blank.png"
+  def get_preview(_), do: path(nil)
 
   def path(nil), do: "/images/card_blank.png"
   def path(url), do: PhotoStorage.path_to_url(url)
