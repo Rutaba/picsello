@@ -2,7 +2,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Package, Packages.Multiplier, Packages.Download, Repo, Job, JobType}
+  alias Picsello.{Package, Packages, Packages.Multiplier, Packages.Download}
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
@@ -23,8 +23,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp choose_initial_step(%{assigns: %{current_user: user, job: job, package: package}} = socket) do
     with %{type: job_type} <- job,
          %{id: nil} <- package,
-         templates when templates != [] <-
-           user |> Package.templates_for_user(job_type) |> Repo.all() do
+         templates when templates != [] <- Packages.templates_for_user(user, job_type) do
       socket
       |> assign(
         templates: templates,
@@ -62,7 +61,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
       <%= unless @is_template do %>
         <div class="py-4 bg-blue-planning-100 modal-banner">
-          <h2 class="text-2xl font-bold text-blue-planning-300"><%= Job.name @job %></h2>
+          <h2 class="text-2xl font-bold text-blue-planning-300"><%= Packages.job_name @job %></h2>
           <%= unless @package.id do %>
             <.step_subheading name={@step} />
           <% end %>
@@ -209,7 +208,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </.input_label>
 
           <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
-            <%= for(job_type <- job_types()) do %>
+            <%= for(job_type <- Packages.job_types()) do %>
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>
           </div>
@@ -347,7 +346,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: %{job: job}} = socket
       ) do
-    changeset = changeset_from_template(socket, String.to_integer(package_template_id))
+    changeset = changeset_from_template(socket, package_template_id)
 
     insert_package_and_update_job(socket, changeset, job)
   end
@@ -380,7 +379,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{"package" => params, "step" => "pricing"},
         socket
       ) do
-    case socket |> build_changeset(params) |> Repo.insert_or_update() do
+    case Packages.insert_or_update_package(socket.assigns, params) do
       {:ok, package} ->
         successfull_save(socket, package)
 
@@ -400,22 +399,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event(
         "customize-template",
         %{},
-        %{assigns: %{templates: templates, changeset: changeset}} = socket
+        %{assigns: %{changeset: changeset}} = socket
       ) do
-    package = current(%{source: changeset})
+    package = current(changeset)
 
-    changeset = socket |> changeset_from_template(package.package_template_id)
+    template = find_template(socket, package.package_template_id)
 
-    template =
-      templates
-      |> Enum.find(&(&1.id == package.package_template_id))
+    changeset = changeset_from_template(template)
 
     socket
     |> assign(
       step: :details,
       package:
-        socket.assigns.package
-        |> Map.merge(
+        Map.merge(
+          socket.assigns.package,
           Map.take(template, [:download_each_price, :download_count, :base_multiplier])
         ),
       changeset: changeset
@@ -433,13 +430,24 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     opts = assigns |> Map.take([:is_template, :step]) |> Map.to_list() |> Keyword.merge(new_opts)
 
     changeset
-    |> Ecto.Changeset.apply_changes()
+    |> current()
     |> Package.changeset(%{}, opts)
   end
 
-  defp changeset_from_template(%{assigns: %{templates: templates}}, template_id) do
-    templates
-    |> Enum.find(&(&1.id == template_id))
+  defp find_template(socket, "" <> template_id),
+    do: find_template(socket, String.to_integer(template_id))
+
+  defp find_template(%{assigns: %{templates: templates}}, template_id),
+    do: Enum.find(templates, &(&1.id == template_id))
+
+  defp changeset_from_template(socket, template_id) do
+    socket
+    |> find_template(template_id)
+    |> changeset_from_template()
+  end
+
+  defp changeset_from_template(%{id: template_id} = template) do
+    template
     |> Map.from_struct()
     |> Map.put(:package_template_id, template_id)
     |> Package.create_from_template_changeset()
@@ -452,47 +460,23 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket |> noreply()
   end
 
-  defp insert_package_and_update_job(socket, changeset, job) do
-    result =
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(:package, changeset)
-      |> Ecto.Multi.update(:job, fn changes ->
-        Job.add_package_changeset(job, %{package_id: changes.package.id})
-      end)
-      |> Repo.transaction()
+  defp insert_package_and_update_job(socket, changeset, job),
+    do:
+      (case(Packages.insert_package_and_update_job(changeset, job)) do
+         {:ok, %{package: package}} ->
+           successfull_save(socket, package)
 
-    case result do
-      {:ok, %{package: package}} ->
-        successfull_save(socket, package)
+         {:error, :package, changeset, _} ->
+           socket |> assign(changeset: changeset) |> noreply()
 
-      {:error, :package, changeset, _} ->
-        socket |> assign(changeset: changeset) |> noreply()
+         {:error, :job, _changeset, _} ->
+           socket
+           |> put_flash(:error, "Oops! Something went wrong. Please try again.")
+           |> noreply()
+       end)
 
-      {:error, :job, _changeset, _} ->
-        socket |> put_flash(:error, "Oops! Something went wrong. Please try again.") |> noreply()
-    end
-  end
-
-  defp build_changeset(
-         %{
-           assigns: %{
-             current_user: current_user,
-             step: step,
-             is_template: is_template,
-             package: package,
-             job: job
-           }
-         },
-         params
-       ) do
-    params = Map.put(params, "organization_id", current_user.organization_id)
-
-    Package.changeset(package, params,
-      step: step,
-      is_template: is_template,
-      validate_shoot_count: job && package.id
-    )
-  end
+  defp build_changeset(socket, params),
+    do: Packages.build_package_changeset(socket.assigns, params)
 
   defp assign_changeset(socket, params, action \\ nil) do
     multiplier_changeset =
@@ -506,14 +490,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Download.changeset(Map.get(params, "download", %{}))
       |> Map.put(:action, action)
 
-    download = Ecto.Changeset.apply_changes(download_changeset)
+    download = current(download_changeset)
 
     package_params =
       params
       |> Map.get("package", %{})
       |> Map.merge(%{
-        "base_multiplier" =>
-          multiplier_changeset |> Ecto.Changeset.apply_changes() |> Multiplier.to_decimal(),
+        "base_multiplier" => multiplier_changeset |> current() |> Multiplier.to_decimal(),
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download)
       })
@@ -527,9 +510,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     )
   end
 
-  defp current(form) do
-    Ecto.Changeset.apply_changes(form.source)
-  end
+  defp current(%{source: changeset}), do: current(changeset)
+  defp current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 
   defp base_adjustment(package_form) do
     adjustment = package_form |> current() |> Package.base_adjustment()
@@ -547,6 +529,4 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp download_price(form),
     do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
-
-  defdelegate job_types(), to: JobType, as: :all
 end

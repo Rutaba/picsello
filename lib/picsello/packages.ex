@@ -1,5 +1,6 @@
 defmodule Picsello.Packages do
   @moduledoc "context module for packages"
+  alias Picsello.{Package, Repo, Job, JobType}
 
   defmodule Multiplier do
     @moduledoc false
@@ -130,4 +131,42 @@ defmodule Picsello.Packages do
     defp set_count_fields(download, count),
       do: %{download | count: count, includes_credits: true}
   end
+
+  def templates_for_user(user, job_type),
+    do: user |> Package.templates_for_user(job_type) |> Repo.all()
+
+  def insert_package_and_update_job(changeset, job),
+    do:
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:package, changeset)
+      |> Ecto.Multi.update(:job, fn changes ->
+        Job.add_package_changeset(job, %{package_id: changes.package.id})
+      end)
+      |> Repo.transaction()
+
+  def build_package_changeset(
+        %{
+          current_user: current_user,
+          step: step,
+          is_template: is_template,
+          package: package,
+          job: job
+        },
+        params
+      ) do
+    params = Map.put(params, "organization_id", current_user.organization_id)
+
+    Package.changeset(package, params,
+      step: step,
+      is_template: is_template,
+      validate_shoot_count: job && package.id
+    )
+  end
+
+  def insert_or_update_package(build_params, client_params),
+    do: build_params |> build_package_changeset(client_params) |> Repo.insert_or_update()
+
+  defdelegate job_types(), to: JobType, as: :all
+
+  defdelegate job_name(job), to: Job, as: :name
 end
