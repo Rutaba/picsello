@@ -68,6 +68,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       Picsello.WHCC.create_editor(
         get_some_product(),
         photo,
+        # design: "SjhvrFtjMP7FHy6Qa",
         complete_url: Routes.gallery_dump_editor_url(socket, :show) <> "?editorId=%EDITOR_ID%",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
         only_favorites: favorites?
@@ -87,13 +88,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> then(& &1.products)
     |> Enum.at(0)
   end
-  
+
   def get_menu_items(_socket),
     do: [
       %{title: "Home", path: "#"},
       %{title: "Shop", path: "#"},
       %{title: "My orders", path: "#"},
-      %{title: "Help", path: "#"},
+      %{title: "Help", path: "#"}
     ]
 
   defp assign_photos(

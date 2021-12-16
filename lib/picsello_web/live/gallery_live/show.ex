@@ -5,6 +5,8 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Messages
+  alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.PhotoComponent
@@ -141,9 +143,52 @@ defmodule PicselloWeb.GalleryLive.Show do
       |> Galleries.set_gallery_hash()
       |> Map.get(:client_link_hash)
 
+    gallery = Picsello.Repo.preload(gallery, job: :client)
+
+    link = Routes.gallery_client_show_url(socket, :show, hash)
+    client_name = gallery.job.client.name
+
+    subject = "#{gallery.name} photos"
+
+    html = """
+    <p>Hi #{client_name},</p> 
+    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p> 
+    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
+    <p>Happy viewing!</p>
+    """
+
+    text = """
+    Hi #{client_name},
+
+    Your gallery is ready to view! You can view the gallery here: #{link}
+
+    Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
+
+    Happy viewing!
+    """
+
     socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> assign(:job, gallery.job)
+    |> assign(:gallery, gallery)
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      body_html: html,
+      body_text: text,
+      subject: subject,
+      modal_title: "Share gallery"
+    })
     |> noreply()
+  end
+
+  def handle_info({:message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+      socket
+      |> close_modal()
+      |> noreply()
+    else
+      _error ->
+        socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
+    end
   end
 
   @impl true
