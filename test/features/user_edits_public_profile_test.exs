@@ -87,4 +87,16 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> click(button("Save"))
     |> assert_has(css("a[href='#']", text: "See our full portfolio"))
   end
+
+  feature "user edits description", %{session: session} do
+    session
+    |> assert_has(link("Settings"))
+    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
+    |> assert_text("What we offer:")
+    |> click(button("Edit Description"))
+    |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
+    |> send_keys(["my description"])
+    |> click(button("Save"))
+    |> assert_has(testid("description", text: "my description"))
+  end
 end

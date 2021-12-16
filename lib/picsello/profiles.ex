@@ -22,6 +22,7 @@ defmodule Picsello.Profiles do
       field(:job_types, {:array, :string}, default: [])
       field(:no_website, :boolean, default: false)
       field(:website, :string)
+      field(:description, :string)
     end
 
     def enabled?(%__MODULE__{is_enabled: is_enabled}), do: is_enabled
@@ -32,7 +33,8 @@ defmodule Picsello.Profiles do
         :no_website,
         :website,
         :color,
-        :job_types
+        :job_types,
+        :description
       ])
       |> then(
         &if get_field(&1, :no_website),

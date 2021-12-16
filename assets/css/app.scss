@@ -78,6 +78,21 @@ html {
   }
 }
 
+.raw_html {
+  ol {
+    list-style: revert;
+    padding: revert;
+  }
+  ul {
+    list-style: revert;
+    padding: revert;
+  }
+  a {
+    @apply text-blue-planning-300;
+    text-decoration: underline;
+  }
+}
+
 .center-container {
   @apply xl:container xl:mx-auto;
 }
