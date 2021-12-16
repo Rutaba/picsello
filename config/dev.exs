@@ -80,4 +80,5 @@ config :picsello, Picsello.Mailer,
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN", "dev-inbox.picsello.com")
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
+
 config :picsello, :render_test_ids, true

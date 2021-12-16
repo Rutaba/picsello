@@ -333,6 +333,13 @@
     @apply bg-transparent !important;
 }
 
+.errorPwdMsg ~ div > .relative input{
+    @apply border
+    border-solid
+    border-red-error-300
+    rounded-lg
+}
+
 .mobileGalleryButtons a {
    @apply inline-block
     w-full

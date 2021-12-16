@@ -5,8 +5,14 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @impl true
   def update(assigns, socket) do
+    defaults = %{
+      composed_event: :message_composed,
+      show_cc: false,
+      modal_title: "Send an email"
+    }
+
     socket
-    |> assign(Enum.into(assigns, %{composed_event: :message_composed, show_cc: false}))
+    |> assign(Enum.into(assigns, defaults))
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
@@ -19,7 +25,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
-      <h1 class="text-3xl font-bold">Send an email</h1>
+      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
 
       <div class="pt-5 input-label">
         Client's email
@@ -32,7 +38,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <%= labeled_input f, :subject, label: "Subject line", wrapper_class: "mt-4", phx_debounce: "500" %>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore">
+        <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
           <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
             <button class="ql-bold"></button>
             <button class="ql-italic"></button>
@@ -81,6 +87,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:subject) => binary,
           optional(:body_text) => any,
           optional(:body_html) => binary,
+          optional(:modal_title) => binary,
           optional(:composed_event) => any
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),

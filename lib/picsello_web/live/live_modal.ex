@@ -91,7 +91,7 @@ defmodule PicselloWeb.LiveModal do
           <%= if @inner_block do %>
             <%= render_block @inner_block %>
           <% else %>
-            <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Saving...">
+            <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Save">
               Save
             </button>
 
