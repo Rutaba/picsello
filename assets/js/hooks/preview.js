@@ -13,7 +13,7 @@ var Preview = {
       let cw = canvas.width;
       let ch = canvas.height;
 
-      frame.onload = function(){ // start upload frame
+      frame.onload = function(){
         let frameW = frame.width;
         let frameH = frame.height;
         let kfw = coord[0]/frameW;
@@ -25,8 +25,8 @@ var Preview = {
         let kh = ch / frameH;
 
         let preview = new Image();
-        preview.src = Preview.unescape(preview_name);
-        preview.onload = function(){ // upload preview
+        preview.src = preview_name;
+        preview.onload = function(){
           let width = (w * kw) < 10 && cw || (w * kw);
           let height = (h * kh) < 10 && ch || (h * kh);
 
@@ -38,24 +38,6 @@ var Preview = {
         }
       }
     }
-  },
-  unescape: function(s){
-    var re = /&(?:amp|#38|lt|#60|gt|#62|apos|#39|quot|#34);/g;
-    var unescaped = {
-        '&amp;': '&',
-        '&#38;': '&',
-        '&lt;': '<',
-        '&#60;': '<',
-        '&gt;': '>',
-        '&#62;': '>',
-        '&apos;': "'",
-        '&#39;': "'",
-        '&quot;': '',
-        '&#34;': ''
-    };
-        return s.replace(re, function (m) {
-        return unescaped[m];
-    });
   }
 }
 
