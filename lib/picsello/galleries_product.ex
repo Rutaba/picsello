@@ -39,7 +39,7 @@ defmodule Picsello.GalleriesProduct do
       category_id: category_id
     })
   end
-  def insert_template(r, row) do
+  def insert_template(r, _row) do
     Logger.error("No match any categories for template please start Picsello.WHCC.sync()")
   end
 
