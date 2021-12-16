@@ -16,6 +16,7 @@ defmodule Picsello.Package do
     field :job_type, :string
     field :name, :string
     field :shoot_count, :integer
+    field :base_multiplier, :decimal, default: 1
 
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
@@ -87,7 +88,8 @@ defmodule Picsello.Package do
       :base_price,
       :download_count,
       :download_each_price,
-      :gallery_credit
+      :gallery_credit,
+      :base_multiplier
     ])
     |> validate_required([:base_price, :download_count, :download_each_price])
     |> validate_money(:base_price)
@@ -106,13 +108,21 @@ defmodule Picsello.Package do
   def gallery_credit(%__MODULE__{gallery_credit: nil}), do: Money.new(0)
   def gallery_credit(%__MODULE__{gallery_credit: credit}), do: credit
 
-  def price(%__MODULE__{base_price: nil} = package),
-    do: price(%{package | base_price: Money.new(0)})
+  def base_price(%__MODULE__{base_price: nil}), do: Money.new(0)
+  def base_price(%__MODULE__{base_price: base}), do: base
 
-  def price(%__MODULE__{base_price: base} = package) do
-    downloads = downloads_price(package)
-    gallery = gallery_credit(package)
-    Enum.reduce([base, gallery, downloads], Money.new(0), &Money.add/2)
+  def adjusted_base_price(%__MODULE__{base_multiplier: multiplier} = package),
+    do: package |> base_price() |> Money.multiply(multiplier)
+
+  def base_adjustment(%__MODULE__{} = package),
+    do: package |> adjusted_base_price() |> Money.subtract(base_price(package))
+
+  def price(%__MODULE__{} = package) do
+    Enum.reduce(
+      [&adjusted_base_price/1, &gallery_credit/1, &downloads_price/1],
+      Money.new(0),
+      &(package |> &1.() |> Money.add(&2))
+    )
   end
 
   def deposit_price(%__MODULE__{} = package) do
