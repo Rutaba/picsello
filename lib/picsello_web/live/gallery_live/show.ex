@@ -47,17 +47,17 @@ defmodule PicselloWeb.GalleryLive.Show do
     url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
 
     event_datas =
-      Enum.map(0..3, fn x ->
+      Enum.map(data, fn template ->
         %{
           preview: url,
-          frame: Map.get(Enum.at(data, x), :name),
-          coords: Map.get(Enum.at(data, x), :corners),
-          target: "canvas#{x}"
+          frame: template.name,
+          coords: template.corners,
+          target: "canvas#{template.id}"
         }
       end)
 
     socket
-    |> assign(:templates, Enum.with_index(data))
+    |> assign(:templates, data)
     |> assign(:gallery_product_id, preview.id)
     |> assign(:preview, cover_photo(url))
     |> push_event("set_preview", Enum.at(event_datas, 0))

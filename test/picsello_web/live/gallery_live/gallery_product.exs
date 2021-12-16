@@ -49,10 +49,12 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   test "redirect from galleries", %{session: session} do
     %{gallery_id: id} = set_gallery_product()
+    frame = Picsello.GalleryProducts.frames() |> List.first
+    %{id: template_id} = Picsello.GalleryProducts.get_template(%{name: frame.name})
 
     session
     |> visit("/galleries/#{id}")
-    |> click(css(".prod-link0"))
+    |> click(css(".prod-link#{template_id}"))
     |> find(css(".item-content"))
   end
 
