@@ -2,58 +2,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Package, Repo, Job, JobType}
+  alias Picsello.{Package, Packages.Multiplier, Packages.Download, Repo, Job, JobType}
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-
-  defmodule Multiplier do
-    @moduledoc false
-    use Ecto.Schema
-    import Ecto.Changeset
-
-    @percent_options for(amount <- 10..100//10, do: {"#{amount}%", amount})
-    @sign_options [{"Discount", "-"}, {"Surcharge", "+"}]
-
-    @primary_key false
-    embedded_schema do
-      field(:percent, :integer, default: @percent_options |> hd |> elem(1))
-      field(:sign, :string, default: @sign_options |> hd |> elem(1))
-      field(:is_enabled, :boolean)
-    end
-
-    def changeset(multiplier \\ %__MODULE__{}, attrs) do
-      multiplier
-      |> cast(attrs, [:percent, :sign, :is_enabled])
-      |> validate_required([:percent, :sign, :is_enabled])
-    end
-
-    def percent_options(), do: @percent_options
-    def sign_options(), do: @sign_options
-
-    def from_decimal(d) do
-      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_integer() do
-        0 ->
-          %__MODULE__{is_enabled: false}
-
-        percent when percent < 0 ->
-          %__MODULE__{percent: abs(percent), sign: "-", is_enabled: true}
-
-        percent when percent > 0 ->
-          %__MODULE__{percent: percent, sign: "+", is_enabled: true}
-      end
-    end
-
-    def to_decimal(%__MODULE__{is_enabled: false}), do: Decimal.new(1)
-
-    def to_decimal(%__MODULE__{sign: sign, percent: percent}) do
-      case sign do
-        "+" -> percent
-        "-" -> Decimal.negate(percent)
-      end
-      |> Decimal.div(100)
-      |> Decimal.add(1)
-    end
-  end
 
   @all_fields Package.__schema__(:fields)
 
@@ -123,10 +74,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.wizard_state form={f} />
 
-        <.step name={@step} f={f} is_template={@is_template} templates={@templates} multiplier_changeset={@multiplier} />
+        <.step name={@step} f={f} is_template={@is_template} templates={@templates} multiplier_changeset={@multiplier} download_changeset={@download} />
 
         <.footer>
-          <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
+          <.step_buttons name={@step} form={f} is_valid={Enum.all?([@download, @multiplier, @changeset], &(&1.valid?))} myself={@myself} />
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
@@ -269,54 +220,100 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :pricing} = assigns) do
     ~H"""
-      <div class="items-center mt-6 justify-items-end grid grid-cols-1 sm:grid-cols-[max-content,3fr,1fr] gap-6">
-        <label class="justify-self-start" for={input_id(@f, :base_price)}>
-          <h2 class="mb-1 text-xl font-bold">Base Price</h2>
-          Your cost in labor, travel, etc.
-        </label>
+      <div class="">
+          <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
+            <label for={input_id(@f, :base_price)}>
+              <h2 class="mb-1 text-xl font-bold">Base Price</h2>
+              Your cost in labor, travel, etc.
+            </label>
 
-        <div class="w-full sm:w-auto sm:col-span-2">
-          <%= input @f, :base_price, placeholder: "$0.00", class: "w-full px-4 text-lg font-bold sm:w-28 sm:text-right text-center", phx_hook: "PriceMask" %>
-        </div>
+            <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-28 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
+          </div>
+
 
         <% m = form_for(@multiplier_changeset, "#") %>
-        <label class="flex items-center justify-self-start sm:col-span-3">
+
+        <label class="flex items-center mt-6 sm:mt-8 justify-self-start">
           <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
+
           Apply a discount or surcharge
         </label>
 
-        <%= if input_value(m, :is_enabled) do %>
-          <div class="contents sm:flex sm:col-span-3 sm:justify-self-start sm:items-center sm:w-full pl-9 pr-4">
-            <h2 class="text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
+        <%= if m |> current() |> Map.get(:is_enabled) do %>
+          <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
+            <h2 class="self-start mt-3 text-xl font-bold sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
-            <div class="flex w-full">
+            <div class="flex w-full mt-3 sm:mt-0">
               <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
 
               <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
             </div>
 
-            <div class="self-end sm:self-auto">
+            <div class="self-end mt-3 sm:self-auto justify-self-end sm:mt-0">
               <%= base_adjustment(@f) %>
             </div>
           </div>
         <% end %>
 
-        <hr class="w-full sm:col-span-3"/>
+        <hr class="block w-full mt-6 sm:hidden"/>
 
-        <label for={input_id(@f, :download_count)} class="font-bold justify-self-start sm:justify-self-end">Download</label>
-        <div class="flex items-center justify-self-start">
-          <%= input @f, :download_count, type: :number_input, min: 0, placeholder: "0", class: "w-20 text-center inline mr-6" %>
-          photos at
-          <%= input @f, :download_each_price, class: "w-20 px-2 inline mx-6 text-center", placeholder: "$0.00", phx_hook: "PriceMask" %>
-          <label for={input_id(@f, :download_each_price)}>each</label>
+        <div class="mt-6 sm:mt-9">
+          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Downloads</h2>
+
+          Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
         </div>
-        <div class="pr-4">+<%=downloads_total(@f) %></div>
 
-        <hr class="w-full sm:col-span-3"/>
+        <% d = form_for(@download_changeset, "#") %>
+
+        <div class="flex flex-col w-full mt-3">
+          <label class="flex items-center">
+            <%= radio_button(d, :is_enabled, true, class: "w-5 h-5 mr-2 radio") %>
+
+            Charge for downloads
+          </label>
+
+          <%= if d |> current() |> Map.get(:is_enabled) do %>
+            <div class="flex flex-col ml-7">
+              <label class="flex items-center mt-3">
+                <%= checkbox(d, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
+
+                Set my own download price
+              </label>
+
+              <%= if d |> current() |> Map.get(:is_custom_price) do %>
+                <%= input(d, :each_price, class: "mt-3 w-full sm:w-28 text-lg text-center", phx_hook: "PriceMask") %>
+              <% end %>
+
+              <div class="flex flex-col justify-between mt-3 sm:flex-row ">
+                <div class="w-full sm:w-auto">
+                  <label class="flex items-center">
+                    <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
+
+                    Include download credits
+                  </label>
+
+                  <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
+                </div>
+
+                <%= if d |> current() |> Map.get(:includes_credits) do %>
+                  <div class="self-end mt-8 sm:self-start sm:mt-0">+<%= downloads_total(@f) %></div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <label class="flex items-center mt-3">
+            <%= radio_button(d, :is_enabled, false, class: "w-5 h-5 mr-2 radio") %>
+
+            Do not charge for downloads
+          </label>
+        </div>
+
+        <hr class="w-full mt-8"/>
       </div>
       <dl class="flex justify-between mt-4">
         <dt class="font-bold">Total Price</dt>
-        <dd class="pr-4 text-xl font-bold sm:col-span-2"><%= total_price(@f) %></dd>
+        <dd class="text-xl font-bold"><%= total_price(@f) %></dd>
       </dl>
     """
   end
@@ -403,12 +400,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event(
         "customize-template",
         %{},
-        %{assigns: %{changeset: changeset}} = socket
+        %{assigns: %{templates: templates, changeset: changeset}} = socket
       ) do
     package = current(%{source: changeset})
+
     changeset = socket |> changeset_from_template(package.package_template_id)
 
-    socket |> assign(step: :details, changeset: changeset) |> noreply()
+    template =
+      templates
+      |> Enum.find(&(&1.id == package.package_template_id))
+
+    socket
+    |> assign(
+      step: :details,
+      package:
+        socket.assigns.package
+        |> Map.merge(
+          Map.take(template, [:download_each_price, :download_count, :base_multiplier])
+        ),
+      changeset: changeset
+    )
+    |> noreply()
   end
 
   defp template_selected?(form),
@@ -482,26 +494,37 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     )
   end
 
-  defp assign_changeset(
-         socket,
-         params,
-         action \\ nil
-       ) do
+  defp assign_changeset(socket, params, action \\ nil) do
     multiplier_changeset =
       socket.assigns.package.base_multiplier
       |> Multiplier.from_decimal()
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
+    download_changeset =
+      socket.assigns.package
+      |> Download.from_package()
+      |> Download.changeset(Map.get(params, "download", %{}))
+      |> Map.put(:action, action)
+
+    download = Ecto.Changeset.apply_changes(download_changeset)
+
     package_params =
-      Map.get(params, "package", %{})
-      |> Map.put(
-        "base_multiplier",
-        multiplier_changeset |> Ecto.Changeset.apply_changes() |> Multiplier.to_decimal()
-      )
+      params
+      |> Map.get("package", %{})
+      |> Map.merge(%{
+        "base_multiplier" =>
+          multiplier_changeset |> Ecto.Changeset.apply_changes() |> Multiplier.to_decimal(),
+        "download_count" => Download.count(download),
+        "download_each_price" => Download.each_price(download)
+      })
 
     changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
 
-    assign(socket, changeset: changeset, multiplier: multiplier_changeset)
+    assign(socket,
+      changeset: changeset,
+      multiplier: multiplier_changeset,
+      download: download_changeset
+    )
   end
 
   defp current(form) do
@@ -521,6 +544,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp total_price(form), do: form |> current() |> Package.price()
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
+
+  defp download_price(form),
+    do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
 
   defdelegate job_types(), to: JobType, as: :all
 end

@@ -18,8 +18,13 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_text("Add a Package: Set Pricing")
     |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(text_field("Base Price"), with: "$100")
-    |> fill_in(text_field("Download"), with: "2")
-    |> fill_in(text_field("each"), with: "$2")
+    |> click(checkbox("Set my own download price"))
+    |> find(
+      text_field("download_each_price"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+    )
+    |> click(checkbox("Include download credits"))
+    |> fill_in(text_field("download_count"), with: "2")
     |> assert_has(definition("Total Price", text: "$104.00"))
   end
 
@@ -165,8 +170,8 @@ defmodule Picsello.CreateLeadPackageTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_value(text_field("Base Price"), "$100.00")
-    |> assert_value(text_field("Download"), "1")
-    |> assert_value(text_field("each"), "$2.00")
+    |> assert_value(text_field("download_count"), "1")
+    |> assert_value(text_field("download_each_price"), "$2.00")
     |> fill_in(text_field("Base Price"), with: "200")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
@@ -207,8 +212,10 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_disabled_submit(text: "Save")
     |> fill_in(text_field("Base Price"), with: " ")
-    |> fill_in(text_field("Download"), with: " ")
-    |> fill_in(text_field("each"), with: " ")
+    |> click(checkbox("Include download credits"))
+    |> fill_in(text_field("download_count"), with: " ")
+    |> click(checkbox("Set my own download price"))
+    |> fill_in(text_field("download_each_price"), with: " ")
     |> assert_has(definition("Total Price", text: "$0.00"))
     |> assert_disabled_submit()
   end
@@ -235,6 +242,5 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_has(testid("step-number", text: "Step 2"))
     |> assert_value(text_field("Base Price"), "$100.00")
-    |> assert_disabled_submit()
   end
 end
