@@ -1,37 +1,24 @@
 defmodule PicselloWeb.GalleryLive.ClientShow do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
 
+  use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Galleries
-  alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:page_title, "Show Gallery")
+    |> assign(:page, 0)
+    |> assign(:update_mode, "append")
+    |> assign(:favorites_filter, false)
+    |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+    |> assign_photos()
+    |> noreply()
   end
 
   @impl true
-  def handle_params(%{"hash" => hash}, _, socket) do
-    gallery = Galleries.get_gallery_by_hash(hash)
-
-    if gallery do
-      socket
-      |> assign(:hash, hash)
-      |> assign(:gallery, gallery)
-      |> assign(:page_title, "Show Gallery")
-      |> assign(:page, 0)
-      |> assign(:update_mode, "append")
-      |> assign(:favorites_filter, false)
-      |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-      |> assign_photos()
-      |> noreply()
-    else
-      {:noreply, socket}
-    end
-  end
-
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)
@@ -113,9 +100,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
-  end
-
-  defp cover_photo(key) do
-    PhotoStorage.path_to_url(key)
   end
 end

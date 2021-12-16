@@ -312,8 +312,4 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
-
-  defp cover_photo(key) do
-    PhotoStorage.path_to_url(key)
-  end
 end

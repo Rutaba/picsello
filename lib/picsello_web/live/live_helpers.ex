@@ -243,6 +243,16 @@ defmodule PicselloWeb.LiveHelpers do
   def filesize(byte_size) when is_integer(byte_size),
     do: Size.humanize!(byte_size, spacer: "")
 
+  def display_cover_photo(key) when is_binary(key),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+
+  def display_cover_photo(_key), do: nil
+
+  def display_photo(key) when is_binary(key),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+
+  def display_photo(nil), do: "/images/gallery-icon.png"
+
   def initials_circle(assigns) do
     assigns =
       assigns

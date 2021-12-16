@@ -135,12 +135,27 @@ defmodule PicselloWeb.Router do
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
   end
 
-  scope "/gallery", PicselloWeb do
-    pipe_through [:browser]
+  pipeline :require_authenticated_gallery do
+    plug PicselloWeb.Plugs.GalleryAuth
+  end
 
+  scope "/gallery", PicselloWeb do
     live "/dump", GalleryLive.DumpEditor, :show
 
-    live "/:hash", GalleryLive.ClientShow, :show
-    post "/:hash/downloads", GalleryDownloadsController, :download
+    live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
+      pipe_through [:browser, :require_authenticated_gallery]
+
+      live "/:hash", GalleryLive.ClientShow, :show
+      post "/:hash/downloads", GalleryDownloadsController, :download
+      post "/:hash/login", GallerySessionController, :put
+    end
+  end
+
+  scope "/gallery", PicselloWeb do
+    live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
+      pipe_through [:browser, :require_authenticated_gallery]
+
+      live "/:hash/login", GalleryLive.ClientShow.Login, :login
+    end
   end
 end
