@@ -5,7 +5,7 @@ defmodule Picsello.WHCC.Adapter do
   @callback designs() :: [Picsello.WHCC.Design.t()]
   @callback design_details(Picsello.WHCC.Design.t()) :: Picsello.WHCC.Design.t()
   @callback editor(map()) :: Picsello.WHCC.CreatedEditor.t()
-  @callback editor_details(String.t()) :: map()
+  @callback editor_details(String.t()) :: Picsello.WHCC.Editor.Details.t()
 
   def products(), do: impl().products()
   def product_details(product), do: impl().product_details(product)
