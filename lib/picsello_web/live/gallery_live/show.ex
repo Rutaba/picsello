@@ -1,8 +1,9 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-
+  alias Picsello.Repo
   alias Picsello.Galleries
+  alias Picsello.GalleryProducts
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Messages
@@ -34,7 +35,38 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
+    preview = GalleryProducts.get(%{gallery_id: id})
+
+    preview =
+      if preview == nil do
+        GalleryProducts.create_gallery_product(id)
+      else
+        preview
+      end
+
+    data = Repo.all(Picsello.CategoryTemplates)
+
+    url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
+      |> PhotoStorage.path_to_url()
+
+    event_datas =
+      Enum.map(data, fn template ->
+        %{
+          preview: url,
+          frame: template.name,
+          coords: template.corners,
+          target: "canvas#{template.id}"
+        }
+      end)
+
     socket
+    |> assign(:templates, data)
+    |> assign(:gallery_product_id, preview.id)
+    |> assign(:preview, url)
+    |> push_event("set_preview", Enum.at(event_datas, 0))
+    |> push_event("set_preview", Enum.at(event_datas, 1))
+    |> push_event("set_preview", Enum.at(event_datas, 2))
+    |> push_event("set_preview", Enum.at(event_datas, 3))
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:gallery, gallery)
     |> assign(:page, 0)
@@ -151,8 +183,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     subject = "#{gallery.name} photos"
 
     html = """
-    <p>Hi #{client_name},</p> 
-    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p> 
+    <p>Hi #{client_name},</p>
+    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
     <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
     <p>Happy viewing!</p>
     """

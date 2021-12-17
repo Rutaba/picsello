@@ -22,6 +22,26 @@
     px-16;
 }
 
+.galleryImage__wrapper {
+    width: 309px;
+    
+}
+
+.photos__rect{
+   display: flex;
+   width: 309px;
+   height: 300px; 
+   background-color: #F5F6F8;
+
+}
+
+.frame {
+    width: 219px;
+    height: 178px;
+
+}
+
+
 .settings__wrapper > div {
     @apply border-2
     border-solid

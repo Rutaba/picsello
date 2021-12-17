@@ -116,6 +116,14 @@ defmodule PicselloWeb.Router do
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
+      live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
+        as: :preview
+
+      live "/galleries/:id/product/:gallery_product_id/:frame_id",
+           GalleryLive.GalleryProduct,
+           :preview,
+           as: :preview
+
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id/settings", GalleryLive.Settings, :settings
