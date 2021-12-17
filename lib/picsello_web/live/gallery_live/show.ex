@@ -46,7 +46,8 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     data = Repo.all(Picsello.CategoryTemplates)
 
-    url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
+    url =
+      PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
       |> PhotoStorage.path_to_url()
 
     event_datas =

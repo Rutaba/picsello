@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   test "redirect from galleries", %{session: session} do
     %{gallery_id: id} = set_gallery_product()
-    frame = Picsello.GalleryProducts.frames() |> List.first
+    frame = Picsello.GalleryProducts.frames() |> List.first()
     %{id: template_id} = Picsello.GalleryProducts.get_template(%{name: frame.name})
 
     session

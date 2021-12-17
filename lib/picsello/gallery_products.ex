@@ -39,6 +39,7 @@ defmodule Picsello.GalleryProducts do
       category_id: category_id
     })
   end
+
   def insert_template(_r, _row) do
     Logger.error("No match any categories for template please start Picsello.WHCC.sync()")
   end
@@ -52,8 +53,7 @@ defmodule Picsello.GalleryProducts do
   def create_gallery_product(gallery_id) do
     seed_templates()
 
-    %{id: category_template_id} =
-      get_template(%{corners: [0, 0, 0, 0, 0, 0, 0, 0]})
+    %{id: category_template_id} = get_template(%{corners: [0, 0, 0, 0, 0, 0, 0, 0]})
 
     product =
       PicselloWeb.GalleryLive.GalleryProduct.changeset(
