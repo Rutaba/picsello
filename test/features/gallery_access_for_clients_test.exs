@@ -3,8 +3,8 @@ defmodule Picsello.GalleryAccessForClientsTest do
 
   setup do
     [gallery: insert(:gallery, %{name: "Test Client Weeding"})]
-  end 
-  
+  end
+
   feature "client views password submit", %{session: session, gallery: gallery} do
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
