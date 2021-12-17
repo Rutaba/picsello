@@ -10,4 +10,14 @@ defmodule Picsello.Contacts do
     )
     |> Repo.all()
   end
+
+  def new_contact_changeset(attrs, organization_id) do
+    attrs
+    |> Map.put("organization_id", organization_id)
+    |> Client.create_contact_changeset()
+  end
+
+  def save_new_contact(attrs, organization_id) do
+    new_contact_changeset(attrs, organization_id) |> Repo.insert()
+  end
 end

@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.Contacts do
   alias Picsello.Contacts
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
+  def mount(_params, _session, socket) do
     socket |> assign_contacts() |> ok()
   end
 
@@ -31,10 +31,10 @@ defmodule PicselloWeb.Live.Contacts do
 
       <table class="responsive-table w-full flex flex-row flex-no-wrap sm:bg-white my-5">
         <thead class="text-white">
-          <%= for contact <- @contacts do %>
+          <%= for _contact <- @contacts do %>
             <tr class="flex flex-col flex-no wrap rounded-l-lg overflow-hidden sm:table-row mb-2 sm:mb-0">
-              <th class="bg-base-300 p-3 text-left uppercase">Email</th>
               <th class="bg-base-300 p-3 text-left uppercase">Name</th>
+              <th class="bg-base-300 p-3 text-left uppercase">Email</th>
               <th class="bg-base-300 p-3 text-left uppercase" width="110px">Actions</th>
             </tr>
           <% end %>
@@ -42,8 +42,8 @@ defmodule PicselloWeb.Live.Contacts do
         <tbody class="flex-1 sm:flex-none">
           <%= for contact <- @contacts do %>
             <tr class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0">
-              <td class="border-grey-light border sm:border-none p-3 truncate"><%= contact.email %></td>
               <td class="border-grey-light border sm:border-none p-3 truncate"><%= contact.name || "-" %></td>
+              <td class="border-grey-light border sm:border-none p-3 truncate"><%= contact.email || "-" %></td>
               <td class="border-grey-light border sm:border-none p-3 relative">
                 &nbsp;
               </td>
@@ -56,9 +56,23 @@ defmodule PicselloWeb.Live.Contacts do
     """
   end
 
+  @impl true
+  def handle_event("add-contact", %{}, socket),
+    do:
+      socket
+      |> PicselloWeb.Live.Contacts.NewContactComponent.open()
+      |> noreply()
+
   defp assign_contacts(%{assigns: %{current_user: current_user}} = socket) do
     contacts = Contacts.find_all_by(user: current_user)
 
     socket |> assign(:contacts, contacts)
+  end
+
+  @impl true
+  def handle_info({:update, _contact}, socket) do
+    socket
+    |> assign_contacts()
+    |> noreply()
   end
 end
