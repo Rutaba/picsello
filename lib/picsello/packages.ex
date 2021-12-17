@@ -169,4 +169,11 @@ defmodule Picsello.Packages do
   defdelegate job_types(), to: JobType, as: :all
 
   defdelegate job_name(job), to: Job, as: :name
+
+  def discount_percent(%{base_multiplier: multiplier}),
+    do:
+      (case(Multiplier.from_decimal(multiplier)) do
+         %{sign: "-", is_enabled: true, percent: percent} -> percent
+         _ -> nil
+       end)
 end

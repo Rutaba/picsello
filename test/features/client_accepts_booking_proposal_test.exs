@@ -32,6 +32,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
+          base_multiplier: 0.8,
           base_price: 100
         },
         client: %{name: "John"},
@@ -125,7 +126,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(definition("From:", text: "Photography LLC"))
       |> assert_has(definition("Email:", text: "photographer@example.com"))
       |> assert_has(definition("Package:", text: "My Package"))
-      |> assert_has(definition("Total", text: "$1.00"))
+      |> assert_has(definition("Subtotal", text: "$1.00"))
+      |> assert_has(definition("Discount", text: "20%"))
+      |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
       |> assert_has(testid("shoot-title", text: "September 30, 2021"))
       |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
@@ -142,11 +145,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Submit"))
       |> assert_has(button("Completed Contract"))
-      |> take_screenshot()
       |> click(button("To-Do Invoice"))
-      |> assert_has(definition("Total", text: "$1.00"))
-      |> assert_has(definition("50% deposit today", text: "$0.50"))
-      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.50"))
+      |> assert_has(definition("Subtotal", text: "$1.00"))
+      |> assert_has(definition("Discount", text: "20%"))
+      |> assert_has(definition("Total", text: "$0.80"))
+      |> assert_has(definition("50% deposit today", text: "$0.40"))
+      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -172,7 +176,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                           %{
                             price_data: %{
                               product_data: %{name: "John Newborn 50% deposit"},
-                              unit_amount: 50
+                              unit_amount: 40
                             }
                           }
                         ]
@@ -187,13 +191,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Got it"))
       |> assert_text("Below are details for")
       |> click(button("To-Do Invoice"))
-      |> assert_has(definition("Total", text: "$1.00"))
+      |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
         definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.50"
+          text: "$0.40"
         )
       )
-      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.50"))
+      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -216,7 +220,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                           %{
                             price_data: %{
                               product_data: %{name: "John Newborn 50% remainder"},
-                              unit_amount: 50
+                              unit_amount: 40
                             }
                           }
                         ]
@@ -224,20 +228,19 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(stripe_success_url)
-      |> take_screenshot()
       |> assert_has(css("h1", text: "Paid in full."))
       |> click(button("Got it"))
       |> assert_text("Thanks for your business!")
       |> click(button("Completed Invoice"))
-      |> assert_has(definition("Total", text: "$1.00"))
+      |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
         definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.50"
+          text: "$0.40"
         )
       )
       |> assert_has(
         definition("Remainder Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.50"
+          text: "$0.40"
         )
       )
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))

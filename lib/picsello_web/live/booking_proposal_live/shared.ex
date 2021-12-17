@@ -3,7 +3,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
-  alias Picsello.Job
+  alias Picsello.{Job, Package, Packages}
 
   def banner(assigns) do
     ~H"""
@@ -19,7 +19,33 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     """
   end
 
+  def total(assigns) do
+    ~H"""
+    <div class="contents">
+      <%= with discount_percent when discount_percent != nil <- Packages.discount_percent(@package) do %>
+        <dl class="pb-6 border-b grid grid-cols-2 border-base-300">
+          <dt class="text-xl font-bold">Subtotal</dt>
+
+          <dd class="text-xl font-bold justify-self-end"><%= Package.base_price(@package) %></dd>
+
+          <dt class="text-xl text-green-finances-300">Discount</dt>
+
+          <dd class="text-xl text-green-finances-300 justify-self-end"><%= discount_percent %>%</dd>
+        </dl>
+      <% end %>
+
+      <dl class="flex justify-between text-2xl font-bold">
+        <dt>Total</dt>
+
+        <dd><%= Package.price(@package) %></dd>
+      </dl>
+    </div>
+    """
+  end
+
   def items(assigns) do
+    assigns = Enum.into(assigns, %{inner_block: nil})
+
     ~H"""
     <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
       <dl class="flex flex-col">
@@ -51,7 +77,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       </dl>
 
       <div class="block pt-2 border-t col-span-2 sm:hidden">
-        <%= render_slot @inner_block %>
+        <.total package={@package} />
+        <%= if @inner_block, do: render_slot @inner_block %>
       </div>
 
       <div class="modal-banner uppercase font-bold py-4 bg-base-200 grid grid-cols-[2fr,3fr] gap-4 col-span-2">
@@ -88,7 +115,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <hr class="hidden col-span-2 sm:block">
 
       <div class="hidden col-start-2 sm:block">
-        <%= render_slot @inner_block %>
+        <.total package={@package} />
+        <%= if @inner_block, do: render_slot @inner_block %>
       </div>
     </div>
     """
