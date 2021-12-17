@@ -15,7 +15,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_new(:job, fn -> nil end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
     |> choose_initial_step()
-    |> assign(:is_template, assigns |> Map.get(:job) |> is_nil())
+    |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
     |> assign_changeset(%{})
     |> ok()
   end
@@ -73,7 +73,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.wizard_state form={f} />
 
-        <.step name={@step} f={f} is_template={@is_template} templates={@templates} multiplier_changeset={@multiplier} download_changeset={@download} />
+        <.step name={@step} f={f} {assigns} />
 
         <.footer>
           <.step_buttons name={@step} form={f} is_valid={Enum.all?([@download, @multiplier, @changeset], &(&1.valid?))} myself={@myself} />
@@ -208,7 +208,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </.input_label>
 
           <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
-            <%= for(job_type <- Packages.job_types()) do %>
+            <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>
           </div>
@@ -230,7 +230,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
 
 
-        <% m = form_for(@multiplier_changeset, "#") %>
+        <% m = form_for(@multiplier, "#") %>
 
         <label class="flex items-center mt-6 sm:mt-8 justify-self-start">
           <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
@@ -262,7 +262,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
         </div>
 
-        <% d = form_for(@download_changeset, "#") %>
+        <% d = form_for(@download, "#") %>
 
         <div class="flex flex-col w-full mt-3">
           <label class="flex items-center">

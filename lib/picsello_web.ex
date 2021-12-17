@@ -41,7 +41,7 @@ defmodule PicselloWeb do
       unquote(view_helpers())
     end
   end
-  
+
   def live_view(options) do
     options =
       case Keyword.get(options, :layout, "live") do
