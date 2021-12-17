@@ -55,7 +55,8 @@ defmodule Picsello.EditLeadPackageTest do
         package
         | name: "My Greatest Package",
           description: "indescribably great.",
-          base_price: %Money{amount: 200, currency: :USD}
+          base_price: %Money{amount: 200},
+          download_each_price: %Money{amount: 5000}
       }
       |> Map.take([:id | form_fields])
 

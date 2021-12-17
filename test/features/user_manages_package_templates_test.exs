@@ -28,6 +28,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Package Templates"))
     |> click(button("Add a package"))
     |> assert_text("Add a Package: Provide Details")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
@@ -41,28 +42,28 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
-    |> fill_in(text_field("Add"), with: "$10")
-    |> fill_in(text_field("Download"), with: "2")
-    |> fill_in(text_field("each"), with: "$2")
-    |> assert_has(definition("Total Price", text: "$144.00"))
+    |> click(checkbox("Set my own download price"))
+    |> find(
+      text_field("download_each_price"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+    )
+    |> click(checkbox("Include download credits"))
+    |> fill_in(text_field("download_count"), with: "2")
+    |> assert_has(definition("Total Price", text: "$134.00"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_flash(:success, text: "The package has been successfully saved")
-
-    base_price = Money.new(10_000)
-    gallery_credit = Money.new(1000)
-    download_each_price = Money.new(200)
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
     assert %Package{
              name: "Wedding Deluxe",
              shoot_count: 2,
              description: "My greatest wedding package",
-             base_price: ^base_price,
-             gallery_credit: ^gallery_credit,
+             base_price: %Money{amount: 10_000},
              download_count: 2,
-             download_each_price: ^download_each_price,
+             download_each_price: %Money{amount: 200},
              job_type: "portrait",
              package_template_id: nil
            } = user |> Package.templates_for_user() |> Repo.one!()
@@ -79,6 +80,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Edit"))
 
     session
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
     |> assert_text("Edit Package: Provide Details")
     |> assert_value(text_field("Title"), template.name)
     |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
@@ -89,12 +91,13 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Save"))
     |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> assert_flash(:success, text: "The package has been successfully saved")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
     form_fields =
-      ~w(base_price description job_type name gallery_credit download_count download_each_price shoot_count)a
+      ~w(base_price description job_type name download_count download_each_price shoot_count)a
 
     updated =
-      %{template | name: "Wedding Super Deluxe"}
+      %{template | name: "Wedding Super Deluxe", download_each_price: %Money{amount: 5000}}
       |> Map.take([:id | form_fields])
 
     assert ^updated =

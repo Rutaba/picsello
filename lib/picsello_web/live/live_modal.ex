@@ -7,6 +7,7 @@ defmodule PicselloWeb.LiveModal do
     defstruct state: :closed,
               component: nil,
               assigns: %{},
+              close_event: nil,
               transition_ms: 0
 
     def new() do
@@ -19,7 +20,8 @@ defmodule PicselloWeb.LiveModal do
         modal
         | component: component,
           state: :opening,
-          assigns: config |> Map.get(:assigns, %{})
+          assigns: Map.get(config, :assigns, %{}),
+          close_event: Map.get(config, :close_event)
       }
   end
 
@@ -40,6 +42,7 @@ defmodule PicselloWeb.LiveModal do
 
   @impl true
   def handle_info({:modal, :close}, %{assigns: %{modal: modal}} = socket) do
+    if modal.close_event, do: send(socket.root_pid, {modal.close_event, modal})
     Process.send_after(self(), {:modal, :closed}, modal.transition_ms)
 
     socket
