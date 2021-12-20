@@ -1,5 +1,23 @@
 import Quill from 'quill';
 
+Quill.debug('error');
+
+const Link = Quill.import('formats/link');
+
+class CustomLink extends Link {
+  static create(value) {
+    let node = super.create(value);
+    value = this.sanitize(value);
+    if (!value.startsWith('http')) {
+      value = `https://${value}`;
+    }
+    node.setAttribute('href', value);
+    return node;
+  }
+}
+
+Quill.register(CustomLink);
+
 export default {
   mounted() {
     const editorEl = this.el.querySelector('#editor');
