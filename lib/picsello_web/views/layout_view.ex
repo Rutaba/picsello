@@ -93,7 +93,7 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Orders", icon: "cart", path: "#"},
       %{title: "Calendar", icon: "calendar", path: "#"},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
-      %{title: "Marketing", icon: "bullhorn", path: "#"},
+      %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
       %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
       %{title: "Finances", icon: "money-bags", path: "#"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
