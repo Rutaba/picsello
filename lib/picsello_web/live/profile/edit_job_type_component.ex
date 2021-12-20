@@ -12,9 +12,14 @@ defmodule PicselloWeb.Live.Profile.EditJobTypeComponent do
 
         <%= for p <- inputs_for(f, :profile) do %>
           <% input_name = input_name(p, :job_types) <> "[]" %>
+          <% one_selected = length(input_value(p, :job_types)) == 1 %>
           <div class="mt-8 grid grid-cols-1 gap-3 sm:gap-5">
             <%= for(job_type <- job_types()) do %>
-              <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={input_value(p, :job_types) |> Enum.member?(job_type)} />
+              <% checked = input_value(p, :job_types) |> Enum.member?(job_type) %>
+              <.job_type_option type="checkbox" disabled={checked && one_selected} name={input_name} job_type={job_type} checked={checked} />
+              <%= if checked && one_selected do %>
+                <input type="hidden" name={input_name} value={job_type} />
+              <% end %>
             <% end %>
           </div>
         <% end %>

@@ -203,12 +203,14 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def job_type_option(assigns) do
+    assigns = Enum.into(assigns, %{disabled: false})
+
     ~H"""
       <label class={classes(
         "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
         %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
       )}>
-        <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} />
+        <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
