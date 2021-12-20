@@ -64,7 +64,8 @@ defmodule Picsello.GalleryProducts do
         name: "card_blank.png",
         category_name: "Loose Prints",
         title: "Prints",
-        corners: [0, 0, 0, 0, 0, 0, 0, 0]},
+        corners: [0, 0, 0, 0, 0, 0, 0, 0]
+      },
       %{
         name: "album_transparency.png",
         category_name: "Albums",

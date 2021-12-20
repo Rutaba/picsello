@@ -37,22 +37,23 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     preview = GalleryProducts.get(%{gallery_id: id})
 
-    category_count =
-      Repo.aggregate(Picsello.Category, :count)
+    category_count = Repo.aggregate(Picsello.Category, :count)
 
     preview =
       cond do
         preview == nil and category_count == 0 ->
           %{id: PicselloWeb.GalleryLive.GalleryProduct.path(nil)}
+
         preview == nil and category_count != 0 ->
           GalleryProducts.create_gallery_product(id)
-        true -> preview
+
+        true ->
+          preview
       end
 
     data = Repo.all(Picsello.CategoryTemplates)
 
-    url =
-      PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
+    url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
 
     event_datas =
       Enum.map(data, fn template ->
@@ -344,7 +345,8 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   defp push_events(s, []), do: s
-  defp push_events(s, [h|t]) do
+
+  defp push_events(s, [h | t]) do
     push_event(s, "set_preview", h) |> push_events(t)
   end
 
