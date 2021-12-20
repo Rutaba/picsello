@@ -56,7 +56,7 @@ defmodule Picsello.Profiles do
           ("https://" <> url) |> url_validation_errors()
 
         %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
-          label = "[a-z0-9\\-]{1,63}+"
+          label = "[a-zA-Z0-9\\-]{1,63}+"
 
           if Regex.compile!("^(?:(?:#{label})\\.)+(?:#{label})$")
              |> Regex.match?(host),

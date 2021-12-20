@@ -203,7 +203,9 @@ defmodule PicselloWeb.FormHelpers do
         <div class="relative flex flex-col">
           <%= input @form, :website,
               phx_debounce: "500",
-            disabled: input_value(@form, :no_website) == true,
+              autocomplete: "off",
+              autocapitalize: "off",
+              disabled: input_value(@form, :no_website) == true,
               placeholder: @placeholder,
               class: "p-4 sm:pr-48" %>
           <%= error_tag @form, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
