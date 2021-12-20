@@ -7,6 +7,7 @@ defmodule Picsello.CategoryTemplates do
   schema "category_templates" do
     field :corners, {:array, :integer}
     field :name, :string
+    field :title, :string
     belongs_to(:category, Category)
 
     timestamps()
@@ -15,7 +16,7 @@ defmodule Picsello.CategoryTemplates do
   @doc false
   def changeset(category_templates, attrs) do
     category_templates
-    |> cast(attrs, [:name, :corners])
-    |> validate_required([:name, :corners])
+    |> cast(attrs, [:name, :corners, :title])
+    |> validate_required([:name, :corners, :title])
   end
 end

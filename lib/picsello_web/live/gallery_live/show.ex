@@ -37,18 +37,22 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     preview = GalleryProducts.get(%{gallery_id: id})
 
+    category_count =
+      Repo.aggregate(Picsello.Category, :count)
+
     preview =
-      if preview == nil do
-        GalleryProducts.create_gallery_product(id)
-      else
-        preview
+      cond do
+        preview == nil and category_count == 0 ->
+          %{id: PicselloWeb.GalleryLive.GalleryProduct.path(nil)}
+        preview == nil and category_count != 0 ->
+          GalleryProducts.create_gallery_product(id)
+        true -> preview
       end
 
     data = Repo.all(Picsello.CategoryTemplates)
 
     url =
       PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
-      |> PhotoStorage.path_to_url()
 
     event_datas =
       Enum.map(data, fn template ->
@@ -61,13 +65,10 @@ defmodule PicselloWeb.GalleryLive.Show do
       end)
 
     socket
+    |> push_events(event_datas)
     |> assign(:templates, data)
     |> assign(:gallery_product_id, preview.id)
     |> assign(:preview, url)
-    |> push_event("set_preview", Enum.at(event_datas, 0))
-    |> push_event("set_preview", Enum.at(event_datas, 1))
-    |> push_event("set_preview", Enum.at(event_datas, 2))
-    |> push_event("set_preview", Enum.at(event_datas, 3))
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:gallery, gallery)
     |> assign(:page, 0)
@@ -340,6 +341,11 @@ defmodule PicselloWeb.GalleryLive.Show do
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
+  end
+
+  defp push_events(s, []), do: s
+  defp push_events(s, [h|t]) do
+    push_event(s, "set_preview", h) |> push_events(t)
   end
 
   defp page_title(:show), do: "Show Gallery"

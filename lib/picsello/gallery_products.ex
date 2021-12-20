@@ -26,7 +26,6 @@ defmodule Picsello.GalleryProducts do
     unless Repo.aggregate(CategoryTemplates, :count) > 4 do
       Enum.each(frames, fn row ->
         result = Repo.get_by(Category, %{name: row.category_name})
-
         insert_template(result, row)
       end)
     end
@@ -35,6 +34,7 @@ defmodule Picsello.GalleryProducts do
   def insert_template(%{id: category_id}, row) do
     Repo.insert!(%CategoryTemplates{
       name: row.name,
+      title: row.title,
       corners: row.corners,
       category_id: category_id
     })
@@ -42,12 +42,6 @@ defmodule Picsello.GalleryProducts do
 
   def insert_template(_r, _row) do
     Logger.error("No match any categories for template please start Picsello.WHCC.sync()")
-  end
-
-  def insert_category(return, _) do
-    Logger.error(
-      "category_template seed was not inserted. Probably Category table is empty. #{return}"
-    )
   end
 
   def create_gallery_product(gallery_id) do
@@ -66,20 +60,27 @@ defmodule Picsello.GalleryProducts do
 
   def frames() do
     [
-      %{name: "card_blank.png", category_name: "Loose Prints", corners: [0, 0, 0, 0, 0, 0, 0, 0]},
+      %{
+        name: "card_blank.png",
+        category_name: "Loose Prints",
+        title: "Prints",
+        corners: [0, 0, 0, 0, 0, 0, 0, 0]},
       %{
         name: "album_transparency.png",
         category_name: "Albums",
+        title: "Custom Albums",
         corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
       },
       %{
         name: "card_envelope.png",
         category_name: "Press Printed Cards",
+        title: "Greeting Cards",
         corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
       },
       %{
         name: "frame_transparency.png",
         category_name: "Wall Displays",
+        title: "Framed Prints",
         corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
       }
     ]
