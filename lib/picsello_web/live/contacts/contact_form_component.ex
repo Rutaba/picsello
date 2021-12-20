@@ -30,6 +30,7 @@ defmodule PicselloWeb.Live.Contacts.ContactFormComponent do
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <%= labeled_input f, :name, placeholder: "Enter first and last name…", phx_debounce: "500" %>
             <%= labeled_input f, :email, placeholder: "Enter email…", phx_debounce: "500" %>
+            <%= labeled_input f, :phone, type: :telephone_input, placeholder: "Enter phone number…", phx_hook: "Phone", phx_debounce: "500" %>
           </div>
 
           <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
