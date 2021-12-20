@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.Contacts do
 
       <hr class="my-4 sm:my-10" />
 
-      <table class="responsive-table w-full flex flex-row flex-no-wrap sm:bg-white my-5">
+      <table class="responsive-table w-full flex flex-row flex-no-wrap sm:bg-white mt-5 mb-32 sm:mb-5">
         <thead class="text-white">
           <%= for _contact <- @contacts do %>
             <tr class="flex flex-col flex-no wrap rounded-l-lg overflow-hidden sm:table-row mb-2 sm:mb-0">
@@ -46,6 +46,20 @@ defmodule PicselloWeb.Live.Contacts do
               <td class="border-grey-light border sm:border-none p-3 truncate"><%= contact.email || "-" %></td>
               <td class="border-grey-light border sm:border-none p-3 relative">
                 &nbsp;
+                <div class="absolute top-3 left-3 sm:left-8" data-offset="0" data-placement="bottom-end" phx-hook="Select" id={"manage-contact-#{contact.id}"}>
+                  <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
+                    <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+
+                    <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                  </button>
+
+                  <div class="z-10 flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+                    <button title="Edit" type="button" phx-click="edit-contact" phx-value-id={contact.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                      <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                      Edit
+                    </button>
+                  </div>
+                </div>
               </td>
             </tr>
           <% end %>
@@ -60,8 +74,22 @@ defmodule PicselloWeb.Live.Contacts do
   def handle_event("add-contact", %{}, socket),
     do:
       socket
-      |> PicselloWeb.Live.Contacts.NewContactComponent.open()
+      |> PicselloWeb.Live.Contacts.ContactFormComponent.open()
       |> noreply()
+
+  @impl true
+  def handle_event(
+        "edit-contact",
+        %{"id" => id},
+        %{assigns: %{contacts: contacts}} = socket
+      ) do
+    {id, _} = Integer.parse(id)
+    contact = contacts |> Enum.find(&(&1.id == id))
+
+    socket
+    |> PicselloWeb.Live.Contacts.ContactFormComponent.open(contact)
+    |> noreply()
+  end
 
   defp assign_contacts(%{assigns: %{current_user: current_user}} = socket) do
     contacts = Contacts.find_all_by(user: current_user)
@@ -73,6 +101,7 @@ defmodule PicselloWeb.Live.Contacts do
   def handle_info({:update, _contact}, socket) do
     socket
     |> assign_contacts()
+    |> put_flash(:success, "Contact saved")
     |> noreply()
   end
 end

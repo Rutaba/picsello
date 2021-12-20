@@ -32,6 +32,15 @@ defmodule Picsello.Client do
     |> unique_constraint([:email, :organization_id])
   end
 
+  def edit_contact_changeset(%__MODULE__{} = client, attrs) do
+    client
+    |> cast(attrs, [:name, :email])
+    |> User.validate_email_format()
+    |> validate_required([:name])
+    |> unsafe_validate_unique(:email, Picsello.Repo)
+    |> unique_constraint([:email])
+  end
+
   def assign_stripe_customer_changeset(%__MODULE__{} = client, "" <> stripe_customer_id),
     do: client |> change(stripe_customer_id: stripe_customer_id)
 

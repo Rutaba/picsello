@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Contacts.NewContactComponent do
+defmodule PicselloWeb.Live.Contacts.ContactFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
@@ -17,7 +17,9 @@ defmodule PicselloWeb.Live.Contacts.NewContactComponent do
     ~H"""
       <div class="flex flex-col modal">
         <div class="flex items-start justify-between flex-shrink-0">
-          <h1 class="mb-4 text-3xl font-bold">Add contact</h1>
+          <h1 class="mb-4 text-3xl font-bold">
+            <%= if @contact, do: "Edit contact", else: "Add contact" %>
+          </h1>
 
           <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
             <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
@@ -45,9 +47,9 @@ defmodule PicselloWeb.Live.Contacts.NewContactComponent do
   def handle_event(
         "save",
         %{"client" => params},
-        %{assigns: %{current_user: current_user}} = socket
+        socket
       ) do
-    case Contacts.save_new_contact(params, current_user.organization_id) do
+    case save_contact(params, socket) do
       {:ok, contact} ->
         send(socket.parent_pid, {:update, contact})
         socket |> close_modal() |> noreply()
@@ -57,11 +59,23 @@ defmodule PicselloWeb.Live.Contacts.NewContactComponent do
     end
   end
 
+  defp save_contact(params, %{assigns: %{current_user: current_user, contact: nil}}) do
+    Contacts.save_new_contact(params, current_user.organization_id)
+  end
+
+  defp save_contact(params, %{assigns: %{contact: contact}}) do
+    Contacts.save_contact(contact, params)
+  end
+
   defp build_changeset(
-         %{assigns: %{current_user: current_user}},
+         %{assigns: %{current_user: current_user, contact: nil}},
          params
        ) do
     Contacts.new_contact_changeset(params, current_user.organization_id)
+  end
+
+  defp build_changeset(%{assigns: %{contact: contact}}, params) do
+    Contacts.edit_contact_changeset(contact, params)
   end
 
   defp assign_changeset(socket, action \\ nil, params \\ %{})
@@ -81,7 +95,7 @@ defmodule PicselloWeb.Live.Contacts.NewContactComponent do
     assign(socket, changeset: changeset)
   end
 
-  def open(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> open_modal(__MODULE__, %{current_user: current_user})
+  def open(%{assigns: %{current_user: current_user}} = socket, contact \\ nil) do
+    socket |> open_modal(__MODULE__, %{current_user: current_user, contact: contact})
   end
 end

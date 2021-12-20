@@ -17,7 +17,15 @@ defmodule Picsello.Contacts do
     |> Client.create_contact_changeset()
   end
 
+  def edit_contact_changeset(contact, attrs) do
+    Client.edit_contact_changeset(contact, attrs)
+  end
+
   def save_new_contact(attrs, organization_id) do
     new_contact_changeset(attrs, organization_id) |> Repo.insert()
+  end
+
+  def save_contact(contact, attrs) do
+    edit_contact_changeset(contact, attrs) |> Repo.update()
   end
 end
