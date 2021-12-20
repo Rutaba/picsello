@@ -1,7 +1,5 @@
 import Quill from 'quill';
 
-Quill.debug('error');
-
 const Link = Quill.import('formats/link');
 
 class CustomLink extends Link {
@@ -16,7 +14,7 @@ class CustomLink extends Link {
   }
 }
 
-Quill.register(CustomLink);
+Quill.register(CustomLink, true);
 
 export default {
   mounted() {
