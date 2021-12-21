@@ -78,7 +78,7 @@
    </div>
 </div>
 
-<%= if length(@templates) > 0 do %>
+<%= if Enum.empty?(@templates) == false do %>
   <div class="flex justify-between center-container">
   <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto">
     <%= for template <- @templates do %>

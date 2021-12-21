@@ -23,7 +23,7 @@ defmodule Picsello.GalleryProducts do
   def seed_templates() do
     frames = frames()
 
-    unless Repo.aggregate(CategoryTemplates, :count) > 4 do
+    if Repo.aggregate(CategoryTemplates, :count) == 0 do
       Enum.each(frames, fn row ->
         result = Repo.get_by(Category, %{name: row.category_name})
         insert_template(result, row)

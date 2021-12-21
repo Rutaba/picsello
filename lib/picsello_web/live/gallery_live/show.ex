@@ -66,7 +66,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       end)
 
     socket
-    |> push_events(event_datas)
+    |> push_preview_events(event_datas)
     |> assign(:templates, data)
     |> assign(:gallery_product_id, preview.id)
     |> assign(:preview, url)
@@ -344,10 +344,10 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 
-  defp push_events(s, []), do: s
+  defp push_preview_events(s, []), do: s
 
-  defp push_events(s, [h | t]) do
-    push_event(s, "set_preview", h) |> push_events(t)
+  defp push_preview_events(socket, [head | tail]) do
+    push_event(socket, "set_preview", head) |> push_preview_events(tail)
   end
 
   defp page_title(:show), do: "Show Gallery"
