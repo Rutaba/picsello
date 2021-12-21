@@ -85,7 +85,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   end
 
   def handle_event(
-        "set_preview",
+        "click",
         %{"preview" => preview, "preview_photo_id" => preview_photo_id},
         socket
       ) do
