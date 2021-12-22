@@ -157,6 +157,7 @@ defmodule PicselloWeb.Router do
       pipe_through [:browser, :require_authenticated_gallery]
 
       live "/:hash", GalleryLive.ClientShow, :show
+      live "/:hash/orders", GalleryLive.ClientOrders, :show
       post "/:hash/downloads", GalleryDownloadsController, :download
       post "/:hash/login", GallerySessionController, :put
     end
