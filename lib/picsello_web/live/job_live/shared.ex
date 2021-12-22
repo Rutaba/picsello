@@ -7,6 +7,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Shoot,
     Repo,
     BookingProposal,
+    Messages,
     Notifiers.ClientNotifier,
     Package,
     Accounts.User
@@ -78,10 +79,7 @@ defmodule PicselloWeb.JobLive.Shared do
         {:message_composed, message_changeset},
         %{assigns: %{job: %{client: client} = job}} = socket
       ) do
-    with {:ok, message} <-
-           message_changeset
-           |> Ecto.Changeset.put_change(:job_id, job.id)
-           |> Repo.insert(),
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
       socket
       |> PicselloWeb.ConfirmationComponent.open(%{

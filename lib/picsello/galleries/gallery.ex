@@ -2,7 +2,8 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Galleries.Photo, Galleries.Watermark, Job}
+  alias Picsello.Galleries.{Photo, Watermark}
+  alias Picsello.Job
 
   @status_options [
     values: ~w(draft active expired),

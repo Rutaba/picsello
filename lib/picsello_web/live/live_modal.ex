@@ -7,6 +7,7 @@ defmodule PicselloWeb.LiveModal do
     defstruct state: :closed,
               component: nil,
               assigns: %{},
+              close_event: nil,
               transition_ms: 0
 
     def new() do
@@ -19,7 +20,8 @@ defmodule PicselloWeb.LiveModal do
         modal
         | component: component,
           state: :opening,
-          assigns: config |> Map.get(:assigns, %{})
+          assigns: Map.get(config, :assigns, %{}),
+          close_event: Map.get(config, :close_event)
       }
   end
 
@@ -40,6 +42,7 @@ defmodule PicselloWeb.LiveModal do
 
   @impl true
   def handle_info({:modal, :close}, %{assigns: %{modal: modal}} = socket) do
+    if modal.close_event, do: send(socket.root_pid, {modal.close_event, modal})
     Process.send_after(self(), {:modal, :closed}, modal.transition_ms)
 
     socket
@@ -72,16 +75,13 @@ defmodule PicselloWeb.LiveModal do
     ~H"""
     <div role="dialog" id="modal-wrapper" phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/20 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
       <%= if @modal.state != :closed do %>
-        <div class={"overflow-hidden rounded-t-lg sm:rounded-b-lg" <> content_class(@modal.assigns[:center])}>
+        <div class={classes("overflow-hidden rounded-t-lg sm:rounded-b-lg", %{"rounded-b-lg" => @modal.assigns[:center], "self-end sm:self-auto" => !@modal.assigns[:center]})}>
           <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
         </div>
       <% end %>
     </div>
     """
   end
-
-  def content_class(true), do: ""
-  def content_class(_), do: " self-end sm:self-auto"
 
   def footer(assigns) do
     assigns = Enum.into(assigns, %{disabled: false, inner_block: nil})
@@ -94,7 +94,7 @@ defmodule PicselloWeb.LiveModal do
           <%= if @inner_block do %>
             <%= render_block @inner_block %>
           <% else %>
-            <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Saving...">
+            <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Save">
               Save
             </button>
 

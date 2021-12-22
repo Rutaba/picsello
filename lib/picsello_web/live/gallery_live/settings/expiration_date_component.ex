@@ -58,6 +58,10 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     |> react_form()
   end
 
+  def handle_event("update_options", _, socket) do
+    noreply(socket)
+  end
+
   def handle_event(
         "save",
         _,

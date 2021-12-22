@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
     <%= for {name, content} <- meta_tags() do %>
       <meta name={name} content={content} />
     <% end %>
@@ -14,6 +14,12 @@
     <% end %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn,"/css/app.css")}/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/js/app.js")}></script>
+    <%= if Application.get_env(:picsello, :google_analytics_api_key) do %>
+    <PicselloWeb.LayoutView.google_analytics gaId={Application.get_env(:picsello, :google_analytics_api_key)} />
+    <% end %>
+    <%= if Application.get_env(:picsello, :google_tag_manager_api_key) do %>
+    <PicselloWeb.LayoutView.google_tag_manager gtmId={Application.get_env(:picsello, :google_tag_manager_api_key)} />
+    <% end %>
   </head>
   <body>
     <%= @inner_content %>

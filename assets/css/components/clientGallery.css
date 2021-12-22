@@ -22,6 +22,26 @@
     px-16;
 }
 
+.galleryImage__wrapper {
+    width: 309px;
+    
+}
+
+.photos__rect{
+   display: flex;
+   width: 309px;
+   height: 300px; 
+   background-color: #F5F6F8;
+
+}
+
+.frame {
+    width: 219px;
+    height: 178px;
+
+}
+
+
 .settings__wrapper > div {
     @apply border-2
     border-solid
@@ -79,8 +99,9 @@
 }
 
 .customWatermarkPopup {
-    max-height: 950px;
+    max-height: 95vh;
     @apply bg-base-100
+    overflow-y-auto
     mx-auto
     my-0;
 }
@@ -241,7 +262,7 @@
     cursor-pointer
     flex
     items-center
-    border-2
+    border
     border-solid
     border-base-100
     rounded-lg
@@ -252,6 +273,10 @@
 
 .bottomBar__btn.btn-secondary {
     @apply border-base-100;
+}
+
+.bottomBar__btn.btn-secondary:hover {
+    @apply text-base-100;
 }
 
 .galleryItem .likeBtn{
@@ -319,6 +344,19 @@
     background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
 }
 
+.errorPwdMsg ~ div > .relative input{
+    @apply border
+    border-solid
+    border-red-error-300
+    rounded-lg
+}
+
+.mobileGalleryButtons a {
+   @apply inline-block
+    w-full
+    h-full;
+}
+
 .productType:first-letter {
     text-transform: uppercase;
 }
@@ -350,4 +388,10 @@
       max-height: 894px;
   }
 
+}
+
+@media screen and (min-width: 1024px) {
+    .customWatermarkPopup {
+        max-height: 950px;
+    }
 }

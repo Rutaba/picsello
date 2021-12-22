@@ -75,7 +75,7 @@ defmodule Picsello.Factory do
 
   def package_factory(attrs) do
     %Package{
-      base_price: 10,
+      base_price: 1000,
       download_count: 0,
       download_each_price: 0,
       name: "Package name",
@@ -265,7 +265,8 @@ defmodule Picsello.Factory do
   def gallery_factory(attrs) do
     %Gallery{
       job: fn -> build(:lead) end,
-      password: "123456"
+      password: "123456",
+      client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

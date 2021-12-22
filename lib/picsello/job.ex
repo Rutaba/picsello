@@ -68,6 +68,10 @@ defmodule Picsello.Job do
     from(job in __MODULE__, where: job.id == ^id)
   end
 
+  def by_client_id(id) do
+    from(job in __MODULE__, where: job.client_id == ^id)
+  end
+
   def lead?(%__MODULE__{} = job) do
     %{job_status: %{is_lead: is_lead}} =
       job

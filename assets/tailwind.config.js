@@ -63,6 +63,7 @@ module.exports = {
         'purple-marketing': { 300: '#585DF6', 200: '#7F82E6', 100: '#F8F4FE' },
         'orange-inbox': { 300: '#F19D4A', 200: '#F5BD7F', 100: '#FDF4E9' },
         'green-finances': { 300: '#429467', 200: '#81CF67', 100: '#CFE7CD' },
+        'red-error' : {300: '#F60000'},
       },
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
