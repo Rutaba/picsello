@@ -1,10 +1,13 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-
+  alias Picsello.Repo
   alias Picsello.Galleries
+  alias Picsello.GalleryProducts
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Messages
+  alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.PhotoComponent
@@ -32,7 +35,41 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
+    preview = GalleryProducts.get(%{gallery_id: id})
+
+    category_count = Repo.aggregate(Picsello.Category, :count)
+
+    preview =
+      cond do
+        preview == nil and category_count == 0 ->
+          %{id: PicselloWeb.GalleryLive.GalleryProduct.path(nil)}
+
+        preview == nil and category_count != 0 ->
+          GalleryProducts.create_gallery_product(id)
+
+        true ->
+          preview
+      end
+
+    data = Repo.all(Picsello.CategoryTemplates)
+
+    url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
+
+    event_datas =
+      Enum.map(data, fn template ->
+        %{
+          preview: url,
+          frame: template.name,
+          coords: template.corners,
+          target: "canvas#{template.id}"
+        }
+      end)
+
     socket
+    |> push_preview_events(event_datas)
+    |> assign(:templates, data)
+    |> assign(:gallery_product_id, preview.id)
+    |> assign(:preview, url)
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:gallery, gallery)
     |> assign(:page, 0)
@@ -141,9 +178,52 @@ defmodule PicselloWeb.GalleryLive.Show do
       |> Galleries.set_gallery_hash()
       |> Map.get(:client_link_hash)
 
+    gallery = Picsello.Repo.preload(gallery, job: :client)
+
+    link = Routes.gallery_client_show_url(socket, :show, hash)
+    client_name = gallery.job.client.name
+
+    subject = "#{gallery.name} photos"
+
+    html = """
+    <p>Hi #{client_name},</p>
+    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
+    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
+    <p>Happy viewing!</p>
+    """
+
+    text = """
+    Hi #{client_name},
+
+    Your gallery is ready to view! You can view the gallery here: #{link}
+
+    Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
+
+    Happy viewing!
+    """
+
     socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> assign(:job, gallery.job)
+    |> assign(:gallery, gallery)
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      body_html: html,
+      body_text: text,
+      subject: subject,
+      modal_title: "Share gallery"
+    })
     |> noreply()
+  end
+
+  def handle_info({:message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+      socket
+      |> close_modal()
+      |> noreply()
+    else
+      _error ->
+        socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
+    end
   end
 
   @impl true
@@ -264,11 +344,13 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 
+  defp push_preview_events(s, []), do: s
+
+  defp push_preview_events(socket, [head | tail]) do
+    push_event(socket, "set_preview", head) |> push_preview_events(tail)
+  end
+
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
-
-  defp cover_photo(key) do
-    PhotoStorage.path_to_url(key)
-  end
 end

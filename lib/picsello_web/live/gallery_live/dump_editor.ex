@@ -15,10 +15,7 @@ defmodule PicselloWeb.GalleryLive.DumpEditor do
   def render(assigns) do
     ~H"""
       <h1>Editor selections</h1>
-      <b>Product Id: </b> <%= @data["productId"] %>
-      <pre><%= inspect(@data["selections"], pretty: true, limit: :infinity, width: 120) %></pre>
-      <hr>
-      <pre><%= inspect(@data, pretty: true) %></pre>
+      <pre><%= inspect(@data, pretty: true, limit: :infinity, width: 120) %></pre>
     """
   end
 end

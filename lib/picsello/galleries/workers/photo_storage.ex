@@ -8,6 +8,7 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
   @callback delete(String.t(), String.t()) :: atom()
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+
   def path_to_url(path, bucket \\ @bucket) do
     sign_opts = [bucket: bucket, key: path]
     GCSSign.sign_url_v4(gcp_credentials(), sign_opts)

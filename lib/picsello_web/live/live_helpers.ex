@@ -203,12 +203,14 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def job_type_option(assigns) do
+    assigns = Enum.into(assigns, %{disabled: false})
+
     ~H"""
       <label class={classes(
         "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
         %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
       )}>
-        <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} />
+        <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
@@ -242,6 +244,19 @@ defmodule PicselloWeb.LiveHelpers do
 
   def filesize(byte_size) when is_integer(byte_size),
     do: Size.humanize!(byte_size, spacer: "")
+
+  def to_integer(int) when is_integer(int), do: int
+  def to_integer(bin) when is_binary(bin), do: String.to_integer(bin)
+
+  def display_cover_photo(key) when is_binary(key),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+
+  def display_cover_photo(_key), do: nil
+
+  def display_photo(key) when is_binary(key),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+
+  def display_photo(nil), do: "/images/gallery-icon.png"
 
   def initials_circle(assigns) do
     assigns =

@@ -98,24 +98,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         </label>
 
         <%= for p <- inputs_for(o, :profile) do %>
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">What is your website URL? <i class="italic font-light">(No worries if you don’t have one)</i></p>
-
-            <div class="relative flex flex-col">
-              <%= input p, :website,
-                  phx_debounce: "500",
-                disabled: input_value(p, :no_website) == true,
-                  placeholder: "www.mystudio.com",
-                  class: "p-4 sm:pr-48" %>
-              <%= error_tag p, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
-
-              <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
-                <%= checkbox p, :no_website, class: "w-5 h-5 checkbox" %>
-
-                <p class="ml-2">I don't have one</p>
-              </label>
-            </div>
-          </label>
+          <.website_field form={p} class="mt-4" />
         <% end %>
       <% end %>
 

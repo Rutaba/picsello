@@ -2,7 +2,7 @@ defmodule Picsello.Client do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, Organization}
+  alias Picsello.{Accounts.User, Organization, Job, Repo}
 
   schema "clients" do
     field :email, :string
@@ -23,6 +23,25 @@ defmodule Picsello.Client do
     |> unique_constraint([:email, :organization_id])
   end
 
+  def create_contact_changeset(client \\ %__MODULE__{}, attrs) do
+    client
+    |> cast(attrs, [:name, :email, :phone, :organization_id])
+    |> User.validate_email_format()
+    |> validate_required([:email, :organization_id])
+    |> unsafe_validate_unique(:email, Picsello.Repo)
+    |> unique_constraint([:email, :organization_id])
+  end
+
+  def edit_contact_changeset(%__MODULE__{} = client, attrs) do
+    client
+    |> cast(attrs, [:name, :email, :phone])
+    |> User.validate_email_format()
+    |> validate_required([:email])
+    |> unsafe_validate_unique(:email, Picsello.Repo)
+    |> unique_constraint([:email])
+    |> validate_required_name_and_phone()
+  end
+
   def assign_stripe_customer_changeset(%__MODULE__{} = client, "" <> stripe_customer_id),
     do: client |> change(stripe_customer_id: stripe_customer_id)
 
@@ -32,6 +51,16 @@ defmodule Picsello.Client do
       []
     else
       [{field, "is invalid"}]
+    end
+  end
+
+  def validate_required_name_and_phone(changeset) do
+    has_jobs = get_field(changeset, :id) |> Job.by_client_id() |> Repo.exists?()
+
+    if has_jobs do
+      changeset |> validate_required([:name, :phone])
+    else
+      changeset
     end
   end
 end

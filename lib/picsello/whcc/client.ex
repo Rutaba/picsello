@@ -63,7 +63,9 @@ defmodule Picsello.WHCC.Client do
 
   def editor_details(id) do
     {:ok, %{body: body}} = new() |> get("/editors/#{id}")
+
     body
+    |> WHCC.Editor.Details.new()
   end
 
   def product_details(%WHCC.Product{id: id} = product) do

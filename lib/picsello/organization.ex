@@ -42,6 +42,12 @@ defmodule Picsello.Organization do
     |> unique_constraint(:slug)
   end
 
+  def edit_profile_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:profile)
+  end
+
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),
     do: organization |> change(stripe_account_id: stripe_account_id)
 

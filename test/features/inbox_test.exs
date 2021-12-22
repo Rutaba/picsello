@@ -111,7 +111,7 @@ defmodule Picsello.InboxTest do
     |> click(testid("inbox-card"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> click(button("Reply"))
-    |> click(css("div[data-placeholder='Compose message...']"))
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is my response"])
     |> within_modal(&wait_for_enabled_submit_button/1)
     |> click(button("Send Email"))
