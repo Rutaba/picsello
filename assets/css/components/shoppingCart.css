@@ -1,4 +1,4 @@
 .cartImg {
-    width: 238px;
-    height: 193px;
+    max-width: 238px;
+    max-height: 193px;
 }

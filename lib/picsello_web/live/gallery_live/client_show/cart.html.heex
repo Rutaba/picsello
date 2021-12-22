@@ -1,3 +1,9 @@
+<%
+  is_physical = true;
+
+%>
+
+
 <div class="gallery__container"> 
   <div class="font-bold text-3xl py-16">Your shopping cart</div>
   <div class="grid grid-cols-3">
@@ -6,13 +12,20 @@
         
       <div class="p-5 border rounded-lg flex mb-5">
         <div class="cartImg">
+          
           <img src="/images/frame_transparency.png"/>
         </div>
 
         <div class="ml-7 py-7">
+        <%= if is_physical do %>
           <div class="text-lg">10x10 Photo print with frame</div>
           <div class="text-2xl font-bold mt-2.5 mb-9">$28.05</div>
+          <%else %>
+            <div class="text-lg">Digital download</div>
+            <div class="text-2xl font-bold mt-2.5 mb-9">1 credit - $0.00</div>
+            <%end %>
           <div class="flex items-center">
+            <%= if is_physical do %>
             <label for="cart-select">Quantity:</label>
             <select class="select w-24 text-base font-bold ml-2" id="cart-select">
               <option value="1">1</option>
@@ -23,6 +36,9 @@
             </select>
             <button type="button" class="text-xl font-semibold text-blue-planning-300 mx-7">Edit</button>
             <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+            <%else %>
+            <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+            <%end %>
           </div>
         </div>
       </div>
@@ -31,9 +47,15 @@
           <img src="/images/frame_transparency.png"/>
         </div>
         <div class="ml-7 py-7">
+        <%= if is_physical do %>
           <div class="text-lg">10x10 Photo print with frame</div>
           <div class="text-2xl font-bold mt-2.5 mb-9">$28.05</div>
+          <%else %>
+            <div class="text-lg">Digital download</div>
+            <div class="text-2xl font-bold mt-2.5 mb-9">1 credit - $0.00</div>
+            <%end %>
           <div class="flex items-center">
+            <%= if is_physical do %>
             <label for="cart-select">Quantity:</label>
             <select class="select w-24 text-base font-bold ml-2" id="cart-select">
               <option value="1">1</option>
@@ -44,6 +66,9 @@
             </select>
             <button type="button" class="text-xl font-semibold text-blue-planning-300 mx-7">Edit</button>
             <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+            <%else %>
+            <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+            <%end %>
           </div>
         </div>
       </div>
@@ -52,9 +77,15 @@
           <img src="/images/frame_transparency.png"/>
         </div>
         <div class="ml-7 py-7">
+        <%= if is_physical do %>
           <div class="text-lg">10x10 Photo print with frame</div>
           <div class="text-2xl font-bold mt-2.5 mb-9">$28.05</div>
+          <%else %>
+            <div class="text-lg">Digital download</div>
+            <div class="text-2xl font-bold mt-2.5 mb-9">1 credit - $0.00</div>
+            <%end %>
           <div class="flex items-center">
+            <%= if is_physical do %>
             <label for="cart-select">Quantity:</label>
             <select class="select w-24 text-base font-bold ml-2" id="cart-select">
               <option value="1">1</option>
@@ -65,13 +96,21 @@
             </select>
             <button type="button" class="text-xl font-semibold text-blue-planning-300 mx-7">Edit</button>
             <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+            <%else %>
+            <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+            <%end %>
           </div>
         </div>
       </div>
     </div>
     <div class="col-span-1">
-      <div class="p-5 border rounded-lg flex">
+      <div class="p-5 border rounded-lg flex flex-col">
+      <%= if is_physical do %>
         <div class="text-xl">Subtotal:<span class="text-2xl font-bold ml-2">$35.55</span> </div>
+      <%else %>
+      <div class="text-xl">Total:<span class="text-2xl font-bold ml-2">$0.00</span> </div>
+      <% end %>  
+        <button type="submit" class="btn-primary mt-5">Continue</button>
       </div>
     </div>
   </div>
