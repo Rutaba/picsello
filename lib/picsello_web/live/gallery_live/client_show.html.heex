@@ -12,8 +12,7 @@
 </div>
 
 
-  <button phx-click="open_edit_product_popup" class="btn-row border-black mt-7 justify-center" id="openEditProductPopupButton">Edit Product!!!</button>
-
+  
 
 
 <div class="px-2 md:px-16">
@@ -51,8 +50,19 @@
         </ul>
 
         <.icon name="shopping-cart" class="h-6 w-6 text-base-300 sm:hidden" />
-
     </div>
+    <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
+      <div class="font-bold text-3xl pt-6">
+        Order custom products with {user}
+      </div>
+      <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto pt-10">
+        <%= for product <- @products do %>
+          <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} product={product} is_editable={false} />
+        <% end %>
+      </ul>
+    </div>
+      
+  
 
     <!-- Content -->
     <div class="pt-16">

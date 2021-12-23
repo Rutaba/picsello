@@ -8,7 +8,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   alias Picsello.Galleries.GalleryProduct
   alias Picsello.Galleries.Photo
   alias Picsello.Category
-  alias Picsello.CategoryTemplates
+  alias Picsello.CategoryTemplate
   require Logger
 
   setup do
@@ -29,7 +29,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
         case category do
           {:ok, %{id: category_id}} ->
-            Repo.insert(%CategoryTemplates{
+            Repo.insert(%CategoryTemplate{
               name: row.name,
               corners: row.corners,
               category_id: category_id
@@ -85,7 +85,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
       position: 1
     })
 
-    template = Repo.all(CategoryTemplates) |> hd
+    template = Repo.all(CategoryTemplate) |> hd
 
     insert(%GalleryProduct{gallery_id: id, category_template_id: template.id})
   end

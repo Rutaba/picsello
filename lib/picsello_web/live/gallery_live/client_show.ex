@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:page_title, "Show Gallery")
+    |> assign(:products, Galleries.get_gallery_products(gallery.id))
     |> assign(:page, 0)
     |> assign(:update_mode, "append")
     |> assign(:favorites_filter, false)
