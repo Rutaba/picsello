@@ -40,8 +40,9 @@ defmodule Picsello.Marketing do
         }
       end)
     end)
-    |> Ecto.Multi.run(:email, fn _repo, %{campaign: campaign} ->
-      send_campaign_mail(campaign, clients)
+    |> Oban.insert(:campaign_email, fn %{campaign: campaign} ->
+      %{id: campaign.id}
+      |> Picsello.Workers.SendCampaign.new()
     end)
     |> Repo.transaction()
   end
@@ -113,14 +114,13 @@ defmodule Picsello.Marketing do
       initials: User.initials(user),
       color: profile.color,
       button_url: Profiles.public_url(organization),
-      content: body_html,
-      image_url:
-        "http://cdn.mcauto-images-production.sendgrid.net/69570c0ddcda5224/da64c90c-a7f8-4dca-a81d-831fce76f7ae/505x217.jpg"
+      content: body_html
     }
   end
 
-  defp send_campaign_mail(campaign, clients) do
-    organization = campaign |> Repo.preload(organization: :user) |> Map.get(:organization)
+  def send_campaign_mail(campaign_id) do
+    campaign = Campaign |> Repo.get(campaign_id) |> Repo.preload([:clients, organization: :user])
+    %{organization: organization, clients: clients} = campaign
 
     template_data =
       template_variables(organization.user, campaign.body_html)
@@ -141,6 +141,13 @@ defmodule Picsello.Marketing do
       }
     }
 
-    SendgridClient.send_mail(body)
+    {:ok, _} = SendgridClient.send_mail(body)
+
+    client_ids = Enum.map(clients, & &1.id)
+
+    from(cc in CampaignClient,
+      where: cc.campaign_id == ^campaign.id and cc.client_id in ^client_ids
+    )
+    |> Repo.update_all(set: [delivered_at: DateTime.utc_now() |> DateTime.truncate(:second)])
   end
 end

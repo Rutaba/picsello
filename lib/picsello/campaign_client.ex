@@ -4,8 +4,9 @@ defmodule Picsello.CampaignClient do
   import Ecto.Changeset
 
   schema "campaign_clients" do
-    field(:client_id, :id)
-    field(:campaign_id, :id)
+    belongs_to(:client, Picsello.Client)
+    belongs_to(:campaign, Picsello.Campaign)
+    field(:delivered_at, :utc_datetime)
 
     timestamps(type: :utc_datetime)
   end

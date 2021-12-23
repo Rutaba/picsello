@@ -14,6 +14,7 @@ defmodule Picsello.Campaign do
     field(:segment_type, :string)
     belongs_to(:organization, Organization)
     has_many(:campaign_clients, CampaignClient)
+    has_many(:clients, through: [:campaign_clients, :client])
 
     timestamps(type: :utc_datetime)
   end
