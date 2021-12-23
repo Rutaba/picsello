@@ -4,7 +4,7 @@
               <ul>
                 <li>
                     <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
-                        <img src="/images/arrow-left.png"/>
+                        <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
                         <span>Back to gallery</span>
                     <% end %>
                  </li>
