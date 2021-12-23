@@ -1,4 +1,7 @@
 defmodule SendgridClient do
+  @moduledoc """
+  Sendgrid API wrapper
+  """
   use Tesla
 
   plug(Tesla.Middleware.BaseUrl, "https://api.sendgrid.com/v3")

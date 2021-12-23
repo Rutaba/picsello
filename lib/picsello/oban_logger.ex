@@ -1,4 +1,5 @@
 defmodule Picsello.ObanLogger do
+  @moduledoc false
   require Logger
 
   def handle_event([:oban, :job, :start], measure, meta, _) do

@@ -120,34 +120,39 @@ defmodule Picsello.Marketing do
 
   def send_campaign_mail(campaign_id) do
     campaign = Campaign |> Repo.get(campaign_id) |> Repo.preload([:clients, organization: :user])
-    %{organization: organization, clients: clients} = campaign
+    %{organization: organization, clients: all_clients} = campaign
 
     template_data =
       template_variables(organization.user, campaign.body_html)
       |> Map.put(:subject, campaign.subject)
 
-    body = %{
-      from: %{email: "noreply@picsello.com", name: organization.name},
-      personalizations:
-        Enum.map(clients, fn client ->
-          %{
-            to: [%{email: client.email}],
-            dynamic_template_data: template_data
-          }
-        end),
-      template_id: SendgridClient.marketing_template_id(),
-      asm: %{
-        group_id: SendgridClient.marketing_unsubscribe_id()
+    # chunk clients since Sendgrid limits 1000 personalizations per request
+    all_clients
+    |> Enum.chunk_every(1000)
+    |> Enum.each(fn clients ->
+      body = %{
+        from: %{email: "noreply@picsello.com", name: organization.name},
+        personalizations:
+          Enum.map(clients, fn client ->
+            %{
+              to: [%{email: client.email}],
+              dynamic_template_data: template_data
+            }
+          end),
+        template_id: SendgridClient.marketing_template_id(),
+        asm: %{
+          group_id: SendgridClient.marketing_unsubscribe_id()
+        }
       }
-    }
 
-    {:ok, _} = SendgridClient.send_mail(body)
+      {:ok, _} = SendgridClient.send_mail(body)
 
-    client_ids = Enum.map(clients, & &1.id)
+      client_ids = Enum.map(clients, & &1.id)
 
-    from(cc in CampaignClient,
-      where: cc.campaign_id == ^campaign.id and cc.client_id in ^client_ids
-    )
-    |> Repo.update_all(set: [delivered_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+      from(cc in CampaignClient,
+        where: cc.campaign_id == ^campaign.id and cc.client_id in ^client_ids
+      )
+      |> Repo.update_all(set: [delivered_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+    end)
   end
 end
