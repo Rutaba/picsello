@@ -8,7 +8,7 @@ export default {
     const openIcon = el.querySelector('.open-icon');
     const closeIcon = el.querySelector('.close-icon');
     const {
-      dataset: { offsetY },
+      dataset: { offsetY, placement = 'bottom-start' },
     } = el;
 
     let popper;
@@ -26,7 +26,7 @@ export default {
       closeIcon.classList.remove('hidden');
 
       popper = createPopper(el, content, {
-        placement: 'bottom-start',
+        placement,
         modifiers: [
           {
             name: 'offset',

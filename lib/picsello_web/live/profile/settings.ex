@@ -6,8 +6,8 @@ defmodule PicselloWeb.Live.Profile.Settings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
-    %{organization: %{slug: slug} = organization} = Repo.preload(user, :organization)
-    url = Routes.profile_url(socket, :index, slug)
+    %{organization: organization} = Repo.preload(user, :organization)
+    url = Profiles.public_url(organization)
     socket |> assign(profile_url: url, organization: organization) |> ok()
   end
 
@@ -15,11 +15,23 @@ defmodule PicselloWeb.Live.Profile.Settings do
   def render(assigns) do
     ~H"""
     <.settings_nav socket={@socket} live_action={@live_action}>
-      <h1 class="mt-4 text-2xl font-bold">Your Public Profile</h1>
-      <p class="mt-1">Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.</p>
-      <hr class="mt-12">
+      <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
+        <div>
+          <h1 class="text-2xl font-bold">Your Public Profile</h1>
 
-      <div class="mx-0 mt-14 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
+          <p class="max-w-2xl my-2">
+            Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
+          </p>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+          <button type="button" phx-click="edit-profile" class="w-full px-8 text-center btn-primary">Customize Profile</button>
+        </div>
+      </div>
+
+      <hr class="my-4 sm:my-10" />
+
+      <div class="mx-0 mt-2 sm:mt-4 pb-32 sm:pb-0 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
         <.card title="Share your profile">
           <fieldset class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
             <div {testid("url")} class={"mt-4 font-bold text-input #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
@@ -65,6 +77,13 @@ defmodule PicselloWeb.Live.Profile.Settings do
   @impl true
   def handle_event("toggle", %{}, %{assigns: %{organization: organization}} = socket) do
     socket |> assign(organization: Profiles.toggle(organization)) |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-profile", %{}, socket) do
+    socket
+    |> push_redirect(to: Routes.profile_settings_path(socket, :edit))
+    |> noreply()
   end
 
   defp card(assigns) do

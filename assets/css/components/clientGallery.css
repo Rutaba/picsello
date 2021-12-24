@@ -100,8 +100,9 @@
 }
 
 .customWatermarkPopup {
-    max-height: 950px;
+    max-height: 95vh;
     @apply bg-base-100
+    overflow-y-auto
     mx-auto
     my-0;
 }
@@ -262,7 +263,7 @@
     cursor-pointer
     flex
     items-center
-    border-2
+    border
     border-solid
     border-base-100
     rounded-lg
@@ -273,6 +274,10 @@
 
 .bottomBar__btn.btn-secondary {
     @apply border-base-100;
+}
+
+.bottomBar__btn.btn-secondary:hover {
+    @apply text-base-100;
 }
 
 .galleryItem .likeBtn{
@@ -329,13 +334,18 @@
     @apply bg-transparent !important;
 }
 
+.errorPwdMsg ~ div > .relative input{
+    @apply border
+    border-solid
+    border-red-error-300
+    rounded-lg
+}
 
 .mobileGalleryButtons a {
    @apply inline-block
     w-full
     h-full;
 }
-
 
 @media screen and (max-width: 640px) {
     .circleBtn ul li a {
@@ -357,3 +367,8 @@
     }
 }
 
+@media screen and (min-width: 1024px) {
+    .customWatermarkPopup {
+        max-height: 950px;
+    }
+}

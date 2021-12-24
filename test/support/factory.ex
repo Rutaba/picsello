@@ -11,6 +11,8 @@ defmodule Picsello.Factory do
     Job,
     Organization,
     Package,
+    Campaign,
+    CampaignClient,
     ClientMessage,
     Repo,
     Shoot,
@@ -95,6 +97,28 @@ defmodule Picsello.Factory do
   def package_template_factory(attrs) do
     build(:package, attrs)
     |> merge_attributes(attrs |> Map.drop([:user]) |> Enum.into(%{job_type: "wedding"}))
+  end
+
+  def campaign_factory(attrs) do
+    %Campaign{
+      subject: "here is a subject",
+      body_text: "lets take some pictures!",
+      body_html: "lets take <i>some</i> <b>pictures!</b>",
+      segment_type: "all",
+      organization: fn ->
+        case attrs do
+          %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
+          _ -> build(:organization, Map.get(attrs, :organization, %{}))
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def campaign_client_factory(attrs) do
+    %CampaignClient{}
+    |> merge_attributes(attrs)
   end
 
   def client_factory(attrs) do
@@ -265,7 +289,8 @@ defmodule Picsello.Factory do
   def gallery_factory(attrs) do
     %Gallery{
       job: fn -> build(:lead) end,
-      password: "123456"
+      password: "123456",
+      client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

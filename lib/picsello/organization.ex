@@ -3,7 +3,7 @@ defmodule Picsello.Organization do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Package, Client, Accounts.User, Repo, Profiles.Profile}
+  alias Picsello.{Package, Campaign, Client, Accounts.User, Repo, Profiles.Profile}
 
   schema "organizations" do
     field(:name, :string)
@@ -12,6 +12,7 @@ defmodule Picsello.Organization do
     embeds_one(:profile, Profile, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
+    has_many(:campaigns, Campaign)
     has_many(:clients, Client)
     has_one(:user, User)
 
@@ -40,6 +41,12 @@ defmodule Picsello.Organization do
       end
     end)
     |> unique_constraint(:slug)
+  end
+
+  def edit_profile_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:profile)
   end
 
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),
