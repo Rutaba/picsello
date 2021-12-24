@@ -35,7 +35,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    preview = GalleryProducts.get(%{gallery_id: id})
+    preview = GalleryProducts.get(%{gallery_id: gallery.id})
 
     category_count = Repo.aggregate(Picsello.Category, :count)
 

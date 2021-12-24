@@ -40,6 +40,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
          |> assign(:frame_id, frame_id)
          |> assign(:frame, frame_name)
          |> assign(:coords, inspect(coords))
+         |> assign(:preview, preview)
          |> push_event("set_preview", %{
            preview: url,
            frame: frame_name,
@@ -68,19 +69,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
       nil
     else
 
-      url = preview.preview_photo.preview_url || nil
-      frame = preview.category_template.name || nil
-
-      frame = preview.category_template.name || nil
-      frame_corners = preview.category_template.corners || nil
-
-      {:ok,
-       socket
-       |> assign(:frame, frame)
-       |> assign(:preview, path(url))
-       |> assign(:frame_corners, "#{inspect(frame_corners)}")
-       |> assign(:changeset, changeset(%{}, []))
-       |> assign(:preview_photo_id, nil)}
+      preview
 
     end
   end

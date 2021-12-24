@@ -15,11 +15,11 @@
 </div>
 
     <script type="application/javascript">
-    preview = "<%= @preview %>";
+    preview = "/images/card_blank.png";
     function draw(preview) {
         frame = "<%= @frame %>";
 
-        var coord =<%= @frame_corners %>;
+        var coord =[0,0,0,0,0,0,0,0];
 
         var canvas = document.getElementById("canvas");
         if (canvas.getContext) {
@@ -121,7 +121,7 @@
         <p class="py-12 border-b">Lorem ipsum copy about what you can do here & why you want to change your cover photo lorem ipsum</p>
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-            <%= submit "Save", title: "Save", class: "save-button btn-primary mt-5 px-11 py-3.5 float-right cursor-pointer",
+            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
                 disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
     </div>
