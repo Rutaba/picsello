@@ -119,12 +119,21 @@ defmodule Picsello.Marketing do
   end
 
   def send_campaign_mail(campaign_id) do
-    campaign = Campaign |> Repo.get(campaign_id) |> Repo.preload([:clients, organization: :user])
-    %{organization: organization, clients: all_clients} = campaign
+    campaign = Campaign |> Repo.get(campaign_id) |> Repo.preload(organization: :user)
+    %{organization: organization} = campaign
 
     template_data =
       template_variables(organization.user, campaign.body_html)
       |> Map.put(:subject, campaign.subject)
+
+    all_clients =
+      from(c in Client,
+        join: cc in CampaignClient,
+        on: cc.client_id == c.id,
+        where: cc.campaign_id == ^campaign_id and is_nil(cc.delivered_at),
+        select: %{id: c.id, email: c.email}
+      )
+      |> Repo.all()
 
     # chunk clients since Sendgrid limits 1000 personalizations per request
     all_clients
