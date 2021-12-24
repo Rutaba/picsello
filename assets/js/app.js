@@ -24,6 +24,7 @@ import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
 import AutoHeight from './hooks/auto-height';
 import Clipboard from './hooks/clipboard';
+import IFrameAutoHeight from './hooks/iframe-auto-height';
 import Preview from './hooks/preview';
 import Phone from './hooks/phone';
 import PlacesAutocomplete from './hooks/places-autocomplete';
@@ -104,6 +105,7 @@ const TZCookie = {
 const Hooks = {
   ClearInput,
   Clipboard,
+  IFrameAutoHeight,
   Preview,
   Modal,
   Phone,
