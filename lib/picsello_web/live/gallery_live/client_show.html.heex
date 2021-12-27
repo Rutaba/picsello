@@ -57,7 +57,9 @@
       </div>
       <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto pt-10">
         <%= for product <- @products do %>
-          <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} product={product} is_editable={false} />
+          <div phx-click="open_edit_product_popup" phx-value-product-id={product.id} >
+            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} product={product} is_editable={false} has_info={true} />
+          </div>
         <% end %>
       </ul>
     </div>

@@ -6,7 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   alias Picsello.Repo
 
-  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken}
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Workers.CleanStore
 
@@ -557,43 +557,5 @@ defmodule Picsello.Galleries do
       nil -> false
       _ -> true
     end)
-  end
-
-  @spec get_gallery_products(gallery_id :: integer) :: [GalleryProduct.t()]
-  def get_gallery_products(gallery_id) do
-    from(product in GalleryProduct,
-      where: product.gallery_id == ^gallery_id and not is_nil(product.preview_photo_id),
-      inner_join: preview_photo in Photo,
-      on: product.preview_photo_id == preview_photo.id,
-      inner_join: category_template in Picsello.CategoryTemplate,
-      on: product.category_template_id == category_template.id,
-      select_merge: %{preview_photo: preview_photo, category_template: category_template},
-      limit: 4
-    )
-    |> Repo.all()
-  end
-
-  @spec get_or_create_gallery_product(gallery_id :: integer, category_template_id :: integer) ::
-          GalleryProduct.t()
-  def get_or_create_gallery_product(gallery_id, category_template_id) do
-    get_gallery_product(gallery_id, category_template_id)
-    |> case do
-      nil ->
-        Repo.insert!(%GalleryProduct{
-          gallery_id: gallery_id,
-          category_template_id: category_template_id
-        })
-
-      product ->
-        product
-    end
-    |> Repo.preload([:preview_photo, :category_template])
-  end
-
-  @spec get_gallery_product(gallery_id :: integer, category_template_id :: integer) ::
-          GalleryProduct.t() | nil
-  defp get_gallery_product(gallery_id, category_template_id) do
-    GalleryProduct
-    |> Repo.get_by(gallery_id: gallery_id, category_template_id: category_template_id)
   end
 end

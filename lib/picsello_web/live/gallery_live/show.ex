@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.GalleryProducts
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.UploadComponent
@@ -36,7 +37,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     products =
       Picsello.CategoryTemplate.all()
       |> Enum.map(fn template ->
-        Galleries.get_or_create_gallery_product(gallery.id, template.id)
+        GalleryProducts.get_or_create_gallery_product(gallery.id, template.id)
       end)
 
     socket

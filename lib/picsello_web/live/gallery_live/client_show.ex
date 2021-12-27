@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Galleries
+  alias Picsello.GalleryProducts
 
   @per_page 12
 
@@ -10,7 +11,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:page_title, "Show Gallery")
-    |> assign(:products, Galleries.get_gallery_products(gallery.id))
+    |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
     |> assign(:page, 0)
     |> assign(:update_mode, "append")
     |> assign(:favorites_filter, false)
@@ -38,9 +39,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
-  def handle_event("open_edit_product_popup", _, socket) do
+  def handle_event(
+        "open_edit_product_popup",
+        %{"product-id" => id},
+        %{assigns: %{products: products}} = socket
+      ) do
     socket
-    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{product: %{}})
+    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{
+      product: Enum.find(products, fn product -> product.id == String.to_integer(id) end)
+    })
     |> noreply()
   end
 
@@ -62,7 +69,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       Picsello.WHCC.create_editor(
         get_some_product(),
         photo,
-        # design: "SjhvrFtjMP7FHy6Qa",
         complete_url: Routes.gallery_dump_editor_url(socket, :show) <> "?editorId=%EDITOR_ID%",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
         only_favorites: favorites?

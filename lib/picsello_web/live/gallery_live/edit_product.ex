@@ -1,14 +1,15 @@
 defmodule PicselloWeb.GalleryLive.EditProduct do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.WHCC
+  alias Picsello.GalleryProducts
 
   @impl true
-  def mount(socket) do
+  def update(assigns, socket) do
     socket
-    |> assign(:type, :print)
-    |> assign_whcc_product()
-    |> assign_whcc_product_size()
+    |> assign(assigns)
+    |> assign_whcc_products()
+    |> set_current_whcc_product()
+    |> set_whcc_product_size()
     |> ok()
   end
 
@@ -20,10 +21,10 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
   end
 
   @impl true
-  def handle_event("update-print-type", %{"product-name" => product_name}, socket) do
+  def handle_event("update-print-type", %{"product-id" => id}, socket) do
     socket
-    |> assign_whcc_product(product_name)
-    |> assign_whcc_product_size()
+    |> set_current_whcc_product(String.to_integer(id))
+    |> set_whcc_product_size()
     |> noreply()
   end
 
@@ -33,51 +34,40 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
 
   def handle_event("update-product-size", %{"product_size" => %{"option" => size}}, socket) do
     socket
-    |> assign_whcc_product_size(size)
+    |> set_whcc_product_size(size)
     |> noreply()
   end
 
-  def title_by_type(:print), do: "Prints"
-  def title_by_type(:framed_print), do: "Framed prints"
-  def title_by_type(:album), do: "Custom album"
-
-  defp assign_whcc_product(%{assigns: %{type: :print}} = socket) do
-    products = WHCC.print_products()
-
+  defp assign_whcc_products(%{assigns: %{product: product}} = socket) do
     socket
-    |> assign(:print_products, products)
-    |> assign(:whcc_product, List.first(products))
+    |> assign(
+      :whcc_products,
+      GalleryProducts.get_whcc_products(product.category_template.category_id)
+    )
   end
 
-  defp assign_whcc_product(%{assigns: %{type: :framed_print}} = socket) do
+  defp set_current_whcc_product(%{assigns: %{whcc_products: whcc_products}} = socket) do
     socket
-    |> assign(:whcc_product, WHCC.framed_print_product())
+    |> assign(:current_whcc_product, List.first(whcc_products))
   end
 
-  defp assign_whcc_product(%{assigns: %{type: :album}} = socket) do
+  defp set_current_whcc_product(%{assigns: %{whcc_products: whcc_products}} = socket, id) do
     socket
-    |> assign(:whcc_product, WHCC.framed_print_product())
+    |> assign(:current_whcc_product, Enum.find(whcc_products, fn product -> product.id == id end))
   end
 
-  defp assign_whcc_product(%{assigns: %{print_products: products, type: :print}} = socket, name) do
-    socket
-    |> assign(:whcc_product, Enum.find(products, fn product -> product.whcc_name == name end))
-  end
-
-  defp assign_whcc_product_size(%{assigns: %{whcc_product: product}} = socket) do
+  defp set_whcc_product_size(%{assigns: %{current_whcc_product: product}} = socket) do
     socket
     |> assign(:whcc_product_size, product |> product_size_options() |> initial_size_option())
   end
 
-  defp assign_whcc_product_size(socket, size) do
+  defp set_whcc_product_size(socket, size) do
     socket
     |> assign(:whcc_product_size, size)
   end
 
-  defp product_size_options(product) do
-    product.attribute_categories
-    |> Enum.find(fn category -> category["_id"] == "size" end)
-    |> then(fn %{"attributes" => attributes} -> attributes end)
+  defp product_size_options(%{sizes: sizes} = product) do
+    sizes
     |> Enum.map(fn option -> [key: option["id"], value: option["name"]] end)
   end
 

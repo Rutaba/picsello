@@ -12,11 +12,4 @@ defmodule Picsello.Galleries.GalleryProduct do
 
     timestamps()
   end
-
-  @doc false
-  def changeset(gallery_product, attrs) do
-    gallery_product
-    |> cast(attrs, [])
-    |> validate_required([])
-  end
 end

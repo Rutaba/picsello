@@ -81,7 +81,7 @@
   <div class="flex justify-between center-container">
   <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto">
     <%= for product <- @products do %>
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} product={product} is_editable={true} />
+      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} product={product} is_editable={true} has_info={true}/>
     <% end %>
     </ul>
   </div>
