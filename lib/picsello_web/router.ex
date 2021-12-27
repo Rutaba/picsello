@@ -97,6 +97,7 @@ defmodule PicselloWeb.Router do
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/contacts", Live.Contacts, :index, as: :contacts
+      live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
       live "/package_templates/new", Live.PackageTemplates, :new

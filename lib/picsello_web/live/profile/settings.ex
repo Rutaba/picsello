@@ -6,8 +6,8 @@ defmodule PicselloWeb.Live.Profile.Settings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
-    %{organization: %{slug: slug} = organization} = Repo.preload(user, :organization)
-    url = Routes.profile_url(socket, :index, slug)
+    %{organization: organization} = Repo.preload(user, :organization)
+    url = Profiles.public_url(organization)
     socket |> assign(profile_url: url, organization: organization) |> ok()
   end
 
