@@ -196,4 +196,8 @@ defmodule Picsello.Profiles do
 
   def color(%Organization{profile: %{color: color}}), do: color
   def color(_), do: Profile.default_color()
+
+  def public_url(%Organization{slug: slug}) do
+    PicselloWeb.Router.Helpers.profile_url(PicselloWeb.Endpoint, :index, slug)
+  end
 end

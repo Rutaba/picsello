@@ -77,6 +77,8 @@
       </div>
    </div>
 </div>
+
+<%= if Enum.empty?(@templates) == false do %>
   <div class="flex justify-between center-container">
   <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto">
     <%= for template <- @templates do %>
@@ -86,7 +88,7 @@
          </div>
         <div class="grid grid-cols-2 text-xl">
           <div class="flex flex-col">
-            <div class="pt-3 pb-1.5 font-bold ">Prints</div>
+            <div class="pt-3 pb-1.5 font-bold "><%= template.title %></div>
             <div class="photos__price text-base" style="color: #898989;">From $0.89</div>
           </div>
             <div class="flex flex-col">
@@ -107,6 +109,7 @@
     <% end %>
     </ul>
   </div>
+  <% end %>
 <div class="gallery__container pb-32">
    <%= if @live_action in [:edit] do %>
    <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,

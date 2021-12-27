@@ -143,6 +143,7 @@ defmodule PicselloWeb.Live.User.Settings do
         <:link to={{:package_templates, :index}} >Package Templates</:link>
         <:link to={{:pricing, :index}} >Gallery Store Pricing</:link>
         <:link to={{:profile_settings, :index}} >Public Profile</:link>
+        <:link to={{:contacts, :index}} >Contacts</:link>
       </._settings_nav>
       <hr />
 
