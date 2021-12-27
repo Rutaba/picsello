@@ -2,82 +2,115 @@
     orders_list = [
     %{
     order_number: 123456789,
-    order_date: 'December 8, 2021',
+    order_date: '12/08/21',
     order_total: 28.05,
-    order_items: [%{type: 'physical', icon: '/physical1.png', price: 128.05, credits_used_amount: 0, quantity: 1, description: '10x10 Photo print with frame'},
-              %{type: 'digital', icon: '/physical2.png', price: 28.05, priceAfterApplyingCredits: 0.00, credits_used_amount: 1,quantity: 1, description: '10x10 Photo print with frame white'},
-              %{type: 'digital', icon: '/physical3.png', price: 218.05, credits_used_amount: 0, quantity: 1, description: '10x10 Photo print with frame black color'}],
+    order_items: [%{type: 'physical', icon: '/physical1.png', price: 128.05, credits_used_amount: 0, quantity: 1, shipping_info: false, description: '10x10 Photo print with frame'},
+              %{type: 'physical', icon: '/physical2.png', price: 28.05, priceAfterApplyingCredits: 0.00, credits_used_amount: 1, quantity: 1, shipping_info: 'urlForTracking', description: '10x10 Photo print with frame white'},
+              %{type: 'digital', icon: '/physical3.png', price: 218.05, credits_used_amount: 0, quantity: 1, shipping_info: 'delivered', description: '10x10 Photo print with frame black color'}],
     },
     %{
     order_number: 123456788,
-    order_date: 'December 6, 2021',
+    order_date: '12/06/21',
     order_total: 128.05,
-    order_items: [%{type: 'physical', icon: '/physical1.png', price: 128.05, credits_used_amount: 0, quantity: 1, description: '10x10 Photo print with frame'},
-              %{type: 'digital', icon: '/physical2.png', price: 28.05, priceAfterApplyingCredits: 0.00, credits_used_amount: 1,quantity: 1, description: '10x10 Photo print with frame white'},
-              %{type: 'digital', icon: '/physical3.png', price: 218.05, credits_used_amount: 0, quantity: 1, description: '10x10 Photo print with frame black color'}],
+    order_items: [%{type: 'digital', icon: '/physical1.png', price: 128.05, credits_used_amount: 0, quantity: 1, shipping_info: 'delivered' , description: '10x10 Photo print with frame'},
+              %{type: 'physical', icon: '/physical2.png', price: 28.05, priceAfterApplyingCredits: 0.00, credits_used_amount: 1, quantity: 1, shipping_info: false, description: '10x10 Photo print with frame white'},
+              %{type: 'physical', icon: '/physical3.png', price: 218.05, credits_used_amount: 0, quantity: 1, shipping_info: 'urlForTracking', description: '10x10 Photo print with frame black color'}],
     }]
-
     %>
 <div>
     <!--<%# <div class="max-w-screen-xl mx-auto px-6 lg:px-14">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
         </div> %> -->
     <hr>
-    <div class="pt-5 lg:pt-16 px-6 lg:px-14 max-w-screen-xl mx-auto">
+    <div class="pt-5 lg:pt-9 px-6 lg:px-14 max-w-screen-xl mx-auto">
         <h3 class="font-bold text-lg md:text-3xl">My orders</h3>
-
-    <%= for order <- orders_list do %>
-    <div class="border rounded-lg border-grey-100">
-        <div class="flex items-center justify-between p-8 bg-base-200">
-            <div class="flex items-center justify-between">
-                <p class="mr-8">
-                    <span class="font-semibold">Order placed: </span>
-                    <%= order.order_date %>
-                </p>
-                <p>
-                    <span class="font-semibold">Order total: </span>
-                    <%= order.order_total %>
-                </p>
+        <%= for order <- orders_list do %>
+        <div class="mt-6 md:mt-8">
+            <div class="md:flex items-center justify-between p-5 md:p-8 bg-base-200 border rounded-t-lg border-base-250 relative">
+                <div class="md:flex items-center justify-between">
+                    <p class="md:mr-8">
+                        <span class="font-semibold">Order placed: </span>
+                        <%= order.order_date %>
+                    </p>
+                    <p>
+                        <span class="font-semibold">Order total: </span>
+                        $<%= order.order_total %>
+                    </p>
+                </div>
+                <div class="md:flex items-center justify-between">
+                    <p class="md:mr-8">
+                        <span class="md:font-semibold">Order number:</span>
+                        <span class="font-semibold md:font-normal"><%= order.order_number %></span>
+                    </p>
+                    <p class="absolute top-5 right-5 md:static">
+                        <a href="#" class="text-blue-planning-300">View details</a>
+                    </p>
+                </div>
             </div>
-            <div class="flex items-center justify-between">
-                <p class="mr-8">
-                    <span class="font-semibold">Order number:</span>
-                    <%= order.order_number %>
-                </p>
-                <p>
-                    <a href="#" class="text-blue-planning-300">View details</a>
-                </p>
-            </div>
-        </div>
-
-     <div>
-        <%= for item <- order.order_items do %>
-                <div class="py-5 md:py-7 border-t border-base-200 first:border-0 md:first:border-t relative">
+            <div class="border border-t-0 rounded-b-lg border-grey-200 orderEntity">
+                <%= for item <- Enum.sort_by(order.order_items, &(&1.type), :desc) do %>
+                <%= if item.type === 'physical' do %>
+                <div class="py-5 md:py-7 pr-3 sm:px-4 border-t border-base-200 first:border-0 md:first:border-t relative">
                     <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
-                        <img src={"/images/#{item.icon}"} class="mx-auto h-24 md:h-40"/>
-                        <%= if item.type === 'physical' do %>
+                        <img src={"/images/#{item.icon}"} class="mx-auto h-24 md:h-28"/>
                         <div class="flex flex-col px-4 md:px-8 md:pt-4">
                             <span class="text-sm md:text-base md:font-medium"><%= item.description %></span>
                             <span class="text-xs md:text-sm pt-2 md:py-5">Quantity: <%= item.quantity %></span>
                         </div>
-                        <% end %>
-                        <%= if item.type === 'digital' do %>
-                        <p class="self-center px-4 md:px-8 text-sm md:text-base">Digital download</p>
-                        <% end %>
-                        <%= if item.credits_used_amount > 0 do %>
-                            <span class="text-base lg:text-2xl font-bold md:pr-8 self-center flex flex-wrap justify-end">
-                                <span class="whitespace-nowrap"><%= item.credits_used_amount %> credit - </span>
-                                <span class="whitespace-nowrap">$ <%= item.priceAfterApplyingCredits %></span>
-                            </span>
-                        <% else %>
-                           <p>shipping details</p>
-                        <% end %>
+                        <span class={classes("text-base lg:text-2xl font-bold md:pr-8 md:self-center" ,
+                        %{"self-center" => item.type === 'digital'})}>$ <%= item.price %></span>
                     </div>
-
+                    <%= if item.shipping_info do %>
+                    <%= if item.shipping_info !== 'delivered' do %>
+                    <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 px-5 md:px-8">
+                        <.icon name="tracking-info-delivered" class="w-7 h-5 mr-2 md:mr-4"/>
+                        <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span> <a href={item.shipping_info} class="cursor-pointer underline">Track USPS Shipment</a></p>
+                    </div>
+                    <% else %>
+                    <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 px-5 md:px-8">
+                        <.icon name="tracking-info" class="w-6 h-6 mr-2 md:mr-4"/>
+                        <p class="text-xs md:text-sm text-base-250">We’ll provide tracking info once your item ships</p>
+                    </div>
+                    <% end %>
+                    <% else %>
+                    <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
+                        <.icon name="tracking-info" class="w-7 h-7 mr-2 md:mr-4"/>
+                        <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
+                    </div>
+                    <% end %>
                 </div>
                 <% end %>
-     </div>
+                <% end %>
+                <div class="digitalItems__wrapper">
+                    <%= for item <- Enum.sort_by(order.order_items, &(&1.type), :desc) do %>
+                    <%= if item.type === 'digital' do %>
+                    <div class="py-5 md:py-7 pr-3 sm:px-4 border-t border-base-200 relative">
+                        <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
+                            <img src={"/images/#{item.icon}"} class="mx-auto h-24 md:h-28"/>
+                            <p class="self-center px-4 md:px-8 text-sm md:text-base">Digital download</p>
+                            <%= if item.credits_used_amount > 0 do %>
+                            <span class="text-base lg:text-2xl font-bold md:pr-8 self-center flex flex-wrap justify-end">
+                            <span class="whitespace-nowrap"><%= item.credits_used_amount %> credit - </span>
+                            <span class="whitespace-nowrap">$ <%= item.priceAfterApplyingCredits %></span>
+                            </span>
+                            <% else %>
+                            <span class={classes("text-base lg:text-2xl font-bold md:pr-8 md:self-center" ,
+                            %{"self-center" => item.type === 'digital'})}>$ <%= item.price %></span>
+                            <% end %>
+                        </div>
+                    </div>
+                    <% end %>
+                    <% end %>
+                    <div>
+                        <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 px-5 md:px-8">
+                            <.icon name="download-link" class="w-6 h-6 mr-2 md:mr-4"/>
+                            <p class="text-xs md:text-sm text-base-250"><span class="font-bold">Order complete:</span> Download link sent to harrypotter@hogwarts.com</p>
+                         </div>
+                        <button class="btn-primary w-full">Download photos</button>
+                    </div>
+                </div>
+            </div>
         </div>
-    <% end %>
+        <% end %>
+    </div>
 </div>
- </div>
