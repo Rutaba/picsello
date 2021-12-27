@@ -289,7 +289,7 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   defp assign_organization(socket, organization) do
-    %{profile: profile, user: user, slug: slug} = organization
+    %{profile: profile, user: user} = organization
 
     assign(socket,
       organization: organization,
@@ -298,7 +298,7 @@ defmodule PicselloWeb.Live.Profile do
       website: profile.website,
       photographer: user,
       job_types: profile.job_types,
-      url: Routes.profile_url(socket, :index, slug)
+      url: Profiles.public_url(organization)
     )
   end
 

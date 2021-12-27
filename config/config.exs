@@ -78,7 +78,7 @@ config :picsello, :whcc,
 
 config :picsello, Oban,
   repo: Picsello.Repo,
-  queues: [default: 10, storage: 10],
+  queues: [default: 10, storage: 10, campaigns: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
