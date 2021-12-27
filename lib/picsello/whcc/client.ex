@@ -12,20 +12,20 @@ defmodule Picsello.WHCC.Client do
     use Agent
     @moduledoc false
 
-    def start_link(_), do: Agent.start_link(fn -> nil end, name: __MODULE__)
+    def start_link(_), do: Agent.start_link(fn -> %{} end, name: __MODULE__)
 
     def get_and_update(f), do: Agent.get_and_update(__MODULE__, f)
   end
 
-  def token(get_and_update \\ &TokenStore.get_and_update/1) do
+  def token(key, get_and_update \\ &TokenStore.get_and_update/1) do
     get_and_update.(fn state ->
-      with %{expires_at: expires_at, token: token} <- state,
+      with %{expires_at: expires_at, token: token} <- state[key],
            false <- expired?(expires_at) do
         {token, state}
       else
         _ ->
-          %{token: token} = state = fetch_token()
-          {token, state}
+          %{token: token} = token_info = fetch_token(key)
+          {token, Map.put(state, key, token_info)}
       end
     end)
   end
@@ -118,15 +118,11 @@ defmodule Picsello.WHCC.Client do
     WHCC.Product.add_details(product, api)
   end
 
-  def new() do
-    Tesla.client([{Tesla.Middleware.BearerAuth, token: token()}])
+  def new(key \\ nil) do
+    Tesla.client([{Tesla.Middleware.BearerAuth, token: token(key)}])
   end
 
-  def new(account_id) do
-    Tesla.client([{Tesla.Middleware.BearerAuth, token: fetch_token!(account_id)}])
-  end
-
-  defp fetch_token(account_id \\ nil) do
+  defp fetch_token(account_id) do
     {:ok, %{body: %{"accessToken" => token, "expires" => expires_unix_time}}} =
       post(
         "/auth/access-token",
@@ -141,12 +137,6 @@ defmodule Picsello.WHCC.Client do
   defp token_params(account_id) do
     token_params(nil)
     |> Map.merge(%{claims: %{"accountId" => account_id}})
-  end
-
-  defp fetch_token!(account_id) do
-    account_id
-    |> fetch_token()
-    |> Map.get(:token)
   end
 
   defp expired?(expires_at) do

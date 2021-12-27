@@ -6,13 +6,10 @@ defmodule PicselloWeb.GalleryLive.DumpEditor do
 
   @impl true
   def mount(%{"editorId" => editor_id, "hash" => hash}, _session, socket) do
-    account_id =
+    data =
       hash
       |> Galleries.get_gallery_by_hash()
       |> Galleries.account_id()
-
-    data =
-      account_id
       |> Picsello.WHCC.Client.editor_details(editor_id)
 
     socket
