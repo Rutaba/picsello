@@ -26,12 +26,13 @@ defmodule Picsello.SignUpTest do
     |> click(button("Sign up"))
     |> assert_path("/onboarding")
 
-    user = Repo.one(User)
+    user = User |> Repo.one() |> Repo.preload(:organization)
 
     assert %{
              name: "Mary Jane",
              email: "user@example.com",
-             time_zone: "FakeTimeZone"
+             time_zone: "FakeTimeZone",
+             organization: %{name: "Mary Jane Photography", slug: "mary-jane-photography"}
            } = user
   end
 

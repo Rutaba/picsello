@@ -182,7 +182,7 @@ export default {
     })
 
     this.init_masonry();
-    this.init_remove_listener()
+    this.init_remove_listener();
   },
 
   /**

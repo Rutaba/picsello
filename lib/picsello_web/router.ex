@@ -36,12 +36,11 @@ defmodule PicselloWeb.Router do
     forward "/", PicselloWeb.Plugs.HealthCheck
   end
 
-  scope "/stripe" do
-    pipeline :webhooks do
-      plug PicselloWeb.Plugs.StripeWebhooks
-    end
+  scope "/sendgrid" do
+    post "/inbound-parse", PicselloWeb.SendgridInboundParseController, :parse
+  end
 
-    pipe_through :webhooks
+  scope "/stripe" do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
@@ -75,9 +74,9 @@ defmodule PicselloWeb.Router do
     live "/", PageLive, :index
     live "/users/register", UserRegisterLive, :new, as: :user_registration
     post "/users/register", UserRegistrationController, :create
-    live "/users/log_in", UserSessionNewLive, :new, as: :user_session
+    live "/users/log_in", Live.Session.New, :new, as: :user_session
     post "/users/log_in", UserSessionController, :create
-    live "/users/reset_password", UserResetPasswordNewLive, :new, as: :user_reset_password
+    live "/users/reset_password", Live.PasswordReset.New, :new, as: :user_reset_password
 
     live "/users/reset_password/:token", UserResetPasswordEditLive, :edit,
       as: :user_reset_password
@@ -97,10 +96,16 @@ defmodule PicselloWeb.Router do
       put "/users/settings", UserSettingsController, :update
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+      live "/contacts", Live.Contacts, :index, as: :contacts
+      live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
+      live "/package_templates/:id/edit", Live.PackageTemplates, :edit
+      live "/package_templates/new", Live.PackageTemplates, :new
       live "/package_templates", Live.PackageTemplates, :index
       live "/pricing/categories/:category_id", Live.Pricing.Category, :show
       live "/pricing", Live.Pricing, :index
+      live "/profile/settings", Live.Profile.Settings, :index, as: :profile_settings
+      live "/profile/settings/edit", Live.Profile, :edit, as: :profile_settings
 
       live "/home", HomeLive.Index, :index, as: :home
       live "/leads/:id", LeadLive.Show, :leads, as: :job
@@ -111,8 +116,17 @@ defmodule PicselloWeb.Router do
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
 
       live "/inbox", InboxLive.Index, :index, as: :inbox
+      live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
+
+      live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
+        as: :preview
+
+      live "/galleries/:id/product/:gallery_product_id/:frame_id",
+           GalleryLive.GalleryProduct,
+           :preview,
+           as: :preview
 
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/upload", GalleryLive.Show, :upload
@@ -129,12 +143,31 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
+
+    live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+  end
+
+  pipeline :require_authenticated_gallery do
+    plug PicselloWeb.Plugs.GalleryAuth
   end
 
   scope "/gallery", PicselloWeb do
-    pipe_through [:browser]
+    live "/dump", GalleryLive.DumpEditor, :show
 
-    live "/:hash", GalleryLive.ClientShow, :show
-    post "/:hash/downloads", GalleryDownloadsController, :download
+    live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
+      pipe_through [:browser, :require_authenticated_gallery]
+
+      live "/:hash", GalleryLive.ClientShow, :show
+      post "/:hash/downloads", GalleryDownloadsController, :download
+      post "/:hash/login", GallerySessionController, :put
+    end
+  end
+
+  scope "/gallery", PicselloWeb do
+    live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
+      pipe_through [:browser, :require_authenticated_gallery]
+
+      live "/:hash/login", GalleryLive.ClientShow.Login, :login
+    end
   end
 end

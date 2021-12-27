@@ -1,0 +1,979 @@
+[
+  {
+    "_id": "SjhvrFtjMP7FHy6Qa",
+    "faces": [
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_1_cream_I61OS.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_1_charcoal_UJ1K7.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_1_white_JRANO.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_1_harbor gray_R8R8H.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_1_merlot_BBUOH.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_1_aegean sea_G0L1H.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_2_cream_K4CDD.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_2_charcoal_1R0UT.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_2_white_T66H3.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_2_harbor gray_69J20.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_2_merlot_QUVVJ.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_2_aegean sea_KYUVC.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_3_cream_GOHQB.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_3_charcoal_4TVRJ.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_3_white_DMZYR.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_3_harbor gray_L4RQW.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_3_merlot_GXLI5.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_3_aegean sea_U6XDN.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_4_cream_95JP3.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_4_charcoal_6KLQV.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_4_white_ISDD8.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_4_harbor gray_1A9AR.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_4_merlot_E8UY3.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10000/layout_4_aegean sea_XUF6E.jpg"
+            }
+          }
+        ],
+        "name": "Front",
+        "nodeId": 10000
+      },
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_1_cream_95RPD.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_1_charcoal_2J7TW.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_1_white_RQFBA.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_1_harbor gray_96TDH.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_1_merlot_KLMBS.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_1_aegean sea_VIZ85.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 2,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_2_cream_FMZB9.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_2_charcoal_GGLMG.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_2_white_PDGEU.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_2_harbor gray_FWJEG.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_2_merlot_AOQII.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_2_aegean sea_QV4SN.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_3_cream_JDYTF.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_3_charcoal_YG435.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_3_white_2ORPW.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_3_harbor gray_P8XEZ.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_3_merlot_LA8DN.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_3_aegean sea_75PSV.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 6,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_4_cream_6QO97.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_4_charcoal_HW995.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_4_white_F8N7E.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_4_harbor gray_TMLAI.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_4_merlot_B5YYS.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_4_aegean sea_PGITE.jpg"
+            }
+          },
+          {
+            "name": "layout_5",
+            "photoCount": 0,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_5_cream_55K1R.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_5_charcoal_Z8VPZ.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_5_white_Q37DB.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_5_harbor gray_N4R91.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_5_merlot_TVEB0.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_5_aegean sea_YSJI2.jpg"
+            }
+          },
+          {
+            "name": "layout_6",
+            "photoCount": 1,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_6_cream_JJOKL.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_6_charcoal_UM8XC.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_6_white_8ZRQB.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_6_harbor gray_3TDC8.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_6_merlot_RWUJW.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_6_aegean sea_H8YZB.jpg"
+            }
+          },
+          {
+            "name": "layout_7",
+            "photoCount": 7,
+            "previews": {
+              "cream": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_7_cream_MYDA9.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_7_charcoal_6ZN4R.jpg",
+              "white": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_7_white_7YNIJ.jpg",
+              "harbor gray": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_7_harbor gray_S9L0M.jpg",
+              "merlot": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_7_merlot_4MFQB.jpg",
+              "aegean sea": "https://designs.dragdrop.design/previews/SjhvrFtjMP7FHy6Qa/10001/layout_7_aegean sea_CHWUJ.jpg"
+            }
+          }
+        ],
+        "name": "Back",
+        "nodeId": 10001
+      }
+    ],
+    "family": {
+      "_id": "sE4bihFeL7fMwuw4R",
+      "name": "warm joyful wishes",
+      "priorityVal": 1
+    },
+    "metadata": {
+      "tags": ["new", "christmas", "holiday", "modern"],
+      "shapes": ["no", "a2", "a3", "c13", "d3", "a15", "e16"],
+      "hasFoils": true
+    },
+    "name": "warm joyful wishes",
+    "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
+    "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
+    "published": { "on": "2021-11-15T22:54:22.862Z" },
+    "publishState": "published",
+    "selections": {
+      "foil_pressed_designs": "joyful_formal",
+      "foil_pressed_foil_color": "rose_gold",
+      "shapes": "e16",
+      "themes": "cream"
+    },
+    "themes": {
+      "cream": { "swatch": [250, 230, 206] },
+      "charcoal": {
+        "swatch": [50, 50, 50],
+        "foil_pressed_foil_color": "rose_gold"
+      },
+      "white": {
+        "swatch": [255, 255, 255],
+        "foil_pressed_foil_color": "rose_gold"
+      },
+      "harbor gray": { "swatch": [187, 188, 182] },
+      "merlot": {
+        "swatch": [98, 0, 51],
+        "foil_pressed_foil_color": "rose_gold"
+      },
+      "aegean sea": {
+        "swatch": [40, 53, 63],
+        "foil_pressed_foil_color": "arctic_blue"
+      }
+    }
+  },
+  {
+    "_id": "ksCYRhCHgLDmSTi37",
+    "faces": [
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 1,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_white_SC7GA.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_charcoal_2C87S.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_midnight_JERCU.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_red_NE475.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_evergreen_IVK79.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_gentle gray_XI6E4.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_copper_GPRXJ.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_pine_T0E06.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_bronze_VY5T8.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_cranberry_APB35.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_1_rosewood_CDKXB.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 2,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_white_9635R.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_charcoal_SBE9C.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_midnight_XWE6U.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_red_TPU9Q.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_evergreen_G4HF5.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_gentle gray_R8SE4.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_copper_7WTVH.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_pine_80MPB.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_bronze_HKKNQ.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_cranberry_QOZXT.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10000/layout_2_rosewood_4FLWU.jpg"
+            }
+          }
+        ],
+        "name": "Front",
+        "nodeId": 10000
+      },
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 0,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_white_F72DD.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_charcoal_84M7M.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_midnight_8ZLX8.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_red_V9D4U.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_evergreen_HKJTP.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_gentle gray_WKRS8.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_copper_MJUW8.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_pine_XUZVY.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_bronze_TKGC1.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_cranberry_WWIO2.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_1_rosewood_4ODO0.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 5,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_white_LLBOU.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_charcoal_6N6O2.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_midnight_4876I.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_red_PPEXO.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_evergreen_V01IU.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_gentle gray_WL5XY.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_copper_3N16F.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_pine_X8J57.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_bronze_W9KZU.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_cranberry_7EXQE.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_2_rosewood_N3PEI.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 2,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_white_4VHWL.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_charcoal_F4BVM.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_midnight_P81HC.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_red_H0FLB.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_evergreen_06M55.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_gentle gray_3R812.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_copper_7E9EX.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_pine_3BE16.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_bronze_HRP8V.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_cranberry_FE5KA.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_3_rosewood_V6WI8.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 1,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_white_NWT4C.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_charcoal_191XQ.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_midnight_5MEFV.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_red_P6MMV.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_evergreen_O9FJZ.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_gentle gray_OU06S.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_copper_TQC2X.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_pine_7102C.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_bronze_2FRYO.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_cranberry_87W7T.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_4_rosewood_XYG2A.jpg"
+            }
+          },
+          {
+            "name": "layout_5",
+            "photoCount": 4,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_white_P1K2T.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_charcoal_82NJQ.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_midnight_9O51C.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_red_BZFBI.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_evergreen_GJAED.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_gentle gray_X8GJU.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_copper_1RGGT.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_pine_5CKN3.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_bronze_4JSUG.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_cranberry_O7G2R.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_5_rosewood_OI0D3.jpg"
+            }
+          },
+          {
+            "name": "layout_6",
+            "photoCount": 0,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_white_L5VMH.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_charcoal_DJDBI.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_midnight_IE118.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_red_R6TWJ.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_evergreen_K5KRJ.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_gentle gray_09KF6.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_copper_IQ4BV.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_pine_Q8WCQ.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_bronze_BDESD.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_cranberry_67ASY.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_6_rosewood_0679L.jpg"
+            }
+          },
+          {
+            "name": "layout_7",
+            "photoCount": 1,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_white_ZRHIC.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_charcoal_ROU19.jpg",
+              "midnight": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_midnight_06KGD.jpg",
+              "red": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_red_4VJIU.jpg",
+              "evergreen": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_evergreen_9Z2T4.jpg",
+              "gentle gray": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_gentle gray_A917W.jpg",
+              "copper": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_copper_Z331M.jpg",
+              "pine": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_pine_XUW64.jpg",
+              "bronze": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_bronze_WORXA.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_cranberry_949P6.jpg",
+              "rosewood": "https://designs.dragdrop.design/previews/ksCYRhCHgLDmSTi37/10001/layout_7_rosewood_NR90C.jpg"
+            }
+          }
+        ],
+        "name": "Back",
+        "nodeId": 10001
+      }
+    ],
+    "family": {
+      "_id": "knpuZenwWTt3assgv",
+      "name": "believe sparkles",
+      "priorityVal": 1
+    },
+    "metadata": {
+      "tags": ["new", "holiday", "classic"],
+      "shapes": ["no", "a2", "b2", "c13", "d3", "e16"],
+      "hasFoils": true
+    },
+    "name": "5x7 flat card vertical",
+    "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
+    "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
+    "published": { "on": "2021-11-08T15:09:03.027Z" },
+    "publishState": "published",
+    "selections": {
+      "foil_pressed_designs": "believe_sparkles",
+      "foil_pressed_foil_color": "gold",
+      "shapes": "no",
+      "themes": "white"
+    },
+    "themes": {
+      "white": { "swatch": [0, 0, 0] },
+      "charcoal": { "swatch": [50, 50, 50] },
+      "midnight": {
+        "swatch": [64, 78, 86],
+        "foil_pressed_foil_color": "arctic_blue"
+      },
+      "red": { "swatch": [205, 19, 24] },
+      "evergreen": { "swatch": [1, 81, 85] },
+      "gentle gray": { "swatch": [182, 191, 196] },
+      "copper": { "swatch": [191, 120, 48] },
+      "pine": { "swatch": [0, 0, 0] },
+      "bronze": { "swatch": [174, 144, 102] },
+      "cranberry": { "swatch": [123, 0, 21] },
+      "rosewood": { "swatch": [0, 0, 0] }
+    }
+  },
+  {
+    "_id": "GKYTrpBahAFb5oRYM",
+    "faces": [
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 3,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_pine_L6KXQ.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_red_O2GIX.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_blue gray_8VLWO.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_spring green_L3RUG.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_spruce_NJ1VP.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_hive_GF07P.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_crimson_6KSEW.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_maroon_9164W.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_sage_GMLIA.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_1_terracotta_0XHVC.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 1,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_pine_AGX6Q.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_red_FMDXP.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_blue gray_I2Z8P.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_spring green_54L5O.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_spruce_9994O.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_hive_ON7C7.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_crimson_HZ3ID.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_maroon_Q95UM.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_sage_PMPCE.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_2_terracotta_T5X6D.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 2,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_pine_5FY06.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_red_3P3NC.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_blue gray_URBMZ.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_spring green_A1X0S.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_spruce_UQN17.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_hive_J2JYA.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_crimson_1DQY1.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_maroon_4ZOQA.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_sage_6O02D.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10000/layout_3_terracotta_XK5HJ.jpg"
+            }
+          }
+        ],
+        "name": "Front",
+        "nodeId": 10000
+      },
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 0,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_pine_0ZRJY.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_red_J25K8.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_blue gray_Q91FW.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_spring green_1EQ31.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_spruce_D3QVN.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_hive_RDWGD.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_crimson_Y5JJG.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_maroon_B08AW.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_sage_O29QI.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_1_terracotta_JCXV9.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 4,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_pine_K1GIF.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_red_9EJ4G.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_blue gray_9XF9O.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_spring green_H16PP.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_spruce_WB52Q.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_hive_ZJKS1.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_crimson_OT4AD.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_maroon_OXWWR.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_sage_9W2EZ.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_2_terracotta_54A0B.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 1,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_pine_72VJ3.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_red_LBEO8.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_blue gray_EDL9B.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_spring green_5KJYV.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_spruce_MMFZF.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_hive_L4N71.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_crimson_406QW.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_maroon_2CYJ6.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_sage_S7LY6.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_3_terracotta_EJ7BJ.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 2,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_pine_K64LT.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_red_CU5ZM.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_blue gray_0TA94.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_spring green_8I43I.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_spruce_CG2YS.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_hive_NUDX7.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_crimson_RCYRB.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_maroon_X7LM4.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_sage_OUMNJ.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_4_terracotta_OMUM0.jpg"
+            }
+          },
+          {
+            "name": "layout_5",
+            "photoCount": 3,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_pine_B153W.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_red_7KD3R.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_blue gray_9RZN0.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_spring green_9LGET.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_spruce_79AI4.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_hive_1M7YX.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_crimson_MC94W.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_maroon_AMSZK.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_sage_P3NOA.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_5_terracotta_CKN7B.jpg"
+            }
+          },
+          {
+            "name": "layout_6",
+            "photoCount": 5,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_pine_2YE96.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_red_IH66V.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_blue gray_MBIC4.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_spring green_6QRNE.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_spruce_F6DB8.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_hive_RIV28.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_crimson_5UEUD.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_maroon_OYPBP.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_sage_EXF67.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_6_terracotta_4D5AS.jpg"
+            }
+          },
+          {
+            "name": "layout_7",
+            "photoCount": 0,
+            "previews": {
+              "pine": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_pine_IEEYJ.jpg",
+              "red": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_red_BON0J.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_blue gray_B8AJT.jpg",
+              "spring green": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_spring green_B8IBL.jpg",
+              "spruce": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_spruce_5N28Y.jpg",
+              "hive": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_hive_GQOP7.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_crimson_WO7DU.jpg",
+              "maroon": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_maroon_Q2CET.jpg",
+              "sage": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_sage_LLBJH.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/GKYTrpBahAFb5oRYM/10001/layout_7_terracotta_VHAHO.jpg"
+            }
+          }
+        ],
+        "name": "Back",
+        "nodeId": 10001
+      }
+    ],
+    "family": {
+      "_id": "dcrrbPp9w8pQjw86X",
+      "name": "stamped happy holidays",
+      "priorityVal": 1
+    },
+    "metadata": {
+      "tags": ["new", "modern", "holiday"],
+      "shapes": ["no", "a2", "b2", "e16"],
+      "hasFoils": false
+    },
+    "name": "5x7 flat card vertical",
+    "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
+    "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
+    "published": { "on": "2021-11-08T15:52:37.582Z" },
+    "publishState": "published",
+    "selections": {
+      "foil_pressed_designs": "no",
+      "foil_pressed_foil_color": "gold",
+      "shapes": "no",
+      "themes": "pine"
+    },
+    "themes": {
+      "pine": { "swatch": [14, 65, 42] },
+      "red": { "swatch": [205, 19, 24] },
+      "blue gray": { "swatch": [139, 156, 160] },
+      "spring green": { "swatch": [75, 132, 62] },
+      "spruce": { "swatch": [66, 118, 113] },
+      "hive": { "swatch": [209, 164, 54] },
+      "crimson": { "swatch": [167, 2, 7] },
+      "maroon": { "swatch": [109, 3, 8] },
+      "sage": { "swatch": [159, 167, 115] },
+      "terracotta": { "swatch": [189, 102, 87] }
+    }
+  },
+  {
+    "_id": "DgGqXwFL8ELGRzATu",
+    "faces": [
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 5,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_midnight_OKFTV.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_beige gray_451Z0.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_crimson_UDF9F.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_fern_QNPQU.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_terracotta_KAZJ0.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_blue gray_NYSL9.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_charcoal_YWK3P.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_cranberry_TO3A9.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_pine_WFQUK.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_white_6E6ZF.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_red_ZFFV0.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_1_darker green_TMHDF.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 1,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_midnight_YVB7K.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_beige gray_2LTET.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_crimson_RAIC0.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_fern_N6T0V.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_terracotta_U65TS.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_blue gray_M7O3A.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_charcoal_AYB44.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_cranberry_72NK9.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_pine_H0LJC.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_white_JZGTU.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_red_APR9B.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_2_darker green_OUQ9F.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 2,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_midnight_KH1O2.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_beige gray_V5Y1Q.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_crimson_UP2ID.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_fern_RJD70.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_terracotta_1PHG8.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_blue gray_N94DF.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_charcoal_P3HN2.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_cranberry_NW7Y3.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_pine_02S3Y.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_white_RRIDW.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_red_WOF4P.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_3_darker green_YJ085.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 2,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_midnight_86NGP.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_beige gray_NJW24.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_crimson_39JDQ.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_fern_5TLUT.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_terracotta_NVPZK.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_blue gray_WBS6L.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_charcoal_6J1QO.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_cranberry_XVI07.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_pine_N1ICR.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_white_FT4FH.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_red_E5SRS.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10000/layout_4_darker green_NM6TP.jpg"
+            }
+          }
+        ],
+        "name": "Front",
+        "nodeId": 10000
+      },
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 3,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_midnight_MQC2B.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_beige gray_QVB59.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_crimson_YS22J.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_fern_BP0B7.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_terracotta_2KNDI.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_blue gray_CI4G0.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_charcoal_1YU79.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_cranberry_USQLX.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_pine_1ET14.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_white_CPJ4S.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_red_85C73.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_1_darker green_UNCYZ.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 0,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_midnight_T1ZC2.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_beige gray_YHYR4.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_crimson_T4LQ0.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_fern_NR95N.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_terracotta_2NQZM.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_blue gray_7XIQR.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_charcoal_P03TP.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_cranberry_LVNON.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_pine_XGJK9.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_white_4CIKB.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_red_6HV4K.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_2_darker green_LD881.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 1,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_midnight_57JBR.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_beige gray_HCCEH.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_crimson_QZ07Q.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_fern_HCF5D.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_terracotta_Y4D2N.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_blue gray_DTY2U.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_charcoal_5EJ62.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_cranberry_PU4UJ.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_pine_JYLKW.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_white_0RHHY.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_red_W9H3H.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_3_darker green_MP4II.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 2,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_midnight_19OQU.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_beige gray_7PHB0.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_crimson_9WL0W.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_fern_J9JC7.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_terracotta_6FZET.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_blue gray_WZ3GF.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_charcoal_974TO.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_cranberry_NS1KE.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_pine_VY69T.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_white_EBAFV.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_red_TGUT5.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_4_darker green_S2OY3.jpg"
+            }
+          },
+          {
+            "name": "layout_5",
+            "photoCount": 4,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_midnight_VE939.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_beige gray_WGH07.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_crimson_DY8ET.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_fern_2YSFQ.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_terracotta_A8CDV.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_blue gray_7W5N6.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_charcoal_QIXFQ.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_cranberry_CRBRG.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_pine_7HIEQ.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_white_YI8BD.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_red_6IJJ1.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_5_darker green_12IIX.jpg"
+            }
+          },
+          {
+            "name": "layout_6",
+            "photoCount": 9,
+            "previews": {
+              "midnight": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_midnight_T8DHV.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_beige gray_5JLDI.jpg",
+              "crimson": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_crimson_RFJDI.jpg",
+              "fern": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_fern_CIEEP.jpg",
+              "terracotta": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_terracotta_AY9B9.jpg",
+              "blue gray": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_blue gray_9S2H6.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_charcoal_Q6WTD.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_cranberry_AXEUU.jpg",
+              "pine": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_pine_WZQ02.jpg",
+              "white": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_white_KY19E.jpg",
+              "red": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_red_M2975.jpg",
+              "darker green": "https://designs.dragdrop.design/previews/DgGqXwFL8ELGRzATu/10001/layout_6_darker green_A6N2D.jpg"
+            }
+          }
+        ],
+        "name": "Back",
+        "nodeId": 10001
+      }
+    ],
+    "family": {
+      "_id": "Cg2WXxYLxgHhuFh9W",
+      "name": "holiday cheer",
+      "priorityVal": 1
+    },
+    "metadata": {
+      "tags": ["new", "holiday", "fun"],
+      "shapes": ["no", "a2", "b2", "c13", "d3", "a15", "a15_hole", "e16"],
+      "hasFoils": true
+    },
+    "name": "5x7 flat card horizontal",
+    "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
+    "product": {
+      "_id": "benT9erT8BwHrn6Ws",
+      "name": "5x7 Flat Card Horizontal"
+    },
+    "published": { "on": "2021-11-05T22:55:13.803Z" },
+    "publishState": "published",
+    "selections": {
+      "foil_pressed_designs": "holiday_cheer",
+      "foil_pressed_foil_color": "arctic_blue",
+      "shapes": "e16",
+      "themes": "midnight"
+    },
+    "themes": {
+      "midnight": {
+        "swatch": [64, 78, 86],
+        "foil_pressed_foil_color": "arctic_blue"
+      },
+      "beige gray": { "swatch": [225, 222, 218] },
+      "crimson": { "swatch": [167, 2, 7] },
+      "fern": { "swatch": [108, 119, 110] },
+      "terracotta": { "swatch": [189, 102, 87] },
+      "blue gray": { "swatch": [139, 156, 160] },
+      "charcoal": { "swatch": [50, 50, 50] },
+      "cranberry": { "swatch": [123, 0, 21] },
+      "pine": { "swatch": [14, 65, 42] },
+      "white": { "swatch": [255, 255, 255] },
+      "red": { "swatch": [205, 19, 24] },
+      "darker green": { "swatch": [40, 99, 36] }
+    }
+  },
+  {
+    "_id": "4Pns93cxkJiJTn2zC",
+    "faces": [
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 1,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_white_ED7AE.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_charcoal_DEMOL.jpg",
+              "navy": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_navy_5XEU7.jpg",
+              "wool": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_wool_3VROS.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_beige gray_UWKKE.jpg",
+              "harbor": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_harbor_CR8DJ.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_cranberry_2QY77.jpg",
+              "dusty green": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10000/layout_1_dusty green_XVA6C.jpg"
+            }
+          }
+        ],
+        "name": "Front",
+        "nodeId": 10000
+      },
+      {
+        "layouts": [
+          {
+            "name": "layout_1",
+            "photoCount": 4,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_white_YV3YY.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_charcoal_HYQ3Z.jpg",
+              "navy": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_navy_29JM0.jpg",
+              "wool": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_wool_GOWV9.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_beige gray_7PNWG.jpg",
+              "harbor": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_harbor_9MXXC.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_cranberry_5S1XA.jpg",
+              "dusty green": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_1_dusty green_4HCR8.jpg"
+            }
+          },
+          {
+            "name": "layout_2",
+            "photoCount": 1,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_white_WRP3L.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_charcoal_WK7ST.jpg",
+              "navy": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_navy_J79XC.jpg",
+              "wool": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_wool_SO7LE.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_beige gray_723M7.jpg",
+              "harbor": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_harbor_TKNBA.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_cranberry_X8PNC.jpg",
+              "dusty green": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_2_dusty green_9FC0K.jpg"
+            }
+          },
+          {
+            "name": "layout_3",
+            "photoCount": 1,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_white_B9Z90.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_charcoal_7L6RY.jpg",
+              "navy": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_navy_SBJI0.jpg",
+              "wool": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_wool_MTNP4.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_beige gray_KJ7RX.jpg",
+              "harbor": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_harbor_3SFAK.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_cranberry_4LMT0.jpg",
+              "dusty green": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_3_dusty green_WMCYT.jpg"
+            }
+          },
+          {
+            "name": "layout_4",
+            "photoCount": 2,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_white_X6PTX.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_charcoal_H25SY.jpg",
+              "navy": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_navy_UKGGM.jpg",
+              "wool": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_wool_MSEG5.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_beige gray_5HGQQ.jpg",
+              "harbor": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_harbor_WD94Y.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_cranberry_EZJXP.jpg",
+              "dusty green": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_4_dusty green_7J2VA.jpg"
+            }
+          },
+          {
+            "name": "layout_5",
+            "photoCount": 0,
+            "previews": {
+              "white": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_white_EZUML.jpg",
+              "charcoal": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_charcoal_H451X.jpg",
+              "navy": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_navy_E803D.jpg",
+              "wool": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_wool_9XLSK.jpg",
+              "beige gray": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_beige gray_U3V5O.jpg",
+              "harbor": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_harbor_VL1L3.jpg",
+              "cranberry": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_cranberry_DCNEJ.jpg",
+              "dusty green": "https://designs.dragdrop.design/previews/4Pns93cxkJiJTn2zC/10001/layout_5_dusty green_II989.jpg"
+            }
+          }
+        ],
+        "name": "Back",
+        "nodeId": 10001
+      }
+    ],
+    "family": {
+      "_id": "WhwhXr6pimmvH6RP8",
+      "name": "holly pattern",
+      "priorityVal": 1
+    },
+    "metadata": {
+      "tags": ["new", "floral"],
+      "shapes": ["no", "a2", "b2", "c13", "d3", "e16"],
+      "hasFoils": true
+    },
+    "name": "5x7 flat card vertical",
+    "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
+    "product": { "_id": "nq4XtJMZMW4d3bfjM", "name": "5x7 Flat Card Vertical" },
+    "published": { "on": "2021-11-05T21:59:43.840Z" },
+    "publishState": "published",
+    "selections": {
+      "foil_pressed_designs": "merry_formal",
+      "foil_pressed_foil_color": "gold",
+      "shapes": "no",
+      "themes": "white"
+    },
+    "themes": {
+      "white": { "swatch": [255, 255, 255] },
+      "charcoal": { "swatch": [50, 50, 50] },
+      "navy": { "swatch": [41, 52, 80] },
+      "wool": { "swatch": [241, 231, 221] },
+      "beige gray": { "swatch": [225, 222, 218] },
+      "harbor": { "swatch": [187, 188, 182] },
+      "cranberry": { "swatch": [123, 0, 21] },
+      "dusty green": { "swatch": [163, 172, 154] }
+    }
+  }
+]

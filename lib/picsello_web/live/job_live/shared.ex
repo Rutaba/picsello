@@ -7,6 +7,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Shoot,
     Repo,
     BookingProposal,
+    Messages,
     Notifiers.ClientNotifier,
     Package,
     Accounts.User
@@ -67,6 +68,9 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("open-compose", %{}, socket),
+    do: socket |> PicselloWeb.ClientMessageComponent.open() |> noreply()
+
   def handle_info({:action_event, "open_email_compose"}, socket) do
     socket |> PicselloWeb.ClientMessageComponent.open() |> noreply()
   end
@@ -75,10 +79,7 @@ defmodule PicselloWeb.JobLive.Shared do
         {:message_composed, message_changeset},
         %{assigns: %{job: %{client: client} = job}} = socket
       ) do
-    with {:ok, message} <-
-           message_changeset
-           |> Ecto.Changeset.put_change(:job_id, job.id)
-           |> Repo.insert(),
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
       socket
       |> PicselloWeb.ConfirmationComponent.open(%{
@@ -222,7 +223,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <%= @job.client.phone %>
           </a>
 
-          <a href={"mailto:#{@job.client.email}"} class="flex items-center min-w-0 text-xs lg:text-blue-planning-300">
+          <a href="#" phx-click="open-compose" class="flex items-center min-w-0 text-xs lg:text-blue-planning-300">
             <span class="flex-shrink-0">
               <.circle radius="7" class="mr-2">
               <.icon name="envelope-outline" class="text-white stroke-current" width="12" height="10" />

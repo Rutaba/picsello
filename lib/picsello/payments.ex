@@ -18,7 +18,7 @@ defmodule Picsello.Payments do
   @callback construct_event(String.t(), String.t(), String.t()) ::
               {:ok, Stripe.Event.t()} | {:error, any}
 
-  @callback retrieve_session(String.t()) ::
+  @callback retrieve_session(String.t(), keyword(binary())) ::
               {:ok, Stripe.Session.t()} | {:error, Stripe.Error.t()}
 
   def handle_payment(%Stripe.Session{

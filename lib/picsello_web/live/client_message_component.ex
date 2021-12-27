@@ -5,12 +5,18 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @impl true
   def update(assigns, socket) do
+    defaults = %{
+      composed_event: :message_composed,
+      show_cc: false,
+      modal_title: "Send an email"
+    }
+
     socket
-    |> assign(Enum.into(assigns, %{composed_event: :message_composed, show_cc: false}))
+    |> assign(Enum.into(assigns, defaults))
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
-      |> Picsello.ClientMessage.create_changeset()
+      |> Picsello.ClientMessage.create_outbound_changeset()
     end)
     |> ok()
   end
@@ -19,32 +25,20 @@ defmodule PicselloWeb.ClientMessageComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
-      <h1 class="text-3xl font-bold">Send an email</h1>
+      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
 
       <div class="pt-5 input-label">
         Client's email
       </div>
-      <div class="relative text-input">
+      <div class="relative text-input text-base-250">
         <%= client_email @job %>
-        <a class="absolute cursor-pointer bottom-2 right-2 text-blue-planning-300" phx-click="toggle-cc" phx-target={@myself}>cc</a>
       </div>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <%= if @show_cc do %>
-          <div class="relative">
-            <%= labeled_input f, :cc_email, label: "CC Email", wrapper_class: "mt-4", phx_debounce: "500" %>
-            <a class="absolute cursor-pointer top-2 right-2 text-blue-planning-300" phx-click="toggle-cc" phx-target={@myself}>
-              <.icon name="close-x" class="w-3 h-3 stroke-current"/>
-            </a>
-            <%= if input_value(f, :cc_email) && input_value(f, :cc_email) != "" do %>
-              <a id="cc-clear" class="absolute cursor-pointer bottom-2 right-2 text-blue-planning-300" phx-hook="ClearInput" data-input-name="cc_email">clear</a>
-            <% end %>
-          </div>
-        <% end %>
         <%= labeled_input f, :subject, label: "Subject line", wrapper_class: "mt-4", phx_debounce: "500" %>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore">
+        <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
           <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
             <button class="ql-bold"></button>
             <button class="ql-italic"></button>
@@ -72,11 +66,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("toggle-cc", _, %{assigns: %{show_cc: show_cc}} = socket) do
-    socket |> assign(:show_cc, !show_cc) |> noreply()
-  end
-
-  @impl true
   def handle_event("validate", %{"client_message" => params}, socket) do
     socket |> assign_changeset(:validate, params) |> noreply()
   end
@@ -98,6 +87,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:subject) => binary,
           optional(:body_text) => any,
           optional(:body_html) => binary,
+          optional(:modal_title) => binary,
           optional(:composed_event) => any
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
@@ -117,7 +107,8 @@ defmodule PicselloWeb.ClientMessageComponent do
          action,
          params
        ) do
-    changeset = params |> Picsello.ClientMessage.create_changeset() |> Map.put(:action, action)
+    changeset =
+      params |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end

@@ -11,13 +11,17 @@ defmodule Picsello.Factory do
     Job,
     Organization,
     Package,
+    Campaign,
+    CampaignClient,
     ClientMessage,
     Repo,
     Shoot,
     Accounts.User,
     Questionnaire,
     Questionnaire.Answer,
-    Galleries.Gallery
+    Galleries.Gallery,
+    Galleries.Watermark,
+    Galleries.Photo
   }
 
   def valid_user_password(), do: "hello world!"
@@ -65,12 +69,15 @@ defmodule Picsello.Factory do
   def unique_user_email(), do: valid_user_attributes() |> Map.get(:email)
 
   def organization_factory do
-    %Organization{name: "Camera User Group"}
+    %Organization{
+      name: "Camera User Group",
+      slug: sequence(:slug, &"camera-user-group-#{&1}")
+    }
   end
 
   def package_factory(attrs) do
     %Package{
-      base_price: 10,
+      base_price: 1000,
       download_count: 0,
       download_each_price: 0,
       name: "Package name",
@@ -92,6 +99,28 @@ defmodule Picsello.Factory do
     |> merge_attributes(attrs |> Map.drop([:user]) |> Enum.into(%{job_type: "wedding"}))
   end
 
+  def campaign_factory(attrs) do
+    %Campaign{
+      subject: "here is a subject",
+      body_text: "lets take some pictures!",
+      body_html: "lets take <i>some</i> <b>pictures!</b>",
+      segment_type: "all",
+      organization: fn ->
+        case attrs do
+          %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
+          _ -> build(:organization, Map.get(attrs, :organization, %{}))
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def campaign_client_factory(attrs) do
+    %CampaignClient{}
+    |> merge_attributes(attrs)
+  end
+
   def client_factory(attrs) do
     %Client{
       email: sequence(:email, &"client-#{&1}@example.com"),
@@ -100,11 +129,11 @@ defmodule Picsello.Factory do
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
-          _ -> build(:organization)
+          _ -> build(:organization, Map.get(attrs, :organization, %{}))
         end
       end
     }
-    |> merge_attributes(Map.drop(attrs, [:user]))
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
     |> evaluate_lazy_attributes()
   end
 
@@ -180,7 +209,9 @@ defmodule Picsello.Factory do
     %ClientMessage{
       subject: "here is what i propose",
       body_text: "lets take some pictures!",
-      body_html: "lets take <i>some</i> <b>pictures!</b>"
+      body_html: "lets take <i>some</i> <b>pictures!</b>",
+      read_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      outbound: true
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -258,7 +289,28 @@ defmodule Picsello.Factory do
   def gallery_factory(attrs) do
     %Gallery{
       job: fn -> build(:lead) end,
-      password: "123456"
+      password: "123456",
+      client_link_hash: UUID.uuid4()
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def text_watermark_factory(attrs) do
+    %Watermark{
+      type: "text",
+      text: "007Agency:)"
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def photo_factory(attrs) do
+    %Photo{
+      gallery: fn -> build(:gallery) end,
+      name: "name.jpg",
+      position: 1.0,
+      original_url: Photo.original_path("name", 333, "4444")
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -269,7 +321,7 @@ defmodule Picsello.Factory do
       whcc_id: sequence("whcc_id"),
       whcc_name: "shirts",
       name: "cool shirts",
-      position: 0,
+      position: sequence(:category_position, & &1),
       icon: "book"
     }
 
@@ -278,11 +330,28 @@ defmodule Picsello.Factory do
       %Picsello.Product{
         whcc_id: sequence("whcc_id"),
         whcc_name: "polo",
-        position: 0,
+        position: sequence(:product_position, & &1),
         category: fn -> build(:category) end
       }
       |> evaluate_lazy_attributes()
 
+  def design_factory,
+    do:
+      %Picsello.Design{
+        whcc_id: sequence("whcc_id"),
+        whcc_name: "birthday",
+        position: 0,
+        product: fn -> build(:product) end
+      }
+      |> evaluate_lazy_attributes()
+
   def markup_factory,
-    do: %Picsello.Markup{}
+    do: %Picsello.Markup{
+      organization: fn -> build(:organization) end,
+      product: fn -> build(:product) end,
+      whcc_attribute_category_id: "surface",
+      whcc_attribute_id: "matte",
+      whcc_variation_id: "4x4",
+      value: 100.0
+    }
 end

@@ -37,6 +37,28 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def post(session, path, body, headers \\ []) do
+      HTTPoison.post(
+        PicselloWeb.Endpoint.url() <> path,
+        body,
+        headers ++
+          [
+            {"user-agent", user_agent(session)}
+          ]
+      )
+
+      session
+    end
+
+    def user_agent(session) do
+      session
+      |> execute_script("return navigator.userAgent;", [], &send(self(), {:user_agent, &1}))
+
+      receive do
+        {:user_agent, agent} -> agent
+      end
+    end
+
     def testid(id, opts \\ []), do: css("*[data-testid='#{id}']", opts)
 
     def wait_for_enabled_submit_button(session, opts \\ []) do
@@ -75,7 +97,7 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Email"), with: email)
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
-      |> click(button("Log In"))
+      |> click(button("Login"))
     end
 
     def maybe_visit_log_in(session) do
@@ -166,7 +188,7 @@ defmodule Picsello.FeatureCase do
       session
       |> visit("/")
       |> click(css("a", text: "Log In"))
-      |> click(css("a", text: "Forgot Password"))
+      |> click(css("a", text: "Forgot your password?"))
     end
   end
 

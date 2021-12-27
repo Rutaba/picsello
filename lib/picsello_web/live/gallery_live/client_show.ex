@@ -1,37 +1,26 @@
 defmodule PicselloWeb.GalleryLive.ClientShow do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
 
+  use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Galleries
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.GalleryProducts
 
   @per_page 12
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:page_title, "Show Gallery")
+    |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
+    |> assign(:page, 0)
+    |> assign(:update_mode, "append")
+    |> assign(:favorites_filter, false)
+    |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+    |> assign_photos()
+    |> noreply()
   end
 
   @impl true
-  def handle_params(%{"hash" => hash}, _, socket) do
-    gallery = Galleries.get_gallery_by_hash(hash)
-
-    if gallery do
-      socket
-      |> assign(:hash, hash)
-      |> assign(:gallery, gallery)
-      |> assign(:page_title, "Show Gallery")
-      |> assign(:page, 0)
-      |> assign(:update_mode, "append")
-      |> assign(:favorites_filter, false)
-      |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-      |> assign_photos()
-      |> noreply()
-    else
-      {:noreply, socket}
-    end
-  end
-
   def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
     socket
     |> assign(page: page + 1)
@@ -50,9 +39,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
-  def handle_event("open_edit_product_popup", _, socket) do
+  def handle_event(
+        "open_edit_product_popup",
+        %{"product-id" => id},
+        %{assigns: %{products: products}} = socket
+      ) do
     socket
-    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{product_type: "prints"})
+    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{
+      product: Enum.find(products, fn product -> product.id == String.to_integer(id) end)
+    })
     |> noreply()
   end
 
@@ -65,6 +60,42 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   def handle_info(:reduce_favorites_count, %{assigns: %{favorites_count: count}} = socket) do
     socket |> assign(:count, count - 1) |> noreply()
   end
+
+  def handle_info(
+        {:photo_click, photo},
+        %{assigns: %{gallery: gallery, favorites_filter: favorites?}} = socket
+      ) do
+    created_editor =
+      Picsello.WHCC.create_editor(
+        get_some_product(),
+        photo,
+        complete_url: Routes.gallery_dump_editor_url(socket, :show) <> "?editorId=%EDITOR_ID%",
+        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
+        only_favorites: favorites?
+      )
+
+    socket
+    |> redirect(external: created_editor.url)
+    |> noreply()
+  end
+
+  # This should be removed as soon as product selection will be implemented
+  defp get_some_product() do
+    Picsello.Category
+    |> Picsello.Repo.all()
+    |> Enum.at(0)
+    |> Picsello.Repo.preload(:products)
+    |> then(& &1.products)
+    |> Enum.at(0)
+  end
+
+  def get_menu_items(_socket),
+    do: [
+      %{title: "Home", path: "#"},
+      %{title: "Shop", path: "#"},
+      %{title: "My orders", path: "#"},
+      %{title: "Help", path: "#"}
+    ]
 
   defp assign_photos(
          %{
@@ -82,9 +113,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
-  end
-
-  defp cover_photo(key) do
-    PhotoStorage.path_to_url(key)
   end
 end

@@ -78,13 +78,28 @@ html {
   }
 }
 
+.raw_html {
+  ol {
+    list-style: revert;
+    padding: revert;
+  }
+  ul {
+    list-style: revert;
+    padding: revert;
+  }
+  a {
+    @apply text-blue-planning-300;
+    text-decoration: underline;
+  }
+}
+
 .center-container {
   @apply xl:container xl:mx-auto;
 }
 
 @layer components {
   .bare-modal {
-    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg px-4 py-3 sm:p-8;
+    @apply bg-white w-90vw max-h-85vh overflow-auto rounded-t-lg p-6 sm:p-8;
   }
 }
 
@@ -110,11 +125,12 @@ html {
 
 .muuri.grid {
   position: relative;
-
+  width: 100%;
+  box-sizing: border-box;
   .item {
     display: block;
     position: absolute;
-    margin: 10px;
+    margin: 10px 0;
     z-index: 1;
   }
   .item.muuri-item-dragging {
@@ -176,5 +192,56 @@ html {
   // every other attribute row is blue in desktop
   .contents .contents:nth-child(odd) div {
     @apply sm:bg-blue-planning-100;
+  }
+}
+
+.phx-click-loading {
+  @apply animate-pulse cursor-wait;
+}
+
+@media (min-width: 640px){
+  .muuri.grid {
+    .item {
+      margin: 10px;
+    }
+  }
+}
+
+@media (min-width: 640px) {
+  .responsive-table {
+    display: inline-table !important;
+
+    thead tr:not(:first-child) {
+      display: none;
+    }
+
+    thead tr {
+      th:first-child {
+        @apply rounded-l-lg;
+      }
+      th:last-child {
+        @apply rounded-r-lg;
+      }
+    }
+
+    tbody tr:nth-child(even) {
+      @apply bg-blue-planning-100;
+      td:first-child {
+        @apply rounded-l-lg;
+      }
+      td:last-child {
+        @apply rounded-r-lg;
+      }
+    }
+  }
+}
+
+.responsive-table {
+  td:not(:last-child) {
+    @apply border-b-0;
+  }
+
+  th:not(:last-child) {
+    @apply border-b-2 border-white sm:border-none;
   }
 }

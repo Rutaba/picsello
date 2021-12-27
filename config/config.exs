@@ -45,6 +45,8 @@ config :money, default_currency: :USD
 config :picsello, :modal_transition_ms, 400
 config :picsello, :payments, Picsello.StripePayments
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
+config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
+config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
@@ -76,7 +78,7 @@ config :picsello, :whcc,
 
 config :picsello, Oban,
   repo: Picsello.Repo,
-  queues: [default: 10, storage: 10],
+  queues: [default: 10, storage: 10, campaigns: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,

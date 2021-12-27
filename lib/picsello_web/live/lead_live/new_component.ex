@@ -78,11 +78,22 @@ defmodule PicselloWeb.JobLive.NewComponent do
     |> Job.create_changeset()
   end
 
-  defp assign_changeset(
-         socket,
-         action \\ nil,
-         params \\ %{"client" => %{}}
-       ) do
+  defp assign_changeset(socket, action \\ nil, params \\ %{"client" => %{}})
+
+  defp assign_changeset(socket, :validate, params) do
+    changeset =
+      socket
+      |> build_changeset(params)
+      |> Map.put(:action, :validate)
+      |> Ecto.Changeset.update_change(
+        :client,
+        &Ecto.Changeset.unsafe_validate_unique(&1, [:email, :organization_id], Repo)
+      )
+
+    assign(socket, changeset: changeset)
+  end
+
+  defp assign_changeset(socket, action, params) do
     changeset = build_changeset(socket, params) |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)

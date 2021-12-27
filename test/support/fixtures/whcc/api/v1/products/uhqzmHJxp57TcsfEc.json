@@ -1,0 +1,2124 @@
+{
+  "category": { "id": "tfhysKwZafFtmGqpQ", "name": "Wall Displays" },
+  "attributeCategories": [
+    {
+      "_id": "size",
+      "name": "size",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "8x10",
+          "name": "8×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 8 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=depth;a=1_1_2in" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "8x12",
+          "name": "8×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 8 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=depth;a=1_1_2in" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "10x10",
+          "name": "10×10",
+          "enabled": true,
+          "metadata": { "height": 10, "width": 10 }
+        },
+        {
+          "id": "10x20",
+          "name": "10×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 10 }
+        },
+        {
+          "id": "11x14",
+          "name": "11×14",
+          "enabled": true,
+          "metadata": { "height": 14, "width": 11 }
+        },
+        {
+          "id": "12x12",
+          "name": "12×12",
+          "enabled": true,
+          "metadata": { "height": 12, "width": 12 }
+        },
+        {
+          "id": "12x18",
+          "name": "12×18",
+          "enabled": true,
+          "metadata": { "height": 18, "width": 12 }
+        },
+        {
+          "id": "16x16",
+          "name": "16×16",
+          "enabled": true,
+          "metadata": { "height": 16, "width": 16 }
+        },
+        {
+          "id": "16x20",
+          "name": "16×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 16 }
+        },
+        {
+          "id": "16x24",
+          "name": "16×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 16 }
+        },
+        {
+          "id": "20x20",
+          "name": "20×20",
+          "enabled": true,
+          "metadata": { "height": 20, "width": 20 }
+        },
+        {
+          "id": "20x24",
+          "name": "20×24",
+          "enabled": true,
+          "metadata": { "height": 24, "width": 20 }
+        },
+        {
+          "id": "20x30",
+          "name": "20×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 20 }
+        },
+        {
+          "id": "20x40",
+          "name": "20×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 20 }
+        },
+        {
+          "id": "24x30",
+          "name": "24×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 24 }
+        },
+        {
+          "id": "24x36",
+          "name": "24×36",
+          "enabled": true,
+          "metadata": { "height": 36, "width": 24 }
+        },
+        {
+          "id": "30x30",
+          "name": "30×30",
+          "enabled": true,
+          "metadata": { "height": 30, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=texture" }],
+              "id": "BG4njvw3k528ymuTv",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        },
+        {
+          "id": "30x40",
+          "name": "30×40",
+          "enabled": true,
+          "metadata": { "height": 40, "width": 30 },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "DISABLE", "recipient": "c=texture" }],
+              "id": "LtKmgm23zJBpZiFfX",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1
+        }
+      ],
+      "default": "10x10"
+    },
+    {
+      "_id": "surface",
+      "name": "surface",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "lustre_photo",
+          "name": "lustre",
+          "enabled": true,
+          "childCategories": ["coating", "texture"],
+          "pricingRefs": {
+            "5x5": {
+              "base": { "value": 1.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 1.35, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 2.3, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 4.05, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 3.1, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 9.95, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 4.7, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 4.65, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 7.05, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 16.2, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 16.2, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 23.7, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 24.25, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 24.5, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 30.65, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 44.3, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 37.6, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 50.7, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 50.7, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 51.8, "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+              "id": "bbTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=canvas_lamination" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 2,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/lustre_paper.jpg"
+          }
+        },
+        {
+          "id": "deep_matte_photo",
+          "name": "deep matte",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 3.11, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 5.47, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 4.19, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 13.44, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 6.35, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 6.28, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 9.52, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 21.87, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 21.87, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 32, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 32.74, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 33.08, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 41.38, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 59.81, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 50.76, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 68.45, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 68.45, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 69.93, "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+              "id": "bbTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=canvas_lamination" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+              "id": "bdTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=texture" }],
+              "id": "beTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 4,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/deep_matte_photo.jpg"
+          }
+        },
+        {
+          "id": "metallic_photo",
+          "name": "metallic",
+          "enabled": true,
+          "childCategories": ["texture"],
+          "pricingRefs": {
+            "5x5": {
+              "base": { "value": 1.32, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 1.62, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 2.76, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 4.86, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 3.72, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 11.94, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 5.64, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 5.58, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 8.46, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 19.44, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 19.44, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 28.44, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 29.1, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 29.4, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 36.78, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 53.16, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 45.12, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 60.84, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 60.84, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 62.16, "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+              "id": "bbTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=canvas_lamination" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+              "id": "bdTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 3,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/metallic_paper.jpg"
+          }
+        },
+        {
+          "id": "glossy_paper_photo",
+          "name": "glossy paper",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "value": 1.1, "type": "ACTUAL", "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 1.35, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 2.3, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 4.05, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 3.1, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 9.95, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 4.7, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 4.65, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 7.05, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 16.2, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 16.2, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 23.7, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 24.25, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 24.5, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 30.65, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 44.3, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 37.6, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 50.7, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 50.7, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 51.8, "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+              "id": "bbTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=canvas_lamination" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+              "id": "bdTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=texture" }],
+              "id": "beTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 4,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/glossy_paper_photo.jpg"
+          }
+        },
+        {
+          "id": "fine_art_print",
+          "name": "fine art print",
+          "enabled": true,
+          "childCategories": ["paper_type"],
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "HIDE", "recipient": "c=canvas_lamination" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+              "id": "bdTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=texture" }],
+              "id": "beTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 3,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/fine_art_print.jpg"
+          }
+        },
+        {
+          "id": "fine_art_canvas",
+          "name": "fine art canvas",
+          "enabled": true,
+          "childCategories": ["canvas_lamination"],
+          "pricingRefs": {
+            "5x7": { "base": { "type": "ACTUAL", "value": 16, "code": "USD" } },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 35.2, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 37, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 37, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 49, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 45.1, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 42.5, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 50, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 55.75, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 64.9, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 71, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 73, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 74.8, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 94.6, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 139.4, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 114.4, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 128.75, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 133, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 163.9, "code": "USD" }
+            }
+          },
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+              "id": "bdTHo8KbSJRxqkTBz",
+              "locked": true
+            },
+            {
+              "trigger": "SELECTED",
+              "actions": [{ "type": "HIDE", "recipient": "c=texture" }],
+              "id": "beTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 3,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/canvas_loose_print.jpg"
+          }
+        }
+      ],
+      "default": "lustre_photo"
+    },
+    {
+      "_id": "coating",
+      "name": "coating",
+      "description": "Adds protection and a matte look",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "surface",
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "no",
+          "name": "no coating",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/none.svg"
+          }
+        },
+        {
+          "id": "lustre_coating",
+          "name": "lustre",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 0.91, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 0.91, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 1.33, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 2.4, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 1.72, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 2.91, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 2.4, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 2.4, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 3.41, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 3.48, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 3.48, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 3.97, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 3.66, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 3.97, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 10.82, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 8.82, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 10.82, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 10.82, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 10.82, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/coating/lustre_coating.jpg"
+          }
+        }
+      ],
+      "rules": [
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+          "id": "bdTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=canvas_lamination" }],
+          "id": "bfTHo8KbSJRxqkTBz",
+          "locked": true
+        }
+      ],
+      "ruleCount": 2,
+      "default": "no"
+    },
+    {
+      "_id": "texture",
+      "name": "texture",
+      "description": "Quality textures for added appearance",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "surface",
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "no",
+          "name": "no texture",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/none.svg"
+          }
+        },
+        {
+          "id": "linen_texture",
+          "name": "linen",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 0.13, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 0.13, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 0.37, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 0.95, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 1.21, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 1.46, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 1.46, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 3.22, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 3.97, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/texture/linen.jpg"
+          }
+        },
+        {
+          "id": "pebble_texture",
+          "name": "pebble",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 0.13, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 0.13, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 0.37, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 0.95, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 1.21, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 1.46, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 1.46, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 3.22, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 3.97, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/texture/pebble.jpg"
+          }
+        },
+        {
+          "id": "embassy_texture",
+          "name": "embassy",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 0.13, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 0.13, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 0.37, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 0.95, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 0.59, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 1.21, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 1.46, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 1.46, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 2.77, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 3.22, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 3.97, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 4.42, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/texture/embassy.jpg"
+          }
+        }
+      ],
+      "rules": [
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+          "id": "bdTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=canvas_lamination" }],
+          "id": "bfTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "CHILD_ATTRIBUTE_SELECTED",
+          "actions": [
+            { "type": "DISABLE", "recipient": "c=size;a=30x30,30x40" }
+          ],
+          "id": "hFQ9oCpGZH8HvrrLg",
+          "locked": true
+        }
+      ],
+      "ruleCount": 3,
+      "default": "no"
+    },
+    {
+      "_id": "paper_type",
+      "name": "paper type",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "surface",
+      "pricingRefsKey": { "keys": ["size"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "smooth_matte",
+          "name": "smooth matte",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 1.71, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 2.1, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 3.57, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 6.28, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 4.81, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 15.43, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 7.29, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 7.21, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 10.93, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 25.11, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 25.11, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 36.74, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 34.08, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 37.98, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 47.51, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 68.67, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 58.28, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 78.59, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 78.59, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 80.29, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/fine_art_smooth_matte.jpg"
+          }
+        },
+        {
+          "id": "torchon",
+          "name": "torchon",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 2.81, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 3.45, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 5.87, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 9.88, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 7.91, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 25.38, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 11.99, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 11.86, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 17.98, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 41.31, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 41.31, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 60.44, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 61.84, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 62.48, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 78.16, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 112.97, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 95.88, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 129.29, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 129.29, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 132.09, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/fine_art_torchon.jpg"
+          }
+        },
+        {
+          "id": "velvet",
+          "name": "velvet",
+          "enabled": true,
+          "pricingRefs": {
+            "5x5": {
+              "base": { "type": "ACTUAL", "value": 0.53, "code": "USD" }
+            },
+            "5x7": {
+              "base": { "type": "ACTUAL", "value": 0.66, "code": "USD" }
+            },
+            "8x10": {
+              "base": { "type": "ACTUAL", "value": 4.95, "code": "USD" }
+            },
+            "8x12": {
+              "base": { "type": "ACTUAL", "value": 8.71, "code": "USD" }
+            },
+            "10x10": {
+              "base": { "type": "ACTUAL", "value": 6.67, "code": "USD" }
+            },
+            "10x20": {
+              "base": { "type": "ACTUAL", "value": 21.4, "code": "USD" }
+            },
+            "11x14": {
+              "base": { "type": "ACTUAL", "value": 10.11, "code": "USD" }
+            },
+            "12x12": {
+              "base": { "type": "ACTUAL", "value": 10, "code": "USD" }
+            },
+            "12x18": {
+              "base": { "type": "ACTUAL", "value": 15.16, "code": "USD" }
+            },
+            "16x16": {
+              "base": { "type": "ACTUAL", "value": 34.83, "code": "USD" }
+            },
+            "16x20": {
+              "base": { "type": "ACTUAL", "value": 34.83, "code": "USD" }
+            },
+            "16x24": {
+              "base": { "type": "ACTUAL", "value": 50.96, "code": "USD" }
+            },
+            "20x20": {
+              "base": { "type": "ACTUAL", "value": 52.14, "code": "USD" }
+            },
+            "20x24": {
+              "base": { "type": "ACTUAL", "value": 52.68, "code": "USD" }
+            },
+            "20x30": {
+              "base": { "type": "ACTUAL", "value": 65.9, "code": "USD" }
+            },
+            "20x40": {
+              "base": { "type": "ACTUAL", "value": 95.25, "code": "USD" }
+            },
+            "24x30": {
+              "base": { "type": "ACTUAL", "value": 80.84, "code": "USD" }
+            },
+            "24x36": {
+              "base": { "type": "ACTUAL", "value": 109.01, "code": "USD" }
+            },
+            "30x30": {
+              "base": { "type": "ACTUAL", "value": 109.01, "code": "USD" }
+            },
+            "30x40": {
+              "base": { "type": "ACTUAL", "value": 111.37, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/fine_art_velvet.jpg"
+          }
+        },
+        {
+          "id": "rag_baryta",
+          "name": "Photo Rag Baryta",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10": {
+              "base": { "value": 5.87, "type": "ACTUAL", "code": "USD" }
+            },
+            "8x12": {
+              "base": { "value": 10.33, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x10": {
+              "base": { "value": 7.91, "type": "ACTUAL", "code": "USD" }
+            },
+            "10x20": {
+              "base": { "value": 25.38, "type": "ACTUAL", "code": "USD" }
+            },
+            "11x14": {
+              "base": { "value": 11.99, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x12": {
+              "base": { "value": 11.86, "type": "ACTUAL", "code": "USD" }
+            },
+            "12x18": {
+              "base": { "value": 17.98, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x16": {
+              "base": { "value": 41.31, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x20": {
+              "base": { "value": 41.31, "type": "ACTUAL", "code": "USD" }
+            },
+            "16x24": {
+              "base": { "value": 60.44, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x20": {
+              "base": { "value": 61.84, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x24": {
+              "base": { "value": 62.48, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x30": {
+              "base": { "value": 78.16, "type": "ACTUAL", "code": "USD" }
+            },
+            "20x40": {
+              "base": { "value": 112.97, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x30": {
+              "base": { "value": 95.88, "type": "ACTUAL", "code": "USD" }
+            },
+            "24x36": {
+              "base": { "value": 129.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x30": {
+              "base": { "value": 129.29, "type": "ACTUAL", "code": "USD" }
+            },
+            "30x40": {
+              "base": { "value": 132.09, "type": "ACTUAL", "code": "USD" }
+            }
+          }
+        }
+      ],
+      "rules": [
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=texture" }],
+          "id": "bdTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+          "id": "beTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=canvas_lamination" }],
+          "id": "bfTHo8KbSJRxqkTBz",
+          "locked": true
+        }
+      ],
+      "ruleCount": 3,
+      "default": "smooth_matte"
+    },
+    {
+      "_id": "canvas_lamination",
+      "name": "protection",
+      "description": "Protects from surface damage and UV light",
+      "multipleValuesAllowed": false,
+      "required": false,
+      "parentCategory": "surface",
+      "attributes": [
+        {
+          "id": "matte_lamination",
+          "name": "matte",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/gallery_fine_art_matte.jpg"
+          }
+        },
+        {
+          "id": "semi_gloss_lamination",
+          "name": "semi-gloss",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/surface/gallery_fine_art_semi.jpg"
+          }
+        }
+      ],
+      "rules": [
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=texture" }],
+          "id": "bdTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=coating" }],
+          "id": "beTHo8KbSJRxqkTBz",
+          "locked": true
+        },
+        {
+          "trigger": "SELECTED",
+          "actions": [{ "type": "HIDE", "recipient": "c=paper_type" }],
+          "id": "bfTHo8KbSJRxqkTBz",
+          "locked": true
+        }
+      ],
+      "ruleCount": 3,
+      "default": "semi_gloss_lamination"
+    },
+    {
+      "_id": "depth",
+      "name": "depth",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "attributes": [
+        {
+          "id": "3_4in",
+          "name": "¾″",
+          "enabled": true,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/depth/standout_3_4in.jpg"
+          }
+        },
+        {
+          "id": "1_1_2in",
+          "name": "1½″",
+          "enabled": true,
+          "rules": [
+            {
+              "trigger": "SELECTED",
+              "actions": [
+                { "type": "DISABLE", "recipient": "c=size;a=8x10,8x12" }
+              ],
+              "id": "bcTHo8KbSJRxqkTBz",
+              "locked": true
+            }
+          ],
+          "ruleCount": 1,
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/depth/standout_1_1_2in.jpg"
+          }
+        }
+      ],
+      "default": "3_4in"
+    },
+    {
+      "_id": "edge",
+      "name": "edge",
+      "description": "Realistic edges mounted on lightweight foam",
+      "multipleValuesAllowed": false,
+      "required": true,
+      "pricingRefsKey": { "keys": ["size", "depth"], "separator": "-" },
+      "attributes": [
+        {
+          "id": "black",
+          "name": "black",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 17.4, "code": "USD" }
+            },
+            "8x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 21.15, "code": "USD" }
+            },
+            "10x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 21.15, "code": "USD" }
+            },
+            "10x10-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 36.15, "code": "USD" }
+            },
+            "10x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 35.35, "code": "USD" }
+            },
+            "10x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 55.15, "code": "USD" }
+            },
+            "11x14-3_4in": {
+              "base": { "type": "ACTUAL", "value": 25.45, "code": "USD" }
+            },
+            "11x14-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 39.35, "code": "USD" }
+            },
+            "12x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.9, "code": "USD" }
+            },
+            "12x12-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 38.3, "code": "USD" }
+            },
+            "12x18-3_4in": {
+              "base": { "type": "ACTUAL", "value": 31.3, "code": "USD" }
+            },
+            "12x18-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 51.9, "code": "USD" }
+            },
+            "15x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 200, "code": "USD" }
+            },
+            "16x16-3_4in": {
+              "base": { "type": "ACTUAL", "value": 33.75, "code": "USD" }
+            },
+            "16x16-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 56.2, "code": "USD" }
+            },
+            "16x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 35.35, "code": "USD" }
+            },
+            "16x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 61.8, "code": "USD" }
+            },
+            "16x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 53.8, "code": "USD" }
+            },
+            "16x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 98.45, "code": "USD" }
+            },
+            "20x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 53.8, "code": "USD" }
+            },
+            "20x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 98.45, "code": "USD" }
+            },
+            "20x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 53.8, "code": "USD" }
+            },
+            "20x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 98.45, "code": "USD" }
+            },
+            "20x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 69.85, "code": "USD" }
+            },
+            "20x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 119.35, "code": "USD" }
+            },
+            "20x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 160.5, "code": "USD" }
+            },
+            "20x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 174.15, "code": "USD" }
+            },
+            "24x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 105.15, "code": "USD" }
+            },
+            "24x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 137.25, "code": "USD" }
+            },
+            "24x36-3_4in": {
+              "base": { "type": "ACTUAL", "value": 146.9, "code": "USD" }
+            },
+            "24x36-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 153.55, "code": "USD" }
+            },
+            "30x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 160.5, "code": "USD" }
+            },
+            "30x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 174.15, "code": "USD" }
+            },
+            "30x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 174.95, "code": "USD" }
+            },
+            "30x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 193.95, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/edge/black.jpg"
+          }
+        },
+        {
+          "id": "white",
+          "name": "white",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 20.75, "code": "USD" }
+            },
+            "8x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 40.95, "code": "USD" }
+            },
+            "10x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 42.2, "code": "USD" }
+            },
+            "10x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 64.05, "code": "USD" }
+            },
+            "11x14-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.9, "code": "USD" }
+            },
+            "11x14-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 44.1, "code": "USD" }
+            },
+            "12x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.3, "code": "USD" }
+            },
+            "12x12-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 43.05, "code": "USD" }
+            },
+            "12x18-3_4in": {
+              "base": { "type": "ACTUAL", "value": 38.6, "code": "USD" }
+            },
+            "12x18-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 60.9, "code": "USD" }
+            },
+            "16x16-3_4in": {
+              "base": { "type": "ACTUAL", "value": 46.05, "code": "USD" }
+            },
+            "16x16-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 69.3, "code": "USD" }
+            },
+            "16x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 47.55, "code": "USD" }
+            },
+            "16x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 74.55, "code": "USD" }
+            },
+            "16x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "16x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 83.55, "code": "USD" }
+            },
+            "20x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 137.55, "code": "USD" }
+            },
+            "20x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "20x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "24x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 115.05, "code": "USD" }
+            },
+            "24x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 154.35, "code": "USD" }
+            },
+            "24x36-3_4in": {
+              "base": { "type": "ACTUAL", "value": 152.1, "code": "USD" }
+            },
+            "24x36-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 169.6, "code": "USD" }
+            },
+            "30x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "30x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "30x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 177.3, "code": "USD" }
+            },
+            "30x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 207.4, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/edge/white.jpg"
+          }
+        },
+        {
+          "id": "bamboo",
+          "name": "bamboo",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 20.75, "code": "USD" }
+            },
+            "8x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 40.95, "code": "USD" }
+            },
+            "10x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 42.2, "code": "USD" }
+            },
+            "10x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 64.05, "code": "USD" }
+            },
+            "11x14-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.9, "code": "USD" }
+            },
+            "11x14-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 44.1, "code": "USD" }
+            },
+            "12x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.3, "code": "USD" }
+            },
+            "12x12-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 43.05, "code": "USD" }
+            },
+            "12x18-3_4in": {
+              "base": { "type": "ACTUAL", "value": 38.6, "code": "USD" }
+            },
+            "12x18-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 60.9, "code": "USD" }
+            },
+            "16x16-3_4in": {
+              "base": { "type": "ACTUAL", "value": 46.05, "code": "USD" }
+            },
+            "16x16-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 69.3, "code": "USD" }
+            },
+            "16x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 47.55, "code": "USD" }
+            },
+            "16x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 74.55, "code": "USD" }
+            },
+            "16x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "16x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 83.55, "code": "USD" }
+            },
+            "20x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 137.55, "code": "USD" }
+            },
+            "20x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "20x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "24x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 115.05, "code": "USD" }
+            },
+            "24x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 154.35, "code": "USD" }
+            },
+            "24x36-3_4in": {
+              "base": { "type": "ACTUAL", "value": 152.1, "code": "USD" }
+            },
+            "24x36-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 169.6, "code": "USD" }
+            },
+            "30x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "30x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "30x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 177.3, "code": "USD" }
+            },
+            "30x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 207.4, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/edge/bamboo.jpg"
+          }
+        },
+        {
+          "id": "light_wood",
+          "name": "light wood",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 20.75, "code": "USD" }
+            },
+            "8x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 40.95, "code": "USD" }
+            },
+            "10x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 42.2, "code": "USD" }
+            },
+            "10x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 64.05, "code": "USD" }
+            },
+            "11x14-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.9, "code": "USD" }
+            },
+            "11x14-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 44.1, "code": "USD" }
+            },
+            "12x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.3, "code": "USD" }
+            },
+            "12x12-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 43.05, "code": "USD" }
+            },
+            "12x18-3_4in": {
+              "base": { "type": "ACTUAL", "value": 38.6, "code": "USD" }
+            },
+            "12x18-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 60.9, "code": "USD" }
+            },
+            "16x16-3_4in": {
+              "base": { "type": "ACTUAL", "value": 46.05, "code": "USD" }
+            },
+            "16x16-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 69.3, "code": "USD" }
+            },
+            "16x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 47.55, "code": "USD" }
+            },
+            "16x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 74.55, "code": "USD" }
+            },
+            "16x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "16x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 83.55, "code": "USD" }
+            },
+            "20x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 137.55, "code": "USD" }
+            },
+            "20x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "20x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "24x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 115.05, "code": "USD" }
+            },
+            "24x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 154.35, "code": "USD" }
+            },
+            "24x36-3_4in": {
+              "base": { "type": "ACTUAL", "value": 152.1, "code": "USD" }
+            },
+            "24x36-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 169.6, "code": "USD" }
+            },
+            "30x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "30x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "30x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 177.3, "code": "USD" }
+            },
+            "30x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 207.4, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/edge/light_wood.jpg"
+          }
+        },
+        {
+          "id": "stainless",
+          "name": "stainless",
+          "enabled": true,
+          "pricingRefs": {
+            "8x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 20.75, "code": "USD" }
+            },
+            "8x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-3_4in": {
+              "base": { "type": "ACTUAL", "value": 24.1, "code": "USD" }
+            },
+            "10x10-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 40.95, "code": "USD" }
+            },
+            "10x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 42.2, "code": "USD" }
+            },
+            "10x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 64.05, "code": "USD" }
+            },
+            "11x14-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.9, "code": "USD" }
+            },
+            "11x14-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 44.1, "code": "USD" }
+            },
+            "12x12-3_4in": {
+              "base": { "type": "ACTUAL", "value": 27.3, "code": "USD" }
+            },
+            "12x12-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 43.05, "code": "USD" }
+            },
+            "12x18-3_4in": {
+              "base": { "type": "ACTUAL", "value": 38.6, "code": "USD" }
+            },
+            "12x18-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 60.9, "code": "USD" }
+            },
+            "16x16-3_4in": {
+              "base": { "type": "ACTUAL", "value": 46.05, "code": "USD" }
+            },
+            "16x16-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 69.3, "code": "USD" }
+            },
+            "16x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 47.55, "code": "USD" }
+            },
+            "16x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 74.55, "code": "USD" }
+            },
+            "16x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "16x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x20-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x20-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x24-3_4in": {
+              "base": { "type": "ACTUAL", "value": 63.75, "code": "USD" }
+            },
+            "20x24-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 112.9, "code": "USD" }
+            },
+            "20x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 83.55, "code": "USD" }
+            },
+            "20x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 137.55, "code": "USD" }
+            },
+            "20x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "20x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "24x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 115.05, "code": "USD" }
+            },
+            "24x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 154.35, "code": "USD" }
+            },
+            "24x36-3_4in": {
+              "base": { "type": "ACTUAL", "value": 152.1, "code": "USD" }
+            },
+            "24x36-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 169.6, "code": "USD" }
+            },
+            "30x30-3_4in": {
+              "base": { "type": "ACTUAL", "value": 164.45, "code": "USD" }
+            },
+            "30x30-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 189, "code": "USD" }
+            },
+            "30x40-3_4in": {
+              "base": { "type": "ACTUAL", "value": 177.3, "code": "USD" }
+            },
+            "30x40-1_1_2in": {
+              "base": { "type": "ACTUAL", "value": 207.4, "code": "USD" }
+            }
+          },
+          "image": {
+            "type": "RASTER",
+            "value": "https://cdn.dragdrop.design/assets/attribute-icons/edge/stainless.jpg"
+          }
+        }
+      ],
+      "default": "black"
+    }
+  ],
+  "orderAttributeCategories": [
+    {
+      "_id": "shipping_options",
+      "name": "Shipping Options",
+      "requiredLevel": 0,
+      "attributes": [
+        { "id": "studio", "externalId": 547, "name": "Ship to Studio" },
+        {
+          "id": "dropship",
+          "externalId": 548,
+          "name": "Ship Directly to Client"
+        }
+      ]
+    },
+    {
+      "_id": "studio_shipping_options",
+      "name": "Studio Shipping Options",
+      "requiredLevel": 547,
+      "attributes": [
+        {
+          "id": "studio_two_day",
+          "parentId": 547,
+          "externalId": 147,
+          "name": "Ground Shipping (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 0, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_standard",
+          "parentId": 547,
+          "externalId": 150,
+          "name": "One Day Shipping, Standard - USA only (Includes Peak Surcharge)",
+          "technical": "(200002 Ground to NDS) $3.95 + 22% of $3.95",
+          "pricing": {
+            "base": { "value": 4.819, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 27, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "studio_one_day_priority",
+          "parentId": 547,
+          "externalId": 149,
+          "name": "One Day Shipping, Priority - USA only (Includes Peak Surcharge)",
+          "technical": "(210002 Ground to NDA) $6.95 + 28% of $6.95",
+          "pricing": {
+            "base": { "value": 8.896, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 33, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    },
+    {
+      "_id": "drop_ship_shipping_options",
+      "name": "Drop Ship Shipping Options",
+      "requiredLevel": 548,
+      "attributes": [
+        {
+          "id": "dropship_lowest_cost",
+          "parentId": 548,
+          "externalId": 553,
+          "name": "USA Drop Ship – Lowest Cost (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_two_day",
+          "parentId": 548,
+          "externalId": 554,
+          "name": "USA Drop Ship – Expedited Shipping (Includes Peak Surcharge)",
+          "technical": "(200003 Ground to 2DY) $7.50 + 15% of $7.50, SEASONAL: $9 + 20% of $9",
+          "pricing": {
+            "base": { "value": 10.8, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 20, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_standard",
+          "parentId": 548,
+          "externalId": 555,
+          "name": "USA Drop Ship – One-Day Shipping, Standard (Includes Peak Surcharge)",
+          "technical": "(200002 Ground to NDS) $7.50 + 22% of $7.50 + $3.95 + 22% of $3.95, SEASONAL: $9 + 27% of $9 + $3.95 + 22% of $3.95",
+          "pricing": {
+            "base": { "value": 16.249, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 27, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_one_day_priority",
+          "parentId": 548,
+          "externalId": 556,
+          "name": "USA Drop Ship – One-Day Shipping, Priority (Includes Peak Surcharge)",
+          "technical": "(210002 Ground to NDA) $7.50 + 28% of $7.50 + $6.95 + 28% of $6.95, SEASONAL: $9 + 33% of $9 + $6.95 + 28% of $6.95",
+          "pricing": {
+            "base": { "value": 20.866, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 33, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_canada",
+          "parentId": 548,
+          "externalId": 557,
+          "name": "Canada Drop Ship – UPS Standard (Includes Peak Surcharge)",
+          "technical": "(222223 Canada Shipping Surcharge) $7.50 + 10% of $7.50",
+          "pricing": {
+            "base": { "value": 10.35, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 15, "type": "PERCENT", "code": "USD" }
+          }
+        },
+        {
+          "id": "dropship_international",
+          "parentId": 548,
+          "externalId": 558,
+          "name": "International Drop Ship – USPS Priority Mail (Includes Peak Surcharge)",
+          "pricing": {
+            "base": { "value": 9.45, "type": "ACTUAL", "code": "USD" },
+            "markup": { "value": 5, "type": "PERCENT", "code": "USD" }
+          }
+        }
+      ]
+    }
+  ],
+  "editorType": "simpleEditor",
+  "_id": "uhqzmHJxp57TcsfEc",
+  "description": "Complement any image with various edge options",
+  "globalProductId": "hmCYk4n6brQniAQjh",
+  "metadata": { "resolution": 300 },
+  "name": "Standout",
+  "nodes": [{ "name": "Main", "nodeId": 10000, "dimensionKeys": ["size"] }],
+  "orgId": "5LsoooWuHGYFMaqbb",
+  "editorCompatibility": "simpleEditor"
+}

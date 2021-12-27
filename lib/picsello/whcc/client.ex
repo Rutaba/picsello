@@ -30,16 +30,48 @@ defmodule Picsello.WHCC.Client do
     end)
   end
 
+  def designs do
+    {:ok, %{body: body}} = new() |> get("/designs")
+    body |> Enum.map(&WHCC.Design.from_map/1)
+  end
+
   def products do
     {:ok, %{body: body}} = new() |> get("/products")
     body |> Enum.map(&WHCC.Product.from_map/1)
   end
 
-  def product_details(%WHCC.Product{id: id} = product) do
-    {:ok, %{body: %{"attributeCategories" => attribute_categories}}} =
-      new() |> get("/products/#{id}")
+  def design_details(%WHCC.Design{id: id} = design) do
+    if Keyword.get(config(), :skip_design_details) do
+      design
+    else
+      {:ok,
+       %{
+         body: api
+       }} = new() |> get("/designs/#{id}")
 
-    %{product | attribute_categories: attribute_categories}
+      WHCC.Design.add_details(design, api)
+    end
+  end
+
+  def editor(params) do
+    {:ok, %{body: body}} =
+      new()
+      |> post("/editors", params)
+
+    body |> WHCC.CreatedEditor.from_map()
+  end
+
+  def editor_details(id) do
+    {:ok, %{body: body}} = new() |> get("/editors/#{id}")
+
+    body
+    |> WHCC.Editor.Details.new()
+  end
+
+  def product_details(%WHCC.Product{id: id} = product) do
+    {:ok, %{body: api}} = new() |> get("/products/#{id}")
+
+    WHCC.Product.add_details(product, api)
   end
 
   def new() do

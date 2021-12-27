@@ -78,9 +78,14 @@ config :picsello, Picsello.Mailer,
   update_email_template: System.get_env("SENDGRID_UPDATE_EMAIL_TEMPLATE"),
   booking_proposal_template: System.get_env("SENDGRID_BOOKING_PROPOSAL_TEMPLATE"),
   lead_to_job_template: System.get_env("SENDGRID_LEAD_TO_JOB_TEMPLATE"),
+  marketing_template: System.get_env("SENDGRID_MARKETING_TEMPLATE"),
+  marketing_unsubscribe_id: System.get_env("SENDGRID_MARKETING_UNSUBSCRIBE_ID"),
   email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
+  reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
+
+config :picsello, :whcc, skip_design_details: true
