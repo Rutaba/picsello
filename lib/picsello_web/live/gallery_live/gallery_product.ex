@@ -68,9 +68,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
       nil
     else
-
       preview
-
     end
   end
 
