@@ -53,19 +53,63 @@ defmodule Picsello.WHCC.Client do
     end
   end
 
-  def editor(params) do
+  def editor(%{"userId" => account_id} = params) do
     {:ok, %{body: body}} =
-      new()
+      new(account_id)
       |> post("/editors", params)
 
     body |> WHCC.CreatedEditor.from_map()
   end
 
-  def editor_details(id) do
-    {:ok, %{body: body}} = new() |> get("/editors/#{id}")
+  def editor_details(account_id, id) do
+    {:ok, %{body: body}} = new(account_id) |> get("/editors/#{id}")
 
     body
     |> WHCC.Editor.Details.new()
+  end
+
+  def editor_export(account_id, id) when not is_list(id), do: editor_export(account_id, [id])
+
+  def editor_export(account_id, ids) do
+    params =
+      ids
+      |> Enum.map(&%{"editorId" => &1})
+      |> then(&%{"editors" => &1})
+
+    {:ok, %{body: body}} =
+      account_id
+      |> new()
+      |> put("/oas/editors/export", params)
+
+    body |> WHCC.Editor.Export.new()
+  end
+
+  def create_order(account_id, editor_id, opts) do
+    params =
+      account_id
+      |> editor_export(editor_id)
+      |> WHCC.Order.Params.from_export(opts)
+
+    {:ok, %{body: body}} =
+      account_id
+      |> new()
+      |> post("/oas/orders/create", params)
+
+    body |> WHCC.Order.Created.new()
+  end
+
+  def confirm_order(account_id, confirmation) do
+    {:ok, %{body: body}} =
+      account_id
+      |> new()
+      |> post("/oas/orders/#{confirmation}/confirm", %{})
+
+    body
+    |> then(fn
+      %{"ConfirmationID" => ^confirmation} -> :confirmed
+      %{"ErrorNumber" => "412.04"} -> :already_confirmed
+      x -> {:error, x}
+    end)
   end
 
   def product_details(%WHCC.Product{id: id} = product) do
@@ -78,14 +122,31 @@ defmodule Picsello.WHCC.Client do
     Tesla.client([{Tesla.Middleware.BearerAuth, token: token()}])
   end
 
-  defp fetch_token() do
+  def new(account_id) do
+    Tesla.client([{Tesla.Middleware.BearerAuth, token: fetch_token!(account_id)}])
+  end
+
+  defp fetch_token(account_id \\ nil) do
     {:ok, %{body: %{"accessToken" => token, "expires" => expires_unix_time}}} =
       post(
         "/auth/access-token",
-        config() |> Keyword.take([:key, :secret]) |> Enum.into(%{})
+        token_params(account_id)
       )
 
     %{token: token, expires_at: DateTime.from_unix!(expires_unix_time)}
+  end
+
+  defp token_params(nil), do: config() |> Keyword.take([:key, :secret]) |> Enum.into(%{})
+
+  defp token_params(account_id) do
+    token_params(nil)
+    |> Map.merge(%{claims: %{"accountId" => account_id}})
+  end
+
+  defp fetch_token!(account_id) do
+    account_id
+    |> fetch_token()
+    |> Map.get(:token)
   end
 
   defp expired?(expires_at) do

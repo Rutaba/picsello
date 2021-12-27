@@ -28,7 +28,7 @@ defmodule Picsello.WHCC.Editor.Params do
     color = Picsello.Profiles.color(organization)
 
     %{
-      "userId" => "{{accountId}}",
+      "userId" => Galleries.account_id(gallery),
       "productId" => product.whcc_id,
       "photos" => PhotoParams.from(photo, gallery_photos),
       "redirects" => redirects(opts),

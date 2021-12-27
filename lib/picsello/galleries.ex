@@ -558,4 +558,12 @@ defmodule Picsello.Galleries do
       _ -> true
     end)
   end
+
+  def account_id(%Gallery{} = gallery), do: account_id(gallery.id)
+
+  def account_id(gallery_id) do
+    "Gallery account #{gallery_id}"
+    |> then(&:crypto.hash(:sha3_256, &1))
+    |> Base.encode64()
+  end
 end
