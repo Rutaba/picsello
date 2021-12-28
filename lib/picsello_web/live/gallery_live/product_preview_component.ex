@@ -3,11 +3,23 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries.Workers.PhotoStorage
 
-  def update(%{product: %{category_template: template} = product} = assigns, socket) do
+  @default_assigns %{
+    edit_product_link: nil,
+    review_params: nil,
+    has_product_info: true
+  }
+
+  def mount(socket) do
+    socket
+    |> assign(@default_assigns)
+    |> ok
+  end
+
+  def update(%{category_template: template, preview_url: preview_url} = assigns, socket) do
     socket
     |> assign(assigns)
     |> push_event("set_preview", %{
-      preview: get_preview(product),
+      preview: path(preview_url),
       frame: template.name,
       coords: template.corners,
       target: "canvas#{template.id}"
@@ -15,9 +27,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     |> ok
   end
 
-  def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
-  def get_preview(_), do: path(nil)
-
-  def path(nil), do: "/images/card_blank.png"
-  def path(url), do: PhotoStorage.path_to_url(url)
+  defp path(nil), do: "/images/card_blank.png"
+  defp path(url), do: PhotoStorage.path_to_url(url)
 end

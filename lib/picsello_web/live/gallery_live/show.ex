@@ -319,4 +319,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
+
+  def product_preview_url(%{preview_photo: %{preview_url: url}}), do: url
+  def product_preview_url(_), do: nil
 end

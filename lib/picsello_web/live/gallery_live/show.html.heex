@@ -81,7 +81,12 @@
   <div class="flex justify-between center-container">
   <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto">
     <%= for product <- @products do %>
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} product={product} is_editable={true} has_info={true}/>
+      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} 
+                      id={product.id} 
+                      preview_url={product_preview_url(product)}
+                      category_template={product.category_template}
+                      edit_product_link={Routes.preview_path(@socket, :preview, product.gallery_id, product.id, product.category_template.id)}
+                      />
     <% end %>
     </ul>
   </div>

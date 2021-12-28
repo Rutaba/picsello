@@ -64,11 +64,11 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
     |> noreply()
   end
 
-  defp assign_whcc_products(%{assigns: %{gallery_product: product}} = socket) do
+  defp assign_whcc_products(%{assigns: %{category_template: template}} = socket) do
     socket
     |> assign(
       :whcc_products,
-      GalleryProducts.get_whcc_products(product.category_template.category_id)
+      GalleryProducts.get_whcc_products(template.category_id)
     )
   end
 
