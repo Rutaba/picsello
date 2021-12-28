@@ -558,4 +558,13 @@ defmodule Picsello.Galleries do
       _ -> true
     end)
   end
+
+  @doc """
+  Loads the gallery ownner.
+  """
+  def get_gallery_owner(%Gallery{id: _} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: [organization: :user]])
+    |> then(fn %{job: %{client: %{organization: %{user: user}}}} -> user end)
+  end
 end

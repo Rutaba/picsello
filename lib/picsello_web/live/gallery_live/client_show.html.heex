@@ -53,7 +53,7 @@
     </div>
     <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
       <div class="font-bold text-3xl pt-6">
-        Order custom products with {user}
+        Order custom products with <%= @owner.name %>
       </div>
       <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto pt-10">
         <%= for product <- @products do %>
