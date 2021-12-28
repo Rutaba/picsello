@@ -107,7 +107,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       ~w(base_price description job_type name download_count download_each_price shoot_count)a
 
     updated =
-      %{template | name: "Wedding Super Deluxe", download_each_price: %Money{amount: 5000}}
+      %{template | name: "Wedding Super Deluxe", download_each_price: %Money{amount: 0}}
       |> Map.take([:id | form_fields])
 
     assert ^updated =

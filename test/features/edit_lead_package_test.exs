@@ -15,7 +15,8 @@ defmodule Picsello.EditLeadPackageTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 2,
-          base_price: 100
+          base_price: 100,
+          download_each_price: 0
         },
         shoots: [%{}, %{}]
       })
@@ -41,6 +42,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_text("Edit Package: Set Pricing")
     |> assert_value(text_field("Base Price"), "$1.00")
     |> fill_in(text_field("Base Price"), with: "2.00")
+    |> assert_has(radio_button("Do not charge for downloads", checked: true))
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("My Greatest Package")
@@ -56,7 +58,7 @@ defmodule Picsello.EditLeadPackageTest do
         | name: "My Greatest Package",
           description: "indescribably great.",
           base_price: %Money{amount: 200},
-          download_each_price: %Money{amount: 5000}
+          download_each_price: %Money{amount: 0}
       }
       |> Map.take([:id | form_fields])
 
