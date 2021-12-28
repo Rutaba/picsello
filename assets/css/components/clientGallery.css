@@ -24,13 +24,13 @@
 
 .galleryImage__wrapper {
     width: 309px;
-    
+
 }
 
 .photos__rect{
    display: flex;
    width: 309px;
-   height: 300px; 
+   height: 300px;
    background-color: #F5F6F8;
 
 }
@@ -344,6 +344,11 @@
     background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
 }
 
+
+.editProductPopup__content {
+    max-height: 90%;
+}
+
 .errorPwdMsg ~ div > .relative input{
     @apply border
     border-solid
@@ -361,6 +366,60 @@
     text-transform: uppercase;
 }
 
+.customSelect select{
+    @apply text-base-300
+    appearance-none
+    border-0
+    rounded-none
+    w-full
+    text-base
+    leading-none
+    bg-transparent
+    py-2
+    px-4
+    h-11
+    focus:outline-none
+}
+
+.customSelect{
+    @apply
+    w-full
+    inline-block
+    border
+    border-solid
+    border-base-200
+    rounded-lg
+    relative
+    overflow-hidden
+    h-11
+}
+
+.customSelect::after{
+    content: '';
+    background: url('/images/chevron-thin-right.svg') no-repeat;
+    width: 16px;
+    height: 9px;
+    position:absolute;
+    right: 14px;
+    top:50%;
+    transform: translateY(-25%);
+}
+
+@media screen and (min-width: 1280px) {
+    .editProductPopup {
+        width: 95vw;
+        max-width: 1440px;
+        height: 95vh;
+        max-height: 894px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .editProductPopup__content {
+        height: 754px;
+        max-height: 89%;
+    }
+}
 
 @media screen and (max-width: 640px) {
     .circleBtn ul li a {

@@ -1,3 +1,4 @@
+
 <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo_id)}')"}
      class="flex flex-nowrap text-left clientGallery__coverImg">
     <div class="w-2/3"></div>
@@ -10,10 +11,6 @@
         </div>
     </div>
 </div>
-
-
-  
-
 
 <div class="px-2 md:px-16">
     <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
@@ -51,6 +48,8 @@
 
         <.icon name="shopping-cart" class="h-6 w-6 text-base-300 sm:hidden" />
     </div>
+
+    <%= if length(@products) !== 0 do %>
     <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
       <div class="font-bold text-3xl pt-6">
         Order custom products with <%= @owner.name %>
@@ -63,8 +62,7 @@
         <% end %>
       </ul>
     </div>
-      
-  
+ <% end %>
 
     <!-- Content -->
     <div class="pt-16">
