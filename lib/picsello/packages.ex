@@ -121,6 +121,7 @@ defmodule Picsello.Packages do
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count
 
+    def each_price(%__MODULE__{is_enabled: false}), do: @zero_price
     def each_price(%__MODULE__{each_price: each_price}), do: each_price
 
     def default_each_price(), do: @default_each_price
