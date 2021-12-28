@@ -252,6 +252,9 @@ defmodule Picsello.Factory do
 
     package =
       case attrs do
+        %{package: %Package{} = package} ->
+          package
+
         %{package: package} ->
           fn ->
             build(

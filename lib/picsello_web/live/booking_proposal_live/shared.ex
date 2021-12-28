@@ -49,30 +49,30 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     ~H"""
     <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
       <dl class="flex flex-col">
-        <dt class="inline-block font-semibold">Dated:</dt>
+        <dt class="inline-block font-bold">Dated:</dt>
         <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
       </dl>
 
       <dl class="flex flex-col">
-        <dt class="inline-block font-semibold">Quote #:</dt>
+        <dt class="inline-block font-bold">Quote #:</dt>
         <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
       </dl>
 
       <hr class="col-span-2">
 
       <dl class="flex flex-col col-span-2 sm:col-span-1">
-        <dt class="font-semibold">For:</dt>
+        <dt class="font-bold">For:</dt>
         <dd><%= @client.name %></dd>
         <dd class="inline"><%= @client.email %></dd>
 
-        <dt class="mt-4 font-semibold">Package:</dt>
+        <dt class="mt-4 font-bold">Package:</dt>
         <dd><%= @package.name %></dd>
       </dl>
 
       <dl class="flex flex-col col-span-2 sm:col-span-1">
-        <dt class="font-semibold">From:</dt>
+        <dt class="font-bold">From:</dt>
         <dd><%= @organization.name %></dd>
-        <dt class="mt-4 font-semibold">Email:</dt>
+        <dt class="mt-4 font-bold">Email:</dt>
         <dd><%= @photographer.email %></dd>
       </dl>
 
@@ -110,8 +110,19 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <hr class="col-span-2">
       <% end %>
 
-      <h3 class="font-bold col-span-2 sm:col-span-1">Photo Downloads</h3>
-      <p class="col-span-2 sm:col-span-1"><%= ngettext "1 photo download", "%{count} photo downloads", @package.download_count %></p>
+      <div class="col-span-2 sm:col-span-1">
+        <h3 class="font-bold">Photo Downloads</h3>
+        <%= case Packages.Download.from_package(@package) do %>
+          <% %{includes_credits: true} = d -> %>
+            <p><%= ngettext "1 download credit", "%{count} download credits", d.count %> included</p>
+            <p> Additional downloads @ <%= d.each_price %>/ea </p>
+          <% %{is_enabled: true} = d -> %>
+            <p> Download photos @ <%= d.each_price %>/ea </p>
+          <% _ -> %>
+            <p> All photos downloadable </p>
+        <% end %>
+      </div>
+
       <hr class="hidden col-span-2 sm:block">
 
       <div class="hidden col-start-2 sm:block">
