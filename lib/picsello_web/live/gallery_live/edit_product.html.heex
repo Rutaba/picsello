@@ -4,10 +4,10 @@
   </a>
   <div class="flex flex-col lg:flex-row items-start w-full h-full overflow-y-auto" style="height: 754px; max-height:89%;">
     <div class="editProductPopup__img lg:w-2/4 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full max-h-80 xl:max-h-full lg:ml-12 ml-0">
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={@product.id} product={@product} is_editable={false} has_info={false} />
+      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={@gallery_product.id} product={@gallery_product} is_editable={false} has_info={false} />
     </div>
     <div class="lg:w-2/4 w-full lg:pl-16 lg:pr-12 px-0 h-full flex flex-col pt-14 flex-start">
-      <h3 class="text-4xl font-bold productType"><%= @product.category_template.title %></h3>
+      <h3 class="text-4xl font-bold productType"><%= @gallery_product.category_template.title %></h3>
       <%= if length(@whcc_products) > 1 do %>
         <div>
           <h6 class="text-base font-bold pt-7 pb-3.5">Type</h6>
@@ -38,7 +38,7 @@
         <h6 class="text-base font-bold pt-9 pb-3.5">Paper</h6>
         <p style="border:1px solid grey; display: inline-block; padding : 9px; width:100%;">place for select paper input</p>
       </div>
-      <button class="btn-primary mt-12">Customize & buy</button>
+      <button class="btn-primary mt-12" phx-click="customize_and_buy" phx-target={@myself}>Customize & buy</button>
     </div>
   </div>
 </div>

@@ -59,14 +59,13 @@ defmodule Picsello.GalleryProducts do
     from(product in Product,
       where: product.category_id == ^category_id,
       order_by: [asc: product.position],
-      select: %{
-        id: product.id,
-        whcc_name: product.whcc_name,
-        sizes:
-          fragment(
-            ~s|SELECT object->'attributes' FROM jsonb_array_elements(attribute_categories) AS object WHERE object->>'_id' = 'size'|
-          )
-      }
+      select:
+        merge(product, %{
+          sizes:
+            fragment(
+              ~s|SELECT object->'attributes' FROM jsonb_array_elements(attribute_categories) AS object WHERE object->>'_id' = 'size'|
+            )
+        })
     )
     |> Repo.all()
   end
