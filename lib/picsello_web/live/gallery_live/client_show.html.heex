@@ -10,7 +10,6 @@
         </div>
     </div>
 </div>
-
 <div class="px-2 md:px-16">
     <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
         <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
@@ -90,23 +89,12 @@
               data-has-more-photos={@has_more_photos}
         >
             <%= for photo <- @photos do %>
-                <div
-                    class="item"
-                    id={"photo-item-#{photo.id}"}
-                    style={"
-                      width: 300px;
-                      height: {if @photo.aspect_ratio, do: 300 / @photo.aspect_ratio, else: auto}
-                    "}
-                >
-                    <div class="item-content">
-                        <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-                            id: photo.id,
-                            photo: photo,
-                            is_likable: true,
-                            is_removable: false,
-                            is_removed: false %>
-                    </div>
-                </div>
+                <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo,
+                    is_likable: true,
+                    is_removable: false,
+                    is_removed: false %>
           <% end %>
         </div>
     </div>
