@@ -34,7 +34,7 @@
       <div>
         <h6 class="text-base font-bold pt-9 pb-3.5">Size</h6>
         <.form let={f} for={:product_size} phx-change="update-product-size" phx-target={@myself}>
-          <div class="flex justify-between">
+          <div class="flex justify-between customSelect">
             <%= select f, :option, product_size_options(@current_whcc_product) %>
           </div>
         </.form>
