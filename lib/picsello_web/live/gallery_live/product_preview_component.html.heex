@@ -1,6 +1,6 @@
 <li class="galleryImage__wrapper flex flex-col justify-between  rounded-lg" phx-hook="Preview">
-  <%= if @review_params do %>
-    <div phx-click="open_edit_product_popup" phx-value-product-id={@review_params[:product_id]}>
+  <%= if @click_params do %>
+    <div phx-click="product_preview_photo_click" phx-value-params={@click_params}>
       <div class="photos__rect rounded-lg justify-center items-center">
         <canvas id={"canvas#{@category_template.id}"} width="220" height="180"></canvas>
       </div>

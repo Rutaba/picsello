@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
 
   @default_assigns %{
     edit_product_link: nil,
-    review_params: nil,
+    click_params: nil,
     has_product_info: true
   }
 

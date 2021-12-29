@@ -41,8 +41,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   def handle_event(
-        "open_edit_product_popup",
-        %{"product-id" => id},
+        "product_preview_photo_click",
+        %{"params" => id},
         %{assigns: %{products: products}} = socket
       ) do
     gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(id) end)
