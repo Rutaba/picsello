@@ -38,30 +38,10 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
     |> noreply()
   end
 
-  def handle_event(
-        "customize_and_buy",
-        _,
-        %{
-          assigns: %{
-            current_whcc_product: whcc_product,
-            gallery_product: product,
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    created_editor =
-      Picsello.WHCC.create_editor(
-        whcc_product,
-        product.preview_photo,
-        complete_url:
-          Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
-            "?editorId=%EDITOR_ID%",
-        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash)
-      )
+  def handle_event("customize_and_buy", _, %{assigns: %{current_whcc_product: whcc_product, photo: photo}} = socket) do
+    send self(), {:customize_and_buy_product, whcc_product, photo}
 
-    socket
-    |> redirect(external: created_editor.url)
-    |> noreply()
+    socket |> noreply()
   end
 
   defp assign_whcc_products(%{assigns: %{category_template: template}} = socket) do

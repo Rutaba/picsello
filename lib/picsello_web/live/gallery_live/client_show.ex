@@ -85,6 +85,22 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
+  def handle_info({:customize_and_buy_product, whcc_product, photo}, %{assigns: %{gallery: gallery}} = socket) do
+    created_editor =
+      Picsello.WHCC.create_editor(
+        whcc_product,
+        photo,
+        complete_url:
+          Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
+            "?editorId=%EDITOR_ID%",
+        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash)
+      )
+
+    socket
+    |> redirect(external: created_editor.url)
+    |> noreply()
+  end
+
   # This should be removed as soon as product selection will be implemented
   defp get_some_product() do
     Picsello.Category
