@@ -40,6 +40,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
          |> assign(:frame_id, frame_id)
          |> assign(:frame, frame_name)
          |> assign(:coords, inspect(coords))
+         |> assign(:preview, preview)
          |> push_event("set_preview", %{
            preview: url,
            frame: frame_name,
