@@ -38,8 +38,12 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
     |> noreply()
   end
 
-  def handle_event("customize_and_buy", _, %{assigns: %{current_whcc_product: whcc_product, photo: photo}} = socket) do
-    send self(), {:customize_and_buy_product, whcc_product, photo}
+  def handle_event(
+        "customize_and_buy",
+        _,
+        %{assigns: %{current_whcc_product: whcc_product, photo: photo}} = socket
+      ) do
+    send(self(), {:customize_and_buy_product, whcc_product, photo})
 
     socket |> noreply()
   end

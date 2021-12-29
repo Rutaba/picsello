@@ -85,7 +85,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
-  def handle_info({:customize_and_buy_product, whcc_product, photo}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        {:customize_and_buy_product, whcc_product, photo},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     created_editor =
       Picsello.WHCC.create_editor(
         whcc_product,
