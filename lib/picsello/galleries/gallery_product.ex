@@ -1,7 +1,6 @@
 defmodule Picsello.Galleries.GalleryProduct do
   @moduledoc false
   use Ecto.Schema
-  import Ecto.Changeset
   alias Picsello.CategoryTemplate
   alias Picsello.Galleries.{Photo, Gallery}
 

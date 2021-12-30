@@ -17,7 +17,7 @@ defmodule Picsello.Cart.Order do
     embeds_many :digitals, Digital do
       field :photo_id, :integer
       field :preview_url, :string
-      field :price, :integer
+      field :price, Money.Ecto.Amount.Type
     end
 
     embeds_one :delivery_info, DeliveryInfo do
@@ -59,14 +59,5 @@ defmodule Picsello.Cart.Order do
   defp cast_subtotal_cost(changeset, {:add, amount}) do
     current_total_cost = get_field(changeset, :subtotal_cost)
     put_change(changeset, :subtotal_cost, Money.add(current_total_cost, amount))
-  end
-
-  defimpl Jason.Encoder, for: Picsello.WHCC.Editor.Details do
-    def encode(value, opts) do
-      Jason.Encode.map(
-        Map.take(value, [:editor_id, :preview_url, :product_id, :selections]),
-        opts
-      )
-    end
   end
 end

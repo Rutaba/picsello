@@ -17,7 +17,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> assign(:favorites_filter, false)
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
-    |> assign(:owner, Galleries.get_gallery_owner(gallery))
+    |> assign(:creator, Galleries.get_gallery_creator(gallery))
     |> noreply()
   end
 
