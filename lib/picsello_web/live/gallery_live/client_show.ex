@@ -4,8 +4,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
+  alias Picsello.Cart
 
   @per_page 12
+
+  @impl true
+  def handle_params(%{"editorId" => whcc_editor_id}, _, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> place_product_in_cart(whcc_editor_id)
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash))
+    |> noreply()
+  end
 
   @impl true
   def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
@@ -94,7 +103,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         whcc_product,
         photo,
         complete_url:
-          Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
+          Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
             "?editorId=%EDITOR_ID%",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash)
       )
@@ -102,6 +111,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket
     |> redirect(external: created_editor.url)
     |> noreply()
+  end
+
+  defp place_product_in_cart(%{assigns: %{gallery: gallery}} = socket, whcc_editor_id) do
+    gallery_account_id = Galleries.account_id(gallery)
+    cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
+    Cart.place_product(cart_product, gallery.id)
+
+    socket
   end
 
   # This should be removed as soon as product selection will be implemented
