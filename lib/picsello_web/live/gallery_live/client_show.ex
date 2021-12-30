@@ -56,6 +56,26 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   @impl true
+  def handle_event(
+        "click",
+        %{"preview_photo_id" => photo_id},
+        %{assigns: %{gallery: gallery, favorites_filter: favorites_filter}} = socket
+      ) do
+    photo_ids =
+      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
+
+    socket
+    |> open_modal(PicselloWeb.GalleryLive.ChooseProduct, %{
+      gallery: gallery,
+      photo_id: photo_id,
+      photo_ids:
+        CLL.init(photo_ids)
+        |> CLL.next(photo_ids |> Enum.find_index(&(&1 == to_integer(photo_id))))
+    })
+    |> noreply
+  end
+
+  @impl true
   def handle_info(:increase_favorites_count, %{assigns: %{favorites_count: count}} = socket) do
     socket |> assign(:count, count + 1) |> noreply()
   end

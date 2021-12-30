@@ -568,6 +568,26 @@ defmodule Picsello.Galleries do
     |> then(fn %{job: %{client: %{organization: %{user: user}}}} -> user end)
   end
 
+  @doc """
+  Get list of photo ids from gallery.
+  """
+  def get_photo_ids([gallery_id: _gallery_id, favorites_filter: favorites_filter] = opts) do
+    opts = Keyword.delete(opts, :favorites_filter)
+
+    opts =
+      if favorites_filter do
+        Keyword.put(opts, :client_liked, true)
+      else
+        opts
+      end
+
+    Photo
+    |> where(^opts)
+    |> order_by(asc: :position)
+    |> select([photo], photo.id)
+    |> Repo.all()
+  end
+
   def account_id(%Gallery{} = gallery), do: account_id(gallery.id)
 
   def account_id(gallery_id) do

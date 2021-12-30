@@ -452,8 +452,19 @@
 
 }
 
+@media screen and (max-width: 1024px) {
+    .choose-product{
+        display: inline-grid;
+    }
+    .choose-product-item {width: 100%;}
+}
+
 @media screen and (min-width: 1024px) {
+    .choose-product{
+        display: flex;
+    }
     .customWatermarkPopup {
         max-height: 950px;
     }
+    .choose-product-item {width: 50%;}
 }

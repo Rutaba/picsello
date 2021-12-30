@@ -1,6 +1,7 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
+  import PicselloWeb.LiveHelpers
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer

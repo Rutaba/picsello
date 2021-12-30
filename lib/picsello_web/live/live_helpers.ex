@@ -5,6 +5,7 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.LiveView, only: [assign: 2]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  alias Picsello.Galleries.Workers.PhotoStorage
 
   def live_modal(_socket, component, opts) do
     path = Keyword.fetch!(opts, :return_to)
@@ -267,4 +268,7 @@ defmodule PicselloWeb.LiveHelpers do
       <div style={@style} class={"#{@class} flex flex-col items-center justify-center rounded-full"}><%= Picsello.Accounts.User.initials @user %></div>
     """
   end
+
+  def path(nil), do: "/images/card_blank.png"
+  def path(url), do: PhotoStorage.path_to_url(url)
 end

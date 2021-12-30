@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.Galleries.Workers.PhotoStorage
+  import PicselloWeb.LiveHelpers
 
   @default_assigns %{
     edit_product_link: nil,
@@ -26,7 +26,4 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     })
     |> ok
   end
-
-  defp path(nil), do: "/images/card_blank.png"
-  defp path(url), do: PhotoStorage.path_to_url(url)
 end
