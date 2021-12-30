@@ -18,6 +18,9 @@ env:
   PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
   PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
   PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
+  PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE: 'Cost of Living Adjustments!A1:B51'
+  PACKAGES_CALCULATOR_PRICES_RANGE: 'Sheet1!A1:E200'
+  PACKAGES_CALCULATOR_SHEET_ID: '1o-jjICzCgevEyf4Kw5keOyTEu8IK5EgfOXfeV_lSMVI'
 
 jobs:
   build:
