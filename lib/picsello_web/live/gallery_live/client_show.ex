@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Galleries
+  alias Picsello.GalleryProducts
 
   @per_page 12
 
@@ -10,11 +11,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   def handle_params(_params, _, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:page_title, "Show Gallery")
+    |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
     |> assign(:page, 0)
     |> assign(:update_mode, "append")
     |> assign(:favorites_filter, false)
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
+    |> assign(:creator, Galleries.get_gallery_creator(gallery))
     |> noreply()
   end
 
@@ -37,6 +40,21 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
+  def handle_event(
+        "product_preview_photo_click",
+        %{"params" => id},
+        %{assigns: %{products: products}} = socket
+      ) do
+    gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(id) end)
+
+    socket
+    |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{
+      category_template: gallery_product.category_template,
+      photo: gallery_product.preview_photo
+    })
+    |> noreply()
+  end
+
   @impl true
   def handle_info(:increase_favorites_count, %{assigns: %{favorites_count: count}} = socket) do
     socket |> assign(:count, count + 1) |> noreply()
@@ -55,12 +73,30 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       Picsello.WHCC.create_editor(
         get_some_product(),
         photo,
-        # design: "SjhvrFtjMP7FHy6Qa",
         complete_url:
           Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
             "?editorId=%EDITOR_ID%",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
         only_favorites: favorites?
+      )
+
+    socket
+    |> redirect(external: created_editor.url)
+    |> noreply()
+  end
+
+  def handle_info(
+        {:customize_and_buy_product, whcc_product, photo},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    created_editor =
+      Picsello.WHCC.create_editor(
+        whcc_product,
+        photo,
+        complete_url:
+          Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
+            "?editorId=%EDITOR_ID%",
+        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash)
       )
 
     socket

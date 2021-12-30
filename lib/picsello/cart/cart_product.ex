@@ -4,21 +4,17 @@ defmodule Picsello.Cart.CartProduct do
 
   """
 
-  defstruct [
-    :editor_details,
-    :price,
-    :whcc_order,
-    :whcc_confirmation,
-    :whcc_tracking
-  ]
+  use Ecto.Schema
 
-  @type t :: %__MODULE__{
-          editor_details: Picsello.WHCC.Editor.Details.t(),
-          price: Money.t(),
-          whcc_order: Picsello.WHCC.Order.Created.t() | nil,
-          whcc_confirmation: atom() | {:error, any()},
-          whcc_tracking: any()
-        }
+  embedded_schema do
+    field :editor_details, :map
+    field :base_price, Money.Ecto.Amount.Type
+    field :price, Money.Ecto.Amount.Type
+    field :whcc_order, :map
+    field :whcc_confirmation, :string
+    field :whcc_processing, :map
+    field :whcc_tracking, :map
+  end
 
   def new(details, price) do
     %__MODULE__{

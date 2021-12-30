@@ -559,6 +559,15 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  @doc """
+  Loads the gallery creator.
+  """
+  def get_gallery_creator(%Gallery{id: _} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: [organization: :user]])
+    |> (& &1.job.client.organization.user).()
+  end
+
   def account_id(%Gallery{} = gallery), do: account_id(gallery.id)
 
   def account_id(gallery_id) do

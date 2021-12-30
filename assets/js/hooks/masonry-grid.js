@@ -147,13 +147,6 @@ export default {
   init_remove_listener() {
     this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
   },
-
-  init_set_preview_listener(){
-    this.handleEvent("set_preview", 
-      ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
-        liveSocket.hooks.Preview.draw(frame_name, preview_name, corners0, canvasId);
-      })
-  },
   
   remove_item(id) {
     const grid = this.get_grid();
@@ -190,7 +183,6 @@ export default {
 
     this.init_masonry();
     this.init_remove_listener();
-    this.init_set_preview_listener();
   },
 
   /**

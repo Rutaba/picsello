@@ -1,3 +1,4 @@
+
 <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo_id)}')"}
      class="flex flex-nowrap text-left clientGallery__coverImg">
     <div class="w-2/3"></div>
@@ -45,8 +46,25 @@
         </ul>
 
         <.icon name="shopping-cart" class="h-6 w-6 text-base-300 sm:hidden" />
-
     </div>
+
+    <%= if length(@products) !== 0 do %>
+    <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
+      <div class="font-bold text-3xl pt-6">
+        Order custom products with <%= @creator.name %>
+      </div>
+      <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto pt-10">
+        <%= for product <- @products do %>
+            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} 
+                            id={product.id} 
+                            preview_url={product.preview_photo.preview_url} 
+                            category_template={product.category_template}
+                            click_params={product.id}
+                            />
+        <% end %>
+      </ul>
+    </div>
+ <% end %>
 
     <!-- Content -->
     <div class="pt-16">

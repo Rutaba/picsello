@@ -30,4 +30,13 @@ defmodule Picsello.WHCC.Editor.Details do
         |> Map.drop(["photo"])
     }
   end
+
+  defimpl Jason.Encoder, for: Picsello.WHCC.Editor.Details do
+    def encode(value, opts) do
+      Jason.Encode.map(
+        Map.take(value, [:editor_id, :preview_url, :product_id, :selections]),
+        opts
+      )
+    end
+  end
 end
