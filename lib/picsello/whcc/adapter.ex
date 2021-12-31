@@ -9,6 +9,9 @@ defmodule Picsello.WHCC.Adapter do
   @callback editor_export(String.t(), String.t()) :: Picsello.WHCC.Editor.Export.t()
   @callback create_order(String.t(), String.t(), Keyword.t()) :: Picsello.WHCC.Order.Created.t()
   @callback confirm_order(String.t(), String.t()) :: atom() | {:error, any()}
+  @callback webhook_register(String.t()) :: any()
+  @callback webhook_verify(String.t()) :: any()
+  @callback webhook_validate(any(), String.t()) :: any()
 
   def products(), do: impl().products()
   def product_details(product), do: impl().product_details(product)
@@ -24,6 +27,10 @@ defmodule Picsello.WHCC.Adapter do
 
   def confirm_order(account_id, confirmation),
     do: impl().confirm_order(account_id, confirmation)
+
+  def webhook_register(url), do: impl().webhook_register(url)
+  def webhook_verify(hash), do: impl().webhook_verify(hash)
+  def webhook_validate(data, signature), do: impl().webhook_validate(data, signature)
 
   defp impl, do: Application.get_env(:picsello, :whcc) |> Keyword.get(:adapter)
 end

@@ -145,12 +145,12 @@ defmodule Picsello.WHCC do
   defdelegate editor_export(account_id, editor_id), to: Adapter
   defdelegate create_order(account_id, editor_id, opts), to: Adapter
   defdelegate confirm_order(account_id, confirmation), to: Adapter
+  defdelegate webhook_register(url), to: Adapter
+  defdelegate webhook_verify(hash), to: Adapter
+  defdelegate webhook_validate(data, signature), to: Adapter
 
-  def mark_up_price(_details, %{"totalOrderBasePrice" => base_price, "code" => "USD"}) do
-    (base_price * 100)
-    |> trunc()
-    |> Money.new(:USD)
-    |> Money.multiply(2)
+  def mark_up_price(_details, %Money{} = base_price) do
+    Money.multiply(base_price, 2)
   end
 
   defp variations(%{variations: variations}),

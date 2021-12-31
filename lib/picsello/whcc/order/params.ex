@@ -8,7 +8,7 @@ defmodule Picsello.WHCC.Order.Params do
       ) do
     %{} = ship_to = Keyword.get(opts, :ship_to)
     %{} = return_to = Keyword.get(opts, :return_to)
-    [_] = attributes = Keyword.get(opts, :attributtes)
+    [_ | _] = attributes = Keyword.get(opts, :attributes)
 
     export.order
     |> Map.put("EntryId", editor_id)
