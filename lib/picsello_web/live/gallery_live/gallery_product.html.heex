@@ -13,19 +13,9 @@
             <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
         </div>    
 </div>
-<div class="gallery__container pt-36 pb-14 grid grid-cols-2 flex">
-    <div class="flex flex-col">
-        <div>
-            <span class="text-base font-bold">Product preview</span>
-            <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
-                <use href="/images/icons.svg#gallery-info"></use>
-            </svg>
-        </div> 
-        <div class="photos__rect flex justify-center items-center preview mt-2">   
-            <div>
-                <canvas id="canvas" width="375" height="375"></canvas>
-            </div>
-        </div>
+<div class="inline-flex">
+    <div id="preview" class="preview" phx-hook="Preview">
+        <canvas id="canvas" width="500" height="500"></canvas>
     </div>
     <div class="description ml-16">
         <h1 class="text-4xl font-bold text-orange-inbox-300 mt-8">Prints</h1>
