@@ -59,6 +59,8 @@ defmodule Picsello.Cart do
           _params
       ) do
     :todo
+  end
+
   @doc """
   Puts the product in the cart.
   """
