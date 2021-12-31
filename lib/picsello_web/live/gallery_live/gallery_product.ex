@@ -7,7 +7,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
-  alias Picsello.Galleries.Workers.PhotoStorage
 
   @per_page 12
 
@@ -179,7 +178,4 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
   def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
   def get_preview(_), do: path(nil)
-
-  def path(nil), do: "/images/card_blank.png"
-  def path(url), do: PhotoStorage.path_to_url(url)
 end

@@ -74,7 +74,8 @@ defmodule Picsello.MixProject do
         {:elixir_uuid, "~> 1.2"},
         {:kane, "~> 0.9.0"},
         {:struct_access, "~> 1.1"},
-        {:size, "~> 0.1.0"}
+        {:size, "~> 0.1.0"},
+        {:cll, "~> 0.1.0"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
