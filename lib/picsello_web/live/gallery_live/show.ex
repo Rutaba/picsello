@@ -1,11 +1,11 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.Repo
+  import PicselloWeb.LiveHelpers
   alias Picsello.Galleries
-  alias Picsello.GalleryProducts
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.GalleryProducts
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.UploadComponent
@@ -35,41 +35,14 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    preview = GalleryProducts.get(%{gallery_id: id})
-
-    category_count = Repo.aggregate(Picsello.Category, :count)
-
-    preview =
-      cond do
-        preview == nil and category_count == 0 ->
-          %{id: PicselloWeb.GalleryLive.GalleryProduct.path(nil)}
-
-        preview == nil and category_count != 0 ->
-          GalleryProducts.create_gallery_product(id)
-
-        true ->
-          preview
-      end
-
-    data = Repo.all(Picsello.CategoryTemplates)
-
-    url = PicselloWeb.GalleryLive.GalleryProduct.get_preview(preview)
-
-    event_datas =
-      Enum.map(data, fn template ->
-        %{
-          preview: url,
-          frame: template.name,
-          coords: template.corners,
-          target: "canvas#{template.id}"
-        }
+    products =
+      Picsello.CategoryTemplate.all()
+      |> Enum.map(fn template ->
+        GalleryProducts.get_or_create_gallery_product(gallery.id, template.id)
       end)
 
     socket
-    |> push_preview_events(event_datas)
-    |> assign(:templates, data)
-    |> assign(:gallery_product_id, preview.id)
-    |> assign(:preview, url)
+    |> assign(:products, products)
     |> assign(:page_title, page_title(socket.assigns.live_action))
     |> assign(:gallery, gallery)
     |> assign(:page, 0)
@@ -344,13 +317,10 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 
-  defp push_preview_events(s, []), do: s
-
-  defp push_preview_events(socket, [head | tail]) do
-    push_event(socket, "set_preview", head) |> push_preview_events(tail)
-  end
-
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
+
+  def product_preview_url(%{preview_photo: %{preview_url: url}}), do: url
+  def product_preview_url(_), do: nil
 end

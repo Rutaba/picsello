@@ -8,12 +8,7 @@
     <% end %>
   </.banner>
 
-  <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client}>
-    <dl class="flex justify-between text-2xl font-bold">
-      <dt>Total</dt>
-      <dd><%= Package.price(@package) %></dd>
-    </dl>
-  </.items>
+  <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client} />
 
   <.footer>
     <%= unless @read_only do %>

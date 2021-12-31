@@ -88,6 +88,13 @@ config :picsello, Oban,
      ]}
   ]
 
+config :picsello, :packages,
+  calculator: [
+    sheet_id: System.get_env("PACKAGES_CALCULATOR_SHEET_ID"),
+    prices: System.get_env("PACKAGES_CALCULATOR_PRICES_RANGE"),
+    cost_of_living: System.get_env("PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE")
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

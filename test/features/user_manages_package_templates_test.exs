@@ -1,6 +1,6 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Package, JobType}
+  alias Picsello.{Repo, Package, Packages.Download, JobType}
 
   setup :onboarded
   setup :authenticated
@@ -81,14 +81,24 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     session
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
-    |> assert_text("Edit Package: Provide Details")
-    |> assert_value(text_field("Title"), template.name)
-    |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Next"))
-    |> assert_text("Edit Package: Set Pricing")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Save"))
+    |> within_modal(
+      &(&1
+        |> assert_text("Edit Package: Provide Details")
+        |> assert_value(text_field("Title"), template.name)
+        |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
+        |> wait_for_enabled_submit_button()
+        |> click(button("Next"))
+        |> assert_text("Edit Package: Set Pricing")
+        |> assert_has(radio_button("Do not charge for downloads", checked: true))
+        |> click(radio_button("Charge for downloads", checked: false))
+        |> assert_text("downloads are valued at #{Download.default_each_price()}")
+        |> click(radio_button("Do not charge for downloads"))
+        |> Kernel.tap(fn modal ->
+          refute Regex.match?(~r/downloads are valued/, Element.text(modal))
+        end)
+        |> wait_for_enabled_submit_button()
+        |> click(button("Save")))
+    )
     |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> assert_flash(:success, text: "The package has been successfully saved")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
@@ -97,7 +107,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       ~w(base_price description job_type name download_count download_each_price shoot_count)a
 
     updated =
-      %{template | name: "Wedding Super Deluxe", download_each_price: %Money{amount: 5000}}
+      %{template | name: "Wedding Super Deluxe", download_each_price: %Money{amount: 0}}
       |> Map.take([:id | form_fields])
 
     assert ^updated =

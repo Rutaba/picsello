@@ -7,7 +7,7 @@
         height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
     "}
 >
- <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-4 border-blue-300 rounded-xl" else "" end}
+ <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-8 border-blue-300 rounded-xl" else "" end}
         >
         
 <div
