@@ -10,9 +10,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         socket
         |> assign(:order, order)
         |> ok()
-      _ -> 
+
+      _ ->
         socket
-        |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash))
+        |> push_redirect(
+          to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash)
+        )
         |> ok()
     end
   end
