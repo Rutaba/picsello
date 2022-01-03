@@ -3,13 +3,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Product do
   use PicselloWeb, :live_component
   alias Picsello.GalleryProducts
 
-  def update(%{product: cart_product} = assigns, socket) do
+  def update(%{product: %{editor_details: %{"product_id" => id}}} = assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign(
-      :whcc_product,
-      GalleryProducts.get_whcc_product(cart_product.editor_details["product_id"])
-    )
+    |> assign(:whcc_product, GalleryProducts.get_whcc_product(id))
     |> ok()
   end
 
