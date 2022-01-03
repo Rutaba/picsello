@@ -36,6 +36,20 @@ defmodule Picsello.Cart do
     end
   end
 
+  @doc """
+  Gets the current order for gallery.
+  """
+  def get_unconfirmed_order(gallery_id) do
+    from(order in Order,
+      where: order.gallery_id == ^gallery_id and order.placed == false
+    )
+    |> Repo.one()
+    |> case do
+      %Order{} = order -> {:ok, order}
+      _ -> {:error, :no_unconfirmed_order}
+    end
+  end
+
   defp create_order_with_product(%CartProduct{id: nil} = product, attrs) do
     product
     |> Order.create_changeset(attrs)
@@ -46,16 +60,5 @@ defmodule Picsello.Cart do
     order
     |> Order.update_changeset(product, attrs)
     |> Repo.update!()
-  end
-
-  defp get_unconfirmed_order(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == false
-    )
-    |> Repo.one()
-    |> case do
-      %Order{} = product -> {:ok, product}
-      _ -> {:error, :no_unconfirmed_order}
-    end
   end
 end
