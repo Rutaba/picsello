@@ -116,7 +116,7 @@
 }
 
 .uploadingBlock {
-    box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
     @apply h-80
     w-80
     bg-base-100
@@ -129,7 +129,7 @@
 }
 
 .reuploadingBlock {
-    box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
     @apply bg-base-100
     h-12
     w-80
@@ -197,7 +197,7 @@
     overflow-hidden
     float-left
     rounded-full;
-    box-shadow: 0px 14px 34px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
 }
 
 .circleBtn ul li a {
@@ -252,7 +252,7 @@
     z-10
     opacity-95
     h-32;
-    box-shadow: 0px -14px 34px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.15);
 }
 
 .bottomBar__btn {
@@ -346,6 +346,15 @@
     h-full;
 }
 
+.gridTemplateOrder {
+    grid-template-columns:110px minmax(80px, 1fr) auto
+}
+
+.orderContent {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .2s;
+}
 
 
 @media screen and (max-width: 640px) {
@@ -371,5 +380,9 @@
 @media screen and (min-width: 1024px) {
     .customWatermarkPopup {
         max-height: 950px;
+    }
+
+    .gridTemplateOrder {
+        grid-template-columns:150px minmax(80px, 1fr) auto
     }
 }
