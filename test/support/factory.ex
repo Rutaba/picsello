@@ -292,6 +292,7 @@ defmodule Picsello.Factory do
   def gallery_factory(attrs) do
     %Gallery{
       job: fn -> build(:lead) end,
+      name: "A gallery name",
       password: "123456",
       client_link_hash: UUID.uuid4()
     }

@@ -46,19 +46,15 @@ defmodule Picsello.Cart do
   end
 
   @doc "stores processing info in product it finds"
-  def store_cart_product_processing(
-        %{"ConfirmationId" => _confirmation, "EntryId" => _entry_id, "Reference" => _ref} =
-          _params
-      ) do
-    :todo
+  def store_cart_product_processing(%{"EntryId" => editor_id} = params) do
+    editor_id
+    |> seek_and_map(&CartProduct.add_processing(&1, params))
   end
 
   @doc "stores processing info in product it finds"
-  def store_cart_product_tracking(
-        %{"ConfirmationId" => _confirmation, "EntryId" => _entry_id, "Reference" => _ref} =
-          _params
-      ) do
-    :todo
+  def store_cart_product_tracking(%{"EntryId" => editor_id} = params) do
+    editor_id
+    |> seek_and_map(&CartProduct.add_tracking(&1, params))
   end
 
   @doc """
@@ -71,6 +67,36 @@ defmodule Picsello.Cart do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
     end
+  end
+
+  def order_with_editor(editor_id) do
+    from(order in Order,
+      join: p in fragment("unnest(?)", order.products),
+      where:
+        fragment(
+          "?->'editor_details'->>'editor_id' = ?",
+          p,
+          ^editor_id
+        )
+    )
+    |> Repo.one()
+  end
+
+  defp seek_and_map(editor_id, fun) do
+    order = editor_id |> order_with_editor()
+
+    {[target], rest} =
+      order.products
+      |> Enum.split_with(fn p -> p.editor_details["editor_id"] == editor_id end)
+
+    updated_product =
+      target
+      |> fun.()
+      |> Map.put(:id, nil)
+
+    order
+    |> Order.change_products([updated_product | rest])
+    |> Repo.update()
   end
 
   defp create_order_with_product(%CartProduct{id: nil} = product, attrs) do

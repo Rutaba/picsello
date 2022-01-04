@@ -1,5 +1,7 @@
 defmodule Picsello.WHCC.Order.Created do
   @moduledoc "Structure for WHCC order created"
+
+  @derive Jason.Encoder
   defstruct [:entry, :confirmation, :total, :products]
 
   @type t :: %__MODULE__{
