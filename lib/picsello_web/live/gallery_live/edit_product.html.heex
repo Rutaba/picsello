@@ -1,4 +1,4 @@
-<div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-7 fixed left-0 top-0 right-0 xl:static" id="edit-product-component">
+<div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-5 fixed left-0 top-0 right-0 xl:static" id="edit-product-component">
   <div class="flex justify-between pt-4 mb-4">
     <a href="#" phx-click="back" phx-target={@myself} class="inline-block xl:hidden cursor-pointer">
        <.icon name="arrow-left" class="w-4 h-4 lg:w-5 lg:h-5" />
@@ -8,10 +8,10 @@
     </a>
   </div>
   <div class="editProductPopup__content flex flex-col lg:flex-row pt-2 items-start w-full h-full overflow-y-auto">
-    <div class="editProductPopup__img lg:w-2/4 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full max-h-80 xl:max-h-full lg:ml-12 ml-0">
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} 
-                      id={@photo.id} 
-                      preview_url={@photo.preview_url} 
+    <div class="editProductPopup__img lg:w-2/4 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full xl:max-h-full lg:ml-12 ml-0">
+      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
+                      id={@photo.id}
+                      preview_url={@photo.preview_url}
                       category_template={@category_template}
                       has_product_info={false} />
     </div>
@@ -20,12 +20,12 @@
       <%= if length(@whcc_products) > 1 do %>
         <div>
           <h6 class="text-base font-bold pt-7 pb-3.5">Type</h6>
-          <div class="flex flex-wrap">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <%= for product <- @whcc_products do %>
               <%= if product === @current_whcc_product do %>
-                <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} ><%= product.whcc_name %></button>
+                <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} ><%= product.whcc_name %></button>
               <% else %>
-                <button phx-click="update-print-type" phx-target={@myself} phx-value-product-id={product.id} class={classes("btn-row w-40 lg:w-36 py-2 px-4 my-2 mr-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}><%= product.whcc_name %></button>
+                <button phx-click="update-print-type" phx-target={@myself} phx-value-product-id={product.id} class={classes("btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}><%= product.whcc_name %></button>
               <% end %>
             <% end %>
           </div>
@@ -43,10 +43,10 @@
           </div>
         </.form>
       </div>
-      <div>
+    <!--  <div>
         <h6 class="text-base font-bold pt-9 pb-3.5">Paper</h6>
         <p style="border:1px solid grey; display: inline-block; padding : 9px; width:100%;">place for select paper input</p>
-      </div>
+      </div> -->
       <button class="btn-primary mt-12" phx-click="customize_and_buy" phx-target={@myself}>Customize & buy</button>
     </div>
   </div>

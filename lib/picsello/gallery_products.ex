@@ -69,4 +69,11 @@ defmodule Picsello.GalleryProducts do
     )
     |> Repo.all()
   end
+
+  @doc """
+  Gets WHCC product by WHCC product id.
+  """
+  def get_whcc_product(whcc_id) do
+    Repo.get_by(Product, whcc_id: whcc_id)
+  end
 end
