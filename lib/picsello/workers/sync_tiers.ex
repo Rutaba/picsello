@@ -6,7 +6,6 @@ defmodule Picsello.Workers.SyncTiers do
 
   alias Picsello.{
     Repo,
-    JobType,
     Packages.BasePrice,
     Packages.Tier,
     Packages.CostOfLivingAdjustment
@@ -58,13 +57,6 @@ defmodule Picsello.Workers.SyncTiers do
           tier: String.downcase(tier)
         }
       end
-
-    job_types =
-      for(%{job_type: job_type} <- rows, uniq: true) do
-        %{name: job_type, position: 9}
-      end
-
-    Repo.insert_all(JobType, job_types, on_conflict: :nothing)
 
     Repo.insert_all(
       Tier,
