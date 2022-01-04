@@ -4,8 +4,8 @@
     <div class="col-span-2 mr-4 sm:mr-0">    
       <%= for product <- @order.products do %>
           <.live_component 
-            module={PicselloWeb.GalleryLive.ClientShow.Cart.Product} 
-            id={product.id} 
+            module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
+            id={product.editor_details["editor_id"]} 
             product={product} 
           />
       <% end %>

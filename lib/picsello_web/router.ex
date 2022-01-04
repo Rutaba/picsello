@@ -44,6 +44,13 @@ defmodule PicselloWeb.Router do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
+  scope "/whcc" do
+    put "/webhook", PicselloWeb.WhccWebhookController, :webhook
+    post "/webhook", PicselloWeb.WhccWebhookController, :webhook
+    patch "/webhook", PicselloWeb.WhccWebhookController, :webhook
+    get "/webhook", PicselloWeb.WhccWebhookController, :webhook
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PicselloWeb do
   #   pipe_through :api

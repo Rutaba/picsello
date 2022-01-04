@@ -21,7 +21,7 @@ defmodule Picsello.Application do
       # Start the Endpoint (http/https)
       PicselloWeb.Endpoint,
       {Picsello.StripeStatusCache, []},
-      Picsello.WHCC.Client.TokenStore,
+      {Picsello.WHCC.Client.TokenStore, %{}},
       {Oban, Application.fetch_env!(:picsello, Oban)},
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
