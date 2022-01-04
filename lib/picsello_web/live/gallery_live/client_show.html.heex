@@ -49,39 +49,40 @@
     </div>
 
     <%= if length(@products) !== 0 do %>
-    <div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center border-b sm:flex-wrap py-2">
-      <div class="font-bold text-3xl pt-6">
+    <div class="px-6 sm:px-0 border-b pt-8 lg:pt-14">
+      <div class="font-bold text-base lg:text-3xl">
         Order custom products with <%= @creator.name %>
       </div>
-      <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto pt-10">
+      <ul class="grid gap-4 sm:gap-8 grid-cols-2 xl:grid-cols-4 mx-auto pb-8 lg:pb-14 pt-5 lg:pt-10 productPreview__client">
         <%= for product <- @products do %>
-            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} 
-                            id={product.id} 
-                            preview_url={product.preview_photo.preview_url} 
+            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
+                            id={product.id}
+                            preview_url={product.preview_photo.preview_url}
                             category_template={product.category_template}
                             click_params={product.id}
-                            />
+            />
         <% end %>
       </ul>
     </div>
  <% end %>
 
     <!-- Content -->
-    <div class="pt-16">
-        <div class="font-bold text-3xl">
+    <div class="pt-5 lg:pt-16">
+    <div class="px-6 sm:px-0">
+        <div class="font-bold text-lg lg:text-3xl">
             <%= @gallery.name %> Gallery
         </div>
-        <div class="text-xl text-gray-400">
+        <div class="text-sm lg:text-xl text-base-250">
             <%= @gallery.total_count %>
             photos
         </div>
         <div class="flex items-center justify-between flex-wrap mb-16">
             <div class="mt-6">
-                <%= button "Download all", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :all}), method: :post, class: "cursor-pointer inline-block btn-primary px-8 mb-4" %>
-                <%= button "Download favorites", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :favorites}), method: :post, class: "cursor-pointer inline-block btn-primary px-8 mb-4" %>
+                <%= button "Download all", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :all}), method: :post, class: "cursor-pointer inline-block btn-primary text-xs lg:text-base py-2 lg:py-3 px-8 mb-4" %>
+                <%= button "Download favorites", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :favorites}), method: :post, class: "cursor-pointer inline-block btn-primary py-2 lg:py-3 text-xs lg:text-base px-8 mb-4" %>
             </div>
             <label class="flex items-center cursor-pointer">
-                <div>Show favorites only</div>
+                <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
                 <div class="relative ml-3">
                     <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
                     <%= if @favorites_filter do %>
@@ -93,6 +94,7 @@
                     <% end %>
                 </div>
             </label>
+        </div>
         </div>
         <!-- images -->
         <div
