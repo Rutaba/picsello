@@ -22,23 +22,11 @@ config :picsello, PicselloWeb.Endpoint,
   http: [port: 4002],
   server: true
 
-# config :picsello, :sql_sandbox, true
-
 # Print only warnings and errors during test
 config :logger, level: :warn
 
-# config :wallaby,
-
-#   chrome: [headless: true], # enable/disable,
-#   driver: Wallaby.Chrome,
-#   otp_app: :picsello,
-#   screenshot_on_failure: true
-
 config :wallaby,
   chromedriver: [headless: System.get_env("HEADLESS", "true") == "true"],
-  # chromedriver: [
-  #   path: "/Application/Google Chrome.app"
-  # ],
   driver: Wallaby.Chrome,
   otp_app: :picsello,
   screenshot_on_failure: true
