@@ -1,57 +1,64 @@
 <div class=" bg-base-200">
-    <div class="gallery__container py-11 flex">       
-            <div class="circleBtn mr-9">
-              <ul>
+    <div class="gallery__container py-11 flex">
+        <div class="circleBtn mr-9">
+            <ul>
                 <li>
                     <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
-                        <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
-                        <span>Back to gallery</span>
+                    <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
+                    <span>Back to gallery</span>
                     <% end %>
-                 </li>
-                </ul>
-            </div>
-            <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
-        </div>    
+                </li>
+            </ul>
+        </div>
+        <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
+    </div>
 </div>
-<div class="inline-flex">
-    <div id="preview" class="preview" phx-hook="Preview">
-        <canvas id="canvas" width="500" height="500"></canvas>
+<div class="gallery__container pt-36 pb-14 grid grid-cols-2 flex">
+    <div class="flex flex-col">
+        <div>
+            <span class="text-base font-bold">Product preview</span>
+            <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
+                <use href="/images/icons.svg#gallery-info"></use>
+            </svg>
+        </div>
+        <div id="preview" class="photos__rect flex justify-center items-center preview mt-2" phx-hook="Preview">
+            <canvas id="canvas" width="375" height="375"></canvas>
+        </div>
     </div>
     <div class="description ml-16">
         <h1 class="text-4xl font-bold text-orange-inbox-300 mt-8">Prints</h1>
         <p class="py-12 border-b">Lorem ipsum copy about what you can do here & why you want to change your cover photo lorem ipsum</p>
         <.form let={f} for={@changeset} action="#" phx-submit="save">
-            <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
-                disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+        <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
+        <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
+            disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
     </div>
 </div>
 
 <div id="gallery_product_form" class="gallery__container pb-32">
     <div
-        phx-hook="MasonryGrid"
-        phx-update="append"
-        id="muuri-grid"
-        class={"muuri grid"}
-        data-page={ @page }
-        data-total={ @gallery.total_count }
-        data-favorites-count={ @favorites_count }
-        data-is-favorites-shown={ @favorites_filter }
-        data-is-sortable="false"
-        data-has-more-photos={ @has_more_photos }
+    phx-hook="MasonryGrid"
+    phx-update="append"
+    id="muuri-grid"
+    class={"muuri grid"}
+    data-page={ @page }
+    data-total={ @gallery.total_count }
+    data-favorites-count={ @favorites_count }
+    data-is-favorites-shown={ @favorites_filter }
+    data-is-sortable="false"
+    data-has-more-photos={ @has_more_photos }
     >
-        <%= for photo <- @photos do %>
-            <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-                id: photo.id,
-                photo: photo,
-                is_likable: false,
-                is_removable: true,
-                is_removed: false,
-                is_gallery_category_page: true,
-                preview_photo_id: @preview_photo_id
-            %>
-        <% end %>
-    </div>
+    <%= for photo <- @photos do %>
+    <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+        id: photo.id,
+        photo: photo,
+        is_likable: false,
+        is_removable: true,
+        is_removed: false,
+        is_gallery_category_page: true,
+        preview_photo_id: @preview_photo_id
+        %>
+    <% end %>
 </div>
-
+</div>
