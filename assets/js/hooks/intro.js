@@ -1,5 +1,4 @@
 import introJs from 'intro.js';
-import 'introJs/introjs.css';
 
 import intros from '../data/intros';
 
@@ -12,14 +11,22 @@ export default {
     const el = this.el;
     const introId = el.id;
     const shouldSeeIntro = JSON.parse(el.dataset.introShow); // turn to an actual boolean
-    const introSteps = intros[introId];
+    const introSteps = intros[introId](el);
 
     // In case we ever fat finger the introId on the wrapper element
     // checking that the user should 1. see it and 2. we have the steps
     shouldSeeIntro && introSteps
       ? introJs()
           .setOptions(introSteps)
+          .onexit(() => {
+            // if user clicks 'x' or the overlay
+            this.pushEvent('intro_js', {
+              action: 'dismissed',
+              intro_id: introId,
+            });
+          })
           .onbeforeexit(() => {
+            // if user has completed the entire tour
             this.pushEvent('intro_js', {
               action: 'completed',
               intro_id: introId,

@@ -33,7 +33,15 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_event("intro_js", %{"action" => action, "intro_id" => _intro_id}, socket) do
     case action do
       "completed" ->
-        # TODO PAIR: saving to an intro_js column on the user?
+        # TODO PAIR: saving to an intro_js column on the user that allows for multiple tours —> JSON, an array?
+        socket
+        |> noreply()
+      "dismissed" ->
+        # TODO PAIR: saving to an intro_js column on the user that allows for multiple tours —> JSON, an array?
+        socket
+        |> noreply()
+      "restarted" ->
+        # TODO PAIR: saving to an intro_js column on the user that allows for multiple tours —> JSON, an array?
         socket
         |> noreply()
       end
