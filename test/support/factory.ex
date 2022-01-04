@@ -291,8 +291,9 @@ defmodule Picsello.Factory do
 
   def gallery_factory(attrs) do
     %Gallery{
+      name: "Test Client Weeding",
       job: fn -> build(:lead) end,
-      password: "123456",
+      password: valid_gallery_password(),
       client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)
@@ -357,4 +358,26 @@ defmodule Picsello.Factory do
       whcc_variation_id: "4x4",
       value: 100.0
     }
+
+  def cart_product_factory(%{product_id: product_id}) do
+    %Picsello.Cart.CartProduct{
+      editor_details: %{
+        "editor_id" => sequence("whcc_id"),
+        "preview_url" =>
+          "https://d3fvjqx1d7l6w5.cloudfront.net/307f7e03-dad9-48f0-a320-99cd64d1093c.jpeg",
+        "product_id" => product_id,
+        "selections" => %{
+          "display_options" => "3_4in_float_mount",
+          "forcePreview" => 1_641_226_557_685,
+          "orientation" => "LANDSCAPE",
+          "quantity" => 1,
+          "size" => "8x10",
+          "surface" => "1_4in_acrylic_with_styrene_backing"
+        }
+      },
+      price: %Money{amount: 9600, currency: :USD}
+    }
+  end
+
+  def valid_gallery_password(), do: "123456"
 end
