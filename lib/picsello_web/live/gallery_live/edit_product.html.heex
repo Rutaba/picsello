@@ -9,9 +9,9 @@
   </div>
   <div class="editProductPopup__content flex flex-col lg:flex-row pt-2 items-start w-full h-full overflow-y-auto">
     <div class="editProductPopup__img lg:w-2/4 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full max-h-80 xl:max-h-full lg:ml-12 ml-0">
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} 
-                      id={@photo.id} 
-                      preview_url={@photo.preview_url} 
+      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
+                      id={@photo.id}
+                      preview_url={@photo.preview_url}
                       category_template={@category_template}
                       has_product_info={false} />
     </div>
@@ -43,10 +43,10 @@
           </div>
         </.form>
       </div>
-      <div>
+    <!--  <div>
         <h6 class="text-base font-bold pt-9 pb-3.5">Paper</h6>
         <p style="border:1px solid grey; display: inline-block; padding : 9px; width:100%;">place for select paper input</p>
-      </div>
+      </div> -->
       <button class="btn-primary mt-12" phx-click="customize_and_buy" phx-target={@myself}>Customize & buy</button>
     </div>
   </div>
