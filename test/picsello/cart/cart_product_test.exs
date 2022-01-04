@@ -44,7 +44,7 @@ defmodule Picsello.Cart.CartProductTest do
           "surface" => "1_4in_acrylic_with_styrene_backing"
         }
       },
-      id: nil,
+      # id: nil,
       price: %Money{amount: 35_200, currency: :USD},
       whcc_confirmation: :confirmed,
       whcc_order: %Picsello.WHCC.Order.Created{

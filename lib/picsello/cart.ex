@@ -60,7 +60,7 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product in the cart.
   """
-  def place_product(%CartProduct{id: nil} = product, gallery_id) do
+  def place_product(%CartProduct{} = product, gallery_id) do
     params = %{gallery_id: gallery_id}
 
     case get_unconfirmed_order(gallery_id) do
@@ -92,14 +92,13 @@ defmodule Picsello.Cart do
     updated_product =
       target
       |> fun.()
-      |> Map.put(:id, nil)
 
     order
     |> Order.change_products([updated_product | rest])
     |> Repo.update()
   end
 
-  defp create_order_with_product(%CartProduct{id: nil} = product, attrs) do
+  defp create_order_with_product(%CartProduct{} = product, attrs) do
     product
     |> Order.create_changeset(attrs)
     |> Repo.insert!()

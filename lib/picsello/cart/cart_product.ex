@@ -6,6 +6,7 @@ defmodule Picsello.Cart.CartProduct do
 
   use Ecto.Schema
 
+  @primary_key false
   embedded_schema do
     field :editor_details, :map
     field :base_price, Money.Ecto.Amount.Type

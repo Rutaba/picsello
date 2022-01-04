@@ -26,7 +26,7 @@ defmodule Picsello.WHCC.ShippingTest do
 
   describe "options into attributes" do
     test "correct attribute forming" do
-      {uid, _, _} = option = Shipping.all() |> Enum.at(0)
+      {uid, _, _, _} = option = Shipping.all() |> Enum.at(0)
       correct = [%{"AttributeUID" => uid}, %{"AttributeUID" => 96}] |> Enum.sort()
 
       assert correct == option |> Shipping.to_attributes() |> Enum.sort()
