@@ -30,7 +30,7 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("intro_js", %{"action" => action, "intro_id" => intro_id}, socket) do
+  def handle_event("intro_js", %{"action" => action, "intro_id" => _intro_id}, socket) do
     case action do
       "completed" ->
         # TODO PAIR: saving to an intro_js column on the user?

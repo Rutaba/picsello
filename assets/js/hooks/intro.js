@@ -5,9 +5,9 @@ import intros from '../data/intros';
 
 export default {
   mounted() {
-    // When using px-hook, it requires a unique ID on the element
+    // When using phx-hook, it requires a unique ID on the element
     // instead of using a data attribute to look up the tour we need
-    // we should us the id and the data-intro-show as the trigger
+    // we should use the id and the data-intro-show as the trigger
     // to see if the user has seen it yet or not
     const el = this.el;
     const introId = el.id;
