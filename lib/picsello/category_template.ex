@@ -89,8 +89,8 @@ defmodule Picsello.CategoryTemplate do
       name: row.name,
       title: row.title,
       corners: row.corners,
-      category_id: category_id,
-      price: row.price
+      price: row.price,
+      category_id: category_id
     })
   end
 
