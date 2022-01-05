@@ -32,7 +32,6 @@ defmodule Picsello.Organization do
   def registration_changeset(organization, attrs) do
     organization
     |> cast(attrs, [:name, :slug])
-    |> cast_embed(:profile)
     |> validate_required([:name])
     |> prepare_changes(fn changeset ->
       case get_field(changeset, :slug) do

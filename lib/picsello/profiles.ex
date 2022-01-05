@@ -18,8 +18,8 @@ defmodule Picsello.Profiles do
     @primary_key false
     embedded_schema do
       field :is_enabled, :boolean, default: true
-      field(:color, :string, default: @default_color)
-      field(:job_types, {:array, :string}, default: [])
+      field(:color, :string)
+      field(:job_types, {:array, :string})
       field(:no_website, :boolean, default: false)
       field(:website, :string)
       field(:description, :string)
@@ -29,21 +29,10 @@ defmodule Picsello.Profiles do
 
     def changeset(%__MODULE__{} = profile, attrs) do
       profile
-      |> cast(attrs, [
-        :no_website,
-        :website,
-        :color,
-        :job_types,
-        :description
-      ])
+      |> cast(attrs, [:no_website, :website, :color, :job_types, :description])
       |> then(
         &if get_field(&1, :no_website),
           do: put_change(&1, :website, nil),
-          else: &1
-      )
-      |> then(
-        &if get_field(&1, :used_software_before),
-          do: validate_required(&1, :switching_from_software),
           else: &1
       )
       |> prepare_changes(&clean_job_types/1)
@@ -58,7 +47,8 @@ defmodule Picsello.Profiles do
         %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
           label = "[a-zA-Z0-9\\-]{1,63}+"
 
-          if Regex.compile!("^(?:(?:#{label})\\.)+(?:#{label})$")
+          if "^(?:(?:#{label})\\.)+(?:#{label})$"
+             |> Regex.compile!()
              |> Regex.match?(host),
              do: [],
              else: ["is invalid"]

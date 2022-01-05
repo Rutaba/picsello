@@ -380,4 +380,7 @@ defmodule Picsello.Factory do
   end
 
   def valid_gallery_password(), do: "123456"
+
+  def cost_of_living_adjustment_factory(),
+    do: %Picsello.Packages.CostOfLivingAdjustment{state: "OK", multiplier: 1.0}
 end
