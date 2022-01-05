@@ -213,9 +213,6 @@ defmodule Picsello.Packages do
 
     default_each_price = Download.default_each_price()
 
-    download_count = 0
-    shoot_count = 1
-
     min_years_query =
       from(base in BasePrice,
         select: max(base.min_years_experience),
@@ -232,13 +229,13 @@ defmodule Picsello.Packages do
         select: %{
           base_price: type(adjustment.multiplier * base.base_price, base.base_price),
           description: array_to_string([base.tier, base.job_type], " "),
-          download_count: type(^download_count, :integer),
+          download_count: base.download_count,
           download_each_price: type(^default_each_price, base.base_price),
           inserted_at: now(),
           job_type: base.job_type,
           name: array_to_string([base.tier, base.job_type], " "),
           organization_id: type(^organization_id, base.id),
-          shoot_count: type(^shoot_count, :integer),
+          shoot_count: base.shoot_count,
           updated_at: now()
         }
       )
