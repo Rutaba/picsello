@@ -42,16 +42,15 @@
         has_border={false}
         has_buttons={false}
       />
-      <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>
-        
+      <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>        
           <input type="radio" phx-click="click" id={shipping_option_uid(option)} name="ship_option" value={shipping_option_uid(option)  }>
           <label for={shipping_option_uid(option)}><%= shipping_option_label(option) %></label><br>
-        
       </.display_shipping_opts>
     <% end %>
       <div class="col-span-1">
         <div class="p-5 border rounded-lg flex flex-col">
-          <div class="text-xl">Products: <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span></div>|
+          <div class="text-xl">Products: <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span></div>
+          <div class="text-xl">Shipping: <span class="text-2xl font-bold ml-2"><%= @shipping_cost %></span></div>|
           <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
         </div>
       </div>

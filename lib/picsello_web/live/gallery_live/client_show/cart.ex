@@ -22,29 +22,37 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end
   end
 
+  @impl true
   def handle_event("continue", _, %{assigns: %{step: :product_list}} = socket) do
     socket
     |> assign(:step, :shipping_opts)
     |> assign_shipping_opts()
+    |> assign_shipping_cost()
     |> noreply()
   end
 
   def handle_event("click", params, %{assigns: %{step: :shipping_opts}} = socket) do
-    IO.inspect(socket)
+    IO.inspect params
 
     socket
-    # |> assign(:step, :shipping_opts)
-    # |> assign_shipping_opts()
     |> noreply()
   end
 
-  defp assign_shipping_opts(%{assigns: %{order: %{products: products}}} = socket) do
-    # IO.inspect Enum.map(products, fn product -> shipping_opts_for_product(product) end)
+  defp assign_shipping_opts(%{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket) do
     socket
     |> assign(
       :shipping_opts,
       Enum.map(products, fn product -> shipping_opts_for_product(product) end)
     )
+  end
+
+  defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
+    socket
+    |> assign(:shipping_cost, 
+      Enum.reduce(opts, Money.new(0), fn %{current: {_, _, _, cost}}, sum -> 
+        Money.parse!(cost)
+        |> Money.add(sum)
+      end))
   end
 
   defp display_shipping_opts(assigns) do
