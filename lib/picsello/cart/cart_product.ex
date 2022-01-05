@@ -6,9 +6,11 @@ defmodule Picsello.Cart.CartProduct do
 
   use Ecto.Schema
 
+  alias Picsello.WHCC
+
   @primary_key false
   embedded_schema do
-    field :editor_details, :map
+    field :editor_details, WHCC.Editor.Details.Type
     field :base_price, Money.Ecto.Amount.Type
     field :price, Money.Ecto.Amount.Type
     field :whcc_order, :map

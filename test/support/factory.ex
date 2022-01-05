@@ -361,12 +361,12 @@ defmodule Picsello.Factory do
 
   def cart_product_factory(%{product_id: product_id}) do
     %Picsello.Cart.CartProduct{
-      editor_details: %{
-        "editor_id" => sequence("whcc_id"),
-        "preview_url" =>
+      editor_details: %Picsello.WHCC.Editor.Details{
+        editor_id: sequence("whcc_id"),
+        preview_url:
           "https://d3fvjqx1d7l6w5.cloudfront.net/307f7e03-dad9-48f0-a320-99cd64d1093c.jpeg",
-        "product_id" => product_id,
-        "selections" => %{
+        product_id: product_id,
+        selections: %{
           "display_options" => "3_4in_float_mount",
           "forcePreview" => 1_641_226_557_685,
           "orientation" => "LANDSCAPE",
