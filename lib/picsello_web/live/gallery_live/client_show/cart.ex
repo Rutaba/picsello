@@ -40,31 +40,37 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           assigns: %{
             step: :shipping_opts,
             shipping_opts: shipping_opts,
-            order: %{products: products} = order
+            order: %{products: products},
+            gallery: gallery
           }
         } = socket
       ) do
-    account_id = Galleries.get_gallery!(order.gallery_id) |> Galleries.account_id()
+    account_id = Galleries.get_gallery!(gallery.id) |> Galleries.account_id()
 
-    Enum.map(products, fn product ->
-      shipping_option =
-        Enum.find(shipping_opts, fn opt ->
-          opt[:editor_id] == product.editor_details.editor_id
-        end)
-        |> (& &1[:current]).()
+    order =
+      Enum.map(products, fn product ->
+        shipping_option =
+          Enum.find(shipping_opts, fn opt ->
+            opt[:editor_id] == product.editor_details.editor_id
+          end)
+          |> (& &1[:current]).()
 
-      Cart.order_product(product, account_id,
-        ship_to: ship_address(),
-        return_to: ship_address(),
-        attributes: Shipping.to_attributes(shipping_option)
+        Cart.order_product(product, account_id,
+          ship_to: ship_address(),
+          return_to: ship_address(),
+          attributes: Shipping.to_attributes(shipping_option)
+        )
+      end)
+      |> Cart.store_cart_products_checkout()
+
+    {:ok, checkout_link} =
+      payments().checkout_link(order,
+        success_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash),
+        cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
       )
-    end)
-    |> Cart.store_cart_products_checkout()
 
     socket
-    # |> assign(:step, :shipping_opts)
-    # |> assign_shipping_opts()
-    # |> assign_shipping_cost()
+    |> redirect(external: checkout_link)
     |> noreply()
   end
 
@@ -164,4 +170,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       "Phone" => "8002525234"
     }
   end
+
+  defp payments, do: Application.get_env(:picsello, :payments)
 end
