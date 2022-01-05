@@ -85,7 +85,12 @@ defmodule Picsello.Onboardings do
       |> Repo.all()
       |> Enum.map(&{&1, &1})
 
-  def complete!(user), do: user |> User.complete_onboarding_changeset() |> Repo.update!()
+  def complete!(user),
+    do:
+      user
+      |> tap(&Picsello.Packages.create_initial/1)
+      |> User.complete_onboarding_changeset()
+      |> Repo.update!()
 
   defp organization_onboarding_changeset(organization, attrs, step) do
     organization

@@ -1,8 +1,7 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
-  alias Picsello.{Repo, Accounts.User, JobType, Onboardings}
-  require Ecto.Query
+  alias Picsello.{Repo, JobType, Onboardings}
 
   @impl true
   def mount(_params, _session, socket) do

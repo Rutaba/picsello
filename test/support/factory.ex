@@ -383,4 +383,18 @@ defmodule Picsello.Factory do
 
   def cost_of_living_adjustment_factory(),
     do: %Picsello.Packages.CostOfLivingAdjustment{state: "OK", multiplier: 1.0}
+
+  def package_tier_factory(),
+    do: %Picsello.Packages.Tier{name: "mid", position: 1}
+
+  def package_base_price_factory(),
+    do: %Picsello.Packages.BasePrice{
+      tier: "mid",
+      job_type: "event",
+      full_time: true,
+      min_years_experience: 1,
+      base_price: 100,
+      shoot_count: 2,
+      download_count: 10
+    }
 end

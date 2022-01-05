@@ -7,6 +7,8 @@ defmodule Picsello.UserOnboardsTest do
 
   setup do
     insert(:cost_of_living_adjustment)
+    insert(:package_tier)
+    insert(:package_base_price)
     :ok
   end
 
@@ -63,7 +65,7 @@ defmodule Picsello.UserOnboardsTest do
     user =
       user
       |> Repo.reload()
-      |> Repo.preload(:organization)
+      |> Repo.preload(organization: :package_templates)
 
     second_color = Picsello.Profiles.colors() |> tl |> hd
 
@@ -77,6 +79,7 @@ defmodule Picsello.UserOnboardsTest do
              },
              organization: %{
                name: "Photogenious",
+               package_templates: [%{base_price: %Money{amount: 100}}],
                profile: %{
                  website: "example.com",
                  no_website: false,
@@ -90,6 +93,7 @@ defmodule Picsello.UserOnboardsTest do
   feature "user goes back while onboarding", %{session: session, user: user} do
     session
     |> assert_path(@onboarding_path)
+    |> assert_disabled_submit()
     |> fill_in_step(2)
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
