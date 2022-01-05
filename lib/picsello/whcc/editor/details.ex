@@ -1,6 +1,8 @@
 defmodule Picsello.WHCC.Editor.Details do
   @moduledoc "Editor detais structure to be used in cart"
 
+  use StructAccess
+
   @derive Jason.Encoder
   defstruct [:product_id, :editor_id, :preview_url, :selections]
 
