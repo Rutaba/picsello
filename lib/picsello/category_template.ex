@@ -75,6 +75,8 @@ defmodule Picsello.CategoryTemplate do
     }
   ]
 
+  def frames(), do: @frames
+
   def seed_templates() do
     if Repo.aggregate(CategoryTemplate, :count) == 0 do
       Enum.each(@frames, fn row ->
