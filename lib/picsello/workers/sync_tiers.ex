@@ -42,7 +42,7 @@ defmodule Picsello.Workers.SyncTiers do
     rows = get_sheet_values(connection, :prices)
 
     rows =
-      for([time, experience_range, type, tier, base_price] <- tl(rows)) do
+      for([time, experience_range, type, tier, base_price, shoots, downloads] <- tl(rows)) do
         [min_years_experience] = Regex.run(~r/^\d+/, experience_range)
         job_type = Map.get(@job_type_map, type, String.downcase(type))
 
@@ -54,7 +54,9 @@ defmodule Picsello.Workers.SyncTiers do
           min_years_experience: String.to_integer(min_years_experience),
           job_type: job_type,
           base_price: base_price_dollars * 100,
-          tier: String.downcase(tier)
+          tier: String.downcase(tier),
+          shoot_count: String.to_integer(shoots),
+          download_count: String.to_integer(downloads)
         }
       end
 
@@ -69,7 +71,7 @@ defmodule Picsello.Workers.SyncTiers do
     )
 
     Repo.insert_all(BasePrice, rows,
-      on_conflict: {:replace, [:base_price]},
+      on_conflict: {:replace, ~w[base_price shoot_count download_count]a},
       conflict_target: ~w[tier job_type full_time min_years_experience]a
     )
   end

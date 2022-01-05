@@ -29,6 +29,8 @@ defmodule Picsello.Repo.Migrations.AddAutoPricingTiers do
       add(:full_time, :boolean, null: false)
       add(:min_years_experience, :integer, null: false)
       add(:base_price, :integer, null: false)
+      add(:shoot_count, :integer, null: false)
+      add(:download_count, :integer, null: false)
     end
 
     create(
