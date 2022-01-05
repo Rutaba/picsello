@@ -6,7 +6,7 @@
         <%= for product <- @order.products do %>
             <.live_component 
               module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-              id={product.editor_details["editor_id"]} 
+              id={product.editor_details.editor_id} 
               product={product} 
             />
         <% end %>
@@ -37,7 +37,7 @@
     <%= for product <- @order.products do %>
       <.live_component 
         module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-        id={product.editor_details["editor_id"]} 
+        id={product.editor_details.editor_id} 
         product={product} 
         has_border={false}
         has_buttons={false}
@@ -48,7 +48,7 @@
           id={shipping_option_uid(option)} 
           name="ship_option" 
           phx-value-option-uid={shipping_option_uid(option)} 
-          phx-value-product-editor-id={product.editor_details["editor_id"]} 
+          phx-value-product-editor-id={product.editor_details.editor_id} 
           checked={is_current_shipping_option?(@shipping_opts, option, product)}>
         <label for={shipping_option_uid(option)}><%= shipping_option_label(option) %></label><br>
         <label for={shipping_option_uid(option)}><%= shipping_option_cost(option) %></label><br>

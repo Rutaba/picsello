@@ -45,10 +45,7 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/whcc" do
-    put "/webhook", PicselloWeb.WhccWebhookController, :webhook
     post "/webhook", PicselloWeb.WhccWebhookController, :webhook
-    patch "/webhook", PicselloWeb.WhccWebhookController, :webhook
-    get "/webhook", PicselloWeb.WhccWebhookController, :webhook
   end
 
   # Other scopes may use custom stacks.

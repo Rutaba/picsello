@@ -9,9 +9,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Product do
         %{
           product: %{
             editor_details: %{
-              "product_id" => id,
-              "preview_url" => preview_url,
-              "selections" => %{"size" => size}
+              product_id: id,
+              preview_url: preview_url,
+              selections: %{"size" => size}
             }
           }
         } = assigns,

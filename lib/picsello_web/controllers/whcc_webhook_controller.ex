@@ -5,24 +5,25 @@ defmodule PicselloWeb.WhccWebhookController do
 
   def webhook(%Plug.Conn{} = conn, %{"verifier" => hash}) do
     %{"isVerified" => true} = WHCC.webhook_verify(hash)
-    Logger.info("[whcc] Webhook regestered successfully")
+    Logger.info("[whcc] Webhook registered successfully")
     conn |> ok()
   end
 
   def webhook(
-        %Plug.Conn{} = conn,
+        %Plug.Conn{private: %{whcc_webhook_verified: true}} = conn,
         %{
+          "EntryId" => entry,
           "Status" => "Accepted"
         } = params
       ) do
     Picsello.Cart.store_cart_product_processing(params)
-    conn.private.raw_body |> IO.inspect(label: "raw body")
+    Logger.info("[whcc] Processed #{entry}")
 
     conn |> ok()
   end
 
   def webhook(
-        %Plug.Conn{} = conn,
+        %Plug.Conn{private: %{whcc_webhook_verified: true}} = conn,
         %{
           "Event" => "Processed",
           "Status" => "Rejected",
@@ -37,18 +38,19 @@ defmodule PicselloWeb.WhccWebhookController do
   end
 
   def webhook(
-        %Plug.Conn{} = conn,
+        %Plug.Conn{private: %{whcc_webhook_verified: true}} = conn,
         %{
+          "EntryId" => entry,
           "Event" => "Shipped"
         } = params
       ) do
     Picsello.Cart.store_cart_product_tracking(params)
+    Logger.info("[whcc] Shipped #{entry}")
     conn |> ok()
   end
 
   def webhook(%Plug.Conn{} = conn, params) do
-    IO.inspect(conn, label: "conn")
-    IO.inspect(params, label: "params")
+    Logger.warn("[whcc] Unknown webhook: #{inspect(params)}")
 
     conn |> ok()
   end

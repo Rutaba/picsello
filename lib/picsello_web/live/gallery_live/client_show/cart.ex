@@ -46,25 +46,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       ) do
     account_id = Galleries.get_gallery!(order.gallery_id) |> Galleries.account_id()
 
-    tt =
-      Enum.map(products, fn product ->
-        shipping_option =
-            Enum.find(shipping_opts, fn opt ->
-              IO.inspect opt
-              opt[:editor_id] == product.editor_details["editor_id"]
-            end)
-            |> (& &1[:current]).()
-        
+    Enum.map(products, fn product ->
+      shipping_option =
+        Enum.find(shipping_opts, fn opt ->
+          opt[:editor_id] == product.editor_details.editor_id
+        end)
+        |> (& &1[:current]).()
 
-        Cart.order_product(product, account_id,
-          ship_to: ship_address(),
-          return_to: ship_address(),
-          attributes: Shipping.to_attributes(shipping_option)
-        )
-      end)
-
-    IO.inspect("ORDERED")
-    IO.inspect(tt)
+      Cart.order_product(product, account_id,
+        ship_to: ship_address(),
+        return_to: ship_address(),
+        attributes: Shipping.to_attributes(shipping_option)
+      )
+    end)
+    |> Cart.store_cart_products_checkout()
 
     socket
     # |> assign(:step, :shipping_opts)
@@ -137,18 +132,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp shipping_opts_for_product(%{
-         editor_details: %{"editor_id" => editor_id, "selections" => %{"size" => size}}
+         editor_details: %{editor_id: editor_id, selections: %{"size" => size}}
        }) do
     %{editor_id: editor_id, list: Shipping.options(size)}
     |> (&Map.put(&1, :current, List.first(&1[:list]))).()
   end
 
-  defp shipping_opts_for_product(opts, %{editor_details: %{"editor_id" => editor_id}}) do
+  defp shipping_opts_for_product(opts, %{editor_details: %{editor_id: editor_id}}) do
     Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
     |> (& &1[:list]).()
   end
 
-  defp is_current_shipping_option?(opts, option, %{editor_details: %{"editor_id" => editor_id}}) do
+  defp is_current_shipping_option?(opts, option, %{editor_details: %{editor_id: editor_id}}) do
     Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
     |> (&(&1[:current] == option)).()
   end

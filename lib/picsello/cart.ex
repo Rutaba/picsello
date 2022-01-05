@@ -57,6 +57,16 @@ defmodule Picsello.Cart do
     |> seek_and_map(&CartProduct.add_tracking(&1, params))
   end
 
+  @doc "stores checkout info in order it finds"
+  def store_cart_products_checkout(
+        [%CartProduct{editor_details: %{editor_id: editor_id}} | _] = products
+      ) do
+    editor_id
+    |> order_with_editor()
+    |> Order.checkout_changeset(products)
+    |> Repo.update!()
+  end
+
   @doc """
   Puts the product in the cart.
   """
@@ -97,19 +107,17 @@ defmodule Picsello.Cart do
   end
 
   defp seek_and_map(editor_id, fun) do
-    order = editor_id |> order_with_editor()
-
-    {[target], rest} =
-      order.products
-      |> Enum.split_with(fn p -> p.editor_details["editor_id"] == editor_id end)
-
-    updated_product =
-      target
-      |> fun.()
-
-    order
-    |> Order.change_products([updated_product | rest])
-    |> Repo.update()
+    with order <- order_with_editor(editor_id),
+         true <- order != nil and is_list(order.products),
+         {[target], rest} <-
+           Enum.split_with(order.products, &(&1.editor_details.editor_id == editor_id)),
+         true <- target != nil do
+      order
+      |> Order.change_products([fun.(target) | rest])
+      |> Repo.update()
+    else
+      _ -> :ignored
+    end
   end
 
   defp create_order_with_product(%CartProduct{} = product, attrs) do

@@ -1,17 +1,18 @@
 defmodule Picsello.Cart.CartProduct do
   @moduledoc """
   Structure/schema to hold product related info
-
   """
 
   use Ecto.Schema
 
+  alias Picsello.WHCC
+
   @primary_key false
   embedded_schema do
-    field :editor_details, :map
+    field :editor_details, WHCC.Editor.Details.Type
     field :base_price, Money.Ecto.Amount.Type
     field :price, Money.Ecto.Amount.Type
-    field :whcc_order, :map
+    field :whcc_order, WHCC.Order.Created.Type
     field :whcc_confirmation, :string
     field :whcc_processing, :map
     field :whcc_tracking, :map
