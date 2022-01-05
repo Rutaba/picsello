@@ -43,8 +43,15 @@
         has_buttons={false}
       />
       <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>        
-          <input type="radio" phx-click="click" id={shipping_option_uid(option)} name="ship_option" value={shipping_option_uid(option)  }>
-          <label for={shipping_option_uid(option)}><%= shipping_option_label(option) %></label><br>
+        <input 
+          type="radio" phx-click="click" 
+          id={shipping_option_uid(option)} 
+          name="ship_option" 
+          phx-value-option-uid={shipping_option_uid(option)} 
+          phx-value-product-editor-id={product.editor_details["editor_id"]} 
+          checked={is_current_shipping_option?(@shipping_opts, option, product)}>
+        <label for={shipping_option_uid(option)}><%= shipping_option_label(option) %></label><br>
+        <label for={shipping_option_uid(option)}><%= shipping_option_cost(option) %></label><br>
       </.display_shipping_opts>
     <% end %>
       <div class="col-span-1">

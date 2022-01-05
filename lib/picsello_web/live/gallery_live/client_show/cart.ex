@@ -31,14 +31,42 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  def handle_event("click", params, %{assigns: %{step: :shipping_opts}} = socket) do
-    IO.inspect params
-
+  def handle_event(
+        "click",
+        %{"option-uid" => option_uid, "product-editor-id" => editor_id},
+        %{assigns: %{step: :shipping_opts}} = socket
+      ) do
     socket
+    |> update_shipping_opts(String.to_integer(option_uid), editor_id)
+    |> assign_shipping_cost()
     |> noreply()
   end
 
-  defp assign_shipping_opts(%{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket) do
+  defp update_shipping_opts(%{assigns: %{shipping_opts: opts}} = socket, option_uid, editor_id) do
+    socket
+    |> assign(
+      :shipping_opts,
+      Enum.map(opts, fn
+        %{editor_id: id, current: {uid, _, _, _}} = opt
+        when editor_id == id and option_uid == uid ->
+          opt
+
+        %{editor_id: id} = opt when editor_id == id ->
+          Map.put(
+            opt,
+            :current,
+            Enum.find(opt[:list], fn list_opt -> option_uid == elem(list_opt, 0) end)
+          )
+
+        opt ->
+          opt
+      end)
+    )
+  end
+
+  defp assign_shipping_opts(
+         %{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket
+       ) do
     socket
     |> assign(
       :shipping_opts,
@@ -48,11 +76,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
     socket
-    |> assign(:shipping_cost, 
-      Enum.reduce(opts, Money.new(0), fn %{current: {_, _, _, cost}}, sum -> 
-        Money.parse!(cost)
-        |> Money.add(sum)
-      end))
+    |> assign(
+      :shipping_cost,
+      Enum.reduce(opts, Money.new(0), fn %{current: {_, _, _, cost}}, sum ->
+        cost |> Money.parse!() |> Money.add(sum)
+      end)
+    )
   end
 
   defp display_shipping_opts(assigns) do
@@ -66,17 +95,23 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp shipping_opts_for_product(%{
-         editor_details: %{"product_id" => product_id, "selections" => %{"size" => size}}
+         editor_details: %{"editor_id" => editor_id, "selections" => %{"size" => size}}
        }) do
-    %{product_id: product_id, list: Shipping.options(size)}
+    %{editor_id: editor_id, list: Shipping.options(size)}
     |> (&Map.put(&1, :current, List.first(&1[:list]))).()
   end
 
-  defp shipping_opts_for_product(opts, %{editor_details: %{"product_id" => product_id}}) do
-    Enum.find(opts, fn %{product_id: id} -> id == product_id end)
+  defp shipping_opts_for_product(opts, %{editor_details: %{"editor_id" => editor_id}}) do
+    Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
     |> (& &1[:list]).()
   end
 
+  defp is_current_shipping_option?(opts, option, %{editor_details: %{"editor_id" => editor_id}}) do
+    Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
+    |> (&(&1[:current] == option)).()
+  end
+
   defp shipping_option_uid({uid, _, _, _}), do: uid
+  defp shipping_option_cost({_, _, _, cost}), do: Money.parse!(cost)
   defp shipping_option_label({_, label, _, _}), do: label
 end
