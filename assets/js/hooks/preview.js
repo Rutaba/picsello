@@ -1,12 +1,25 @@
+let preview;
+let renderImageWithFrame;
+
 const Preview = {
+    frame_name: null,
+    preview_name: null,
+    coords: null,
+    target: null,
     mounted() {
         this.handleEvent("set_preview",
             ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
+                this.frame_name = frame_name
+                this.preview_name = preview_name
+                this.coords = corners0
+                this.target = canvasId
+
                 this.draw(frame_name, preview_name, corners0, canvasId);
             })
     },
 
-    draw: function (frame_name, preview_name, coord, canvasId) {
+    draw(frame_name, preview_name, coord, canvasId) {
+
         if (typeof (coord) == 'string') {
             coord = JSON.parse(coord)
         }
@@ -40,9 +53,7 @@ const Preview = {
                 const kw = cw / frameW;
                 const kh = ch / frameH;
 
-                const preview = new Image();
-                preview.src = preview_name;
-                preview.onload = function () {
+                renderImageWithFrame = () => {
                     const width = (w * kw) < 10 && cw || (w * kw);
                     const height = (h * kh) < 10 && ch || (h * kh);
 
@@ -52,9 +63,19 @@ const Preview = {
                     ctx.drawImage(frame, 0, 0, cw, ch);
                     ctx.drawImage(preview, ltx, lty, width, height);
                 }
+
+                preview = new Image();
+                preview.src = preview_name;
+                preview.onload = renderImageWithFrame
             }
         }
     },
+    updated() {
+        this.draw(this.frame_name, this.preview_name, this.coords, this.target);
+        if (preview) {
+            renderImageWithFrame()
+        }
+    }
 }
 
 export default Preview;
