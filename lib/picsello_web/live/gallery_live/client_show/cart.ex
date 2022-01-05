@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.Cart
   alias Picsello.WHCC.Shipping
+  alias Picsello.Galleries
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -28,6 +29,47 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(:step, :shipping_opts)
     |> assign_shipping_opts()
     |> assign_shipping_cost()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "checkout",
+        _,
+        %{
+          assigns: %{
+            step: :shipping_opts,
+            shipping_opts: shipping_opts,
+            order: %{products: products} = order
+          }
+        } = socket
+      ) do
+    account_id = Galleries.get_gallery!(order.gallery_id) |> Galleries.account_id()
+
+    tt =
+      Enum.map(products, fn product ->
+        shipping_option =
+            Enum.find(shipping_opts, fn opt ->
+              IO.inspect opt
+              opt[:editor_id] == product.editor_details["editor_id"]
+            end)
+            |> (& &1[:current]).()
+        
+
+        Cart.order_product(product, account_id,
+          ship_to: ship_address(),
+          return_to: ship_address(),
+          attributes: Shipping.to_attributes(shipping_option)
+        )
+      end)
+
+    IO.inspect("ORDERED")
+    IO.inspect(tt)
+
+    socket
+    # |> assign(:step, :shipping_opts)
+    # |> assign_shipping_opts()
+    # |> assign_shipping_cost()
     |> noreply()
   end
 
@@ -114,4 +156,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp shipping_option_uid({uid, _, _, _}), do: uid
   defp shipping_option_cost({_, _, _, cost}), do: Money.parse!(cost)
   defp shipping_option_label({_, label, _, _}), do: label
+
+  defp ship_address() do
+    %{
+      "Name" => "Returns Department",
+      "Addr1" => "3432 Denmark Ave",
+      "Addr2" => "Suite 390",
+      "City" => "Eagan",
+      "State" => "MN",
+      "Zip" => "55123",
+      "Country" => "US",
+      "Phone" => "8002525234"
+    }
+  end
 end

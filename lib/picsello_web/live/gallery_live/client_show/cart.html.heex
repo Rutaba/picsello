@@ -58,7 +58,7 @@
         <div class="p-5 border rounded-lg flex flex-col">
           <div class="text-xl">Products: <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span></div>
           <div class="text-xl">Shipping: <span class="text-2xl font-bold ml-2"><%= @shipping_cost %></span></div>|
-          <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
+          <button type="submit" class="btn-primary mt-5" phx-click="checkout">Check out with Stripe</button>
         </div>
       </div>
     
