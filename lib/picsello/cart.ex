@@ -86,7 +86,7 @@ defmodule Picsello.Cart do
     with order <- order_with_editor(editor_id),
          true <- order != nil and is_list(order.products),
          {[target], rest} <-
-           Enum.split_with(order.products, &(&1.editor_details["editor_id"] == editor_id)),
+           Enum.split_with(order.products, &(&1.editor_details.editor_id == editor_id)),
          true <- target != nil do
       order
       |> Order.change_products([fun.(target) | rest])
