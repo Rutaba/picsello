@@ -226,7 +226,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               Your cost in labor, travel, etc.
             </label>
 
-            <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-28 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
+            <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
           </div>
 
 
@@ -281,7 +281,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </label>
 
               <%= if d |> current() |> Map.get(:is_custom_price) do %>
-                <%= input(d, :each_price, class: "mt-3 w-full sm:w-28 text-lg text-center", phx_hook: "PriceMask") %>
+                <%= input(d, :each_price, class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
               <% end %>
 
               <div class="flex flex-col justify-between mt-3 sm:flex-row ">
