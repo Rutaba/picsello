@@ -256,13 +256,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <hr class="block w-full mt-6 sm:hidden"/>
 
+        <% d = form_for(@download, "#") %>
+
         <div class="mt-6 sm:mt-9">
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Downloads</h2>
-
-          Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
+          <%= if d |> current() |> Map.get(:is_enabled) do %>
+            Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
+          <% end %>
         </div>
-
-        <% d = form_for(@download, "#") %>
 
         <div class="flex flex-col w-full mt-3">
           <label class="flex items-center">

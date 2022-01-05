@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, BookingProposal, Package}
+  alias Picsello.{Repo, BookingProposal}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
 

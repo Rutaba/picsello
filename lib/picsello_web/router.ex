@@ -44,6 +44,10 @@ defmodule PicselloWeb.Router do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
+  scope "/whcc" do
+    post "/webhook", PicselloWeb.WhccWebhookController, :webhook
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PicselloWeb do
   #   pipe_through :api
@@ -97,6 +101,7 @@ defmodule PicselloWeb.Router do
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/contacts", Live.Contacts, :index, as: :contacts
+      live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
       live "/package_templates/new", Live.PackageTemplates, :new
@@ -151,7 +156,7 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/gallery", PicselloWeb do
-    live "/dump", GalleryLive.DumpEditor, :show
+    live "/:hash/dump", GalleryLive.DumpEditor, :show
 
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
       pipe_through [:browser, :require_authenticated_gallery]
@@ -159,6 +164,7 @@ defmodule PicselloWeb.Router do
       live "/:hash", GalleryLive.ClientShow, :show
       live "/:hash/orders", GalleryLive.ClientOrders, :show
       live "/:hash/orders/:order_id", GalleryLive.ClientOrder, :show
+      live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
       post "/:hash/downloads", GalleryDownloadsController, :download
       post "/:hash/login", GallerySessionController, :put
     end

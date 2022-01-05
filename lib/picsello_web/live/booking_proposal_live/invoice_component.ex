@@ -25,12 +25,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
           <p><%= @package.description %></p>
         </.banner>
 
-        <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client}>
-          <dl class="flex justify-between text-2xl font-bold">
-            <dt>Total</dt>
-            <dd><%= Package.price(@package) %></dd>
-          </dl>
-
+        <.items {assigns}>
           <hr class="my-4" />
 
           <dl class={classes("flex justify-between", %{"text-green-finances-300" => @deposit_paid, "font-bold" => !@deposit_paid})}>

@@ -78,7 +78,7 @@ config :picsello, :whcc,
 
 config :picsello, Oban,
   repo: Picsello.Repo,
-  queues: [default: 10, storage: 10],
+  queues: [default: 10, storage: 10, campaigns: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
@@ -86,6 +86,13 @@ config :picsello, Oban,
        {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
        {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
      ]}
+  ]
+
+config :picsello, :packages,
+  calculator: [
+    sheet_id: System.get_env("PACKAGES_CALCULATOR_SHEET_ID"),
+    prices: System.get_env("PACKAGES_CALCULATOR_PRICES_RANGE"),
+    cost_of_living: System.get_env("PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE")
   ]
 
 # Import environment specific config. This must remain at the bottom

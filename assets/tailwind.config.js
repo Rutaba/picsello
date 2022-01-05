@@ -76,6 +76,7 @@ module.exports = {
       fontSize: {
         '13px': '13px',
         '16px': '16px',
+        '15px': '15px'
       },
       boxShadow: {
         md: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',

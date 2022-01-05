@@ -1,4 +1,12 @@
-var Preview = { 
+var Preview = {
+  mounted() { 
+    this.handleEvent("set_preview", 
+    ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
+      this.draw(frame_name, preview_name, corners0, canvasId);
+    })
+
+  },
+  
   draw: function(frame_name, preview_name, coord, canvasId) {
     if(typeof(coord) == 'string'){coord = JSON.parse(coord)};
     

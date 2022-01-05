@@ -32,7 +32,7 @@
    width: 309px;
    height: 300px;
    background-color: #F5F6F8;
-
+   @apply rounded-lg
 }
 
 .frame {
@@ -41,6 +41,9 @@
 
 }
 
+.preview {
+    height: 650px
+}
 
 .settings__wrapper > div {
     @apply border-2
@@ -333,6 +336,21 @@
     @apply bg-transparent !important;
 }
 
+.editProductPopup{
+    @apply
+    box-border
+    h-full
+    w-full;
+}
+
+.editProductPopup__img{
+    background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
+}
+
+.editProductPopup__content {
+    max-height: 90%;
+}
+
 .errorPwdMsg ~ div > .relative input{
     @apply border
     border-solid
@@ -356,6 +374,65 @@
     transition: max-height .2s;
 }
 
+.productType:first-letter {
+    text-transform: uppercase;
+}
+
+.customSelect select{
+    @apply text-base-300
+    appearance-none
+    border-0
+    rounded-none
+    w-full
+    text-base
+    leading-none
+    bg-transparent
+    py-2
+    px-4
+    h-11
+    focus:outline-none
+    cursor-pointer
+}
+
+.customSelect{
+    @apply
+    w-full
+    inline-block
+    border
+    border-solid
+    border-base-200
+    rounded-lg
+    relative
+    overflow-hidden
+    h-11
+}
+
+.customSelect::after{
+    content: '';
+    background: url('/images/chevron-thin-right.svg') no-repeat;
+    width: 16px;
+    height: 9px;
+    position:absolute;
+    right: 14px;
+    top:50%;
+    transform: translateY(-25%);
+}
+
+@media screen and (min-width: 1280px) {
+    .editProductPopup {
+        width: 95vw;
+        max-width: 1440px;
+        height: 95vh;
+        max-height: 894px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .editProductPopup__content {
+        height: 754px;
+        max-height: 89%;
+    }
+}
 
 @media screen and (max-width: 640px) {
     .circleBtn ul li a {
@@ -375,9 +452,27 @@
         @apply pl-8
         pr-4;
     }
+
+    .editProductPopup {
+      width: 95vw;
+      max-width: 1440px;
+      height: 95vh;
+      max-height: 894px;
+  }
+
+}
+
+@media screen and (max-width: 1024px) {
+    .choose-product{
+        display: inline-grid;
+    }
+    .choose-product-item {width: 100%;}
 }
 
 @media screen and (min-width: 1024px) {
+    .choose-product{
+        display: flex;
+    }
     .customWatermarkPopup {
         max-height: 950px;
     }
@@ -385,4 +480,5 @@
     .gridTemplateOrder {
         grid-template-columns:150px minmax(80px, 1fr) auto
     }
+    .choose-product-item {width: 50%;}
 }
