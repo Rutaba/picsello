@@ -1,6 +1,6 @@
 defmodule Picsello.ClientVisitsPhotographerProfileTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, Onboardings}
   require Ecto.Query
 
   setup do
@@ -67,7 +67,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     profile_url: profile_url
   } do
     photographer
-    |> Picsello.Accounts.User.onboarding_changeset(%{
+    |> Onboardings.changeset(%{
       onboarding: %{job_types: [:event]}
     })
     |> Repo.update()

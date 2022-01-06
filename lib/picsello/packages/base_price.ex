@@ -8,5 +8,7 @@ defmodule Picsello.Packages.BasePrice do
     field :full_time, :boolean
     field :min_years_experience, :integer
     field :base_price, Money.Ecto.Amount.Type
+    field :shoot_count, :integer
+    field :download_count, :integer
   end
 end

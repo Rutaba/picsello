@@ -23,10 +23,13 @@ defmodule PicselloWeb.Plugs.WhccWebhook do
   def handle_request(conn, body) do
     with [signature] <- get_req_header(conn, "whcc-signature"),
          %{"isValid" => true} <- Picsello.WHCC.webhook_validate(body, signature) do
-      put_private(conn, :whcc_webhook_verified, true)
+      conn
+      |> struct(%{body_params: Jason.decode!(body)})
     else
-      _ -> conn
+      _ ->
+        conn
+        |> send_resp(400, "")
+        |> halt
     end
-    |> struct(%{body_params: Jason.decode!(body)})
   end
 end

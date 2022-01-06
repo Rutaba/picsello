@@ -10,7 +10,7 @@ defmodule PicselloWeb.WhccWebhookController do
   end
 
   def webhook(
-        %Plug.Conn{private: %{whcc_webhook_verified: true}} = conn,
+        %Plug.Conn{} = conn,
         %{
           "EntryId" => entry,
           "Status" => "Accepted"
@@ -23,7 +23,7 @@ defmodule PicselloWeb.WhccWebhookController do
   end
 
   def webhook(
-        %Plug.Conn{private: %{whcc_webhook_verified: true}} = conn,
+        %Plug.Conn{} = conn,
         %{
           "Event" => "Processed",
           "Status" => "Rejected",
@@ -38,7 +38,7 @@ defmodule PicselloWeb.WhccWebhookController do
   end
 
   def webhook(
-        %Plug.Conn{private: %{whcc_webhook_verified: true}} = conn,
+        %Plug.Conn{} = conn,
         %{
           "EntryId" => entry,
           "Event" => "Shipped"
