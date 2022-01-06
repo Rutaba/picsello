@@ -13,10 +13,10 @@ defmodule Picsello.UserOnboardsTest do
   end
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
-  @phone_field text_field("user_onboarding_phone")
-  @photographer_years_field text_field("user_onboarding_photographer_years")
+  @phone_field text_field("onboarding-step-2_onboarding_phone")
+  @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
   @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
-  @website_field text_field("user_organization_profile_website")
+  @website_field text_field("onboarding-step-4_organization_profile_website")
 
   def fill_in_step(session, 2) do
     session
@@ -27,7 +27,7 @@ defmodule Picsello.UserOnboardsTest do
 
   feature "user onboards", %{session: session, user: user} do
     user = Repo.preload(user, :organization)
-    org_name_field = text_field("user_organization_name")
+    org_name_field = text_field("onboarding-step-2_organization_name")
     home_path = Routes.home_path(PicselloWeb.Endpoint, :index)
 
     session
@@ -49,6 +49,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
+    |> assert_has(css("input[name$='[website]']:not(.text-input-invalid:not(.phx-no-feedback))"))
     |> assert_disabled_submit()
     |> click(@second_color_field)
     |> fill_in(@website_field, with: "inval!d.com")
