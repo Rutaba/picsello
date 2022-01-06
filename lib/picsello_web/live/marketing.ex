@@ -27,10 +27,12 @@ defmodule PicselloWeb.Live.Marketing do
             </p>
           <% end %>
           <div class={classes("flex flex-col gap-3 sm:flex-row justify-end mb-6 sm:mb-0", %{"sm:-mt-8" => Enum.any?(@campaigns)})}>
-            <.badge class={"flex self-start sm:self-center items-center"} color={:red}>
-              Enable your Public Profile to start sending
-              <.icon name="forth" class="ml-1 w-3 h-3 stroke-current"/>
-            </.badge>
+            <%= unless Profiles.enabled?(@organization) do %>
+              <.badge class={"flex self-start sm:self-center items-center"} color={:red}>
+                Enable your Public Profile to start sending
+                <.icon name="forth" class="ml-1 w-3 h-3 stroke-current"/>
+              </.badge>
+            <% end %>
             <button type="button" disabled={!Profiles.enabled?(@organization)} phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
           </div>
           <%= unless Enum.empty?(@campaigns) do %>
@@ -41,6 +43,33 @@ defmodule PicselloWeb.Live.Marketing do
                 <.campaign_item subject={campaign.subject} date={strftime(@current_user.time_zone, campaign.inserted_at, "%B %d, %Y")} clients_count={campaign.clients_count} />
               <% end %>
             </ul>
+          <% end %>
+        </.card>
+        <.card title="Public Profile">
+          <%= if Profiles.enabled?(@organization) do %>
+            <fieldset class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
+              <div {testid("url")} class={"mt-4 font-bold text-input #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
+                <%= Profiles.public_url(@organization) %>
+              </div>
+
+              <div class="flex flex-col mt-4 gap-3 sm:flex-row justify-end">
+                <a href={Routes.profile_settings_path(@socket, :index)} class="btn-secondary text-center">
+                  Edit
+                </a>
+                <button disabled={!Profiles.enabled?(@organization)} type="button" class="w-full sm:w-auto text-center btn-primary" id="copy-public-profile-link" data-clipboard-text={Profiles.public_url(@organization)} phx-hook="Clipboard">
+                  <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100 text-base-300" role="tooltip">Copied!</div>
+                  Copy Link
+                </button>
+              </div>
+            </fieldset>
+          <% else %>
+            <p class="mb-8">
+              <strong>You haven’t set up your public profile yet.</strong> It’s important to customize your business and site to be able to send email to your clients.
+            </p>
+
+            <div class="flex justify-end">
+              <a href={Routes.profile_settings_path(@socket, :index)} class="w-full sm:w-auto text-center btn-primary">Get Started</a>
+            </div>
           <% end %>
         </.card>
       </div>
