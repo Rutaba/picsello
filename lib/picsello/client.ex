@@ -17,6 +17,7 @@ defmodule Picsello.Client do
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
     |> cast(attrs, [:name, :email, :organization_id, :phone])
+    |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:name, :organization_id, :phone])
     |> validate_change(:phone, &valid_phone/2)
@@ -26,6 +27,7 @@ defmodule Picsello.Client do
   def create_contact_changeset(client \\ %__MODULE__{}, attrs) do
     client
     |> cast(attrs, [:name, :email, :phone, :organization_id])
+    |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:email, :organization_id])
     |> unsafe_validate_unique(:email, Picsello.Repo)
@@ -35,6 +37,7 @@ defmodule Picsello.Client do
   def edit_contact_changeset(%__MODULE__{} = client, attrs) do
     client
     |> cast(attrs, [:name, :email, :phone])
+    |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:email])
     |> unsafe_validate_unique(:email, Picsello.Repo)
@@ -59,6 +62,16 @@ defmodule Picsello.Client do
 
     if has_jobs do
       changeset |> validate_required([:name, :phone])
+    else
+      changeset
+    end
+  end
+
+  defp downcase_email(changeset) do
+    email = get_field(changeset, :email)
+
+    if email do
+      update_change(changeset, :email, &String.downcase/1)
     else
       changeset
     end
