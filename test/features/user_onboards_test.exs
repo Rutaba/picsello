@@ -60,6 +60,16 @@ defmodule Picsello.UserOnboardsTest do
     |> assert_disabled_submit()
     |> click(css("label", text: "Shootproof"))
     |> click(css("label", text: "Session"))
+    |> find(css("input:checked", count: 2, visible: false), fn inputs ->
+      assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
+    end)
+    |> click(css("label", text: "None"))
+    |> assert_value(css("input:checked", count: 1, visible: false), "none")
+    |> click(css("label", text: "Shootproof"))
+    |> click(css("label", text: "Session"))
+    |> find(css("input:checked", count: 2, visible: false), fn inputs ->
+      assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
+    end)
     |> click(css("button[type='submit']", text: "Finish"))
     |> assert_path(home_path)
 
