@@ -2,6 +2,7 @@ defmodule Picsello.StripePayments do
   @moduledoc false
 
   @behaviour Picsello.Payments
+  @dialyzer {:nowarn_function, checkout_link: 2}
 
   require Logger
   alias Picsello.{Repo, BookingProposal, Organization, Accounts.User, Client}
