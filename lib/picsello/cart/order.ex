@@ -63,11 +63,31 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:products, products)
   end
 
+  def checkout_changeset(%__MODULE__{} = order, products, attrs \\ %{}) do
+    order
+    |> cast(attrs, [])
+    |> cast_shipping_cost(products)
+    |> put_embed(:products, products)
+  end
+
   defp cast_subtotal_cost(changeset, {:default, amount}),
     do: put_change(changeset, :subtotal_cost, amount)
 
   defp cast_subtotal_cost(changeset, {:add, amount}) do
     current_total_cost = get_field(changeset, :subtotal_cost)
     put_change(changeset, :subtotal_cost, Money.add(current_total_cost, amount))
+  end
+
+  defp cast_shipping_cost(changeset, products) do
+    changeset
+    |> put_change(
+      :shipping_cost,
+      Enum.reduce(products, Money.new(0), fn product, cost ->
+        product.whcc_order.total
+        |> Money.parse!()
+        |> Money.subtract(product.base_price)
+        |> Money.add(cost)
+      end)
+    )
   end
 end

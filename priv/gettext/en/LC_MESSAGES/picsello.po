@@ -42,3 +42,9 @@ msgstr "Portrait"
 
 msgid "other"
 msgstr "Other"
+
+msgid "boudoir"
+msgstr "Boudoir"
+
+msgid "mini"
+msgstr "Mini-session"

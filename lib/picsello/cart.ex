@@ -57,6 +57,16 @@ defmodule Picsello.Cart do
     |> seek_and_map(&CartProduct.add_tracking(&1, params))
   end
 
+  @doc "stores checkout info in order it finds"
+  def store_cart_products_checkout(
+        [%CartProduct{editor_details: %{editor_id: editor_id}} | _] = products
+      ) do
+    editor_id
+    |> order_with_editor()
+    |> Order.checkout_changeset(products)
+    |> Repo.update!()
+  end
+
   @doc """
   Puts the product in the cart.
   """
@@ -66,6 +76,20 @@ defmodule Picsello.Cart do
     case get_unconfirmed_order(gallery_id) do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
+    end
+  end
+
+  @doc """
+  Gets the current order for gallery.
+  """
+  def get_unconfirmed_order(gallery_id) do
+    from(order in Order,
+      where: order.gallery_id == ^gallery_id and order.placed == false
+    )
+    |> Repo.one()
+    |> case do
+      %Order{} = order -> {:ok, order}
+      _ -> {:error, :no_unconfirmed_order}
     end
   end
 
@@ -93,20 +117,6 @@ defmodule Picsello.Cart do
       |> Repo.update()
     else
       _ -> :ignored
-    end
-  end
-
-  @doc """
-  Gets the current order for gallery.
-  """
-  def get_unconfirmed_order(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == false
-    )
-    |> Repo.one()
-    |> case do
-      %Order{} = order -> {:ok, order}
-      _ -> {:error, :no_unconfirmed_order}
     end
   end
 
