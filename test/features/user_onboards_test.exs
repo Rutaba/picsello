@@ -8,7 +8,7 @@ defmodule Picsello.UserOnboardsTest do
   setup do
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
-    insert(:package_base_price)
+    insert(:package_base_price, base_price: 300)
     :ok
   end
 
@@ -90,7 +90,9 @@ defmodule Picsello.UserOnboardsTest do
              },
              organization: %{
                name: "Photogenious",
-               package_templates: [%{base_price: %Money{amount: 100}}],
+               package_templates: [
+                 %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
+               ],
                profile: %{
                  website: "example.com",
                  no_website: false,
