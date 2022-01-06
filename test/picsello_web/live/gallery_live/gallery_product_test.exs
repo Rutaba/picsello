@@ -46,7 +46,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   end
 
   setup do
-    [gallery: insert(:gallery, %{name: "Test Client Weeding"})]
+    [gallery: insert(:gallery, %{name: "Test Client Wedding"})]
   end
 
   setup :onboarded
@@ -88,7 +88,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
     session
     |> visit("/gallery/#{hash}/login")
     |> fill_in(css("#login_password"), with: "123456")
-    |> has_text?("Test Client Weeding")
+    |> has_text?("Test Client Wedding")
 
   end
 
