@@ -93,6 +93,18 @@ defmodule Picsello.Cart do
     end
   end
 
+  @doc """
+  Confirms the order.
+  """
+  def confirm_order(%Order{products: products} = order, account_id) do
+    confirmed_products =
+      Enum.map(products, fn product -> confirm_product(product, account_id) end)
+
+    order
+    |> Order.confirmation_changeset(confirmed_products)
+    |> Repo.update!()
+  end
+
   def order_with_editor(editor_id) do
     from(order in Order,
       join: p in fragment("unnest(?)", order.products),

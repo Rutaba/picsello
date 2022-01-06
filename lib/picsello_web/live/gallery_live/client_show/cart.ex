@@ -65,7 +65,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
     {:ok, checkout_link} =
       payments().checkout_link(order,
-        success_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash),
+        success_url:
+          Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.id),
         cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
       )
 
