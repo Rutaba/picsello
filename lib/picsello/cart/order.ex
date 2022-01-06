@@ -53,6 +53,16 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:products, products ++ [product])
   end
 
+  def change_products(
+        %__MODULE__{} = order,
+        products,
+        attrs \\ %{}
+      ) do
+    order
+    |> cast(attrs, [])
+    |> put_embed(:products, products)
+  end
+
   defp cast_subtotal_cost(changeset, {:default, amount}),
     do: put_change(changeset, :subtotal_cost, amount)
 
