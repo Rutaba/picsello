@@ -1,12 +1,13 @@
 defmodule PicselloWeb.Live.Marketing do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.Marketing
+  alias Picsello.{Marketing, Profiles}
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Marketing")
+    |> assign_organization()
     |> assign_campaigns()
     |> ok()
   end
@@ -25,8 +26,12 @@ defmodule PicselloWeb.Live.Marketing do
               Lorem ispum intro copy goes here, we should talk about the future of this feature here or in a help article as we build out the feature. Lorem ipsum copy goes to three lines.
             </p>
           <% end %>
-          <div class={classes("flex justify-end mb-6 sm:mb-0", %{"sm:-mt-8" => Enum.any?(@campaigns)})}>
-            <button type="button" phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
+          <div class={classes("flex flex-col gap-3 sm:flex-row justify-end mb-6 sm:mb-0", %{"sm:-mt-8" => Enum.any?(@campaigns)})}>
+            <.badge class={"flex self-start sm:self-center items-center"} color={:red}>
+              Enable your Public Profile to start sending
+              <.icon name="forth" class="ml-1 w-3 h-3 stroke-current"/>
+            </.badge>
+            <button type="button" disabled={!Profiles.enabled?(@organization)} phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
           </div>
           <%= unless Enum.empty?(@campaigns) do %>
             <h2 class="mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Most Recent</h2>
@@ -98,6 +103,11 @@ defmodule PicselloWeb.Live.Marketing do
 
     socket
     |> noreply()
+  end
+
+  def assign_organization(%{assigns: %{current_user: current_user}} = socket) do
+    organization = Profiles.find_organization_by(user: current_user)
+    socket |> assign(:organization, organization)
   end
 
   defp assign_campaigns(%{assigns: %{current_user: current_user}} = socket) do
