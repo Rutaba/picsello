@@ -14,6 +14,9 @@
       rounded-lg
       p-3;
   }
+  .text-input:disabled {
+    opacity: 0.5;
+  }
   .text-input-invalid:not(.phx-no-feedback) {
     @apply border-red-sales-300
       bg-red-sales-100

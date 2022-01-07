@@ -30,7 +30,7 @@ defmodule Picsello.Client do
     |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:email, :organization_id])
-    |> unsafe_validate_unique(:email, Picsello.Repo)
+    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
   end
 
@@ -40,8 +40,8 @@ defmodule Picsello.Client do
     |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:email])
-    |> unsafe_validate_unique(:email, Picsello.Repo)
-    |> unique_constraint([:email])
+    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
+    |> unique_constraint([:email, :organization_id])
     |> validate_required_name_and_phone()
   end
 
