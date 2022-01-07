@@ -71,7 +71,7 @@ defmodule Picsello.UserSendsMarketingCampaignTest do
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
     |> assert_disabled(button("Create an email"))
-    |> click(link("Get Started"))
+    |> click(link("Edit"))
     |> click(css("label", text: "Disabled"))
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))

@@ -64,11 +64,11 @@ defmodule PicselloWeb.Live.Marketing do
             </fieldset>
           <% else %>
             <p class="mb-8">
-              <strong>You haven’t set up your public profile yet.</strong> It’s important to customize your business and site to be able to send email to your clients.
+              <strong>Looks like you public profile is disabled.</strong> Please enable to start sendig promotional emails. You can edit your profile at anytime.
             </p>
 
             <div class="flex justify-end">
-              <a href={Routes.profile_settings_path(@socket, :index)} class="w-full sm:w-auto text-center btn-primary">Get Started</a>
+              <a href={Routes.profile_settings_path(@socket, :index)} class="w-full sm:w-auto text-center btn-primary">Edit</a>
             </div>
           <% end %>
         </.card>
