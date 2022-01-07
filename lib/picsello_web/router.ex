@@ -164,6 +164,7 @@ defmodule PicselloWeb.Router do
       live "/:hash", GalleryLive.ClientShow, :show
       live "/:hash/orders", GalleryLive.ClientOrders, :show
       live "/:hash/orders/:order_id", GalleryLive.ClientOrder, :show
+      live "/:hash/orders/:order_id/paid", GalleryLive.ClientOrder, :paid
       live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
       post "/:hash/downloads", GalleryDownloadsController, :download
       post "/:hash/login", GallerySessionController, :put

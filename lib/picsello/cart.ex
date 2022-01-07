@@ -93,6 +93,13 @@ defmodule Picsello.Cart do
     end
   end
 
+  def get_placed_gallery_order(order_id, gallery_id) do
+    from(order in Order,
+      where: order.gallery_id == ^gallery_id and order.placed == true and order.id == ^order_id
+    )
+    |> Repo.one()
+  end
+
   def order_with_editor(editor_id) do
     from(order in Order,
       join: p in fragment("unnest(?)", order.products),
