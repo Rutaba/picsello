@@ -199,8 +199,24 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   def show_intro?(current_user, intro_id) do
-    # TODO: List of struct pattern matching? WTF
-    "false"
+    found_state =
+      current_user.onboarding.intro_state
+      |> Enum.map(&Map.take(&1, [:id, :state]))
+      |> Enum.find(&(&1[:id] == intro_id))
+
+    case found_state do
+      %{id: ^intro_id, state: :dismissed} ->
+        "false"
+
+      %{id: ^intro_id, state: :exited} ->
+        "false"
+
+      %{id: ^intro_id, state: :restarted} ->
+        "true"
+
+      _ ->
+        "true"
+    end
   end
 
   def card(assigns) do
