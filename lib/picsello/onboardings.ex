@@ -10,6 +10,15 @@ defmodule Picsello.Onboardings do
 
     use Ecto.Schema
 
+    defmodule IntroState do
+      use Ecto.Schema
+
+      embedded_schema do
+        field(:changed_at, :utc_datetime)
+        field(:state, Ecto.Enum, values: [:completed, :dismissed, :restarted])
+      end
+    end
+
     @software_options [
       sprout_studio: "Sprout Studio",
       pixieset: "Pixieset",
@@ -32,6 +41,7 @@ defmodule Picsello.Onboardings do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
       field(:state, :string)
+      embeds_many(:intro_state, IntroState)
     end
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
@@ -92,6 +102,13 @@ defmodule Picsello.Onboardings do
       |> User.complete_onboarding_changeset()
       |> Repo.update!()
 
+  def save_intro_state(current_user, intro_id, new_intro_state) do
+    current_user
+    |> cast(%{onboarding: %{intro_state: [%{id: intro_id, state: new_intro_state}]}}, [])
+    |> cast_embed(:onboarding, with: &save_onboarding_intro_state/2)
+    |> Repo.update!()
+  end
+
   defp organization_onboarding_changeset(organization, attrs, step) do
     organization
     |> Organization.registration_changeset(attrs)
@@ -127,5 +144,17 @@ defmodule Picsello.Onboardings do
 
   defp onboarding_changeset(onboarding, attrs, _) do
     Onboarding.changeset(onboarding, attrs)
+  end
+
+  defp save_onboarding_intro_state(onboarding, %{intro_state: [new_intro_state]}) do
+    onboarding
+    |> change()
+    |> put_embed(
+      :intro_state,
+      [
+        Map.put(new_intro_state, :changed_at, DateTime.utc_now())
+        | onboarding.intro_state || []
+      ]
+    )
   end
 end

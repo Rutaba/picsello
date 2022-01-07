@@ -37,8 +37,7 @@
   </div>
 </header>
 
-<%# TODO PAIR: Pulling from the @current_user to check if they viewed this specific tour 2. set the boolean for the JS %>
-<div class="px-6 pb-6 center-container" phx-hook="IntroJS" data-intro-show="true" id="intro_test">
+<div class="px-6 pb-6 center-container" phx-hook="IntroJS" data-intro-show={show_intro?(@current_user, "intro_test")} id="intro_test">
   <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
 
   <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

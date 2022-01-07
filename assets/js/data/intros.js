@@ -20,6 +20,6 @@ export default {
         element: el.querySelector('.card__image'),
         intro: 'And this is our final step!',
       },
-    ]
+    ],
   }),
 };

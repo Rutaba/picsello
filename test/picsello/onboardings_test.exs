@@ -139,5 +139,49 @@ defmodule Picsello.OnboardingsTest do
                    |> get_in([:organization, :profile, :website])
                )
     end
+
+  describe "save_intro_state" do
+    test "persists intro_id, time of action, and new state" do
+      user = :user |> insert() |> Picsello.Onboardings.save_intro_state("intro_id_1", "completed")
+
+      assert %{
+               onboarding: %{
+                 intro_state: [%{id: "intro_id_1", changed_at: %DateTime{}, state: :completed}]
+               }
+             } = Repo.reload(user)
+    end
+
+    test "adds a subsequent intro entry for multiple usage" do
+      user =
+        :user
+        |> insert()
+        |> Picsello.Onboardings.save_intro_state("intro_id_2", "dismissed")
+        |> Picsello.Onboardings.save_intro_state("intro_id_3", "restarted")
+
+      assert %{
+               onboarding: %{
+                 intro_state: [
+                   %{id: "intro_id_3", changed_at: %DateTime{}, state: :restarted},
+                   %{id: "intro_id_2", changed_at: %DateTime{}, state: :dismissed}
+                 ]
+               }
+             } = Repo.reload(user)
+    end
+
+    test "adds an intro entry and then updates it" do
+      user =
+        :user
+        |> insert()
+        |> Picsello.Onboardings.save_intro_state("intro_id_4", "dismissed")
+        |> Picsello.Onboardings.save_intro_state("intro_id_4", "completed")
+
+      assert %{
+               onboarding: %{
+                 intro_state: [
+                   %{id: "intro_id_4", changed_at: %DateTime{}, state: :dismissed}
+                 ]
+               }
+             } = Repo.reload(user)
+    end
   end
 end

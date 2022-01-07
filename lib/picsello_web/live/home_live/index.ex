@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
+  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage, Onboardings}
   import Ecto.Query
 
   @impl true
@@ -30,21 +30,30 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("intro_js", %{"action" => action, "intro_id" => _intro_id}, socket) do
+  def handle_event(
+        "intro_js",
+        %{"action" => action, "intro_id" => intro_id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
     case action do
       "completed" ->
-        # TODO PAIR: saving to an intro_js column on the user that allows for multiple tours —> JSON, an array?
+        Onboardings.save_intro_state(current_user, intro_id, "completed")
+
         socket
         |> noreply()
+
       "dismissed" ->
-        # TODO PAIR: saving to an intro_js column on the user that allows for multiple tours —> JSON, an array?
+        Onboardings.save_intro_state(current_user, intro_id, "dismissed")
+
         socket
         |> noreply()
+
       "restarted" ->
-        # TODO PAIR: saving to an intro_js column on the user that allows for multiple tours —> JSON, an array?
+        Onboardings.save_intro_state(current_user, intro_id, "restarted")
+
         socket
         |> noreply()
-      end
+    end
   end
 
   @impl true
@@ -187,6 +196,11 @@ defmodule PicselloWeb.HomeLive.Index do
       )
 
     socket |> assign(:attention_items, items)
+  end
+
+  def show_intro?(current_user, intro_id) do
+    # TODO: List of struct pattern matching? WTF
+    "false"
   end
 
   def card(assigns) do
