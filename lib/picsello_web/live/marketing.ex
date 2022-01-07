@@ -64,7 +64,7 @@ defmodule PicselloWeb.Live.Marketing do
             </fieldset>
           <% else %>
             <p class="mb-8">
-              <strong>Looks like you public profile is disabled.</strong> Please enable to start sendig promotional emails. You can edit your profile at anytime.
+              <strong>Looks like your public profile is disabled.</strong> Please enable to start sendig promotional emails. You can edit your profile at anytime.
             </p>
 
             <div class="flex justify-end">
