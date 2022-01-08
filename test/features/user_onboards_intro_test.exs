@@ -1,5 +1,6 @@
 defmodule Picsello.UserOnboardsTest do
   use Picsello.FeatureCase, async: true
+
   alias Picsello.Repo
 
   setup do
@@ -11,7 +12,7 @@ defmodule Picsello.UserOnboardsTest do
   setup :onboarded
   setup :authenticated
 
-  feature "user has intro js loaded", %{session: session, user: user} do
+  feature "user has intro js loaded", %{session: session} do
     session
     |> find(Query.data("intro-show", "true"))
   end
