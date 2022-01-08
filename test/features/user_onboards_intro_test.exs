@@ -1,8 +1,6 @@
 defmodule Picsello.UserOnboardsTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.Repo
-
   setup do
     user = insert(:user)
 
