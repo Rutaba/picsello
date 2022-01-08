@@ -14,6 +14,7 @@ defmodule Picsello.Factory do
     Campaign,
     CampaignClient,
     ClientMessage,
+    Onboardings,
     Repo,
     Shoot,
     Accounts.User,
@@ -52,6 +53,7 @@ defmodule Picsello.Factory do
     user
     |> User.complete_onboarding_changeset()
     |> Repo.update!()
+    |> Onboardings.save_intro_state("intro_test", "completed")
   end
 
   def valid_user_attributes(attrs \\ %{}),

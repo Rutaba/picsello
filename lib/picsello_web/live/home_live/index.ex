@@ -208,7 +208,7 @@ defmodule PicselloWeb.HomeLive.Index do
       %{id: ^intro_id, state: :dismissed} ->
         "false"
 
-      %{id: ^intro_id, state: :exited} ->
+      %{id: ^intro_id, state: :completed} ->
         "false"
 
       %{id: ^intro_id, state: :restarted} ->
