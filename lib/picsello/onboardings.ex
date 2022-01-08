@@ -10,8 +10,8 @@ defmodule Picsello.Onboardings do
 
     use Ecto.Schema
 
-    @moduledoc "Container for introjs specific info. Embedded in the onboarding embed"
     defmodule IntroState do
+      @moduledoc "Container for user specific onboarding info. Embedded in users table."
       use Ecto.Schema
 
       embedded_schema do
