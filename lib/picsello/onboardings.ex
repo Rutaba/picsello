@@ -10,6 +10,7 @@ defmodule Picsello.Onboardings do
 
     use Ecto.Schema
 
+    @moduledoc "Container for introjs specific info. Embedded in the onboarding embed"
     defmodule IntroState do
       use Ecto.Schema
 
