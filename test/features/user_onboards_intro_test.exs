@@ -7,7 +7,7 @@ defmodule Picsello.UserOnboardsTest do
     [user: user]
   end
 
-  setup :onboarded
+  setup :onboarded_show_intro
   setup :authenticated
 
   feature "user has intro js loaded", %{session: session} do
