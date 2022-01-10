@@ -142,7 +142,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
          editor_details: %{editor_id: editor_id, selections: %{"size" => size}}
        }) do
     %{editor_id: editor_id, list: Shipping.options(size)}
-    |> then(& Map.put(&1, :current, List.first(&1.list)))
+    |> then(&Map.put(&1, :current, List.first(&1.list)))
   end
 
   defp shipping_opts_for_product(opts, %{editor_details: %{editor_id: editor_id}}) do
@@ -152,7 +152,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp is_current_shipping_option?(opts, option, %{editor_details: %{editor_id: editor_id}}) do
     Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
-    |> then(& &1.current == option)
+    |> then(&(&1.current == option))
   end
 
   defp shipping_option_uid({uid, _, _, _}), do: uid

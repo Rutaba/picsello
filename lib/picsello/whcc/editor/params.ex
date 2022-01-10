@@ -13,8 +13,9 @@ defmodule Picsello.WHCC.Editor.Params do
     favorites_only = Keyword.get(opts, :favorites_only, false)
 
     gallery =
-      Galleries.get_gallery!(photo.gallery_id)
-      |> Repo.preload(job: [client: :organization])
+      photo.gallery_id
+      |> Galleries.get_gallery!()
+      |> Galleries.populate_organization()
 
     gallery_photos =
       if product.category.whcc_name in @multi_photo_categories do
