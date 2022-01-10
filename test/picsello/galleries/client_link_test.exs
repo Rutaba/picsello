@@ -1,4 +1,4 @@
-defmodule Picsello.GalleriesTest do
+defmodule Picsello.Galleries.ClientLinkTest do
   use Picsello.DataCase
 
   alias Picsello.Galleries
