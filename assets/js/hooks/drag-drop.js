@@ -5,7 +5,6 @@ export default {
 
         const preventDefaults = (e) => {
             e.preventDefault();
-            e.stopPropagation();
         }
         const highlight = () => dropArea.classList.add("active");
         const unhighlight = () => dropArea.classList.remove("active");

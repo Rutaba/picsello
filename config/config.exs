@@ -45,6 +45,8 @@ config :money, default_currency: :USD
 config :picsello, :modal_transition_ms, 400
 config :picsello, :payments, Picsello.StripePayments
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
+config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
+config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
@@ -72,11 +74,12 @@ config :picsello, :whcc,
   adapter: Picsello.WHCC.Client,
   url: System.get_env("WHCC_URL"),
   key: System.get_env("WHCC_KEY"),
-  secret: System.get_env("WHCC_SECRET")
+  secret: System.get_env("WHCC_SECRET"),
+  webhook_url: System.get_env("WHCC_WEBHOOK_URL", "")
 
 config :picsello, Oban,
   repo: Picsello.Repo,
-  queues: [default: 10, storage: 10],
+  queues: [default: 10, storage: 10, campaigns: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
@@ -84,6 +87,13 @@ config :picsello, Oban,
        {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
        {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
      ]}
+  ]
+
+config :picsello, :packages,
+  calculator: [
+    sheet_id: System.get_env("PACKAGES_CALCULATOR_SHEET_ID"),
+    prices: System.get_env("PACKAGES_CALCULATOR_PRICES_RANGE"),
+    cost_of_living: System.get_env("PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE")
   ]
 
 # Import environment specific config. This must remain at the bottom

@@ -69,20 +69,23 @@ module.exports = {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
       },
       spacing: {
-        '90vw': '90vw',
-        '85vh': '85vh',
         '5vw': '5vw',
       },
       fontSize: {
         '13px': '13px',
         '16px': '16px',
+        '15px': '15px'
       },
       boxShadow: {
         md: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
         lg: '0px 4px 14px 0px rgba(0, 0, 0, 0.15)',
       },
       zIndex: { '-10': '-10' },
-      strokeWidth: {'3':'3', '4':'4'}
+      strokeWidth: {'3':'3', '4':'4'},
+      gridTemplateColumns: {
+        'cart': '110px minmax(80px, 1fr) auto',
+        'cartWide': '16rem 1fr auto'
+      }
     },
   },
   variants: {

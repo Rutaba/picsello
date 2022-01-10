@@ -49,6 +49,7 @@ defmodule Picsello.MixProject do
         {:jason, "~> 1.2.2"},
         {:libcluster, "~> 3.3"},
         {:money, "~> 1.9"},
+        {:mustache, "~> 0.4.0"},
         {:oban, "~> 2.10.1"},
         {:paginator, "~> 1.0.4"},
         {:phoenix, "~> 1.5.12"},
@@ -69,10 +70,12 @@ defmodule Picsello.MixProject do
         {:broadway_cloud_pub_sub, "~> 0.7.0"},
         {:goth, "~> 1.0"},
         {:google_api_storage, "~> 0.32.0"},
+        {:google_api_sheets, "~> 0.29.2"},
         {:elixir_uuid, "~> 1.2"},
         {:kane, "~> 0.9.0"},
         {:struct_access, "~> 1.1"},
-        {:size, "~> 0.1.0"}
+        {:size, "~> 0.1.0"},
+        {:cll, "~> 0.1.0"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},

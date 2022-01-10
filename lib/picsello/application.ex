@@ -22,6 +22,7 @@ defmodule Picsello.Application do
       PicselloWeb.Endpoint,
       {Picsello.StripeStatusCache, []},
       Picsello.WHCC.Client.TokenStore,
+      Picsello.WHCC.WebhookKeeper,
       {Oban, Application.fetch_env!(:picsello, Oban)},
       # Start a worker by calling: Picsello.Worker.start_link(arg)
       # {Picsello.Worker, arg}
@@ -29,6 +30,10 @@ defmodule Picsello.Application do
       Picsello.Galleries.Workers.PositionNormalizer,
       {Picsello.Galleries.PhotoProcessing.ProcessedConsumer, [producer_module: producer_module]}
     ]
+
+    events = [[:oban, :job, :start], [:oban, :job, :stop], [:oban, :job, :exception]]
+
+    :telemetry.attach_many("oban-logger", events, &Picsello.ObanLogger.handle_event/4, [])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -9,16 +9,18 @@ defmodule PicselloWeb.LiveAuth do
     socket |> allow_sandbox() |> mount(session)
   end
 
-  def on_mount(:gallery_client, %{"hash" => hash}, params, socket) do
-    socket = allow_sandbox(socket)
-    gallery = Galleries.get_gallery_by_hash(hash)
-
+  def on_mount(:gallery_client, params, session, socket) do
     socket
-    |> assign(gallery: gallery)
-    |> assign(
-      authenticated:
-        Galleries.session_exists_with_token?(gallery.id, params["gallery_session_token"])
-    )
+    |> allow_sandbox()
+    |> authenticate_gallery(params)
+    |> authenticate_gallery_client(session)
+    |> maybe_redirect_to_client_login(params)
+  end
+
+  def on_mount(:gallery_client_login, params, _session, socket) do
+    socket
+    |> allow_sandbox()
+    |> authenticate_gallery(params)
     |> cont()
   end
 
@@ -38,6 +40,18 @@ defmodule PicselloWeb.LiveAuth do
 
   defp mount(socket, _session), do: socket |> halt()
 
+  defp authenticate_gallery(socket, %{"hash" => hash}) do
+    socket |> assign(gallery: Galleries.get_gallery_by_hash(hash))
+  end
+
+  defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do
+    socket
+    |> assign(
+      authenticated:
+        Galleries.session_exists_with_token?(gallery.id, session["gallery_session_token"])
+    )
+  end
+
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),
          true <- connected?(socket),
@@ -46,6 +60,16 @@ defmodule PicselloWeb.LiveAuth do
     end
 
     socket
+  end
+
+  defp maybe_redirect_to_client_login(%{assigns: %{authenticated: true}} = socket, _) do
+    socket |> cont()
+  end
+
+  defp maybe_redirect_to_client_login(socket, %{"hash" => hash}) do
+    socket
+    |> push_redirect(to: Routes.gallery_client_show_login_path(socket, :login, hash))
+    |> halt()
   end
 
   defp maybe_redirect_to_onboarding(

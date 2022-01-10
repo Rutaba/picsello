@@ -6,11 +6,10 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
 
     create table(:gallery_products) do
       add :name, :string
-      add :price, :float
 
       add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
 
-      add(:preview_photo_id, references(:photos, on_delete: :nothing), null: false)
+      add(:preview_photo_id, references(:photos, on_delete: :nothing))
       add(:gallery_id, references(:galleries, on_delete: :nothing), null: false)
 
       timestamps()

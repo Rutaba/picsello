@@ -170,5 +170,32 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
 
       refute has_element?(popup_view, "button.cursor-not-allowed", "Save")
     end
+
+    test "set image watermark", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}/settings")
+
+      view
+      |> element("#openCustomWatermarkPopupButton")
+      |> render_click()
+
+      [popup_view] = live_children(view)
+
+      watermark =
+        file_input(popup_view, "#dragDrop-form", :image, [
+          %{
+            last_modified: 1_594_171_879_000,
+            name: "phoenix.png",
+            content:
+              File.read!(Path.join(:code.priv_dir(:picsello), "/static/images/phoenix.png")),
+            size: 1_396_009,
+            type: "image/png"
+          }
+        ])
+
+      upload_rendered = render_upload(watermark, "phoenix.png")
+
+      assert upload_rendered =~ "Upload complete!"
+      assert upload_rendered =~ "100%"
+    end
   end
 end

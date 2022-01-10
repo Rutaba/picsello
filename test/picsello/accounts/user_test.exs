@@ -16,37 +16,6 @@ defmodule Picsello.Accounts.UserTest do
     end
   end
 
-  describe "onboarding_changeset" do
-    test "validates website" do
-      assert [["is invalid"], nil, nil, ["is invalid"]] =
-               for(
-                 url <- [
-                   "ftp://example.com",
-                   "example.com",
-                   "example.com/my-profile",
-                   "https://bad!.hostname"
-                 ],
-                 do:
-                   %User{}
-                   |> User.onboarding_changeset(%{onboarding: %{website: url}})
-                   |> errors_on()
-                   |> get_in([:onboarding, :website])
-               )
-    end
-
-    test "requires switching_from_software if used_software_before" do
-      assert %{} =
-               %User{}
-               |> User.onboarding_changeset(%{onboarding: %{used_software_before: false}})
-               |> errors_on()
-
-      assert %{onboarding: %{switching_from_software: ["can't be blank"]}} =
-               %User{}
-               |> User.onboarding_changeset(%{onboarding: %{used_software_before: true}})
-               |> errors_on()
-    end
-  end
-
   describe "complete_onboarding_changeset" do
     test "marks the onboarding as complete" do
       user = insert(:user, onboarding: %{website: "http://example.com"})

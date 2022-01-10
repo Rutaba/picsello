@@ -275,6 +275,8 @@ defmodule Picsello.Galleries do
   @doc """
   Updates a photo
   """
+  def update_photo(nil, %{} = _attrs), do: []
+
   def update_photo(%Photo{id: _} = photo, %{} = attrs) do
     photo
     |> Photo.update_changeset(attrs)
@@ -343,7 +345,7 @@ defmodule Picsello.Galleries do
       """
         WITH ranks AS (
           SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS pos
-          FROM photos 
+          FROM photos
           WHERE gallery_id = $1::integer
         )
         UPDATE photos p
@@ -555,5 +557,42 @@ defmodule Picsello.Galleries do
       nil -> false
       _ -> true
     end)
+  end
+
+  @doc """
+  Loads the gallery creator.
+  """
+  def get_gallery_creator(%Gallery{id: _} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: [organization: :user]])
+    |> (& &1.job.client.organization.user).()
+  end
+
+  @doc """
+  Get list of photo ids from gallery.
+  """
+  def get_photo_ids([gallery_id: _gallery_id, favorites_filter: favorites_filter] = opts) do
+    opts = Keyword.delete(opts, :favorites_filter)
+
+    opts =
+      if favorites_filter do
+        Keyword.put(opts, :client_liked, true)
+      else
+        opts
+      end
+
+    Photo
+    |> where(^opts)
+    |> order_by(asc: :position)
+    |> select([photo], photo.id)
+    |> Repo.all()
+  end
+
+  def account_id(%Gallery{} = gallery), do: account_id(gallery.id)
+
+  def account_id(gallery_id) do
+    "Gallery account #{gallery_id}"
+    |> then(&:crypto.hash(:sha3_256, &1))
+    |> Base.encode64()
   end
 end

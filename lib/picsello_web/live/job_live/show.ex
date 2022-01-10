@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, ClientMessage}
+  alias Picsello.{Job, Repo, ClientMessage, BookingProposal, Package}
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -28,7 +28,7 @@ defmodule PicselloWeb.JobLive.Show do
     button_click = assigns[:button_click]
 
     ~H"""
-      <li class="flex flex-col justify-between p-4 border rounded-lg">
+      <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
           <div class="mb-6 font-bold">
             <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />

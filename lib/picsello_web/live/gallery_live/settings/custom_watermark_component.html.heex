@@ -1,4 +1,4 @@
-<div class="customWatermarkPopup w-11/12 lg:w-screen py-5 md:pb-8 px-5 md:px-10 absolute lg:static top-8 left-0 right-0 max-w-screen-lg bg-base-100 mx-auto my-0">
+<div class="customWatermarkPopup w-11/12 lg:w-screen py-5 md:pb-8 px-5 md:px-10 absolute lg:static bottom-4 left-0 right-0 max-w-screen-lg bg-base-100 mx-auto my-0">
   <div class="flex justify-between">
     <h1 class="text-2xl font-bold pb-7">Custom watermark</h1>
     <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><.icon name="close-x" class="w-5 h-5 stroke-current stroke-2"/></a>
@@ -79,9 +79,8 @@
       </.form>
     </div>
   <% end %>
-
-  <div class="flex flex-col md:flex-row md:justify-end mt-8">
-    <button class="mr-3 btn-row border-black md:w-auto px-9 py-3.5 mb-6 md:mb-0 justify-center" phx-target={@myself}>
+  <div class="flex flex-col md:flex-row md:justify-end mt-8 md:mt-16">
+    <button class="mr-3 btn-row border-black md:w-auto px-9 py-3.5 mb-6 md:mb-0 justify-center" phx-click="close" phx-target={@myself}>
       <span>Cancel</span>
     </button>
     <%= if @ready_to_save do %>

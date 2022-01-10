@@ -2,7 +2,7 @@ defmodule Picsello.Client do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, Organization, Repo}
+  alias Picsello.{Accounts.User, Organization, Job, Repo}
 
   schema "clients" do
     field :email, :string
@@ -17,11 +17,32 @@ defmodule Picsello.Client do
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
     |> cast(attrs, [:name, :email, :organization_id, :phone])
+    |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:name, :organization_id, :phone])
     |> validate_change(:phone, &valid_phone/2)
-    |> unsafe_validate_unique([:email, :organization_id], Repo)
     |> unique_constraint([:email, :organization_id])
+  end
+
+  def create_contact_changeset(client \\ %__MODULE__{}, attrs) do
+    client
+    |> cast(attrs, [:name, :email, :phone, :organization_id])
+    |> downcase_email()
+    |> User.validate_email_format()
+    |> validate_required([:email, :organization_id])
+    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
+    |> unique_constraint([:email, :organization_id])
+  end
+
+  def edit_contact_changeset(%__MODULE__{} = client, attrs) do
+    client
+    |> cast(attrs, [:name, :email, :phone])
+    |> downcase_email()
+    |> User.validate_email_format()
+    |> validate_required([:email])
+    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
+    |> unique_constraint([:email, :organization_id])
+    |> validate_required_name_and_phone()
   end
 
   def assign_stripe_customer_changeset(%__MODULE__{} = client, "" <> stripe_customer_id),
@@ -33,6 +54,26 @@ defmodule Picsello.Client do
       []
     else
       [{field, "is invalid"}]
+    end
+  end
+
+  def validate_required_name_and_phone(changeset) do
+    has_jobs = get_field(changeset, :id) |> Job.by_client_id() |> Repo.exists?()
+
+    if has_jobs do
+      changeset |> validate_required([:name, :phone])
+    else
+      changeset
+    end
+  end
+
+  defp downcase_email(changeset) do
+    email = get_field(changeset, :email)
+
+    if email do
+      update_change(changeset, :email, &String.downcase/1)
+    else
+      changeset
     end
   end
 end

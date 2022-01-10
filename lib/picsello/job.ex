@@ -3,7 +3,7 @@ defmodule Picsello.Job do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Client, JobStatus, Package, Shoot, BookingProposal, Repo}
+  alias Picsello.{Client, JobStatus, Package, Shoot, BookingProposal, Repo, ClientMessage}
   alias Picsello.Galleries.Gallery
 
   schema "jobs" do
@@ -17,6 +17,7 @@ defmodule Picsello.Job do
     has_one(:gallery, Gallery)
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
+    has_many(:client_messages, ClientMessage)
 
     timestamps(type: :utc_datetime)
   end
@@ -65,6 +66,10 @@ defmodule Picsello.Job do
 
   def by_id(id) do
     from(job in __MODULE__, where: job.id == ^id)
+  end
+
+  def by_client_id(id) do
+    from(job in __MODULE__, where: job.client_id == ^id)
   end
 
   def lead?(%__MODULE__{} = job) do

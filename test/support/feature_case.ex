@@ -191,9 +191,21 @@ defmodule Picsello.FeatureCase do
       |> click(css("a", text: "Forgot your password?"))
     end
 
-    def timeout(session) do
-      :timer.sleep(100)
+    def authenticated_gallery_client(%{session: session, gallery: gallery}) do
+      gallery_login(session, gallery)
+
+      [session: session, gallery: gallery]
+    end
+
+    def authenticated_gallery_client(%{session: session}) do
+      authenticated_gallery_client(%{session: session, gallery: insert(:gallery)})
+    end
+
+    defp gallery_login(session, gallery, password \\ valid_gallery_password()) do
       session
+      |> visit("/gallery/#{gallery.client_link_hash}")
+      |> fill_in(css("#login_password"), with: password)
+      |> click(button("Submit"))
     end
   end
 

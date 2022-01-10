@@ -1,6 +1,6 @@
 #!make
 include .env
-.PHONY: help console outdated setup server test update-mix check iex
+.PHONY: help console outdated setup server test test-clear update-mix check iex
 
 HELP_PADDING = 20
 
@@ -47,14 +47,12 @@ test: setup check test-clear
 	rm -f screenshots/*.png
 	mix test
 
-test-clear: 
-	killall chrome | true
-	ps ax | grep Chrome | grep headless | cut -c -6 | xargs kill -9 | true
+test-clear:
+	ps ax | grep '[Cc]hrome.*--headless' | cut -f1 -d ' ' | xargs kill -9 | true
+	killall -vz chromedriver | true
 
 test-watch: ## Run tests in watch mode
 	git ls-files | entr mix test $(FILE)
-
-
 
 update-mix: ## Update mix packages.
 	mix deps.update --all

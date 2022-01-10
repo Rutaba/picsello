@@ -49,6 +49,8 @@ defmodule PicselloWeb.Endpoint do
 
   plug PicselloWeb.Plugs.StripeWebhooks
 
+  plug PicselloWeb.Plugs.WhccWebhook
+
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
