@@ -89,7 +89,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
     |> visit("/gallery/#{hash}/login")
     |> fill_in(css("#login_password"), with: "123456")
     |> has_text?("Test Client Wedding")
-
   end
 
   def insert_photo(gallery_id, photo_url) do
