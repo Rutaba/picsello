@@ -291,7 +291,7 @@ defmodule Picsello.Factory do
 
   def gallery_factory(attrs) do
     %Gallery{
-      name: "Test Client Weeding",
+      name: "Test Client Weding",
       job: fn -> build(:lead) end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4()
@@ -361,12 +361,12 @@ defmodule Picsello.Factory do
 
   def cart_product_factory(%{product_id: product_id}) do
     %Picsello.Cart.CartProduct{
-      editor_details: %{
-        "editor_id" => sequence("whcc_id"),
-        "preview_url" =>
+      editor_details: %Picsello.WHCC.Editor.Details{
+        editor_id: sequence("whcc_id"),
+        preview_url:
           "https://d3fvjqx1d7l6w5.cloudfront.net/307f7e03-dad9-48f0-a320-99cd64d1093c.jpeg",
-        "product_id" => product_id,
-        "selections" => %{
+        product_id: product_id,
+        selections: %{
           "display_options" => "3_4in_float_mount",
           "forcePreview" => 1_641_226_557_685,
           "orientation" => "LANDSCAPE",
@@ -380,4 +380,21 @@ defmodule Picsello.Factory do
   end
 
   def valid_gallery_password(), do: "123456"
+
+  def cost_of_living_adjustment_factory(),
+    do: %Picsello.Packages.CostOfLivingAdjustment{state: "OK", multiplier: 1.0}
+
+  def package_tier_factory(),
+    do: %Picsello.Packages.Tier{name: "mid", position: 1}
+
+  def package_base_price_factory(),
+    do: %Picsello.Packages.BasePrice{
+      tier: "mid",
+      job_type: "event",
+      full_time: true,
+      min_years_experience: 1,
+      base_price: 100,
+      shoot_count: 2,
+      download_count: 10
+    }
 end

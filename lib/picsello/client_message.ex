@@ -36,7 +36,7 @@ defmodule Picsello.ClientMessage do
 
   defp validate_email_format(changeset, field) do
     changeset
-    |> validate_format(field, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
+    |> validate_format(field, Picsello.Accounts.User.email_regex(), message: "is invalid")
     |> validate_length(field, max: 160)
   end
 

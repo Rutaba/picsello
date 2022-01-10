@@ -42,19 +42,4 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("label", text: "Type of Photography can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
   end
-
-  feature "user sees error when creating client with duplicate email", %{
-    session: session,
-    user: user
-  } do
-    email = "taylor@example.com"
-
-    insert(:client, %{email: email, user: user})
-
-    session
-    |> click(button("Create a lead"))
-    |> fill_in(text_field("Client Email"), with: email)
-    |> assert_has(css("label", text: "Email has already been taken"))
-    |> assert_has(css("button:disabled[type='submit']"))
-  end
 end

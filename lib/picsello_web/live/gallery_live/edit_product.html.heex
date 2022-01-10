@@ -1,6 +1,6 @@
 <div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-5 fixed left-0 top-0 right-0 xl:static" id="edit-product-component">
   <div class="flex justify-between pt-4 mb-4">
-    <a href="#" phx-click="back" phx-target={@myself} class="inline-block xl:hidden cursor-pointer">
+    <a href="#" phx-click="click" phx-value-preview_photo_id={@photo.id} phx-target="#hamburger-menu" class="inline-block xl cursor-pointer">
        <.icon name="arrow-left" class="w-4 h-4 lg:w-5 lg:h-5" />
     </a>
     <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer ml-auto">

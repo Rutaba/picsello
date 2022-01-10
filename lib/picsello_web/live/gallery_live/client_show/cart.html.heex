@@ -1,34 +1,66 @@
 <div class="gallery__container"> 
-  <div class="font-bold text-3xl py-16">Your shopping cart</div>
-  <div class="grid grid-cols-3 sm:grid-cols-1">
-    <div class="col-span-2 mr-4 sm:mr-0">    
-      <%= for product <- @order.products do %>
-          <.live_component 
-            module={PicselloWeb.GalleryLive.ClientShow.Cart.Product} 
-            id={product.id} 
-            product={product} 
-          />
-      <% end %>
-      <%= for digital_download <- @order.digitals do %>
-          <.live_component 
-            module={PicselloWeb.GalleryLive.ClientShow.Cart.DigitalDownload} 
-            id={digital_download.id} 
-            digital_download={digital_download} 
-          />
-      <% end %>
-    </div>
-    <div class="col-span-1">
-      <div class="p-5 border rounded-lg flex flex-col">
-        <div class="text-xl"> 
-          <%= unless Enum.empty?(@order.products) do %>
-            Subtotal:
-          <% else %>
-            Total:
-          <% end %>    
-          <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+  <%= if @step == :product_list do %>
+    <div class="font-bold text-3xl py-16">Your shopping cart</div>
+    <div class="grid grid-cols-3 sm:grid-cols-1">
+      <div class="col-span-2 mr-4 sm:mr-0">    
+        <%= for product <- @order.products do %>
+            <.live_component 
+              module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
+              id={product.editor_details.editor_id} 
+              product={product} 
+            />
+        <% end %>
+        <%= for digital_download <- @order.digitals do %>
+            <.live_component 
+              module={PicselloWeb.GalleryLive.ClientShow.Cart.DigitalDownload} 
+              id={digital_download.id} 
+              digital_download={digital_download} 
+            />
+        <% end %>
+      </div>
+      <div class="col-span-1">
+        <div class="p-5 border rounded-lg flex flex-col">
+          <div class="text-xl"> 
+            <%= unless Enum.empty?(@order.products) do %>
+              Subtotal:
+            <% else %>
+              Total:
+            <% end %>
+            <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+          </div>
+          <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
         </div>
-        <button type="submit" class="btn-primary mt-5">Continue</button>
       </div>
     </div>
-  </div>
+  <% end %>
+  <%= if @step == :shipping_opts do %>
+    <%= for product <- @order.products do %>
+      <.live_component 
+        module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
+        id={product.editor_details.editor_id} 
+        product={product} 
+        has_border={false}
+        has_buttons={false}
+      />
+      <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>        
+        <input 
+          type="radio" phx-click="click" 
+          id={shipping_option_uid(option)} 
+          name="ship_option" 
+          phx-value-option-uid={shipping_option_uid(option)} 
+          phx-value-product-editor-id={product.editor_details.editor_id} 
+          checked={is_current_shipping_option?(@shipping_opts, option, product)}>
+        <label for={shipping_option_uid(option)}><%= shipping_option_label(option) %></label><br>
+        <label for={shipping_option_uid(option)}><%= shipping_option_cost(option) %></label><br>
+      </.display_shipping_opts>
+    <% end %>
+      <div class="col-span-1">
+        <div class="p-5 border rounded-lg flex flex-col">
+          <div class="text-xl">Products: <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span></div>
+          <div class="text-xl">Shipping: <span class="text-2xl font-bold ml-2"><%= @shipping_cost %></span></div>|
+          <button type="submit" class="btn-primary mt-5" phx-click="checkout">Check out with Stripe</button>
+        </div>
+      </div>
+    
+  <% end %>
 </div> 

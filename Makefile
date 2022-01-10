@@ -49,6 +49,7 @@ test: setup check test-clear
 
 test-clear:
 	ps ax | grep '[Cc]hrome.*--headless' | cut -f1 -d ' ' | xargs kill -9 | true
+	killall -vz chromedriver | true
 
 test-watch: ## Run tests in watch mode
 	git ls-files | entr mix test $(FILE)
