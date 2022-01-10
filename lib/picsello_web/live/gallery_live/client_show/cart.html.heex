@@ -5,7 +5,7 @@
       <%= for product <- @order.products do %>
           <.live_component 
             module={PicselloWeb.GalleryLive.ClientShow.Cart.Product} 
-            id={product.id} 
+            id={product.editor_details.editor_id} 
             product={product} 
           />
       <% end %>

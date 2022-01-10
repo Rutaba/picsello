@@ -118,7 +118,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
   defp segment_type_option(assigns) do
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer leading-tight sm:text-base",
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer leading-tight",
         %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
       )}>
         <input class="hidden" type={:radio} name={@name} value={@value} checked={@checked} />
@@ -131,7 +131,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         </div>
 
         <div class="flex flex-col">
-          <div class="font-semibold">
+          <div class="font-semibold text-sm">
             <%= @title %>
           </div>
           <div class="block text-sm opacity-70">
