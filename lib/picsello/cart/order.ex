@@ -11,6 +11,7 @@ defmodule Picsello.Cart.Order do
     field :subtotal_cost, Money.Ecto.Amount.Type
     field :shipping_cost, Money.Ecto.Amount.Type, default: Money.new(0)
     field :placed, :boolean, default: false
+    field :placed_at, :utc_datetime
     belongs_to(:gallery, Gallery)
     embeds_many :products, CartProduct, on_replace: :delete
 
@@ -68,6 +69,14 @@ defmodule Picsello.Cart.Order do
     |> cast(attrs, [])
     |> cast_shipping_cost(products)
     |> put_embed(:products, products)
+  end
+
+  def confirmation_changeset(%__MODULE__{} = order, confirmed_products) do
+    attrs = %{placed: true, placed_at: DateTime.utc_now()}
+
+    order
+    |> cast(attrs, [:placed, :placed_at])
+    |> put_embed(:products, confirmed_products)
   end
 
   defp cast_subtotal_cost(changeset, {:default, amount}),

@@ -80,4 +80,88 @@ defmodule Picsello.UserManagesContactsTest do
     |> assert_flash(:success, text: "Contact saved")
     |> assert_text("John")
   end
+
+  feature "creates lead from contact without name and phone", %{session: session, user: user} do
+    insert(:client,
+      user: user,
+      name: nil,
+      phone: nil,
+      email: "elizabeth@example.com"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Contacts"))
+    |> assert_text("You have 1 contact")
+    |> click(button("Manage"))
+    |> click(button("Create a lead"))
+    |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
+    |> fill_in(text_field("Client Phone"), with: "(555) 123-4567")
+    |> fill_in(text_field("Private Notes"), with: "things to know about")
+    |> click(option("Wedding"))
+    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
+    |> assert_has(testid("subheader", text: "Elizabeth Taylor"))
+    |> assert_has(testid("subheader", text: "elizabeth@example.com"))
+    |> assert_has(testid("subheader", text: "(555) 123-4567"))
+    |> assert_has(testid("notes", text: "things to know about"))
+  end
+
+  feature "creates lead from contact without phone", %{session: session, user: user} do
+    insert(:client,
+      user: user,
+      name: "Elizabeth Taylor",
+      phone: nil,
+      email: "elizabeth@example.com"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Contacts"))
+    |> assert_text("You have 1 contact")
+    |> click(button("Manage"))
+    |> click(button("Create a lead"))
+    |> assert_disabled(text_field("Client Name"))
+    |> fill_in(text_field("Client Phone"), with: "(555) 123-4567")
+    |> fill_in(text_field("Private Notes"), with: "things to know about")
+    |> click(option("Wedding"))
+    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
+    |> assert_has(testid("subheader", text: "Elizabeth Taylor"))
+    |> assert_has(testid("subheader", text: "elizabeth@example.com"))
+    |> assert_has(testid("subheader", text: "(555) 123-4567"))
+    |> assert_has(testid("notes", text: "things to know about"))
+  end
+
+  feature "creates lead from contact with existing name and phone", %{
+    session: session,
+    user: user
+  } do
+    insert(:client,
+      user: user,
+      name: "Elizabeth Taylor",
+      phone: "(555) 123-4567",
+      email: "elizabeth@example.com"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Contacts"))
+    |> assert_text("You have 1 contact")
+    |> click(button("Manage"))
+    |> click(button("Create a lead"))
+    |> assert_disabled(text_field("Client Name"))
+    |> assert_disabled(text_field("Client Phone"))
+    |> fill_in(text_field("Private Notes"), with: "things to know about")
+    |> click(option("Wedding"))
+    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
+    |> assert_has(testid("subheader", text: "Elizabeth Taylor"))
+    |> assert_has(testid("subheader", text: "elizabeth@example.com"))
+    |> assert_has(testid("subheader", text: "(555) 123-4567"))
+    |> assert_has(testid("notes", text: "things to know about"))
+  end
 end

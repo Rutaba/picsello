@@ -62,4 +62,19 @@ defmodule Picsello.UserSendsMarketingCampaignTest do
     campaign = Repo.get_by(Campaign, subject: "My subject")
     assert_enqueued(worker: Picsello.Workers.SendCampaign, args: %{id: campaign.id})
   end
+
+  feature "send button is disabled when profile is disabled", %{session: session} do
+    session
+    |> click(link("Settings"))
+    |> click(link("Public Profile"))
+    |> click(css("label", text: "Enabled"))
+    |> click(css("#hamburger-menu"))
+    |> click(link("Marketing"))
+    |> assert_disabled(button("Create an email"))
+    |> click(link("Edit"))
+    |> click(css("label", text: "Disabled"))
+    |> click(css("#hamburger-menu"))
+    |> click(link("Marketing"))
+    |> assert_enabled(button("Create an email"))
+  end
 end

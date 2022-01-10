@@ -51,15 +51,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   def handle_event(
         "product_preview_photo_click",
-        %{"params" => id},
+        %{"template_id" => template_id, "photo_id" => photo_id},
         %{assigns: %{products: products}} = socket
       ) do
-    gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(id) end)
+    gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(template_id) end)
+    photo = Galleries.get_photo(String.to_integer(photo_id))
 
     socket
     |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{
       category_template: gallery_product.category_template,
-      photo: gallery_product.preview_photo
+      photo: photo
     })
     |> noreply()
   end

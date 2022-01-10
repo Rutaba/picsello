@@ -1,12 +1,13 @@
 defmodule PicselloWeb.Live.Marketing do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.Marketing
+  alias Picsello.{Marketing, Profiles}
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Marketing")
+    |> assign_organization()
     |> assign_campaigns()
     |> ok()
   end
@@ -25,8 +26,14 @@ defmodule PicselloWeb.Live.Marketing do
               Lorem ispum intro copy goes here, we should talk about the future of this feature here or in a help article as we build out the feature. Lorem ipsum copy goes to three lines.
             </p>
           <% end %>
-          <div class={classes("flex justify-end mb-6 sm:mb-0", %{"sm:-mt-8" => Enum.any?(@campaigns)})}>
-            <button type="button" phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
+          <div class={classes("flex flex-col gap-3 sm:flex-row justify-end mb-6 sm:mb-0", %{"sm:-mt-8" => Enum.any?(@campaigns)})}>
+            <%= unless Profiles.enabled?(@organization) do %>
+              <.badge class={"flex self-start sm:self-center items-center"} color={:red}>
+                Enable your Public Profile to start sending
+                <.icon name="forth" class="ml-1 w-3 h-3 stroke-current"/>
+              </.badge>
+            <% end %>
+            <button type="button" disabled={!Profiles.enabled?(@organization)} phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
           </div>
           <%= unless Enum.empty?(@campaigns) do %>
             <h2 class="mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Most Recent</h2>
@@ -36,6 +43,33 @@ defmodule PicselloWeb.Live.Marketing do
                 <.campaign_item subject={campaign.subject} date={strftime(@current_user.time_zone, campaign.inserted_at, "%B %d, %Y")} clients_count={campaign.clients_count} />
               <% end %>
             </ul>
+          <% end %>
+        </.card>
+        <.card title="Public Profile">
+          <%= if Profiles.enabled?(@organization) do %>
+            <fieldset class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
+              <div {testid("url")} class={"mt-4 font-bold text-input #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
+                <%= Profiles.public_url(@organization) %>
+              </div>
+
+              <div class="flex flex-col mt-4 gap-3 sm:flex-row justify-end">
+                <a href={Routes.profile_settings_path(@socket, :index)} class="btn-secondary text-center">
+                  Edit
+                </a>
+                <button disabled={!Profiles.enabled?(@organization)} type="button" class="w-full sm:w-auto text-center btn-primary" id="copy-public-profile-link" data-clipboard-text={Profiles.public_url(@organization)} phx-hook="Clipboard">
+                  <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100 text-base-300" role="tooltip">Copied!</div>
+                  Copy Link
+                </button>
+              </div>
+            </fieldset>
+          <% else %>
+            <p class="mb-8">
+              <strong>Looks like your public profile is disabled.</strong> Please enable to start sendig promotional emails. You can edit your profile at anytime.
+            </p>
+
+            <div class="flex justify-end">
+              <a href={Routes.profile_settings_path(@socket, :index)} class="w-full sm:w-auto text-center btn-primary">Edit</a>
+            </div>
           <% end %>
         </.card>
       </div>
@@ -98,6 +132,11 @@ defmodule PicselloWeb.Live.Marketing do
 
     socket
     |> noreply()
+  end
+
+  def assign_organization(%{assigns: %{current_user: current_user}} = socket) do
+    organization = Profiles.find_organization_by(user: current_user)
+    socket |> assign(:organization, organization)
   end
 
   defp assign_campaigns(%{assigns: %{current_user: current_user}} = socket) do
