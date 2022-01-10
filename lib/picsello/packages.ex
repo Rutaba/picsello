@@ -200,6 +200,17 @@ defmodule Picsello.Packages do
     end
   end
 
+  defmacro nearest(number, nearest) do
+    quote do
+      fragment(
+        "(round(?::decimal / ?::decimal) * ?::decimal)",
+        unquote(number),
+        unquote(nearest),
+        unquote(nearest)
+      )
+    end
+  end
+
   def create_initial(
         %User{
           onboarding: %{photographer_years: years_experience, schedule: schedule, state: state}
@@ -219,6 +230,8 @@ defmodule Picsello.Packages do
         where: base.min_years_experience <= ^years_experience
       )
 
+    nearest = 500
+
     templates_query =
       from(base in BasePrice,
         where:
@@ -227,7 +240,11 @@ defmodule Picsello.Packages do
         join: adjustment in CostOfLivingAdjustment,
         on: adjustment.state == ^state,
         select: %{
-          base_price: type(adjustment.multiplier * base.base_price, base.base_price),
+          base_price:
+            type(
+              nearest(adjustment.multiplier * base.base_price, ^nearest),
+              base.base_price
+            ),
           description: array_to_string([base.tier, base.job_type], " "),
           download_count: base.download_count,
           download_each_price: type(^default_each_price, base.base_price),

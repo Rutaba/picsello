@@ -8,8 +8,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign_step(2)
     |> then(fn %{assigns: %{current_user: user}} = socket ->
-      socket |> assign(current_user: user |> Repo.preload(:organization))
+      assign(socket, current_user: Repo.preload(user, :organization))
     end)
+    |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
     |> ok()
   end
@@ -19,7 +20,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_event("previous", %{}, %{assigns: %{step: step}} = socket) do
-    socket |> assign_step(step - 1) |> noreply()
+    socket |> assign_step(step - 1) |> assign_changeset() |> noreply()
   end
 
   @impl true
@@ -28,8 +29,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
-  def handle_event("validate", _, socket) do
-    socket |> assign_changeset(%{}) |> noreply()
+  def handle_event("validate", _params, socket) do
+    socket |> assign_changeset() |> noreply()
   end
 
   @impl true
@@ -51,7 +52,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
-        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save">
+        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
           <div class="flex justify-between mt-5 sm:justify-end sm:mt-9">
@@ -171,9 +172,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp step(%{step: 5} = assigns) do
+    software_selected? = fn form, software ->
+      Enum.member?(input_value(form, :switching_from_softwares) || [], software)
+    end
+
     ~H"""
       <%= for o <- inputs_for(@f, :onboarding) do %>
-        <% input_name = input_name(o, :switching_from_softwares) <> "[]" %>
         <div class="flex flex-col pb-1">
           <p class="py-2 font-extrabold">
             Which photography software have you used before?
@@ -181,13 +185,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </p>
 
           <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-            <%= for({value, label} <- software_options(), checked <- [Enum.member?(input_value(o, :switching_from_softwares) || [], value)]) do %>
-
+            <%= for({value, label} <- software_options(), checked <- [software_selected?.(o, value)]) do %>
               <label class={classes(
                 "p-3 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm sm:text-base",
                 %{"border-blue-planning-300 bg-blue-planning-100" => checked}
               )}>
-                <input class="hidden" type="checkbox" name={input_name} value={value} checked={checked} />
+                <input class="hidden" type={if software_selected?.(o, :none), do: "radio", else: "checkbox"} name={input_name(o, :switching_from_softwares) <> "[]"} value={value} checked={checked} />
 
                 <%= label %>
               </label>
