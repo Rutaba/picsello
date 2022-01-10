@@ -1,6 +1,3 @@
-<%
-    order_items = 5
-    %>
 <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo_id)}')"}
 class="flex flex-nowrap text-left clientGallery__coverImg">
 <div class="w-2/3"></div>
@@ -45,11 +42,9 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
     </ul>
     <div class="relative sm:ml-auto cursor-pointer">
         <.icon name="shopping-cart" class="h-6 w-6 text-base-300" />
-        <%= if order_items > 0 do %>
         <span class="absolute -top-1 -left-2 bg-blue-planning-300 text-base-100 font-bold rounded-full text-center cartItemsAmount">
-            <%= order_items %>
+            5
         </span>
-        <% end %>
     </div>
 </div>
 <hr>
