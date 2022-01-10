@@ -103,7 +103,11 @@ defmodule PicselloWeb.LayoutView do
   def top_nav(socket),
     do: [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-      %{title: "Finances", icon: "money-bags", path: "#"},
+      %{
+        title: "Public profile",
+        icon: "profile",
+        path: Routes.profile_settings_path(socket, :index)
+      },
       %{title: "Help", icon: "question-mark", path: "#"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
