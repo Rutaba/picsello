@@ -153,7 +153,7 @@ defmodule Picsello.StripePayments do
             display_name: "Shipping",
             fixed_amount: %{
               amount: shipping_cost.amount,
-              currency: "usd"
+              currency: shipping_cost.currency
             }
           }
         }
@@ -177,7 +177,7 @@ defmodule Picsello.StripePayments do
                           } ->
       %{
         price_data: %{
-          currency: "usd",
+          currency: price.currency,
           unit_amount: price.amount,
           product_data: %{
             name: size <> " " <> GalleryProducts.get_whcc_product(product_id).whcc_name,
