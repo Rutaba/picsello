@@ -454,6 +454,13 @@
     transform: translateY(-25%);
 }
 
+.cartItemsAmount {
+    font-size: 10px;
+    line-height: 15px;
+    width: 16px;
+    height: 16px;
+}
+
 @media screen and (min-width: 1280px) {
     .editProductPopup {
         width: 95vw;
