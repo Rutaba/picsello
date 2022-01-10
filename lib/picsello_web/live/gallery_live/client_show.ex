@@ -2,9 +2,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   @moduledoc false
 
   use PicselloWeb,
-      live_view: [
-        layout: "live_client"
-      ]
+    live_view: [
+      layout: "live_client"
+    ]
+
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
   alias Picsello.Cart
@@ -97,14 +98,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
     socket
     |> open_modal(
-         PicselloWeb.GalleryLive.EditProduct,
-         %{
-           category_template: gallery_product.category_template,
-           photo: gallery_product.preview_photo
-         }
-       )
+      PicselloWeb.GalleryLive.EditProduct,
+      %{
+        category_template: gallery_product.category_template,
+        photo: gallery_product.preview_photo
+      }
+    )
     |> noreply()
   end
+
   @impl true
   def handle_event(
         "click",
@@ -121,18 +123,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
     socket
     |> open_modal(
-         PicselloWeb.GalleryLive.ChooseProduct,
-         %{
-           gallery: gallery,
-           photo_id: photo_id,
-           photo_ids:
-             CLL.init(photo_ids)
-             |> CLL.next(
-                  photo_ids
-                  |> Enum.find_index(&(&1 == to_integer(photo_id)))
-                )
-         }
-       )
+      PicselloWeb.GalleryLive.ChooseProduct,
+      %{
+        gallery: gallery,
+        photo_id: photo_id,
+        photo_ids:
+          CLL.init(photo_ids)
+          |> CLL.next(
+            photo_ids
+            |> Enum.find_index(&(&1 == to_integer(photo_id)))
+          )
+      }
+    )
     |> noreply
   end
 
@@ -179,7 +181,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         photo,
         complete_url:
           Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
+            "?editorId=%EDITOR_ID%",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
         only_favorites: favorites?
       )
@@ -203,7 +205,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         photo,
         complete_url:
           Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
+            "?editorId=%EDITOR_ID%",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash)
       )
 
@@ -240,12 +242,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   def get_menu_items(_socket),
-      do: [
-        %{title: "Home", path: "#"},
-        %{title: "Shop", path: "#"},
-        %{title: "My orders", path: "#"},
-        %{title: "Help", path: "#"}
-      ]
+    do: [
+      %{title: "Home", path: "#"},
+      %{title: "Shop", path: "#"},
+      %{title: "My orders", path: "#"},
+      %{title: "Help", path: "#"}
+    ]
 
   defp assign_photos(
          %{
@@ -264,14 +266,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
     socket
     |> assign(
-         :photos,
-         photos
-         |> Enum.take(per_page)
-       )
+      :photos,
+      photos
+      |> Enum.take(per_page)
+    )
     |> assign(
-         :has_more_photos,
-         photos
-         |> length > per_page
-       )
+      :has_more_photos,
+      photos
+      |> length > per_page
+    )
   end
 end

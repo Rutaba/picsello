@@ -20,14 +20,15 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       ) do
     order_id = to_integer(order_id)
 
-    with {:ok, %{id: ^order_id} = order} <- Cart.get_unconfirmed_order(gallery.id) do
-      order = Cart.confirm_order(order, Galleries.account_id(gallery))
+    case Cart.get_unconfirmed_order(gallery.id) do
+      {:ok, %{id: ^order_id} = order} ->
+        order = Cart.confirm_order(order, Galleries.account_id(gallery))
 
-      socket
-      |> assign(:from_checkout, true)
-      |> assign_details(gallery, order)
-      |> noreply()
-    else
+        socket
+        |> assign(:from_checkout, true)
+        |> assign_details(gallery, order)
+        |> noreply()
+
       _ ->
         socket
         |> push_patch(
