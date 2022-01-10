@@ -25,6 +25,15 @@ msgstr "1.5 hrs"
 msgid "duration-120"
 msgstr "2 hrs"
 
+msgid "duration-180"
+msgstr "3 hrs"
+
+msgid "duration-240"
+msgstr "4 hrs"
+
+msgid "duration-300"
+msgstr "5 hrs"
+
 msgid "wedding"
 msgstr "Wedding"
 
