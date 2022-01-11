@@ -139,6 +139,7 @@ defmodule Picsello.OnboardingsTest do
                    |> get_in([:organization, :profile, :website])
                )
     end
+  end
 
   describe "save_intro_state" do
     test "persists intro_id, time of action, and new state" do
@@ -146,7 +147,7 @@ defmodule Picsello.OnboardingsTest do
 
       assert %{
                onboarding: %{
-                 intro_state: [%{id: "intro_id_1", changed_at: %DateTime{}, state: :completed}]
+                 intro_states: [%{id: "intro_id_1", changed_at: %DateTime{}, state: :completed}]
                }
              } = Repo.reload(user)
     end
@@ -160,7 +161,7 @@ defmodule Picsello.OnboardingsTest do
 
       assert %{
                onboarding: %{
-                 intro_state: [
+                 intro_states: [
                    %{id: "intro_id_3", changed_at: %DateTime{}, state: :restarted},
                    %{id: "intro_id_2", changed_at: %DateTime{}, state: :dismissed}
                  ]
@@ -177,7 +178,7 @@ defmodule Picsello.OnboardingsTest do
 
       assert %{
                onboarding: %{
-                 intro_state: [
+                 intro_states: [
                    %{id: "intro_id_4", changed_at: %DateTime{}, state: :dismissed}
                  ]
                }

@@ -42,7 +42,7 @@ defmodule Picsello.Onboardings do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
       field(:state, :string)
-      embeds_many(:intro_state, IntroState)
+      embeds_many(:intro_states, IntroState)
     end
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
@@ -103,11 +103,35 @@ defmodule Picsello.Onboardings do
       |> User.complete_onboarding_changeset()
       |> Repo.update!()
 
-  def save_intro_state(current_user, intro_id, new_intro_state) do
+  def save_intro_state(current_user, intro_id, state) do
+    new_intro_state = %Onboarding.IntroState{
+      changed_at: DateTime.utc_now(),
+      state: state,
+      id: intro_id
+    }
+
     current_user
-    |> cast(%{onboarding: %{intro_state: [%{id: intro_id, state: new_intro_state}]}}, [])
-    |> cast_embed(:onboarding, with: &save_onboarding_intro_state/2)
+    |> cast(%{onboarding: %{}}, [])
+    |> cast_embed(:onboarding,
+      with: fn %{intro_states: intro_states} = onboarding, _ ->
+        onboarding
+        |> change()
+        |> put_embed(:intro_states, [
+          new_intro_state | Enum.filter(intro_states, &(&1.id != intro_id))
+        ])
+      end
+    )
     |> Repo.update!()
+  end
+
+  def show_intro?(current_user, intro_id) do
+    for(
+      %{id: ^intro_id, state: state} when state in [:completed, :dismissed] <-
+        current_user.onboarding.intro_states,
+      reduce: true
+    ) do
+      _ -> false
+    end
   end
 
   defp organization_onboarding_changeset(organization, attrs, step) do
@@ -145,17 +169,5 @@ defmodule Picsello.Onboardings do
 
   defp onboarding_changeset(onboarding, attrs, _) do
     Onboarding.changeset(onboarding, attrs)
-  end
-
-  defp save_onboarding_intro_state(onboarding, %{intro_state: [new_intro_state]}) do
-    onboarding
-    |> change()
-    |> put_embed(
-      :intro_state,
-      [
-        Map.put(new_intro_state, :changed_at, DateTime.utc_now())
-        | onboarding.intro_state || []
-      ]
-    )
   end
 end

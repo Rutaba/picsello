@@ -22,14 +22,14 @@ export default {
             // if user clicks 'x' or the overlay
             this.pushEvent('intro_js', {
               action: 'dismissed',
-              intro_id: introId,
+              intro_id: introId
             });
           })
           .onbeforeexit(() => {
             // if user has completed the entire tour
             this.pushEvent('intro_js', {
               action: 'completed',
-              intro_id: introId,
+              intro_id: introId
             });
           })
           .start()
@@ -40,5 +40,5 @@ export default {
     // into the HTML to avoid JS bloat
     // see https://introjs.com/docs/hints/attributes
     introJs().addHints();
-  },
+  }
 };

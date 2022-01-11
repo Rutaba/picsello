@@ -35,25 +35,9 @@ defmodule PicselloWeb.HomeLive.Index do
         %{"action" => action, "intro_id" => intro_id},
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    case action do
-      "completed" ->
-        Onboardings.save_intro_state(current_user, intro_id, "completed")
-
-        socket
-        |> noreply()
-
-      "dismissed" ->
-        Onboardings.save_intro_state(current_user, intro_id, "dismissed")
-
-        socket
-        |> noreply()
-
-      "restarted" ->
-        Onboardings.save_intro_state(current_user, intro_id, "restarted")
-
-        socket
-        |> noreply()
-    end
+    socket
+    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
+    |> noreply()
   end
 
   @impl true
@@ -198,27 +182,6 @@ defmodule PicselloWeb.HomeLive.Index do
     socket |> assign(:attention_items, items)
   end
 
-  def show_intro?(current_user, intro_id) do
-    found_state =
-      current_user.onboarding.intro_state
-      |> Enum.map(&Map.take(&1, [:id, :state]))
-      |> Enum.find(&(&1[:id] == intro_id))
-
-    case found_state do
-      %{id: ^intro_id, state: :dismissed} ->
-        "false"
-
-      %{id: ^intro_id, state: :completed} ->
-        "false"
-
-      %{id: ^intro_id, state: :restarted} ->
-        "true"
-
-      _ ->
-        "true"
-    end
-  end
-
   def card(assigns) do
     assigns = Map.put(assigns, :attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
 
@@ -242,6 +205,9 @@ defmodule PicselloWeb.HomeLive.Index do
     </li>
     """
   end
+
+  def show_intro?(current_user, intro_id),
+    do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
 
   defp job_count_by_status(user) do
     now = DateTime.utc_now()
