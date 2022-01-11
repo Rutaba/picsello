@@ -19,6 +19,11 @@ defmodule Picsello.UserOnboardsIntroTest do
     session
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
+    |> click(css(".introjs-nextbutton"))
+    |> click(css(".introjs-nextbutton"))
+    |> click(css(".introjs-nextbutton"))
+    |> click(css(".introjs-nextbutton"))
+    |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-donebutton"))
     |> visit("/")
     |> find(Query.data("intro-show", "false"))

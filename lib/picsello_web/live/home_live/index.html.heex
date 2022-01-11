@@ -1,131 +1,133 @@
-<header class="bg-blue-planning-100">
-  <div class="pt-6 pb-12 center-container">
-    <h1 class="px-6 text-3xl font-bold">
-      <%= time_of_day_greeting @current_user %>
-    </h1>
+<div phx-hook="IntroJS" data-intro-show={show_intro?(@current_user, "intro_dashboard")} id="intro_dashboard">
+  <header class="bg-blue-planning-100">
+    <div class="pt-6 pb-12 center-container">
+      <h1 class="px-6 text-3xl font-bold">
+        <%= time_of_day_greeting @current_user %>
+      </h1>
 
-    <%= case @attention_items do %>
-      <% [] -> %>
-      <% items -> %>
-        <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-blue-planning-200">Needs attention</h2>
-        <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none">
-          <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action} <- items do %>
-          <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg border-#{color}"}>
-            <div>
-              <h1 class="text-lg font-bold">
-                <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
-                <%= title %>
-              </h1>
+      <%= case @attention_items do %>
+        <% [] -> %>
+        <% items -> %>
+          <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-blue-planning-200">Needs attention</h2>
+          <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-needs-attention">
+            <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class} <- items do %>
+            <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg border-#{color} #{class}"}>
+              <div>
+                <h1 class="text-lg font-bold">
+                  <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
+                  <%= title %>
+                </h1>
 
-              <p class="my-2 text-sm"><%= body %></p>
-            </div>
+                <p class="my-2 text-sm"><%= body %></p>
+              </div>
 
-            <%= case action do %>
-              <% "set-up-stripe" -> %>
-                <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-                  class: "#{button_class} text-sm w-full py-2 mt-2",
-                  current_user: @current_user,
-                  return_url: Routes.home_url(@socket, :index),
-                  stripe_status: @stripe_status %>
-              <% _ -> %>
-                <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
+              <%= case action do %>
+                <% "set-up-stripe" -> %>
+                  <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+                    class: "#{button_class} text-sm w-full py-2 mt-2",
+                    current_user: @current_user,
+                    return_url: Routes.home_url(@socket, :index),
+                    stripe_status: @stripe_status %>
+                <% _ -> %>
+                  <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
+              <% end %>
+            </li>
             <% end %>
-          </li>
-          <% end %>
-        </ul>
-    <% end %>
-  </div>
-</header>
-
-<div class="px-6 pb-6 center-container" phx-hook="IntroJS" data-intro-show={show_intro?(@current_user, "intro_test")} id="intro_test">
-  <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
-
-  <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card">
-      <%= if @leads_empty? do %>
-      <p class="my-2">
-        Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
-      </p>
-
-      <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
-      <% else %>
-      <ul class="my-2 grid grid-flow-col auto-cols-fr gap-2">
-      <%= for {lead_state, number} <- @lead_stats do %>
-        <li class="text-center"><span class="font-bold"><%= number %></span> <%= lead_state %> <%= ngettext "lead", "leads", number %></li>
+          </ul>
       <% end %>
-      </ul>
+    </div>
+  </header>
 
-      <div class="flex items-stretch mt-4">
-        <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="create-lead">Create a lead</button>
+  <div class="px-6 pb-6 center-container">
+    <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
 
-        <button type="button" class="flex-1 py-2 text-sm btn-secondary">View leads</button>
-      </div>
-      <% end %>
-    </.card>
+    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card">
+        <%= if @leads_empty? do %>
+        <p class="my-2">
+          Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
+        </p>
 
-    <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
-      <%= if @jobs_empty? do %>
-      <p class="my-2">
-        Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.
-        <%= if @leads_empty? do %>Create your first lead!<% end %>
-      </p>
-      <% else %>
-        <p class="my-2"><span class="font-bold"><%= @job_count %></span> upcoming <%= ngettext "job", "jobs", @job_count %> within the next seven days</p>
-      <% end %>
-    </.card>
-
-    <li class="flex flex-col items-center justify-center h-full p-5 border rounded-lg">
-      <.icon name="upload" class="w-12 h-12 text-blue-planning-300" />
-      <p class="mt-2 text-lg font-bold">
-        Upload a shoot
-      </p>
-    </li>
-  </ul>
-
-  <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
-
-  <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer">
-      <p class="my-2">
-        <%= if @inbox_count > 0 do %>
-          <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+        <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
         <% else %>
-          Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+        <ul class="my-2 grid grid-flow-col auto-cols-fr gap-2">
+        <%= for {lead_state, number} <- @lead_stats do %>
+          <li class="text-center"><span class="font-bold"><%= number %></span> <%= lead_state %> <%= ngettext "lead", "leads", number %></li>
         <% end %>
-      </p>
-    </.card>
+        </ul>
 
-    <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" badge={0} phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer">
-      <p class="my-2">
-        Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!
-      </p>
-    </.card>
+        <div class="flex items-stretch mt-4">
+          <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="create-lead">Create a lead</button>
 
-    <.card color="red-sales-300" icon="cart" title="Manage Orders" badge={0}>
-      <p class="my-2">
-        After you upload your shoot, clients can buy prints and much more directly from your gallery page!
-      </p>
-    </.card>
-  </ul>
-</div>
+          <button type="button" class="flex-1 py-2 text-sm btn-secondary">View leads</button>
+        </div>
+        <% end %>
+      </.card>
 
-<div id="float-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
-  <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
-    <.icon name="close-x" class="w-6 h-6 stroke-current rotate-45 stroke-2" />
+      <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
+        <%= if @jobs_empty? do %>
+        <p class="my-2">
+          Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.
+          <%= if @leads_empty? do %>Create your first lead!<% end %>
+        </p>
+        <% else %>
+          <p class="my-2"><span class="font-bold"><%= @job_count %></span> upcoming <%= ngettext "job", "jobs", @job_count %> within the next seven days</p>
+        <% end %>
+      </.card>
+
+      <li class="flex flex-col items-center justify-center h-full p-5 border rounded-lg">
+        <.icon name="upload" class="w-12 h-12 text-blue-planning-300" />
+        <p class="mt-2 text-lg font-bold">
+          Upload a shoot
+        </p>
+      </li>
+    </ul>
+
+    <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
+
+    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">
+        <p class="my-2">
+          <%= if @inbox_count > 0 do %>
+            <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+          <% else %>
+            Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+          <% end %>
+        </p>
+      </.card>
+
+      <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" badge={0} phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
+        <p class="my-2">
+          Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!
+        </p>
+      </.card>
+
+      <.card color="red-sales-300" icon="cart" title="Manage Orders" badge={0}>
+        <p class="my-2">
+          After you upload your shoot, clients can buy prints and much more directly from your gallery page!
+        </p>
+      </.card>
+    </ul>
   </div>
-  <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
-    <nav class="flex flex-col w-64 m-8 overflow-hidden bg-white rounded-lg shadow-md">
-      <a href="#" phx-click="create-lead" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300">
-        <.icon name="three-people" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-        Add a lead
-      </a>
-      <div class="p-4 pl-12 text-sm text-white uppercase bg-base-300">
-       Quick actions
-      </div>
-    </nav>
 
+  <div id="float-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
     <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
-      <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
+      <.icon name="close-x" class="w-6 h-6 stroke-current rotate-45 stroke-2" />
+    </div>
+    <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
+      <nav class="flex flex-col w-64 m-8 overflow-hidden bg-white rounded-lg shadow-md">
+        <a href="#" phx-click="create-lead" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300">
+          <.icon name="three-people" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
+          Add a lead
+        </a>
+        <div class="p-4 pl-12 text-sm text-white uppercase bg-base-300">
+        Quick actions
+        </div>
+      </nav>
+
+      <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
+        <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
+      </div>
     </div>
   </div>
 </div>
