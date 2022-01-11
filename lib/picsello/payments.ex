@@ -15,6 +15,8 @@ defmodule Picsello.Payments do
   @callback customer_id(%Picsello.Client{}) :: {:ok, binary()}
   @callback checkout_link(%Picsello.BookingProposal{}, list(map()), keyword(binary())) ::
               {:ok, binary()}
+  @callback checkout_link(%Picsello.Cart.Order{}, keyword(binary())) ::
+              {:ok, %{link: binary(), line_items: [map()]}}
   @callback construct_event(String.t(), String.t(), String.t()) ::
               {:ok, Stripe.Event.t()} | {:error, any}
 

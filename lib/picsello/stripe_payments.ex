@@ -137,10 +137,19 @@ defmodule Picsello.StripePayments do
   end
 
   def checkout_link(%Order{products: products, shipping_cost: shipping_cost}, opts) do
+    params = cart_checkout_params(products, shipping_cost, opts)
+
+    case Stripe.Session.create(params) do
+      {:ok, %{url: url}} -> {:ok, %{link: url, line_items: params.line_items}}
+      error -> error
+    end
+  end
+
+  def cart_checkout_params(products, shipping_cost, opts) do
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)
 
-    stripe_params = %{
+    %{
       cancel_url: cancel_url,
       success_url: success_url,
       payment_method_types: ["card"],
@@ -159,11 +168,6 @@ defmodule Picsello.StripePayments do
         }
       ]
     }
-
-    case Stripe.Session.create(stripe_params) do
-      {:ok, %{url: url}} -> {:ok, url}
-      error -> error
-    end
   end
 
   defp form_order_line_items(products) do
@@ -175,12 +179,15 @@ defmodule Picsello.StripePayments do
                               product_id: product_id
                             }
                           } ->
+      unit_amount = price |> Money.divide(quantity) |> List.first() |> then(& &1.amount)
+      name = size <> " " <> GalleryProducts.get_whcc_product(product_id).whcc_name
+
       %{
         price_data: %{
           currency: price.currency,
-          unit_amount: price.amount,
+          unit_amount: unit_amount,
           product_data: %{
-            name: size <> " " <> GalleryProducts.get_whcc_product(product_id).whcc_name,
+            name: name,
             images: [preview_url]
           }
         },

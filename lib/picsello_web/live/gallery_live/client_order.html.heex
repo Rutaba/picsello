@@ -1,94 +1,91 @@
 <div>
-    <div class="pt-5 lg:pt-9 px-6 lg:px-14 max-w-screen-xl mx-auto">
-      <%= if @from_checkout do %>
-        <h3 class="font-bold text-lg md:text-3xl">
-          Thank you for your order!
-        </h3>
-
-        <div>
-          Thank you for shopping with <%= @organization_name %>.
-          We’ll send you a confirmation email with your order details and tracking information for each product you’ve ordered.
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-14">
+        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
+    </div>
+    <hr>
+    <div class="pt-5 lg:pt-14 px-6 lg:px-14 max-w-screen-xl mx-auto">
+        <%= if @from_checkout do %>
+        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center">
+            <h3 class="font-bold text-lg md:text-3xl">Thank you for your order!</h3>
+            <p class="text-base md:text-xl pt-5 lg:pt-0">Order number: <span class="font-bold"><%= @order.number %></span></p>
         </div>
         <div>
-          Use the button below if you’d like to return to the gallery and shop for more.
-          <div>
-        <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
-        <%= live_redirect "Continue shopping", to: Routes.gallery_client_show_path(@socket, :show, @gallery.client_link_hash) %>
-        </button>
-
-          </div>     
+            <p class="py-5 md:pt-8 text-sm md:text-base">Thank you for shopping with <%= @organization_name %>.
+                We’ll send you a confirmation email with your order details and tracking information for each product you’ve ordered.
+            </p>
+            <p class="text-sm md:text-base">Use the button below if you’d like to return to the gallery and shop for more.</p>
+            <button class="btn-primary w-full md:w-96 mt-6 mb-1"><%= live_redirect "Continue shopping", to: Routes.gallery_client_show_path(@socket, :show, @gallery.client_link_hash) %></button>
         </div>
-
-     <% else %>
-        <div> My order > Order number <%= @order.number %></div> 
+        <% else %>
+        <nav class="pb-5 lg:pb-9 text-blue-planning-300">
+            <ol class="list-reset flex text-grey-dark">
+                <li><a href="#">My orders</a></li>
+                <li><span class="mx-2">></span></li>
+                <li><a href="#" class="font-bold">Order number <%= @order.number %></a></li>
+            </ol>
+        </nav>
         <h3 class="font-bold text-lg md:text-3xl">
-          Order number <%= @order.number %>
+            Order number <%= @order.number %>
         </h3>
-     <% end %>
-     <%= unless Enum.empty?(@order.products) do %>
-        <div class="border rounded-lg p-5 mb-5 mt-5">
-          <div class="text-2xl font-semibold"> Your order will be sent to: </div>
-
-          <div>Shipping name</div>
-
-          <div>123 Street</div>
-          <div>City State ZIP</div>
+        <% end %>
+        <%= unless Enum.empty?(@order.products) do %>
+        <div class="border rounded-lg border-grey-100 p-5 mt-5">
+            <h4 class="font-bold text-lg">Your order will be sent to:</h4>
+            <p class="text-base pt-4">Shipping name</p>
+            <p class="text-base pt-2.5">123 Street</p>
+            <p class="text-base pt-2.5">City State ZIP</p>
         </div>
-
-      <% end %>
-      <div class="rounded-lg border mb-2 p-5">
-        <h3 class="text-xl font-semibold mb-2"> Order details </h3>
-
-        <p class="mb-3">Order number: <%= @order.number %></p>
-
-        <%= for item <- @order.products do %>
-                <hr/>
-                <div class="py-5 lg:py-8 border-t lg:border-t-0 border-base-200 first:border-0 md:first:border-t relative lg:flex justify-between">
-                    <div class="grid grid-rows-1 gridTemplateOrder lg:grid-rows-3 lg:grid-flow-col">
-                        <img src={item.editor_details.preview_url} class="mx-auto h-24 lg:h-28 lg:row-span-4"/>
-                        <div class="flex flex-col px-4 md:px-8 pt-2 lg:pt-0 lg:col-span-2 lg:row-span-2">
-                            <span class="text-sm md:text-base md:font-medium lg:h-2/4 lg:flex lg:items-center">
-                              <%= item.editor_details.selections["size"] %>
-                              <.product_description id={item.editor_details.product_id} />
-                            </span>
-                            <span class="text-xs md:text-sm pt-2 lg:pt-0 lg:h-2/4 lg:flex lg:items-center">Quantity: <%= item.editor_details.selections["quantity"] %></span>
+        <% end %>
+        <div class="border rounded-lg border-grey-100 p-5 mt-5">
+            <h4 class="font-bold text-lg md:text-2xl">Order details:</h4>
+            <p class="text-base md:text-lg md:pt-5 md:pb-7">Order number: <span class="font-bold"><%= @order.number %></span></p>
+            <div class="divide-y divide-grey-200 ">
+                <%= for item <- @order.products do %>
+                <div class="py-5 md:py-7 md:first:border-t md:border-base-200 relative">
+                    <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
+                        <img src={item.editor_details.preview_url} class="mx-auto h-24 md:h-40"/>
+                        <div class="flex flex-col px-4 md:px-8 md:pt-4">
+                            <span class="text-sm md:text-base md:font-medium"> <%= item.editor_details.selections["size"] %> <.product_description id={item.editor_details.product_id} /></span>
+                            <span class="text-xs md:text-sm pt-2 md:py-5">Quantity: <%= item.editor_details.selections["quantity"] %></span>
                         </div>
-                        <span class="text-base pt-4 font-bold lg:col-span-2 lg:row-span-1 lg:px-8 lg:pt-0 lg:self-center"><%= item.price %></span>
+                        <span class="text-base lg:text-2xl font-bold md:pr-8 md:self-center"><%= item.price %></span>
                     </div>
                     <%= if item.whcc_tracking do %>
-                    <div class="flex items-center pt-3 lg:w-80">
-                        <.icon name="order-shipped" class="w-7 h-5 lg:w-6 lg:h-4 mr-2"/>
-                        <p class="text-xs lg:text-sm"><span class="font-bold">Item shipped:</span>
-                          <.tracking_link info={item.whcc_tracking} />      
+                    <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
+                        <.icon name="order-shipped" class="w-7 h-7 mr-2 md:mr-4"/>
+                        <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
+                            <.tracking_link info={item.whcc_tracking} />
                         </p>
                     </div>
                     <% else %>
-                    <div class="flex items-center pt-3 lg:w-80">
-                        <.icon name="tracking-info" class="w-6 h-6 mr-2"/>
-                        <p class="text-xs text-base-250 lg:text-sm">We’ll provide tracking info once your item ships</p>
+                    <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
+                        <.icon name="tracking-info" class="w-7 h-7 mr-2 md:mr-4"/>
+                        <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
                     </div>
                     <% end %>
                 </div>
-
-        <% end %>
-        <%= for digital <- @order.digitals do %>
-      <pre>
-        <%= inspect(digital, pretty: true) %>
-      </pre>
-        <% end %>
-      </div>
-      <div>
-        <div class="p-5 border rounded-lg flex flex-col">
-          <div class="text-xl">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="text-2xl font-bold ml-2 float-right"><%= @order.subtotal_cost %></span></div>
-          <div class="text-xl">Shipping: <span class="text-2xl font-bold ml-2 float-right"><%= @order.shipping_cost %></span></div>
-          <hr class="mt-2" />
-          <div class="text-xl">Total: <span class="text-2xl font-bold ml-2 float-right"><%= Money.add(@order.shipping_cost, @order.subtotal_cost) %></span></div>
+                <% end %>
+            </div>
         </div>
-      </div>
-
-
+        <%= for digital <- @order.digitals do %>
+        <pre>
+        <%= inspect(digital, pretty: true) %>
+    </pre>
+        <% end %>
+        <div class="border border-grey-100 rounded-lg w-full p-5 mt-5">
+            <p class="md:flex md:justify-between md:items-center text-base-300 text-opacity-80 text-base md:text-lg">
+                <span>Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>):</span>
+                <span class="font-bold md:pr-8"><%= @order.subtotal_cost %></span>
+            </p>
+            <p class="md:flex md:justify-between md:items-center text-base-300 text-opacity-80 text-base md:text-lg pt-2.5">
+                <span>Shipping:</span>
+                <span class="font-bold md:pr-8"><%= @order.shipping_cost %></span>
+            </p>
+            <hr class="my-4">
+            <p class="md:flex md:justify-between md:items-center text-xl md:text-2xl text-base-300">
+                <span>Total:</span>
+                <span class="font-bold md:pr-8"><%= Money.add(@order.shipping_cost, @order.subtotal_cost) %></span>
+            </p>
+        </div>
     </div>
 </div>
-
-
-
