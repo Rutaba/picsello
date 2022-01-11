@@ -32,6 +32,6 @@ defmodule Picsello.GalleryCartTest do
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
     |> assert_text("Subtotal: " <> Money.to_string(order.subtotal_cost))
-    |> assert_has(css("img", count: 1))
+    |> assert_has(css(".cartImg", count: 1))
   end
 end
