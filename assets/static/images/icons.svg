@@ -187,7 +187,7 @@
     <path d="M16.1999 8.6001H12.3999" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 
-  <svg id="checkmark" viewBox="0 0 16 16" fill="none">
+  <svg id="checkmark" viewBox="0 0 16 16" fill="none" stroke-width="3">
     <path d="M1 8.22222L6.15789 14L15 1" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 
