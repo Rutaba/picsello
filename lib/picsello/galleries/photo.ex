@@ -30,7 +30,7 @@ defmodule Picsello.Galleries.Photo do
     :watermarked_preview_url,
     :client_liked,
     :gallery_id,
-    :album_id,
+    # :album_id,
     :aspect_ratio
   ]
   @update_attrs [

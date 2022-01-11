@@ -2,8 +2,21 @@
 
   <%= if @step == :product_list do %>
     <div class="font-bold text-3xl py-16">Your shopping cart</div>
-    <div class="grid grid-cols-3 sm:grid-cols-1">
-      <div class="col-span-2 mr-4 sm:mr-0">    
+    <div class="grid grid-cols-1 md:grid-cols-3">
+      <div class="col-span-1 mb-4 md:hidden">
+        <div class="p-5 border rounded-lg flex flex-col">
+          <div class="text-xl"> 
+            <%= unless Enum.empty?(@order.products) do %>
+              Subtotal:
+            <% else %>
+              Total:
+            <% end %>
+            <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+          </div>
+          <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
+        </div>
+      </div>
+      <div class="col-span-2 mr-0 md:mr-4">    
         <%= for product <- @order.products do %>
             <.live_component 
               module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}

@@ -58,7 +58,8 @@ defmodule Picsello.WHCC.Client do
     {:ok, %{body: body}} =
       new(account_id)
       |> post("/editors", params)
-
+      IO.inspect params
+      IO.inspect body
     body |> WHCC.CreatedEditor.from_map()
   end
 
