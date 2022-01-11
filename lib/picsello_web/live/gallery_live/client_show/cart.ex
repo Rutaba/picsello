@@ -60,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           Enum.find(shipping_opts, fn opt ->
             opt[:editor_id] == product.editor_details.editor_id
           end)
-          |> (& &1[:current]).()
+          |> then(& &1.current)
 
         Cart.order_product(product, account_id,
           ship_to: ship_address(),
@@ -70,7 +70,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       end)
       |> Cart.store_cart_products_checkout()
 
-    {:ok, checkout_link} =
+    {:ok, %{link: checkout_link}} =
       payments().checkout_link(order,
         success_url:
           Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.id),
@@ -149,17 +149,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
          editor_details: %{editor_id: editor_id, selections: %{"size" => size}}
        }) do
     %{editor_id: editor_id, list: Shipping.options(size)}
-    |> (&Map.put(&1, :current, List.first(&1[:list]))).()
+    |> then(&Map.put(&1, :current, List.first(&1.list)))
   end
 
   defp shipping_opts_for_product(opts, %{editor_details: %{editor_id: editor_id}}) do
     Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
-    |> (& &1[:list]).()
+    |> then(& &1.list)
   end
 
   defp is_current_shipping_option?(opts, option, %{editor_details: %{editor_id: editor_id}}) do
     Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
-    |> (&(&1[:current] == option)).()
+    |> then(&(&1.current == option))
   end
 
   defp shipping_option_uid({uid, _, _, _}), do: uid

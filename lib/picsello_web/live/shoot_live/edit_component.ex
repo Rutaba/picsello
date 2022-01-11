@@ -38,7 +38,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
                   wrapper_class: classes("",%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
             %>
 
-            <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})}>
+            <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field} |> Map.merge(select_invalid_classes(f, :location)))}>
               <div class="flex items-center justify-between">
                 <%= label_for f, :location, label: "Shoot Location" %>
 

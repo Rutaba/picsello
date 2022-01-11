@@ -69,8 +69,6 @@ module.exports = {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
       },
       spacing: {
-        '90vw': '90vw',
-        '85vh': '85vh',
         '5vw': '5vw',
       },
       fontSize: {

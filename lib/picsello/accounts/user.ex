@@ -4,6 +4,8 @@ defmodule Picsello.Accounts.User do
   import Ecto.Changeset
   alias Picsello.Onboardings.Onboarding
 
+  @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
+
   @derive {Inspect, except: [:password]}
   schema "users" do
     field :confirmed_at, :naive_datetime
@@ -71,7 +73,7 @@ defmodule Picsello.Accounts.User do
   def validate_email_format(changeset) do
     changeset
     |> validate_required([:email])
-    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
+    |> validate_format(:email, email_regex(), message: "is invalid")
     |> validate_length(:email, max: 160)
   end
 
@@ -81,6 +83,8 @@ defmodule Picsello.Accounts.User do
     |> unsafe_validate_unique(:email, Picsello.Repo)
     |> unique_constraint(:email)
   end
+
+  def email_regex(), do: @email_regex
 
   def validate_password(changeset, opts) do
     changeset

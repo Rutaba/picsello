@@ -595,4 +595,9 @@ defmodule Picsello.Galleries do
     |> then(&:crypto.hash(:sha3_256, &1))
     |> Base.encode64()
   end
+
+  def populate_organization(%Gallery{} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: :organization])
+  end
 end

@@ -28,8 +28,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     job = message |> Repo.preload(job: [client: :organization]) |> Map.get(:job)
 
-    domain = Application.get_env(:picsello, Picsello.Mailer) |> Keyword.get(:reply_to_domain)
-    reply_to = [Job.token(job), domain] |> Enum.join("@")
+    reply_to = Job.email_address(job)
     from_display = job.client.organization.name
 
     template_name
