@@ -86,8 +86,15 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def side_nav(socket),
-    do: [
+  def side_nav(socket, current_user) do
+    stripe_status = payments().status(current_user)
+
+    finances =
+      if stripe_status == :charges_enabled,
+        do: %{title: "Finances", icon: "money-bags", path: "https://dashboard.stripe.com"},
+        else: nil
+
+    [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{title: "Orders", icon: "cart", path: "#"},
@@ -95,10 +102,12 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
       %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
-      %{title: "Finances", icon: "money-bags", path: "#"},
+      finances,
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
       %{title: "Help", icon: "question-mark", path: "#"}
     ]
+    |> Enum.filter(& &1)
+  end
 
   def top_nav(socket),
     do: [
@@ -111,4 +120,6 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Help", icon: "question-mark", path: "#"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
+
+  defp payments(), do: Application.get_env(:picsello, :payments)
 end
