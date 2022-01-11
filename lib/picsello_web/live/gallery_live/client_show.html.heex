@@ -10,47 +10,14 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
     </div>
 </div>
 </div>
-<div class="flex justify-between px-6 sm:px-0 sm:justify-start items-center sm:flex-wrap py-2 gallery__container px-2 md:px-16">
-    <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
-        <div class="fixed left-0 top-0 w-3/4 bottom-0 z-10 flex flex-col items-start hidden cursor-default toggle-content bg-white py-6 px-10">
-            <div class="cursor-pointer text-base-300">
-                <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
-            </div>
-            <nav class="flex flex-col pt-1">
-                <%= for %{title: title, path: path} <- get_menu_items(@socket) do %>
-                    <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center text-lg pt-6 font-medium" active_class="bg-blue-planning-100 font-bold">
-                        <%= title %>
-                    </.nav_link>
-                <% end %>
-            </nav>
-        </div>
-        <.icon name="hamburger" class="h-4 text-base-300 w-6" />
-    </div>
-    <img
-        height="50"
-        width="150"
-        src="https://janegoodrichphotography.com/wp-content/uploads/2019/08/janelogo3.png"
-        class="inline-block sm:mr-8"
-        />
-    <ul class="sm:flex items-center py-4 hidden">
-        <%= for %{title: title, path: path} <- get_menu_items(@socket) do %>
-            <.nav_link title={title} to={path} socket={@socket} live_action={@live_action}
-            class="mr-8 whitespace-nowrap last:mr-0" active_class="bg-blue-planning-100 font-bold">
-                <%= title %>
-            </.nav_link>
-        <% end %>
-    </ul>
-    <div class="relative sm:ml-auto cursor-pointer">
-        <.icon name="shopping-cart" class="h-6 w-6 text-base-300" />
-        <span class="absolute -top-1 -left-2 bg-blue-planning-300 text-base-100 font-bold rounded-full text-center cartItemsAmount">
-            5
-        </span>
-    </div>
+
+<div class="gallery__container">
+    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
 </div>
 <hr>
-<div class="gallery__container px-2 md:px-16">
+<div class="gallery__container">
     <%= if length(@products) !== 0 do %>
-    <div class="px-6 sm:px-0 pt-8 lg:pt-14">
+    <div class="pt-8 lg:pt-14">
         <div class="font-bold text-base lg:text-3xl">
             Order custom products with <%= @creator.name %>
         </div>
@@ -68,7 +35,7 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
     <% end %>
     <!-- Content -->
     <div class="pt-5 lg:pt-16">
-        <div class="px-6 sm:px-0">
+        <div>
             <div class="font-bold text-lg lg:text-3xl">
                 <%= @gallery.name %> Gallery
             </div>
