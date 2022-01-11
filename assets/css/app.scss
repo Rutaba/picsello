@@ -200,11 +200,22 @@ html {
   @apply animate-pulse cursor-wait;
 }
 
+.show_on_mobile{
+  display: none;
+}
+
 @media (min-width: 640px){
   .muuri.grid {
     .item {
       margin: 10px;
     }
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .show_on_mobile{
+    display: flex;
+    max-width: 562px;
   }
 }
 
