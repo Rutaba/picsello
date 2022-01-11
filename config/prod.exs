@@ -14,7 +14,8 @@ config :picsello, PicselloWeb.Endpoint,
     host:
       System.get_env("EXTERNAL_HOSTNAME") || System.get_env("RENDER_EXTERNAL_HOSTNAME") ||
         "localhost",
-    port: 80
+    port: 443,
+    scheme: "https"
   ],
   debug_errors: System.get_env("DEBUG_ERRORS") == "true",
   cache_static_manifest: "priv/static/cache_manifest.json"
