@@ -29,8 +29,8 @@
         <h1 class="text-4xl font-bold text-orange-inbox-300 mt-8">Prints</h1>
         <p class="py-12 border-b">Lorem ipsum copy about what you can do here & why you want to change your cover photo lorem ipsum</p>
         <.form let={f} for={@changeset} action="#" phx-submit="save">
-        <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-        <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
+            <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
+            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
             disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
     </div>
@@ -38,16 +38,16 @@
 
 <div id="gallery_product_form" class="gallery__container pb-32">
     <div
-    phx-hook="MasonryGrid"
-    phx-update="append"
-    id="muuri-grid"
-    class={"muuri grid"}
-    data-page={ @page }
-    data-total={ @gallery.total_count }
-    data-favorites-count={ @favorites_count }
-    data-is-favorites-shown={ @favorites_filter }
-    data-is-sortable="false"
-    data-has-more-photos={ @has_more_photos }
+        phx-hook="MasonryGrid"
+        phx-update="append"
+        id="muuri-grid"
+        class={"muuri grid"}
+        data-page={ @page }
+        data-total={ @gallery.total_count }
+        data-favorites-count={ @favorites_count }
+        data-is-favorites-shown={ @favorites_filter }
+        data-is-sortable="false"
+        data-has-more-photos={ @has_more_photos }
     >
     <%= for photo <- @photos do %>
         <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
