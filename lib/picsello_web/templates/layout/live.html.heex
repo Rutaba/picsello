@@ -66,4 +66,26 @@
   <%= flash(@flash) %>
 
   <%= @inner_content %>
+
+  <div class="mt-12"></div>
+  <footer class="mt-auto hidden sm:block bg-base-300 text-white">
+    <div class="px-6 center-container py-10">
+      <nav class="text-lg font-bold mt-4">
+        <ul class="flex">
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#" class="ml-10">Help center</a></li>
+          <li><a href="#" class="ml-10">Contact us</a></li>
+        </ul>
+      </nav>
+      <hr class="my-8 opacity-30" />
+      <div class="flex">
+        <div>Copyright © <%= DateTime.utc_now.year %> Picsello</div>
+        <ul class="flex ml-auto">
+          <li><a href="#">Terms</a></li>
+          <li><a href="#" class="ml-10">Privacy Policy</a></li>
+          <li><a href="#" class="ml-10">California Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
 </main>
