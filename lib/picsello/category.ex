@@ -12,6 +12,7 @@ defmodule Picsello.Category do
     field :position, :integer
     field :whcc_id, :string
     field :whcc_name, :string
+    field :default_markup, :decimal
     has_many(:products, Picsello.Product)
 
     timestamps(type: :utc_datetime)
@@ -21,8 +22,9 @@ defmodule Picsello.Category do
 
   def changeset(category, attrs \\ %{}) do
     category
-    |> cast(attrs, [:hidden, :icon, :name, :position])
-    |> validate_required([:icon, :name, :position])
+    |> cast(attrs, [:hidden, :icon, :name, :default_markup])
+    |> validate_required([:icon, :name, :default_markup])
+    |> validate_number(:default_markup, greater_than_or_equal_to: 1.0)
     |> validate_inclusion(:icon, Picsello.Icon.names())
     |> unique_constraint(:position)
   end

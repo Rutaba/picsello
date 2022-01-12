@@ -334,7 +334,8 @@ defmodule Picsello.Factory do
       whcc_name: "shirts",
       name: "cool shirts",
       position: sequence(:category_position, & &1),
-      icon: "book"
+      icon: "book",
+      default_markup: 2.0
     }
 
   def product_factory,
