@@ -14,7 +14,7 @@ defmodule Picsello.Cart.Order do
     field :placed, :boolean, default: false
     field :placed_at, :utc_datetime
     belongs_to(:gallery, Gallery)
-    embeds_one :delivery_info, DeliveryInfo
+    embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
 
     embeds_many :digitals, Digital do
@@ -69,6 +69,12 @@ defmodule Picsello.Cart.Order do
     order
     |> cast(attrs, [:placed, :placed_at])
     |> put_embed(:products, confirmed_products)
+  end
+
+  def store_delivery_info(order, delivery_info_changeset) do
+    order
+    |> change
+    |> put_embed(:delivery_info, delivery_info_changeset)
   end
 
   defp cast_subtotal_cost(changeset, {:default, amount}),
