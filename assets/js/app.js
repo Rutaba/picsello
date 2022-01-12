@@ -37,6 +37,7 @@ import MasonryGrid from './hooks/masonry-grid';
 import DragDrop from './hooks/drag-drop';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Analytics from './hooks/analytics';
+import IntroJS from './hooks/intro';
 
 const Modal = {
   mounted() {
@@ -120,6 +121,7 @@ const Hooks = {
   MasonryGrid,
   DragDrop,
   ScrollIntoView,
+  IntroJS,
 };
 
 let Uploaders = {};
