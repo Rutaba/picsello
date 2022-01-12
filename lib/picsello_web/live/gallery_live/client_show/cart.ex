@@ -221,7 +221,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       "State" => state,
       "Zip" => zip,
       "Country" => country
-      # "Phone" => "8002525234"
     }
   end
 

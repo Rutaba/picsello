@@ -15,8 +15,6 @@ defmodule Picsello.Cart.DeliveryInfo do
     embeds_one :address, Address
   end
 
-  @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
-
   def changeset(nil, attrs), do: changeset(%__MODULE__{}, attrs)
 
   def changeset(%__MODULE__{} = struct, attrs) do
