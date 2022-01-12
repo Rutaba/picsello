@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Photo do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.{Album, Gallery}
+  alias Picsello.Galleries.Gallery
 
   schema "photos" do
     field :client_liked, :boolean, default: false
@@ -17,7 +17,6 @@ defmodule Picsello.Galleries.Photo do
     field :width, :integer
 
     belongs_to(:gallery, Gallery)
-    belongs_to(:album, Album)
 
     timestamps(type: :utc_datetime)
   end

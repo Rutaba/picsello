@@ -44,6 +44,10 @@ defmodule PicselloWeb.Router do
     post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
   end
 
+  scope "/whcc" do
+    post "/webhook", PicselloWeb.WhccWebhookController, :webhook
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PicselloWeb do
   #   pipe_through :api
@@ -158,6 +162,9 @@ defmodule PicselloWeb.Router do
       pipe_through [:browser, :require_authenticated_gallery]
 
       live "/:hash", GalleryLive.ClientShow, :show
+      live "/:hash/orders", GalleryLive.ClientOrders, :show
+      live "/:hash/orders/:order_id", GalleryLive.ClientOrder, :show
+      live "/:hash/orders/:order_id/paid", GalleryLive.ClientOrder, :paid
       live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
       post "/:hash/downloads", GalleryDownloadsController, :download
       post "/:hash/login", GallerySessionController, :put

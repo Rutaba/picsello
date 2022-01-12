@@ -3,6 +3,7 @@ defmodule Picsello.WHCC.Client do
   plug(Tesla.Middleware.JSON)
   plug(Tesla.Middleware.BaseUrl, config() |> Keyword.get(:url))
   plug(Tesla.Middleware.Logger)
+
   alias Picsello.WHCC
 
   @moduledoc "client for whcc http api"
@@ -116,6 +117,44 @@ defmodule Picsello.WHCC.Client do
     {:ok, %{body: api}} = new() |> get("/products/#{id}")
 
     WHCC.Product.add_details(product, api)
+  end
+
+  def webhook_register(url) do
+    {:ok, %{body: body}} =
+      new()
+      |> post("/webhooks/create", %{
+        "callbackUri" => url
+      })
+
+    case body do
+      %{"created" => _} ->
+        :ok
+
+      %{"error" => _, "message" => message} ->
+        {:error, message}
+
+      x ->
+        {:error, x}
+    end
+  end
+
+  def webhook_verify(hash) do
+    {:ok, %{body: body}} =
+      new()
+      |> post("/webhooks/verify", %{"verifier" => hash})
+
+    body
+  end
+
+  def webhook_validate(playload, signature) do
+    {:ok, %{body: body}} =
+      new()
+      |> post("/webhooks/validate", %{
+        "body" => playload,
+        "signature" => signature
+      })
+
+    body
   end
 
   def new(key \\ nil) do

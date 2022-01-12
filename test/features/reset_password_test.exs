@@ -15,7 +15,7 @@ defmodule Picsello.ResetPasswordTest do
     session
     |> navigate_to_forgot_password()
     |> fill_in(text_field("Email"), with: "invalid")
-    |> assert_has(css("label", text: "Email must have the @ sign and no spaces"))
+    |> assert_has(css("label", text: "Email is invalid"))
     |> fill_in(text_field("Email"), with: user.email)
     |> wait_for_enabled_submit_button()
     |> click(button("Reset Password"))

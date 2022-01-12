@@ -53,10 +53,14 @@ defmodule PicselloWeb.Live.Contacts do
                     <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
                   </button>
 
-                  <div class="z-10 flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+                  <div class="z-10 flex flex-col w-40 hidden bg-white border rounded-lg shadow-lg popover-content">
                     <button title="Edit" type="button" phx-click="edit-contact" phx-value-id={contact.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                       <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                       Edit
+                    </button>
+                    <button title="Create a lead" type="button" phx-click="create-lead" phx-value-id={contact.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                      <.icon name="three-people" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                      Create a lead
                     </button>
                   </div>
                 </div>
@@ -88,6 +92,27 @@ defmodule PicselloWeb.Live.Contacts do
 
     socket
     |> PicselloWeb.Live.Contacts.ContactFormComponent.open(contact)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "create-lead",
+        %{"id" => id},
+        %{assigns: %{contacts: contacts}} = socket
+      ) do
+    {id, _} = Integer.parse(id)
+    contact = contacts |> Enum.find(&(&1.id == id))
+
+    assigns = %{
+      current_user: socket.assigns.current_user,
+      email: contact.email,
+      phone: contact.phone,
+      name: contact.name
+    }
+
+    socket
+    |> open_modal(PicselloWeb.JobLive.NewComponent, assigns)
     |> noreply()
   end
 

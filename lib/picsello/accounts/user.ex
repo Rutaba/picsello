@@ -2,45 +2,11 @@ defmodule Picsello.Accounts.User do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  alias Picsello.Onboardings.Onboarding
 
-  defmodule Onboarding do
-    @moduledoc false
-
-    use Ecto.Schema
-
-    @primary_key false
-    embedded_schema do
-      field(:phone, :string)
-      field(:photographer_years, :integer)
-      field(:used_software_before, :boolean)
-      field(:switching_from_software, :string)
-      field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
-      field(:completed_at, :utc_datetime)
-    end
-
-    def changeset(%__MODULE__{} = onboarding, attrs) do
-      onboarding
-      |> cast(attrs, [
-        :phone,
-        :schedule,
-        :photographer_years,
-        :used_software_before,
-        :switching_from_software
-      ])
-      |> then(
-        &if get_field(&1, :used_software_before),
-          do: validate_required(&1, :switching_from_software),
-          else: &1
-      )
-      |> validate_change(:phone, &valid_phone/2)
-    end
-
-    def completed?(%__MODULE__{completed_at: nil}), do: false
-    def completed?(%__MODULE__{}), do: true
-    defdelegate valid_phone(field, value), to: Picsello.Client
-  end
-
+  @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
+
   schema "users" do
     field :confirmed_at, :naive_datetime
     field :email, :string
@@ -75,7 +41,12 @@ defmodule Picsello.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(put_new_attr(attrs, :organization, %{}), [:email, :name, :password, :time_zone])
+    |> cast(put_new_attr(attrs, :organization, %{}), [
+      :email,
+      :name,
+      :password,
+      :time_zone
+    ])
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
@@ -99,17 +70,10 @@ defmodule Picsello.Accounts.User do
     |> validate_email_format()
   end
 
-  def onboarding_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
-    user
-    |> cast(attrs, [])
-    |> cast_embed(:onboarding, required: true)
-    |> cast_assoc(:organization, with: &Picsello.Organization.registration_changeset/2)
-  end
-
   def validate_email_format(changeset) do
     changeset
     |> validate_required([:email])
-    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
+    |> validate_format(:email, email_regex(), message: "is invalid")
     |> validate_length(:email, max: 160)
   end
 
@@ -119,6 +83,8 @@ defmodule Picsello.Accounts.User do
     |> unsafe_validate_unique(:email, Picsello.Repo)
     |> unique_constraint(:email)
   end
+
+  def email_regex(), do: @email_regex
 
   def validate_password(changeset, opts) do
     changeset
@@ -264,13 +230,18 @@ defmodule Picsello.Accounts.User do
   def confirmed?(%__MODULE__{confirmed_at: nil, sign_up_auth_provider: :password}), do: false
   def confirmed?(%__MODULE__{}), do: true
 
-  defp put_new_attr(map, atom, value) do
-    key =
-      case Map.keys(map) do
-        [first_key | _] when is_atom(first_key) -> atom
-        _ -> Atom.to_string(atom)
-      end
+  def put_new_attr(map, atom, value) when is_atom(atom) do
+    Map.put_new(map, match_key_type(map).(atom), value)
+  end
 
-    Map.put_new(map, key, value)
+  def update_attr_in(map, path, f) do
+    update_in(map, Enum.map(path, match_key_type(map)), f)
+  end
+
+  defp match_key_type(%{} = map) do
+    case Map.keys(map) do
+      [first_key | _] when is_atom(first_key) -> & &1
+      _ -> &Atom.to_string/1
+    end
   end
 end

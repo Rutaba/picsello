@@ -200,6 +200,23 @@ defmodule Picsello.Packages do
     end
   end
 
+  defmacro nearest(number, nearest) do
+    quote do
+      fragment(
+        "(round(?::decimal / ?::decimal) * ?::decimal)",
+        unquote(number),
+        unquote(nearest),
+        unquote(nearest)
+      )
+    end
+  end
+
+  defmacro initcap(string) do
+    quote do
+      fragment("initcap(?)", unquote(string))
+    end
+  end
+
   def create_initial(
         %User{
           onboarding: %{photographer_years: years_experience, schedule: schedule, state: state}
@@ -213,32 +230,38 @@ defmodule Picsello.Packages do
 
     default_each_price = Download.default_each_price()
 
-    download_count = 0
-    shoot_count = 1
-
     min_years_query =
       from(base in BasePrice,
         select: max(base.min_years_experience),
         where: base.min_years_experience <= ^years_experience
       )
 
+    nearest = 500
+
     templates_query =
       from(base in BasePrice,
         where:
           base.full_time == ^full_time and base.job_type in ^job_types and
             base.min_years_experience in subquery(min_years_query),
+        inner_lateral_join:
+          name in ([base.tier, base.job_type] |> array_to_string(" ") |> initcap()),
+        on: true,
         join: adjustment in CostOfLivingAdjustment,
         on: adjustment.state == ^state,
         select: %{
-          base_price: type(adjustment.multiplier * base.base_price, base.base_price),
-          description: array_to_string([base.tier, base.job_type], " "),
-          download_count: type(^download_count, :integer),
+          base_price:
+            type(
+              nearest(adjustment.multiplier * base.base_price, ^nearest),
+              base.base_price
+            ),
+          description: name.initcap,
+          download_count: base.download_count,
           download_each_price: type(^default_each_price, base.base_price),
           inserted_at: now(),
           job_type: base.job_type,
-          name: array_to_string([base.tier, base.job_type], " "),
+          name: name.initcap,
           organization_id: type(^organization_id, base.id),
-          shoot_count: type(^shoot_count, :integer),
+          shoot_count: base.shoot_count,
           updated_at: now()
         }
       )

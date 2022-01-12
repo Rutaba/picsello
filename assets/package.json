@@ -14,6 +14,7 @@
     "@tailwindcss/line-clamp": "~0.2.2",
     "clipboard": "~2.0.8",
     "imask": "~6.1.0",
+    "intro.js": "~4.3.0",
     "masonry-layout": "^4.2.2",
     "muuri": "^0.9.5",
     "phoenix": "file:../deps/phoenix",

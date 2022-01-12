@@ -2,18 +2,31 @@ defmodule PicselloWeb.JobLive.NewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, Client}
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_changeset()
+    |> then(fn socket ->
+      if socket.assigns[:changeset] do
+        socket
+      else
+        assign_changeset(socket, %{
+          "client" =>
+            Map.take(assigns, [:email, :name, :phone])
+            |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
+            |> Enum.into(%{})
+        })
+      end
+    end)
     |> ok()
   end
 
   @impl true
   def render(assigns) do
+    assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
+
     ~H"""
       <div class="flex flex-col modal">
         <div class="flex items-start justify-between flex-shrink-0">
@@ -27,9 +40,18 @@ defmodule PicselloWeb.JobLive.NewComponent do
         <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <%= inputs_for f, :client, fn client_form -> %>
-              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Elizabeth Taylor", phx_debounce: "500" %>
-              <%= labeled_input client_form, :email, label: "Client Email", placeholder: "elizabeth@taylor.com", phx_debounce: "500" %>
-              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500" %>
+              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Elizabeth Taylor", phx_debounce: "500", disabled: @name != nil %>
+              <%= if @name != nil do %>
+                <%= hidden_input client_form, :name %>
+              <% end %>
+              <%= labeled_input client_form, :email, label: "Client Email", placeholder: "elizabeth@taylor.com", phx_debounce: "500", disabled: @email != nil %>
+              <%= if @email != nil do %>
+                <%= hidden_input client_form, :email %>
+              <% end %>
+              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
+              <%= if @phone != nil do %>
+                <%= hidden_input client_form, :phone %>
+              <% end %>
             <% end %>
 
             <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of Photography", prompt: "Select below" %>
@@ -53,20 +75,64 @@ defmodule PicselloWeb.JobLive.NewComponent do
 
   @impl true
   def handle_event("validate", %{"job" => params}, socket) do
-    socket |> assign_changeset(:validate, params) |> noreply()
+    socket |> assign_changeset(params) |> noreply()
   end
 
   @impl true
-  def handle_event("save", %{"job" => params}, socket) do
-    changeset = build_changeset(socket, params)
+  def handle_event("save", %{"job" => params}, %{assigns: %{current_user: current_user}} = socket) do
+    job = socket |> build_changeset(params) |> Ecto.Changeset.apply_changes()
 
-    case changeset |> Repo.insert() do
-      {:ok, %Job{id: job_id}} ->
+    old_client =
+      Repo.get_by(Client,
+        email: job.client.email |> String.downcase(),
+        organization_id: current_user.organization_id
+      )
+
+    case Ecto.Multi.new()
+         |> maybe_upsert_client(old_client, job.client, current_user.organization_id)
+         |> Ecto.Multi.insert(
+           :lead,
+           &Job.create_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
+         )
+         |> Repo.transaction() do
+      {:ok, %{lead: %Job{id: job_id}}} ->
         socket |> push_redirect(to: Routes.job_path(socket, :leads, job_id)) |> noreply()
 
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
+  end
+
+  defp maybe_upsert_client(
+         multi,
+         %Client{id: id, name: name, phone: phone} = old_client,
+         new_client,
+         _organization_id
+       )
+       when id != nil and (name == nil or phone == nil) do
+    attrs =
+      old_client
+      |> Map.take([:name, :phone])
+      |> Enum.filter(fn {_, v} -> v != nil end)
+      |> Enum.into(%{name: new_client.name, phone: new_client.phone})
+
+    Ecto.Multi.update(multi, :client, Client.edit_contact_changeset(old_client, attrs))
+  end
+
+  defp maybe_upsert_client(multi, %Client{id: id} = old_client, _new_client, _organization_id)
+       when id != nil do
+    Ecto.Multi.put(multi, :client, old_client)
+  end
+
+  defp maybe_upsert_client(multi, nil = _old_client, new_client, organization_id) do
+    Ecto.Multi.insert(
+      multi,
+      :client,
+      new_client
+      |> Map.take([:name, :email, :phone])
+      |> Map.put(:organization_id, organization_id)
+      |> Client.create_changeset()
+    )
   end
 
   defp build_changeset(
@@ -78,23 +144,11 @@ defmodule PicselloWeb.JobLive.NewComponent do
     |> Job.create_changeset()
   end
 
-  defp assign_changeset(socket, action \\ nil, params \\ %{"client" => %{}})
-
-  defp assign_changeset(socket, :validate, params) do
+  defp assign_changeset(socket, params) do
     changeset =
       socket
       |> build_changeset(params)
       |> Map.put(:action, :validate)
-      |> Ecto.Changeset.update_change(
-        :client,
-        &Ecto.Changeset.unsafe_validate_unique(&1, [:email, :organization_id], Repo)
-      )
-
-    assign(socket, changeset: changeset)
-  end
-
-  defp assign_changeset(socket, action, params) do
-    changeset = build_changeset(socket, params) |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end

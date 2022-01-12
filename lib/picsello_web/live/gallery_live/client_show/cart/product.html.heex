@@ -1,17 +1,19 @@
-<div class="p-5 border rounded-lg flex mb-5">
+<div class={classes("p-5 flex mb-5", %{"border rounded-lg" => @has_border})}>
   <div class="cartImg">
-    <img src={product_preview_url(@product)} width="238" height="193.53" />
+    <img src={@preview_url} width="238" height="193.53" />
   </div>
   <div class="ml-7 py-7">
-    <div class="text-lg"><%= product_size(@product) %> <%= @whcc_product.whcc_name %></div>
+    <div class="text-lg"><%= @size %> <%= @whcc_product.whcc_name %></div>
     <div class="text-2xl font-bold mt-2.5 mb-9"><%= @product.price %></div>
     <div class="flex items-center">
       <label for="cart-select">Quantity:</label>
       <select class="select w-24 text-base font-bold ml-2" id="cart-select">
-        <option value="1">1</option>
+        <option value="1"><%= @product.editor_details.selections["quantity"] %></option>
       </select>
-      <button type="button" class="text-xl font-semibold text-blue-planning-300 mx-7">Edit</button>
-      <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+      <%= if @has_buttons do %>
+        <button type="button" class="text-xl font-semibold text-blue-planning-300 mx-7">Edit</button>
+        <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+      <% end %>
     </div>
   </div>
 </div>

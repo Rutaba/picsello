@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
+  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage, Onboardings}
   import Ecto.Query
 
   @impl true
@@ -28,6 +28,17 @@ defmodule PicselloWeb.HomeLive.Index do
       socket
       |> push_redirect(to: path)
       |> noreply()
+
+  @impl true
+  def handle_event(
+        "intro_js",
+        %{"action" => action, "intro_id" => intro_id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
+    |> noreply()
+  end
 
   @impl true
   def handle_event(
@@ -132,7 +143,8 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "envelope",
              button_label: "Resend email",
              button_class: "btn-primary",
-             color: "red-sales-300"
+             color: "red-sales-300",
+             class: "intro-confirmation"
            }},
           {leads_empty?,
            %{
@@ -142,7 +154,8 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "three-people",
              button_label: "Create your first lead",
              button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300"
+             color: "blue-planning-300",
+             class: "intro-first-lead"
            }},
           {stripe_status != :charges_enabled,
            %{
@@ -152,7 +165,8 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
              button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300"
+             color: "blue-planning-300",
+             class: "intro-stripe"
            }},
           {true,
            %{
@@ -162,7 +176,8 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "question-mark",
              button_label: "See available resources",
              button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300"
+             color: "blue-planning-300",
+             class: "intro-resources"
            }}
         ],
         do: item
@@ -194,6 +209,9 @@ defmodule PicselloWeb.HomeLive.Index do
     </li>
     """
   end
+
+  def show_intro?(current_user, intro_id),
+    do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
 
   defp job_count_by_status(user) do
     now = DateTime.utc_now()
