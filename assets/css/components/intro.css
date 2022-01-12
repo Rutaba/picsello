@@ -44,8 +44,7 @@
 }
 
 .introjs-hint {
-    margin-top: 5px;
-    margin-left: -2px;
+    @apply mt-1 -ml-0.5;
 }
 
 .introjs-hint:hover > .introjs-hint-pulse {
