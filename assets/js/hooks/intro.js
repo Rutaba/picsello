@@ -16,7 +16,9 @@ export default {
     // using the data-attribute API to embed directly
     // into the HTML to avoid JS bloat
     // see https://introjs.com/docs/hints/attributes
-    introJs().addHints();
+    introJs().addHints().setOptions({
+      hintShowButton: false,
+    });
 
     if (shouldSeeIntro) {
       const introSteps = intros[introId](el);
@@ -41,5 +43,55 @@ export default {
         })
         .start();
     }
+
+    // no api for triggering hints on hover so we make our own
+    // should add debouncing down the road
+    document.querySelectorAll('.introjs-hint').forEach((el) => {
+      if (el) {
+        const step = el.dataset.step;
+
+        if (!step) return;
+
+        el.addEventListener('mouseenter', () => {
+          const hintDialog = document.querySelector(
+            `[data-step="${step}"].introjs-hintReference`
+          );
+
+          if (hintDialog) {
+            // if this element exists, means the dialog is open
+            // edge case that a rehover resets the DOM
+            return;
+          } else {
+            // We have to setup hints in order for them
+            // to use the showHintDialog method
+            introJs()
+              .addHints()
+              .setOptions({
+                hintShowButton: false,
+              })
+              .showHintDialog(JSON.parse(el.dataset.step));
+          }
+        });
+
+        el.addEventListener('mouseleave', () => {
+          const hintDialog = document.querySelector(
+            `[data-step="${step}"].introjs-hintReference`
+          );
+
+          // IntroJS does not export a decent API to remove
+          // an active hint dialog, so we'll force it
+          hintDialog.remove();
+        });
+      }
+    });
+  },
+  destroyed() {
+    // Intro js doesn't have a method
+    // to delete itself from the DOM ran into
+    // and edge case where live view navgations
+    // need to force remove to reset the introHints
+    // for the next view
+    const hintsEl = document.querySelector('.introjs-hints');
+    if (hintsEl) hintsEl.remove();
   },
 };

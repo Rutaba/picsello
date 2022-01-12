@@ -156,8 +156,6 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/gallery", PicselloWeb do
-    live "/:hash/dump", GalleryLive.DumpEditor, :show
-
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
       pipe_through [:browser, :require_authenticated_gallery]
 

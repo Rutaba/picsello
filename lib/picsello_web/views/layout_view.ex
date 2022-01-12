@@ -87,10 +87,8 @@ defmodule PicselloWeb.LayoutView do
   end
 
   def side_nav(socket, current_user) do
-    stripe_status = payments().status(current_user)
-
     finances =
-      if stripe_status == :charges_enabled,
+      if current_user.organization.stripe_account_id,
         do: %{title: "Finances", icon: "money-bags", path: "https://dashboard.stripe.com"},
         else: nil
 
@@ -120,6 +118,4 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Help", icon: "question-mark", path: "#"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
-
-  defp payments(), do: Application.get_env(:picsello, :payments)
 end

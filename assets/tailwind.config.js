@@ -53,6 +53,7 @@ module.exports = {
           100: '#FFFFFF',
         },
         'blue-gallery': {
+          400: '#4DAAC6',
           300: '#6696F8',
           200: '#92B6F9',
           100: '#E1EBFD',
