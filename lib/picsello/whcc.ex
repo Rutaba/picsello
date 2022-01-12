@@ -1,7 +1,26 @@
 defmodule Picsello.WHCC do
   @moduledoc "WHCC context module"
+
+  # extracted from https://docs.google.com/spreadsheets/d/19epUUDsDmHWNePViH9v8x5BXGp0Anu0x/edit#gid=1549535757
+  @area_markups [
+    {24, 25},
+    {35, 35},
+    {80, 75},
+    {96, 75},
+    {100, 75},
+    {154, 125},
+    {144, 125},
+    {216, 195},
+    {320, 265},
+    {384, 265},
+    {600, 335}
+  ]
+  @area_markup_category "h3GrtaTf5ipFicdrJ"
+
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor.Params}
+  import Picsello.Repo.CustomMacros
+
+  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor.Params, WHCC.Editor.Details}
 
   def sync() do
     # fetch latest from whcc api
@@ -149,8 +168,39 @@ defmodule Picsello.WHCC do
   defdelegate webhook_verify(hash), to: Adapter
   defdelegate webhook_validate(data, signature), to: Adapter
 
-  def mark_up_price(_details, %Money{} = base_price) do
-    Money.multiply(base_price, 2)
+  def mark_up_price(
+        %Details{product_id: product_id, selections: selections},
+        %Money{amount: cents}
+      ) do
+    nearest = 500
+
+    from(category in Picsello.Category,
+      join: product in assoc(category, :products),
+      where: product.whcc_id == ^product_id,
+      select: %{
+        default_price: cast_money(nearest(category.default_markup * ^cents, ^nearest)),
+        attribute_categories: product.attribute_categories,
+        category_whcc_id: category.whcc_id
+      }
+    )
+    |> Repo.one()
+    |> then(fn
+      %{category_whcc_id: @area_markup_category, attribute_categories: attribute_categories} ->
+        size = Map.get(selections, "size")
+
+        [selected_area] =
+          for(
+            %{"name" => "size", "attributes" => attributes} <- attribute_categories,
+            %{"id" => ^size, "metadata" => %{"height" => height, "width" => width}} <- attributes,
+            do: height * width
+          )
+
+        [{_, dollars} | _] = Enum.sort_by(@area_markups, &abs(selected_area - elem(&1, 0)))
+        Money.new(dollars * 100) |> Money.multiply(Map.get(selections, "quantity", 1))
+
+      %{default_price: default_price} ->
+        default_price
+    end)
   end
 
   defp variations(%{variations: variations}),
