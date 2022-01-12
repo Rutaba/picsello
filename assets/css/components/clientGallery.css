@@ -38,7 +38,7 @@
 
 .preview {
     width: 603px;
-    height: 650px;
+    height: 650px
 }
 
 .productPreview__client > li > .productPreview_photo {
@@ -591,4 +591,8 @@
         @apply w-1/2
     }
 
+    .preview {
+        width: 603px;
+        height: 650px;
+    }
 }
