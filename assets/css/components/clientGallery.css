@@ -37,6 +37,7 @@
 }
 
 .preview {
+    width: 603px;
     height: 650px
 }
 
@@ -590,4 +591,8 @@
         @apply w-1/2
     }
 
+    .preview {
+        width: 603px;
+        height: 650px;
+    }
 }

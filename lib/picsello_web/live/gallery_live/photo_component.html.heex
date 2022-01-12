@@ -7,7 +7,7 @@
         height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
     "}
 >
- <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-8 border-blue-300 rounded-xl" else "" end}
+ <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-8 border-blue-planning-300 bg-blue-planning-300 rounded-xl" else "" end}
         >
         
 <div
@@ -49,8 +49,8 @@
         </button>
     <% end %>
     <%= if @preview_photo_id == @photo.id do %>
-        <div class="bg-blue-300 w-5 h-5 rounded-sm right-0 top-0 z-10 absolute">
-            <.icon name="checkmark" class="w-4 h-4 stroke-current" />
+        <div class="bg-blue-planning-300 flex justify-center items-center stroke-1 w-5 h-5 rounded right-3 top-3 z-10 absolute">
+            <.icon name="checkmark" class="w-4 h-3" />
         </div>
     <% end %>
  </div> 
