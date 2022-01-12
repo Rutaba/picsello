@@ -92,7 +92,7 @@ defmodule PicselloWeb.Live.Profile do
       <div class="flex flex-col items-center justify-start pt-6 mb-8 border-t md:flex-row md:justify-between border-base-250 text-base-300 opacity-30">
         <span>© <%= Date.utc_today().year %> <%= @organization.name %></span>
 
-        <span class="mt-2 md:mt-0">Powered By Picsello</span>
+        <span class="mt-2 md:mt-0">Powered By <a href="https://www.picsello.com/?utm_source=app&utm_medium=link&utm_campaign=public_profile&utm_contentType=landing_page&utm_content=footer_link&utm_audience=existing_user" target="_blank">Picsello</a></span>
       </div>
     </footer>
 

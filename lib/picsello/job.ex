@@ -93,6 +93,11 @@ defmodule Picsello.Job do
       PicselloWeb.Endpoint
       |> Phoenix.Token.sign("JOB_ID", id, signed_at: DateTime.to_unix(inserted_at))
 
+  def email_address(%__MODULE__{} = job) do
+    domain = Application.get_env(:picsello, Picsello.Mailer) |> Keyword.get(:reply_to_domain)
+    [token(job), domain] |> Enum.join("@")
+  end
+
   def find_by_token("" <> token) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
       {:ok, job_id} -> Repo.get(__MODULE__, job_id)

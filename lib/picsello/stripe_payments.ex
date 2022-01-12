@@ -2,9 +2,12 @@ defmodule Picsello.StripePayments do
   @moduledoc false
 
   @behaviour Picsello.Payments
+  @dialyzer {:nowarn_function, checkout_link: 2}
 
   require Logger
   alias Picsello.{Repo, BookingProposal, Organization, Accounts.User, Client}
+  alias Picsello.Cart.Order
+  alias Picsello.GalleryProducts
 
   def link(user, opts, stripe_module \\ Stripe)
 
@@ -131,6 +134,66 @@ defmodule Picsello.StripePayments do
       {:ok, %{url: url}} -> {:ok, url}
       error -> error
     end
+  end
+
+  def checkout_link(%Order{products: products, shipping_cost: shipping_cost}, opts) do
+    params = cart_checkout_params(products, shipping_cost, opts)
+
+    case Stripe.Session.create(params) do
+      {:ok, %{url: url}} -> {:ok, %{link: url, line_items: params.line_items}}
+      error -> error
+    end
+  end
+
+  def cart_checkout_params(products, shipping_cost, opts) do
+    cancel_url = opts |> Keyword.get(:cancel_url)
+    success_url = opts |> Keyword.get(:success_url)
+
+    %{
+      cancel_url: cancel_url,
+      success_url: success_url,
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: form_order_line_items(products),
+      shipping_options: [
+        %{
+          shipping_rate_data: %{
+            type: "fixed_amount",
+            display_name: "Shipping",
+            fixed_amount: %{
+              amount: shipping_cost.amount,
+              currency: shipping_cost.currency
+            }
+          }
+        }
+      ]
+    }
+  end
+
+  defp form_order_line_items(products) do
+    Enum.map(products, fn %{
+                            price: price,
+                            editor_details: %{
+                              selections: %{"size" => size, "quantity" => quantity},
+                              preview_url: preview_url,
+                              product_id: product_id
+                            }
+                          } ->
+      unit_amount = price |> Money.divide(quantity) |> List.first() |> then(& &1.amount)
+      name = size <> " " <> GalleryProducts.get_whcc_product(product_id).whcc_name
+
+      %{
+        price_data: %{
+          currency: price.currency,
+          unit_amount: unit_amount,
+          product_data: %{
+            name: name,
+            images: [preview_url]
+          }
+        },
+        quantity: quantity
+      }
+    end)
   end
 
   defdelegate retrieve_session(id, opts), to: Stripe.Session, as: :retrieve

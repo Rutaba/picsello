@@ -5,7 +5,6 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.LiveView, only: [assign: 2]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
-  alias Picsello.Galleries.Workers.PhotoStorage
 
   def live_modal(_socket, component, opts) do
     path = Keyword.fetch!(opts, :return_to)
@@ -174,8 +173,14 @@ defmodule PicselloWeb.LiveHelpers do
   def nav_link(assigns) do
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
-        <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
-          <%= render_slot(@inner_block, active) %>
+        <%= if String.starts_with?(@to, "/") do %>
+          <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
+            <%= render_slot(@inner_block, active) %>
+          <% end %>
+        <% else %>
+          <a href={@to} class={@class} target="_blank" rel="noopener noreferrer">
+            <%= render_slot(@inner_block, active) %>
+          </a>
         <% end %>
       </.is_active>
     """
@@ -254,8 +259,9 @@ defmodule PicselloWeb.LiveHelpers do
 
   def display_cover_photo(_key), do: nil
 
-  def display_photo(key) when is_binary(key),
-    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+  def display_photo(key) when is_binary(key) do
+    Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+  end
 
   def display_photo(nil), do: "/images/gallery-icon.png"
 
@@ -270,5 +276,5 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def path(nil), do: "/images/card_blank.png"
-  def path(url), do: PhotoStorage.path_to_url(url)
+  def path(url), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(url)
 end

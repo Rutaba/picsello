@@ -11,7 +11,7 @@
         Thanks for your business!
       </p>
       <h3 class="text-sm text-gray-400 uppercase">Have questions?</h3>
-      <a class="block pt-2 link" href={"mailto:#{@photographer.email}"}>Email us at <%= @photographer.email %></a>
+      <a class="block pt-2 link" href={"mailto:#{Job.email_address(@job)}?subject=#{Job.name(@job)}"}>Email <%= @organization.name %></a>
     <% else %>
       <p class="mt-2 mb-6 text-lg">
         Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.

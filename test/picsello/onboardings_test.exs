@@ -8,8 +8,8 @@ defmodule Picsello.OnboardingsTest do
     def changeset_errors(user, attrs, options) do
       user
       |> Onboardings.changeset(attrs, options)
-      |> Changeset.traverse_errors(fn _changeset, _field, {_, [{_, validation}]} ->
-        validation
+      |> Changeset.traverse_errors(fn _changeset, _field, {_message, meta} ->
+        Keyword.get(meta, :validation)
       end)
     end
 

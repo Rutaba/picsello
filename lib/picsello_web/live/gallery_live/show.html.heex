@@ -78,8 +78,8 @@
     </div>
 </div>
 
-<div class="gallery__container pb-14">
-    <div class="pt-14 pb-7">
+<div class="gallery__container">
+    <div class="pt-14">
         <div class="font-bold text-3xl">
             Showcase photos your clients will love
             <svg width="22" height="22" class="stroke-current inline-block mr-2 rounded-full fill-current" >
@@ -87,11 +87,11 @@
             </svg>
         </div>
     </div>
-  <div class="flex justify-between center-container">
-  <ul class="grid gap-8 grid-cols-2 lg:grid-cols-2 gap-10 xl:grid-cols-4 gap-6 mx-auto">
+  <div class="px-6 sm:px-0 border-b pb-14 pt-10">
+  <ul class="grid gap-8 grid-cols-4 mx-auto">
     <%= for product <- @products do %>
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} 
-                      id={product.id} 
+      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
+                      id={product.id}
                       preview_url={product_preview_url(product)}
                       category_template={product.category_template}
                       edit_product_link={Routes.preview_path(@socket, :preview, product.gallery_id, product.id, product.category_template.id)}
@@ -130,7 +130,7 @@
         data-favorites-count={@favorites_count}
         data-is-favorites-shown={@favorites_filter}
         data-is-sortable="true"
-        data-has-more-photos={@has_more_photos}
+        data-has-more-photos={ "#{@has_more_photos}" }
         >
         <%= for photo <- @photos do %>
         <%= live_component PicselloWeb.GalleryLive.PhotoComponent,

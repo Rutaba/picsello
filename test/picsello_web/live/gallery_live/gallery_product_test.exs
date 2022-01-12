@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   setup do
     unless Repo.aggregate(Category, :count) == 4 do
-      frames = Picsello.GalleryProducts.frames()
+      frames = Picsello.CategoryTemplate.frames()
 
       Enum.each(frames, fn row ->
         length = Repo.aggregate(Category, :count)
@@ -32,6 +32,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
             Repo.insert(%CategoryTemplate{
               name: row.name,
               corners: row.corners,
+              price: row.price,
               category_id: category_id
             })
 
@@ -44,13 +45,17 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
     :ok
   end
 
+  setup do
+    [gallery: insert(:gallery, %{name: "Test Client Wedding"})]
+  end
+
   setup :onboarded
   setup :authenticated
 
   test "redirect from galleries", %{session: session} do
     %{gallery_id: id} = set_gallery_product()
-    frame = Picsello.GalleryProducts.frames() |> List.first()
-    %{id: template_id} = Picsello.GalleryProducts.get_template(%{name: frame.name})
+    frame = Picsello.CategoryTemplate.frames() |> List.first()
+    %{id: template_id} = Repo.get_by(Picsello.CategoryTemplates, %{name: frame.name})
 
     session
     |> visit("/galleries/#{id}")
@@ -70,6 +75,30 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
       Repo.get_by(GalleryProduct, %{id: g_product_id}) |> Repo.preload([:preview_photo])
 
     assert "card_blank.png" == url
+  end
+
+  test "grid load", %{session: session, gallery: %{id: gallery_id, client_link_hash: hash}} do
+    photos = :lists.map(fn _ -> :rand.uniform(999_999) end, :lists.seq(1, 22))
+
+    Enum.map(photos, &Map.get(insert_photo(gallery_id, "/images/tmp/#{&1}.png"), :id))
+
+    session
+    |> visit("/galleries/#{gallery_id}")
+
+    session
+    |> visit("/gallery/#{hash}/login")
+    |> fill_in(css("#login_password"), with: "123456")
+    |> has_text?("Test Client Wedding")
+  end
+
+  def insert_photo(gallery_id, photo_url) do
+    insert(%Photo{
+      gallery_id: gallery_id,
+      preview_url: photo_url,
+      original_url: photo_url,
+      name: photo_url,
+      position: 1
+    })
   end
 
   def set_gallery_product() do
