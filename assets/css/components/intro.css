@@ -42,3 +42,32 @@
     @apply font-thin text-5xl pr-0;
     line-height: 0px;
 }
+
+.introjs-hint {
+    @apply mt-1 -ml-0.5;
+}
+
+.introjs-hint:hover > .introjs-hint-pulse {
+    @apply bg-blue-planning-300/[.5];
+}
+
+.introjs-hint-pulse {
+    @apply bg-blue-planning-300/[.06];
+}
+
+@keyframes introjspulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(77, 170, 198, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(77, 170, 198, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(77, 170, 198, 0);
+  }
+}
