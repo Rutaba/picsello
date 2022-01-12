@@ -173,8 +173,14 @@ defmodule PicselloWeb.LiveHelpers do
   def nav_link(assigns) do
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
-        <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
-          <%= render_slot(@inner_block, active) %>
+        <%= if String.starts_with?(@to, "/") do %>
+          <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
+            <%= render_slot(@inner_block, active) %>
+          <% end %>
+        <% else %>
+          <a href={@to} class={@class} target="_blank" rel="noopener noreferrer">
+            <%= render_slot(@inner_block, active) %>
+          </a>
         <% end %>
       </.is_active>
     """

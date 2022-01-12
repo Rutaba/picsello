@@ -118,6 +118,10 @@ defmodule Picsello.FeatureCase do
       authenticated(%{session: session, user: insert(:user)})
     end
 
+    def onboarded_show_intro(%{user: user}) do
+      [user: Picsello.Factory.onboard_show_intro!(user)]
+    end
+
     def onboarded(%{user: user}) do
       [user: Picsello.Factory.onboard!(user)]
     end

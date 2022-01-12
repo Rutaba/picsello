@@ -1,66 +1,88 @@
-<div class="gallery__container"> 
-  <%= if @step == :product_list do %>
-    <div class="font-bold text-3xl py-16">Your shopping cart</div>
-    <div class="grid grid-cols-3 sm:grid-cols-1">
-      <div class="col-span-2 mr-4 sm:mr-0">    
-        <%= for product <- @order.products do %>
-            <.live_component 
-              module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-              id={product.editor_details.editor_id} 
-              product={product} 
-            />
-        <% end %>
-        <%= for digital_download <- @order.digitals do %>
-            <.live_component 
-              module={PicselloWeb.GalleryLive.ClientShow.Cart.DigitalDownload} 
-              id={digital_download.id} 
-              digital_download={digital_download} 
-            />
-        <% end %>
-      </div>
-      <div class="col-span-1">
-        <div class="p-5 border rounded-lg flex flex-col">
-          <div class="text-xl"> 
-            <%= unless Enum.empty?(@order.products) do %>
-              Subtotal:
-            <% else %>
-              Total:
-            <% end %>
-            <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
-          </div>
-          <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
-        </div>
-      </div>
+<div>
+    <div class="gallery__container">
+        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
     </div>
-  <% end %>
-  <%= if @step == :shipping_opts do %>
-    <%= for product <- @order.products do %>
-      <.live_component 
-        module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-        id={product.editor_details.editor_id} 
-        product={product} 
-        has_border={false}
-        has_buttons={false}
-      />
-      <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>        
-        <input 
-          type="radio" phx-click="click" 
-          id={shipping_option_uid(option)} 
-          name="ship_option" 
-          phx-value-option-uid={shipping_option_uid(option)} 
-          phx-value-product-editor-id={product.editor_details.editor_id} 
-          checked={is_current_shipping_option?(@shipping_opts, option, product)}>
-        <label for={shipping_option_uid(option)}><%= shipping_option_label(option) %></label><br>
-        <label for={shipping_option_uid(option)}><%= shipping_option_cost(option) %></label><br>
-      </.display_shipping_opts>
-    <% end %>
-      <div class="col-span-1">
-        <div class="p-5 border rounded-lg flex flex-col">
-          <div class="text-xl">Products: <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span></div>
-          <div class="text-xl">Shipping: <span class="text-2xl font-bold ml-2"><%= @shipping_cost %></span></div>|
-          <button type="submit" class="btn-primary mt-5" phx-click="checkout">Check out with Stripe</button>
+    <hr>
+    <div class="gallery__container">
+        <%= if @step == :product_list do %>
+        <div class="font-bold text-3xl py-16">Your shopping cart</div>
+        <div class="grid grid-cols-3 sm:grid-cols-1">
+            <div class="col-span-2 mr-4 sm:mr-0">
+                <%= for product <- @order.products do %>
+                <.live_component
+                module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
+                id={product.editor_details.editor_id}
+                product={product}
+                />
+                <% end %>
+                <%= for digital_download <- @order.digitals do %>
+                <.live_component
+                module={PicselloWeb.GalleryLive.ClientShow.Cart.DigitalDownload}
+                id={digital_download.id}
+                digital_download={digital_download}
+                />
+                <% end %>
+            </div>
+            <div class="col-span-1">
+                <div class="p-5 border rounded-lg flex flex-col">
+                    <div class="text-xl">
+                        <%= unless Enum.empty?(@order.products) do %>
+                        Subtotal:
+                        <% else %>
+                        Total:
+                        <% end %>
+                        <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+                    </div>
+                    <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
+                </div>
+            </div>
         </div>
-      </div>
-    
-  <% end %>
-</div> 
+        <% end %>
+        <%= if @step == :shipping_opts do %>
+        <div class="font-bold text-3xl py-16">Shipping options</div>
+        <div class="flex flex-col xl:flex-row xl:justify-between w-full">
+            <div class="darkerBorder divide-y divide-gray-200 w-full xl:w-2/3 px-6 xl:mr-6 shippingOptions__infoBlock">
+                <%= for product <- @order.products do %>
+                <div class="flex py-4">
+                    <div>
+                        <.live_component
+                            module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
+                            id={product.editor_details.editor_id}
+                            product={product}
+                            has_border={false}
+                            has_buttons={false}
+                        />
+                    </div>
+                    <div class="border-l border-gray-200 pl-9 deliveryOptions__wrapper">
+                        <p class="font-medium text-base pb-6">Choose a delivery option:</p>
+                        <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>
+                        <div class="flex mb-2">
+                            <input
+                                style="margin-top:4px"
+                                type="radio" phx-click="click"
+                                id={shipping_option_uid(option)}
+                                name="ship_option"
+                                phx-value-option-uid={shipping_option_uid(option)}
+                                phx-value-product-editor-id={product.editor_details.editor_id}
+                                checked={is_current_shipping_option?(@shipping_opts, option, product)}>
+                            <div class="ml-4">
+                                <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
+                                <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium"><%= shipping_option_cost(option) %></label><br>
+                            </div>
+                        </div>
+                        </.display_shipping_opts>
+                    </div>
+                </div>
+                <% end %>
+            </div>
+            <div class="darkerBorder w-full xl:max-w-md xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
+                <p class="text-black text-opacity-80 text-lg">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+                <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= @shipping_cost %></span></p>
+                <hr class="my-4">
+                <div class="text-xl">Total: <span class="font-bold ml-2"><%= Money.add(@order.subtotal_cost, @shipping_cost) %></span></div>
+                <button type="submit" class="btn-primary mt-5 w-full" phx-click="checkout">Check out with Stripe</button>
+            </div>
+        </div>
+        <% end %>
+    </div>
+</div>

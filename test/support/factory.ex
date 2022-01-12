@@ -14,6 +14,7 @@ defmodule Picsello.Factory do
     Campaign,
     CampaignClient,
     ClientMessage,
+    Onboardings,
     Repo,
     Shoot,
     Accounts.User,
@@ -48,10 +49,17 @@ defmodule Picsello.Factory do
     |> Ecto.Changeset.apply_changes()
   end
 
+  def onboard_show_intro!(%User{} = user) do
+    user
+    |> User.complete_onboarding_changeset()
+    |> Repo.update!()
+  end
+
   def onboard!(%User{} = user) do
     user
     |> User.complete_onboarding_changeset()
     |> Repo.update!()
+    |> Onboardings.save_intro_state("intro_dashboard", "completed")
   end
 
   def valid_user_attributes(attrs \\ %{}),
@@ -359,26 +367,6 @@ defmodule Picsello.Factory do
       value: 100.0
     }
 
-  def cart_product_factory(%{product_id: product_id}) do
-    %Picsello.Cart.CartProduct{
-      editor_details: %Picsello.WHCC.Editor.Details{
-        editor_id: sequence("whcc_id"),
-        preview_url:
-          "https://d3fvjqx1d7l6w5.cloudfront.net/307f7e03-dad9-48f0-a320-99cd64d1093c.jpeg",
-        product_id: product_id,
-        selections: %{
-          "display_options" => "3_4in_float_mount",
-          "forcePreview" => 1_641_226_557_685,
-          "orientation" => "LANDSCAPE",
-          "quantity" => 1,
-          "size" => "8x10",
-          "surface" => "1_4in_acrylic_with_styrene_backing"
-        }
-      },
-      price: %Money{amount: 9600, currency: :USD}
-    }
-  end
-
   def valid_gallery_password(), do: "123456"
 
   def cost_of_living_adjustment_factory(),
@@ -397,4 +385,96 @@ defmodule Picsello.Factory do
       shoot_count: 2,
       download_count: 10
     }
+
+  def cart_product_factory(%{product_id: product_id}) do
+    %Picsello.Cart.CartProduct{
+      base_price: %Money{amount: 17_600, currency: :USD},
+      editor_details: %Picsello.WHCC.Editor.Details{
+        editor_id: sequence("hkazbRKGjcoWwnEq3"),
+        preview_url:
+          "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+        product_id: product_id,
+        selections: %{
+          "display_options" => "no",
+          "quantity" => 1,
+          "size" => "20x30",
+          "surface" => "1_4in_acrylic_with_styrene_backing"
+        }
+      },
+      price: %Money{amount: 35_200, currency: :USD},
+      whcc_confirmation: nil,
+      whcc_order: nil,
+      whcc_processing: nil,
+      whcc_tracking: nil
+    }
+  end
+
+  def whcc_order_created_factory do
+    %Picsello.WHCC.Order.Created{
+      confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
+      entry: "hkazbRKGjcoWwnEq3",
+      products: [
+        %{
+          "Price" => "176.00",
+          "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
+          "Quantity" => 1
+        },
+        %{
+          "Price" => "8.80",
+          "ProductDescription" => "Peak Season Surcharge",
+          "Quantity" => 1
+        },
+        %{
+          "Price" => "65.60",
+          "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
+          "Quantity" => 1
+        }
+      ],
+      total: "250.40"
+    }
+  end
+
+  def ordered_cart_product_factory(%{product_id: product_id}) do
+    %Picsello.Cart.CartProduct{
+      base_price: %Money{amount: 17_600, currency: :USD},
+      editor_details: %Picsello.WHCC.Editor.Details{
+        editor_id: "hkazbRKGjcoWwnEq3",
+        preview_url:
+          "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+        product_id: product_id,
+        selections: %{
+          "display_options" => "no",
+          "quantity" => 1,
+          "size" => "20x30",
+          "surface" => "1_4in_acrylic_with_styrene_backing"
+        }
+      },
+      price: %Money{amount: 35_200, currency: :USD},
+      whcc_confirmation: nil,
+      whcc_order: %Picsello.WHCC.Order.Created{
+        confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
+        entry: "hkazbRKGjcoWwnEq3",
+        products: [
+          %{
+            "Price" => "176.00",
+            "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
+            "Quantity" => 1
+          },
+          %{
+            "Price" => "8.80",
+            "ProductDescription" => "Peak Season Surcharge",
+            "Quantity" => 1
+          },
+          %{
+            "Price" => "65.60",
+            "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
+            "Quantity" => 1
+          }
+        ],
+        total: "250.40"
+      },
+      whcc_processing: nil,
+      whcc_tracking: nil
+    }
+  end
 end

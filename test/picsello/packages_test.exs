@@ -79,27 +79,27 @@ defmodule Picsello.PackagesTest do
           {name, csv} <- %{
             prices: """
             Time	Experience	Type	Tier	Price	Shoots	Downloads
-            Part-Time	0	Other	Low	$100	1	5
-            Full-Time	0	Other	Low	$200	1	5
-            Full-Time	0	Other	Mid	$300	1	10
-            Full-Time	0	Other	High	$400	1	20
-            Full-Time	1-2	Wedding	Low	$500	2	5
-            Full-Time	1-2	Wedding	Mid	$600	2	10
-            Full-Time	1-2	Wedding	High	$700	2	20
-            Full-Time	1-2	Family	Low	$800	1	5
-            Full-Time	1-2	Family	Mid	$900	1	10
-            Full-Time	1-2	Family	High	$1,000	1	20
-            Full-Time	1-2	Event	Low	$1,100	1	5
-            Full-Time	1-2	Event	Mid	$1,200	1	10
-            Full-Time	1-2	Event	High	$1,300	1	20
-            Full-Time	0	Wedding	Low	$1,4000	2	5
-            Full-Time	0	Wedding	Mid	$1,5000	2	10
-            Full-Time	0	Wedding	High	$1,6000	2	20
+            Part-Time	0	Other	Bronze	$100	1	5
+            Full-Time	0	Other	Bronze	$200	1	5
+            Full-Time	0	Other	Silver	$300	1	10
+            Full-Time	0	Other	Gold	$400	1	20
+            Full-Time	1-2	Wedding	Bronze	$500	2	5
+            Full-Time	1-2	Wedding	Silver	$600	2	10
+            Full-Time	1-2	Wedding	Gold	$700	2	20
+            Full-Time	1-2	Family	Bronze	$800	1	5
+            Full-Time	1-2	Family	Silver	$900	1	10
+            Full-Time	1-2	Family	Gold	$1,000	1	20
+            Full-Time	1-2	Event	Bronze	$1,100	1	5
+            Full-Time	1-2	Event	Silver	$1,200	1	10
+            Full-Time	1-2	Event	Gold	$1,300	1	20
+            Full-Time	0	Wedding	Bronze	$1,4000	2	5
+            Full-Time	0	Wedding	Silver	$1,5000	2	10
+            Full-Time	0	Wedding	Gold	$1,6000	2	20
             """,
             cost_of_living: """
             state percent
             IL -8%
-            OK -10%
+            OK -3%
             """
           }
         ) do
@@ -135,38 +135,38 @@ defmodule Picsello.PackagesTest do
 
       assert [
                %{
-                 name: "high event",
-                 base_price: %Money{amount: 117_000},
-                 download_count: 20,
-                 shoot_count: 1
-               },
-               %{
-                 name: "high wedding",
-                 base_price: %Money{amount: 63_000},
-                 download_count: 20,
-                 shoot_count: 2
-               },
-               %{
-                 name: "low event",
-                 base_price: %Money{amount: 99_000},
+                 name: "Bronze Event",
+                 base_price: %Money{amount: 106_500},
                  download_count: 5,
                  shoot_count: 1
                },
                %{
-                 name: "low wedding",
-                 base_price: %Money{amount: 45_000},
+                 name: "Bronze Wedding",
+                 base_price: %Money{amount: 48_500},
                  download_count: 5,
                  shoot_count: 2
                },
                %{
-                 name: "mid event",
-                 base_price: %Money{amount: 108_000},
+                 name: "Gold Event",
+                 base_price: %Money{amount: 126_000},
+                 download_count: 20,
+                 shoot_count: 1
+               },
+               %{
+                 name: "Gold Wedding",
+                 base_price: %Money{amount: 68_000},
+                 download_count: 20,
+                 shoot_count: 2
+               },
+               %{
+                 name: "Silver Event",
+                 base_price: %Money{amount: 116_500},
                  download_count: 10,
                  shoot_count: 1
                },
                %{
-                 name: "mid wedding",
-                 base_price: %Money{amount: 54_000},
+                 name: "Silver Wedding",
+                 base_price: %Money{amount: 58_000},
                  download_count: 10,
                  shoot_count: 2
                }
