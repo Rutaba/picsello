@@ -135,8 +135,9 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         :category_template_id
       ])
       |> Repo.insert_or_update()
+
       {:noreply, socket |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery_id))}
-      else
+    else
       {:noreply, socket}
     end
   end
