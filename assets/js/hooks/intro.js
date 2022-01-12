@@ -50,6 +50,7 @@ export default {
     // and edge case where live view navgations
     // need to force remove to reset the introHints
     // for the next view
-    document.querySelector('.introjs-hints').remove();
+    const hintsEl = document.querySelector('.introjs-hints');
+    if (hintsEl) hintsEl.remove();
   },
 };
