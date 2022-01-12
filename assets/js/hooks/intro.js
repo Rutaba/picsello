@@ -16,7 +16,9 @@ export default {
     // using the data-attribute API to embed directly
     // into the HTML to avoid JS bloat
     // see https://introjs.com/docs/hints/attributes
-    introJs().addHints();
+    introJs().addHints().setOptions({
+      hintShowButton: false,
+    });
 
     if (shouldSeeIntro) {
       const introSteps = intros[introId](el);
@@ -41,5 +43,13 @@ export default {
         })
         .start();
     }
+  },
+  destroyed() {
+    // Intro js doesn't have a method
+    // to delete itself from the DOM ran into
+    // and edge case where live view navgations
+    // need to force remove to reset the introHints
+    // for the next view
+    document.querySelector('.introjs-hints').remove();
   },
 };

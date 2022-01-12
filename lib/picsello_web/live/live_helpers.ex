@@ -277,4 +277,10 @@ defmodule PicselloWeb.LiveHelpers do
 
   def path(nil), do: "/images/card_blank.png"
   def path(url), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(url)
+
+  def intro_hint(%{content: content} = assigns) do
+    ~H"""
+    <span class="inline-block relative" data-hint={"#{content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block mr-2 rounded-sm fill-current text-blue-planning-300 w-4 h-4" /></span>
+    """
+  end
 end

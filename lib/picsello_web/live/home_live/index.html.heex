@@ -45,7 +45,7 @@
       <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card">
         <%= if @leads_empty? do %>
         <p class="my-2">
-          Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
+          Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step. <.intro_hint content="testing" />
         </p>
 
         <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
