@@ -4,8 +4,7 @@ defmodule PicselloWeb.WhccWebhookController do
   alias Picsello.WHCC
 
   def webhook(%Plug.Conn{} = conn, %{"verifier" => hash}) do
-    %{"isVerified" => true} = WHCC.webhook_verify(hash)
-    Logger.info("[whcc] Webhook registered successfully")
+    WHCC.WebhookKeeper.finish_verification(hash)
     conn |> ok()
   end
 
