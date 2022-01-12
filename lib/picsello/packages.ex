@@ -10,6 +10,8 @@ defmodule Picsello.Packages do
     Packages.CostOfLivingAdjustment
   }
 
+  import Picsello.Repo.CustomMacros
+
   import Ecto.Query, only: [from: 2]
 
   defmodule Multiplier do
@@ -187,35 +189,6 @@ defmodule Picsello.Packages do
          %{sign: "-", is_enabled: true, percent: percent} -> percent
          _ -> nil
        end)
-
-  defmacro array_to_string(array, delimiter) do
-    quote do
-      fragment("array_to_string(?, ?)", unquote(array), unquote(delimiter))
-    end
-  end
-
-  defmacro now() do
-    quote do
-      fragment("now()")
-    end
-  end
-
-  defmacro nearest(number, nearest) do
-    quote do
-      fragment(
-        "(round(?::decimal / ?::decimal) * ?::decimal)",
-        unquote(number),
-        unquote(nearest),
-        unquote(nearest)
-      )
-    end
-  end
-
-  defmacro initcap(string) do
-    quote do
-      fragment("initcap(?)", unquote(string))
-    end
-  end
 
   def create_initial(
         %User{
