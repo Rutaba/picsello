@@ -27,6 +27,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event("continue", _, %{assigns: %{step: :product_list, order: order}} = socket) do
     socket
     |> assign(:step, :delivery_info)
+    |> assign(:delivery_info_changeset, Cart.order_delivery_info_change(order))
     |> noreply()
   end
 
