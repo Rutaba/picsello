@@ -4,6 +4,7 @@ defmodule Picsello.Cart.DeliveryInfo do
   """
   use Ecto.Schema
   import Ecto.Changeset
+  import EctoCommons.EmailValidator
   alias __MODULE__.Address
 
   @derive {Jason.Encoder, only: [:name, :email, :address]}
@@ -23,7 +24,7 @@ defmodule Picsello.Cart.DeliveryInfo do
     |> cast(attrs, [:name, :email])
     |> cast_embed(:address, with: &Address.changeset/2)
     |> validate_required([:name, :email])
-    |> validate_format(:email, @email_regex)
+    |> validate_email(:email)
     |> validate_length(:name, min: 2, max: 30)
   end
 
