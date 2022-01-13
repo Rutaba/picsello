@@ -1,0 +1,73 @@
+.introjs-tooltipReferenceLayer *,
+.introjs-tooltipReferenceLayer {
+    @apply font-sans;
+}
+
+.introjs-tooltip {
+    min-width: 300px;
+}
+
+.introjs-bullets ul li a {
+    @apply bg-base-200;
+}
+
+.introjs-bullets ul li a.active {
+    @apply bg-blue-planning-300;
+}
+
+.introjs-tooltipbuttons {
+    border-top: unset;
+    @apply bg-base-200 rounded-b-lg;
+}
+
+.introjs-tooltipbuttons a {
+    text-shadow: unset;
+}
+
+.introjs-prevbutton {
+    text-shadow: unset;
+    @apply px-6 py-3 font-medium text-base-300 bg-transparent border border-base-300 rounded-lg hover:bg-base-300/10 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.introjs-disabled,
+.introjs-disabled:hover, .introjs-disabled:focus {
+    @apply opacity-50 cursor-not-allowed border-base-250;
+}
+
+.introjs-nextbutton {
+    @apply px-6 py-3 font-medium text-white bg-base-300 border border-base-300 rounded-lg hover:bg-base-300/90 hover:text-white focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 focus:bg-base-300 focus:text-white disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.introjs-skipbutton {
+    @apply font-thin text-5xl pr-0;
+    line-height: 0px;
+}
+
+.introjs-hint {
+    @apply mt-1 -ml-0.5;
+}
+
+.introjs-hint:hover > .introjs-hint-pulse {
+    @apply bg-blue-planning-300/[.5];
+}
+
+.introjs-hint-pulse {
+    @apply bg-blue-planning-300/[.06];
+}
+
+@keyframes introjspulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(77, 170, 198, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(77, 170, 198, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(77, 170, 198, 0);
+  }
+}

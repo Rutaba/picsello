@@ -29,8 +29,8 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
     assert "Check this out" = email |> email_substitutions |> Map.get("subject")
 
-    assert "This is 1st line\r\n2nd line\r\n" =
-             email |> email_substitutions |> Map.get("body_text")
+    assert "This is 1st line\n2nd line\n" =
+             email |> email_substitutions |> Map.get("body_text") |> String.replace(~r/\r/, "")
 
     assert "<p>This is 1st line</p><p>2nd line</p>" =
              email |> email_substitutions |> Map.get("body_html")

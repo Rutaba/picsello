@@ -45,6 +45,20 @@ defmodule Picsello.Questionnaire do
   end
 
   def for_job(%Job{type: job_type}) do
-    from(q in __MODULE__, where: q.job_type == ^job_type)
+    from(q in __MODULE__,
+      where: q.job_type in [^job_type, "other"],
+      order_by:
+        fragment(
+          """
+          case
+            when ?.job_type != 'other' then 0
+            when ?.job_type = 'other' then 1
+          end asc
+          """,
+          q,
+          q
+        ),
+      limit: 1
+    )
   end
 end

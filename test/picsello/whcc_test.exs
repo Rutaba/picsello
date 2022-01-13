@@ -286,4 +286,50 @@ defmodule Picsello.WHCCTest do
                |> Enum.filter(&(&1.category_id == "canvas_type" && &1.id == "fine_art"))
     end
   end
+
+  describe "mark_up_price" do
+    test "for prints it looks up size in size table" do
+      insert(:product,
+        category: build(:category, whcc_id: "h3GrtaTf5ipFicdrJ"),
+        whcc_id: "ABC",
+        attribute_categories: [
+          %{
+            "name" => "size",
+            "attributes" => [%{"id" => "10x10", "metadata" => %{"height" => 10, "width" => 10}}]
+          }
+        ]
+      )
+
+      details = %Picsello.WHCC.Editor.Details{
+        product_id: "ABC",
+        selections: %{"size" => "10x10", "quantity" => 3}
+      }
+
+      assert %Money{amount: 22_500} = Picsello.WHCC.mark_up_price(details, %Money{amount: 0})
+    end
+
+    test "defaults to product category" do
+      insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 3.0))
+
+      details = %Picsello.WHCC.Editor.Details{
+        product_id: "ABC"
+      }
+
+      total = Money.new(2000)
+
+      assert %Money{amount: 6000} = Picsello.WHCC.mark_up_price(details, total)
+    end
+
+    test "rounds price to nearest $5" do
+      insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 3.0))
+
+      details = %Picsello.WHCC.Editor.Details{
+        product_id: "ABC"
+      }
+
+      total = Money.new(2300)
+
+      assert %Money{amount: 7000} = Picsello.WHCC.mark_up_price(details, total)
+    end
+  end
 end

@@ -63,9 +63,9 @@ defmodule Picsello.Workers.SyncTiers do
     Repo.insert_all(
       Tier,
       [
-        %{name: "low", position: 0},
-        %{name: "mid", position: 1},
-        %{name: "high", position: 2}
+        %{name: "bronze", position: 0},
+        %{name: "silver", position: 1},
+        %{name: "gold", position: 2}
       ],
       on_conflict: :nothing
     )

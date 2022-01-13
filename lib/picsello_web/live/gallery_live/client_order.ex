@@ -22,7 +22,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
     case Cart.get_unconfirmed_order(gallery.id) do
       {:ok, %{id: ^order_id} = order} ->
-        order = Cart.confirm_order(order, Galleries.account_id(gallery))
+        order =
+          if socket |> connected?() do
+            Cart.confirm_order(order, Galleries.account_id(gallery))
+          else
+            order
+          end
 
         socket
         |> assign(:from_checkout, true)

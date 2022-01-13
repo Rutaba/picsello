@@ -172,9 +172,8 @@ defmodule PicselloWeb.InboxLive.Index do
       confirm_event: "delete",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
-      title: "Delete Conversation?",
-      subtitle:
-        "Are you sure you wish to permanently delete this conversation? This action cannot be undone."
+      title: "Remove Conversation?",
+      subtitle: "This will remove the conversation from Inbox and cannot be undone."
     })
     |> noreply()
   end

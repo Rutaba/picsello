@@ -12,11 +12,14 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
 </div>
 
 <div class="gallery__container">
-    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
+    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, 
+        live_action: @live_action,
+        cart_count: @cart_count,
+        cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
 </div>
 <hr>
 <div class="gallery__container">
-    <%= if length(@products) !== 0 do %>
+    <%= unless Enum.empty?(@products) do %>
     <div class="pt-8 lg:pt-14">
         <div class="font-bold text-base lg:text-3xl">
             Order custom products with <%= @creator.name %>

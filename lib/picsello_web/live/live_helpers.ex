@@ -173,8 +173,14 @@ defmodule PicselloWeb.LiveHelpers do
   def nav_link(assigns) do
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
-        <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
-          <%= render_slot(@inner_block, active) %>
+        <%= if String.starts_with?(@to, "/") do %>
+          <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
+            <%= render_slot(@inner_block, active) %>
+          <% end %>
+        <% else %>
+          <a href={@to} class={@class} target="_blank" rel="noopener noreferrer">
+            <%= render_slot(@inner_block, active) %>
+          </a>
         <% end %>
       </.is_active>
     """
@@ -271,4 +277,10 @@ defmodule PicselloWeb.LiveHelpers do
 
   def path(nil), do: "/images/card_blank.png"
   def path(url), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(url)
+
+  def intro_hint(%{content: content} = assigns) do
+    ~H"""
+    <span class="inline-block relative" data-hint={"#{content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block mr-2 rounded-sm fill-current text-blue-planning-300 w-4 h-4" /></span>
+    """
+  end
 end

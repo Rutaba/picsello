@@ -14,6 +14,7 @@ defmodule Picsello.Factory do
     Campaign,
     CampaignClient,
     ClientMessage,
+    Onboardings,
     Repo,
     Shoot,
     Accounts.User,
@@ -48,10 +49,17 @@ defmodule Picsello.Factory do
     |> Ecto.Changeset.apply_changes()
   end
 
+  def onboard_show_intro!(%User{} = user) do
+    user
+    |> User.complete_onboarding_changeset()
+    |> Repo.update!()
+  end
+
   def onboard!(%User{} = user) do
     user
     |> User.complete_onboarding_changeset()
     |> Repo.update!()
+    |> Onboardings.save_intro_state("intro_dashboard", "completed")
   end
 
   def valid_user_attributes(attrs \\ %{}),
@@ -326,7 +334,8 @@ defmodule Picsello.Factory do
       whcc_name: "shirts",
       name: "cool shirts",
       position: sequence(:category_position, & &1),
-      icon: "book"
+      icon: "book",
+      default_markup: 2.0
     }
 
   def product_factory,

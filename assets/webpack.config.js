@@ -13,16 +13,21 @@ module.exports = (env, options) => {
     optimization: {
       minimizer: [
         new TerserPlugin({ cache: true, parallel: true, sourceMap: devMode }),
-        new OptimizeCSSAssetsPlugin({})
-      ]
+        new OptimizeCSSAssetsPlugin({}),
+      ],
     },
     entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+      app: glob.sync('./vendor/**/*.js').concat(['./js/app.js']),
     },
     output: {
       filename: '[name].js',
       path: path.resolve(__dirname, '../priv/static/js'),
-      publicPath: '/js/'
+      publicPath: '/js/',
+    },
+    resolve: {
+      alias: {
+        introJs: path.resolve(__dirname, './node_modules/intro.js'),
+      },
     },
     devtool: devMode ? 'eval-cheap-module-source-map' : undefined,
     module: {
@@ -31,8 +36,8 @@ module.exports = (env, options) => {
           test: /\.js$/,
           exclude: /node_modules/,
           use: {
-            loader: 'babel-loader'
-          }
+            loader: 'babel-loader',
+          },
         },
         {
           test: /\.[s]?css$/,
@@ -55,12 +60,12 @@ module.exports = (env, options) => {
               },
             },
           ],
-        }
-      ]
+        },
+      ],
     },
     plugins: [
       new MiniCssExtractPlugin({ filename: '../css/app.css' }),
-      new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
-    ]
-  }
+      new CopyWebpackPlugin([{ from: 'static/', to: '../' }]),
+    ],
+  };
 };

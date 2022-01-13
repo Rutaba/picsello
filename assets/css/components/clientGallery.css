@@ -37,6 +37,7 @@
 }
 
 .preview {
+    width: 603px;
     height: 650px
 }
 
@@ -478,12 +479,59 @@
     height: 16px;
 }
 
+.darkerBorder {
+    border: 1px solid #C9C9C9;
+    @apply rounded-lg
+}
+
+.deliveryOptions__wrapper input[type="radio"]{
+    @apply appearance-none
+    h-5
+    w-5
+    bg-base-100
+    border
+    border-blue-planning-300
+    rounded-full
+    cursor-pointer
+    inline-flex
+    items-center
+    justify-center
+    outline-none
+    box-border
+
+}
+
+.deliveryOptions__wrapper input[type="radio"] label{
+    @apply text-green-finances-300
+}
+
+.deliveryOptions__wrapper input[type="radio"]:after{
+    content: "";
+    @apply h-3
+    w-3
+    rounded-full
+    bg-blue-planning-300
+    hidden
+}
+
+.deliveryOptions__wrapper input[type="radio"]:checked:after{
+  @apply inline-block
+}
+
+.shippingOptions__infoBlock {
+    max-width: 100%;
+}
+
 @media screen and (min-width: 1280px) {
     .editProductPopup {
         width: 95vw;
         max-width: 1440px;
         height: 95vh;
         max-height: 894px;
+    }
+
+    .shippingOptions__infoBlock{
+        max-width: 835px;
     }
 }
 
@@ -550,4 +598,8 @@
         @apply w-1/2
     }
 
+    .preview {
+        width: 603px;
+        height: 650px;
+    }
 }
