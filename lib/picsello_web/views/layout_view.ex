@@ -87,24 +87,23 @@ defmodule PicselloWeb.LayoutView do
   end
 
   def side_nav(socket, current_user) do
-    finances =
-      if current_user.organization.stripe_account_id,
-        do: %{title: "Finances", icon: "money-bags", path: "https://dashboard.stripe.com"},
-        else: nil
-
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
-      %{title: "Orders", icon: "cart", path: "#"},
-      %{title: "Calendar", icon: "calendar", path: "#"},
+      %{title: "Orders", icon: "cart"},
+      %{title: "Calendar", icon: "calendar"},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
       %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
-      finances,
+      %{
+        title: "Finances",
+        icon: "money-bags",
+        path: current_user.organization.stripe_account_id && "https://dashboard.stripe.com"
+      },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
       %{title: "Help", icon: "question-mark", path: "#"}
     ]
-    |> Enum.filter(& &1)
+    |> Enum.filter(&Map.get(&1, :path))
   end
 
   def top_nav(socket),
