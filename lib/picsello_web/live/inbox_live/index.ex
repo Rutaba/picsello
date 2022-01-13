@@ -1,7 +1,7 @@
 defmodule PicselloWeb.InboxLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, ClientMessage, Messages, Notifiers.ClientNotifier, Onboardings}
+  alias Picsello.{Job, Repo, ClientMessage, Messages, Notifiers.ClientNotifier}
   import Ecto.Query
 
   @impl true
@@ -29,7 +29,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})} phx-hook="IntroJS" data-intro-show={show_intro?(@current_user, "intro_inbox")} id="intro_inbox"><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
+    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
     <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
@@ -151,9 +151,6 @@ defmodule PicselloWeb.InboxLive.Index do
     end
   end
 
-  def show_intro?(current_user, intro_id),
-    do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
-
   @impl true
   def handle_event("open-thread", %{"id" => id}, socket) do
     socket
@@ -181,16 +178,7 @@ defmodule PicselloWeb.InboxLive.Index do
     |> noreply()
   end
 
-  @impl true
-  def handle_event(
-        "intro_js",
-        %{"action" => action, "intro_id" => intro_id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    socket
-    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
-    |> noreply()
-  end
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
     job_query = Job.for_user(current_user)
