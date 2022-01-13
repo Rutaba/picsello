@@ -10,7 +10,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
           name: "Mary Jane Photography",
           slug: "mary-jane-photos",
           profile: %{
-            color: "3376FF",
+            color: Picsello.Profiles.Profile.colors() |> hd,
             job_types: ~w(portrait event),
             website: "http://photos.example.com"
           }
