@@ -8,6 +8,7 @@ defmodule Picsello.Cart do
   alias Picsello.WHCC
   alias Picsello.Cart.CartProduct
   alias Picsello.Cart.Order
+  alias Picsello.Cart.DeliveryInfo
 
   def new_product(editor_id, account_id) do
     details = WHCC.editor_details(account_id, editor_id)
@@ -123,6 +124,26 @@ defmodule Picsello.Cart do
         )
     )
     |> Repo.one()
+  end
+
+  def delivery_info_address_states(), do: DeliveryInfo.Address.states()
+
+  def delivery_info_selected_state(delivery_info_change) do
+    DeliveryInfo.selected_state(delivery_info_change)
+  end
+
+  def delivery_info_change(attrs \\ %{}) do
+    DeliveryInfo.changeset(%DeliveryInfo{}, attrs)
+  end
+
+  def order_delivery_info_change(%Order{delivery_info: delivery_info}, attrs \\ %{}) do
+    DeliveryInfo.changeset(delivery_info, attrs)
+  end
+
+  def store_order_delivery_info(%Order{} = order, delivery_info_change) do
+    order
+    |> Order.store_delivery_info(delivery_info_change)
+    |> Repo.update!()
   end
 
   defp seek_and_map(editor_id, fun) do
