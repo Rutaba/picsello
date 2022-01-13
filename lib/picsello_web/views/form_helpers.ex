@@ -209,11 +209,13 @@ defmodule PicselloWeb.FormHelpers do
 
         <div class="relative flex flex-col">
           <%= input @form, :website,
+              type: :url_input,
               phx_debounce: "500",
-              autocomplete: "off",
-              autocapitalize: "off",
               disabled: input_value(@form, :no_website) == true,
               placeholder: @placeholder,
+              autocomplete: "url",
+              novalidate: true,
+              phx_hook: "PrefixHttp",
               class: "p-4 sm:pr-48" %>
           <%= error_tag @form, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
 
