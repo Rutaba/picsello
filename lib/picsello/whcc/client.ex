@@ -42,7 +42,7 @@ defmodule Picsello.WHCC.Client do
   end
 
   def design_details(%WHCC.Design{id: id} = design) do
-    if Keyword.get(config(), :skip_design_details) do
+    if Enum.member?(Application.get_env(:picsello, :feature_flags, []), :sync_whcc_design_details) do
       design
     else
       {:ok,
