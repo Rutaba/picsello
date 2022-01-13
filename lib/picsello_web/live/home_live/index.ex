@@ -187,13 +187,18 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   def card(assigns) do
-    assigns = Map.put(assigns, :attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
+    assigns =
+      assigns
+      |> Map.put(:attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
+      |> Enum.into(%{badge: nil})
 
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
-      <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
-        <%= if @badge > 0, do: @badge %>
-      </div>
+      <%= if @badge do %>
+        <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+          <%= if @badge > 0, do: @badge %>
+        </div>
+      <% end %>
 
       <div class={"border hover:border-#{@color} h-full rounded-lg bg-#{@color} overflow-hidden"}>
         <div class="h-full p-5 ml-3 bg-white">

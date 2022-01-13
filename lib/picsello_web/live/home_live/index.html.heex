@@ -75,12 +75,11 @@
         <% end %>
       </.card>
 
-      <li class="flex flex-col items-center justify-center h-full p-5 border rounded-lg">
-        <.icon name="upload" class="w-12 h-12 text-blue-planning-300" />
-        <p class="mt-2 text-lg font-bold">
-          Upload a shoot
+      <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
+        <p class="my-2">
+          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own!
         </p>
-      </li>
+      </.card>
     </ul>
 
     <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
@@ -96,15 +95,9 @@
         </p>
       </.card>
 
-      <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" badge={0} phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
+      <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
         <p class="my-2">
           Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!
-        </p>
-      </.card>
-
-      <.card color="red-sales-300" icon="cart" title="Manage Orders" badge={0}>
-        <p class="my-2">
-          After you upload your shoot, clients can buy prints and much more directly from your gallery page!
         </p>
       </.card>
     </ul>
