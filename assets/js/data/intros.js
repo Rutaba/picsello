@@ -24,7 +24,7 @@ export default {
         title: 'Confirm your email',
         element: el.querySelector('.intro-confirmation'),
         intro:
-          'Let’s take a look at what’s on your list! It looks like you need to confirm your email. A confirmation email will be sent to the email address associated with your account. Click on the link within the email to confirm the account. If you’re having trouble, you can find instructions on how to do this here, in our help bottom-middle-aligned.',
+          'It looks like you need to confirm your email. A confirmation email will be sent to the email address associated with your account. Click on the link within the email to confirm the account. If you’re having trouble, you can find instructions on how to do this here, in our help center.',
         position: 'bottom-middle-aligned',
       },
       {
@@ -45,7 +45,7 @@ export default {
         title: 'Packages',
         element: '',
         intro:
-          'Packages were designed to make life easier for you! They allow you to use our preset reusable job templates, or to create your own.',
+          'Create or edit package templates that work best for your job types.',
         position: 'bottom-middle-aligned',
       },
       {
