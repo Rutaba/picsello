@@ -8,6 +8,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_new(:job_types, &Job.types/0)
     |> then(fn socket ->
       if socket.assigns[:changeset] do
         socket
@@ -54,7 +55,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
               <% end %>
             <% end %>
 
-            <%= labeled_select f, :type, for(type <- Job.types(), do: {humanize(type), type}), label: "Type of Photography", prompt: "Select below" %>
+            <%= labeled_select f, :type, for(type <- @job_types, do: {humanize(type), type}), label: "Type of Photography", prompt: "Select below" %>
 
             <div class="sm:col-span-2">
               <div class="flex items-center justify-between mb-2">
