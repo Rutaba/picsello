@@ -184,7 +184,7 @@ defmodule PicselloWeb.Live.Profile do
       <%= if @contact_changeset do %>
         <.form for={@contact_changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" >
           <div class="flex flex-col mt-3">
-            <%= label_for f, :name, label: "Your name", class: "py-2 font-bold" %>
+            <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
             <%= input f, :name, placeholder: "Type your first and last name...", class: "p-5", phx_debounce: 300 %>
           </div>
@@ -193,13 +193,13 @@ defmodule PicselloWeb.Live.Profile do
             <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
               <%= label_for f, :email, label: "Your email", class: "py-2 font-bold" %>
 
-              <%= input f, :email, placeholder: "Type email...", class: "p-5", phx_debounce: 300 %>
+              <%= input f, :email, type: :email_input, placeholder: "Type email...", class: "p-5", phx_debounce: 300 %>
             </div>
 
             <div class="flex flex-col flex-1 mt-3">
               <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-bold" %>
 
-              <%= input f, :phone, placeholder: "Type phone number...", class: "p-5", phx_debounce: 300, phx_hook: "Phone" %>
+              <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", class: "p-5", phx_debounce: 300, phx_hook: "Phone" %>
             </div>
           </div>
 
