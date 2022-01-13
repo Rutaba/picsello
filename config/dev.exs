@@ -86,3 +86,5 @@ config :picsello, Picsello.Mailer,
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
 
 config :picsello, :render_test_ids, true
+
+config :picsello, :feature_flags, ~w[sync_whcc_design_details show_pricing_tab]a
