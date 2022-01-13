@@ -19,6 +19,7 @@ defmodule Picsello.Repo.Migrations.RemoveAlbums do
     end
 
     create index(:albums, [:gallery_id])
+
     alter table("photos") do
       add :album_id, references(:albums)
     end
