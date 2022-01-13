@@ -55,11 +55,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
-          <div class="flex justify-between mt-5 sm:justify-end sm:mt-9">
+          <div class="flex justify-between mt-5 sm:justify-end sm:mt-9 items-center">
             <%= if @step > 2 do %>
               <button type="button" phx-click="previous" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">
                 Back
               </button>
+            <% else %>
+              <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
             <button type="submit" phx-disable-with="Saving..." disabled={!@changeset.valid?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
               <%= if @step == 5, do: "Finish", else: "Next" %>

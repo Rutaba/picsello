@@ -103,6 +103,15 @@ defmodule Picsello.UserOnboardsTest do
            } = user
   end
 
+  feature "user logs out during onboarding", %{session: session} do
+    session
+    |> assert_path(@onboarding_path)
+    |> assert_disabled_submit()
+    |> click(link("Logout"))
+    |> assert_path("/")
+    |> assert_flash(:info, text: "Logged out successfully")
+  end
+
   feature "user goes back while onboarding", %{session: session, user: user} do
     session
     |> assert_path(@onboarding_path)
