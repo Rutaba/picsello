@@ -94,7 +94,7 @@ defmodule Picsello.UserOnboardsTest do
                  %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
                ],
                profile: %{
-                 website: "example.com",
+                 website: "https://example.com",
                  no_website: false,
                  color: ^second_color,
                  job_types: ~w(event portrait)
