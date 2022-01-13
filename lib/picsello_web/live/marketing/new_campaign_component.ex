@@ -154,7 +154,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         %{assigns: %{review: false, changeset: changeset}} = socket
       ) do
     body_html = Ecto.Changeset.get_field(changeset, :body_html)
-    Process.send_after(self(), {:load_template_preview, body_html}, 50)
+    Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
     socket |> assign(:review, true) |> assign(:template_preview, :loading) |> noreply()
   end
 

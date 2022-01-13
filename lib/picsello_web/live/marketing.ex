@@ -40,7 +40,7 @@ defmodule PicselloWeb.Live.Marketing do
 
             <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
               <%= for campaign <- @campaigns do %>
-                <.campaign_item subject={campaign.subject} date={strftime(@current_user.time_zone, campaign.inserted_at, "%B %d, %Y")} clients_count={campaign.clients_count} />
+                <.campaign_item id={campaign.id} subject={campaign.subject} date={strftime(@current_user.time_zone, campaign.inserted_at, "%B %d, %Y")} clients_count={campaign.clients_count} />
               <% end %>
             </ul>
           <% end %>
@@ -95,7 +95,7 @@ defmodule PicselloWeb.Live.Marketing do
 
   defp campaign_item(assigns) do
     ~H"""
-    <li class="border rounded-lg p-4">
+    <li {testid("campaign-item")} phx-click="open-campaign" phx-value-campaign-id={@id} class="border rounded-lg p-4 hover:bg-purple-marketing-100 hover:border-purple-marketing-300 cursor-pointer">
       <.badge color={:green}>Sent</.badge>
       <div class="text-xl font-semibold"><%= @subject %></div>
       <div class="text-gray-400 mt-1">Sent on <%= @date %> to <%= ngettext "1 client", "%{count} clients", @clients_count %></div>
@@ -109,6 +109,11 @@ defmodule PicselloWeb.Live.Marketing do
   end
 
   @impl true
+  def handle_event("open-campaign", %{"campaign-id" => campaign_id}, socket) do
+    socket |> PicselloWeb.Live.Marketing.CampaignDetailsComponent.open(campaign_id) |> noreply()
+  end
+
+  @impl true
   def handle_info({:update, _campaign}, socket) do
     socket
     |> assign_campaigns()
@@ -118,15 +123,15 @@ defmodule PicselloWeb.Live.Marketing do
 
   @impl true
   def handle_info(
-        {:load_template_preview, body_html},
+        {:load_template_preview, component, body_html},
         %{assigns: %{current_user: current_user, modal_pid: modal_pid}} = socket
       ) do
     template_preview = Marketing.template_preview(current_user, body_html)
 
     send_update(
       modal_pid,
-      PicselloWeb.Live.Marketing.NewCampaignComponent,
-      id: PicselloWeb.Live.Marketing.NewCampaignComponent,
+      component,
+      id: component,
       template_preview: template_preview
     )
 

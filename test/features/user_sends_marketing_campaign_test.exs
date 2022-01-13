@@ -30,7 +30,7 @@ defmodule Picsello.UserSendsMarketingCampaignTest do
     |> click(css("div.ql-editor"))
     |> send_keys(["This is the body"])
     |> click(button("Review"))
-    |> focus_frame(css("iframe"))
+    |> focus_frame(css("iframe#template-preview"))
     |> assert_text("TEMPLATE_PREVIEW")
     |> focus_parent_frame()
     |> assert_text("Recipient list: 1 contact")
@@ -42,6 +42,13 @@ defmodule Picsello.UserSendsMarketingCampaignTest do
 
     campaign = Repo.get_by(Campaign, subject: "My subject")
     assert_enqueued(worker: Picsello.Workers.SendCampaign, args: %{id: campaign.id})
+
+    session
+    |> click(testid("campaign-item"))
+    |> within_modal(&assert_text(&1, "My subject"))
+    |> within_modal(&assert_text(&1, "Recipient list: 1 contact"))
+    |> focus_frame(css("iframe#template-preview"))
+    |> assert_text("TEMPLATE_PREVIEW")
   end
 
   feature "sends campaign to all contacts", %{session: session} do
