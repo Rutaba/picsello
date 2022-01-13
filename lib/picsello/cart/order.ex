@@ -40,10 +40,20 @@ defmodule Picsello.Cart.Order do
         %CartProduct{price: price} = product,
         attrs \\ %{}
       ) do
-    order
-    |> cast(attrs, [])
-    |> cast_subtotal_cost({:add, price})
-    |> put_embed(:products, products ++ [product])
+    product_already_exist =
+      Enum.find_value(products, fn %{editor_details: %{editor_id: editor_id}} ->
+        editor_id == product.editor_details.editor_id
+      end)
+
+    if product_already_exist do
+      order
+      |> change()
+    else
+      order
+      |> cast(attrs, [])
+      |> cast_subtotal_cost({:add, price})
+      |> put_embed(:products, products ++ [product])
+    end
   end
 
   def change_products(
