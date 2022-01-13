@@ -37,9 +37,13 @@ defmodule PicselloWeb.Live.User.SettingsTest do
       |> Picsello.Repo.update!()
 
       {:ok, _view, html} = live(conn, Routes.user_settings_path(conn, :edit))
-      assert [form] = html |> Floki.parse_fragment!() |> Floki.find("main > :not(header) form")
       sign_out_path = Routes.user_session_path(conn, :delete)
-      assert [^sign_out_path] = form |> Floki.attribute("action")
+
+      assert [^sign_out_path] =
+               html
+               |> Floki.parse_fragment!()
+               |> Floki.attribute("main > :not(header) form", "action")
+               |> Enum.uniq()
     end
   end
 
