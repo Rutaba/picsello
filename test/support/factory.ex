@@ -60,6 +60,7 @@ defmodule Picsello.Factory do
     |> User.complete_onboarding_changeset()
     |> Repo.update!()
     |> Onboardings.save_intro_state("intro_dashboard", "completed")
+    |> Onboardings.save_intro_state("intro_inbox", "completed")
   end
 
   def valid_user_attributes(attrs \\ %{}),

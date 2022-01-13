@@ -27,7 +27,7 @@ export default {
 
       introJs()
         .setOptions(introSteps)
-        .onexit((test) => {
+        .onexit(() => {
           // if user clicks 'x' or the overlay
           this.pushEvent('intro_js', {
             action: 'dismissed',

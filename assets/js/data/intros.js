@@ -64,4 +64,16 @@ export default {
       },
     ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM
   }),
+  intro_inbox: (el) => ({
+    showBullets: false,
+    steps: [
+      {
+        title: 'Welcome to your inbox!',
+        intro:
+          'Once you send a booking proposal or other communication to a client, the communications will be logged in your inbox. You’ll be able to send messages, and keep track of all your messages to and from clients, all in one place.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('h1'),
+      },
+    ],
+  }),
 };

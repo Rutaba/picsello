@@ -43,6 +43,10 @@
     line-height: 0px;
 }
 
+.introjs-tooltiptext p {
+    @apply text-sm;
+}
+
 .introjs-hint {
     @apply mt-1 -ml-0.5;
 }
