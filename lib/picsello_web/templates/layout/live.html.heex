@@ -29,11 +29,10 @@
         <% end %>
 
         <%= for %{title: title, icon: icon, path: path} <- top_nav(@socket), @current_user do %>
-          <%= live_redirect to: path, title: title, class: "hidden lg:flex ml-10 items-center p-3 mr-2 hover:bg-blue-planning-100" do %>
+          <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="hidden lg:flex ml-10 items-center p-3 mr-2 hover:bg-blue-planning-100" active_class="">
             <.icon name={icon} class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
-
             <%= title %>
-          <% end %>
+          </.nav_link>
         <% end %>
       </nav>
 

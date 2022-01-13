@@ -114,7 +114,7 @@ defmodule PicselloWeb.LayoutView do
         icon: "profile",
         path: Routes.profile_settings_path(socket, :index)
       },
-      %{title: "Help", icon: "question-mark", path: "#"},
+      %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
 end
