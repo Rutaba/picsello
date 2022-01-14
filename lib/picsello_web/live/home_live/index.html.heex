@@ -45,7 +45,7 @@
       <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card">
         <%= if @leads_empty? do %>
         <p class="my-2">
-          Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
+          Create leads to start bringing in new business. Manage existing leads as they are created.
         </p>
 
         <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
@@ -68,7 +68,6 @@
         <%= if @jobs_empty? do %>
         <p class="my-2">
           Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.
-          <%= if @leads_empty? do %>Create your first lead!<% end %>
         </p>
         <% else %>
           <p class="my-2"><span class="font-bold"><%= @job_count %></span> upcoming <%= ngettext "job", "jobs", @job_count %> within the next seven days</p>
@@ -90,14 +89,14 @@
           <%= if @inbox_count > 0 do %>
             <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
           <% else %>
-            Communicate with all of your clients in one spot, whether it be text, email, or social. Get started today!
+            Communicate with your clients in one spot.
           <% end %>
         </p>
       </.card>
 
       <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
         <p class="my-2">
-          Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!
+          Send marketing emails to your contacts to encourage new business.
         </p>
       </.card>
     </ul>

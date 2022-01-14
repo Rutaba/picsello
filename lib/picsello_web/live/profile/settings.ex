@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
     <.settings_nav socket={@socket} live_action={@live_action}>
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Your Public Profile</h1>
+          <h1 class="text-2xl font-bold">Public Profile</h1>
 
           <p class="max-w-2xl my-2">
             Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
@@ -47,7 +47,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
         </.card>
 
         <.card title="Enable/disable your public profile">
-          <p class="mt-4">If for whatever reason you want to hide your public profile, you can disable it here!</p>
+          <p class="mt-4">Hide your public profile or make it visible.</p>
 
           <.form for={:toggle} phx-change="toggle">
             <label class="mt-4 text-2xl flex">
