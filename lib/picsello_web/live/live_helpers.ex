@@ -291,9 +291,21 @@ defmodule PicselloWeb.LiveHelpers do
     ]
   end
 
-  def intro_hint(%{content: content} = assigns) do
+  def intro_hints_only(intro_id) do
+    [
+      phx_hook: "IntroJS",
+      id: intro_id
+    ]
+  end
+
+  def intro_hint(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:content, :class]))
+      |> Enum.into(%{class: ""})
+
     ~H"""
-    <span class="inline-block relative" data-hint={"#{content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block mr-2 rounded-sm fill-current text-blue-planning-300 w-4 h-4" /></span>
+    <span class={"inline-block relative #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block mr-2 rounded-sm fill-current text-blue-planning-300 w-4 h-4" /></span>
     """
   end
 

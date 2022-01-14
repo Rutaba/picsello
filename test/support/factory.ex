@@ -59,8 +59,13 @@ defmodule Picsello.Factory do
     user
     |> User.complete_onboarding_changeset()
     |> Repo.update!()
-    |> Onboardings.save_intro_state("intro_dashboard", "completed")
-    |> Onboardings.save_intro_state("intro_inbox", "completed")
+    |> then(fn user ->
+      Enum.reduce(
+        ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
+        user,
+        &Onboardings.save_intro_state(&2, &1, "completed")
+      )
+    end)
   end
 
   def valid_user_attributes(attrs \\ %{}),

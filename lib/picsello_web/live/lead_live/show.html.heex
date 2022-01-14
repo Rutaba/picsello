@@ -1,3 +1,4 @@
+<div {intro(@current_user, "intro_leads_new")}>
 <header class="bg-blue-planning-100">
   <div class="p-6 pb-2 lg:pb-6 center-container">
     <.crumbs>
@@ -28,7 +29,7 @@
       </h1>
       <%= cond do %>
         <% is_nil(@package) -> %>
-          <button type="button" class="w-full mt-6 md:w-auto btn-primary" phx-click="add-package">Add a package</button>
+          <button type="button" class="w-full mt-6 md:w-auto btn-primary" phx-click="add-package" >Add a package <.intro_hint content="To finish booking your proposal, you’ll need a Stripe account to process client payments. Create your Stripe account now to continue booking." /></button>
         <% is_nil(@proposal) -> %>
           <div class="flex flex-col justify-center">
             You haven’t sent a proposal yet.
@@ -55,8 +56,8 @@
 
       <p>You don’t have any shoots yet. Please add a package first.</p>
 
-      <button {testid("add-package-from-shoot")} type="button" phx-click="add-package" class="mt-2 text-center btn-primary">
-        Add a package
+      <button {testid("add-package-from-shoot")} type="button" phx-click="add-package" class="mt-2 text-center btn-primary intro-add-package">
+        Add a package <.intro_hint content="To finish booking your proposal, you’ll need a Stripe account to process client payments. Create your Stripe account now to continue booking." />
       </button>
     </div>
 
@@ -106,7 +107,8 @@
         <select id="contract_type" class="block w-full md:w-3/4 select"><option>Standard Contract</option></select>
 
         <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
-        <button id="finish-proposal" title="finish proposal" class="w-full mt-6 md:w-auto btn-primary" phx-click="finish-proposal" disabled={!(@stripe_status == :charges_enabled && shoots_completed)}>Finish booking proposal</button>
+        <button id="finish-proposal" title="finish proposal" class="w-full mt-6 md:w-auto btn-primary" phx-click="finish-proposal" disabled={!(@stripe_status == :charges_enabled && shoots_completed)}>Finish booking proposal <.intro_hint content="In order to send your booking proposal and turn your lead into a job, you’ll need to complete the rest of these booking details." /></button>
       </div>
     <% end %>
+</div>
 </div>

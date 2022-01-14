@@ -24,7 +24,7 @@ export default {
         title: 'Confirm your email',
         element: el.querySelector('.intro-confirmation'),
         intro:
-          'It looks like you need to confirm your email. A confirmation email will be sent to the email address associated with your account. Click on the link within the email to confirm the account. If you’re having trouble, you can find instructions on how to do this here, in our help center.',
+          'It looks like you need to confirm your email. A confirmation email will be sent to the email address associated with your account. Click on the link within the email to confirm the account. If you’re having trouble, you can find instructions on how to do this in our <a href="https://support.picsello.com" target="_blank">help center</a>.',
         position: 'bottom-middle-aligned',
       },
       {
@@ -75,5 +75,90 @@ export default {
         element: el.querySelector('h1'),
       },
     ],
+  }),
+  intro_marketing: (el) => ({
+    steps: [
+      {
+        title: 'Promotional emails',
+        intro:
+          'Picsello makes it easy to reach out to your customers at any time. You can create custom messages and send them to either all of your contacts, or only those that are not currently leads.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-promotional'),
+      },
+      {
+        title: 'Your Public Profile',
+        intro:
+          'This is your custom, Picsello-hosted site that clients will be able to use to find and contact you.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-profile'),
+      },
+    ],
+  }),
+  intro_leads_empty: (el) => ({
+    showBullets: false,
+    steps: [
+      {
+        title: 'Your leads',
+        intro:
+          'Before you can create jobs, you need to create leads. You’ll add your client’s name and email address, and information about the shoot they’re interested in doing. Don’t worry, you won’t have to add this information a second time - we’ll help you convert the lead into a job once you and your client have agreed to work together.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-leads'),
+      },
+    ],
+  }),
+  intro_leads_new: (el) => ({
+    steps: [
+      {
+        title: 'Yay!',
+        intro:
+          'Your lead has been successfully created! Just a few more steps to go to turn it into a job.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('h1'),
+      },
+      {
+        title: 'Add a package to your lead',
+        intro:
+          'This will include details like pricing and how many shoots are included. Packages are reusable, and if you’re unsure where to start, we have preset templates you can use as a guide.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-add-package'),
+      },
+    ],
+  }),
+  intro_settings: (el) => ({
+    steps: [
+      {
+        title: 'Profile',
+        intro: 'Manage your Picsello account from here.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="user_settings"]'),
+      },
+      {
+        title: 'Package templates',
+        intro: 'View preset packages or create your own.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="package_templates"]'),
+      },
+      {
+        title: 'Gallery store pricing',
+        intro:
+          'Bulk-edit your gallery offerings, or review your gallery pricing at-a-glance, with access to all your gallery pricing in one place.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="pricing"]'),
+      },
+      {
+        title: 'Public profile',
+        intro:
+          'We offer a Public Profile page that will allow potential clients to contact you directly through a website that we host.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="profile_settings"]'),
+      },
+      {
+        title: 'Contacts',
+        intro:
+          'If someone isn’t a lead yet, but you want to keep track of their contact information, you can add them as a contact here. You can also convert them into a lead later.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="contacts"]'),
+      },
+    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
   }),
 };

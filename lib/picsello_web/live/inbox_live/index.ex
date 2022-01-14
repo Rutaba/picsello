@@ -191,7 +191,9 @@ defmodule PicselloWeb.InboxLive.Index do
     |> noreply()
   end
 
-  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
     job_query = Job.for_user(current_user)

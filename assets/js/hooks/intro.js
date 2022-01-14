@@ -10,7 +10,8 @@ export default {
     // to see if the user has seen it yet or not
     const el = this.el;
     const introId = el.id;
-    const shouldSeeIntro = JSON.parse(el.dataset.introShow); // turn to an actual boolean
+    const isHintsOnly = introId.includes('intro_hints_only'); // ran into a use case where we only need hints using phx-hook
+    const shouldSeeIntro = !isHintsOnly && JSON.parse(el.dataset.introShow); // turn to an actual boolean
 
     // We are using hints as tooltips and they will
     // using the data-attribute API to embed directly
@@ -80,7 +81,7 @@ export default {
 
           // IntroJS does not export a decent API to remove
           // an active hint dialog, so we'll force it
-          hintDialog.remove();
+          !isHintsOnly && hintDialog.remove();
         });
       }
     });

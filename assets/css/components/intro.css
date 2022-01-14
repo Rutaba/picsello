@@ -47,6 +47,10 @@
     @apply text-sm;
 }
 
+.introjs-tooltiptext a {
+    @apply text-blue-planning-300 underline;
+}
+
 .introjs-hint {
     @apply mt-1 -ml-0.5;
 }
