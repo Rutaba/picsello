@@ -87,13 +87,26 @@ defmodule PicselloWeb.InboxLive.Index do
   defp current_thread(assigns) do
     ~H"""
       <div class="flex flex-col w-full sm:overflow-y-auto sm:border">
-        <div class="sticky z-10 top-0 bg-white px-6 sm:px-2 py-2 flex shadow-sm sm:shadow-none">
+        <div class="sticky z-10 top-0 bg-white px-6 py-2 flex shadow-sm sm:shadow-none">
           <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
             <.icon name="left-arrow" class="w-6 h-6" />
           </.live_link>
           <div>
-            <div class="sm:font-semibold sm:pb-1 text-2xl line-clamp-1"><%= @title %></div>
-            <div class="sm:hidden line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
+            <div class="sm:font-semibold text-2xl line-clamp-1"><%= @title %></div>
+            <div class="line-clamp-1 leading-tight pb-1">
+              <span class="mr-2">
+                <%= @subtitle %>
+              </span>
+              <%= if @is_lead do %>
+                <.live_link to={Routes.job_path(@socket, :leads, @id)} class="underline">
+                  view lead
+                </.live_link>
+              <% else %>
+                <.live_link to={Routes.job_path(@socket, :jobs, @id)} class="underline">
+                  view job
+                </.live_link>
+              <% end %>
+            </div>
           </div>
           <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
             <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3" />
@@ -235,7 +248,8 @@ defmodule PicselloWeb.InboxLive.Index do
          thread_id,
          message_id_to_scroll \\ nil
        ) do
-    job = Job.for_user(current_user) |> Repo.get!(thread_id) |> Repo.preload(:client)
+    job =
+      Job.for_user(current_user) |> Repo.get!(thread_id) |> Repo.preload([:client, :job_status])
 
     client_messages =
       from(message in ClientMessage,
@@ -280,7 +294,8 @@ defmodule PicselloWeb.InboxLive.Index do
       id: job.id,
       messages: thread_messages,
       title: job.client.name,
-      subtitle: Job.name(job)
+      subtitle: Job.name(job),
+      is_lead: job.job_status.is_lead
     })
     |> assign(:job, job)
     |> mark_current_thread_as_read()
