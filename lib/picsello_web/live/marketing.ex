@@ -18,9 +18,9 @@ defmodule PicselloWeb.Live.Marketing do
     <header class="bg-purple-marketing-100">
       <h1 class="px-6 py-8 text-3xl font-semibold center-container">Marketing</h1>
     </header>
-    <div class="px-6 center-container">
+    <div class="px-6 center-container" {intro(@current_user, "intro_marketing")}>
       <div class="mx-0 mt-8 pb-32 sm:pb-0 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
-        <.card title="Promotional Emails" class={classes("relative", %{"sm:col-span-2" => Enum.any?(@campaigns)})}>
+        <.card title="Promotional Emails" class={classes("relative intro-promotional", %{"sm:col-span-2" => Enum.any?(@campaigns)})}>
           <%= if Enum.empty?(@campaigns) do %>
             <p class="mb-8">
               Lorem ispum intro copy goes here, we should talk about the future of this feature here or in a help article as we build out the feature. Lorem ipsum copy goes to three lines.
@@ -45,7 +45,7 @@ defmodule PicselloWeb.Live.Marketing do
             </ul>
           <% end %>
         </.card>
-        <.card title="Public Profile">
+        <.card title="Public Profile" class={classes("intro-profile")}>
           <%= if Profiles.enabled?(@organization) do %>
             <fieldset class={"flex flex-col #{unless Profiles.enabled?(@organization), do: "text-base-250" }"}>
               <div {testid("url")} class={"mt-4 font-bold text-input #{if Profiles.enabled?(@organization), do: "select-all", else: "select-none"}"}>
@@ -112,6 +112,8 @@ defmodule PicselloWeb.Live.Marketing do
   def handle_event("open-campaign", %{"campaign-id" => campaign_id}, socket) do
     socket |> PicselloWeb.Live.Marketing.CampaignDetailsComponent.open(campaign_id) |> noreply()
   end
+
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   @impl true
   def handle_info({:update, _campaign}, socket) do

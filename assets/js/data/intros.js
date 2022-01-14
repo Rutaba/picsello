@@ -76,4 +76,22 @@ export default {
       },
     ],
   }),
+  intro_marketing: (el) => ({
+    steps: [
+      {
+        title: 'Promotional emails',
+        intro:
+          'Picsello makes it easy to reach out to your customers at any time. You can create custom messages and send them to either all of your contacts, or only those that are not currently leads.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-promotional'),
+      },
+      {
+        title: 'Your Public Profile',
+        intro:
+          'This is your custom, Picsello-hosted site that clients will be able to use to find and contact you.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-profile'),
+      },
+    ],
+  }),
 };
