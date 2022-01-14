@@ -131,8 +131,8 @@ defmodule PicselloWeb.Live.User.Settings do
     |> noreply()
   end
 
-  @impl true
-  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   def settings_nav(assigns) do
     assigns = assigns |> Enum.into(%{container_class: ""})

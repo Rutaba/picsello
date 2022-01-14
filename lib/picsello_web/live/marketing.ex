@@ -113,7 +113,8 @@ defmodule PicselloWeb.Live.Marketing do
     socket |> PicselloWeb.Live.Marketing.CampaignDetailsComponent.open(campaign_id) |> noreply()
   end
 
-  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   def handle_info({:update, _campaign}, socket) do

@@ -116,8 +116,8 @@ defmodule PicselloWeb.Live.Contacts do
     |> noreply()
   end
 
-  @impl true
-  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   defp assign_contacts(%{assigns: %{current_user: current_user}} = socket) do
     contacts = Contacts.find_all_by(user: current_user)

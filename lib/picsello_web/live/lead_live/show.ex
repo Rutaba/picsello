@@ -7,8 +7,7 @@ defmodule PicselloWeb.LeadLive.Show do
     Repo,
     BookingProposal,
     Notifiers.ClientNotifier,
-    Questionnaire,
-    Onboardings
+    Questionnaire
   }
 
   import PicselloWeb.JobLive.Shared,
@@ -111,15 +110,8 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
-  def handle_event(
-        "intro_js",
-        %{"action" => action, "intro_id" => intro_id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    socket
-    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
-    |> noreply()
-  end
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared

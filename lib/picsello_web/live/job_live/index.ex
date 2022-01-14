@@ -57,8 +57,8 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def handle_event("page", %{}, socket), do: socket |> noreply()
 
-  @impl true
-  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   defp assign_jobs(
          %{assigns: %{current_user: current_user, live_action: action, pagination: pagination}} =
