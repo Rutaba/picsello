@@ -24,7 +24,7 @@ export default {
         title: 'Confirm your email',
         element: el.querySelector('.intro-confirmation'),
         intro:
-          'It looks like you need to confirm your email. A confirmation email will be sent to the email address associated with your account. Click on the link within the email to confirm the account. If you’re having trouble, you can find instructions on how to do this here, in our help center.',
+          'It looks like you need to confirm your email. A confirmation email will be sent to the email address associated with your account. Click on the link within the email to confirm the account. If you’re having trouble, you can find instructions on how to do this in our <a href="https://support.picsello.com" target="_blank">help center</a>.',
         position: 'bottom-middle-aligned',
       },
       {
