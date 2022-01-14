@@ -61,7 +61,7 @@ defmodule Picsello.Factory do
     |> Repo.update!()
     |> then(fn user ->
       Enum.reduce(
-        ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings"],
+        ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
         user,
         &Onboardings.save_intro_state(&2, &1, "completed")
       )
