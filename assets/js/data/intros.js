@@ -94,4 +94,34 @@ export default {
       },
     ],
   }),
+  intro_leads_empty: (el) => ({
+    showBullets: false,
+    steps: [
+      {
+        title: 'Your leads',
+        intro:
+          'Before you can create jobs, you need to create leads. You’ll add your client’s name and email address, and information about the shoot they’re interested in doing. Don’t worry, you won’t have to add this information a second time - we’ll help you convert the lead into a job once you and your client have agreed to work together.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-leads'),
+      },
+    ],
+  }),
+  intro_leads_new: (el) => ({
+    steps: [
+      {
+        title: 'Yay!',
+        intro:
+          'Your lead has been successfully created! Just a few more steps to go to turn it into a job.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('h1'),
+      },
+      {
+        title: 'Add a package to your lead',
+        intro:
+          'This will include details like pricing and how many shoots are included. Packages are reusable, and if you’re unsure where to start, we have preset templates you can use as a guide.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-add-package'),
+      },
+    ],
+  }),
 };

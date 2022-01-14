@@ -1,7 +1,15 @@
 defmodule PicselloWeb.LeadLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, BookingProposal, Notifiers.ClientNotifier, Questionnaire}
+
+  alias Picsello.{
+    Job,
+    Repo,
+    BookingProposal,
+    Notifiers.ClientNotifier,
+    Questionnaire,
+    Onboardings
+  }
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -100,6 +108,16 @@ defmodule PicselloWeb.LeadLive.Show do
       ) do
     socket
     |> assign(:include_questionnaire, !include_questionnaire)
+    |> noreply()
+  end
+
+  def handle_event(
+        "intro_js",
+        %{"action" => action, "intro_id" => intro_id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
     |> noreply()
   end
 
