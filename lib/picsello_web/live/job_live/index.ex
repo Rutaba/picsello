@@ -57,6 +57,7 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def handle_event("page", %{}, socket), do: socket |> noreply()
 
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 

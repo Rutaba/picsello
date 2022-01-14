@@ -86,6 +86,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
     |> noreply()
   end
 
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 end
