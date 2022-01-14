@@ -119,7 +119,7 @@ defmodule Picsello.UserOnboardsTest do
     |> fill_in_step(2)
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_text("What types")
+    |> assert_text("speciality")
     |> click(button("Back"))
     |> assert_has(@photographer_years_field)
 

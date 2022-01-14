@@ -23,7 +23,7 @@ defmodule PicselloWeb.Live.Marketing do
         <.card title="Promotional Emails" class={classes("relative", %{"sm:col-span-2" => Enum.any?(@campaigns)})}>
           <%= if Enum.empty?(@campaigns) do %>
             <p class="mb-8">
-              Lorem ispum intro copy goes here, we should talk about the future of this feature here or in a help article as we build out the feature. Lorem ipsum copy goes to three lines.
+              Reach out to your contacts and future clients with our easy-to-use tools.
             </p>
           <% end %>
           <div class={classes("flex flex-col gap-3 sm:flex-row justify-end mb-6 sm:mb-0", %{"sm:-mt-8" => Enum.any?(@campaigns)})}>

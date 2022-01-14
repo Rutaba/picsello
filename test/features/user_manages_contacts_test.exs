@@ -9,7 +9,7 @@ defmodule Picsello.UserManagesContactsTest do
     session
     |> click(link("Settings"))
     |> click(link("Contacts"))
-    |> assert_text("You have 0 contacts")
+    |> assert_text("Manage your 0 contacts")
     |> click(button("Add contact"))
     |> fill_in(text_field("Email"), with: " ")
     |> assert_text("Email can't be blank")
@@ -18,7 +18,7 @@ defmodule Picsello.UserManagesContactsTest do
     |> fill_in(text_field("Phone"), with: "(555) 123-1234")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> assert_flash(:success, text: "Contact saved")
     |> assert_text("John")
     |> assert_text("john@example.com")
@@ -32,7 +32,7 @@ defmodule Picsello.UserManagesContactsTest do
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_text("Josh")
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> assert_flash(:success, text: "Contact saved")
   end
 
@@ -40,12 +40,12 @@ defmodule Picsello.UserManagesContactsTest do
     session
     |> click(link("Settings"))
     |> click(link("Contacts"))
-    |> assert_text("You have 0 contacts")
+    |> assert_text("Manage your 0 contacts")
     |> click(button("Add contact"))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> assert_flash(:success, text: "Contact saved")
     |> assert_text("john@example.com")
     |> click(button("Manage"))
@@ -64,7 +64,7 @@ defmodule Picsello.UserManagesContactsTest do
     session
     |> click(link("Settings"))
     |> click(link("Contacts"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> click(button("Manage"))
     |> click(button("Edit"))
     |> assert_text("Edit contact")
@@ -76,7 +76,7 @@ defmodule Picsello.UserManagesContactsTest do
     |> fill_in(text_field("Phone"), with: "(555) 9876-1234")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> assert_flash(:success, text: "Contact saved")
     |> assert_text("John")
   end
@@ -92,7 +92,7 @@ defmodule Picsello.UserManagesContactsTest do
     session
     |> click(link("Settings"))
     |> click(link("Contacts"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> click(button("Manage"))
     |> click(button("Create a lead"))
     |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
@@ -119,7 +119,7 @@ defmodule Picsello.UserManagesContactsTest do
     session
     |> click(link("Settings"))
     |> click(link("Contacts"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> click(button("Manage"))
     |> click(button("Create a lead"))
     |> assert_disabled(text_field("Client Name"))
@@ -149,7 +149,7 @@ defmodule Picsello.UserManagesContactsTest do
     session
     |> click(link("Settings"))
     |> click(link("Contacts"))
-    |> assert_text("You have 1 contact")
+    |> assert_text("Manage your 1 contact")
     |> click(button("Manage"))
     |> click(button("Create a lead"))
     |> assert_disabled(text_field("Client Name"))

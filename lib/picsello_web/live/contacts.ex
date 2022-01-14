@@ -15,10 +15,10 @@ defmodule PicselloWeb.Live.Contacts do
     <.settings_nav socket={@socket} live_action={@live_action}>
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Manage your contacts</h1>
+          <h1 class="text-2xl font-bold">Contacts</h1>
 
           <p class="max-w-2xl my-2">
-            You have <%= ngettext "1 contact", "%{count} contacts", length(@contacts) %>
+            Manage your <%= ngettext "1 contact", "%{count} contacts", length(@contacts) %>
           </p>
         </div>
 
