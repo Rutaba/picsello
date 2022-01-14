@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.Pricing do
         <h1 class="text-2xl font-bold">Gallery Store Pricing</h1>
 
         <p class="max-w-2xl my-2">
-          Get your gallery store set up in a few mintues. You’ll need to decide for each category of products the markup (amout of money) you would like to make when someone orders.
+          Customize markup pricing for products clients can purchase through you.
         </p>
       </div>
 

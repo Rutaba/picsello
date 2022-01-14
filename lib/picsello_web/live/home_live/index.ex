@@ -164,7 +164,7 @@ defmodule PicselloWeb.HomeLive.Index do
            %{
              action: "",
              title: "Helpful resources",
-             body: "Stuck? Need advice? We have a plethora of resources ready for you.",
+             body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",
              button_label: "See available resources",
              button_class: "btn-secondary bg-blue-planning-100",

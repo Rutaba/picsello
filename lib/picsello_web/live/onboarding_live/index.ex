@@ -101,7 +101,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         </label>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your state?</p>
+          <p class="py-2 font-extrabold">Where’s your business based?</p>
 
           <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
           <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
@@ -126,7 +126,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <% input_name = input_name(p, :job_types) <> "[]" %>
           <div class="flex flex-col pb-1">
             <p class="py-2 font-extrabold">
-              What types of photography do you shoot?
+              What’s your speciality?
               <i class="italic font-light">(Select one or more)</i>
             </p>
 
@@ -148,7 +148,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <%= for p <- inputs_for(o, :profile) do %>
           <label class="flex flex-col">
-            <p class="py-2 font-extrabold">Color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
+            <p class="py-2 font-extrabold">Choose your color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
             <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
               <%= for(color <- colors()) do %>
                 <li class="aspect-h-1 aspect-w-1">
@@ -222,8 +222,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 3,
       color_class: "bg-blue-gallery-200",
-      step_title: "Customize your business",
-      subtitle: "We need a little more info to get your account ready!",
+      step_title: "Customize your account",
+      subtitle: "",
       page_title: "Onboarding Step 3"
     )
   end
@@ -233,8 +233,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 4,
       color_class: "bg-green-finances-100",
-      step_title: "Customize your business",
-      subtitle: "We need a little more info to get your account ready!",
+      step_title: "Customize your account",
+      subtitle: "",
       page_title: "Onboarding Step 4"
     )
   end
@@ -245,7 +245,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step: 5,
       color_class: "bg-blue-planning-200",
       step_title: "Almost done!",
-      subtitle: "This last question helps us understand and serve each of our customers better.",
+      subtitle: "",
       page_title: "Onboarding Step 5"
     )
   end

@@ -140,7 +140,7 @@ defmodule Picsello.WelcomePageTest do
     session
     |> sign_in(user)
     |> find(testid("leads-card"))
-    |> assert_text("This is your first step")
+    |> assert_text("Create leads to start")
 
     insert(:lead, user: user, archived_at: DateTime.utc_now())
 
