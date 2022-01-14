@@ -74,14 +74,14 @@ defmodule PicselloWeb.Live.Profile do
           <%= if @edit || @description do %>
             <.description edit={@edit} description={@description} color={@color} />
           <% else %>
-            <.contact_form color={@color} contact_changeset={@contact_changeset} job_types={@job_types} />
+            <.contact_form color={@color} changeset={@contact_changeset} job_types={@job_types} />
           <% end %>
         </div>
       </div>
 
       <%= if @edit || @description do %>
         <div class="flex flex-col items-center mt-8">
-          <.contact_form header_suffix={" with #{@organization.name}"} color={@color} contact_changeset={@contact_changeset} job_types={@job_types} />
+          <.contact_form header_suffix={" with #{@organization.name}"} color={@color} changeset={@contact_changeset} job_types={@job_types} />
         </div>
       <% end %>
     </div>
@@ -181,8 +181,8 @@ defmodule PicselloWeb.Live.Profile do
 
       <div class="w-1/3 h-2 mt-4 lg:w-1/4" style={"background-color: #{@color}"}></div>
 
-      <%= if @contact_changeset do %>
-        <.form for={@contact_changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" >
+      <%= if @changeset do %>
+        <.form for={@changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" >
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
@@ -217,7 +217,7 @@ defmodule PicselloWeb.Live.Profile do
             <%= input f, :message, type: :textarea, placeholder: "Type your message...", class: "p-5", rows: 5, phx_debounce: 300 %>
           </div>
 
-          <div class="mt-8 text-right"><button class="w-full lg:w-auto btn-primary">Submit</button></div>
+          <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
         </.form>
       <% else %>
         <div class="flex items-center mt-14 min-w-max">
