@@ -11,7 +11,7 @@ defmodule PicselloWeb.Live.Pricing do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} container_class="sm:pb-0 pb-28">
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class="my-5">
         <h1 class="text-2xl font-bold">Gallery Store Pricing</h1>
 
@@ -36,6 +36,9 @@ defmodule PicselloWeb.Live.Pricing do
     </.settings_nav>
     """
   end
+
+  @impl true
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   defp assign_categories(socket) do
     socket |> assign(categories: Picsello.WHCC.categories())

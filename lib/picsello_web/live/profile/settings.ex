@@ -14,7 +14,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action}>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
           <h1 class="text-2xl font-bold">Your Public Profile</h1>
@@ -85,4 +85,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
     |> push_redirect(to: Routes.profile_settings_path(socket, :edit))
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 end

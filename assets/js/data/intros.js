@@ -124,4 +124,41 @@ export default {
       },
     ],
   }),
+  intro_settings: (el) => ({
+    steps: [
+      {
+        title: 'Profile',
+        intro: 'Manage your Picsello account from here.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="user_settings"]'),
+      },
+      {
+        title: 'Package templates',
+        intro: 'View preset packages or create your own.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="package_templates"]'),
+      },
+      {
+        title: 'Gallery store pricing',
+        intro:
+          'Bulk-edit your gallery offerings, or review your gallery pricing at-a-glance, with access to all your gallery pricing in one place.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="pricing"]'),
+      },
+      {
+        title: 'Public profile',
+        intro:
+          'We offer a Public Profile page that will allow potential clients to contact you directly through a website that we host.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="profile_settings"]'),
+      },
+      {
+        title: 'Contacts',
+        intro:
+          'If someone isn’t a lead yet, but you want to keep track of their contact information, you can add them as a contact here. You can also convert them into a lead later.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[title="contacts"]'),
+      },
+    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
+  }),
 };

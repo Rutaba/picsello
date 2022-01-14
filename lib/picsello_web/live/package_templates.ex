@@ -39,7 +39,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} container_class="sm:pb-0 pb-28">
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
         <div>
           <h1 class="text-2xl font-bold">Photography Package Templates</h1>
@@ -128,6 +128,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
         title: "Are you sure you want to archive this package template?"
       })
       |> noreply()
+
+  @impl true
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   @impl true
   def handle_info(

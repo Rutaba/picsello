@@ -12,10 +12,10 @@ defmodule PicselloWeb.Live.Contacts do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action}>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Manage your contacts</h1>
+          <h1 class="text-2xl font-bold">Manage your contacts <.intro_hint content="Adding a contact will save their information without creating a lead - this is a great option if a client isn’t quite interested in a job yet, but you want to keep track of their contact info." /></h1>
 
           <p class="max-w-2xl my-2">
             You have <%= ngettext "1 contact", "%{count} contacts", length(@contacts) %>
@@ -23,7 +23,7 @@ defmodule PicselloWeb.Live.Contacts do
         </div>
 
         <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-          <button type="button" phx-click="add-contact" class="w-full px-8 text-center btn-primary">Add contact</button>
+          <button type="button" phx-click="add-contact" class="w-full px-8 text-center btn-primary">Add contact </button>
         </div>
       </div>
 
@@ -115,6 +115,9 @@ defmodule PicselloWeb.Live.Contacts do
     |> open_modal(PicselloWeb.JobLive.NewComponent, assigns)
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   defp assign_contacts(%{assigns: %{current_user: current_user}} = socket) do
     contacts = Contacts.find_all_by(user: current_user)
