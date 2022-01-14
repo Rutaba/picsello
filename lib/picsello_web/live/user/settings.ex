@@ -152,6 +152,30 @@ defmodule PicselloWeb.Live.User.Settings do
     """
   end
 
+  def card(assigns) do
+    assigns = Enum.into(assigns, %{class: ""})
+
+    ~H"""
+    <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
+      <div class="w-4 border-r bg-blue-planning-300" />
+
+      <div class="flex flex-col w-full p-4">
+        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
+
+        <%= render_slot(@inner_block) %>
+      </div>
+    </div>
+    """
+  end
+
+  defp sign_out(assigns) do
+    ~H"""
+      <.form class={@class} for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
+        <%= submit "Sign out", class: "btn-primary w-full" %>
+      </.form>
+    """
+  end
+
   defp _settings_nav(assigns) do
     ~H"""
     <ul class="flex py-4 -ml-4 overflow-auto font-bold text-blue-planning-300">

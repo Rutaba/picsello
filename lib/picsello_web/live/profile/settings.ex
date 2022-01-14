@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Profile.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
   alias Picsello.{Repo, Profiles}
 
   @impl true
@@ -84,19 +84,5 @@ defmodule PicselloWeb.Live.Profile.Settings do
     socket
     |> push_redirect(to: Routes.profile_settings_path(socket, :edit))
     |> noreply()
-  end
-
-  defp card(assigns) do
-    ~H"""
-    <div class="flex overflow-hidden border rounded-lg">
-      <div class="w-4 border-r bg-blue-planning-300" />
-
-      <div class="flex flex-col w-full p-4">
-        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
-
-        <%= render_slot(@inner_block) %>
-      </div>
-    </div>
-    """
   end
 end
