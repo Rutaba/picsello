@@ -42,7 +42,7 @@
     <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
 
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card">
+      <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card" hint_content={if @leads_empty? do "Create your first lead! We’ll help you log your potential client’s contact info and guide you through the process of sending them a proposal. Once they accept, your lead will become a job!" end}>
         <%= if @leads_empty? do %>
         <p class="my-2">
           Leads are pretty important to growing your business. Without leads, you can’t turn them into jobs. This is your first step.
@@ -64,7 +64,7 @@
         <% end %>
       </.card>
 
-      <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer">
+      <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer" hint_content={if @jobs_empty? do "Review contracts, payments, and package settings. Once your photos are ready to share with your client, you’ll also create their gallery here." end}>
         <%= if @jobs_empty? do %>
         <p class="my-2">
           Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.

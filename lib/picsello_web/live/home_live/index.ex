@@ -182,7 +182,7 @@ defmodule PicselloWeb.HomeLive.Index do
     assigns =
       assigns
       |> Map.put(:attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
-      |> Enum.into(%{badge: nil})
+      |> Enum.into(%{badge: nil, hint_content: nil})
 
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
@@ -197,7 +197,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
 
-            <%= @title %>
+            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </h1>
 
           <%= render_block(@inner_block) %>
