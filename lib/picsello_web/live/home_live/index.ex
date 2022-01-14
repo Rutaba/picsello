@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage, Onboardings}
+  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
   import Ecto.Query
 
   @impl true
@@ -31,17 +31,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_event(
-        "intro_js",
-        %{"action" => action, "intro_id" => intro_id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    socket
-    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
         "send-confirmation-email",
         %{},
         %{assigns: %{current_user: current_user}} = socket
@@ -62,6 +51,9 @@ defmodule PicselloWeb.HomeLive.Index do
         socket |> put_flash(:error, "Failed to send email.") |> noreply()
     end
   end
+
+  @impl true
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
@@ -214,9 +206,6 @@ defmodule PicselloWeb.HomeLive.Index do
     </li>
     """
   end
-
-  def show_intro?(current_user, intro_id),
-    do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
 
   defp job_count_by_status(user) do
     now = DateTime.utc_now()

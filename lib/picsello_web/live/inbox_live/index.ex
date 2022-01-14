@@ -29,7 +29,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})}><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
+    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
     <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
@@ -47,7 +47,7 @@ defmodule PicselloWeb.InboxLive.Index do
               <div class="flex items-center flex-col text-orange-inbox-300 text-xl">
                 <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
                 <p>You don’t have any new messages.</p>
-                <p>Go to a job or lead to send a new message.</p>
+                <p>Go to a job or lead to send a new message. <.intro_hint content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
               </div>
             </div>
           <% true -> %>
@@ -177,6 +177,8 @@ defmodule PicselloWeb.InboxLive.Index do
     })
     |> noreply()
   end
+
+  defdelegate handle_event(current_user, intro_id, action), to: PicselloWeb.LiveHelpers
 
   defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
     job_query = Job.for_user(current_user)
