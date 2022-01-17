@@ -35,9 +35,9 @@
         <%= unless Enum.empty?(@order.products) do %>
         <div class="border rounded-lg border-grey-100 p-5 mt-5">
             <h4 class="font-bold text-lg">Your order will be sent to:</h4>
-            <p class="text-base pt-4">Shipping name</p>
-            <p class="text-base pt-2.5">123 Street</p>
-            <p class="text-base pt-2.5">City State ZIP</p>
+            <p class="text-base pt-4"><%= @shipping_name %></p>
+            <p class="text-base pt-2.5"><%= @shipping_address.addr1 %></p>
+            <p class="text-base pt-2.5"><%= @shipping_address.city <> ", " <> @shipping_address.state <> " " <> @shipping_address.zip %></p>
         </div>
         <% end %>
         <div class="border rounded-lg border-grey-100 p-5 mt-5">
