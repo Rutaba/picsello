@@ -105,4 +105,16 @@ defmodule Picsello.ViewJobTest do
     |> assert_has(definition("Paid", text: "$10"))
     |> assert_has(css("dt", count: 1))
   end
+
+  feature "user checks gallery", %{session: session, job: job} do
+    session
+    |> find(testid("overview-Gallery"))
+    |> assert_has(button("Upload photo"))
+    |> click(button("Upload photo"))
+
+    session
+    |> visit("/jobs/#{job.id}")
+    |> find(testid("overview-Gallery"))
+    |> assert_has(button("View Gallery"))
+  end
 end
