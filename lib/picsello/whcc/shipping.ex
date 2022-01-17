@@ -33,6 +33,8 @@ defmodule Picsello.WHCC.Shipping do
       # {104, "FedEx to Canada", true}
     ]
 
+  defp any(_), do: true
+
   @doc "Converts shipping option into order attributes"
   def to_attributes(uid) when is_integer(uid),
     do: [%{"AttributeUID" => uid}, %{"AttributeUID" => 96}]
