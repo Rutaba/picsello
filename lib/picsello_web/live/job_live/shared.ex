@@ -14,9 +14,9 @@ defmodule PicselloWeb.JobLive.Shared do
     Accounts.User
   }
 
-  alias PicselloWeb.Router.Helpers, as: Routes
-
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  alias PicselloWeb.Router.Helpers, as: Routes
+  require Ecto.Query
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
@@ -130,28 +130,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def assign_job(%{assigns: %{current_user: current_user, live_action: action}} = socket, job_id) do
-    job =
-      current_user
-      |> Job.for_user()
-      |> then(fn query ->
-        case action do
-          :jobs -> query |> Job.not_leads()
-          :leads -> query |> Job.leads()
-        end
-      end)
-      |> Repo.get!(job_id)
-      |> Repo.preload([:client, :package, :job_status, :gallery])
-
-    socket
-    |> assign(
-      job: job |> Map.drop([:package]),
-      page_title: job |> Job.name(),
-      package: job.package
-    )
-    |> assign_shoots()
-  end
-
   def assign_shoots(
         %{assigns: %{package: %{shoot_count: shoot_count}, job: %{id: job_id}}} = socket
       ) do
@@ -174,7 +152,7 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> assign(proposal: proposal)
   end
 
-  def assign_inbox_count(%{assigns: %{job: job}} = socket) do
+  defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
     count =
       Job.by_id(job.id)
       |> ClientMessage.unread_messages()
@@ -453,5 +431,43 @@ defmodule PicselloWeb.JobLive.Shared do
       </div>
     </a>
     """
+  end
+
+  def assign_job(%{assigns: %{current_user: current_user, live_action: :leads}} = socket, job_id) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Repo.get!(job_id)
+
+    if job.job_status.is_lead do
+      socket
+      |> do_assign_job(job)
+    else
+      push_redirect(socket, to: Routes.job_path(socket, :jobs, job_id))
+    end
+  end
+
+  def assign_job(%{assigns: %{current_user: current_user, live_action: :jobs}} = socket, job_id) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Job.not_leads()
+      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Repo.get!(job_id)
+
+    do_assign_job(socket, job)
+  end
+
+  defp do_assign_job(socket, job) do
+    socket
+    |> assign(
+      job: job |> Map.drop([:package]),
+      page_title: job |> Job.name(),
+      package: job.package
+    )
+    |> assign_shoots()
+    |> assign_proposal()
+    |> assign_inbox_count()
   end
 end

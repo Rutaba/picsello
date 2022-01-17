@@ -6,8 +6,6 @@ defmodule PicselloWeb.JobLive.Show do
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
-      assign_proposal: 1,
-      assign_inbox_count: 1,
       notes: 1,
       shoot_details: 1,
       status_badge: 1,
@@ -20,8 +18,6 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id}, _session, socket) do
     socket
     |> assign_job(job_id)
-    |> assign_inbox_count()
-    |> assign_proposal()
     |> ok()
   end
 
