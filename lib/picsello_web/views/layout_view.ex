@@ -101,7 +101,7 @@ defmodule PicselloWeb.LayoutView do
         path: current_user.organization.stripe_account_id && "https://dashboard.stripe.com"
       },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
-      %{title: "Help", icon: "question-mark", path: "#"}
+      %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"}
     ]
     |> Enum.filter(&Map.get(&1, :path))
   end

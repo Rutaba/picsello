@@ -28,6 +28,10 @@
                     current_user: @current_user,
                     return_url: Routes.home_url(@socket, :index),
                     stripe_status: @stripe_status %>
+                <% "help-link" -> %>
+                  <a href="https://support.picsello.com/" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                    <%= button_label %>
+                  </a>
                 <% _ -> %>
                   <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
               <% end %>
