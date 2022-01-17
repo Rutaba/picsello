@@ -71,7 +71,7 @@ defmodule PicselloWeb.JobLive.Show do
           %{
             button_text: "View Gallery",
             button_click: "view-gallery",
-            inner_block: fn _, _ -> "#{gallery.total_count} photos" end
+            inner_block: fn _, _ -> "#{gallery.total_count || 0} photos" end
           }
 
         :deactivated ->
