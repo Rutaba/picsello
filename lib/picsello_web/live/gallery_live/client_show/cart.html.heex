@@ -82,7 +82,7 @@
                 <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span><%= @order.subtotal_cost %></span></p>
                 <hr class="my-4">
                 <p class="text-xl">Total: <span class="font-bold"><%= @order.subtotal_cost %></span></p>
-                <%= submit "Continue", class: "btn-primary w-full mt-5", disabled: !@delivery_info_changeset.valid? %>  
+                <%= submit "Continue", class: "btn-primary w-full mt-5", disabled: !@delivery_info_changeset.valid? %>
             </div>
         </.form>
     </div>
@@ -115,7 +115,7 @@
                                 phx-value-option-uid={shipping_option_uid(option)}
                                 phx-value-product-editor-id={product.editor_details.editor_id}
                                 checked={is_current_shipping_option?(@shipping_opts, option, product)}>
-                            <div class="ml-4">
+                            <div class="ml-4 w-11/12">
                                 <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
                                 <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium"><%= shipping_option_cost(option) %></label><br>
                             </div>
