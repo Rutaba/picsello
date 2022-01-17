@@ -484,4 +484,27 @@ defmodule Picsello.Factory do
       whcc_tracking: nil
     }
   end
+
+  def confirmed_order_factory(attrs) do
+    %Picsello.Cart.Order{
+      delivery_info: %Picsello.Cart.DeliveryInfo{
+        address: %Picsello.Cart.DeliveryInfo.Address{
+          addr1: "1234 Hogwarts Way",
+          addr2: nil,
+          city: "New York",
+          country: "US",
+          state: "NY",
+          zip: "10001"
+        },
+        email: "hello@gmail.com",
+        name: "Harry Potter"
+      },
+      number: 226160,
+      placed: true,
+      placed_at: ~U[2022-01-17 09:42:05Z],
+      shipping_cost: %Money{amount: 5703, currency: :USD},
+      subtotal_cost: %Money{amount: 380000, currency: :USD},
+    }
+    |> merge_attributes(attrs)
+  end
 end

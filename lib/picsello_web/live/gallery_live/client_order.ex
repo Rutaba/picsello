@@ -62,6 +62,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     conn
     |> assign(:order, order)
     |> assign(:organization_name, org_name)
+    |> assign(:shipping_name, order.delivery_info.name)
+    |> assign(:shipping_address, order.delivery_info.address)
   end
 
   defp product_description(%{id: id}) do
