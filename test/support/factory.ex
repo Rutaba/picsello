@@ -499,11 +499,11 @@ defmodule Picsello.Factory do
         email: "hello@gmail.com",
         name: "Harry Potter"
       },
-      number: 226160,
+      number: 226_160,
       placed: true,
       placed_at: ~U[2022-01-17 09:42:05Z],
       shipping_cost: %Money{amount: 5703, currency: :USD},
-      subtotal_cost: %Money{amount: 380000, currency: :USD},
+      subtotal_cost: %Money{amount: 380_000, currency: :USD}
     }
     |> merge_attributes(attrs)
   end
