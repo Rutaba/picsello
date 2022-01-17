@@ -59,13 +59,13 @@ defmodule Picsello.CategoryTemplate do
       price: Money.new(1_5),
       corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
     },
-    %{
-      name: "card_envelope.png",
-      category_name: "Press Printed Cards",
-      title: "Greeting Cards",
-      price: Money.new(30),
-      corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
-    },
+    #    %{
+    #      name: "card_envelope.png",
+    #      category_name: "Press Printed Cards",
+    #      title: "Greeting Cards",
+    #      price: Money.new(30),
+    #      corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
+    #    },
     %{
       name: "frame_transparency.png",
       category_name: "Wall Displays",
