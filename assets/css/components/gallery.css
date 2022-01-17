@@ -418,12 +418,6 @@
     grid-template-columns:110px minmax(80px, 1fr) auto
 }
 
-.orderContent {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height .2s;
-}
-
 .productType:first-letter {
     text-transform: uppercase;
 }

@@ -16,6 +16,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         socket
         |> assign(:gallery, gallery)
         |> assign(:order, order)
+        |> assign(:gallery, gallery)
         |> assign(:step, :product_list)
         |> assign_cart_count(gallery)
         |> ok()

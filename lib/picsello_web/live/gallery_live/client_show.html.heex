@@ -18,6 +18,7 @@ class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @g
         live_action: @live_action,
         organization: @gallery.job.client.organization,
         cart_count: @cart_count,
+        gallery: @gallery,
         cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
 </div>
 <hr>
