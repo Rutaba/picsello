@@ -2,3 +2,32 @@
     max-width: 100%;
     max-height: 100%;
 }
+
+.cartImg img {
+    height: 193px;
+    width: auto;
+}
+
+.cartItem {
+    @apply 
+    mr-4
+}
+
+@media screen and (max-width: 1280px) {
+    .cart {
+        position: relative;
+    }
+    .cartPanel {
+        position: absolute;
+        @apply ml-11
+        
+    }
+
+    .cartImg {
+        @apply mb-16
+    }
+
+    .cartItem {
+        @apply mr-0
+    }
+}
