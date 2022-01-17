@@ -599,4 +599,9 @@ defmodule Picsello.Galleries do
     gallery
     |> Repo.preload(job: [client: :organization])
   end
+
+  def populate_organization_user(%Gallery{} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: [organization: :user]])
+  end
 end

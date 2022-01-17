@@ -1,6 +1,10 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
+  use PicselloWeb,
+    live_view: [
+      layout: "live_client"
+    ]
+
   import PicselloWeb.LiveHelpers
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
@@ -25,10 +29,12 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:upload_bucket, @bucket)
-     |> allow_upload(:cover_photo, @upload_options)}
+    {
+      :ok,
+      socket
+      |> assign(:upload_bucket, @bucket)
+      |> allow_upload(:cover_photo, @upload_options)
+    }
   end
 
   @impl true
@@ -51,7 +57,11 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
     |> then(fn
-      %{assigns: %{live_action: :upload}} = socket ->
+      %{
+        assigns: %{
+          live_action: :upload
+        }
+      } = socket ->
         send(self(), :open_modal)
         socket
 
@@ -72,17 +82,28 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event("click", _, socket) do
-    socket |> noreply
+    socket
+    |> noreply
   end
 
   @impl true
   def handle_event("open_upload_popup", _, socket) do
     send(self(), :open_modal)
-    socket |> noreply()
+
+    socket
+    |> noreply()
   end
 
   @impl true
-  def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
+  def handle_event(
+        "load-more",
+        _,
+        %{
+          assigns: %{
+            page: page
+          }
+        } = socket
+      ) do
     socket
     |> assign(page: page + 1)
     |> assign(:update_mode, "append")
@@ -91,7 +112,15 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_event("toggle_favorites", _, %{assigns: %{favorites_filter: toggle_state}} = socket) do
+  def handle_event(
+        "toggle_favorites",
+        _,
+        %{
+          assigns: %{
+            favorites_filter: toggle_state
+          }
+        } = socket
+      ) do
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
@@ -104,11 +133,18 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_event(
         "update_photo_position",
         %{"photo_id" => photo_id, "type" => type, "args" => args},
-        %{assigns: %{gallery: %{id: gallery_id}}} = socket
+        %{
+          assigns: %{
+            gallery: %{
+              id: gallery_id
+            }
+          }
+        } = socket
       ) do
     Galleries.update_gallery_photo_position(
       gallery_id,
-      photo_id |> String.to_integer(),
+      photo_id
+      |> String.to_integer(),
       type,
       args
     )
@@ -119,7 +155,15 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_event("delete_cover_photo_popup", _, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_event(
+        "delete_cover_photo_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
     socket
     |> ConfirmationComponent.open(%{
       center: true,
@@ -134,7 +178,15 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_event("delete_photo_popup", %{"id" => id}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_event(
+        "delete_photo_popup",
+        %{"id" => id},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
     socket
     |> ConfirmationComponent.open(%{
       center: true,
@@ -144,13 +196,23 @@ defmodule PicselloWeb.GalleryLive.Show do
       icon: "warning-orange",
       title: "Delete this photo?",
       subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?",
-      payload: %{photo_id: id}
+      payload: %{
+        photo_id: id
+      }
     })
     |> noreply()
   end
 
   @impl true
-  def handle_event("client-link", _, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_event(
+        "client-link",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
     hash =
       gallery
       |> Galleries.set_gallery_hash()
@@ -192,7 +254,14 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
+  def handle_info(
+        {:message_composed, message_changeset},
+        %{
+          assigns: %{
+            job: job
+          }
+        } = socket
+      ) do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
@@ -200,14 +269,28 @@ defmodule PicselloWeb.GalleryLive.Show do
       |> noreply()
     else
       _error ->
-        socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
+        socket
+        |> put_flash(:error, "Something went wrong")
+        |> close_modal()
+        |> noreply()
     end
   end
 
   @impl true
   def handle_info(
-        {:photo_processed, %{"task" => %{"photoId" => photo_id}}},
-        %{assigns: %{modal_pid: modal_pid}} = socket
+        {
+          :photo_processed,
+          %{
+            "task" => %{
+              "photoId" => photo_id
+            }
+          }
+        },
+        %{
+          assigns: %{
+            modal_pid: modal_pid
+          }
+        } = socket
       ) do
     send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
 
@@ -221,7 +304,11 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_info(
         {:confirm_event, "delete_cover_photo"},
-        %{assigns: %{gallery: gallery}} = socket
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
       ) do
     {:ok, gallery} = Galleries.update_gallery(gallery, %{cover_photo_id: nil})
 
@@ -234,9 +321,15 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_info(
         {:confirm_event, "delete_photo", %{photo_id: id}},
-        %{assigns: %{gallery: gallery}} = socket
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
       ) do
-    Galleries.get_photo(id) |> Galleries.delete_photo()
+    Galleries.get_photo(id)
+    |> Galleries.delete_photo()
+
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
     send_update(PhotoComponent, id: String.to_integer(id), is_removed: true)
@@ -248,7 +341,14 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info(:open_modal, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        :open_modal,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
     socket
     |> open_modal(UploadComponent, %{gallery: gallery})
     |> noreply()
@@ -260,7 +360,14 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:photo_upload_completed, _count}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        {:photo_upload_completed, _count},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
     Galleries.update_gallery_photo_count(gallery.id)
 
     Galleries.normalize_gallery_photo_positions(gallery.id)
@@ -273,12 +380,19 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
     if entry.done? do
       {:ok, gallery} =
-        Galleries.update_gallery(assigns.gallery, %{
-          cover_photo_id: entry.uuid,
-          cover_photo_aspect_ratio: 1
-        })
+        Galleries.update_gallery(
+          assigns.gallery,
+          %{
+            cover_photo_id: entry.uuid,
+            cover_photo_aspect_ratio: 1
+          }
+        )
 
-      {:noreply, socket |> assign(:gallery, gallery)}
+      {
+        :noreply,
+        socket
+        |> assign(:gallery, gallery)
+      }
     else
       {:noreply, socket}
     end
@@ -307,7 +421,9 @@ defmodule PicselloWeb.GalleryLive.Show do
   defp assign_photos(
          %{
            assigns: %{
-             gallery: %{id: id},
+             gallery: %{
+               id: id
+             },
              page: page,
              favorites_filter: filter
            }
@@ -318,14 +434,28 @@ defmodule PicselloWeb.GalleryLive.Show do
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
-    |> assign(:photos, photos |> Enum.take(per_page))
-    |> assign(:has_more_photos, photos |> length > per_page)
+    |> assign(
+      :photos,
+      photos
+      |> Enum.take(per_page)
+    )
+    |> assign(
+      :has_more_photos,
+      photos
+      |> length > per_page
+    )
   end
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
 
-  def product_preview_url(%{preview_photo: %{preview_url: url}}), do: url
+  def product_preview_url(%{
+        preview_photo: %{
+          preview_url: url
+        }
+      }),
+      do: url
+
   def product_preview_url(_), do: nil
 end

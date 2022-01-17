@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       layout: "live_client"
     ]
 
+  import PicselloWeb.GalleryLive.Shared
+
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
   alias Picsello.Cart
@@ -38,7 +40,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
           }
         } = socket
       ) do
+    gallery = Galleries.populate_organization_user(gallery)
+
     socket
+    |> assign(:gallery, gallery)
     |> assign(:page_title, "Show Gallery")
     |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
     |> assign(:page, 0)
@@ -255,16 +260,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       photos
       |> length > per_page
     )
-  end
-
-  defp assign_cart_count(socket, gallery) do
-    count =
-      case Picsello.Cart.get_unconfirmed_order(gallery.id) do
-        {:ok, order} -> Enum.count(order.products) + Enum.count(order.digitals)
-        _ -> 0
-      end
-
-    socket
-    |> assign(:cart_count, count)
   end
 end
