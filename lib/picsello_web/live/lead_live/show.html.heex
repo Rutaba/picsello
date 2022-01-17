@@ -63,6 +63,16 @@
         </button>
       </div>
     </.overview_card>
+    <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
+      <.overview_card title="Finances" icon="money-bags-outline">
+        Connect or set up Stripe.
+        <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_overview,
+            current_user: @current_user,
+            class: "mt-4 w-full p-2 text-sm text-center border rounded-lg border-base-300",
+            return_url: Routes.job_url(@socket, @live_action, @job.id),
+            stripe_status: @stripe_status %>
+      </.overview_card>
+    <% end %>
   </ul>
 
   <.notes job={@job} />
@@ -88,7 +98,7 @@
       <.proposal_details proposal={@proposal} current_user={@current_user} />
 
     <% else %>
-      <div class="w-full p-4 mt-2 border rounded-lg lg:w-1/2">
+      <div {testid("booking-summary")} class="w-full p-4 mt-2 border rounded-lg lg:w-1/2">
         <p class="text-sm">Add additional details to be included with the booking proposal.</p>
 
         <label class="flex mt-4">
