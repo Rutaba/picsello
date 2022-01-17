@@ -7,7 +7,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id, photo_ids: photo_ids}, socket) do
     photo = Galleries.get_photo(photo_id)
-    templates = CategoryTemplate.all_with_gallery_products()
+    templates = CategoryTemplate.all_with_gallery_products(gallery.id)
 
     socket
     |> assign(:gallery_id, gallery.id)

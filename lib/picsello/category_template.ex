@@ -20,11 +20,11 @@ defmodule Picsello.CategoryTemplate do
 
   def all, do: Repo.all(CategoryTemplate)
 
-  def all_with_gallery_products do
+  def all_with_gallery_products(gallery_id) do
     Repo.all(
       from ct in __MODULE__,
         join: gp in GalleryProduct,
-        on: ct.id == gp.category_template_id,
+        on: ct.id == gp.category_template_id and gp.gallery_id == ^gallery_id,
         where: not is_nil(gp.preview_photo_id),
         select: %{
           name: ct.name,
