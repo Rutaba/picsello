@@ -9,6 +9,18 @@ defmodule Picsello.WHCC.Shipping do
     |> Enum.filter(fn {_, _, frame, _} -> size |> fits?(frame) end)
   end
 
+  def options(category, size, price) do
+    all()
+    |> Enum.filter(fn %{size: size_filter, category: category_filter} ->
+      size_filter.(size) and category_filter.(category)
+    end)
+    |> Enum.sort()
+    |> Enum.take(3)
+    |> Enum.map(fn %{id: id, name: name, base: base, percent: percent} ->
+      %{id: id, name: name, price: base + price * percent * 100}
+    end)
+  end
+
   def all(),
     do: [
       {545, "Fulfillment Shipping - Economy", {8, 12}, "3.60"},
