@@ -1,4 +1,4 @@
-<div class="flex justify-between w-full sm:justify-start items-center py-2">
+<div class={classes("flex w-full items-center py-2", %{"justify-between" => @cart_count > 0, "justify-start" => @cart_count == 0})}>
     <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
         <div class="fixed left-0 top-0 w-3/4 bottom-0 z-10 flex flex-col items-start hidden cursor-default
             toggle-content bg-white py-6 px-10">
