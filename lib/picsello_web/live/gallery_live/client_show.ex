@@ -38,7 +38,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
           }
         } = socket
       ) do
+    gallery =
+      gallery
+      |> Galleries.populate_organization_user()
+
     socket
+    |> assign(:gallery, gallery)
     |> assign(:page_title, "Show Gallery")
     |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
     |> assign(:page, 0)

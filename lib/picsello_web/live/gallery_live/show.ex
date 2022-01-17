@@ -192,6 +192,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
+  def handle_event("click", _, socket), do: socket |> noreply()
+
   def handle_info({:message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do

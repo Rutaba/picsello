@@ -16,10 +16,9 @@
         </div>
         <.icon name="hamburger" class="h-4 text-base-300 w-6" />
     </div>
-    <img
-        src="https://janegoodrichphotography.com/wp-content/uploads/2019/08/janelogo3.png"
-        class="inline-block h-9 sm:h-12 w-28 sm:w-36 sm:mr-8"
-        />
+    <div class="px-6 py-2  ">
+        <.initials_circle style={"background-color: #{@organization.profile.color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@organization.user} />
+    </div>
     <ul class="sm:flex items-center py-4 hidden">
         <%= for %{title: title, path: path} <- get_menu_items(@socket) do %>
         <li>
@@ -30,6 +29,7 @@
         </li>
         <% end %>
     </ul>
+   
     <%= if @cart_count > 0 do %>
     <div class="relative sm:ml-auto cursor-pointer">
         <%= live_redirect to: @cart_route do %>
@@ -39,5 +39,7 @@
             </span>
         <% end %>
     </div>
+    <% else %>
+    <span></span>
     <% end %>
 </div>
