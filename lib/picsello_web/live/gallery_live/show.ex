@@ -1,9 +1,10 @@
 defmodule PicselloWeb.GalleryLive.Show do
   @moduledoc false
   use PicselloWeb,
-      live_view: [
-        layout: "live_client"
-      ]
+    live_view: [
+      layout: "live_client"
+    ]
+
   import PicselloWeb.LiveHelpers
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
@@ -42,11 +43,9 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     products =
       Picsello.CategoryTemplate.all()
-      |> Enum.map(
-           fn template ->
-             GalleryProducts.get_or_create_gallery_product(gallery.id, template.id)
-           end
-         )
+      |> Enum.map(fn template ->
+        GalleryProducts.get_or_create_gallery_product(gallery.id, template.id)
+      end)
 
     socket
     |> assign(:products, products)
@@ -57,20 +56,18 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:favorites_filter, false)
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
     |> assign_photos()
-    |> then(
-         fn
-           %{
-             assigns: %{
-               live_action: :upload
-             }
-           } = socket ->
-             send(self(), :open_modal)
-             socket
+    |> then(fn
+      %{
+        assigns: %{
+          live_action: :upload
+        }
+      } = socket ->
+        send(self(), :open_modal)
+        socket
 
-           socket ->
-             socket
-         end
-       )
+      socket ->
+        socket
+    end)
     |> noreply()
   end
 
@@ -78,9 +75,9 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_event("start", _params, socket) do
     socket.assigns.uploads.cover_photo
     |> case do
-         %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
-         _ -> {:noreply, socket}
-       end
+      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
+      _ -> {:noreply, socket}
+    end
   end
 
   @impl true
@@ -92,6 +89,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_event("open_upload_popup", _, socket) do
     send(self(), :open_modal)
+
     socket
     |> noreply()
   end
@@ -167,17 +165,15 @@ defmodule PicselloWeb.GalleryLive.Show do
         } = socket
       ) do
     socket
-    |> ConfirmationComponent.open(
-         %{
-           center: true,
-           close_label: "No, go back",
-           confirm_event: "delete_cover_photo",
-           confirm_label: "Yes, delete",
-           icon: "warning-orange",
-           title: "Delete this photo?",
-           subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
-         }
-       )
+    |> ConfirmationComponent.open(%{
+      center: true,
+      close_label: "No, go back",
+      confirm_event: "delete_cover_photo",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this photo?",
+      subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
+    })
     |> noreply()
   end
 
@@ -192,20 +188,18 @@ defmodule PicselloWeb.GalleryLive.Show do
         } = socket
       ) do
     socket
-    |> ConfirmationComponent.open(
-         %{
-           center: true,
-           close_label: "No, go back",
-           confirm_event: "delete_photo",
-           confirm_label: "Yes, delete",
-           icon: "warning-orange",
-           title: "Delete this photo?",
-           subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?",
-           payload: %{
-             photo_id: id
-           }
-         }
-       )
+    |> ConfirmationComponent.open(%{
+      center: true,
+      close_label: "No, go back",
+      confirm_event: "delete_photo",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this photo?",
+      subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?",
+      payload: %{
+        photo_id: id
+      }
+    })
     |> noreply()
   end
 
@@ -234,9 +228,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     html = """
     <p>Hi #{client_name},</p>
     <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
-    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{
-      gallery.password
-    }</b></p>
+    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
     <p>Happy viewing!</p>
     """
 
@@ -253,14 +245,12 @@ defmodule PicselloWeb.GalleryLive.Show do
     socket
     |> assign(:job, gallery.job)
     |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(
-         %{
-           body_html: html,
-           body_text: text,
-           subject: subject,
-           modal_title: "Share gallery"
-         }
-       )
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      body_html: html,
+      body_text: text,
+      subject: subject,
+      modal_title: "Share gallery"
+    })
     |> noreply()
   end
 
@@ -339,6 +329,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       ) do
     Galleries.get_photo(id)
     |> Galleries.delete_photo()
+
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
     send_update(PhotoComponent, id: String.to_integer(id), is_removed: true)
@@ -444,27 +435,27 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     socket
     |> assign(
-         :photos,
-         photos
-         |> Enum.take(per_page)
-       )
+      :photos,
+      photos
+      |> Enum.take(per_page)
+    )
     |> assign(
-         :has_more_photos,
-         photos
-         |> length > per_page
-       )
+      :has_more_photos,
+      photos
+      |> length > per_page
+    )
   end
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
   defp page_title(:upload), do: "New Gallery"
 
-  def product_preview_url(
-        %{
-          preview_photo: %{
-            preview_url: url
-          }
+  def product_preview_url(%{
+        preview_photo: %{
+          preview_url: url
         }
-      ), do: url
+      }),
+      do: url
+
   def product_preview_url(_), do: nil
 end
