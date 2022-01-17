@@ -4,6 +4,7 @@ defmodule Picsello.Cart.Order do
   import Ecto.Changeset
   alias Picsello.Galleries.Gallery
   alias Picsello.Cart.CartProduct
+  alias Picsello.Cart.DeliveryInfo
 
   schema "gallery_orders" do
     field :number, :integer, default: Enum.random(100_000..999_999)
@@ -13,22 +14,13 @@ defmodule Picsello.Cart.Order do
     field :placed, :boolean, default: false
     field :placed_at, :utc_datetime
     belongs_to(:gallery, Gallery)
+    embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
 
     embeds_many :digitals, Digital do
       field :photo_id, :integer
       field :preview_url, :string
       field :price, Money.Ecto.Amount.Type
-    end
-
-    embeds_one :delivery_info, DeliveryInfo do
-      field :type, :string
-      field :name, :string
-      field :city, :string
-      field :state, :string
-      field :zip, :integer
-      field :address_line1, :string
-      field :address_line2, :string
     end
 
     timestamps(type: :utc_datetime)
@@ -48,10 +40,20 @@ defmodule Picsello.Cart.Order do
         %CartProduct{price: price} = product,
         attrs \\ %{}
       ) do
-    order
-    |> cast(attrs, [])
-    |> cast_subtotal_cost({:add, price})
-    |> put_embed(:products, products ++ [product])
+    product_already_exist =
+      Enum.find_value(products, fn %{editor_details: %{editor_id: editor_id}} ->
+        editor_id == product.editor_details.editor_id
+      end)
+
+    if product_already_exist do
+      order
+      |> change()
+    else
+      order
+      |> cast(attrs, [])
+      |> cast_subtotal_cost({:add, price})
+      |> put_embed(:products, products ++ [product])
+    end
   end
 
   def change_products(
@@ -77,6 +79,12 @@ defmodule Picsello.Cart.Order do
     order
     |> cast(attrs, [:placed, :placed_at])
     |> put_embed(:products, confirmed_products)
+  end
+
+  def store_delivery_info(order, delivery_info_changeset) do
+    order
+    |> change
+    |> put_embed(:delivery_info, delivery_info_changeset)
   end
 
   defp cast_subtotal_cost(changeset, {:default, amount}),

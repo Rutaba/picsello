@@ -2,6 +2,8 @@ defmodule PicselloWeb.LiveHelpers do
   @moduledoc "used in both views and components"
   use Phoenix.Component
 
+  alias Picsello.Onboardings
+
   import Phoenix.LiveView, only: [assign: 2]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
@@ -173,8 +175,14 @@ defmodule PicselloWeb.LiveHelpers do
   def nav_link(assigns) do
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
-        <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
-          <%= render_slot(@inner_block, active) %>
+        <%= if String.starts_with?(@to, "/") do %>
+          <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
+            <%= render_slot(@inner_block, active) %>
+          <% end %>
+        <% else %>
+          <a href={@to} class={@class} target="_blank" rel="noopener noreferrer">
+            <%= render_slot(@inner_block, active) %>
+          </a>
         <% end %>
       </.is_active>
     """
@@ -271,4 +279,43 @@ defmodule PicselloWeb.LiveHelpers do
 
   def path(nil), do: "/images/card_blank.png"
   def path(url), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(url)
+
+  def show_intro?(current_user, intro_id),
+    do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
+
+  def intro(current_user, intro_id) do
+    [
+      phx_hook: "IntroJS",
+      data_intro_show: show_intro?(current_user, intro_id),
+      id: intro_id
+    ]
+  end
+
+  def intro_hints_only(intro_id) do
+    [
+      phx_hook: "IntroJS",
+      id: intro_id
+    ]
+  end
+
+  def intro_hint(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:content, :class]))
+      |> Enum.into(%{class: ""})
+
+    ~H"""
+    <span class={"inline-block relative #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block mr-2 rounded-sm fill-current text-blue-planning-300 w-4 h-4" /></span>
+    """
+  end
+
+  def handle_event(
+        "intro_js",
+        %{"action" => action, "intro_id" => intro_id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
+    |> noreply()
+  end
 end

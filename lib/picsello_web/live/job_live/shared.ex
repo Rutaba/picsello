@@ -193,7 +193,7 @@ defmodule PicselloWeb.JobLive.Shared do
           %Phoenix.LiveView.Rendered{}
   def subheader(assigns) do
     ~H"""
-    <div {testid("subheader")} class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white">
+    <div {testid("subheader")} class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white" {intro_hints_only("intro_hints_only")}>
       <div class="flex flex-col lg:items-center lg:flex-row">
         <%= if @package do %>
           <div class="flex justify-between min-w-0 lg:flex-row lg:justify-start">
@@ -203,7 +203,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
           <%= if Job.lead?(@job) do %>
             <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class="mt-2 lg:mt-0 w-max lg:ml-6">
-              Package settings
+              Package settings <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
             </.icon_button>
           <% end %>
         <% end %>

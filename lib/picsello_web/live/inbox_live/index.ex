@@ -29,7 +29,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})}><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
+    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
     <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
@@ -47,7 +47,7 @@ defmodule PicselloWeb.InboxLive.Index do
               <div class="flex items-center flex-col text-orange-inbox-300 text-xl">
                 <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
                 <p>You don’t have any new messages.</p>
-                <p>Go to a job or lead to send a new message.</p>
+                <p>Go to a job or lead to send a new message. <.intro_hint content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
               </div>
             </div>
           <% true -> %>
@@ -87,13 +87,26 @@ defmodule PicselloWeb.InboxLive.Index do
   defp current_thread(assigns) do
     ~H"""
       <div class="flex flex-col w-full sm:overflow-y-auto sm:border">
-        <div class="sticky z-10 top-0 bg-white px-6 sm:px-2 py-2 flex shadow-sm sm:shadow-none">
+        <div class="sticky z-10 top-0 bg-white px-6 py-2 flex shadow-sm sm:shadow-none">
           <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
             <.icon name="left-arrow" class="w-6 h-6" />
           </.live_link>
           <div>
-            <div class="sm:font-semibold sm:pb-1 text-2xl line-clamp-1"><%= @title %></div>
-            <div class="sm:hidden line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
+            <div class="sm:font-semibold text-2xl line-clamp-1"><%= @title %></div>
+            <div class="line-clamp-1 leading-tight pb-1">
+              <span class="mr-2">
+                <%= @subtitle %>
+              </span>
+              <%= if @is_lead do %>
+                <.live_link to={Routes.job_path(@socket, :leads, @id)} class="underline">
+                  view lead
+                </.live_link>
+              <% else %>
+                <.live_link to={Routes.job_path(@socket, :jobs, @id)} class="underline">
+                  view job
+                </.live_link>
+              <% end %>
+            </div>
           </div>
           <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
             <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3" />
@@ -172,12 +185,15 @@ defmodule PicselloWeb.InboxLive.Index do
       confirm_event: "delete",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
-      title: "Delete Conversation?",
-      subtitle:
-        "Are you sure you wish to permanently delete this conversation? This action cannot be undone."
+      title: "Remove Conversation?",
+      subtitle: "This will remove the conversation from Inbox and cannot be undone."
     })
     |> noreply()
   end
+
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
     job_query = Job.for_user(current_user)
@@ -234,7 +250,8 @@ defmodule PicselloWeb.InboxLive.Index do
          thread_id,
          message_id_to_scroll \\ nil
        ) do
-    job = Job.for_user(current_user) |> Repo.get!(thread_id) |> Repo.preload(:client)
+    job =
+      Job.for_user(current_user) |> Repo.get!(thread_id) |> Repo.preload([:client, :job_status])
 
     client_messages =
       from(message in ClientMessage,
@@ -279,7 +296,8 @@ defmodule PicselloWeb.InboxLive.Index do
       id: job.id,
       messages: thread_messages,
       title: job.client.name,
-      subtitle: Job.name(job)
+      subtitle: Job.name(job),
+      is_lead: job.job_status.is_lead
     })
     |> assign(:job, job)
     |> mark_current_thread_as_read()

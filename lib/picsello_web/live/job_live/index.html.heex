@@ -17,7 +17,7 @@
   </div>
 </header>
 <%= if Enum.empty? @jobs do %>
-  <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
+  <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none" {intro(@current_user, "intro_leads_empty")}>
     <div></div> <%# flex in thirds %>
     <%= case @live_action do %>
       <% :leads -> %>
@@ -26,7 +26,7 @@
           <p class="block text-lg lg:text-2xl lg:w-1/2">You don't have any leads at the moment.</p>
         </div>
         <div class="lg:inline-flex">
-          <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary" phx-click="create-lead">
+          <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary intro-leads" phx-click="create-lead">
             Create a lead
           </a>
         </div>

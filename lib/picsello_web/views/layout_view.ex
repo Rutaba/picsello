@@ -86,25 +86,35 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def side_nav(socket),
-    do: [
+  def side_nav(socket, current_user) do
+    [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
-      %{title: "Orders", icon: "cart", path: "#"},
-      %{title: "Calendar", icon: "calendar", path: "#"},
+      %{title: "Orders", icon: "cart"},
+      %{title: "Calendar", icon: "calendar"},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
       %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
-      %{title: "Finances", icon: "money-bags", path: "#"},
+      %{
+        title: "Finances",
+        icon: "money-bags",
+        path: current_user.organization.stripe_account_id && "https://dashboard.stripe.com"
+      },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
       %{title: "Help", icon: "question-mark", path: "#"}
     ]
+    |> Enum.filter(&Map.get(&1, :path))
+  end
 
   def top_nav(socket),
     do: [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-      %{title: "Finances", icon: "money-bags", path: "#"},
-      %{title: "Help", icon: "question-mark", path: "#"},
+      %{
+        title: "Public profile",
+        icon: "profile",
+        path: Routes.profile_settings_path(socket, :index)
+      },
+      %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
 end

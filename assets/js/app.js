@@ -22,21 +22,23 @@ import '@fontsource/be-vietnam/400.css';
 import '@fontsource/be-vietnam/500.css';
 import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
+import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
 import Clipboard from './hooks/clipboard';
+import DragDrop from './hooks/drag-drop';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
-import Preview from './hooks/preview';
+import PrefixHttp from './hooks/prefix-http';
+import IntroJS from './hooks/intro';
+import MasonryGrid from './hooks/masonry-grid';
+import PercentMask from './hooks/percent-mask';
 import Phone from './hooks/phone';
 import PlacesAutocomplete from './hooks/places-autocomplete';
+import Preview from './hooks/preview';
 import PriceMask from './hooks/price-mask';
-import PercentMask from './hooks/percent-mask';
 import Quill from './hooks/quill';
+import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
-import MasonryGrid from './hooks/masonry-grid';
-import DragDrop from './hooks/drag-drop';
-import ScrollIntoView from './hooks/scroll-into-view';
-import Analytics from './hooks/analytics';
 
 const Modal = {
   mounted() {
@@ -103,23 +105,25 @@ const TZCookie = {
 };
 
 const Hooks = {
+  AutoHeight,
   ClearInput,
   Clipboard,
+  DragDrop,
   IFrameAutoHeight,
-  Preview,
+  IntroJS,
+  MasonryGrid,
   Modal,
-  Phone,
-  PriceMask,
   PercentMask,
-  ToggleContent,
+  Phone,
+  PlacesAutocomplete,
+  PrefixHttp,
+  Preview,
+  PriceMask,
   Quill,
+  ScrollIntoView,
   Select,
   TZCookie,
-  PlacesAutocomplete,
-  AutoHeight,
-  MasonryGrid,
-  DragDrop,
-  ScrollIntoView,
+  ToggleContent,
 };
 
 let Uploaders = {};

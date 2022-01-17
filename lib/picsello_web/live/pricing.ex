@@ -11,12 +11,12 @@ defmodule PicselloWeb.Live.Pricing do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} container_class="sm:pb-0 pb-28">
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class="my-5">
         <h1 class="text-2xl font-bold">Gallery Store Pricing</h1>
 
         <p class="max-w-2xl my-2">
-          Get your gallery store set up in a few mintues. You’ll need to decide for each category of products the markup (amout of money) you would like to make when someone orders.
+          Customize markup pricing for products clients can purchase through you.
         </p>
       </div>
 
@@ -36,6 +36,10 @@ defmodule PicselloWeb.Live.Pricing do
     </.settings_nav>
     """
   end
+
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   defp assign_categories(socket) do
     socket |> assign(categories: Picsello.WHCC.categories())

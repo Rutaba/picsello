@@ -56,12 +56,30 @@ defmodule Picsello.Marketing do
       limit: ^limit,
       group_by: c.id,
       select: %{
+        id: c.id,
         subject: c.subject,
         inserted_at: c.inserted_at,
         clients_count: count(cc.id)
       }
     )
     |> Repo.all()
+  end
+
+  def get_recent_campaign(campaign_id, organization_id) do
+    from(c in Campaign,
+      join: cc in CampaignClient,
+      on: cc.campaign_id == c.id,
+      where: c.organization_id == ^organization_id and c.id == ^campaign_id,
+      group_by: c.id,
+      select: %{
+        id: c.id,
+        subject: c.subject,
+        inserted_at: c.inserted_at,
+        clients_count: count(cc.id),
+        body_html: c.body_html
+      }
+    )
+    |> Repo.one()
   end
 
   def clients(segment_type, organization_id) do

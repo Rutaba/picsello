@@ -52,6 +52,10 @@ defmodule PicselloWeb.HomeLive.Index do
     end
   end
 
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
 
@@ -132,7 +136,8 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "envelope",
              button_label: "Resend email",
              button_class: "btn-primary",
-             color: "red-sales-300"
+             color: "red-sales-300",
+             class: "intro-confirmation"
            }},
           {leads_empty?,
            %{
@@ -142,7 +147,8 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "three-people",
              button_label: "Create your first lead",
              button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300"
+             color: "blue-planning-300",
+             class: "intro-first-lead"
            }},
           {stripe_status != :charges_enabled,
            %{
@@ -152,17 +158,19 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
              button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300"
+             color: "blue-planning-300",
+             class: "intro-stripe"
            }},
           {true,
            %{
              action: "",
              title: "Helpful resources",
-             body: "Stuck? Need advice? We have a plethora of resources ready for you.",
+             body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",
              button_label: "See available resources",
              button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300"
+             color: "blue-planning-300",
+             class: "intro-resources"
            }}
         ],
         do: item
@@ -172,20 +180,25 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   def card(assigns) do
-    assigns = Map.put(assigns, :attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
+    assigns =
+      assigns
+      |> Map.put(:attrs, Map.drop(assigns, ~w(class icon color inner_block badge)a))
+      |> Enum.into(%{badge: nil, hint_content: nil})
 
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
-      <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
-        <%= if @badge > 0, do: @badge %>
-      </div>
+      <%= if @badge do %>
+        <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+          <%= if @badge > 0, do: @badge %>
+        </div>
+      <% end %>
 
       <div class={"border hover:border-#{@color} h-full rounded-lg bg-#{@color} overflow-hidden"}>
         <div class="h-full p-5 ml-3 bg-white">
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
 
-            <%= @title %>
+            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </h1>
 
           <%= render_block(@inner_block) %>

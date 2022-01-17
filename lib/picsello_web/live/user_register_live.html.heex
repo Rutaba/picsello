@@ -1,4 +1,4 @@
-<.container step={1} color_class="bg-blue-planning-200" title="Let's get started!" subtitle="Signup just takes a few minutes, and then you’ll be ready to start growing your business with Picsello!">
+<.container step={1} color_class="bg-blue-planning-200" title="Let's get started!" subtitle="Get signed up and start growing your business.">
   <div id="tz-cookie" phx-hook="TZCookie"></div>
 
   <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-secondary">
@@ -11,7 +11,7 @@
   <.form let={f} for={@changeset} action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
 
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
-    <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", wrapper_class: "mt-4", label: "Name" %>
+    <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", wrapper_class: "mt-4", label: "Name", autocomplete: "name" %>
     <%= labeled_input f, :email, type: :email_input, placeholder: "jack.nimble@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>
 

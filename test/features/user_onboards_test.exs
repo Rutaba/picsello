@@ -8,15 +8,15 @@ defmodule Picsello.UserOnboardsTest do
   setup do
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
-    insert(:package_base_price)
+    insert(:package_base_price, base_price: 300)
     :ok
   end
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
-  @phone_field text_field("user_onboarding_phone")
-  @photographer_years_field text_field("user_onboarding_photographer_years")
+  @phone_field text_field("onboarding-step-2_onboarding_phone")
+  @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
   @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
-  @website_field text_field("user_organization_profile_website")
+  @website_field text_field("onboarding-step-4_organization_profile_website")
 
   def fill_in_step(session, 2) do
     session
@@ -27,7 +27,7 @@ defmodule Picsello.UserOnboardsTest do
 
   feature "user onboards", %{session: session, user: user} do
     user = Repo.preload(user, :organization)
-    org_name_field = text_field("user_organization_name")
+    org_name_field = text_field("onboarding-step-2_organization_name")
     home_path = Routes.home_path(PicselloWeb.Endpoint, :index)
 
     session
@@ -49,6 +49,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
+    |> assert_has(css("input[name$='[website]']:not(.text-input-invalid:not(.phx-no-feedback))"))
     |> assert_disabled_submit()
     |> click(@second_color_field)
     |> fill_in(@website_field, with: "inval!d.com")
@@ -59,6 +60,16 @@ defmodule Picsello.UserOnboardsTest do
     |> assert_disabled_submit()
     |> click(css("label", text: "Shootproof"))
     |> click(css("label", text: "Session"))
+    |> find(css("input:checked", count: 2, visible: false), fn inputs ->
+      assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
+    end)
+    |> click(css("label", text: "None"))
+    |> assert_value(css("input:checked", count: 1, visible: false), "none")
+    |> click(css("label", text: "Shootproof"))
+    |> click(css("label", text: "Session"))
+    |> find(css("input:checked", count: 2, visible: false), fn inputs ->
+      assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
+    end)
     |> click(css("button[type='submit']", text: "Finish"))
     |> assert_path(home_path)
 
@@ -79,15 +90,26 @@ defmodule Picsello.UserOnboardsTest do
              },
              organization: %{
                name: "Photogenious",
-               package_templates: [%{base_price: %Money{amount: 100}}],
+               package_templates: [
+                 %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
+               ],
                profile: %{
-                 website: "example.com",
+                 website: "https://example.com",
                  no_website: false,
                  color: ^second_color,
                  job_types: ~w(event portrait)
                }
              }
            } = user
+  end
+
+  feature "user logs out during onboarding", %{session: session} do
+    session
+    |> assert_path(@onboarding_path)
+    |> assert_disabled_submit()
+    |> click(link("Logout"))
+    |> assert_path("/")
+    |> assert_flash(:info, text: "Logged out successfully")
   end
 
   feature "user goes back while onboarding", %{session: session, user: user} do
@@ -97,7 +119,7 @@ defmodule Picsello.UserOnboardsTest do
     |> fill_in_step(2)
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_text("What types")
+    |> assert_text("speciality")
     |> click(button("Back"))
     |> assert_has(@photographer_years_field)
 

@@ -24,11 +24,41 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   @impl true
-  def handle_event("continue", _, %{assigns: %{step: :product_list}} = socket) do
+  def handle_event("continue", _, %{assigns: %{step: :product_list, order: order}} = socket) do
+    socket
+    |> assign(:step, :delivery_info)
+    |> assign(:delivery_info_changeset, Cart.order_delivery_info_change(order))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "continue",
+        _,
+        %{
+          assigns: %{
+            step: :delivery_info,
+            order: order,
+            delivery_info_changeset: delivery_info_changeset
+          }
+        } = socket
+      ) do
     socket
     |> assign(:step, :shipping_opts)
+    |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
     |> assign_shipping_opts()
     |> assign_shipping_cost()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate_delivery_info",
+        %{"delivery_info" => params},
+        %{assigns: %{step: :delivery_info}} = socket
+      ) do
+    socket
+    |> assign(:delivery_info_changeset, Cart.delivery_info_change(params))
     |> noreply()
   end
 
@@ -40,7 +70,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           assigns: %{
             step: :shipping_opts,
             shipping_opts: shipping_opts,
-            order: %{products: products},
+            order: %{products: products, delivery_info: delivery_info},
             gallery: gallery
           }
         } = socket
@@ -56,14 +86,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           |> then(& &1.current)
 
         Cart.order_product(product, account_id,
-          ship_to: ship_address(),
-          return_to: ship_address(),
+          ship_to: form_ship_address(delivery_info),
+          return_to: return_to_address(),
           attributes: Shipping.to_attributes(shipping_option)
         )
       end)
       |> Cart.store_cart_products_checkout()
 
-    {:ok, checkout_link} =
+    {:ok, %{link: checkout_link}} =
       payments().checkout_link(order,
         success_url:
           Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.id),
@@ -159,7 +189,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp shipping_option_cost({_, _, _, cost}), do: Money.parse!(cost)
   defp shipping_option_label({_, label, _, _}), do: label
 
-  defp ship_address() do
+  defp return_to_address() do
     %{
       "Name" => "Returns Department",
       "Addr1" => "3432 Denmark Ave",
@@ -169,6 +199,28 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       "Zip" => "55123",
       "Country" => "US",
       "Phone" => "8002525234"
+    }
+  end
+
+  defp form_ship_address(%{
+         name: name,
+         address: %{
+           addr1: addr1,
+           addr2: addr2,
+           city: city,
+           zip: zip,
+           state: state,
+           country: country
+         }
+       }) do
+    %{
+      "Name" => name,
+      "Addr1" => addr1,
+      "Addr2" => addr2,
+      "City" => city,
+      "State" => state,
+      "Zip" => zip,
+      "Country" => country
     }
   end
 

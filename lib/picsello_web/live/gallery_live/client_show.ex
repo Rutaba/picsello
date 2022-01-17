@@ -45,6 +45,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> assign(:update_mode, "append")
     |> assign(:favorites_filter, false)
     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+    |> assign_cart_count(gallery)
     |> assign_photos()
     |> assign(:creator, Galleries.get_gallery_creator(gallery))
     |> noreply()
@@ -102,6 +103,30 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       %{
         category_template: gallery_product.category_template,
         photo: gallery_product.preview_photo
+      }
+    )
+    |> noreply()
+  end
+
+  def handle_event(
+        "product_preview_photo_click",
+        %{"photo_id" => photo_id, "template_id" => template_id},
+        socket
+      ) do
+    photo = Galleries.get_photo(photo_id)
+
+    template_id = template_id |> to_integer()
+
+    category_template =
+      GalleryProducts.get(id: template_id)
+      |> then(& &1.category_template)
+
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.EditProduct,
+      %{
+        category_template: category_template,
+        photo: photo
       }
     )
     |> noreply()
@@ -167,31 +192,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   def handle_info(
-        {:photo_click, photo},
-        %{
-          assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites?
-          }
-        } = socket
-      ) do
-    created_editor =
-      Picsello.WHCC.create_editor(
-        get_some_product(),
-        photo,
-        complete_url:
-          Routes.gallery_dump_editor_url(socket, :show, gallery.client_link_hash) <>
-            "?editorId=%EDITOR_ID%",
-        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
-        only_favorites: favorites?
-      )
-
-    socket
-    |> redirect(external: created_editor.url)
-    |> noreply()
-  end
-
-  def handle_info(
         {:customize_and_buy_product, whcc_product, photo},
         %{
           assigns: %{
@@ -229,26 +229,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket
   end
 
-  # This should be removed as soon as product selection will be implemented
-  defp get_some_product() do
-    Picsello.Category
-    |> Picsello.Repo.all()
-    |> Enum.reject(& &1.deleted_at)
-    |> Enum.at(0)
-    |> Picsello.Repo.preload(:products)
-    |> then(& &1.products)
-    |> Enum.reject(& &1.deleted_at)
-    |> Enum.at(0)
-  end
-
-  def get_menu_items(_socket),
-    do: [
-      %{title: "Home", path: "#"},
-      %{title: "Shop", path: "#"},
-      %{title: "My orders", path: "#"},
-      %{title: "Help", path: "#"}
-    ]
-
   defp assign_photos(
          %{
            assigns: %{
@@ -275,5 +255,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       photos
       |> length > per_page
     )
+  end
+
+  defp assign_cart_count(socket, gallery) do
+    count =
+      case Picsello.Cart.get_unconfirmed_order(gallery.id) do
+        {:ok, order} -> Enum.count(order.products) + Enum.count(order.digitals)
+        _ -> 0
+      end
+
+    socket
+    |> assign(:cart_count, count)
   end
 end

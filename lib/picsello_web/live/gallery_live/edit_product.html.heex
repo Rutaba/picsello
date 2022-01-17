@@ -8,19 +8,20 @@
     </a>
   </div>
   <div class="editProductPopup__content flex flex-col lg:flex-row pt-2 items-start w-full h-full overflow-y-auto">
-    <div class="editProductPopup__img lg:w-2/4 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full xl:max-h-full lg:ml-12 ml-0">
+    <div class="editProductPopup__img lg:w-2/4 sm:py-8 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full xl:max-h-full lg:ml-12 ml-0">
       <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
                       id={@photo.id}
                       preview_url={@photo.preview_url}
                       category_template={@category_template}
-                      has_product_info={false} />
+                      has_product_info={false}
+                       />
     </div>
     <div class="lg:w-2/4 w-full lg:pl-16 lg:pr-12 px-0 h-full flex flex-col pt-14 flex-start">
       <h3 class="text-4xl font-bold productType"><%= @category_template.title %></h3>
       <%= if length(@whcc_products) > 1 do %>
         <div>
           <h6 class="text-base font-bold pt-7 pb-3.5">Type</h6>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
             <%= for product <- @whcc_products do %>
               <%= if product === @current_whcc_product do %>
                 <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} ><%= product.whcc_name %></button>
@@ -39,7 +40,7 @@
         <h6 class="text-base font-bold pt-9 pb-3.5">Size</h6>
         <.form let={f} for={:product_size} phx-change="update-product-size" phx-target={@myself}>
           <div class="flex justify-between customSelect">
-            <%= select f, :option, product_size_options(@current_whcc_product) %>
+            <%= select f, :option, product_size_options(@current_whcc_product), class: "text-base py-2" %>
           </div>
         </.form>
       </div>
