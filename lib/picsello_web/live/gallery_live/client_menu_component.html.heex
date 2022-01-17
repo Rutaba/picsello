@@ -16,7 +16,7 @@
         </div>
         <.icon name="hamburger" class="h-4 text-base-300 w-6" />
     </div>
-    <div class="px-6 py-2  ">
+    <div class="px-6 sm:pl-0 sm:pr-9 py-2">
         <.initials_circle style={"background-color: #{@organization.profile.color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@organization.user} />
     </div>
     <ul class="sm:flex items-center py-4 hidden">
@@ -29,7 +29,7 @@
         </li>
         <% end %>
     </ul>
-   
+
     <%= if @cart_count > 0 do %>
     <div class="relative sm:ml-auto cursor-pointer">
         <%= live_redirect to: @cart_route do %>
