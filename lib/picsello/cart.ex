@@ -32,6 +32,8 @@ defmodule Picsello.Cart do
   def order_product(product, account_id, opts) do
     created_order = WHCC.create_order(account_id, product.editor_details.editor_id, opts)
 
+    IO.inspect ["##!", created_order]
+
     product
     |> CartProduct.add_order(created_order)
   end
