@@ -44,9 +44,26 @@
 <.subheader package={@package} job={@job} />
 
 <div class="p-6 center-container">
-
   <h2 class="mt-2 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status History</h2>
   <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, job: @job, current_user: @current_user %>
+
+  <ul class="mt-6 grid gap-5 grid-cols-2 lg:grid-cols-4">
+    <.overview_card title="Inbox" icon="envelope-outline">
+      <%= if @inbox_count > 0 do %>
+        <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+      <% else %>
+        View or send messages.
+      <% end %>
+      <div class="mt-4 gap-3 grid grid-cols-2 ">
+        <button type="button" class="p-2 text-sm text-center border rounded-lg border-base-300" phx-click="open-inbox">
+          Go to inbox
+        </button>
+        <button type="button" class="p-2 text-sm text-center border rounded-lg border-base-300" phx-click="open-compose">
+          Send message
+        </button>
+      </div>
+    </.overview_card>
+  </ul>
 
   <.notes job={@job} />
 
