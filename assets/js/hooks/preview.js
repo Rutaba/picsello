@@ -1,11 +1,10 @@
-let preview;
-let renderImageWithFrame;
-
 const Preview = {
     frame_name: null,
     preview_name: null,
     coords: null,
     target: null,
+    preview: null,
+    renderImageWithFrame: null,
     mounted() {
         this.handleEvent("set_preview",
             ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
@@ -53,7 +52,7 @@ const Preview = {
                 const kw = cw / frameW;
                 const kh = ch / frameH;
 
-                renderImageWithFrame = () => {
+                const renderImageWithFrame = function () {
                     const width = (w * kw) < 10 && cw || (w * kw);
                     const height = (h * kh) < 10 && ch || (h * kh);
 
@@ -64,16 +63,19 @@ const Preview = {
                     ctx.drawImage(preview, ltx, lty, width, height);
                 }
 
-                preview = new Image();
+                const preview = new Image();
                 preview.src = preview_name;
                 preview.onload = renderImageWithFrame
+
+                Preview.preview = preview
+                Preview.renderImageWithFrame = renderImageWithFrame
             }
         }
     },
     updated() {
         this.draw(this.frame_name, this.preview_name, this.coords, this.target);
-        if (preview) {
-            renderImageWithFrame()
+        if (this.preview) {
+            this.renderImageWithFrame()
         }
     }
 }
