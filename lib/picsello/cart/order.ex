@@ -69,8 +69,8 @@ defmodule Picsello.Cart.Order do
   def checkout_changeset(%__MODULE__{} = order, products, attrs \\ %{}) do
     order
     |> cast(attrs, [])
-    |> cast_shipping_cost(products)
     |> put_embed(:products, products)
+    |> cast_shipping_cost(products)
   end
 
   def confirmation_changeset(%__MODULE__{} = order, confirmed_products) do
@@ -104,7 +104,16 @@ defmodule Picsello.Cart.Order do
         |> Money.parse!()
         |> Money.subtract(product.base_price)
         |> Money.add(cost)
+        |> reset_negative_cost()
       end)
     )
+  end
+
+  defp reset_negative_cost(cost) do
+    if Money.negative?(cost) do
+      Money.new(0)
+    else
+      cost
+    end
   end
 end
