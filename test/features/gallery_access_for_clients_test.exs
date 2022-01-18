@@ -31,6 +31,6 @@ defmodule Picsello.GalleryAccessForClientsTest do
     |> fill_in(css("#login_password"), with: gallery.password)
     |> click(button("Submit"))
     |> assert_path("/gallery/#{gallery.client_link_hash}")
-    |> assert_has(css(".font-bold.text-6xl", text: "#{gallery.name}"))
+    |> assert_has(css(".font-bold.text-2xl", text: "#{gallery.name}"))
   end
 end
