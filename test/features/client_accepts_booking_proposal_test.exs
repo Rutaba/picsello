@@ -246,7 +246,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     @sessions 2
     feature "client pays - webhook is late", %{
-      sessions: [_, client_session],
+      sessions: [photographer_session, client_session],
       lead: lead,
       proposal: %{id: proposal_id},
       url: url
@@ -278,6 +278,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> visit(stripe_success_url)
       |> assert_has(css("h1", text: "Thank you"))
       |> assert_has(css("h1", text: "Your session is now booked."))
+
+      photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
     end
   end
 
