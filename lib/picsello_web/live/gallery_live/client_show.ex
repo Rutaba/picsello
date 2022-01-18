@@ -159,10 +159,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         photo_id: photo_id,
         photo_ids:
           CLL.init(photo_ids)
-          |> CLL.next(
-            photo_ids
-            |> Enum.find_index(&(&1 == to_integer(photo_id)))
-          )
+          |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
       }
     )
     |> noreply
