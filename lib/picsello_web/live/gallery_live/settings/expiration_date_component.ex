@@ -28,6 +28,39 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   @impl true
   def handle_event(
         "update-options",
+        %{"date" => %{"month" => ""}, "_target" => ["date", "month"]},
+        socket
+      ) do
+    socket
+    |> assign(:is_valid, false)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "update-options",
+        %{"date" => %{"day" => ""}, "_target" => ["date", "day"]},
+        socket
+      ) do
+    socket
+    |> assign(:is_valid, false)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "update-options",
+        %{"date" => %{"year" => ""}, "_target" => ["date", "year"]},
+        socket
+      ) do
+    socket
+    |> assign(:is_valid, false)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "update-options",
         %{"date" => %{"day" => day}, "_target" => ["date", "day"]},
         socket
       ) do
@@ -58,7 +91,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     |> react_form()
   end
 
-  def handle_event("update_options", _, socket) do
+  def handle_event("update-options", _, socket) do
     noreply(socket)
   end
 
@@ -126,9 +159,9 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   defp assign_options(%{assigns: %{is_never_expires: true}} = socket) do
     socket
     |> assign(
-      year_options: [],
       month_options: [],
-      day_options: []
+      day_options: [],
+      year_options: []
     )
   end
 
