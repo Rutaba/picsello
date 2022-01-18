@@ -49,14 +49,14 @@ defmodule Picsello.CategoryTemplate do
       name: "card_blank.png",
       category_name: "Loose Prints",
       title: "Prints",
-      price: Money.new(80_75),
+      price: Money.new(0_83),
       corners: [0, 0, 0, 0, 0, 0, 0, 0]
     },
     %{
       name: "album_transparency.png",
       category_name: "Albums",
       title: "Custom Albums",
-      price: Money.new(1_5),
+      price: Money.new(30_00),
       corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
     },
     #    %{
@@ -70,7 +70,7 @@ defmodule Picsello.CategoryTemplate do
       name: "frame_transparency.png",
       category_name: "Wall Displays",
       title: "Framed Prints",
-      price: Money.new(5),
+      price: Money.new(32_55),
       corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
     }
   ]
