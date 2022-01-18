@@ -184,9 +184,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :details} = assigns) do
     ~H"""
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-7">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-7">
         <%= labeled_input @f, :name, label: "Title", placeholder: "Wedding Deluxe, or 1 Hour Portrait Session", phx_debounce: "500", wrapper_class: "mt-4" %>
         <%= labeled_select @f, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", phx_update: "ignore" %>
+        <div class="mt-4 flex flex-col">
+          <%= label_for @f, :turnaround_weeks, label: "Image Turnaround Time" %>
+
+          <div>
+            <%= input @f, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
+
+            <%= ngettext("week", "weeks", Ecto.Changeset.get_field(@changeset, :turnaround_weeks)) %>
+          </div>
+        </div>
       </div>
 
       <div class="flex flex-col mt-4">
