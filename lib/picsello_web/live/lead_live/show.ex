@@ -14,7 +14,6 @@ defmodule PicselloWeb.LeadLive.Show do
     only: [
       assign_job: 2,
       assign_proposal: 1,
-      assign_inbox_count: 1,
       subheader: 1,
       notes: 1,
       shoot_details: 1,
@@ -28,8 +27,6 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
-    |> assign_inbox_count()
-    |> assign_proposal()
     |> ok()
   end
 
