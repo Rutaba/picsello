@@ -3,7 +3,7 @@
 @import "tailwindcss/utilities";
 
 @import "./components/buttons.css";
-@import "./components/clientGallery.css";
+@import "components/gallery.css";
 @import "./components/shoppingCart.css";
 @import "./components/forms.css";
 @import "./components/typography.css";
@@ -133,7 +133,7 @@ html {
   .item {
     display: block;
     position: absolute;
-    margin: 10px 0;
+ /*   margin: 10px 0;*/
     z-index: 1;
   }
   .item.muuri-item-dragging {
@@ -205,7 +205,7 @@ html {
 @media (min-width: 640px){
   .muuri.grid {
     .item {
-      margin: 10px;
+    /*  margin: 10px;*/
     }
   }
 }

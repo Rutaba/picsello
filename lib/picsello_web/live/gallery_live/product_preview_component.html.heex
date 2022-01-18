@@ -17,13 +17,13 @@
     <% end %>
     <% end %>
     <%= if @has_product_info do %>
-    <div class="grid grid-cols-2">
-        <div class="flex flex-col">
+    <div class="grid grid-cols-5">
+        <div class="flex flex-col col-span-3">
             <div class="pt-3 pb-1.5 font-bold text-sm lg:text-xl"><%= @category_template.title %></div>
             <div class="photos__price text-xs lg:text-base text-base-250" >From <%= Money.to_string(@category_template.price) %></div>
         </div>
         <%= if @edit_product_link do %>
-        <div class="flex flex-col">
+        <div class="flex col-span-2 justify-self-end">
             <div class="flex justify-end pt-7">
                 <%= live_redirect to: @edit_product_link, class: "prod-link#{@category_template.id}" do %>
                 <button title="Edit" type="button" class="flex items-center text-sm py-2 pr-3.5 pl-3 border border-blue-planning-300 rounded-lg">
