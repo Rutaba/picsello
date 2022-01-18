@@ -49,8 +49,8 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
             </div>
             <div class="flex items-center justify-between flex-wrap mb-16">
                 <div class="mt-6">
-                    <%= button "Download all", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :all}), method: :post, class: "cursor-pointer inline-block btn-primary text-xs lg:text-base py-2 lg:py-3 px-8 mb-4" %>
-                    <%= button "Download favorites", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :favorites}), method: :post, class: "cursor-pointer inline-block btn-primary py-2 lg:py-3 text-xs lg:text-base px-8 mb-4" %>
+                    <%= button "Download all", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :all}), method: :post, class: "hidden cursor-pointer inline-block btn-primary text-xs lg:text-base py-2 lg:py-3 px-8 mb-4" %>
+                    <%= button "Download favorites", to: Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, %{type: :favorites}), method: :post, class: "hidden cursor-pointer inline-block btn-primary py-2 lg:py-3 text-xs lg:text-base px-8 mb-4" %>
                 </div>
                 <label class="flex items-center cursor-pointer">
                     <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
