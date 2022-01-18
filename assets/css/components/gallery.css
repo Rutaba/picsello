@@ -39,10 +39,10 @@
     height: 178px;
 }
 
-.preview {
+/*.preview {
     width: 603px;
     height: 650px
-}
+}*/
 
 .productPreview__client > li > .productPreview_photo {
     @apply relative
@@ -605,10 +605,10 @@
         @apply w-1/2
     }
 
-    .preview {
+  /*  .preview {
         width: 603px;
         height: 650px;
-    }
+    }*/
 
     .gallery__coverImg {
         height: 566px;

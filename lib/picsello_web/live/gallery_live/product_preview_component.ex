@@ -33,8 +33,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     socket
     |> push_event("set_preview", %{
       preview: path(photo.preview_url),
-      width: photo.width,
-      height: photo.height,
+      ratio: photo.aspect_ratio,
       frame: template.name,
       coords: template.corners,
       target: "canvas#{template.id}"

@@ -134,9 +134,7 @@ export default {
     grid.remove(grid.getItems());
     calculateItemsMargins()
     grid.add(document.querySelectorAll('#muuri-grid .item'));
-
-
-  },
+    },
 
   /**
    * Injects newly added photos into grid
@@ -209,7 +207,6 @@ export default {
    */
   updated(){
     this.pending = this.page();
-    calculateItemsMargins()
     if (this.pending === "0") {
       this.reload_masonry();
     }else {
