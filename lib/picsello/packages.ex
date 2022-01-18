@@ -235,11 +235,13 @@ defmodule Picsello.Packages do
           name: name.initcap,
           organization_id: type(^organization_id, base.id),
           shoot_count: base.shoot_count,
+          turnaround_weeks: base.turnaround_weeks,
           updated_at: now()
         }
       )
 
     {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
+
     templates
   end
 

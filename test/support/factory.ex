@@ -97,6 +97,7 @@ defmodule Picsello.Factory do
       name: "Package name",
       description: "Package description",
       shoot_count: 2,
+      turnaround_weeks: 1,
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -390,6 +391,7 @@ defmodule Picsello.Factory do
       min_years_experience: 1,
       base_price: 100,
       shoot_count: 2,
+      turnaround_weeks: 1,
       download_count: 10
     }
 

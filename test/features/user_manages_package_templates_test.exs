@@ -30,6 +30,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> assert_value(text_field("Image Turnaround Time"), "1")
+    |> fill_in(text_field("Image Turnaround Time"), with: "2")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Description"), with: "My greatest wedding package")
     |> click(css("label", text: "Portrait"))
