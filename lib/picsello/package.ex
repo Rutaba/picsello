@@ -124,7 +124,7 @@ defmodule Picsello.Package do
     package |> price() |> Money.subtract(deposit_price(package))
   end
 
-  def templates_for_user(%User{organization_id: organization_id}) do
+  def templates_for_organization_id(organization_id) do
     from(package in __MODULE__,
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
@@ -132,6 +132,9 @@ defmodule Picsello.Package do
       order_by: [desc: package.inserted_at]
     )
   end
+
+  def templates_for_user(%User{organization_id: organization_id}),
+    do: templates_for_organization_id(organization_id)
 
   def templates_for_user(user, type) when type != nil do
     from(template in templates_for_user(user), where: template.job_type == ^type)

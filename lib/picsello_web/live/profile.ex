@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Profile do
   @moduledoc "photographers public profile"
   use PicselloWeb, live_view: [layout: "profile"]
-  alias Picsello.{Profiles}
+  alias Picsello.{Profiles, Packages}
 
   @impl true
   def mount(%{"organization_slug" => slug}, session, socket) do
@@ -34,32 +34,43 @@ defmodule PicselloWeb.Live.Profile do
       <hr class="border-base-200">
 
       <div class="flex flex-col justify-center px-6 mt-10 md:mt-20 md:px-16 md:flex-row center-container">
-        <div class="mb-10 mr-0 md:mr-10">
+        <div class="flex flex-col mb-10 mr-0 md:mr-10">
           <h1 class="text-5xl font-bold text-center lg:text-6xl md:text-left"><%= @organization.name %></h1>
 
-          <div class="flex items-center mt-12">
-            <h2 class="text-lg font-bold">What we offer:</h2>
-            <%= if @edit do %>
-              <.icon_button class="ml-5 shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
-                Edit Photography Types
-              </.icon_button>
-            <% end %>
+          <div>
+            <div class="flex items-center mt-12">
+              <h2 class="text-lg font-bold">What we offer:</h2>
+              <%= if @edit do %>
+                <.icon_button class="ml-5 shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
+                  Edit Photography Types
+                </.icon_button>
+              <% end %>
+            </div>
+            <div class="w-24 h-2" style={"background-color: #{@color}"}></div>
           </div>
 
-          <div class="w-1/4 h-2" style={"background-color: #{@color}"}></div>
-
-          <div class="w-auto md:w-min">
+          <div class="w-auto">
             <%= for job_type <- @job_types do %>
-              <div {testid("job-type")} class="flex my-4 p-4 items-center font-semibold rounded-lg bg-[#fafafa]">
+              <.live_link to={Routes.profile_pricing_job_type_path(@socket, :index, @organization.slug, job_type)} {testid("job-type")} class={"flex my-4 p-4 items-center rounded-lg bg-[#fafafa] border border-white hover:border-base-250"}>
                 <.icon name={job_type} style={"color: #{@color};"} class="mr-6 fill-current w-9 h-9" />
-
-                <span class="whitespace-nowrap"><%= dyn_gettext job_type %></span>
-              </div>
+                <dl class="flex flex-col">
+                  <dt class="font-semibold whitespace-nowrap"><%= dyn_gettext job_type %></dt>
+                  <%= case @start_prices[job_type] do %>
+                    <% nil -> %>
+                    <% price -> %>
+                      <dd class="whitespace-nowrap">Starting at <%= Money.to_string(price, fractional_unit: false) %></dd>
+                  <% end %>
+                </dl>
+              </.live_link>
             <% end %>
           </div>
+
+          <.live_link to={Routes.profile_pricing_path(@socket, :index, @organization.slug)} class={"btn-primary text-center py-2 px-8 mt-2 md:self-start"}>
+            See full price list
+          </.live_link>
 
           <%= if @website || @edit do %>
-            <div class="flex items-center">
+            <div class="flex items-center mt-auto pt-6">
               <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
               <%= if @edit do %>
                 <.icon_button class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
@@ -298,6 +309,7 @@ defmodule PicselloWeb.Live.Profile do
       website: profile.website,
       photographer: user,
       job_types: profile.job_types,
+      start_prices: start_prices(organization),
       url: Profiles.public_url(organization)
     )
   end
@@ -310,5 +322,15 @@ defmodule PicselloWeb.Live.Profile do
       end
 
     assign(socket, :contact_changeset, Profiles.contact_changeset(params))
+  end
+
+  def start_prices(organization) do
+    Packages.templates_for_organization(organization)
+    |> Enum.group_by(& &1.job_type)
+    |> Enum.map(fn {job_type, packages} ->
+      min_price = packages |> Enum.map(&Packages.price/1) |> Enum.sort() |> hd
+      {job_type, min_price}
+    end)
+    |> Enum.into(%{})
   end
 end

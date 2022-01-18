@@ -10,7 +10,6 @@ defmodule PicselloWeb.Live.Profile.Shared do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_organization()
     |> assign_changeset()
     |> ok()
   end
@@ -40,7 +39,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
         socket,
         module,
         %{
-          assigns: Map.take(assigns, [:current_user])
+          assigns: Map.take(assigns, [:organization])
         }
       )
 
@@ -55,10 +54,5 @@ defmodule PicselloWeb.Live.Profile.Shared do
       |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
-  end
-
-  def assign_organization(%{assigns: %{current_user: current_user}} = socket) do
-    organization = Profiles.find_organization_by(user: current_user)
-    socket |> assign(:organization, organization)
   end
 end

@@ -19,6 +19,9 @@ defmodule Picsello.UserEditsPublicProfileTest do
       )
       |> onboard!
 
+    insert(:package_template, user: user, job_type: "portrait", base_price: 3000)
+    insert(:package_template, user: user, job_type: "portrait", base_price: 2000)
+
     [
       user: user,
       color: color
@@ -35,7 +38,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("Mary Jane Photography")
     |> assert_text("What we offer:")
-    |> assert_text("Portrait")
+    |> assert_has(definition("Portrait", text: "Starting at $20"))
     |> assert_text("Event")
     |> assert_has(radio_button("Portrait", visible: false))
     |> assert_has(radio_button("Event", visible: false))
@@ -83,6 +86,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("What we offer:")
     |> assert_has(css("a[href='https://photos.example.com']", text: "See our full portfolio"))
+    |> resize_window(1280, 900)
     |> click(button("Edit Link"))
     |> fill_in(text_field("organization_profile_website"), with: "http://google.com")
     |> click(button("Save"))
