@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
 
     send(self(), favorites_update)
 
-    {:noreply, socket}
+    socket |> noreply()
   end
 
   @impl true
