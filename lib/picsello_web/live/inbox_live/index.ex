@@ -35,6 +35,9 @@ defmodule PicselloWeb.InboxLive.Index do
 
       <div class="flex sm:h-[calc(100vh-18rem)]">
         <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
+          <%= if @current_thread && !Enum.find(@threads, & &1.id == @current_thread.id) do %>
+            <.thread_card {@current_thread} message={nil} date={nil} unread={false} selected={true} />
+          <% end %>
           <%= for thread <- @threads do %>
             <.thread_card {thread} unread={Enum.member?(@unread_job_ids, thread.id)} selected={@current_thread && thread.id == @current_thread.id} />
           <% end %>

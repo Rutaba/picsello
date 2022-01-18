@@ -1,11 +1,14 @@
 defmodule PicselloWeb.GalleryLive.PhotoComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  alias Phoenix.LiveView.JS
   alias Picsello.Galleries
 
   @impl true
   def mount(socket) do
-    socket |> assign(:preview_photo_id, nil) |> ok
+    socket
+    |> assign(:preview_photo_id, nil)
+    |> ok
   end
 
   @impl true
@@ -21,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
 
     send(self(), favorites_update)
 
-    {:noreply, assign(socket, :photo, photo)}
+    socket |> noreply()
   end
 
   @impl true
@@ -30,5 +33,12 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
 
     socket
     |> noreply()
+  end
+
+  defp js_like_click(js \\ %JS{}, id, target) do
+    js
+    |> JS.push("like", target: target, value: %{id: id})
+    |> JS.toggle(to: "#photo-#{id}-liked")
+    |> JS.toggle(to: "#photo-#{id}-to-like")
   end
 end

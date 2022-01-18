@@ -1,6 +1,8 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
+  import PicselloWeb.GalleryLive.Shared
+
   alias Picsello.Cart
   alias Picsello.WHCC.Shipping
   alias Picsello.Galleries
@@ -9,9 +11,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
     case Cart.get_unconfirmed_order(gallery.id) do
       {:ok, order} ->
+        gallery = Galleries.populate_organization_user(gallery)
+
         socket
+        |> assign(:gallery, gallery)
         |> assign(:order, order)
         |> assign(:step, :product_list)
+        |> assign_cart_count(gallery)
         |> ok()
 
       _ ->

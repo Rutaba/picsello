@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       layout: "live_client"
     ]
 
+  import PicselloWeb.GalleryLive.Shared
+
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
   alias Picsello.Cart
@@ -38,7 +40,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
           }
         } = socket
       ) do
+    gallery = Galleries.populate_organization_user(gallery)
+
     socket
+    |> assign(:gallery, gallery)
     |> assign(:page_title, "Show Gallery")
     |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
     |> assign(:page, 0)
@@ -154,10 +159,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         photo_id: photo_id,
         photo_ids:
           CLL.init(photo_ids)
-          |> CLL.next(
-            photo_ids
-            |> Enum.find_index(&(&1 == to_integer(photo_id)))
-          )
+          |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
       }
     )
     |> noreply
@@ -245,26 +247,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
-    |> assign(
-      :photos,
-      photos
-      |> Enum.take(per_page)
-    )
-    |> assign(
-      :has_more_photos,
-      photos
-      |> length > per_page
-    )
-  end
-
-  defp assign_cart_count(socket, gallery) do
-    count =
-      case Picsello.Cart.get_unconfirmed_order(gallery.id) do
-        {:ok, order} -> Enum.count(order.products) + Enum.count(order.digitals)
-        _ -> 0
-      end
-
-    socket
-    |> assign(:cart_count, count)
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, length(photos) > per_page)
   end
 end

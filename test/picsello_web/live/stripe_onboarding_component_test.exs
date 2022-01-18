@@ -33,7 +33,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:no_account)
       button = html |> Floki.find("button")
 
-      assert button |> Floki.text() =~ "Create Stripe Account"
+      assert button |> Floki.text() =~ "Set up Stripe"
       assert [] = button |> Floki.attribute("disabled")
     end
 

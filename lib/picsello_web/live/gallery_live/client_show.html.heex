@@ -14,6 +14,7 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
 <div class="gallery__container">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, 
         live_action: @live_action,
+        organization: @gallery.job.client.organization,
         cart_count: @cart_count,
         cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
 </div>
@@ -75,8 +76,8 @@ class="flex flex-nowrap text-left clientGallery__coverImg">
             data-page={@page}
             data-total={@gallery.total_count}
             data-favorites-count={@favorites_count}
-            data-is-favorites-shown={@favorites_filter}
-            data-has-more-photos={@has_more_photos}
+            data-is-favorites-shown={ "#{@favorites_filter}" }
+            data-has-more-photos={ "#{@has_more_photos}" }
             >
             <%= for photo <- @photos do %>
             <%= live_component PicselloWeb.GalleryLive.PhotoComponent,

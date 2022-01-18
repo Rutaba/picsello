@@ -163,7 +163,7 @@ defmodule PicselloWeb.HomeLive.Index do
            }},
           {true,
            %{
-             action: "",
+             action: "help-link",
              title: "Helpful resources",
              body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",

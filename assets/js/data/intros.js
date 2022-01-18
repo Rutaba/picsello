@@ -14,10 +14,10 @@ export default {
         element: el.querySelector('h1'),
       },
       {
-        element: el.querySelector('.intro-needs-attention'),
-        title: 'Needs attention section',
+        element: el.querySelector('.intro-next-up'),
+        title: 'Next Up section',
         intro:
-          'The “needs attention” section will guide you through which steps you should focus on next. The more important an action is, the more we will highlight it to make sure you don’t miss it.',
+          'The “Next Up” section will guide you through which steps you should focus on next. The more important an action is, the more we will highlight it to make sure you don’t miss it.',
         position: 'bottom-middle-aligned',
       },
       {

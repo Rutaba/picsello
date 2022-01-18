@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   @moduledoc "Order display to client"
 
   use PicselloWeb, live_view: [layout: "live_client"]
+  import PicselloWeb.GalleryLive.Shared
   alias Picsello.Cart
   alias Picsello.Cart.Order
   alias Picsello.GalleryProducts
@@ -29,9 +30,13 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
             order
           end
 
+        gallery = Galleries.populate_organization_user(gallery)
+
         socket
+        |> assign(:gallery, gallery)
         |> assign(:from_checkout, true)
         |> assign_details(gallery, order)
+        |> assign_cart_count(gallery)
         |> noreply()
 
       _ ->
@@ -46,9 +51,13 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   def handle_params(%{"order_id" => order_id}, _, %{assigns: %{gallery: gallery}} = socket) do
     %Order{} = order = Cart.get_placed_gallery_order(order_id, gallery.id)
 
+    gallery = Galleries.populate_organization_user(gallery)
+
     socket
+    |> assign(:gallery, gallery)
     |> assign(:from_checkout, false)
     |> assign_details(gallery, order)
+    |> assign_cart_count(gallery)
     |> noreply()
   end
 
@@ -62,6 +71,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     conn
     |> assign(:order, order)
     |> assign(:organization_name, org_name)
+    |> assign(:shipping_name, order.delivery_info.name)
+    |> assign(:shipping_address, order.delivery_info.address)
   end
 
   defp product_description(%{id: id}) do

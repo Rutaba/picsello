@@ -37,8 +37,8 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             <em class="block pt-1 text-xs text-center text-red-sales-300">Error accessing your Stripe information.</em>
 
           <% :no_account -> %>
-            <button type="submit" phx-disable-with="Create Stripe Account" class={@class}>
-              Create Stripe Account
+            <button type="submit" phx-disable-with="Set up Stripe" class={@class}>
+              Set up Stripe
             </button>
 
           <% :missing_information -> %>

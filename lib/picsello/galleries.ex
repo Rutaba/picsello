@@ -435,7 +435,6 @@ defmodule Picsello.Galleries do
 
   def gallery_current_status(nil), do: :none_created
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
-  def gallery_current_status(%Gallery{total_count: nil}), do: :upload_in_progress
 
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos])
@@ -599,5 +598,10 @@ defmodule Picsello.Galleries do
   def populate_organization(%Gallery{} = gallery) do
     gallery
     |> Repo.preload(job: [client: :organization])
+  end
+
+  def populate_organization_user(%Gallery{} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: [organization: :user]])
   end
 end
