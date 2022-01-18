@@ -78,10 +78,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     @sessions 2
     feature "client clicks link in booking proposal email", %{
-      sessions: [_, client_session],
       lead: lead,
+      proposal: proposal,
+      sessions: [_, client_session],
       url: url,
-      proposal: proposal
+      user: user
     } do
       Mox.stub(Picsello.MockPayments, :construct_event, fn metadata, _, _ ->
         {:ok,
@@ -139,6 +140,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Close"))
       |> click(button("To-Do Contract"))
       |> assert_text("Terms and Conditions")
+      |> assert_text("#{lead.package.turnaround_weeks} week")
+      |> assert_text(
+        "laws of the State of #{PicselloWeb.Gettext.dyn_gettext(user.onboarding.state)}"
+      )
       |> assert_disabled(button("Submit"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
