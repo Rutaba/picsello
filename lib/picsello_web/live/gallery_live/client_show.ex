@@ -250,15 +250,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
-    |> assign(
-      :photos,
-      photos
-      |> Enum.take(per_page)
-    )
-    |> assign(
-      :has_more_photos,
-      photos
-      |> length > per_page
-    )
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, length(photos) > per_page)
   end
 end
