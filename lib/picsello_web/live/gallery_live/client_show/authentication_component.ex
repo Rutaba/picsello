@@ -8,7 +8,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> assign(:password_is_correct, true)
     |> assign(:submit, false)
     |> assign(:session_token, nil)
+    |> assign(:password_changeset, Galleries.gallery_password_change())
     |> ok()
+  end
+
+  def handle_event("change", %{"login" => params}, socket) do
+    socket
+    |> assign(:password_changeset, Galleries.gallery_password_change(params))
+    |> noreply()
   end
 
   def handle_event(
