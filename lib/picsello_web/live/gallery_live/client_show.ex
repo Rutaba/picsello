@@ -159,10 +159,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         photo_id: photo_id,
         photo_ids:
           CLL.init(photo_ids)
-          |> CLL.next(
-            photo_ids
-            |> Enum.find_index(&(&1 == to_integer(photo_id)))
-          )
+          |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
       }
     )
     |> noreply
@@ -250,15 +247,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
-    |> assign(
-      :photos,
-      photos
-      |> Enum.take(per_page)
-    )
-    |> assign(
-      :has_more_photos,
-      photos
-      |> length > per_page
-    )
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, length(photos) > per_page)
   end
 end

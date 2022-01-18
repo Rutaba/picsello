@@ -78,8 +78,8 @@ class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @g
             data-page={@page}
             data-total={@gallery.total_count}
             data-favorites-count={@favorites_count}
-            data-is-favorites-shown={@favorites_filter}
-            data-has-more-photos={@has_more_photos}
+            data-is-favorites-shown={ "#{@favorites_filter}" }
+            data-has-more-photos={ "#{@has_more_photos}" }
             >
             <%= for photo <- @photos do %>
             <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
