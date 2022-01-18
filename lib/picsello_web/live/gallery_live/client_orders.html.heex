@@ -47,8 +47,7 @@
                 <% end %>
                 <% end %>
                 <div class="digitalItems__wrapper relative">
-                    <%= for item <- order.products do %>
-                    <%= if Map.has_key?(item, :type) and item.type == 'digital' do %>
+                    <%= for item <- order.digitals do %>
                     <div class="py-5 lg:py-8 border-t lg:border-t-0 border-base-200">
                         <div class="grid grid-rows-1 gridTemplateOrder lg:grid-rows-2 lg:grid-flow-col">
                             <img src={"#{item.editor_details.preview_url}"} class="mx-auto h-24 md:h-28 lg:row-span-2"/>
@@ -65,7 +64,6 @@
                             <% end %>
                         </div>
                     </div>
-                    <% end %>
                     <% end %>
                     <%= if Map.has_key?(order, :order_type) and order.order_type !== 'physical' do %>
                     <div class="px-5 lg:px-8 pt-5 lg:pt-0 border-t lg:border-t-0 border-base-200 lg:absolute top-8 right-0 lg:w-80 lg:px-0">

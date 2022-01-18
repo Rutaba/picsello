@@ -102,7 +102,8 @@ defmodule Picsello.Cart do
   end
 
   def get_orders(gallery_id) do
-    from(order in Order, where: order.gallery_id == ^gallery_id and order.placed == true)
+    from(order in Order, where: order.gallery_id == ^gallery_id and order.placed == true,
+      order_by: [desc: order.id])
     |> Repo.all()
   end
 
