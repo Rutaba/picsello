@@ -118,6 +118,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("h2", text: Job.name(lead)))
       |> assert_disabled(@invoice_button)
       |> assert_text("Below are details for")
+      |> click(link("Message Photography LLC"))
+      |> fill_in(text_field("Subject line"),
+        with: "This field is required here, but ignored in the inbox."
+      )
+      |> fill_in(css("#editor > div"), with: "actual message")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Send Email"))
+      |> assert_text("Photography LLC will reply to #{lead.client.email}")
       |> click(button("To-Do Proposal"))
       |> assert_has(
         definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))

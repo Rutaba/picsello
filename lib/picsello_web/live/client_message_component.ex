@@ -8,6 +8,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     defaults = %{
       composed_event: :message_composed,
       show_cc: false,
+      show_client_email: true,
       modal_title: "Send an email"
     }
 
@@ -27,12 +28,14 @@ defmodule PicselloWeb.ClientMessageComponent do
     <div class="modal">
       <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
 
-      <div class="pt-5 input-label">
-        Client's email
-      </div>
-      <div class="relative text-input text-base-250">
-        <%= client_email @job %>
-      </div>
+      <%= if @show_client_email do %>
+        <div class="pt-5 input-label">
+          Client's email
+        </div>
+        <div class="relative text-input text-base-250">
+          <%= client_email @job %>
+        </div>
+      <% end %>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <%= labeled_input f, :subject, label: "Subject line", wrapper_class: "mt-4", phx_debounce: "500" %>
@@ -88,6 +91,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:body_text) => any,
           optional(:body_html) => binary,
           optional(:modal_title) => binary,
+          optional(:show_client_email) => boolean,
           optional(:composed_event) => any
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),

@@ -21,6 +21,16 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
+  def handle_event("open-compose", %{}, %{assigns: %{organization: organization}} = socket),
+    do:
+      socket
+      |> PicselloWeb.ClientMessageComponent.open(%{
+        modal_title: "Email #{organization.name}",
+        show_client_email: false
+      })
+      |> noreply()
+
+  @impl true
   def handle_event(
         "open-" <> page,
         %{},
@@ -67,6 +77,36 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     # clear the success param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:message_composed, changeset},
+        %{
+          assigns: %{
+            organization: %{name: organization_name},
+            job: %{id: job_id, client: %{email: client_email}}
+          }
+        } = socket
+      ) do
+    flash =
+      changeset
+      |> Ecto.Changeset.change(job_id: job_id, outbound: false)
+      |> Ecto.Changeset.apply_changes()
+      |> Repo.insert()
+      |> case do
+        {:ok, _} ->
+          &put_flash(
+            &1,
+            :info,
+            "Message sent! #{organization_name} will reply to #{client_email}."
+          )
+
+        {:error, _} ->
+          &put_flash(&1, :error, "Message not sent.")
+      end
+
+    socket |> close_modal() |> flash.() |> noreply()
   end
 
   def open_page_modal(%{assigns: %{proposal: proposal}} = socket, page, read_only \\ false)
