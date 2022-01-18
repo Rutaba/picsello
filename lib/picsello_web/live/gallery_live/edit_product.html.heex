@@ -11,7 +11,7 @@
     <div class="editProductPopup__img lg:w-2/4 sm:py-8 w-full rounded-2xl bg-base-250 flex items-center justify-center h-full xl:max-h-full lg:ml-12 ml-0">
       <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
                       id={@photo.id}
-                      preview_url={@photo.preview_url}
+                      photo={@photo}
                       category_template={@category_template}
                       has_product_info={false}
                        />
