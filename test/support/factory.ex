@@ -55,18 +55,28 @@ defmodule Picsello.Factory do
     |> Repo.update!()
   end
 
-  def onboard!(%User{} = user) do
+  def onboard!(%User{onboarding: nil} = user) do
     user
-    |> User.complete_onboarding_changeset()
+    |> Ecto.Changeset.change(onboarding: build(:onboarding))
     |> Repo.update!()
-    |> then(fn user ->
-      Enum.reduce(
-        ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
-        user,
-        &Onboardings.save_intro_state(&2, &1, "completed")
-      )
-    end)
   end
+
+  def onboard!(%User{onboarding: %{completed_at: %DateTime{}}} = user), do: user
+
+  def onboarding_factory,
+    do: %Onboardings.Onboarding{
+      phone: "(918) 555-1234",
+      photographer_years: 1,
+      switching_from_softwares: [:none],
+      schedule: :part_time,
+      completed_at: DateTime.utc_now(),
+      state: "OK",
+      intro_states:
+        Enum.map(
+          ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
+          &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
+        )
+    }
 
   def valid_user_attributes(attrs \\ %{}),
     do:
