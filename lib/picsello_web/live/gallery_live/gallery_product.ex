@@ -42,7 +42,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
          |> assign(:preview, preview)
          |> push_event("set_preview", %{
            preview: url,
-           ratio: get_in(preview,[:preview_photo, :aspect_ratio]),
+           ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
            frame: frame_name,
            coords: coords,
            target: "canvas"
