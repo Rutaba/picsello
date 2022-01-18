@@ -9,21 +9,35 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     has_product_info: true
   }
 
-  def mount(socket) do
+  def update(assigns, socket) do
     socket
     |> assign(@default_assigns)
+    |> assign(assigns)
+    |> set_preview()
     |> ok
   end
 
-  def update(%{category_template: template, preview_url: preview_url} = assigns, socket) do
+  defp set_preview(%{assigns: %{category_template: template, photo: nil}} = socket) do
     socket
-    |> assign(assigns)
     |> push_event("set_preview", %{
-      preview: path(preview_url),
+      preview: path(nil),
+      width: nil,
+      height: nil,
       frame: template.name,
       coords: template.corners,
       target: "canvas#{template.id}"
     })
-    |> ok
+  end
+
+  defp set_preview(%{assigns: %{category_template: template, photo: photo}} = socket) do
+    socket
+    |> push_event("set_preview", %{
+      preview: path(photo.preview_url),
+      width: photo.width,
+      height: photo.height,
+      frame: template.name,
+      coords: template.corners,
+      target: "canvas#{template.id}"
+    })
   end
 end
