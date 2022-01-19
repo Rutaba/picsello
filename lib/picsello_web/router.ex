@@ -149,6 +149,12 @@ defmodule PicselloWeb.Router do
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
 
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+
+    live "/photographer/:organization_slug/pricing", Live.ProfilePricing, :index,
+      as: :profile_pricing
+
+    live "/photographer/:organization_slug/pricing/:job_type", Live.ProfilePricing, :index,
+      as: :profile_pricing_job_type
   end
 
   pipeline :require_authenticated_gallery do

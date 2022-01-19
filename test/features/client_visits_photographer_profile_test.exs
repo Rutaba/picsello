@@ -18,6 +18,26 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       )
       |> onboard!
 
+    insert(:package_template,
+      name: "Gold",
+      description: "gold desc",
+      download_count: 2,
+      user: user,
+      job_type: "portrait",
+      base_price: 3000
+    )
+
+    insert(:package_template,
+      name: "Silver",
+      description: "silver desc",
+      download_count: 1,
+      user: user,
+      job_type: "portrait",
+      base_price: 2000
+    )
+
+    insert(:package_template, name: "Gold", user: user, job_type: "event", base_price: 1000)
+
     [
       photographer: user,
       profile_url: Routes.profile_path(PicselloWeb.Endpoint, :index, user.organization.slug)
@@ -38,8 +58,8 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> visit(profile_url)
     |> assert_text("Mary Jane Photography")
     |> assert_text("What we offer:")
-    |> assert_text("Portrait")
-    |> assert_text("Event")
+    |> assert_has(definition("Portrait", text: "Starting at $20"))
+    |> assert_has(definition("Event", text: "Starting at $10"))
     |> assert_has(radio_button("Portrait", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
@@ -151,5 +171,39 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
                }
              ]
            } = photographer |> latest_job()
+  end
+
+  feature "checks pricing", %{session: session, profile_url: profile_url} do
+    session
+    |> visit(profile_url)
+    |> click(link("See full price list"))
+    |> assert_text("Photography package types")
+    |> find(testid("package-detail", count: 2, at: 0), &assert_text(&1, "Gold"))
+    |> find(testid("package-detail", count: 2, at: 0), &assert_text(&1, "$30"))
+    |> find(testid("package-detail", count: 2, at: 0), &assert_text(&1, "gold desc"))
+    |> find(testid("package-detail", count: 2, at: 0), &assert_text(&1, "2 photo downloads"))
+    |> find(testid("package-detail", count: 2, at: 1), &assert_text(&1, "Silver"))
+    |> find(testid("package-detail", count: 2, at: 1), &assert_text(&1, "$20"))
+    |> find(testid("package-detail", count: 2, at: 1), &assert_text(&1, "silver desc"))
+    |> find(testid("package-detail", count: 2, at: 1), &assert_text(&1, "1 photo download"))
+    |> click(link("Back"))
+    |> click(link("Starting at $10"))
+    |> find(testid("package-detail", count: 1, at: 0), &assert_text(&1, "Gold"))
+    |> find(testid("package-detail", count: 1, at: 0), &assert_text(&1, "$10"))
+    |> find(testid("package-detail", count: 1, at: 0), &assert_text(&1, "0 photo downloads"))
+  end
+
+  feature "contacts from pricing page", %{session: session, profile_url: profile_url} do
+    session
+    |> visit(profile_url)
+    |> click(link("See full price list"))
+    |> fill_in(text_field("Your name"), with: "Chad Smith")
+    |> fill_in(text_field("Your email"), with: "chad@example.com")
+    |> fill_in(text_field("Your phone number"), with: "987 123 4567")
+    |> fill_in(text_field("Your message"), with: "May you take some pictures of our family?")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Submit"))
+    |> assert_text("Message sent")
+    |> assert_text("We'll contact you soon!")
   end
 end
