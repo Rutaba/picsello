@@ -3,12 +3,21 @@ defmodule PicselloWeb.Live.Profile do
   use PicselloWeb, live_view: [layout: "profile"]
   alias Picsello.{Profiles, Packages}
 
+  import PicselloWeb.Live.Profile.Shared,
+    only: [
+      assign_organization: 2,
+      assign_organization_by_slug: 2,
+      photographer_logo: 1,
+      profile_footer: 1
+    ]
+
   @impl true
   def mount(%{"organization_slug" => slug}, session, socket) do
     socket
     |> assign(:edit, false)
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
+    |> assign_start_prices()
     |> assign_contact_changeset()
     |> ok()
   end
@@ -19,22 +28,25 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(:edit, true)
     |> assign_defaults(session)
     |> assign_current_organization()
+    |> assign_start_prices()
     |> assign_contact_changeset()
     |> ok()
   end
 
   @impl true
   def render(assigns) do
+    pricing_params = if assigns.edit, do: %{edit: true}, else: %{}
+
     ~H"""
     <div class="flex-grow border-b-8 pb-16 md:pb-32" style={"border-color: #{@color}"}>
       <div class="px-6 py-4 md:py-8 md:px-16 center-container">
-        <.default_logo color={@color} photographer={@photographer} />
+        <.photographer_logo color={@color} photographer={@photographer} />
       </div>
 
       <hr class="border-base-200">
 
       <div class="flex flex-col justify-center px-6 mt-10 md:mt-20 md:px-16 md:flex-row center-container">
-        <div class="flex flex-col mb-10 mr-0 md:mr-10">
+        <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[40%]">
           <h1 class="text-5xl font-bold text-center lg:text-6xl md:text-left"><%= @organization.name %></h1>
 
           <div>
@@ -51,7 +63,7 @@ defmodule PicselloWeb.Live.Profile do
 
           <div class="w-auto">
             <%= for job_type <- @job_types do %>
-              <.live_link to={Routes.profile_pricing_job_type_path(@socket, :index, @organization.slug, job_type)} {testid("job-type")} class={"flex my-4 p-4 items-center rounded-lg bg-[#fafafa] border border-white hover:border-base-250"}>
+              <.live_link to={Routes.profile_pricing_job_type_path(@socket, :index, @organization.slug, job_type, pricing_params)} {testid("job-type")} class={"flex my-4 p-4 items-center rounded-lg bg-[#fafafa] border border-white hover:border-base-250"}>
                 <.icon name={job_type} style={"color: #{@color};"} class="mr-6 fill-current w-9 h-9" />
                 <dl class="flex flex-col">
                   <dt class="font-semibold whitespace-nowrap"><%= dyn_gettext job_type %></dt>
@@ -65,7 +77,7 @@ defmodule PicselloWeb.Live.Profile do
             <% end %>
           </div>
 
-          <.live_link to={Routes.profile_pricing_path(@socket, :index, @organization.slug)} class={"btn-primary text-center py-2 px-8 mt-2 md:self-start"}>
+          <.live_link to={Routes.profile_pricing_path(@socket, :index, @organization.slug, pricing_params)} class={"btn-primary text-center py-2 px-8 mt-2 md:self-start"}>
             See full price list
           </.live_link>
 
@@ -97,15 +109,7 @@ defmodule PicselloWeb.Live.Profile do
       <% end %>
     </div>
 
-    <footer class="px-6 md:px-16 center-container">
-      <div class="flex justify-center py-8 md:justify-start md:py-14"><.default_logo color={@color} photographer={@photographer} /></div>
-
-      <div class="flex flex-col items-center justify-start pt-6 mb-8 border-t md:flex-row md:justify-between border-base-250 text-base-300 opacity-30">
-        <span>© <%= Date.utc_today().year %> <%= @organization.name %></span>
-
-        <span class="mt-2 md:mt-0">Powered By <a href="https://www.picsello.com/?utm_source=app&utm_medium=link&utm_campaign=public_profile&utm_contentType=landing_page&utm_content=footer_link&utm_audience=existing_user" target="_blank">Picsello</a></span>
-      </div>
-    </footer>
+    <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
 
     <%= if @edit do %>
       <.edit_footer url={@url} />
@@ -170,18 +174,13 @@ defmodule PicselloWeb.Live.Profile do
   def handle_info({:update, organization}, socket) do
     socket
     |> assign_organization(organization)
+    |> assign_start_prices()
     |> noreply()
   end
 
   defp website_url(nil), do: "#"
   defp website_url("http" <> _domain = url), do: url
   defp website_url(domain), do: "https://#{domain}"
-
-  defp default_logo(assigns) do
-    ~H"""
-      <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
-    """
-  end
 
   defp contact_form(assigns) do
     assigns = assigns |> Enum.into(%{header_suffix: ""})
@@ -289,29 +288,9 @@ defmodule PicselloWeb.Live.Profile do
     """
   end
 
-  defp assign_organization_by_slug(socket, slug) do
-    organization = Profiles.find_organization_by(slug: slug)
-    assign_organization(socket, organization)
-  end
-
   defp assign_current_organization(%{assigns: %{current_user: current_user}} = socket) do
     organization = Profiles.find_organization_by(user: current_user)
     assign_organization(socket, organization)
-  end
-
-  defp assign_organization(socket, organization) do
-    %{profile: profile, user: user} = organization
-
-    assign(socket,
-      organization: organization,
-      color: profile.color,
-      description: profile.description,
-      website: profile.website,
-      photographer: user,
-      job_types: profile.job_types,
-      start_prices: start_prices(organization),
-      url: Profiles.public_url(organization)
-    )
   end
 
   defp assign_contact_changeset(%{assigns: %{job_types: types}} = socket) do
@@ -324,13 +303,16 @@ defmodule PicselloWeb.Live.Profile do
     assign(socket, :contact_changeset, Profiles.contact_changeset(params))
   end
 
-  def start_prices(organization) do
-    Packages.templates_for_organization(organization)
-    |> Enum.group_by(& &1.job_type)
-    |> Enum.map(fn {job_type, packages} ->
-      min_price = packages |> Enum.map(&Packages.price/1) |> Enum.sort() |> hd
-      {job_type, min_price}
-    end)
-    |> Enum.into(%{})
+  def assign_start_prices(%{assigns: %{organization: organization}} = socket) do
+    start_prices =
+      Packages.templates_for_organization(organization)
+      |> Enum.group_by(& &1.job_type)
+      |> Enum.map(fn {job_type, packages} ->
+        min_price = packages |> Enum.map(&Packages.price/1) |> Enum.sort() |> hd
+        {job_type, min_price}
+      end)
+      |> Enum.into(%{})
+
+    socket |> assign(:start_prices, start_prices)
   end
 end
