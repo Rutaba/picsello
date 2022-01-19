@@ -15,7 +15,7 @@ defmodule PicselloWeb.Live.Contacts do
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Contacts <.intro_hint content="Adding a contact will save their information without creating a lead - this is a great option if a client isn’t quite interested in a job yet, but you want to keep track of their contact info." /></h1>
+          <h1 class="text-2xl font-bold">Contacts</h1>
 
           <p class="max-w-2xl my-2">
             Manage your <%= ngettext "1 contact", "%{count} contacts", length(@contacts) %>
