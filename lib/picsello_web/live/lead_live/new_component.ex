@@ -41,11 +41,11 @@ defmodule PicselloWeb.JobLive.NewComponent do
         <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <%= inputs_for f, :client, fn client_form -> %>
-              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Jane Doe", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
+              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Elizabeth Taylor", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
               <%= if @name != nil do %>
                 <%= hidden_input client_form, :name %>
               <% end %>
-              <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "jane@example.com", phx_debounce: "500", disabled: @email != nil %>
+              <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "elizabeth.taylor@example.com", phx_debounce: "500", disabled: @email != nil %>
               <%= if @email != nil do %>
                 <%= hidden_input client_form, :email %>
               <% end %>
