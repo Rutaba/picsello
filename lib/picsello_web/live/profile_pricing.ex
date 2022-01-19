@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.ProfilePricing do
   @moduledoc "photographers public profile pricing"
   use PicselloWeb, live_view: [layout: "profile"]
-  alias Picsello.{Profiles, Packages}
+  alias Picsello.{Packages}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [assign_organization_by_slug: 2, photographer_logo: 1, profile_footer: 1]
@@ -44,7 +44,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
           <.photographer_logo color={@color} photographer={@photographer} />
         </div>
         <div class="md:hidden col-span-2 flex justify-end">
-          <a class="btn-primary text-center py-2"href="#contact">Let's chat</a>
+          <a class="btn-primary text-center py-2"href="#contact-form">Let's chat</a>
         </div>
       </div>
 
@@ -64,6 +64,10 @@ defmodule PicselloWeb.Live.ProfilePricing do
         </div>
       </div>
 
+      <div class="flex flex-col items-center my-10">
+        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: [@job_type] %>
+      </div>
+
       <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
     </div>
     """
@@ -74,7 +78,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
     <ul class="flex font-bold mt-10 text-xl px-6 overflow-auto">
       <%= for job_type <- @job_types do %>
         <% active = job_type == @current_job_type %>
-        <li id={"nav-#{job_type}"} {if active, do: %{phx_hook: "ScrollIntoView"}, else: %{}} class="border-b-8 mr-6 px-4 flex whitespace-nowrap items-center" style={"border-color: #{if active, do: @color, else: "white"}"}>
+        <li id={"nav-#{job_type}"} class="border-b-8 mr-6 px-4 flex whitespace-nowrap items-center" style={"border-color: #{if active, do: @color, else: "white"}"}>
           <%= if active do %>
             <.icon name={job_type} class="fill-current w-6 h-6" />
           <% end %>
@@ -83,6 +87,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
               <%= dyn_gettext job_type %>
             </div>
           <% end %>
+          <div {if active, do: %{id: "nav-scroll-#{job_type}", phx_hook: "ScrollIntoView"}, else: %{}}></div>
         </li>
       <% end %>
     </ul>
@@ -91,20 +96,22 @@ defmodule PicselloWeb.Live.ProfilePricing do
 
   defp package_detail(assigns) do
     ~H"""
-    <div class="flex justify-between font-bold text-xl pt-14">
-      <div><%= @name %></div>
-      <div><%= Money.to_string(@price, fractional_unit: false) %></div>
-    </div>
+    <div {testid("package-detail")}>
+      <div class="flex justify-between font-bold text-xl pt-14">
+        <div><%= @name %></div>
+        <div><%= Money.to_string(@price, fractional_unit: false) %></div>
+      </div>
 
-    <div>
-      <dl class="flex mt-4">
-        <dt class="underline mr-2">Description:</dt>
-        <dd><%= @description %></dd>
-      </dl>
-      <dl class="flex mt-4">
-        <dt class="underline mr-2">Included:</dt>
-        <dd><%= ngettext "1 photo download", "%{count} photo downloads", @download_count %></dd>
-      </dl>
+      <div>
+        <dl class="flex mt-4">
+          <dt class="underline mr-2">Description:</dt>
+          <dd><%= @description %></dd>
+        </dl>
+        <dl class="flex mt-4">
+          <dt class="underline mr-2">Included:</dt>
+          <dd><%= ngettext "1 photo download", "%{count} photo downloads", @download_count %></dd>
+        </dl>
+      </div>
     </div>
     """
   end
