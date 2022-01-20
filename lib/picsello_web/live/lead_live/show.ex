@@ -1,7 +1,14 @@
 defmodule PicselloWeb.LeadLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, BookingProposal, Notifiers.ClientNotifier, Questionnaire}
+
+  alias Picsello.{
+    Job,
+    Repo,
+    BookingProposal,
+    Notifiers.ClientNotifier,
+    Questionnaire
+  }
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -10,7 +17,8 @@ defmodule PicselloWeb.LeadLive.Show do
       subheader: 1,
       notes: 1,
       shoot_details: 1,
-      proposal_details: 1
+      proposal_details: 1,
+      overview_card: 1
     ]
 
   @impl true
@@ -19,7 +27,6 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
-    |> assign_proposal()
     |> ok()
   end
 
@@ -102,6 +109,10 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(:include_questionnaire, !include_questionnaire)
     |> noreply()
   end
+
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared

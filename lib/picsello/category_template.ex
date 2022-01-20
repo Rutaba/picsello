@@ -20,11 +20,11 @@ defmodule Picsello.CategoryTemplate do
 
   def all, do: Repo.all(CategoryTemplate)
 
-  def all_with_gallery_products do
+  def all_with_gallery_products(gallery_id) do
     Repo.all(
       from ct in __MODULE__,
         join: gp in GalleryProduct,
-        on: ct.id == gp.category_template_id,
+        on: ct.id == gp.category_template_id and gp.gallery_id == ^gallery_id,
         where: not is_nil(gp.preview_photo_id),
         select: %{
           name: ct.name,
@@ -49,31 +49,33 @@ defmodule Picsello.CategoryTemplate do
       name: "card_blank.png",
       category_name: "Loose Prints",
       title: "Prints",
-      price: Money.new(80_75),
+      price: Money.new(0_83),
       corners: [0, 0, 0, 0, 0, 0, 0, 0]
     },
     %{
       name: "album_transparency.png",
       category_name: "Albums",
       title: "Custom Albums",
-      price: Money.new(1_5),
+      price: Money.new(30_00),
       corners: [800, 715, 1720, 715, 800, 1620, 1720, 1620]
     },
-    %{
-      name: "card_envelope.png",
-      category_name: "Press Printed Cards",
-      title: "Greeting Cards",
-      price: Money.new(30),
-      corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
-    },
+    #    %{
+    #      name: "card_envelope.png",
+    #      category_name: "Press Printed Cards",
+    #      title: "Greeting Cards",
+    #      price: Money.new(30),
+    #      corners: [1650, 610, 3100, 610, 1650, 2620, 3100, 2620]
+    #    },
     %{
       name: "frame_transparency.png",
       category_name: "Wall Displays",
       title: "Framed Prints",
-      price: Money.new(5),
+      price: Money.new(32_55),
       corners: [550, 550, 2110, 550, 550, 1600, 2110, 1600]
     }
   ]
+
+  def frames(), do: @frames
 
   def seed_templates() do
     if Repo.aggregate(CategoryTemplate, :count) == 0 do

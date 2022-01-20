@@ -11,11 +11,21 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
     |> then(fn socket ->
       socket
       |> assign_new(:changeset, fn ->
+        body = """
+        We hope this email finds you well! We are getting a lot of inquiries for fall photoshoots already so we wanted to send you a reminder so you can book a shoot!
+
+        You are on the VIP list so you do get first dibs on the dates! We will be sending out another email blast next week so let us know today!
+
+        Any questions, just reply to this email, we are happy to help!
+
+        Can’t wait to photograph your family again soon!
+        """
+
         Marketing.new_campaign_changeset(
           %{
-            "subject" => "Lorem ipsum dolor sit amet",
-            "body_text" => "Lorem ipsum email description goes here lorem ipsum",
-            "body_html" => "Lorem ipsum email description goes here lorem ipsum",
+            "subject" => "It’s here! Our fall calendar is open!",
+            "body_text" => body,
+            "body_html" => body,
             "segment_type" => "new"
           },
           socket.assigns.current_user.organization_id
@@ -154,7 +164,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         %{assigns: %{review: false, changeset: changeset}} = socket
       ) do
     body_html = Ecto.Changeset.get_field(changeset, :body_html)
-    Process.send_after(self(), {:load_template_preview, body_html}, 50)
+    Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
     socket |> assign(:review, true) |> assign(:template_preview, :loading) |> noreply()
   end
 

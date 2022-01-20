@@ -23,8 +23,7 @@ defmodule Picsello.DeleteGalleryWatermarkTest do
     |> click(css("button", text: "Yes, delete"))
     |> assert_has(
       css("p",
-        text:
-          "If you’d like, add a custom watermark to your photos. Upload your logo, & we’ll do the rest!"
+        text: "Upload your logo and we’ll do the rest."
       )
     )
   end

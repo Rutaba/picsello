@@ -5,8 +5,8 @@ defmodule Picsello.Accounts.User do
   alias Picsello.Onboardings.Onboarding
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
-
   @derive {Inspect, except: [:password]}
+
   schema "users" do
     field :confirmed_at, :naive_datetime
     field :email, :string

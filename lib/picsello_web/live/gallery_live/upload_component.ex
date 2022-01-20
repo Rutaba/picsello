@@ -26,6 +26,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      socket
      |> assign(:upload_bucket, @bucket)
      |> assign(:overall_progress, 0)
+     |> assign(:estimate, "n/a")
      |> assign(:uploaded_files, 0)
      |> assign(:progress, %GalleryUploadProgress{})
      |> assign(:update_mode, "prepend")
@@ -140,6 +141,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
     total_progress = GalleryUploadProgress.total_progress(progress)
+    estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
 
     if total_progress == 100 do
       send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
@@ -147,6 +149,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
     socket
     |> assign(:overall_progress, total_progress)
+    |> assign(:estimate, estimate)
   end
 
   defp create_photo(gallery, entry) do

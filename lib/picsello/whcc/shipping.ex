@@ -11,13 +11,13 @@ defmodule Picsello.WHCC.Shipping do
 
   def all(),
     do: [
-      {545, "Economy USPS ", {8, 12}, "3.60"},
-      {1719, "Small Economy Trackable ", {8, 12}, "5.35"},
-      {546, "Economy trackable ", true, "7.90"},
-      {100, "3 days or less  ", true, "11.25"},
-      {101, "Next day saver ", true, "21.60"},
-      {1729, "Priority One-Day", true, "26.95"},
-      {1728, "Standard One-Day", true, "21.60"}
+      {545, "Fulfillment Shipping - Economy", {8, 12}, "3.60"},
+      {1719, "Fulfillment Shipping - Economy Trackable Small Format", {8, 12}, "5.35"},
+      {546, "Fulfillment Shipping - Economy Trackable", true, "7.90"},
+      {100, "Fulfillment Shipping WD - 3 days or less", true, "11.25"},
+      {101, "Fulfillment Shipping WD - NDS or 2 day", true, "21.60"},
+      {1729, "Fulfillment Shipping WD - Priority One-Day", true, "26.95"},
+      {1728, "Fulfillment Shipping WD - Standard One-Day", true, "21.60"}
       # {104, "FedEx to Canada", true}
     ]
 

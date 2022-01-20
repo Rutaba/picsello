@@ -123,16 +123,10 @@ defmodule PicselloWeb.FormHelpers do
   def select_field(form, field, options, opts \\ []) do
     phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
 
-    value = input_value(form, field)
-
     select_opts =
       [
         phx_feedback_for,
-        class:
-          classes(["select" | Keyword.get_values(opts, :class)], %{
-            "select-invalid" => form.errors[field],
-            "select-prompt" => !value || value == ""
-          })
+        class: classes(["select" | Keyword.get_values(opts, :class)])
       ] ++
         Keyword.drop(opts, [:class])
 
@@ -149,12 +143,25 @@ defmodule PicselloWeb.FormHelpers do
         Keyword.drop(opts, [:wrapper_class, :select_class, :label])
 
     content_tag :div,
-      class: classes([Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"]) do
+      class:
+        classes(
+          [Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"],
+          select_invalid_classes(form, field)
+        ) do
       [
         label_for(form, field, label_opts),
         select_field(form, field, options, select_opts)
       ]
     end
+  end
+
+  def select_invalid_classes(form, field) do
+    value = input_value(form, field)
+
+    %{
+      "select-invalid" => form.errors[field],
+      "select-prompt" => !value || value == ""
+    }
   end
 
   @doc """
@@ -202,11 +209,13 @@ defmodule PicselloWeb.FormHelpers do
 
         <div class="relative flex flex-col">
           <%= input @form, :website,
+              type: :url_input,
               phx_debounce: "500",
-              autocomplete: "off",
-              autocapitalize: "off",
               disabled: input_value(@form, :no_website) == true,
               placeholder: @placeholder,
+              autocomplete: "url",
+              novalidate: true,
+              phx_hook: "PrefixHttp",
               class: "p-4 sm:pr-48" %>
           <%= error_tag @form, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
 

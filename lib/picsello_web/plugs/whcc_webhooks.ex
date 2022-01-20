@@ -3,6 +3,7 @@ defmodule PicselloWeb.Plugs.WhccWebhook do
   @behaviour Plug
 
   import Plug.Conn
+  require Logger
 
   def init(config), do: config
 
@@ -27,6 +28,8 @@ defmodule PicselloWeb.Plugs.WhccWebhook do
       |> struct(%{body_params: Jason.decode!(body)})
     else
       _ ->
+        Logger.error("[whcc] Error verifying #{body}")
+
         conn
         |> send_resp(400, "")
         |> halt

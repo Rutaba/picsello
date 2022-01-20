@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Profile.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
   alias Picsello.{Repo, Profiles}
 
   @impl true
@@ -14,10 +14,10 @@ defmodule PicselloWeb.Live.Profile.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action}>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
-          <h1 class="text-2xl font-bold">Your Public Profile</h1>
+          <h1 class="text-2xl font-bold">Public Profile</h1>
 
           <p class="max-w-2xl my-2">
             Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
@@ -47,7 +47,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
         </.card>
 
         <.card title="Enable/disable your public profile">
-          <p class="mt-4">If for whatever reason you want to hide your public profile, you can disable it here!</p>
+          <p class="mt-4">Hide your public profile or make it visible.</p>
 
           <.form for={:toggle} phx-change="toggle">
             <label class="mt-4 text-2xl flex">
@@ -86,17 +86,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
     |> noreply()
   end
 
-  defp card(assigns) do
-    ~H"""
-    <div class="flex overflow-hidden border rounded-lg">
-      <div class="w-4 border-r bg-blue-planning-300" />
-
-      <div class="flex flex-col w-full p-4">
-        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
-
-        <%= render_slot(@inner_block) %>
-      </div>
-    </div>
-    """
-  end
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 end

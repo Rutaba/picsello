@@ -156,12 +156,13 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/gallery", PicselloWeb do
-    live "/:hash/dump", GalleryLive.DumpEditor, :show
-
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
       pipe_through [:browser, :require_authenticated_gallery]
 
       live "/:hash", GalleryLive.ClientShow, :show
+      live "/:hash/orders", GalleryLive.ClientOrders, :show
+      live "/:hash/orders/:order_id", GalleryLive.ClientOrder, :show
+      live "/:hash/orders/:order_id/paid", GalleryLive.ClientOrder, :paid
       live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
       post "/:hash/downloads", GalleryDownloadsController, :download
       post "/:hash/login", GallerySessionController, :put

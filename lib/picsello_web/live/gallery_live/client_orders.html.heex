@@ -1,0 +1,82 @@
+<div>
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-14">
+        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, gallery: @gallery, organization: @gallery.job.client.organization %>
+    </div> 
+    <hr>
+    <div class="pt-5 lg:pt-9 px-6 lg:px-14 max-w-screen-xl mx-auto">
+        <h3 class="font-bold text-lg md:text-3xl">My orders</h3>
+        <%= for order <- @orders do %>
+        <div class="mt-6 orderEntity lg:mt-8">
+            <div class="lg:flex items-center justify-between p-5 md:p-8 bg-base-200 border rounded-t-lg border-base-250 relative">
+                <div class="lg:flex items-center justify-between">
+                    <p class="lg:mr-8">
+                        <span class="font-semibold">Order placed: </span>
+                        <%= DateTime.to_string(order.placed_at) %>
+                    </p>
+                    <!-- *** *** *** !!! for wide screens (lg = 1024px) date should be in 'December 8, 2021' format !!! *** *** *** -->
+                    <p>
+                        <span class="font-semibold">Order total: </span>
+                        <%= Money.add(order.subtotal_cost, order.shipping_cost) %>
+                    </p>
+                </div>
+                <div class="lg:flex items-center justify-between">
+                    <p class="lg:mr-8">
+                        <span class="lg:font-semibold">Order number:</span>
+                        <span class="font-semibold lg:font-normal"><%= order.number %></span>
+                    </p>
+                    <p class="absolute top-5 right-5 lg:static">
+                    <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.id) do %>
+                        <p class="text-blue-planning-300">View details</p>
+                    <% end %>
+                    </p>
+                </div>
+            </div>
+            <div class="border-t-0 rounded-b-lg border-base-250 px-5 lg:px-20 border pb-5">
+                <%= for item <- order.products do %>
+                <%= unless Map.has_key?(item, :type) do %>
+                <div class="py-5 lg:py-8 border-t lg:border-t-0 border-base-200 first:border-0 md:first:border-t relative lg:flex justify-between">
+                    <div class="grid grid-rows-1 gridTemplateOrder lg:grid-rows-3 lg:grid-flow-col">
+                        <img src={"#{item.editor_details.preview_url}"} class="mx-auto h-24 lg:h-28 lg:row-span-4"/>
+                        <div class="flex flex-col px-4 md:px-8 pt-2 lg:pt-0 lg:col-span-2 lg:row-span-2">
+                            <span class="text-sm md:text-base md:font-medium lg:h-2/4 lg:flex lg:items-center"><%= item.editor_details.selections["size"] %> <%= item.editor_details.selections["size"] %></span>
+                            <span class="text-xs md:text-sm pt-2 lg:pt-0 lg:h-2/4 lg:flex lg:items-center">Quantity: <%= item.editor_details.selections["quantity"] %></span>
+                        </div>
+                        <span class="text-base pt-4 font-bold lg:col-span-2 lg:row-span-1 lg:px-8 lg:pt-0 lg:self-center"> <%= item.price %></span>
+                    </div>
+                </div>
+                <% end %>
+                <% end %>
+                <div class="digitalItems__wrapper relative">
+                    <%= for item <- order.digitals do %>
+                    <div class="py-5 lg:py-8 border-t lg:border-t-0 border-base-200">
+                        <div class="grid grid-rows-1 gridTemplateOrder lg:grid-rows-2 lg:grid-flow-col">
+                            <img src={"#{item.editor_details.preview_url}"} class="mx-auto h-24 md:h-28 lg:row-span-2"/>
+                            <div class="flex flex-col justify-end px-4 md:px-8 lg:col-span-2 lg:row-span-1 lg:pb-1 ">
+                                <span class="text-sm md:text-base md:font-medium lg:h-2/4 lg:flex lg:items-center">Digital download</span>
+                            </div>
+                            <%= if item.credits_used_amount > 0 do %>
+                            <span class="text-base font-bold self-start flex flex-wrap justify-end lg:justify-start lg:px-8 lg:pt-1 ">
+                            <span class="whitespace-nowrap"><%= item.credits_used_amount %> credit - </span>
+                            <span class="whitespace-nowrap"> <%= item.priceAfterApplyingCredits %></span>
+                            </span>
+                            <% else %>
+                            <span class="text-base font-bold lg:self-start lg:pt-1 lg:px-8 "> <%= item.price %></span>
+                            <% end %>
+                        </div>
+                    </div>
+                    <% end %>
+                    <%= if Map.has_key?(order, :order_type) and order.order_type !== 'physical' do %>
+                    <div class="px-5 lg:px-8 pt-5 lg:pt-0 border-t lg:border-t-0 border-base-200 lg:absolute top-8 right-0 lg:w-80 lg:px-0">
+                        <div class="flex items-center">
+                            <.icon name="download-link" class="w-9 h-7 lg:w-9 lg:h-6 mr-2 md:mr-4 "/>
+                            <p class="text-xs lg:text-sm text-base-250"><span class="font-bold">Order complete:</span> Download link sent to harrypotter@hogwarts.com</p>
+                        </div>
+                        <button class="btn-primary w-full my-5">Download photos</button>
+                    </div>
+                    <% end %>
+                </div>
+            </div>
+        </div>
+        <% end %>
+    </div>
+</div>

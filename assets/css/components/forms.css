@@ -38,12 +38,12 @@
       border
       border-gray-200
       rounded-lg
-      p-3;
+      p-2;
   }
-  .select-prompt {
+  .select-prompt > select {
     @apply text-gray-400;
   }
-  .select-invalid:not(.phx-no-feedback) {
+  .select-invalid > select:not(.phx-no-feedback) {
     @apply border-red-sales-300
       bg-red-sales-100
       focus:border-red-sales-300;

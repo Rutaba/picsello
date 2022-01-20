@@ -75,7 +75,9 @@ defmodule Picsello.MixProject do
         {:kane, "~> 0.9.0"},
         {:struct_access, "~> 1.1"},
         {:size, "~> 0.1.0"},
-        {:cll, "~> 0.1.0"}
+        {:cll, "~> 0.1.0"},
+        {:ex_zipcodes, "~> 0.1.1"},
+        {:ecto_commons, "~> 0.3.3"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},

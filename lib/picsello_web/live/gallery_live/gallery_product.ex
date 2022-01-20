@@ -42,6 +42,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
          |> assign(:preview, preview)
          |> push_event("set_preview", %{
            preview: url,
+           ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
            frame: frame_name,
            coords: coords,
            target: "canvas"
@@ -135,9 +136,11 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         :category_template_id
       ])
       |> Repo.insert_or_update()
-    end
 
-    {:noreply, socket}
+      {:noreply, socket |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery_id))}
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl true

@@ -10,7 +10,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
           name: "Mary Jane Photography",
           slug: "mary-jane-photos",
           profile: %{
-            color: "3376FF",
+            color: Picsello.Profiles.Profile.colors() |> hd,
             job_types: ~w(portrait event),
             website: "http://photos.example.com"
           }
@@ -80,17 +80,21 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
   feature "contact", %{session: session, profile_url: profile_url, photographer: photographer} do
     session
     |> visit(profile_url)
-    |> click(button("Submit"))
+    |> assert_disabled_submit()
+    |> fill_in(text_field("Your name"), with: " ")
+    |> fill_in(text_field("Your email"), with: " ")
+    |> fill_in(text_field("Your phone number"), with: " ")
+    |> fill_in(text_field("Your message"), with: " ")
     |> assert_text("Your name can't be blank")
     |> assert_text("Your email can't be blank")
-    |> assert_text("Your phone number can't be blank")
-    |> assert_text("What photography type are you interested in? can't be blank")
+    |> assert_text("Your phone number is invalid")
     |> assert_text("Your message can't be blank")
     |> fill_in(text_field("Your name"), with: "Chad Smith")
     |> fill_in(text_field("Your email"), with: "chad@example.com")
     |> fill_in(text_field("Your phone number"), with: "987 123 4567")
     |> click(css("label", text: "Portrait"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our family?")
+    |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
     |> assert_text("Message sent")
     |> assert_text("We'll contact you soon!")
@@ -123,6 +127,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> fill_in(text_field("Your phone number"), with: "918 123 4567")
     |> click(css("label", text: "Event"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our party?")
+    |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
     |> assert_text("Message sent")
 

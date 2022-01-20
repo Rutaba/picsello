@@ -1,16 +1,19 @@
-.clientGallery__coverImg {
-    height: 566px;
-    text-shadow: 0 0 10px #222;
-    @apply bg-base-250
-    bg-cover
-    bg-center;
-}
-
-.coverImg__wrapper {
-    height: 566px;
+.gallery__coverImg {
+    height:223px;
     @apply bg-base-200
     bg-cover
-    bg-center;
+    bg-center
+    relative;
+}
+
+.gallery__coverImg.active::after{
+    content: '';
+    background: linear-gradient(180deg, rgba(31, 28, 30, 0) 25.56%, rgba(31, 28, 30, 0.6) 66.71%);
+    @apply absolute
+    top-0
+    bottom-0
+    left-0
+    right-0
 }
 
 .gallery__container {
@@ -22,27 +25,74 @@
     px-16;
 }
 
-.galleryImage__wrapper {
-    width: 309px;
-
-}
-
-.photos__rect{
-   display: flex;
-   width: 309px;
-   height: 300px;
-   background-color: #F5F6F8;
-   @apply rounded-lg
+.photos__rect {
+    background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
+    height: 170px;
+    @apply rounded-lg
+    flex
+    w-auto
+    max-w-full
 }
 
 .frame {
     width: 219px;
     height: 178px;
-
 }
 
-.preview {
+/*.preview {
+    width: 603px;
     height: 650px
+}*/
+
+.productPreview__client > li > .productPreview_photo {
+    @apply relative
+    cursor-pointer
+}
+
+.productPreview__client > li > .productPreview_photo::before {
+    content: '';
+    background: linear-gradient(0deg, rgba(31, 28, 30, 0.65) 0%, rgba(31, 28, 30, 0.065) 100%);
+    @apply absolute
+    block
+    top-0
+    w-full
+    h-full
+    transition-all
+    duration-300
+    opacity-0
+    z-10
+    rounded-lg;
+}
+
+.productPreview__client > li > .productPreview_photo::after {
+    content: 'View product';
+    @apply absolute
+    text-base-100
+    text-center
+    flex
+    h-12
+    items-center
+    justify-center
+    bottom-4
+    left-1/2
+    border
+    border-base-100
+    -translate-x-1/2
+    p-4
+    w-11/12
+    transition-all
+    duration-300
+    opacity-0
+    z-20
+    rounded-lg;
+}
+
+.productPreview__client > li:hover > .productPreview_photo::before {
+    @apply opacity-100;
+}
+
+.productPreview__client > li:hover > .productPreview_photo::after {
+    @apply opacity-40;
 }
 
 .settings__wrapper > div {
@@ -282,7 +332,7 @@
     @apply text-base-100;
 }
 
-.galleryItem .likeBtn{
+.galleryItem .likeBtn {
     @apply opacity-0
     absolute;
 }
@@ -336,14 +386,14 @@
     @apply bg-transparent !important;
 }
 
-.editProductPopup{
+.editProductPopup {
     @apply
     box-border
     h-full
     w-full;
 }
 
-.editProductPopup__img{
+.editProductPopup__img {
     background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
 }
 
@@ -351,7 +401,7 @@
     max-height: 90%;
 }
 
-.errorPwdMsg ~ div > .relative input{
+.errorPwdMsg ~ div > .relative input {
     @apply border
     border-solid
     border-red-error-300
@@ -359,32 +409,33 @@
 }
 
 .mobileGalleryButtons a {
-   @apply inline-block
+    @apply inline-block
     w-full
     h-full;
+}
+
+.gridTemplateOrder {
+    grid-template-columns:110px minmax(80px, 1fr) auto
 }
 
 .productType:first-letter {
     text-transform: uppercase;
 }
 
-.customSelect select{
+.customSelect select {
     @apply text-base-300
     appearance-none
     border-0
     rounded-none
     w-full
-    text-base
-    leading-none
     bg-transparent
-    py-2
     px-4
     h-11
     focus:outline-none
     cursor-pointer
 }
 
-.customSelect{
+.customSelect {
     @apply
     w-full
     inline-block
@@ -397,15 +448,75 @@
     h-11
 }
 
-.customSelect::after{
+.customSelect::after {
     content: '';
     background: url('/images/chevron-thin-right.svg') no-repeat;
     width: 16px;
     height: 9px;
-    position:absolute;
+    position: absolute;
     right: 14px;
-    top:50%;
+    top: 50%;
     transform: translateY(-25%);
+}
+
+.customInvalidOption,
+.customInvalidOption option {
+   @apply text-base-300
+}
+
+.customInvalidOption:invalid,
+.customInvalidOption option[value=""] {
+   @apply text-base-250
+}
+
+.cartItemsAmount {
+    font-size: 10px;
+    line-height: 15px;
+    width: 16px;
+    height: 16px;
+}
+
+.darkerBorder {
+    border: 1px solid #C9C9C9;
+    @apply rounded-lg
+}
+
+.deliveryOptions__wrapper input[type="radio"]{
+    @apply appearance-none
+    h-5
+    w-5
+    bg-base-100
+    border
+    border-blue-planning-300
+    rounded-full
+    cursor-pointer
+    inline-flex
+    items-center
+    justify-center
+    outline-none
+    box-border
+
+}
+
+.deliveryOptions__wrapper input[type="radio"] label{
+    @apply text-green-finances-300
+}
+
+.deliveryOptions__wrapper input[type="radio"]:after{
+    content: "";
+    @apply h-3
+    w-3
+    rounded-full
+    bg-blue-planning-300
+    hidden
+}
+
+.deliveryOptions__wrapper input[type="radio"]:checked:after{
+  @apply inline-block
+}
+
+.shippingOptions__infoBlock {
+    max-width: 100%;
 }
 
 @media screen and (min-width: 1280px) {
@@ -414,6 +525,10 @@
         max-width: 1440px;
         height: 95vh;
         max-height: 894px;
+    }
+
+    .shippingOptions__infoBlock{
+        max-width: 835px;
     }
 }
 
@@ -434,7 +549,7 @@
     }
 
     .gallery__container {
-        @apply px-6;
+        @apply px-4;
     }
 
     .settings__wrapper > div {
@@ -444,27 +559,57 @@
     }
 
     .editProductPopup {
-      width: 95vw;
-      max-width: 1440px;
-      height: 95vh;
-      max-height: 894px;
-  }
+        width: 95vw;
+        max-width: 1440px;
+        height: 95vh;
+        max-height: 894px;
+    }
+}
 
+@media screen and (min-width: 640px) {
+    .photos__rect {
+        height: 300px;
+    }
+
+    .gallery__coverImg {
+        height: 400px;
+    }
 }
 
 @media screen and (max-width: 1024px) {
-    .choose-product{
-        display: inline-grid;
+    .choose-product {
+        @apply inline-grid
     }
-    .choose-product-item {width: 100%;}
+
+    .choose-product-item {
+       @apply w-full
+    }
 }
 
 @media screen and (min-width: 1024px) {
-    .choose-product{
-        display: flex;
+    .choose-product {
+        @apply flex
     }
+
     .customWatermarkPopup {
         max-height: 950px;
     }
-    .choose-product-item {width: 50%;}
+
+    .choose-product-item {
+        @apply w-1/2
+    }
+
+  /*  .preview {
+        width: 603px;
+        height: 650px;
+    }*/
+
+    .gallery__coverImg {
+        height: 566px;
+    }
+
+    .gallery__coverImg.active::after {
+        background: linear-gradient(270deg, rgba(31, 28, 30, 0.7) 0%, rgba(31, 28, 30, 0) 100%);
+    }
 }
+

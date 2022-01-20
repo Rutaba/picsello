@@ -25,6 +25,18 @@ msgstr "1.5 hrs"
 msgid "duration-120"
 msgstr "2 hrs"
 
+msgid "duration-180"
+msgstr "3 hrs"
+
+msgid "duration-240"
+msgstr "4 hrs"
+
+msgid "duration-300"
+msgstr "5 hrs"
+
+msgid "duration-360"
+msgstr "6 hrs"
+
 msgid "wedding"
 msgstr "Wedding"
 
@@ -48,3 +60,180 @@ msgstr "Boudoir"
 
 msgid "mini"
 msgstr "Mini-session"
+
+msgid "AL"
+msgstr "Alabama"
+
+msgid "AK"
+msgstr "Alaska"
+
+msgid "AS"
+msgstr "American Samoa"
+
+msgid "AZ"
+msgstr "Arizona"
+
+msgid "AR"
+msgstr "Arkansas"
+
+msgid "CA"
+msgstr "California"
+
+msgid "CO"
+msgstr "Colorado"
+
+msgid "CT"
+msgstr "Connecticut"
+
+msgid "DE"
+msgstr "Delaware"
+
+msgid "DC"
+msgstr "District of Columbia"
+
+msgid "FM"
+msgstr "Federated States of Micronesia"
+
+msgid "FL"
+msgstr "Florida"
+
+msgid "GA"
+msgstr "Georgia"
+
+msgid "GU"
+msgstr "Guam"
+
+msgid "HI"
+msgstr "Hawaii"
+
+msgid "ID"
+msgstr "Idaho"
+
+msgid "IL"
+msgstr "Illinois"
+
+msgid "IN"
+msgstr "Indiana"
+
+msgid "IA"
+msgstr "Iowa"
+
+msgid "KS"
+msgstr "Kansas"
+
+msgid "KY"
+msgstr "Kentucky"
+
+msgid "LA"
+msgstr "Louisiana"
+
+msgid "ME"
+msgstr "Maine"
+
+msgid "MH"
+msgstr "Marshall Islands"
+
+msgid "MD"
+msgstr "Maryland"
+
+msgid "MA"
+msgstr "Massachusetts"
+
+msgid "MI"
+msgstr "Michigan"
+
+msgid "MN"
+msgstr "Minnesota"
+
+msgid "MS"
+msgstr "Mississippi"
+
+msgid "MO"
+msgstr "Missouri"
+
+msgid "MT"
+msgstr "Montana"
+
+msgid "NE"
+msgstr "Nebraska"
+
+msgid "NV"
+msgstr "Nevada"
+
+msgid "NH"
+msgstr "New Hampshire"
+
+msgid "NJ"
+msgstr "New Jersey"
+
+msgid "NM"
+msgstr "New Mexico"
+
+msgid "NY"
+msgstr "New York"
+
+msgid "NC"
+msgstr "North Carolina"
+
+msgid "ND"
+msgstr "North Dakota"
+
+msgid "MP"
+msgstr "Northern Mariana Islands"
+
+msgid "OH"
+msgstr "Ohio"
+
+msgid "OK"
+msgstr "Oklahoma"
+
+msgid "OR"
+msgstr "Oregon"
+
+msgid "PW"
+msgstr "Palau"
+
+msgid "PA"
+msgstr "Pennsylvania"
+
+msgid "PR"
+msgstr "Puerto Rico"
+
+msgid "RI"
+msgstr "Rhode Island"
+
+msgid "SC"
+msgstr "South Carolina"
+
+msgid "SD"
+msgstr "South Dakota"
+
+msgid "TN"
+msgstr "Tennessee"
+
+msgid "TX"
+msgstr "Texas"
+
+msgid "UT"
+msgstr "Utah"
+
+msgid "VT"
+msgstr "Vermont"
+
+msgid "VI"
+msgstr "Virgin Islands"
+
+msgid "VA"
+msgstr "Virginia"
+
+msgid "WA"
+msgstr "Washington"
+
+msgid "WV"
+msgstr "West Virginia"
+
+msgid "WI"
+msgstr "Wisconsin"
+
+msgid "WY"
+msgstr "Wyoming"

@@ -135,4 +135,20 @@ defmodule Picsello.InboxTest do
     |> assert_has(testid("thread-card", count: 0))
     |> assert_text("You don’t have any new messages")
   end
+
+  feature "user goes to lead page from message", %{session: session, lead: lead} do
+    session
+    |> click(testid("inbox-card"))
+    |> click(testid("thread-card", count: 2, at: 1))
+    |> click(link("view lead"))
+    |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+  end
+
+  feature "user goes to job page from message", %{session: session, job: job} do
+    session
+    |> click(testid("inbox-card"))
+    |> click(testid("thread-card", count: 2, at: 0))
+    |> click(link("view job"))
+    |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :jobs, job.id))
+  end
 end

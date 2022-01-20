@@ -78,4 +78,38 @@ defmodule Picsello.StripePaymentsTest do
       assert "/already-saved-stub-account-id" = url |> URI.parse() |> Map.get(:path)
     end
   end
+
+  describe "cart checkout params" do
+    test "returns correct line items" do
+      gallery = insert(:gallery)
+      whcc_product = insert(:product)
+
+      cart_product = build(:ordered_cart_product, %{product_id: whcc_product.whcc_id})
+
+      %{products: products, shipping_cost: shipping_cost, subtotal_cost: subtotal_cost} =
+        Picsello.Cart.place_product(cart_product, gallery.id)
+
+      checkout_params =
+        Picsello.StripePayments.cart_checkout_params(products, shipping_cost,
+          success_url: "https://example.com/success",
+          cancel_url: "https://example.com/error"
+        )
+
+      assert [
+               %{
+                 price_data: %{
+                   currency: :USD,
+                   product_data: %{
+                     images: [cart_product.editor_details.preview_url],
+                     name:
+                       cart_product.editor_details.selections["size"] <>
+                         " " <> whcc_product.whcc_name
+                   },
+                   unit_amount: subtotal_cost.amount
+                 },
+                 quantity: cart_product.editor_details.selections["quantity"]
+               }
+             ] == checkout_params.line_items
+    end
+  end
 end

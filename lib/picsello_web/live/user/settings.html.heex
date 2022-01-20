@@ -1,39 +1,44 @@
-<.settings_nav socket={@socket} live_action={@live_action}>
-  <%= if @email_changeset do %>
-    <h3 class="mt-4 text-lg font-bold">Change email</h3>
+<.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
+  <div class="flex items-center justify-between">
+    <h1 class="my-7 text-2xl font-bold">Profile</h1>
 
-    <.form let={f} for={@email_changeset} phx-change="validate" phx-submit="save" id="email_form">
-      <%= hidden_input f, :action, name: "action", value: "update_email" %>
+    <.sign_out class="hidden sm:block" socket={@socket} sign_out={@sign_out} />
+  </div>
+  <hr />
 
-      <%= labeled_input f, :email, type: :email_input %>
+  <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-12">
+    <%= if @email_changeset do %>
+      <.card title="Change email">
+        <.form let={f} for={@email_changeset} phx-change="validate" phx-submit="save" id="email_form">
+        <%= hidden_input f, :action, name: "action", value: "update_email" %>
 
-      <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :current_password, name: :current_password, label: "Current password" %>
+        <%= labeled_input f, :email, type: :email_input, wrapper_class: "mt-4"  %>
 
-      <div class="mt-5 text-center">
-        <%= submit "Change email", class: "btn-primary mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Changing email..." %>
-      </div>
-    </.form>
-  <% end %>
+        <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :current_password, name: :current_password, label: "Current password" %>
 
-  <%= if @password_changeset do %>
-    <h3 class="mt-4 text-lg font-bold">Change password</h3>
+          <div class="mt-5 text-right">
+            <%= submit "Change email", class: "btn-primary mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Changing email..." %>
+          </div>
+        </.form>
+      </.card>
+    <% end %>
 
-    <.form let={f} for={@password_changeset} action={Routes.user_settings_path(@socket, :update)} phx-change="validate" phx-submit="save" method="put" phx-trigger-action={@submit_changed_password}>
-      <%= hidden_input f, :action, name: "action", value: "update_password" %>
+    <%= if @password_changeset do %>
+      <.card title="Change password">
+        <.form let={f} for={@password_changeset} action={Routes.user_settings_path(@socket, :update)} phx-change="validate" phx-submit="save" method="put" phx-trigger-action={@submit_changed_password}>
+          <%= hidden_input f, :action, name: "action", value: "update_password" %>
 
-      <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :change_new_password, label: "New password" %>
+          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :change_new_password, label: "New password" %>
 
-      <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password_to_change, name: :password_to_change, label: "Current password" %>
+          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password_to_change, name: :password_to_change, label: "Current password" %>
 
-      <div class="mt-5 text-center">
-        <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
-      </div>
-    </.form>
-  <% end %>
+          <div class="mt-5 text-right">
+            <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>
+          </div>
+        </.form>
+      </.card>
+    <% end %>
+  </div>
 
-  <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
-    <div class="mt-5 text-center">
-       <%= submit "Sign out", class: "btn-primary" %>
-    </div>
-  </.form>
+  <.sign_out class="block sm:hidden mt-8 w-full" socket={@socket} sign_out={@sign_out} />
 </.settings_nav>

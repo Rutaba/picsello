@@ -34,7 +34,12 @@
                 <p class="font-semibold text-sm"><%= template.title %></p>
                 <p class="font-semibold text-xs opacity-60"> <%= Money.to_string(template.price) %></p>
               </div>
-                <span phx-click="product_preview_photo_click" phx-target="#hamburger-menu" phx-value-params={ template.gid} class="p-2 bg-black text-white rounded-md float-right cursor-pointer">Select</span>
+                <span 
+                  phx-click="product_preview_photo_click" 
+                  phx-target="#hamburger-menu" 
+                  phx-value-template_id={template.gid}
+                  phx-value-photo_id={@photo_id}
+                  class="p-2 bg-black text-white rounded-md float-right cursor-pointer">Select</span>
             </div>
           </div>
           <% end %>

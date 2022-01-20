@@ -10,7 +10,13 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :picsello, PicselloWeb.Endpoint,
-  url: [host: System.get_env("RENDER_EXTERNAL_HOSTNAME") || "localhost", port: 80],
+  url: [
+    host:
+      System.get_env("EXTERNAL_HOSTNAME") || System.get_env("RENDER_EXTERNAL_HOSTNAME") ||
+        "localhost",
+    port: 443,
+    scheme: "https"
+  ],
   debug_errors: System.get_env("DEBUG_ERRORS") == "true",
   cache_static_manifest: "priv/static/cache_manifest.json"
 
@@ -87,5 +93,3 @@ config :picsello, Picsello.Mailer,
   ]
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
-
-config :picsello, :whcc, skip_design_details: true

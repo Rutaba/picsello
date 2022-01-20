@@ -26,6 +26,10 @@ defmodule PicselloWeb.GalleryLive.Settings do
     socket |> noreply()
   end
 
+  def handle_event("share_link", params, socket) do
+    PicselloWeb.GalleryLive.Show.handle_event("client-link", params, socket)
+  end
+
   @impl true
   def handle_event("open_watermark_deletion_popup", _, socket) do
     socket

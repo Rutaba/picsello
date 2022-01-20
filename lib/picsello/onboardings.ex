@@ -10,6 +10,16 @@ defmodule Picsello.Onboardings do
 
     use Ecto.Schema
 
+    defmodule IntroState do
+      @moduledoc "Container for user specific introjs state. Embedded in onboarding embed."
+      use Ecto.Schema
+
+      embedded_schema do
+        field(:changed_at, :utc_datetime)
+        field(:state, Ecto.Enum, values: [:completed, :dismissed, :restarted])
+      end
+    end
+
     @software_options [
       sprout_studio: "Sprout Studio",
       pixieset: "Pixieset",
@@ -32,6 +42,7 @@ defmodule Picsello.Onboardings do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
       field(:state, :string)
+      embeds_many(:intro_states, IntroState)
     end
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
@@ -91,6 +102,37 @@ defmodule Picsello.Onboardings do
       |> tap(&Picsello.Packages.create_initial/1)
       |> User.complete_onboarding_changeset()
       |> Repo.update!()
+
+  def save_intro_state(current_user, intro_id, state) do
+    new_intro_state = %Onboarding.IntroState{
+      changed_at: DateTime.utc_now(),
+      state: state,
+      id: intro_id
+    }
+
+    current_user
+    |> cast(%{onboarding: %{}}, [])
+    |> cast_embed(:onboarding,
+      with: fn %{intro_states: intro_states} = onboarding, _ ->
+        onboarding
+        |> change()
+        |> put_embed(:intro_states, [
+          new_intro_state | Enum.filter(intro_states, &(&1.id != intro_id))
+        ])
+      end
+    )
+    |> Repo.update!()
+  end
+
+  def show_intro?(current_user, intro_id) do
+    for(
+      %{id: ^intro_id, state: state} when state in [:completed, :dismissed] <-
+        current_user.onboarding.intro_states,
+      reduce: true
+    ) do
+      _ -> false
+    end
+  end
 
   defp organization_onboarding_changeset(organization, attrs, step) do
     organization

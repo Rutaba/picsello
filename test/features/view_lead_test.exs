@@ -43,4 +43,20 @@ defmodule Picsello.ViewLeadTest do
     |> click(link("Rick Sanchez Family"))
     |> assert_text("Email scheduled for #{first_reminder_on}")
   end
+
+  feature "user view inbox card on lead page", %{
+    session: session,
+    leads: [lead | _]
+  } do
+    session
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> find(testid("overview-Inbox"), &assert_text(&1, "View or send messages"))
+    |> find(testid("overview-Inbox"), &click(&1, button("Send message")))
+    |> within_modal(&assert_text(&1, "Send an email"))
+    |> within_modal(&click(&1, button("Cancel")))
+    |> click(button("Go to inbox"))
+    |> assert_path(Routes.inbox_path(PicselloWeb.Endpoint, :show, lead.id))
+    |> assert_has(testid("thread-card", count: 1))
+    |> find(testid("thread-card"), &assert_text(&1, "Rick Sanchez Family"))
+  end
 end

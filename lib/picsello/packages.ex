@@ -10,6 +10,8 @@ defmodule Picsello.Packages do
     Packages.CostOfLivingAdjustment
   }
 
+  import Picsello.Repo.CustomMacros
+
   import Ecto.Query, only: [from: 2]
 
   defmodule Multiplier do
@@ -188,18 +190,6 @@ defmodule Picsello.Packages do
          _ -> nil
        end)
 
-  defmacro array_to_string(array, delimiter) do
-    quote do
-      fragment("array_to_string(?, ?)", unquote(array), unquote(delimiter))
-    end
-  end
-
-  defmacro now() do
-    quote do
-      fragment("now()")
-    end
-  end
-
   def create_initial(
         %User{
           onboarding: %{photographer_years: years_experience, schedule: schedule, state: state}
@@ -219,28 +209,39 @@ defmodule Picsello.Packages do
         where: base.min_years_experience <= ^years_experience
       )
 
+    nearest = 500
+
     templates_query =
       from(base in BasePrice,
         where:
           base.full_time == ^full_time and base.job_type in ^job_types and
             base.min_years_experience in subquery(min_years_query),
+        inner_lateral_join:
+          name in ([base.tier, base.job_type] |> array_to_string(" ") |> initcap()),
+        on: true,
         join: adjustment in CostOfLivingAdjustment,
         on: adjustment.state == ^state,
         select: %{
-          base_price: type(adjustment.multiplier * base.base_price, base.base_price),
-          description: array_to_string([base.tier, base.job_type], " "),
+          base_price:
+            type(
+              nearest(adjustment.multiplier * base.base_price, ^nearest),
+              base.base_price
+            ),
+          description: name.initcap,
           download_count: base.download_count,
           download_each_price: type(^default_each_price, base.base_price),
           inserted_at: now(),
           job_type: base.job_type,
-          name: array_to_string([base.tier, base.job_type], " "),
+          name: name.initcap,
           organization_id: type(^organization_id, base.id),
           shoot_count: base.shoot_count,
+          turnaround_weeks: base.turnaround_weeks,
           updated_at: now()
         }
       )
 
     {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
+
     templates
   end
 

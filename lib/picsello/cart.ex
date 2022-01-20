@@ -8,6 +8,7 @@ defmodule Picsello.Cart do
   alias Picsello.WHCC
   alias Picsello.Cart.CartProduct
   alias Picsello.Cart.Order
+  alias Picsello.Cart.DeliveryInfo
 
   def new_product(editor_id, account_id) do
     details = WHCC.editor_details(account_id, editor_id)
@@ -57,6 +58,16 @@ defmodule Picsello.Cart do
     |> seek_and_map(&CartProduct.add_tracking(&1, params))
   end
 
+  @doc "stores checkout info in order it finds"
+  def store_cart_products_checkout(
+        [%CartProduct{editor_details: %{editor_id: editor_id}} | _] = products
+      ) do
+    editor_id
+    |> order_with_editor()
+    |> Order.checkout_changeset(products)
+    |> Repo.update!()
+  end
+
   @doc """
   Puts the product in the cart.
   """
@@ -67,6 +78,45 @@ defmodule Picsello.Cart do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
     end
+  end
+
+  @doc """
+  Gets the current order for gallery.
+  """
+  def get_unconfirmed_order(gallery_id) do
+    from(order in Order,
+      where: order.gallery_id == ^gallery_id and order.placed == false
+    )
+    |> Repo.one()
+    |> case do
+      %Order{} = order -> {:ok, order}
+      _ -> {:error, :no_unconfirmed_order}
+    end
+  end
+
+  def get_placed_gallery_order(order_id, gallery_id) do
+    from(order in Order,
+      where: order.gallery_id == ^gallery_id and order.placed == true and order.id == ^order_id
+    )
+    |> Repo.one()
+  end
+
+  def get_orders(gallery_id) do
+    from(order in Order, where: order.gallery_id == ^gallery_id and order.placed == true,
+      order_by: [desc: order.id])
+    |> Repo.all()
+  end
+
+  @doc """
+  Confirms the order.
+  """
+  def confirm_order(%Order{products: products} = order, account_id) do
+    confirmed_products =
+      Enum.map(products, fn product -> confirm_product(product, account_id) end)
+
+    order
+    |> Order.confirmation_changeset(confirmed_products)
+    |> Repo.update!()
   end
 
   def order_with_editor(editor_id) do
@@ -82,6 +132,26 @@ defmodule Picsello.Cart do
     |> Repo.one()
   end
 
+  def delivery_info_address_states(), do: DeliveryInfo.Address.states()
+
+  def delivery_info_selected_state(delivery_info_change) do
+    DeliveryInfo.selected_state(delivery_info_change)
+  end
+
+  def delivery_info_change(attrs \\ %{}) do
+    DeliveryInfo.changeset(%DeliveryInfo{}, attrs)
+  end
+
+  def order_delivery_info_change(%Order{delivery_info: delivery_info}, attrs \\ %{}) do
+    DeliveryInfo.changeset(delivery_info, attrs)
+  end
+
+  def store_order_delivery_info(%Order{} = order, delivery_info_change) do
+    order
+    |> Order.store_delivery_info(delivery_info_change)
+    |> Repo.update!()
+  end
+
   defp seek_and_map(editor_id, fun) do
     with order <- order_with_editor(editor_id),
          true <- order != nil and is_list(order.products),
@@ -93,20 +163,6 @@ defmodule Picsello.Cart do
       |> Repo.update()
     else
       _ -> :ignored
-    end
-  end
-
-  @doc """
-  Gets the current order for gallery.
-  """
-  def get_unconfirmed_order(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == false
-    )
-    |> Repo.one()
-    |> case do
-      %Order{} = order -> {:ok, order}
-      _ -> {:error, :no_unconfirmed_order}
     end
   end
 

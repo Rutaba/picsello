@@ -74,14 +74,14 @@ defmodule PicselloWeb.Live.Profile do
           <%= if @edit || @description do %>
             <.description edit={@edit} description={@description} color={@color} />
           <% else %>
-            <.contact_form color={@color} contact_changeset={@contact_changeset} job_types={@job_types} />
+            <.contact_form color={@color} changeset={@contact_changeset} job_types={@job_types} />
           <% end %>
         </div>
       </div>
 
       <%= if @edit || @description do %>
         <div class="flex flex-col items-center mt-8">
-          <.contact_form header_suffix={" with #{@organization.name}"} color={@color} contact_changeset={@contact_changeset} job_types={@job_types} />
+          <.contact_form header_suffix={" with #{@organization.name}"} color={@color} changeset={@contact_changeset} job_types={@job_types} />
         </div>
       <% end %>
     </div>
@@ -92,7 +92,7 @@ defmodule PicselloWeb.Live.Profile do
       <div class="flex flex-col items-center justify-start pt-6 mb-8 border-t md:flex-row md:justify-between border-base-250 text-base-300 opacity-30">
         <span>© <%= Date.utc_today().year %> <%= @organization.name %></span>
 
-        <span class="mt-2 md:mt-0">Powered By Picsello</span>
+        <span class="mt-2 md:mt-0">Powered By <a href="https://www.picsello.com/?utm_source=app&utm_medium=link&utm_campaign=public_profile&utm_contentType=landing_page&utm_content=footer_link&utm_audience=existing_user" target="_blank">Picsello</a></span>
       </div>
     </footer>
 
@@ -181,10 +181,10 @@ defmodule PicselloWeb.Live.Profile do
 
       <div class="w-1/3 h-2 mt-4 lg:w-1/4" style={"background-color: #{@color}"}></div>
 
-      <%= if @contact_changeset do %>
-        <.form for={@contact_changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" >
+      <%= if @changeset do %>
+        <.form for={@changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" >
           <div class="flex flex-col mt-3">
-            <%= label_for f, :name, label: "Your name", class: "py-2 font-bold" %>
+            <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
             <%= input f, :name, placeholder: "Type your first and last name...", class: "p-5", phx_debounce: 300 %>
           </div>
@@ -193,13 +193,13 @@ defmodule PicselloWeb.Live.Profile do
             <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
               <%= label_for f, :email, label: "Your email", class: "py-2 font-bold" %>
 
-              <%= input f, :email, placeholder: "Type email...", class: "p-5", phx_debounce: 300 %>
+              <%= input f, :email, type: :email_input, placeholder: "Type email...", class: "p-5", phx_debounce: 300 %>
             </div>
 
             <div class="flex flex-col flex-1 mt-3">
               <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-bold" %>
 
-              <%= input f, :phone, placeholder: "Type phone number...", class: "p-5", phx_debounce: 300, phx_hook: "Phone" %>
+              <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", class: "p-5", phx_debounce: 300, phx_hook: "Phone" %>
             </div>
           </div>
 
@@ -217,7 +217,7 @@ defmodule PicselloWeb.Live.Profile do
             <%= input f, :message, type: :textarea, placeholder: "Type your message...", class: "p-5", rows: 5, phx_debounce: 300 %>
           </div>
 
-          <div class="mt-8 text-right"><button class="w-full lg:w-auto btn-primary">Submit</button></div>
+          <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
         </.form>
       <% else %>
         <div class="flex items-center mt-14 min-w-max">

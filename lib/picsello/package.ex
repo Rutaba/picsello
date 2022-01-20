@@ -8,6 +8,7 @@ defmodule Picsello.Package do
 
   schema "packages" do
     field :archived_at, :utc_datetime
+    field :base_multiplier, :decimal, default: 1
     field :base_price, Money.Ecto.Amount.Type
     field :description, :string
     field :download_count, :integer
@@ -15,7 +16,7 @@ defmodule Picsello.Package do
     field :job_type, :string
     field :name, :string
     field :shoot_count, :integer
-    field :base_multiplier, :decimal, default: 1
+    field :turnaround_weeks, :integer, default: 1
 
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
@@ -54,14 +55,10 @@ defmodule Picsello.Package do
 
   defp create_details(package, attrs, opts \\ []) do
     package
-    |> cast(attrs, [
-      :description,
-      :name,
-      :organization_id,
-      :shoot_count
-    ])
-    |> validate_required([:name, :description, :shoot_count, :organization_id])
+    |> cast(attrs, ~w[description name organization_id shoot_count turnaround_weeks]a)
+    |> validate_required(~w[description name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
+    |> validate_number(:turnaround_weeks, greater_than_or_equal_to: 1)
     |> then(fn changeset ->
       if Keyword.get(opts, :is_template) do
         changeset |> cast(attrs, [:job_type]) |> validate_required([:job_type])

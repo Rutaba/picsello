@@ -42,12 +42,17 @@ defmodule Picsello.Workers.SyncTiers do
     rows = get_sheet_values(connection, :prices)
 
     rows =
-      for([time, experience_range, type, tier, base_price, shoots, downloads] <- tl(rows)) do
+      for(
+        [time, experience_range, type, tier, base_price, shoots, downloads, turnaround] <-
+          tl(rows)
+      ) do
         [min_years_experience] = Regex.run(~r/^\d+/, experience_range)
         job_type = Map.get(@job_type_map, type, String.downcase(type))
 
         base_price_dollars =
           Regex.scan(~r/\d+/, base_price) |> List.flatten() |> Enum.join() |> String.to_integer()
+
+        [_, turnaround_weeks] = Regex.run(~r/^(\d+)\s+weeks/i, turnaround)
 
         %{
           full_time: time != "Part-Time",
@@ -56,16 +61,17 @@ defmodule Picsello.Workers.SyncTiers do
           base_price: base_price_dollars * 100,
           tier: String.downcase(tier),
           shoot_count: String.to_integer(shoots),
-          download_count: String.to_integer(downloads)
+          download_count: String.to_integer(downloads),
+          turnaround_weeks: String.to_integer(turnaround_weeks)
         }
       end
 
     Repo.insert_all(
       Tier,
       [
-        %{name: "low", position: 0},
-        %{name: "mid", position: 1},
-        %{name: "high", position: 2}
+        %{name: "bronze", position: 0},
+        %{name: "silver", position: 1},
+        %{name: "gold", position: 2}
       ],
       on_conflict: :nothing
     )

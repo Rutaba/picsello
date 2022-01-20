@@ -8,8 +8,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign_step(2)
     |> then(fn %{assigns: %{current_user: user}} = socket ->
-      socket |> assign(current_user: user |> Repo.preload(:organization))
+      assign(socket, current_user: Repo.preload(user, :organization))
     end)
+    |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
     |> ok()
   end
@@ -19,7 +20,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_event("previous", %{}, %{assigns: %{step: step}} = socket) do
-    socket |> assign_step(step - 1) |> noreply()
+    socket |> assign_step(step - 1) |> assign_changeset() |> noreply()
   end
 
   @impl true
@@ -28,8 +29,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
-  def handle_event("validate", _, socket) do
-    socket |> assign_changeset(%{}) |> noreply()
+  def handle_event("validate", _params, socket) do
+    socket |> assign_changeset() |> noreply()
   end
 
   @impl true
@@ -51,14 +52,16 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
-        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save">
+        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
-          <div class="flex justify-between mt-5 sm:justify-end sm:mt-9">
+          <div class="flex justify-between mt-5 sm:justify-end sm:mt-9 items-center">
             <%= if @step > 2 do %>
               <button type="button" phx-click="previous" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">
                 Back
               </button>
+            <% else %>
+              <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
             <button type="submit" phx-disable-with="Saving..." disabled={!@changeset.valid?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
               <%= if @step == 5, do: "Finish", else: "Next" %>
@@ -98,7 +101,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         </label>
 
         <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What is your state?</p>
+          <p class="py-2 font-extrabold">Where’s your business based?</p>
 
           <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
           <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
@@ -123,7 +126,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <% input_name = input_name(p, :job_types) <> "[]" %>
           <div class="flex flex-col pb-1">
             <p class="py-2 font-extrabold">
-              What types of photography do you shoot?
+              What’s your speciality?
               <i class="italic font-light">(Select one or more)</i>
             </p>
 
@@ -145,7 +148,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <%= for p <- inputs_for(o, :profile) do %>
           <label class="flex flex-col">
-            <p class="py-2 font-extrabold">Color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
+            <p class="py-2 font-extrabold">Choose your color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
             <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
               <%= for(color <- colors()) do %>
                 <li class="aspect-h-1 aspect-w-1">
@@ -171,9 +174,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp step(%{step: 5} = assigns) do
+    software_selected? = fn form, software ->
+      Enum.member?(input_value(form, :switching_from_softwares) || [], software)
+    end
+
     ~H"""
       <%= for o <- inputs_for(@f, :onboarding) do %>
-        <% input_name = input_name(o, :switching_from_softwares) <> "[]" %>
         <div class="flex flex-col pb-1">
           <p class="py-2 font-extrabold">
             Which photography software have you used before?
@@ -181,13 +187,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </p>
 
           <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-            <%= for({value, label} <- software_options(), checked <- [Enum.member?(input_value(o, :switching_from_softwares) || [], value)]) do %>
-
+            <%= for({value, label} <- software_options(), checked <- [software_selected?.(o, value)]) do %>
               <label class={classes(
                 "p-3 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm sm:text-base",
                 %{"border-blue-planning-300 bg-blue-planning-100" => checked}
               )}>
-                <input class="hidden" type="checkbox" name={input_name} value={value} checked={checked} />
+                <input class="hidden" type={if software_selected?.(o, :none), do: "radio", else: "checkbox"} name={input_name(o, :switching_from_softwares) <> "[]"} value={value} checked={checked} />
 
                 <%= label %>
               </label>
@@ -217,8 +222,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 3,
       color_class: "bg-blue-gallery-200",
-      step_title: "Customize your business",
-      subtitle: "We need a little more info to get your account ready!",
+      step_title: "Customize your account",
+      subtitle: "",
       page_title: "Onboarding Step 3"
     )
   end
@@ -228,8 +233,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 4,
       color_class: "bg-green-finances-100",
-      step_title: "Customize your business",
-      subtitle: "We need a little more info to get your account ready!",
+      step_title: "Customize your account",
+      subtitle: "",
       page_title: "Onboarding Step 4"
     )
   end
@@ -240,7 +245,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step: 5,
       color_class: "bg-blue-planning-200",
       step_title: "Almost done!",
-      subtitle: "This last question helps us understand and serve each of our customers better.",
+      subtitle: "",
       page_title: "Onboarding Step 5"
     )
   end

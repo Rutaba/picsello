@@ -53,6 +53,7 @@ module.exports = {
           100: '#FFFFFF',
         },
         'blue-gallery': {
+          400: '#4DAAC6',
           300: '#6696F8',
           200: '#92B6F9',
           100: '#E1EBFD',
@@ -81,7 +82,11 @@ module.exports = {
         lg: '0px 4px 14px 0px rgba(0, 0, 0, 0.15)',
       },
       zIndex: { '-10': '-10' },
-      strokeWidth: {'3':'3', '4':'4'}
+      strokeWidth: {'3':'3', '4':'4'},
+      gridTemplateColumns: {
+        'cart': '110px minmax(80px, 1fr) auto',
+        'cartWide': '16rem 1fr auto'
+      }
     },
   },
   variants: {

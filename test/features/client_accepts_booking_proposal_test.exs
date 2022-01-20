@@ -78,10 +78,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     @sessions 2
     feature "client clicks link in booking proposal email", %{
-      sessions: [_, client_session],
       lead: lead,
+      proposal: proposal,
+      sessions: [_, client_session],
       url: url,
-      proposal: proposal
+      user: user
     } do
       Mox.stub(Picsello.MockPayments, :construct_event, fn metadata, _, _ ->
         {:ok,
@@ -126,8 +127,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(definition("From:", text: "Photography LLC"))
       |> assert_has(definition("Email:", text: "photographer@example.com"))
       |> assert_has(definition("Package:", text: "My Package"))
-      |> assert_has(definition("Subtotal", text: "$1.00"))
-      |> assert_has(definition("Discount", text: "20%"))
+      |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
       |> assert_has(testid("shoot-title", text: "September 30, 2021"))
@@ -140,14 +140,17 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Close"))
       |> click(button("To-Do Contract"))
       |> assert_text("Terms and Conditions")
+      |> assert_text("#{lead.package.turnaround_weeks} week")
+      |> assert_text(
+        "laws of the State of #{PicselloWeb.Gettext.dyn_gettext(user.onboarding.state)}"
+      )
       |> assert_disabled(button("Submit"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Submit"))
       |> assert_has(button("Completed Contract"))
       |> click(button("To-Do Invoice"))
-      |> assert_has(definition("Subtotal", text: "$1.00"))
-      |> assert_has(definition("Discount", text: "20%"))
+      |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(definition("50% deposit today", text: "$0.40"))
       |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
@@ -248,7 +251,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     @sessions 2
     feature "client pays - webhook is late", %{
-      sessions: [_, client_session],
+      sessions: [photographer_session, client_session],
       lead: lead,
       proposal: %{id: proposal_id},
       url: url
@@ -280,6 +283,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> visit(stripe_success_url)
       |> assert_has(css("h1", text: "Thank you"))
       |> assert_has(css("h1", text: "Your session is now booked."))
+
+      photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
     end
   end
 

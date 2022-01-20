@@ -1,8 +1,9 @@
 defmodule Picsello.Galleries.Photo do
   @moduledoc false
   use Ecto.Schema
+  use StructAccess
   import Ecto.Changeset
-  alias Picsello.Galleries.{Album, Gallery}
+  alias Picsello.Galleries.Gallery
 
   schema "photos" do
     field :client_liked, :boolean, default: false
@@ -17,7 +18,6 @@ defmodule Picsello.Galleries.Photo do
     field :width, :integer
 
     belongs_to(:gallery, Gallery)
-    belongs_to(:album, Album)
 
     timestamps(type: :utc_datetime)
   end
@@ -31,7 +31,6 @@ defmodule Picsello.Galleries.Photo do
     :watermarked_preview_url,
     :client_liked,
     :gallery_id,
-    :album_id,
     :aspect_ratio
   ]
   @update_attrs [

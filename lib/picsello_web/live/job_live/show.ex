@@ -1,54 +1,24 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, ClientMessage, BookingProposal, Package}
+  alias Picsello.{Job, Repo, BookingProposal, Package}
 
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
-      assign_proposal: 1,
       notes: 1,
       shoot_details: 1,
       status_badge: 1,
       subheader: 1,
-      proposal_details: 1
+      proposal_details: 1,
+      overview_card: 1
     ]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
     socket
     |> assign_job(job_id)
-    |> assign_inbox_count()
-    |> assign_proposal()
-    |> subscribe_inbound_messages()
     |> ok()
-  end
-
-  def overview_card(assigns) do
-    button_click = assigns[:button_click]
-
-    ~H"""
-      <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
-        <div>
-          <div class="mb-6 font-bold">
-            <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
-            <%= @title %>
-          </div>
-
-          <%= render_block(@inner_block) %>
-        </div>
-
-        <%= if @button_text do %>
-          <button
-            type="button"
-            class="w-full p-2 mt-6 text-sm text-center border rounded-lg border-base-300"
-            phx-click={button_click}
-          >
-            <%= @button_text %>
-          </button>
-        <% end %>
-      </li>
-    """
   end
 
   def gallery_overview_card(%{gallery: gallery} = assigns) do
@@ -71,7 +41,7 @@ defmodule PicselloWeb.JobLive.Show do
           %{
             button_text: "View Gallery",
             button_click: "view-gallery",
-            inner_block: fn _, _ -> "#{gallery.total_count} photos" end
+            inner_block: fn _, _ -> "#{gallery.total_count || 0} photos" end
           }
 
         :deactivated ->
@@ -121,13 +91,6 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
-    socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
-    |> noreply()
-  end
-
-  @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
@@ -164,35 +127,6 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
-  def handle_info(
-        {:inbound_messages, message},
-        %{assigns: %{inbox_count: count, job: job}} = socket
-      ) do
-    count = if message.job_id == job.id, do: count + 1, else: count
-
-    socket
-    |> assign(:inbox_count, count)
-    |> noreply()
-  end
-
   @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
-
-  defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
-    count =
-      Job.by_id(job.id)
-      |> ClientMessage.unread_messages()
-      |> Repo.aggregate(:count)
-
-    socket |> assign(:inbox_count, count)
-  end
-
-  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
-    Phoenix.PubSub.subscribe(
-      Picsello.PubSub,
-      "inbound_messages:#{current_user.organization_id}"
-    )
-
-    socket
-  end
 end

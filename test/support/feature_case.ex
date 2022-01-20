@@ -118,6 +118,10 @@ defmodule Picsello.FeatureCase do
       authenticated(%{session: session, user: insert(:user)})
     end
 
+    def onboarded_show_intro(%{user: user}) do
+      [user: Picsello.Factory.onboard_show_intro!(user)]
+    end
+
     def onboarded(%{user: user}) do
       [user: Picsello.Factory.onboard!(user)]
     end
@@ -198,7 +202,8 @@ defmodule Picsello.FeatureCase do
     end
 
     def authenticated_gallery_client(%{session: session}) do
-      authenticated_gallery_client(%{session: session, gallery: insert(:gallery)})
+      job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
+      authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do

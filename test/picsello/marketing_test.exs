@@ -4,10 +4,12 @@ defmodule Picsello.MarketingTest do
 
   describe "send_campaign_mail/1" do
     test "send emails" do
+      color = Picsello.Profiles.Profile.colors() |> hd
+
       user =
         insert(:user,
           name: "John Jack",
-          organization: %{name: "Photo 1", slug: "photo-1", profile: %{color: "#3AE7C7"}}
+          organization: %{name: "Photo 1", slug: "photo-1", profile: %{color: color}}
         )
 
       client = insert(:client, user: user, email: "client@example.com")
@@ -27,7 +29,7 @@ defmodule Picsello.MarketingTest do
                      "to" => [%{"email" => "client@example.com"}],
                      "dynamic_template_data" => %{
                        "initials" => "JJ",
-                       "color" => "#3AE7C7",
+                       "color" => ^color,
                        "button_url" => "http://localhost:4002/photographer/photo-1",
                        "content" => "<p>body</p>"
                      }
