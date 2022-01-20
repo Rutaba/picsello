@@ -95,7 +95,7 @@ defmodule Picsello.WHCC.Shipping do
       },
       %Option{
         id: 8,
-        name: "new one",
+        name: "Drop Ship",
         base: Money.new(750),
         percent: 0,
         size: &any/1,
@@ -114,6 +114,8 @@ defmodule Picsello.WHCC.Shipping do
     |> then(& &1.attrs)
     |> Enum.map(&%{"AttributeUID" => &1})
   end
+
+  def to_attributes(%{id: id}), do: to_attributes(id)
 
   defp normalize(size) do
     size

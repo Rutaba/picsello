@@ -128,7 +128,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(
       :shipping_opts,
       Enum.map(opts, fn
-        %{editor_id: id, current: {uid, _, _, _}} = opt
+        %{editor_id: id, current: %{id: uid}} = opt
         when editor_id == id and option_uid == uid ->
           opt
 
@@ -136,7 +136,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           Map.put(
             opt,
             :current,
-            Enum.find(opt[:list], fn list_opt -> option_uid == elem(list_opt, 0) end)
+            Enum.find(opt[:list], fn list_opt -> option_uid == list_opt.id end)
           )
 
         opt ->
@@ -159,8 +159,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     socket
     |> assign(
       :shipping_cost,
-      Enum.reduce(opts, Money.new(0), fn %{current: {_, _, _, cost}}, sum ->
-        cost |> Money.parse!() |> Money.add(sum)
+      Enum.reduce(opts, Money.new(0), fn %{current: %{price: cost}}, sum ->
+        cost |> Money.add(sum)
       end)
     )
   end
@@ -199,9 +199,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> then(&(&1.current == option))
   end
 
-  defp shipping_option_uid({uid, _, _, _}), do: uid
-  defp shipping_option_cost({_, _, _, cost}), do: Money.parse!(cost)
-  defp shipping_option_label({_, label, _, _}), do: label
+  defp shipping_option_uid(%{id: id}), do: id
+  defp shipping_option_cost(%{price: price}), do: price
+  defp shipping_option_label(%{name: label}), do: label
 
   defp return_to_address() do
     %{
