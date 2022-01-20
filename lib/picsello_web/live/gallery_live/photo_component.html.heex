@@ -7,9 +7,9 @@
         height: #{if @photo.aspect_ratio, do: "#{300 / @photo.aspect_ratio}px", else: "auto"};
     "}
 >
- <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-8 border-blue-planning-300 bg-blue-planning-300 rounded-xl" else "" end}
+ <div class={"item-content" <> if @preview_photo_id == @photo.id do " border-8 border-blue-planning-300 bg-blue-planning-300 rounded-xl selected" else "" end}
         >
-        
+
 <div
     id={"photo-#{@id}"}
     class="galleryItem"
@@ -23,22 +23,26 @@
         src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
         class="relative"
     />
-    <button
-        class="likeBtn"
-        phx-click={@is_likable && "like"}
-        phx-target={@myself}
-        phx-value-id={@id}
-    >
-         <%= if @photo.client_liked do %>
-              <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
-         <% else %>
-             <%= if @is_likable do %>
-                   <.icon name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
-              <% else %>
-                   <.icon name="heart" class="w-7 h-7 text-gray-200" />
-               <% end %>
-         <% end %>
-    </button>
+
+    <%= if @is_likable do %>
+        <button
+            class="likeBtn"
+            phx-click={js_like_click(@id, @myself)}
+        >
+            <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
+                <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
+            </div>
+
+            <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
+                <.icon  name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
+            </div>
+        </button>
+    <% else %>
+        <button class="likeBtn">
+            <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="w-7 h-7 text-gray-200"/>
+        </button>
+    <% end %>
+
     <%= if @is_removable do %>
         <button
             class="removeBtn absolute"
@@ -53,6 +57,6 @@
             <.icon name="checkmark" class="w-4 h-3" />
         </div>
     <% end %>
- </div> 
+ </div>
  </div>
 </div>

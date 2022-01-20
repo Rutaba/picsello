@@ -1,6 +1,7 @@
 defmodule Picsello.Galleries.Photo do
   @moduledoc false
   use Ecto.Schema
+  use StructAccess
   import Ecto.Changeset
   alias Picsello.Galleries.Gallery
 

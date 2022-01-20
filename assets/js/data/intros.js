@@ -14,10 +14,10 @@ export default {
         element: el.querySelector('h1'),
       },
       {
-        element: el.querySelector('.intro-needs-attention'),
-        title: 'Needs attention section',
+        element: el.querySelector('.intro-next-up'),
+        title: 'Next Up section',
         intro:
-          'The “needs attention” section will guide you through which steps you should focus on next. The more important an action is, the more we will highlight it to make sure you don’t miss it.',
+          'The “Next Up” section will guide you through which steps you should focus on next. The more important an action is, the more we will highlight it to make sure you don’t miss it.',
         position: 'bottom-middle-aligned',
       },
       {
@@ -116,13 +116,27 @@ export default {
         element: el.querySelector('h1'),
       },
       {
-        title: 'Add a package to your lead',
+        title: 'Add a package',
         intro:
           'This will include details like pricing and how many shoots are included. Packages are reusable, and if you’re unsure where to start, we have preset templates you can use as a guide.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('.intro-add-package'),
       },
-    ],
+      {
+        title: 'Connect Stripe',
+        intro:
+          'Connect a Stripe account or create one to make it easy for your clients to pay you.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-stripe'),
+      },
+      {
+        title: 'Send a proposal',
+        intro:
+          'Once the above steps are completed, you’ll be able to send your client a booking proposal for them to review.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-finish-proposal'),
+      },
+    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,,
   }),
   intro_settings: (el) => ({
     steps: [

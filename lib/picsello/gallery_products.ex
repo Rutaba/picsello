@@ -57,7 +57,7 @@ defmodule Picsello.GalleryProducts do
   """
   def get_whcc_products(category_id) do
     from(product in Product,
-      where: product.category_id == ^category_id,
+      where: product.category_id == ^category_id and is_nil(product.deleted_at),
       order_by: [asc: product.position],
       select:
         merge(product, %{

@@ -5,6 +5,7 @@ defmodule PicselloWeb.JobLive.Shared do
   alias Picsello.{
     Job,
     Shoot,
+    ClientMessage,
     Repo,
     BookingProposal,
     Messages,
@@ -14,6 +15,8 @@ defmodule PicselloWeb.JobLive.Shared do
   }
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  alias PicselloWeb.Router.Helpers, as: Routes
+  require Ecto.Query
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
@@ -71,6 +74,12 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_event("open-compose", %{}, socket),
     do: socket |> PicselloWeb.ClientMessageComponent.open() |> noreply()
 
+  def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
+    socket
+    |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
+    |> noreply()
+  end
+
   def handle_info({:action_event, "open_email_compose"}, socket) do
     socket |> PicselloWeb.ClientMessageComponent.open() |> noreply()
   end
@@ -110,26 +119,15 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
 
-  def assign_job(%{assigns: %{current_user: current_user, live_action: action}} = socket, job_id) do
-    job =
-      current_user
-      |> Job.for_user()
-      |> then(fn query ->
-        case action do
-          :jobs -> query |> Job.not_leads()
-          :leads -> query |> Job.leads()
-        end
-      end)
-      |> Repo.get!(job_id)
-      |> Repo.preload([:client, :package, :job_status, :gallery])
+  def handle_info(
+        {:inbound_messages, message},
+        %{assigns: %{inbox_count: count, job: job}} = socket
+      ) do
+    count = if message.job_id == job.id, do: count + 1, else: count
 
     socket
-    |> assign(
-      job: job |> Map.drop([:package]),
-      page_title: job |> Job.name(),
-      package: job.package
-    )
-    |> assign_shoots()
+    |> assign(:inbox_count, count)
+    |> noreply()
   end
 
   def assign_shoots(
@@ -152,6 +150,24 @@ defmodule PicselloWeb.JobLive.Shared do
   def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
     proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
     socket |> assign(proposal: proposal)
+  end
+
+  defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
+    count =
+      Job.by_id(job.id)
+      |> ClientMessage.unread_messages()
+      |> Repo.aggregate(:count)
+
+    socket |> subscribe_inbound_messages() |> assign(:inbox_count, count)
+  end
+
+  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "inbound_messages:#{current_user.organization_id}"
+    )
+
+    socket
   end
 
   @spec status_badge(%{job_status: %Picsello.JobStatus{}, class: binary}) ::
@@ -236,6 +252,33 @@ defmodule PicselloWeb.JobLive.Shared do
 
       <hr class="hidden border-gray-200 lg:block col-span-2"/>
     </div>
+    """
+  end
+
+  def overview_card(assigns) do
+    assigns = assigns |> Enum.into(%{button_text: nil, button_click: nil})
+
+    ~H"""
+      <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
+        <div>
+          <div class="mb-4 font-bold">
+            <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
+            <%= @title %>
+          </div>
+
+          <%= render_block(@inner_block) %>
+        </div>
+
+        <%= if @button_text do %>
+          <button
+            type="button"
+            class="w-full p-2 mt-4 text-sm text-center border rounded-lg border-base-300"
+            phx-click={@button_click}
+          >
+            <%= @button_text %>
+          </button>
+        <% end %>
+      </li>
     """
   end
 
@@ -388,5 +431,43 @@ defmodule PicselloWeb.JobLive.Shared do
       </div>
     </a>
     """
+  end
+
+  def assign_job(%{assigns: %{current_user: current_user, live_action: :leads}} = socket, job_id) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Repo.get!(job_id)
+
+    if job.job_status.is_lead do
+      socket
+      |> do_assign_job(job)
+    else
+      push_redirect(socket, to: Routes.job_path(socket, :jobs, job_id))
+    end
+  end
+
+  def assign_job(%{assigns: %{current_user: current_user, live_action: :jobs}} = socket, job_id) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Job.not_leads()
+      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Repo.get!(job_id)
+
+    do_assign_job(socket, job)
+  end
+
+  defp do_assign_job(socket, job) do
+    socket
+    |> assign(
+      job: job |> Map.drop([:package]),
+      page_title: job |> Job.name(),
+      package: job.package
+    )
+    |> assign_shoots()
+    |> assign_proposal()
+    |> assign_inbox_count()
   end
 end

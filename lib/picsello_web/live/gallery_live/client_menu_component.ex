@@ -13,11 +13,10 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
     |> then(&{:ok, &1})
   end
 
-  def get_menu_items(_socket),
-    do: [
-      %{title: "Home", path: "#"},
-      %{title: "Shop", path: "#"},
-      %{title: "My orders", path: "#"},
-      %{title: "Help", path: "#"}
+  def get_menu_items(socket, gallery) do
+    [
+      %{title: "Home", path: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash)},
+      %{title: "My orders", path: Routes.gallery_client_orders_path(socket, :show, gallery.client_link_hash)}
     ]
+  end
 end

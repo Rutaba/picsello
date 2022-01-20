@@ -2,6 +2,7 @@ defmodule Picsello.Packages do
   @moduledoc "context module for packages"
   alias Picsello.{
     Accounts.User,
+    Organization,
     Package,
     Repo,
     Job,
@@ -148,6 +149,9 @@ defmodule Picsello.Packages do
   def templates_for_user(user, job_type),
     do: user |> Package.templates_for_user(job_type) |> Repo.all()
 
+  def templates_for_organization(%Organization{id: id}),
+    do: id |> Package.templates_for_organization_id() |> Repo.all()
+
   def insert_package_and_update_job(changeset, job),
     do:
       Ecto.Multi.new()
@@ -182,6 +186,8 @@ defmodule Picsello.Packages do
   defdelegate job_types(), to: JobType, as: :all
 
   defdelegate job_name(job), to: Job, as: :name
+
+  defdelegate price(price), to: Package
 
   def discount_percent(%{base_multiplier: multiplier}),
     do:
@@ -235,11 +241,13 @@ defmodule Picsello.Packages do
           name: name.initcap,
           organization_id: type(^organization_id, base.id),
           shoot_count: base.shoot_count,
+          turnaround_weeks: base.turnaround_weeks,
           updated_at: now()
         }
       )
 
     {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
+
     templates
   end
 

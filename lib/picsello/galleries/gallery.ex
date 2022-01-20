@@ -50,6 +50,8 @@ defmodule Picsello.Galleries.Gallery do
   @required_attrs [:name, :job_id, :status, :password]
 
   def create_changeset(gallery, attrs \\ %{}) do
+    attrs = Map.put(attrs, :expired_at, next_year_expiration_datetime())
+
     gallery
     |> cast(attrs, @create_attrs)
     |> cast_password()
@@ -85,6 +87,12 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_required([:client_link_hash])
   end
 
+  def password_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [:password])
+    |> validate_required([:password])
+  end
+
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),
@@ -95,4 +103,8 @@ defmodule Picsello.Galleries.Gallery do
 
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 50)
+
+  defp next_year_expiration_datetime do
+    Date.utc_today() |> Date.add(365) |> DateTime.new!(~T[12:00:00])
+  end
 end

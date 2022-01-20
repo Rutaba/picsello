@@ -2,7 +2,8 @@ defmodule Picsello.GalleryAccessForClientsTest do
   use Picsello.FeatureCase, async: true
 
   setup do
-    [gallery: insert(:gallery, %{name: "Test Client Weeding"})]
+    job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
+    [gallery: insert(:gallery, %{name: "Test Client Weeding", job: job})]
   end
 
   feature "client views password submit", %{session: session, gallery: gallery} do
@@ -30,6 +31,6 @@ defmodule Picsello.GalleryAccessForClientsTest do
     |> fill_in(css("#login_password"), with: gallery.password)
     |> click(button("Submit"))
     |> assert_path("/gallery/#{gallery.client_link_hash}")
-    |> assert_has(css(".font-bold.text-4xl", text: "#{gallery.name}"))
+    |> assert_has(css(".font-bold.text-2xl", text: "#{gallery.name}"))
   end
 end

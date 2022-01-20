@@ -1,13 +1,31 @@
 <div>
     <div class="gallery__container">
-        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
+        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent,
+              live_action: @live_action,
+              organization: @gallery.job.client.organization,
+              cart_count: @cart_count,
+              gallery: @gallery,
+              cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
     </div>
     <hr>
     <div class="gallery__container">
         <%= if @step == :product_list do %>
         <div class="font-bold text-3xl py-16">Your shopping cart</div>
-        <div class="grid grid-cols-3 sm:grid-cols-1">
-            <div class="col-span-2 mr-4 sm:mr-0">
+        <div class="grid gridWrapper">
+            <div class="col-span-1 mb-4 subTotal">
+                <div class="p-5 border rounded-lg flex flex-col">
+                    <div class="text-xl"> 
+                        <%= unless Enum.empty?(@order.products) do %>
+                        Subtotal:
+                        <% else %>
+                        Total:
+                        <% end %>
+                        <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+                    </div>
+                    <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
+                </div>
+            </div>
+            <div class="col-span-2 cartItem">
                 <%= for product <- @order.products do %>
                 <.live_component
                 module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
@@ -39,54 +57,54 @@
         </div>
         <% end %>
 
- <%= if @step == :delivery_info do %>
-    <div class="max-w-screen-xl w-full m-auto px-6 xl:px-0">
-        <h2 class="text-xl xl:text-3xl font-bold pt-14 pb-10">Enter your shipping information</h2>
-        <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
+        <%= if @step == :delivery_info do %>
+        <div class="max-w-screen-xl w-full m-auto px-6 xl:px-0">
+            <h2 class="text-xl xl:text-3xl font-bold pt-14 pb-10">Enter your shipping information</h2>
+            <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
             <div class="border border-gray-200 rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
                 <div class="flex flex-col md:flex-row">
-                  <div class="flex flex-col flex-1 md:mr-4">
-                    <label for="email" class="text-sm font-bold pb-2 leading-8">Email address</label>
-                    <%= text_input f, :email, id: "email", class: "border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-                  <div class="flex flex-col flex-1">
-                    <label for="name" class="text-sm font-bold pb-2 leading-8">Name</label>
-                    <%= text_input f, :name, id: "name", class: "border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
+                    <div class="flex flex-col flex-1 md:mr-4">
+                        <label for="email" class="text-sm font-bold pb-2 leading-8">Email address</label>
+                        <%= text_input f, :email, id: "email", class: "border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <label for="name" class="text-sm font-bold pb-2 leading-8">Name</label>
+                        <%= text_input f, :name, id: "name", class: "border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
                 </div>
-                <div class="mt-6"> <!-- this block should be hidden in case non physical products-->
-                  <p class="text-sm font-bold">Shipping address</p>
-                  <%= inputs_for f, :address, fn fp -> %>
-
-                  <div class="pt-4">
-                    <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-                  <div class="pt-4">
-                    <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-                  <div class="flex pt-4">
-                      <div class="mr-4 w-1/2">
-                        <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                      </div>
-                      <div class="w-1/2">
-                        <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                      </div>
-                  </div>
-                  <div class="customSelect mt-4 cursor-pointer">
-                    <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 rounded focus:outline-none h-12 px-3"  %>
-                  </div>
-                <% end %>
-              </div>
+                <div class="mt-6">
+                    <!-- this block should be hidden in case non physical products-->
+                    <p class="text-sm font-bold">Shipping address</p>
+                    <%= inputs_for f, :address, fn fp -> %>
+                    <div class="pt-4">
+                        <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+                    <div class="pt-4">
+                        <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+                    <div class="flex pt-4">
+                        <div class="mr-4 w-1/2">
+                            <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                        </div>
+                        <div class="w-1/2">
+                            <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                        </div>
+                    </div>
+                    <div class="customSelect mt-4 cursor-pointer">
+                        <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 rounded focus:outline-none h-12 px-3"  %>
+                    </div>
+                    <% end %>
+                </div>
             </div>
             <div class="border border-gray-200 rounded-lg w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
                 <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span><%= @order.subtotal_cost %></span></p>
                 <hr class="my-4">
                 <p class="text-xl">Total: <span class="font-bold"><%= @order.subtotal_cost %></span></p>
-                <%= submit "Continue", class: "btn-primary w-full mt-5", disabled: !@delivery_info_changeset.valid? %>  
+                <%= submit "Continue", class: "btn-primary w-full mt-5", disabled: !@delivery_info_changeset.valid? %>
             </div>
-        </.form>
-    </div>
-  <% end %>
+            </.form>
+        </div>
+        <% end %>
 
         <%= if @step == :shipping_opts do %>
         <div class="font-bold text-3xl py-16">Shipping options</div>
@@ -96,11 +114,11 @@
                 <div class="flex py-4">
                     <div>
                         <.live_component
-                            module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-                            id={product.editor_details.editor_id}
-                            product={product}
-                            has_border={false}
-                            has_buttons={false}
+                        module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
+                        id={product.editor_details.editor_id}
+                        product={product}
+                        has_border={false}
+                        has_buttons={false}
                         />
                     </div>
                     <div class="border-l border-gray-200 pl-9 deliveryOptions__wrapper">
@@ -115,7 +133,7 @@
                                 phx-value-option-uid={shipping_option_uid(option)}
                                 phx-value-product-editor-id={product.editor_details.editor_id}
                                 checked={is_current_shipping_option?(@shipping_opts, option, product)}>
-                            <div class="ml-4">
+                            <div class="ml-4 w-11/12">
                                 <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
                                 <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium"><%= shipping_option_cost(option) %></label><br>
                             </div>

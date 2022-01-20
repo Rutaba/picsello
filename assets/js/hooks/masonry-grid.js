@@ -58,6 +58,13 @@ const positionChange = (movedId, order) => {
     return false;
 }
 
+const calculateItemsMargins = () => {
+    const gridElement = document.querySelector("#muuri-grid");
+    const gridWidth = gridElement.offsetWidth;
+    const elementsInRow = parseInt(gridWidth /300  + '');
+    const margin = ((gridWidth - (elementsInRow * 300)) / elementsInRow)
+    document.querySelectorAll('#muuri-grid .item').forEach(el => el.style.margin = `10px ${margin/2}px`)
+}
 
 export default {
   /**
@@ -73,6 +80,8 @@ export default {
   init_masonry () {
     const gridElement = document.querySelector("#muuri-grid");
     if (gridElement) {
+        window.addEventListener('resize', ()=>  calculateItemsMargins())
+        calculateItemsMargins()
       const opts = {
         layout: {
           fillGaps: true,
@@ -123,8 +132,9 @@ export default {
   reload_masonry () {
     const grid = this.get_grid();
     grid.remove(grid.getItems());
+    calculateItemsMargins()
     grid.add(document.querySelectorAll('#muuri-grid .item'));
-  },
+    },
 
   /**
    * Injects newly added photos into grid
@@ -134,12 +144,13 @@ export default {
     const addedItemsIds = grid.getItems().map(x => x.getElement().id);
     const allItems = document.querySelectorAll('#muuri-grid .item');
     const itemsToInject = Array.from(allItems).filter(x => !addedItemsIds.includes(x.id))
-
+    calculateItemsMargins()
     grid.add(itemsToInject);
+
   },
 
   /**
-   * Returns true if there are more photos to load. 
+   * Returns true if there are more photos to load.
    * @returns {boolean}
    */
   hasMorePhotoToLoad() { return this.el.dataset.hasMorePhotos === 'true' },
@@ -147,7 +158,7 @@ export default {
   init_remove_listener() {
     this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
   },
-  
+
   remove_item(id) {
     const grid = this.get_grid();
     const itemElement = document.getElementById(`photo-item-${id}`);
@@ -160,10 +171,10 @@ export default {
    * Compares position objects
    */
   isPositionEqual(previousPosition, nextPosition) {
-    return previousPosition.left === nextPosition.left 
+    return previousPosition.left === nextPosition.left
         && previousPosition.top === nextPosition.top;
   },
-  
+
   /**
    * Mount callback
    */
@@ -177,7 +188,6 @@ export default {
       ){
         this.pending = this.page() + 1
         this.pushEvent("load-more", {})
-        
       }
     })
 

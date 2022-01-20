@@ -505,6 +505,10 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  def gallery_password_change(attrs \\ %{}) do
+    Gallery.password_changeset(%Gallery{}, attrs)
+  end
+
   @doc """
   Returns the changeset of watermark struct.
   """
@@ -598,5 +602,10 @@ defmodule Picsello.Galleries do
   def populate_organization(%Gallery{} = gallery) do
     gallery
     |> Repo.preload(job: [client: :organization])
+  end
+
+  def populate_organization_user(%Gallery{} = gallery) do
+    gallery
+    |> Repo.preload(job: [client: [organization: :user]])
   end
 end

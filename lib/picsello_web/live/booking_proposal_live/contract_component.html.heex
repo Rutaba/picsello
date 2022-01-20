@@ -66,7 +66,7 @@
       </.li>
 
       <.li title="Miscellany.">
-        This Agreement incorporates the entire understanding of the parties.  Any modifications of this Agreement must be in writing and signed by both parties.  Any waiver of a breach or default hereunder shall not be deemed a waiver of a subsequent breach or default of either the same provision or any other provision of this Agreement.  This Agreement shall be governed by the laws of the State of New York.
+        This Agreement incorporates the entire understanding of the parties.  Any modifications of this Agreement must be in writing and signed by both parties.  Any waiver of a breach or default hereunder shall not be deemed a waiver of a subsequent breach or default of either the same provision or any other provision of this Agreement.  This Agreement shall be governed by the laws of the State of <%= dyn_gettext(@photographer.onboarding.state) %>.
       </.li>
 
       <.li title="RELEASE">
@@ -79,6 +79,10 @@
 
       <.li title="PHOTOGRAPHER INFORMATION">
         <p><%= @organization.name %></p>
+      </.li>
+
+      <.li title="DELIVERY OF FINISHED PRODUCT">
+        The client will be presented with the purchased images from the session within <%= ngettext("1 week", "%{count} weeks", @package.turnaround_weeks) %> of their session date. Though many more images will be recorded, any image that does not meet quality standards will not be shown. The Photographer will choose to show only the best images for purchase consideration. The client’s images will be presented via an online gallery delivered to the client’s email address.
       </.li>
     </ol>
 

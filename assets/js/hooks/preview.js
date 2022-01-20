@@ -1,31 +1,32 @@
-let preview;
-let renderImageWithFrame;
-
 const Preview = {
     frame_name: null,
     preview_name: null,
     coords: null,
     target: null,
+    preview: null,
+    renderImageWithFrame: null,
+    ratio: null,
     mounted() {
         this.handleEvent("set_preview",
-            ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
+            ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId, ratio}) => {
                 this.frame_name = frame_name
                 this.preview_name = preview_name
                 this.coords = corners0
                 this.target = canvasId
+                this.ratio = ratio
 
-                this.draw(frame_name, preview_name, corners0, canvasId);
+                this.draw(frame_name, preview_name, corners0, canvasId, ratio);
             })
     },
 
-    draw(frame_name, preview_name, coord, canvasId) {
-
+    draw(frame_name, preview_name, coord, canvasId, ratio) {
         if (typeof (coord) == 'string') {
             coord = JSON.parse(coord)
         }
 
         const screenWidth = window.innerWidth;
         const canvas = document.getElementById(canvasId);
+        const smallHeight = canvas.dataset.small
 
         if (canvas.getContext) {
             const ctx = canvas.getContext("2d");
@@ -35,12 +36,22 @@ const Preview = {
             frame.src = "/images/" + frame_name;
 
             if (screenWidth < 640) {
-                canvas.width = 120
-                canvas.height = 80
+                canvas.height = smallHeight || 80
             }
 
-            const cw = canvas.width;
+            if (canvas.classList.contains('edit')) {
+                const selectedImage = document.querySelector('.selected img');
+                if(selectedImage) {
+                    const selectedImage__height = selectedImage?.height
+                    const selectedImage__width = selectedImage?.width
+                    ratio = selectedImage__width / selectedImage__height
+                }
+            }
+
+            const cw = ratio ? canvas.height * ratio : canvas.width;
             const ch = canvas.height;
+
+            canvas.width = cw
 
             frame.onload = function () {
                 const frameW = frame.width;
@@ -53,7 +64,7 @@ const Preview = {
                 const kw = cw / frameW;
                 const kh = ch / frameH;
 
-                renderImageWithFrame = () => {
+                const renderImageWithFrame = function () {
                     const width = (w * kw) < 10 && cw || (w * kw);
                     const height = (h * kh) < 10 && ch || (h * kh);
 
@@ -64,16 +75,19 @@ const Preview = {
                     ctx.drawImage(preview, ltx, lty, width, height);
                 }
 
-                preview = new Image();
+                const preview = new Image();
                 preview.src = preview_name;
                 preview.onload = renderImageWithFrame
+
+                Preview.preview = preview
+                Preview.renderImageWithFrame = renderImageWithFrame
             }
         }
     },
     updated() {
-        this.draw(this.frame_name, this.preview_name, this.coords, this.target);
-        if (preview) {
-            renderImageWithFrame()
+        this.draw(this.frame_name, this.preview_name, this.coords, this.target, this.ratio);
+        if (this.preview) {
+            this.renderImageWithFrame()
         }
     }
 }

@@ -1,6 +1,11 @@
 <div>
     <div class="max-w-screen-xl mx-auto px-6 lg:px-14">
-        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action %>
+        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent,
+          live_action: @live_action,
+          organization: @gallery.job.client.organization,
+          cart_count: @cart_count,
+          gallery: @gallery,
+          cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
     </div>
     <hr>
     <div class="pt-5 lg:pt-14 px-6 lg:px-14 max-w-screen-xl mx-auto">
@@ -31,9 +36,9 @@
         <%= unless Enum.empty?(@order.products) do %>
         <div class="border rounded-lg border-grey-100 p-5 mt-5">
             <h4 class="font-bold text-lg">Your order will be sent to:</h4>
-            <p class="text-base pt-4">Shipping name</p>
-            <p class="text-base pt-2.5">123 Street</p>
-            <p class="text-base pt-2.5">City State ZIP</p>
+            <p class="text-base pt-4"><%= @shipping_name %></p>
+            <p class="text-base pt-2.5"><%= @shipping_address.addr1 %></p>
+            <p class="text-base pt-2.5"><%= @shipping_address.city <> ", " <> @shipping_address.state <> " " <> @shipping_address.zip %></p>
         </div>
         <% end %>
         <div class="border rounded-lg border-grey-100 p-5 mt-5">

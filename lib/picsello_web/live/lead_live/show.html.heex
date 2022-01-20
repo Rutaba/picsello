@@ -29,7 +29,7 @@
       </h1>
       <%= cond do %>
         <% is_nil(@package) -> %>
-          <button type="button" class="w-full mt-6 md:w-auto btn-primary" phx-click="add-package" >Add a package <.intro_hint content="To finish booking your proposal, you’ll need a Stripe account to process client payments. Create your Stripe account now to continue booking." /></button>
+          <button type="button" class="w-full mt-6 md:w-auto btn-primary" phx-click="add-package" >Add a package</button>
         <% is_nil(@proposal) -> %>
           <div class="flex flex-col justify-center">
             You haven’t sent a proposal yet.
@@ -44,9 +44,36 @@
 <.subheader package={@package} job={@job} />
 
 <div class="p-6 center-container">
-
   <h2 class="mt-2 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status History</h2>
   <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, job: @job, current_user: @current_user %>
+
+  <ul class="mt-6 grid gap-5 grid-cols-2 lg:grid-cols-4">
+    <.overview_card title="Inbox" icon="envelope-outline">
+      <%= if @inbox_count > 0 do %>
+        <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+      <% else %>
+        View or send messages.
+      <% end %>
+      <div class="mt-4 gap-3 grid grid-cols-2 ">
+        <button type="button" class="p-2 text-sm text-center border rounded-lg border-base-300" phx-click="open-inbox">
+          Go to inbox
+        </button>
+        <button type="button" class="p-2 text-sm text-center border rounded-lg border-base-300" phx-click="open-compose">
+          Send message
+        </button>
+      </div>
+    </.overview_card>
+    <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
+      <.overview_card title="Finances" icon="money-bags-outline">
+        Connect or set up Stripe.
+        <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_overview,
+            current_user: @current_user,
+            class: "mt-4 w-full p-2 text-sm text-center border rounded-lg border-base-300",
+            return_url: Routes.job_url(@socket, @live_action, @job.id),
+            stripe_status: @stripe_status %>
+      </.overview_card>
+    <% end %>
+  </ul>
 
   <.notes job={@job} />
 
@@ -57,7 +84,7 @@
       <p>You don’t have any shoots yet. Please add a package first.</p>
 
       <button {testid("add-package-from-shoot")} type="button" phx-click="add-package" class="mt-2 text-center btn-primary intro-add-package">
-        Add a package <.intro_hint content="To finish booking your proposal, you’ll need a Stripe account to process client payments. Create your Stripe account now to continue booking." />
+        Add a package
       </button>
     </div>
 
@@ -71,7 +98,7 @@
       <.proposal_details proposal={@proposal} current_user={@current_user} />
 
     <% else %>
-      <div class="w-full p-4 mt-2 border rounded-lg lg:w-1/2">
+      <div {testid("booking-summary")} class="w-full p-4 mt-2 border rounded-lg lg:w-1/2">
         <p class="text-sm">Add additional details to be included with the booking proposal.</p>
 
         <label class="flex mt-4">
@@ -95,7 +122,7 @@
             <div class="max-w-max">
               <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
                   current_user: @current_user,
-                  class: "w-full mt-2 btn-primary py-1 px-3",
+                  class: "w-full mt-2 btn-primary py-1 px-3 intro-stripe",
                   return_url: Routes.job_url(@socket, @live_action, @job.id),
                   stripe_status: @stripe_status %>
               </div>
@@ -107,7 +134,7 @@
         <select id="contract_type" class="block w-full md:w-3/4 select"><option>Standard Contract</option></select>
 
         <% shoots_completed = @package && @shoots && @package.shoot_count == Enum.count(@shoots, &elem(&1, 1)) %>
-        <button id="finish-proposal" title="finish proposal" class="w-full mt-6 md:w-auto btn-primary" phx-click="finish-proposal" disabled={!(@stripe_status == :charges_enabled && shoots_completed)}>Finish booking proposal <.intro_hint content="In order to send your booking proposal and turn your lead into a job, you’ll need to complete the rest of these booking details." /></button>
+        <button id="finish-proposal" title="finish proposal" class="w-full mt-6 md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={!(@stripe_status == :charges_enabled && shoots_completed)}>Finish booking proposal</button>
       </div>
     <% end %>
 </div>

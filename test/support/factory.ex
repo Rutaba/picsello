@@ -55,18 +55,28 @@ defmodule Picsello.Factory do
     |> Repo.update!()
   end
 
-  def onboard!(%User{} = user) do
+  def onboard!(%User{onboarding: nil} = user) do
     user
-    |> User.complete_onboarding_changeset()
+    |> Ecto.Changeset.change(onboarding: build(:onboarding))
     |> Repo.update!()
-    |> then(fn user ->
-      Enum.reduce(
-        ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
-        user,
-        &Onboardings.save_intro_state(&2, &1, "completed")
-      )
-    end)
   end
+
+  def onboard!(%User{onboarding: %{completed_at: %DateTime{}}} = user), do: user
+
+  def onboarding_factory,
+    do: %Onboardings.Onboarding{
+      phone: "(918) 555-1234",
+      photographer_years: 1,
+      switching_from_softwares: [:none],
+      schedule: :part_time,
+      completed_at: DateTime.utc_now(),
+      state: "OK",
+      intro_states:
+        Enum.map(
+          ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
+          &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
+        )
+    }
 
   def valid_user_attributes(attrs \\ %{}),
     do:
@@ -97,6 +107,7 @@ defmodule Picsello.Factory do
       name: "Package name",
       description: "Package description",
       shoot_count: 2,
+      turnaround_weeks: 1,
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -390,6 +401,7 @@ defmodule Picsello.Factory do
       min_years_experience: 1,
       base_price: 100,
       shoot_count: 2,
+      turnaround_weeks: 1,
       download_count: 10
     }
 
@@ -483,5 +495,28 @@ defmodule Picsello.Factory do
       whcc_processing: nil,
       whcc_tracking: nil
     }
+  end
+
+  def confirmed_order_factory(attrs) do
+    %Picsello.Cart.Order{
+      delivery_info: %Picsello.Cart.DeliveryInfo{
+        address: %Picsello.Cart.DeliveryInfo.Address{
+          addr1: "1234 Hogwarts Way",
+          addr2: nil,
+          city: "New York",
+          country: "US",
+          state: "NY",
+          zip: "10001"
+        },
+        email: "hello@gmail.com",
+        name: "Harry Potter"
+      },
+      number: 226_160,
+      placed: true,
+      placed_at: ~U[2022-01-17 09:42:05Z],
+      shipping_cost: %Money{amount: 5703, currency: :USD},
+      subtotal_cost: %Money{amount: 380_000, currency: :USD}
+    }
+    |> merge_attributes(attrs)
   end
 end
