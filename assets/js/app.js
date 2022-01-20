@@ -28,6 +28,7 @@ import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
+import HelpScout from './hooks/help-scout';
 import IntroJS from './hooks/intro';
 import MasonryGrid from './hooks/masonry-grid';
 import PercentMask from './hooks/percent-mask';
@@ -110,6 +111,7 @@ const Hooks = {
   Clipboard,
   DragDrop,
   IFrameAutoHeight,
+  HelpScout,
   IntroJS,
   MasonryGrid,
   Modal,
