@@ -42,9 +42,17 @@ import ToggleContent from './hooks/toggle-content';
 
 const Modal = {
   mounted() {
-    this.el.addEventListener('click', (e) => {
-      if (e.target.id === 'modal-wrapper') {
-        this.pushEvent('modal', { action: 'close' });
+    this.el.addEventListener('mousedown', (e) => {
+      const targetIsOverlay = (e) => e.target.id === 'modal-wrapper';
+
+      if (targetIsOverlay(e)) {
+        const mouseup = (e) => {
+          if (targetIsOverlay(e)) {
+            this.pushEvent('modal', { action: 'close' });
+          }
+          this.el.removeEventListener('mouseup', mouseup);
+        };
+        this.el.addEventListener('mouseup', mouseup);
       }
     });
 
