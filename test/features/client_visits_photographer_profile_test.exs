@@ -191,6 +191,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> find(testid("package-detail", count: 1, at: 0), &assert_text(&1, "Gold"))
     |> find(testid("package-detail", count: 1, at: 0), &assert_text(&1, "$10"))
     |> find(testid("package-detail", count: 1, at: 0), &assert_text(&1, "0 photo downloads"))
+    |> assert_value(css("input:checked[name='contact[job_type]']", visible: false), "event")
   end
 
   feature "contacts from pricing page", %{session: session, profile_url: profile_url} do

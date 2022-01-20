@@ -42,4 +42,19 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("label", text: "Type of Photography can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
   end
+
+  feature "user creates lead with job type 'other'", %{session: session} do
+    session
+    |> click(button("Create a lead"))
+    |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
+    |> fill_in(text_field("Client Email"), with: "taylor@example.com")
+    |> fill_in(text_field("Client Phone"), with: "(210) 111-1234")
+    |> click(option("Other"))
+    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Other"))
+    |> click(link("Picsello"))
+    |> find(testid("leads-card"))
+    |> assert_text("1 pending lead")
+  end
 end
