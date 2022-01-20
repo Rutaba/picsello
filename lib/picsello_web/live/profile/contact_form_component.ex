@@ -72,6 +72,10 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
     """
   end
 
+  defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
+    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
+  end
+
   defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
     params =
       case types do

@@ -65,7 +65,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
       </div>
 
       <div class="flex flex-col items-center my-10">
-        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: [@job_type] %>
+        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_type: @job_type, job_types: @job_types %>
       </div>
 
       <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
