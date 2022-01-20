@@ -22,7 +22,8 @@ defmodule Picsello.Factory do
     Questionnaire.Answer,
     Galleries.Gallery,
     Galleries.Watermark,
-    Galleries.Photo
+    Galleries.Photo,
+    Profiles.Profile
   }
 
   def valid_user_password(), do: "hello world!"
@@ -56,6 +57,17 @@ defmodule Picsello.Factory do
   end
 
   def onboard!(%User{onboarding: nil} = user) do
+    organization =
+      user
+      |> Repo.preload(:organization)
+      |> Map.get(:organization)
+
+    if !organization.profile do
+      organization
+      |> Ecto.Changeset.change(profile: build(:profile))
+      |> Repo.update!()
+    end
+
     user
     |> Ecto.Changeset.change(onboarding: build(:onboarding))
     |> Repo.update!()
@@ -76,6 +88,14 @@ defmodule Picsello.Factory do
           ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
           &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
         )
+    }
+
+  def profile_factory,
+    do: %{
+      color: Profile.colors() |> hd,
+      is_enabled: true,
+      job_types: ["event", "wedding", "newborn"],
+      no_website: true
     }
 
   def valid_user_attributes(attrs \\ %{}),
