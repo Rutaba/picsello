@@ -11,9 +11,8 @@
                 <div class="lg:flex items-center justify-between">
                     <p class="lg:mr-8">
                         <span class="font-semibold">Order placed: </span>
-                        <%= DateTime.to_string(order.placed_at) %>
+                        <%= "#{PicselloWeb.LiveHelpers.month_name(order.placed_at.month)} #{order.placed_at.day}, #{order.placed_at.year}" %>
                     </p>
-                    <!-- *** *** *** !!! for wide screens (lg = 1024px) date should be in 'December 8, 2021' format !!! *** *** *** -->
                     <p>
                         <span class="font-semibold">Order total: </span>
                         <%= Money.add(order.subtotal_cost, order.shipping_cost) %>
