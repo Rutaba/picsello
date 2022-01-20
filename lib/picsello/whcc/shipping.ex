@@ -1,31 +1,121 @@
 defmodule Picsello.WHCC.Shipping do
   @moduledoc "WHCC shipping options"
 
-  @doc "Returns options available for size"
-  def options(size) do
-    size = normalize(size)
+  alias Picsello.WHCC.Shipping.Option
 
+  @doc "Returns options available for category, size, price"
+  def options(category, size, price, limit \\ 3) do
     all()
-    |> Enum.filter(fn {_, _, frame, _} -> size |> fits?(frame) end)
+    |> Enum.filter(fn %{size: size_filter, category: category_filter} ->
+      size_filter.(normalize(size)) and category_filter.(category)
+    end)
+    |> Enum.sort_by(& &1.prio)
+    |> Enum.take(limit)
+    |> Enum.map(fn %{id: id, name: name, base: base, percent: percent} ->
+      %{id: id, name: name, price: Money.add(base, Money.multiply(price, percent / 100))}
+    end)
+  end
+
+  defmodule Option do
+    @moduledoc "Structure to represent shipping option"
+    defstruct [:id, :name, :base, :percent, :size, :category, :attrs, :prio]
   end
 
   def all(),
     do: [
-      {545, "Fulfillment Shipping - Economy", {8, 12}, "3.60"},
-      {1719, "Fulfillment Shipping - Economy Trackable Small Format", {8, 12}, "5.35"},
-      {546, "Fulfillment Shipping - Economy Trackable", true, "7.90"},
-      {100, "Fulfillment Shipping WD - 3 days or less", true, "11.25"},
-      {101, "Fulfillment Shipping WD - NDS or 2 day", true, "21.60"},
-      {1729, "Fulfillment Shipping WD - Priority One-Day", true, "26.95"},
-      {1728, "Fulfillment Shipping WD - Standard One-Day", true, "21.60"}
-      # {104, "FedEx to Canada", true}
+      %Option{
+        id: 1,
+        name: "Economy",
+        base: Money.new(355),
+        percent: 5,
+        size: &fits?(&1, {8, 12}),
+        category: &(&1 == "Loose Prints"),
+        attrs: [96, 545],
+        prio: 5
+      },
+      %Option{
+        id: 2,
+        name: "Economy Trackable Small Format",
+        base: Money.new(535),
+        percent: 6,
+        size: &fits?(&1, {8, 12}),
+        category: &(&1 == "Loose Prints"),
+        attrs: [96, 1719],
+        prio: 1
+      },
+      %Option{
+        id: 3,
+        name: "Economy Trackable",
+        base: Money.new(790),
+        percent: 9,
+        size: &any/1,
+        category: &any/1,
+        attrs: [96, 546],
+        prio: 2
+      },
+      %Option{
+        id: 4,
+        name: "WD - 3 days or less",
+        base: Money.new(1125),
+        percent: 10,
+        size: &any/1,
+        category: &any/1,
+        attrs: [96, 100],
+        prio: 3
+      },
+      %Option{
+        id: 5,
+        name: "WD - NDS or 2 day",
+        base: Money.new(2160),
+        percent: 15,
+        size: &any/1,
+        category: &any/1,
+        attrs: [96, 101],
+        prio: 4
+      },
+      %Option{
+        id: 6,
+        name: "WD - Priority One-Day",
+        base: Money.new(2695),
+        percent: 15,
+        size: &any/1,
+        category: &any/1,
+        attrs: [96, 1729],
+        prio: 5
+      },
+      %Option{
+        id: 7,
+        name: "WD - Standard One-Day",
+        base: Money.new(2160),
+        percent: 15,
+        size: &any/1,
+        category: &any/1,
+        attrs: [96, 1728],
+        prio: 5
+      },
+      %Option{
+        id: 8,
+        name: "Drop Ship",
+        base: Money.new(750),
+        percent: 0,
+        size: &any/1,
+        category: &(&1 in ["Albums", "Books"]),
+        attrs: [553, 548],
+        prio: 1
+      }
     ]
 
-  @doc "Converts shipping option into order attributes"
-  def to_attributes(uid) when is_integer(uid),
-    do: [%{"AttributeUID" => uid}, %{"AttributeUID" => 96}]
+  defp any(_), do: true
 
-  def to_attributes({uid, _, _, _}), do: to_attributes(uid)
+  @doc "Converts shipping option into order attributes"
+  def to_attributes(id) when is_integer(id) do
+    all()
+    |> Enum.find(%{attrs: []}, &(&1.id == id))
+    |> then(& &1.attrs)
+    |> Enum.map(&%{"AttributeUID" => &1})
+  end
+
+  def to_attributes(%{id: id}), do: to_attributes(id)
 
   defp normalize(size) do
     size
@@ -35,5 +125,4 @@ defmodule Picsello.WHCC.Shipping do
   end
 
   defp fits?({a, b}, {x, y}), do: a <= x and b <= y
-  defp fits?(_, true), do: true
 end

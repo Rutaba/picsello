@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   alias Picsello.Cart
   alias Picsello.WHCC.Shipping
   alias Picsello.Galleries
+  alias Picsello.GalleryProducts
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -127,7 +128,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(
       :shipping_opts,
       Enum.map(opts, fn
-        %{editor_id: id, current: {uid, _, _, _}} = opt
+        %{editor_id: id, current: %{id: uid}} = opt
         when editor_id == id and option_uid == uid ->
           opt
 
@@ -135,7 +136,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           Map.put(
             opt,
             :current,
-            Enum.find(opt[:list], fn list_opt -> option_uid == elem(list_opt, 0) end)
+            Enum.find(opt[:list], fn list_opt -> option_uid == list_opt.id end)
           )
 
         opt ->
@@ -158,8 +159,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     socket
     |> assign(
       :shipping_cost,
-      Enum.reduce(opts, Money.new(0), fn %{current: {_, _, _, cost}}, sum ->
-        cost |> Money.parse!() |> Money.add(sum)
+      Enum.reduce(opts, Money.new(0), fn %{current: %{price: cost}}, sum ->
+        cost |> Money.add(sum)
       end)
     )
   end
@@ -175,9 +176,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp shipping_opts_for_product(%{
-         editor_details: %{editor_id: editor_id, selections: %{"size" => size}}
+         editor_details: %{
+           editor_id: editor_id,
+           selections: %{"size" => size},
+           product_id: product_id
+         },
+         base_price: price
        }) do
-    %{editor_id: editor_id, list: Shipping.options(size)}
+    category = GalleryProducts.get_whcc_product_category(product_id)
+
+    %{editor_id: editor_id, list: Shipping.options(category.whcc_name, size, price)}
     |> then(&Map.put(&1, :current, List.first(&1.list)))
   end
 
@@ -191,9 +199,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> then(&(&1.current == option))
   end
 
-  defp shipping_option_uid({uid, _, _, _}), do: uid
-  defp shipping_option_cost({_, _, _, cost}), do: Money.parse!(cost)
-  defp shipping_option_label({_, label, _, _}), do: label
+  defp shipping_option_uid(%{id: id}), do: id
+  defp shipping_option_cost(%{price: price}), do: price
+  defp shipping_option_label(%{name: label}), do: label
 
   defp return_to_address() do
     %{
