@@ -318,9 +318,4 @@ defmodule PicselloWeb.LiveHelpers do
     |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
     |> noreply()
   end
-
-  def month_name(month) do
-    {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
-    |> elem(month - 1)
-  end
 end

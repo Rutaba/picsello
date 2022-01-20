@@ -11,7 +11,7 @@
                 <div class="lg:flex items-center justify-between">
                     <p class="lg:mr-8">
                         <span class="font-semibold">Order placed: </span>
-                        <%= "#{PicselloWeb.LiveHelpers.month_name(order.placed_at.month)} #{order.placed_at.day}, #{order.placed_at.year}" %>
+                        <%= Calendar.strftime(order.placed_at, "%B %d, %Y") %>
                     </p>
                     <p>
                         <span class="font-semibold">Order total: </span>
