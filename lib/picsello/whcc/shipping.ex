@@ -4,13 +4,13 @@ defmodule Picsello.WHCC.Shipping do
   alias Picsello.WHCC.Shipping.Option
 
   @doc "Returns options available for category, size, price"
-  def options(category, size, price, count \\ 3) do
+  def options(category, size, price, limit \\ 3) do
     all()
     |> Enum.filter(fn %{size: size_filter, category: category_filter} ->
       size_filter.(normalize(size)) and category_filter.(category)
     end)
     |> Enum.sort_by(& &1.prio)
-    |> Enum.take(count)
+    |> Enum.take(limit)
     |> Enum.map(fn %{id: id, name: name, base: base, percent: percent} ->
       %{id: id, name: name, price: Money.add(base, Money.multiply(price, percent / 100))}
     end)
