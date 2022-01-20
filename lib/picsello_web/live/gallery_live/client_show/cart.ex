@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   alias Picsello.Cart
   alias Picsello.WHCC.Shipping
   alias Picsello.Galleries
+  alias Picsello.GalleryProducts
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -169,9 +170,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp shipping_opts_for_product(%{
-         editor_details: %{editor_id: editor_id, selections: %{"size" => size}}
+         editor_details: %{
+           editor_id: editor_id,
+           selections: %{"size" => size},
+           product_id: product_id
+         },
+         base_price: price
        }) do
-    %{editor_id: editor_id, list: Shipping.options(size)}
+    category = GalleryProducts.get_whcc_product_category(product_id)
+
+    %{editor_id: editor_id, list: Shipping.options(category.whcc_name, size, price)}
     |> then(&Map.put(&1, :current, List.first(&1.list)))
   end
 

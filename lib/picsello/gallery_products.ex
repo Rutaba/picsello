@@ -76,4 +76,11 @@ defmodule Picsello.GalleryProducts do
   def get_whcc_product(whcc_id) do
     Repo.get_by(Product, whcc_id: whcc_id)
   end
+
+  def get_whcc_product_category(whcc_id) do
+    whcc_id
+    |> get_whcc_product()
+    |> Repo.preload(:category)
+    |> then(& &1.category)
+  end
 end
