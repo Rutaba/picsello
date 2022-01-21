@@ -96,11 +96,11 @@ defmodule PicselloWeb.LayoutView do
     ]
   end
 
-  def help_scout(assigns) do
+  def help_scout_menu(assigns) do
     ~H"""
     <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
     <div id="float-menu-help" class="cursor-pointer hidden md:blockhidden md:block" phx-hook="ToggleContent">
-      <div class="fixed p-5 text-white rounded-full shadow-md bg-blue-planning-300 bottom-8 right-8">
+      <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
         <.icon name="question-mark-help-scout" class="w-6 h-6" />
       </div>
       <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
@@ -117,8 +117,7 @@ defmodule PicselloWeb.LayoutView do
           Help
           </div>
         </nav>
-
-        <div class="fixed p-5 text-white rounded-full shadow-md bg-blue-planning-300 bottom-8 right-8">
+        <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
           <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
         </div>
       </div>
