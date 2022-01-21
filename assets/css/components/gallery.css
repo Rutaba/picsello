@@ -110,6 +110,10 @@
     @apply opacity-40;
 }
 
+.product-image{
+    height: 70vh;
+}
+
 .settings__wrapper > div {
     @apply border-2
     border-solid
@@ -593,7 +597,7 @@
 
 @media screen and (max-width: 1024px) {
     .choose-product {
-        @apply inline-grid
+        @apply grid
     }
 
     .choose-product-item {

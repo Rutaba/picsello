@@ -1,0 +1,30 @@
+<div  class="m-6">
+    <h1 class="text-3xl font-bold mb-6 mt-6">
+        <%= @gallery.name %> Gallery Orders
+    </h1>
+    <%= for order <- @orders do %>
+    <div class="lg:flex items-center justify-between p-5 md:p-8 mb-6 bg-base-200 border rounded-lg border-base-250 relative">
+      <div class="lg:flex items-center justify-between">
+          <p class="lg:mr-8">
+              <span class="font-semibold">Order placed: </span>
+              <%= Calendar.strftime(order.placed_at, "%B %d, %Y") %>
+          </p>
+          <p class="lg:mr-8">
+              <span class="font-semibold">Order total: </span>
+              <%= Money.add(order.subtotal_cost, order.shipping_cost) %>
+          </p>
+      </div>
+      <div class="lg:flex items-center justify-between">
+          <p class="lg:mr-8">
+              <span class="lg:font-semibold">Order number:</span>
+              <span class="font-semibold lg:font-normal"><%= order.number %></span>
+          </p>
+          <p class="absolute top-5 right-5 lg:static">
+          <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.id) do %>
+              <p class="text-blue-planning-300">View details</p>
+          <% end %>
+          </p>
+      </div>
+    </div>
+    <% end %>
+</div>
