@@ -109,14 +109,6 @@ defmodule Picsello.Cart do
     |> Repo.all()
   end
 
-  def get_photographer_orders(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == false,
-      order_by: [desc: order.id]
-    )
-    |> Repo.all()
-  end
-
   @doc """
   Confirms the order.
   """

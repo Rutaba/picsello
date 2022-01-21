@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerOrders do
   alias Picsello.{Cart, Galleries}
 
   def mount(%{"id" => id}, _, socket) do
-    orders = Cart.get_photographer_orders(id)
+    orders = Cart.get_orders(id)
     gallery = Galleries.get_gallery!(id)
 
     socket
