@@ -7,9 +7,20 @@ defmodule Picsello.Cart.OrderNumberTest do
     test "number greater than half a base" do
       half = trunc(@base / 2)
 
-      for i <- [1, 100, 1000, 30000, 10_000_000] do
-        assert to_number(i) > half
-      end
+      number = to_number(1) |> IO.inspect()
+      assert number > half
+
+      number = to_number(2) |> IO.inspect()
+      assert number > half
+
+      number = to_number(3) |> IO.inspect()
+      assert number > half
+
+      number = to_number(4_000) |> IO.inspect()
+      assert number > half
+
+      number = to_number(50_000_000_000) |> IO.inspect()
+      assert number > half
     end
   end
 
