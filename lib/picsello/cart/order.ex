@@ -69,8 +69,8 @@ defmodule Picsello.Cart.Order do
   def checkout_changeset(%__MODULE__{} = order, products, attrs \\ %{}) do
     order
     |> cast(attrs, [])
-    |> put_embed(:products, products)
-    |> cast_shipping_cost(products)
+    |> replace_products(products)
+    |> cast_shipping_cost()
   end
 
   def confirmation_changeset(%__MODULE__{} = order, confirmed_products) do
@@ -87,6 +87,19 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:delivery_info, delivery_info_changeset)
   end
 
+  defp replace_products(changeset, new_products) do
+    new_product_ids = Enum.map(new_products, fn product -> product.editor_details.editor_id end)
+
+    products_to_remain =
+      changeset
+      |> get_field(:products)
+      |> Enum.filter(fn product -> product.editor_details.editor_id not in new_product_ids end)
+    
+    IO.inspect products_to_remain
+
+    changeset |> put_embed(:products, products_to_remain ++ new_products)
+  end
+
   defp cast_subtotal_cost(changeset, {:default, amount}),
     do: put_change(changeset, :subtotal_cost, amount)
 
@@ -95,7 +108,8 @@ defmodule Picsello.Cart.Order do
     put_change(changeset, :subtotal_cost, Money.add(current_total_cost, amount))
   end
 
-  defp cast_shipping_cost(changeset, products) do
+  defp cast_shipping_cost(changeset) do
+    products = changeset |> get_field(:products)
     changeset
     |> put_change(
       :shipping_cost,

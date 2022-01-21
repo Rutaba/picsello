@@ -132,6 +132,7 @@
                                 name="ship_option"
                                 phx-value-option-uid={shipping_option_uid(option)}
                                 phx-value-product-editor-id={product.editor_details.editor_id}
+                                disabled={product in @products_to_order}
                                 checked={is_current_shipping_option?(@shipping_opts, option, product)}>
                             <div class="ml-4 w-11/12">
                                 <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
@@ -145,10 +146,16 @@
             </div>
             <div class="darkerBorder w-full xl:max-w-md xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
                 <p class="text-black text-opacity-80 text-lg">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
-                <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= @shipping_cost %></span></p>
+                <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= @order.shipping_cost %></span></p>
                 <hr class="my-4">
-                <div class="text-xl">Total: <span class="font-bold ml-2"><%= Money.add(@order.subtotal_cost, @shipping_cost) %></span></div>
-                <button type="submit" class="btn-primary mt-5 w-full" phx-click="checkout">Check out with Stripe</button>
+                <div class="text-xl">Total: <span class="font-bold ml-2"><%= Money.add(@order.subtotal_cost, @order.shipping_cost) %></span></div>
+                <button 
+                  type="submit" 
+                  class="btn-primary mt-5 w-full" 
+                  disabled={@products_to_order != []}
+                  phx-click="checkout">
+                  Check out with Stripe
+                </button>
             </div>
         </div>
         <% end %>

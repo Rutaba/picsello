@@ -45,17 +45,84 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{
           assigns: %{
             step: :delivery_info,
-            order: order,
-            delivery_info_changeset: delivery_info_changeset
+            delivery_info_changeset: delivery_info_changeset,
+            order: %{products: products} = order
           }
         } = socket
       ) do
+        
+        products_to_order = products
+        |> Enum.split_with(fn product -> product.whcc_order != nil end)
+        |> then(fn {_, products_to_order} -> products_to_order end)
+  
+      
+      socket
+      |> assign(:step, :shipping_opts)
+      |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
+      |> assign(:products_to_order, products_to_order)
+      |> assign_shipping_opts()
+      |> schedule_products_ordering(products_to_order)
+      |> noreply()
+  end
+
+
+  defp schedule_products_ordering(socket, []) do
     socket
-    |> assign(:step, :shipping_opts)
-    |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
-    |> assign_shipping_opts()
-    |> assign_shipping_cost()
+  end
+
+  defp schedule_products_ordering(socket, products) do
+    Process.send_after(self(), {:order_products, products}, 100)
+
+    socket
+  end
+
+  @impl true
+  def handle_info(
+        {:order_products, products},
+        %{assigns: %{gallery: gallery, order: order}} = socket
+      ) do
+    account_id = Galleries.account_id(gallery)
+
+    IO.inspect(DateTime.utc_now())
+
+    order =
+      products
+      |> Task.async_stream(
+        fn product ->
+          shipping_options = product_shipping_options(socket, product)
+
+          Cart.order_product(product, account_id,
+            ship_to: form_ship_address(order.delivery_info),
+            return_to: return_to_address(),
+            attributes: Shipping.to_attributes(shipping_options)
+          )
+        end,
+        timeout: :infinity
+      )
+      |> Enum.map(fn {:ok, ordered_product} -> ordered_product end)
+      |> Cart.store_cart_products_checkout()
+    IO.inspect order
+
+    send self(), {:store_ordered_products, order, products}
+    
+    socket
+    |> noreply
+  end
+
+  @impl true
+  def handle_info({:store_ordered_products, order, ordered_products}, %{assigns: %{products_to_order: products_to_order}} = socket) do
+    socket
+    |> assign(:order, order)
+    |> assign(:products_to_order, products_to_order -- ordered_products)
     |> noreply()
+  end
+
+  defp product_shipping_options(%{assigns: %{shipping_opts: shipping_opts}}, product) do
+    shipping_opts
+    |> Enum.find(fn opt ->
+      opt[:editor_id] == product.editor_details.editor_id
+    end)
+    |> then(& &1.current)
   end
 
   @impl true
@@ -115,11 +182,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "click",
         %{"option-uid" => option_uid, "product-editor-id" => editor_id},
-        %{assigns: %{step: :shipping_opts}} = socket
+        %{assigns: %{step: :shipping_opts, products_to_order: products_to_order, order: %{products: products}}} = socket
       ) do
+    IO.inspect socket.assigns
+    product = Enum.find(products, fn p -> p.editor_details.editor_id == editor_id end)
     socket
     |> update_shipping_opts(String.to_integer(option_uid), editor_id)
-    |> assign_shipping_cost()
+    |> assign(:products_to_order, products_to_order ++ [product])
+    |> schedule_products_ordering([product])
     |> noreply()
   end
 
@@ -155,15 +225,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     )
   end
 
-  defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
-    socket
-    |> assign(
-      :shipping_cost,
-      Enum.reduce(opts, Money.new(0), fn %{current: %{price: cost}}, sum ->
-        cost |> Money.add(sum)
-      end)
-    )
-  end
+  #defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
+  #  socket
+  #  |> assign(
+  #    :shipping_cost,
+  #    Enum.reduce(opts, Money.new(0), fn %{current: %{price: cost}}, sum ->
+  #      cost |> Money.add(sum)
+  #    end)
+  #  )
+  #end
 
   defp display_shipping_opts(assigns) do
     ~H"""
