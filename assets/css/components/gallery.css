@@ -95,6 +95,10 @@
     @apply opacity-40;
 }
 
+.product-image{
+    height: 70vh;
+}
+
 .settings__wrapper > div {
     @apply border-2
     border-solid
