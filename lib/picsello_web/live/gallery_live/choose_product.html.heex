@@ -8,7 +8,7 @@
     <div class="choose-product overflow-y-scroll">
       <div class="choose-product-item container p-6 float-left flex-1 relative overflow-hidden">
         <div id="wrapper" class="wrapper h-full flex-row justify-center flex">
-          <div phx-click="prev" phx-target={@myself} class="absolute left-0 top-1/2 swiper-button-prev bg-white rounded-full border-white z-500 border-8">
+          <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="absolute left-0 top-1/2 swiper-button-prev bg-white rounded-full border-white z-500 border-8">
             <.icon name="back-blue" class="w-8 h-8 stroke-blue-planning-300 cursor-pointer" />
           </div>
           <div phx-click="next" phx-target={@myself} class="absolute right-0 top-1/2 swiper-button-next bg-white rounded-full border-white z-500 border-8">
