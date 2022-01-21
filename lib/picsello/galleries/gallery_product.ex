@@ -1,6 +1,7 @@
 defmodule Picsello.Galleries.GalleryProduct do
   @moduledoc false
   use Ecto.Schema
+  use StructAccess
   alias Picsello.CategoryTemplate
   alias Picsello.Galleries.{Photo, Gallery}
 

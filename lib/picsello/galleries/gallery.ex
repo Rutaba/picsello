@@ -87,6 +87,12 @@ defmodule Picsello.Galleries.Gallery do
     |> validate_required([:client_link_hash])
   end
 
+  def password_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [:password])
+    |> validate_required([:password])
+  end
+
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),

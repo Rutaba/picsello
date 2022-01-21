@@ -22,7 +22,8 @@ defmodule Picsello.Factory do
     Questionnaire.Answer,
     Galleries.Gallery,
     Galleries.Watermark,
-    Galleries.Photo
+    Galleries.Photo,
+    Profiles.Profile
   }
 
   def valid_user_password(), do: "hello world!"
@@ -55,18 +56,47 @@ defmodule Picsello.Factory do
     |> Repo.update!()
   end
 
-  def onboard!(%User{} = user) do
+  def onboard!(%User{onboarding: nil} = user) do
+    organization =
+      user
+      |> Repo.preload(:organization)
+      |> Map.get(:organization)
+
+    if !organization.profile do
+      organization
+      |> Ecto.Changeset.change(profile: build(:profile))
+      |> Repo.update!()
+    end
+
     user
-    |> User.complete_onboarding_changeset()
+    |> Ecto.Changeset.change(onboarding: build(:onboarding))
     |> Repo.update!()
-    |> then(fn user ->
-      Enum.reduce(
-        ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
-        user,
-        &Onboardings.save_intro_state(&2, &1, "completed")
-      )
-    end)
   end
+
+  def onboard!(%User{onboarding: %{completed_at: %DateTime{}}} = user), do: user
+
+  def onboarding_factory,
+    do: %Onboardings.Onboarding{
+      phone: "(918) 555-1234",
+      photographer_years: 1,
+      switching_from_softwares: [:none],
+      schedule: :part_time,
+      completed_at: DateTime.utc_now(),
+      state: "OK",
+      intro_states:
+        Enum.map(
+          ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
+          &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
+        )
+    }
+
+  def profile_factory,
+    do: %{
+      color: Profile.colors() |> hd,
+      is_enabled: true,
+      job_types: ["event", "wedding", "newborn"],
+      no_website: true
+    }
 
   def valid_user_attributes(attrs \\ %{}),
     do:
@@ -97,6 +127,7 @@ defmodule Picsello.Factory do
       name: "Package name",
       description: "Package description",
       shoot_count: 2,
+      turnaround_weeks: 1,
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -390,6 +421,7 @@ defmodule Picsello.Factory do
       min_years_experience: 1,
       base_price: 100,
       shoot_count: 2,
+      turnaround_weeks: 1,
       download_count: 10
     }
 
