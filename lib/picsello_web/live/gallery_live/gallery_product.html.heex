@@ -30,7 +30,6 @@
     <div class="description ml-16">
         <h1 class="text-4xl font-bold text-orange-inbox-300 mt-8">Prints</h1>
         <p class="py-12">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
->>>>>>> main
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
             <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
