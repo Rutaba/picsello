@@ -1,17 +1,17 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@import './components/buttons.css';
-@import 'components/gallery.css';
-@import './components/shoppingCart.css';
-@import './components/forms.css';
-@import './components/typography.css';
-@import './components/uploadPopup.css';
-@import 'intro.js/introjs.css';
-@import './components/intro.css';
-@import 'quill/dist/quill.core.css';
-@import 'quill/dist/quill.snow.css';
+@import "./components/buttons.css";
+@import "components/gallery.css";
+@import "./components/shoppingCart.css";
+@import "./components/forms.css";
+@import "./components/typography.css";
+@import "./components/uploadPopup.css";
+@import "intro.js/introjs.css";
+@import "./components/intro.css";
+@import "quill/dist/quill.core.css";
+@import "quill/dist/quill.snow.css";
 
 html {
   @apply text-base-300 bg-white text-13px sm:text-16px;
@@ -75,7 +75,7 @@ html {
   .ql-tooltip {
     @apply border-gray-200 rounded-lg;
 
-    &.ql-editing input[type='text'] {
+    &.ql-editing input[type="text"] {
       @apply text-input;
     }
   }
