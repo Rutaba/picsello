@@ -8,7 +8,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_new(:job_types, &Job.types/0)
+    |> assign_job_types()
     |> then(fn socket ->
       if socket.assigns[:changeset] do
         socket
@@ -41,11 +41,11 @@ defmodule PicselloWeb.JobLive.NewComponent do
         <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <%= inputs_for f, :client, fn client_form -> %>
-              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Jane Doe", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
+              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Elizabeth Taylor", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
               <%= if @name != nil do %>
                 <%= hidden_input client_form, :name %>
               <% end %>
-              <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "jane@example.com", phx_debounce: "500", disabled: @email != nil %>
+              <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "elizabeth.taylor@example.com", phx_debounce: "500", disabled: @email != nil %>
               <%= if @email != nil do %>
                 <%= hidden_input client_form, :email %>
               <% end %>
@@ -152,5 +152,12 @@ defmodule PicselloWeb.JobLive.NewComponent do
       |> Map.put(:action, :validate)
 
     assign(socket, changeset: changeset)
+  end
+
+  defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
+    socket
+    |> assign_new(:job_types, fn ->
+      (organization.profile.job_types ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
+    end)
   end
 end

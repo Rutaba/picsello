@@ -52,7 +52,9 @@
 }
 
 .introjs-hint {
-    @apply mt-1 -ml-0.5;
+    @apply pt-1 -ml-0.5;
+    width: 17px;
+    height: 24px;
 }
 
 .introjs-hint:hover > .introjs-hint-pulse {
@@ -61,6 +63,10 @@
 
 .introjs-hint-pulse {
     @apply bg-blue-planning-300/[.06];
+}
+
+.introjs-hint-dot {
+    @apply hidden;
 }
 
 @keyframes introjspulse {
