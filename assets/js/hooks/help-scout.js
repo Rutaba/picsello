@@ -30,25 +30,27 @@ const toggleMenu = (state = 'none') => {
   document.querySelector('#float-menu-help').style.display = state;
 };
 
-const handleMenuClose = () => {
-  window.Beacon('on', 'close', () => {
-    toggleMenu('block');
-    window.Beacon('destroy');
-  });
-};
-
 const initHelpScout = (helpScoutId, currentUserEmail, currentUserName) => {
   const beaconIsOpen =
     window?.Beacon && window?.Beacon('info')?.status?.isOpened;
 
+  // check if Beacon is open to avoid
+  // init twice console.error
   if (!beaconIsOpen) {
     window.Beacon('init', helpScoutId);
     window.Beacon('identify', {
       name: currentUserName,
       email: currentUserEmail,
     });
+    // attach listener to instance
+    // to reset facade when user closes
+    window.Beacon('on', 'close', () => {
+      toggleMenu('block');
+      window.Beacon('destroy');
+    });
   }
 
+  // always open after init OR toggling
   window.Beacon('open');
 };
 
@@ -62,10 +64,9 @@ export default {
       window?.Beacon && window?.Beacon('info')?.status?.isOpened;
 
     // need to check if open on mount
-    // to close our facade menu
+    // to hide our facade menu
     if (beaconIsOpen) {
       toggleMenu();
-      handleMenuClose();
     }
 
     el.addEventListener('click', (e) => {
@@ -73,7 +74,6 @@ export default {
       toggleMenu();
       loadHelpScout();
       initHelpScout(helpScoutId, currentUserEmail, currentUserName);
-      handleMenuClose();
     });
   },
 };
