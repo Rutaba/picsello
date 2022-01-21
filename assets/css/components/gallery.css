@@ -582,7 +582,7 @@
 
 @media screen and (max-width: 1024px) {
     .choose-product {
-        @apply inline-grid
+        @apply grid
     }
 
     .choose-product-item {
