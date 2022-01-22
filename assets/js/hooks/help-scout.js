@@ -38,6 +38,8 @@ const initHelpScout = (helpScoutId, currentUserEmail, currentUserName) => {
   // init twice console.error
   if (!beaconIsOpen) {
     window.Beacon('init', helpScoutId);
+    // this isn't the most secure, but this would be
+    // passed over the network through JS anyways
     window.Beacon('identify', {
       name: currentUserName,
       email: currentUserEmail,
