@@ -94,10 +94,12 @@ defmodule Picsello.Cart.Order do
       changeset
       |> get_field(:products)
       |> Enum.filter(fn product -> product.editor_details.editor_id not in new_product_ids end)
-    
-    IO.inspect products_to_remain
 
-    changeset |> put_embed(:products, products_to_remain ++ new_products)
+    products_to_store =
+      (products_to_remain ++ new_products)
+      |> Enum.sort(&(&1.created_at < &2.created_at))
+
+    changeset |> put_embed(:products, products_to_store)
   end
 
   defp cast_subtotal_cost(changeset, {:default, amount}),
@@ -110,11 +112,16 @@ defmodule Picsello.Cart.Order do
 
   defp cast_shipping_cost(changeset) do
     products = changeset |> get_field(:products)
+
     changeset
     |> put_change(
       :shipping_cost,
       Enum.reduce(products, Money.new(0), fn product, cost ->
-        product.whcc_order.total
+        if product.whcc_order do
+          product.whcc_order.total
+        else
+          "0"
+        end
         |> Money.parse!()
         |> Money.subtract(product.base_price)
         |> Money.add(cost)

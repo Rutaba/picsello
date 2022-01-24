@@ -50,79 +50,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           }
         } = socket
       ) do
-        
-        products_to_order = products
-        |> Enum.split_with(fn product -> product.whcc_order != nil end)
-        |> then(fn {_, products_to_order} -> products_to_order end)
-  
-      
-      socket
-      |> assign(:step, :shipping_opts)
-      |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
-      |> assign(:products_to_order, products_to_order)
-      |> assign_shipping_opts()
-      |> schedule_products_ordering(products_to_order)
-      |> noreply()
-  end
-
-
-  defp schedule_products_ordering(socket, []) do
-    socket
-  end
-
-  defp schedule_products_ordering(socket, products) do
-    Process.send_after(self(), {:order_products, products}, 100)
-
-    socket
-  end
-
-  @impl true
-  def handle_info(
-        {:order_products, products},
-        %{assigns: %{gallery: gallery, order: order}} = socket
-      ) do
-    account_id = Galleries.account_id(gallery)
-
-    IO.inspect(DateTime.utc_now())
-
-    order =
+    products_to_order =
       products
-      |> Task.async_stream(
-        fn product ->
-          shipping_options = product_shipping_options(socket, product)
+      |> Enum.split_with(fn product -> product.whcc_order != nil end)
+      |> then(fn {_, products_to_order} -> products_to_order end)
 
-          Cart.order_product(product, account_id,
-            ship_to: form_ship_address(order.delivery_info),
-            return_to: return_to_address(),
-            attributes: Shipping.to_attributes(shipping_options)
-          )
-        end,
-        timeout: :infinity
-      )
-      |> Enum.map(fn {:ok, ordered_product} -> ordered_product end)
-      |> Cart.store_cart_products_checkout()
-    IO.inspect order
-
-    send self(), {:store_ordered_products, order, products}
-    
     socket
-    |> noreply
-  end
-
-  @impl true
-  def handle_info({:store_ordered_products, order, ordered_products}, %{assigns: %{products_to_order: products_to_order}} = socket) do
-    socket
-    |> assign(:order, order)
-    |> assign(:products_to_order, products_to_order -- ordered_products)
+    |> assign(:step, :shipping_opts)
+    |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
+    |> assign(:ordering_tasks, [])
+    |> assign_shipping_opts()
+    |> schedule_products_ordering(order.products)
     |> noreply()
-  end
-
-  defp product_shipping_options(%{assigns: %{shipping_opts: shipping_opts}}, product) do
-    shipping_opts
-    |> Enum.find(fn opt ->
-      opt[:editor_id] == product.editor_details.editor_id
-    end)
-    |> then(& &1.current)
   end
 
   @impl true
@@ -182,15 +121,83 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "click",
         %{"option-uid" => option_uid, "product-editor-id" => editor_id},
-        %{assigns: %{step: :shipping_opts, products_to_order: products_to_order, order: %{products: products}}} = socket
+        %{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket
       ) do
-    IO.inspect socket.assigns
     product = Enum.find(products, fn p -> p.editor_details.editor_id == editor_id end)
+
     socket
     |> update_shipping_opts(String.to_integer(option_uid), editor_id)
-    |> assign(:products_to_order, products_to_order ++ [product])
     |> schedule_products_ordering([product])
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(:process_ordering_tasks, %{assigns: %{ordering_tasks: tasks}} = socket) do
+    {_processed_tasks, tasks_to_process} =
+      tasks
+      |> Task.yield_many(0)
+      |> Enum.split_with(fn {_task, result} ->
+        case result do
+          nil -> false
+          {:ok, _} -> true
+        end
+      end)
+
+    if Enum.any?(tasks_to_process) do
+      Process.send_after(self(), :process_ordering_tasks, 50)
+    end
+
+    socket
+    |> assign(:ordering_tasks, Enum.map(tasks_to_process, &elem(&1, 0)))
+    |> noreply
+  end
+
+  @impl true
+  def handle_info({ref, product}, %{assigns: %{ordering_tasks: tasks}} = socket) do
+    Process.demonitor(ref, [:flush])
+
+    socket
+    |> assign(:order, Cart.store_cart_products_checkout([product]))
+    |> assign(:ordering_tasks, Enum.filter(tasks, fn task -> task.ref != ref end))
+    |> noreply()
+  end
+
+  defp product_shipping_options(%{assigns: %{shipping_opts: shipping_opts}}, product) do
+    shipping_opts
+    |> Enum.find(fn opt ->
+      opt[:editor_id] == product.editor_details.editor_id
+    end)
+    |> then(& &1.current)
+  end
+
+  defp schedule_products_ordering(socket, []) do
+    socket
+  end
+
+  defp schedule_products_ordering(
+         %{assigns: %{gallery: gallery, order: order, ordering_tasks: ordering_tasks}} = socket,
+         products
+       ) do
+    account_id = Galleries.account_id(gallery)
+    # IO.inspect DateTime.utc_now(), label: "STARTTIME"
+    tasks =
+      products
+      |> Enum.map(fn product ->
+        Task.async(fn ->
+          shipping_options = product_shipping_options(socket, product)
+
+          Cart.order_product(product, account_id,
+            ship_to: form_ship_address(order.delivery_info),
+            return_to: return_to_address(),
+            attributes: Shipping.to_attributes(shipping_options)
+          )
+        end)
+      end)
+
+    Process.send_after(self(), :process_ordering_tasks, 50)
+
+    socket
+    |> assign(:ordering_tasks, ordering_tasks ++ tasks)
   end
 
   defp update_shipping_opts(%{assigns: %{shipping_opts: opts}} = socket, option_uid, editor_id) do
@@ -225,7 +232,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     )
   end
 
-  #defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
+  # defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
   #  socket
   #  |> assign(
   #    :shipping_cost,
@@ -233,7 +240,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   #      cost |> Money.add(sum)
   #    end)
   #  )
-  #end
+  # end
 
   defp display_shipping_opts(assigns) do
     ~H"""

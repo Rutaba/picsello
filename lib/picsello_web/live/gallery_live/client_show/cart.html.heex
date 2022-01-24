@@ -132,11 +132,11 @@
                                 name="ship_option"
                                 phx-value-option-uid={shipping_option_uid(option)}
                                 phx-value-product-editor-id={product.editor_details.editor_id}
-                                disabled={product in @products_to_order}
+                                
                                 checked={is_current_shipping_option?(@shipping_opts, option, product)}>
                             <div class="ml-4 w-11/12">
                                 <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
-                                <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium"><%= shipping_option_cost(option) %></label><br>
+                                <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium">from <%= shipping_option_cost(option) %></label><br>
                             </div>
                         </div>
                         </.display_shipping_opts>
@@ -152,7 +152,7 @@
                 <button 
                   type="submit" 
                   class="btn-primary mt-5 w-full" 
-                  disabled={@products_to_order != []}
+                  disabled={@ordering_tasks != []}
                   phx-click="checkout">
                   Check out with Stripe
                 </button>
