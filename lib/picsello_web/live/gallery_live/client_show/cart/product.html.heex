@@ -1,11 +1,12 @@
-<div class={classes("p-5 flex mb-5 w-full cart", %{"border rounded-lg" => @has_border})}>
+<div class={classes("p-5 w-full cart", %{"border rounded-lg mb-5" => @has_border})}>
+<div class="relative flex">
   <div class="cartImg flex items-center justify-center">
     <img src={@preview_url} />
   </div>
-  <div class="py-7 flex flex-col justify-start xl:justify-center ml-5">
+  <div class="py-7 flex flex-col justify-start lg:justify-center ml-5">
     <div class="text-sm lg:text-lg"><%= @size %> <%= @whcc_product.whcc_name %></div>
     <div class="text-base lg:text-xl font-bold mt-2.5 mb-9"><%= @product.price %></div>
-    <div class="flex items-center bottom-0 left-0 mb-5 cartPanel">
+    <div class="flex items-center cartPanel">
       <label for="cart-select text-sm lg:text-base">Quantity:</label>
       <select class="select w-20 text-base font-bold ml-2" id="cart-select">
         <option value="1"><%= @product.editor_details.selections["quantity"] %></option>
@@ -16,4 +17,5 @@
       <% end %>
     </div>
   </div>
+</div>
 </div>

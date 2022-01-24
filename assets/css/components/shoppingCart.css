@@ -1,17 +1,17 @@
 .cartImg {
-    max-width: 100%;
-    max-height: 100%;
-    @apply w-4/12
+    max-width: 250px;
+    @apply w-full
+    max-h-full
+    overflow-hidden
 }
 
 .cartImg img {
     height: 193px;
-    width: auto;
+    @apply w-auto
 }
 
-.cartItem {
-    @apply 
-    mr-4
+.shippingOptions__infoBlock  select{
+    @apply w-full
 }
 
 .gridWrapper {
@@ -23,66 +23,34 @@
 }
 
 @media screen and (max-width: 1280px) {
-    .cart {
-        position: relative;
-    }
-    .cartPanel {
-        position: absolute;
-        @apply ml-9
-        
-    }
-
-    .cartImg {
-        @apply mb-16
-        w-3/12
-    }
-
-    .cartItem {
-        @apply mr-0
-    }
-
     .gridWrapper {
         @apply grid-cols-1
     }
-    
+
     .subTotal {
         @apply block
     }
 }
 
-@media screen and (max-width: 1024px) {
-    .cartImg {
-        @apply w-4/12
-    }
-}
-
 @media screen and (max-width: 768px) {
+    .cart {
+        @apply relative
+    }
+
     .cartImg {
-        @apply w-5/12
+        max-width: 165px;
+        @apply pb-20
     }
 
     .cartPanel {
-        @apply ml-8        
-    }
-}
-
-@media screen and (max-width: 640px) {
-    .cartImg {
-        @apply w-3/12
+       @apply absolute
+        bottom-5
+        left-0
+        right-0
+        w-full
     }
 
     .cartImg img {
-        height: 100px;
-        width: auto;
-    }
-
-    .cartPanel {
-        @apply ml-6        
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .cartImg {
-        @apply w-2/5
+        height: 132px;
     }
 }
