@@ -109,14 +109,11 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(testid("description", text: "my description"))
   end
 
-  feature "user goes to pricing page and comes back", %{session: session} do
+  feature "user can't go to pricing page", %{session: session} do
     session
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_has(button("Edit Photography Types"))
-    |> click(link("See full price list"))
-    |> assert_text("Photography package types")
-    |> click(link("Back"))
-    |> assert_has(button("Edit Photography Types"))
+    |> click(css("div.btn-primary", text: "See full price list"))
   end
 end
