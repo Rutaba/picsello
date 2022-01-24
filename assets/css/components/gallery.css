@@ -515,33 +515,6 @@
   @apply inline-block
 }
 
-/*
-.deliveryOptions__wrapper input[type="radio"]:disabled{
-  content: "";
-  @apply appearance-none
-  h-5
-  w-5
-  bg-base-100
-  border
-  border-gray-300
-  rounded-full
-  cursor-pointer
-  inline-flex
-  items-center
-  justify-center
-  outline-none
-  box-border
-}
-
-.deliveryOptions__wrapper input[type="radio"]:disabled:after{
-  content: "";
-  @apply h-3
-  w-3
-  rounded-full
-  bg-gray-300
-}
-*/
-
 .shippingOptions__infoBlock {
     max-width: 100%;
 }
