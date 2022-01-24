@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.User.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Accounts, Accounts.User}
+  alias Picsello.{Accounts, Accounts.User, Organization, Repo}
 
   require Logger
 
@@ -18,7 +18,12 @@ defmodule PicselloWeb.Live.User.Settings do
         _ ->
           [email_changeset: nil, password_changeset: nil]
       end
-      |> Keyword.merge(submit_changed_password: false, sign_out: false, page_title: "Settings")
+      |> Keyword.merge(
+        submit_changed_password: false,
+        sign_out: false,
+        page_title: "Settings",
+        organization_name_changeset: organization_name_changeset(user)
+      )
     )
     |> ok()
   end
@@ -34,6 +39,11 @@ defmodule PicselloWeb.Live.User.Settings do
     user
     |> Ecto.Changeset.cast(params, [:password])
     |> User.validate_password([])
+  end
+
+  defp organization_name_changeset(user, params \\ %{}) do
+    user.organization
+    |> Organization.name_changeset(params)
   end
 
   @impl true
@@ -68,6 +78,22 @@ defmodule PicselloWeb.Live.User.Settings do
       |> Map.put(:action, :validate)
 
     socket |> assign(:password_changeset, changeset) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_name",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset =
+      organization_name_changeset(user, organization_params)
+      |> Map.put(:action, :validate)
+
+    socket |> assign(:organization_name_changeset, changeset) |> noreply()
   end
 
   @impl true
@@ -122,6 +148,28 @@ defmodule PicselloWeb.Live.User.Settings do
       submit_changed_password: changeset.valid?
     )
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_name",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset = organization_name_changeset(user, organization_params)
+
+    case Repo.update(changeset) do
+      {:ok, organization} ->
+        socket
+        |> put_flash(:success, "Business name changed successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(organization_name_changeset: changeset) |> noreply()
+    end
   end
 
   @impl true
