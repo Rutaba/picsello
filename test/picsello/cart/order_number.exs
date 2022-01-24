@@ -1,4 +1,5 @@
 defmodule Picsello.Cart.OrderNumberTest do
+  @defmodule "Test order numbers"
   use ExUnit.Case, async: true
 
   import Picsello.Cart.OrderNumber
