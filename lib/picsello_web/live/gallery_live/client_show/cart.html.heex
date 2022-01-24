@@ -10,19 +10,19 @@
     <hr>
     <div class="gallery__container">
         <%= if @step == :product_list do %>
-        <div class="font-bold text-3xl py-16">Your shopping cart</div>
+        <div class="font-bold text-lg lg:text-3xl py-5 lg:pt-14 lg:pb-10">Your shopping cart</div>
         <div class="grid gridWrapper">
             <div class="col-span-1 mb-4 subTotal">
                 <div class="p-5 border rounded-lg flex flex-col">
-                    <div class="text-xl"> 
+                    <div class="text-lg lg:text-xl">
                         <%= unless Enum.empty?(@order.products) do %>
                         Subtotal:
                         <% else %>
                         Total:
                         <% end %>
-                        <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+                        <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
                     </div>
-                    <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
+                    <button type="submit" class="btn-primary text-base lg:text-lg mt-5" phx-click="continue">Continue</button>
                 </div>
             </div>
             <div class="col-span-2 cartItem">
@@ -43,15 +43,15 @@
             </div>
             <div class="col-span-1">
                 <div class="p-5 border rounded-lg flex flex-col">
-                    <div class="text-xl">
+                    <div class="text-lg lg:text-xl">
                         <%= unless Enum.empty?(@order.products) do %>
                         Subtotal:
                         <% else %>
                         Total:
                         <% end %>
-                        <span class="text-2xl font-bold ml-2"><%= @order.subtotal_cost %></span>
+                        <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
                     </div>
-                    <button type="submit" class="btn-primary mt-5" phx-click="continue">Continue</button>
+                    <button type="submit" class="btn-primary text-base lg:text-lg mt-5" phx-click="continue">Continue</button>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
 
         <%= if @step == :delivery_info do %>
         <div class="max-w-screen-xl w-full m-auto px-6 xl:px-0">
-            <h2 class="text-xl xl:text-3xl font-bold pt-14 pb-10">Enter your shipping information</h2>
+            <h2 class="text-lg lg:text-3xl font-bold py-5 lg:pt-14 lg:pb-10">Enter your shipping information</h2>
             <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
             <div class="border border-gray-200 rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
                 <div class="flex flex-col md:flex-row">
@@ -107,9 +107,9 @@
         <% end %>
 
         <%= if @step == :shipping_opts do %>
-        <div class="font-bold text-3xl py-16">Shipping options</div>
+        <div class="font-bold text-lg lg:text-3xl py-5 lg:pt-14 lg:pb-10">Shipping options</div>
         <div class="flex flex-col xl:flex-row xl:justify-between w-full">
-            <div class="darkerBorder divide-y divide-gray-200 w-full xl:w-2/3 px-6 xl:mr-6 shippingOptions__infoBlock">
+            <div class="darkerBorder divide-y divide-gray-200 w-full xl:max-w-screen-xl px-6 xl:mr-6 shippingOptions__infoBlock">
                 <%= for product <- @order.products do %>
                 <div class="flex py-4">
                     <div>

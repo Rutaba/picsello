@@ -2,17 +2,17 @@
   <div class="cartImg flex items-center justify-center">
     <img src={@preview_url} />
   </div>
-  <div class="py-7 flex flex-col justify-center ml-5">
-    <div class="text-lg"><%= @size %> <%= @whcc_product.whcc_name %></div>
-    <div class="text-2xl font-bold mt-2.5 mb-9"><%= @product.price %></div>
+  <div class="py-7 flex flex-col justify-start xl:justify-center ml-5">
+    <div class="text-sm lg:text-lg"><%= @size %> <%= @whcc_product.whcc_name %></div>
+    <div class="text-base lg:text-xl font-bold mt-2.5 mb-9"><%= @product.price %></div>
     <div class="flex items-center bottom-0 left-0 mb-5 cartPanel">
-      <label for="cart-select">Quantity:</label>
+      <label for="cart-select text-sm lg:text-base">Quantity:</label>
       <select class="select w-20 text-base font-bold ml-2" id="cart-select">
         <option value="1"><%= @product.editor_details.selections["quantity"] %></option>
       </select>
       <%= if @has_buttons do %>
-        <button type="button" class="text-xl font-semibold text-blue-planning-300 mx-7">Edit</button>
-        <button type="button" class="text-xl font-semibold text-blue-planning-300">Delete</button>
+        <button type="button" class="font-semibold lg:text-base text-blue-planning-300 mx-7">Edit</button>
+        <button type="button" class="font-semibold lg:text-base text-blue-planning-300">Delete</button>
       <% end %>
     </div>
   </div>
