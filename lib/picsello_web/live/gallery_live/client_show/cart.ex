@@ -50,15 +50,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           }
         } = socket
       ) do
-    products_to_order =
-      products
-      |> Enum.split_with(fn product -> product.whcc_order != nil end)
-      |> then(fn {_, products_to_order} -> products_to_order end)
-
     socket
     |> assign(:step, :shipping_opts)
     |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
-    |> assign(:ordering_tasks, [])
+    |> assign(:ordering_tasks, %{})
     |> assign_shipping_opts()
     |> schedule_products_ordering(order.products)
     |> noreply()
@@ -83,29 +78,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           assigns: %{
             step: :shipping_opts,
             shipping_opts: shipping_opts,
-            order: %{products: products, delivery_info: delivery_info},
+            order: %{products: products, delivery_info: delivery_info} = order,
             gallery: gallery
           }
         } = socket
       ) do
-    account_id = Galleries.get_gallery!(gallery.id) |> Galleries.account_id()
-
-    order =
-      Enum.map(products, fn product ->
-        shipping_option =
-          Enum.find(shipping_opts, fn opt ->
-            opt[:editor_id] == product.editor_details.editor_id
-          end)
-          |> then(& &1.current)
-
-        Cart.order_product(product, account_id,
-          ship_to: form_ship_address(delivery_info),
-          return_to: return_to_address(),
-          attributes: Shipping.to_attributes(shipping_option)
-        )
-      end)
-      |> Cart.store_cart_products_checkout()
-
     {:ok, %{link: checkout_link}} =
       payments().checkout_link(order,
         success_url:
@@ -121,7 +98,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "click",
         %{"option-uid" => option_uid, "product-editor-id" => editor_id},
-        %{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket
+        %{assigns: %{step: :shipping_opts, ordering_tasks: tasks, order: %{products: products}}} =
+          socket
       ) do
     product = Enum.find(products, fn p -> p.editor_details.editor_id == editor_id end)
 
@@ -133,22 +111,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   @impl true
   def handle_info(:process_ordering_tasks, %{assigns: %{ordering_tasks: tasks}} = socket) do
-    {_processed_tasks, tasks_to_process} =
-      tasks
-      |> Task.yield_many(0)
-      |> Enum.split_with(fn {_task, result} ->
-        case result do
-          nil -> false
-          {:ok, _} -> true
-        end
-      end)
-
-    if Enum.any?(tasks_to_process) do
-      Process.send_after(self(), :process_ordering_tasks, 50)
-    end
+    tasks
+    |> Map.values()
+    |> Task.yield_many(0)
 
     socket
-    |> assign(:ordering_tasks, Enum.map(tasks_to_process, &elem(&1, 0)))
     |> noreply
   end
 
@@ -158,7 +125,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
     socket
     |> assign(:order, Cart.store_cart_products_checkout([product]))
-    |> assign(:ordering_tasks, Enum.filter(tasks, fn task -> task.ref != ref end))
+    |> assign(:ordering_tasks, Map.drop(tasks, [product.editor_details.editor_id]))
     |> noreply()
   end
 
@@ -170,7 +137,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> then(& &1.current)
   end
 
-  defp schedule_products_ordering(socket, []) do
+  defp schedule_products_ordering(socket, %{}) do
     socket
   end
 
@@ -179,25 +146,34 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
          products
        ) do
     account_id = Galleries.account_id(gallery)
-    # IO.inspect DateTime.utc_now(), label: "STARTTIME"
+
     tasks =
       products
-      |> Enum.map(fn product ->
-        Task.async(fn ->
-          shipping_options = product_shipping_options(socket, product)
+      |> Enum.reduce(ordering_tasks, fn product, tasks ->
+        case ordering_tasks[product.editor_details.editor_id] do
+          nil -> :ignore
+          task -> Task.shutdown(task, :brutal_kill)
+        end
 
-          Cart.order_product(product, account_id,
-            ship_to: form_ship_address(order.delivery_info),
-            return_to: return_to_address(),
-            attributes: Shipping.to_attributes(shipping_options)
-          )
-        end)
+        Map.put(
+          tasks,
+          product.editor_details.editor_id,
+          Task.async(fn ->
+            shipping_options = product_shipping_options(socket, product)
+
+            Cart.order_product(product, account_id,
+              ship_to: form_ship_address(order.delivery_info),
+              return_to: return_to_address(),
+              attributes: Shipping.to_attributes(shipping_options)
+            )
+          end)
+        )
       end)
 
     Process.send_after(self(), :process_ordering_tasks, 50)
 
     socket
-    |> assign(:ordering_tasks, ordering_tasks ++ tasks)
+    |> assign(:ordering_tasks, tasks)
   end
 
   defp update_shipping_opts(%{assigns: %{shipping_opts: opts}} = socket, option_uid, editor_id) do
@@ -274,6 +250,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp is_current_shipping_option?(opts, option, %{editor_details: %{editor_id: editor_id}}) do
     Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
     |> then(&(&1.current == option))
+  end
+
+  defp is_product_ordering?(ordering_tasks, product) do
+    Map.has_key?(ordering_tasks, product.editor_details.editor_id)
   end
 
   defp shipping_option_uid(%{id: id}), do: id

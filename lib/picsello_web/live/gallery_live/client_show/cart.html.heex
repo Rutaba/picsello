@@ -132,11 +132,18 @@
                                 name="ship_option"
                                 phx-value-option-uid={shipping_option_uid(option)}
                                 phx-value-product-editor-id={product.editor_details.editor_id}
-                                
                                 checked={is_current_shipping_option?(@shipping_opts, option, product)}>
                             <div class="ml-4 w-11/12">
                                 <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
-                                <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium">from <%= shipping_option_cost(option) %></label><br>
+                                <%= if is_current_shipping_option?(@shipping_opts, option, product) do %>
+                                  <%= if is_product_ordering?(@ordering_tasks, product) do %>
+                                    <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium">updating...</label><br>
+                                  <% else %>
+                                    <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium"><%= Money.parse!(product.whcc_order.total) |> Money.subtract(product.base_price) %></label><br>
+                                  <% end %>
+                                <% else %>
+                                  <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium">from <%= shipping_option_cost(option) %></label><br>
+                                <% end %>
                             </div>
                         </div>
                         </.display_shipping_opts>
@@ -152,7 +159,7 @@
                 <button 
                   type="submit" 
                   class="btn-primary mt-5 w-full" 
-                  disabled={@ordering_tasks != []}
+                  disabled={@ordering_tasks != %{}}
                   phx-click="checkout">
                   Check out with Stripe
                 </button>
