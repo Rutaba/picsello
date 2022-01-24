@@ -55,7 +55,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
     |> assign(:ordering_tasks, %{})
     |> assign_shipping_opts()
-    |> schedule_products_ordering(order.products)
+    |> schedule_products_ordering(products)
     |> noreply()
   end
 
@@ -77,8 +77,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{
           assigns: %{
             step: :shipping_opts,
-            shipping_opts: shipping_opts,
-            order: %{products: products, delivery_info: delivery_info} = order,
+            order: order,
             gallery: gallery
           }
         } = socket
@@ -98,7 +97,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "click",
         %{"option-uid" => option_uid, "product-editor-id" => editor_id},
-        %{assigns: %{step: :shipping_opts, ordering_tasks: tasks, order: %{products: products}}} =
+        %{assigns: %{step: :shipping_opts, order: %{products: products}}} =
           socket
       ) do
     product = Enum.find(products, fn p -> p.editor_details.editor_id == editor_id end)
@@ -207,16 +206,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       Enum.map(products, fn product -> shipping_opts_for_product(product) end)
     )
   end
-
-  # defp assign_shipping_cost(%{assigns: %{step: :shipping_opts, shipping_opts: opts}} = socket) do
-  #  socket
-  #  |> assign(
-  #    :shipping_cost,
-  #    Enum.reduce(opts, Money.new(0), fn %{current: %{price: cost}}, sum ->
-  #      cost |> Money.add(sum)
-  #    end)
-  #  )
-  # end
 
   defp display_shipping_opts(assigns) do
     ~H"""
