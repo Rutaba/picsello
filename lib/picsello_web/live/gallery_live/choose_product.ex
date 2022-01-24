@@ -19,6 +19,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> ok
   end
 
+
+
   @impl true
   def handle_event("prev", _, %{assigns: %{photo_ids: photo_ids}} = socket) do
     photo_ids = CLL.prev(photo_ids)
@@ -46,6 +48,15 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign(:photo_client_liked, photo.client_liked)
     |> noreply
   end
+
+  @impl true
+  def handle_event("keydown", %{"key" => "ArrowLeft"}, socket), do: __MODULE__.handle_event("prev", [], socket)
+
+  @impl true
+  def handle_event("keydown", %{"key" => "ArrowRight"}, socket), do: __MODULE__.handle_event("next", [], socket)
+
+  @impl true
+  def handle_event("keydown", _, socket), do: socket |> noreply
 
   @impl true
   def handle_event("close", _, socket) do
