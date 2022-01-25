@@ -173,25 +173,17 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
-  def handle_event(
-        "save",
-        %{
-          "action" => "update_name",
-          "organization" => organization_params
-        },
-        %{assigns: %{current_user: user}} = socket
-      ) do
-    changeset = organization_name_changeset(user, organization_params)
-
-    case Repo.update(changeset) do
-      {:ok, _organization} ->
-        socket
-        |> put_flash(:success, "Business name changed successfully")
-        |> noreply()
-
-      {:error, changeset} ->
-        socket |> assign(organization_name_changeset: changeset) |> noreply()
-    end
+  def handle_event("save", %{"action" => "update_name"}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "change-name",
+      confirm_label: "Yes, change name",
+      icon: "warning-orange",
+      title: "Are you sure?",
+      subtitle: "Changing your business name will update throughout Picsello."
+    })
+    |> noreply()
   end
 
   @impl true
@@ -226,6 +218,25 @@ defmodule PicselloWeb.Live.User.Settings do
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "change-name"},
+        %{assigns: %{organization_name_changeset: changeset}} = socket
+      ) do
+    changeset = changeset |> Map.put(:action, nil)
+
+    case Repo.update(changeset) do
+      {:ok, _organization} ->
+        socket
+        |> close_modal()
+        |> put_flash(:success, "Business name changed successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> close_modal() |> assign(organization_name_changeset: changeset) |> noreply()
+    end
+  end
 
   def settings_nav(assigns) do
     assigns = assigns |> Enum.into(%{container_class: ""})

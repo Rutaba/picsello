@@ -30,6 +30,7 @@ defmodule Picsello.UserSettingsTest do
     |> fill_in(text_field("Business name"), with: "MJ Photography")
     |> wait_for_enabled_submit_button(text: "Change name")
     |> click(button("Change name"))
+    |> within_modal(&click(&1, button("Yes, change name")))
     |> assert_flash(:success, text: "Business name changed successfully")
 
     organization = user |> Repo.preload(:organization, force: true) |> Map.get(:organization)
