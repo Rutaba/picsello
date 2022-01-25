@@ -7,6 +7,26 @@
   <hr />
 
   <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-12">
+    <.card title="Change your business name">
+      <.form let={f} for={@organization_name_changeset} phx-change="validate" phx-submit="save" id="name_form">
+        <%= hidden_input f, :action, name: "action", value: "update_name" %>
+        <%= labeled_input f, :name, label: "Business name", wrapper_class: "mt-4"  %>
+
+        <div class="mt-5 text-right">
+          <%= submit "Change name", class: "btn-primary mx-1", disabled: !@organization_name_changeset.valid?, phx_disable_with: "Change name" %>
+        </div>
+      </.form>
+    </.card>
+    <.card title="Change your timezone">
+      <.form let={f} for={@time_zone_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
+        <%= hidden_input f, :action, name: "action", value: "update_time_zone" %>
+        <%= labeled_select f, :time_zone, time_zone_options(), label: "Timezone", wrapper_class: "mt-4" %>
+
+        <div class="mt-5 text-right">
+          <%= submit "Change timezone", class: "btn-primary mx-1", disabled: !@time_zone_changeset.valid?, phx_disable_with: "Change timezone" %>
+        </div>
+      </.form>
+    </.card>
     <%= if @email_changeset do %>
       <.card title="Change email">
         <.form let={f} for={@email_changeset} phx-change="validate" phx-submit="save" id="email_form">

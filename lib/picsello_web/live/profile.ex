@@ -18,6 +18,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
     |> assign_start_prices()
+    |> maybe_redirect_slug(slug)
     |> ok()
   end
 
@@ -238,5 +239,13 @@ defmodule PicselloWeb.Live.Profile do
       |> Enum.into(%{})
 
     socket |> assign(:start_prices, start_prices)
+  end
+
+  defp maybe_redirect_slug(%{assigns: %{organization: organization}} = socket, current_slug) do
+    if current_slug != organization.slug do
+      push_redirect(socket, to: Routes.profile_path(socket, :index, organization.slug))
+    else
+      socket
+    end
   end
 end

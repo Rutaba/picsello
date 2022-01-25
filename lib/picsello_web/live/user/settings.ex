@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.User.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Accounts, Accounts.User}
+  alias Picsello.{Accounts, Accounts.User, Organization, Repo}
 
   require Logger
 
@@ -18,7 +18,13 @@ defmodule PicselloWeb.Live.User.Settings do
         _ ->
           [email_changeset: nil, password_changeset: nil]
       end
-      |> Keyword.merge(submit_changed_password: false, sign_out: false, page_title: "Settings")
+      |> Keyword.merge(
+        submit_changed_password: false,
+        sign_out: false,
+        page_title: "Settings",
+        organization_name_changeset: organization_name_changeset(user),
+        time_zone_changeset: time_zone_changeset(user)
+      )
     )
     |> ok()
   end
@@ -34,6 +40,16 @@ defmodule PicselloWeb.Live.User.Settings do
     user
     |> Ecto.Changeset.cast(params, [:password])
     |> User.validate_password([])
+  end
+
+  defp organization_name_changeset(user, params \\ %{}) do
+    user.organization
+    |> Organization.name_changeset(params)
+  end
+
+  defp time_zone_changeset(user, params \\ %{}) do
+    user
+    |> User.time_zone_changeset(params)
   end
 
   @impl true
@@ -68,6 +84,38 @@ defmodule PicselloWeb.Live.User.Settings do
       |> Map.put(:action, :validate)
 
     socket |> assign(:password_changeset, changeset) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_name",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset =
+      organization_name_changeset(user, organization_params)
+      |> Map.put(:action, :validate)
+
+    socket |> assign(:organization_name_changeset, changeset) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_time_zone",
+          "user" => user_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset =
+      time_zone_changeset(user, user_params)
+      |> Map.put(:action, :validate)
+
+    socket |> assign(:time_zone_changeset, changeset) |> noreply()
   end
 
   @impl true
@@ -125,6 +173,42 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
+  def handle_event("save", %{"action" => "update_name"}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "change-name",
+      confirm_label: "Yes, change name",
+      icon: "warning-orange",
+      title: "Are you sure?",
+      subtitle: "Changing your business name will update throughout Picsello."
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_time_zone",
+          "user" => user_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset = time_zone_changeset(user, user_params)
+
+    case Repo.update(changeset) do
+      {:ok, _user} ->
+        socket
+        |> put_flash(:success, "Timezone changed successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(time_zone_changeset: changeset) |> noreply()
+    end
+  end
+
+  @impl true
   def handle_event("sign_out", _params, socket) do
     socket
     |> assign(sign_out: true)
@@ -134,6 +218,25 @@ defmodule PicselloWeb.Live.User.Settings do
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "change-name"},
+        %{assigns: %{organization_name_changeset: changeset}} = socket
+      ) do
+    changeset = changeset |> Map.put(:action, nil)
+
+    case Repo.update(changeset) do
+      {:ok, _organization} ->
+        socket
+        |> close_modal()
+        |> put_flash(:success, "Business name changed successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> close_modal() |> assign(organization_name_changeset: changeset) |> noreply()
+    end
+  end
 
   def settings_nav(assigns) do
     assigns = assigns |> Enum.into(%{container_class: ""})
@@ -198,4 +301,11 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp show_pricing_tab?,
     do: Enum.member?(Application.get_env(:picsello, :feature_flags, []), :show_pricing_tab)
+
+  def time_zone_options() do
+    TzExtra.countries_time_zones()
+    |> Enum.sort_by(&{&1.utc_offset, &1.time_zone})
+    |> Enum.map(&{"(GMT#{&1.pretty_utc_offset}) #{&1.time_zone}", &1.time_zone})
+    |> Enum.uniq()
+  end
 end

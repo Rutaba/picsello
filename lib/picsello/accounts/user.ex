@@ -2,6 +2,7 @@ defmodule Picsello.Accounts.User do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  import TzExtra.Changeset
   alias Picsello.Onboardings.Onboarding
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
@@ -163,6 +164,13 @@ defmodule Picsello.Accounts.User do
           message
         )
     end
+  end
+
+  def time_zone_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:time_zone])
+    |> validate_required([:time_zone])
+    |> validate_time_zone_identifier(:time_zone)
   end
 
   @doc """
