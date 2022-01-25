@@ -86,6 +86,9 @@ module.exports = {
       gridTemplateColumns: {
         'cart': '110px minmax(80px, 1fr) auto',
         'cartWide': '16rem 1fr auto'
+      },
+      gridTemplateRows: {
+        'preview': '50px auto'
       }
     },
   },

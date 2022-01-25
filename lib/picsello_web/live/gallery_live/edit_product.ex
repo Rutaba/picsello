@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
     socket
     |> set_current_whcc_product(String.to_integer(id))
     |> set_whcc_product_size()
+    |> push_event("update_print_type", %{})
     |> noreply()
   end
 

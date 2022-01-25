@@ -33,7 +33,6 @@ const Preview = {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const frame = new Image();
-            frame.src = "/images/" + frame_name;
 
             if (screenWidth < 640) {
                 canvas.height = smallHeight || 80
@@ -41,7 +40,7 @@ const Preview = {
 
             if (canvas.classList.contains('edit')) {
                 const selectedImage = document.querySelector('.selected img');
-                if(selectedImage) {
+                if (selectedImage) {
                     const selectedImage__height = selectedImage?.height
                     const selectedImage__width = selectedImage?.width
                     ratio = selectedImage__width / selectedImage__height
@@ -76,19 +75,23 @@ const Preview = {
                 }
 
                 const preview = new Image();
-                preview.src = preview_name;
                 preview.onload = renderImageWithFrame
+                preview.src = preview_name;
 
                 Preview.preview = preview
                 Preview.renderImageWithFrame = renderImageWithFrame
             }
+
+            frame.src = "/images/" + frame_name;
         }
     },
     updated() {
-        this.draw(this.frame_name, this.preview_name, this.coords, this.target, this.ratio);
-        if (this.preview) {
-            this.renderImageWithFrame()
-        }
+        this.handleEvent("set_preview", ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
+            this.draw(frame_name, preview_name, corners0, canvasId)
+        })
+        this.handleEvent("update_print_type", () => {
+            this.draw(this.frame_name, this.preview_name, this.coords, this.target, this.ratio)
+        })
     }
 }
 
