@@ -10,7 +10,7 @@
     <hr>
     <div class="gallery__container">
         <%= if @step == :product_list do %>
-        <div class="font-bold text-lg lg:text-3xl py-5 lg:pt-14 lg:pb-10">Your shopping cart</div>
+        <div class="font-bold text-xl lg:text-3xl py-5 lg:pt-14 lg:pb-10">Your shopping cart</div>
         <div class="grid gridWrapper">
             <div class="col-span-1 mb-4 subTotal">
                 <div class="p-5 border rounded-lg flex flex-col">
@@ -61,7 +61,7 @@
 
         <%= if @step == :delivery_info do %>
         <div class="max-w-screen-xl w-full m-auto">
-            <h2 class="text-lg lg:text-3xl font-bold py-5 lg:pt-14 lg:pb-10">Enter your shipping information</h2>
+            <h2 class="text-xl lg:text-3xl font-bold py-5 lg:pt-14 lg:pb-10">Enter your shipping information</h2>
             <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
             <div class="border border-gray-200 rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
                 <div class="flex flex-col md:flex-row">
@@ -109,7 +109,7 @@
         <% end %>
 
         <%= if @step == :shipping_opts do %>
-        <div class="font-bold text-lg lg:text-3xl py-5 lg:pt-14 lg:pb-10">Shipping options</div>
+        <div class="font-bold text-xl lg:text-3xl py-5 lg:pt-14 lg:pb-10">Shipping options</div>
         <div class="flex flex-col-reverse xl:flex-row xl:justify-between w-full">
             <button type="submit" class=" lg:hidden btn-primary mt-5 w-full" phx-click="checkout">Check out with Stripe</button>
             <div class="xl:border rounded-lg border-base-200 xl:divide-y divide-base-200 w-full xl:max-w-screen-xl xl:px-6 xl:mr-6 shippingOptions__infoBlock">
