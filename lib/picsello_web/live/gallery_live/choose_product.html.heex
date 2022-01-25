@@ -1,6 +1,6 @@
 <div>
   <div class="relative z-10">
-    <a href="" phx-click="close" phx-target={@myself} class="absolute cursor-pointer right-3 top-3 mb-4 lg:mb-9">
+    <a href="#" phx-click="close" phx-target={@myself} class="absolute cursor-pointer right-3 top-3 mb-4 lg:mb-9">
       <.icon name="modal_close" class="w-4 h-4 stroke-current" />
     </a>
   </div>
@@ -34,9 +34,9 @@
                 <p class="font-semibold text-sm"><%= template.title %></p>
                 <p class="font-semibold text-xs opacity-60"> <%= Money.to_string(template.price) %></p>
               </div>
-                <span 
-                  phx-click="product_preview_photo_click" 
-                  phx-target="#hamburger-menu" 
+                <span
+                  phx-click="product_preview_photo_click"
+                  phx-target="#hamburger-menu"
                   phx-value-template_id={template.gid}
                   phx-value-photo_id={@photo_id}
                   class="p-2 bg-black text-white rounded-md float-right cursor-pointer">Select</span>
