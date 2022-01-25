@@ -58,11 +58,11 @@ const positionChange = (movedId, order) => {
     return false;
 }
 
-const calculateItemsMargins = () => {
+const calculateItemsMargins = (photoWidth = 300) => {
     const gridElement = document.querySelector("#muuri-grid");
     const gridWidth = gridElement.offsetWidth;
-    const elementsInRow = parseInt(gridWidth /300  + '');
-    const margin = ((gridWidth - (elementsInRow * 300)) / elementsInRow)
+    const elementsInRow = parseInt(gridWidth / photoWidth  + '');
+    const margin = ((gridWidth - (elementsInRow * photoWidth)) / elementsInRow)
     document.querySelectorAll('#muuri-grid .item').forEach(el => el.style.margin = `10px ${margin/2}px`)
 }
 
@@ -80,8 +80,8 @@ export default {
   init_masonry () {
     const gridElement = document.querySelector("#muuri-grid");
     if (gridElement) {
-        window.addEventListener('resize', ()=>  calculateItemsMargins())
-        calculateItemsMargins()
+        window.addEventListener('resize', ()=>  calculateItemsMargins(this.el.dataset.photoWidth))
+        calculateItemsMargins(this.el.dataset.photoWidth)
       const opts = {
         layout: {
           fillGaps: true,
@@ -132,7 +132,7 @@ export default {
   reload_masonry () {
     const grid = this.get_grid();
     grid.remove(grid.getItems());
-    calculateItemsMargins()
+    calculateItemsMargins(this.el.dataset.photoWidth)
     grid.add(document.querySelectorAll('#muuri-grid .item'));
     },
 
@@ -144,7 +144,7 @@ export default {
     const addedItemsIds = grid.getItems().map(x => x.getElement().id);
     const allItems = document.querySelectorAll('#muuri-grid .item');
     const itemsToInject = Array.from(allItems).filter(x => !addedItemsIds.includes(x.id))
-    calculateItemsMargins()
+    calculateItemsMargins(this.el.dataset.photoWidth)
     grid.add(itemsToInject);
 
   },

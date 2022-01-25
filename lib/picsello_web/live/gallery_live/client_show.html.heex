@@ -84,14 +84,17 @@ class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @g
             data-favorites-count={@favorites_count}
             data-is-favorites-shown={ "#{@favorites_filter}" }
             data-has-more-photos={ "#{@has_more_photos}" }
+            data-photo-width="300"
             >
             <%= for photo <- @photos do %>
             <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                 id: photo.id,
                 photo: photo,
+                photo_width: 300,
                 is_likable: true,
                 is_removable: false,
-                is_removed: false %>
+                is_removed: false,
+                is_gallery_category_page: false %>
             <% end %>
         </div>
     </div>
