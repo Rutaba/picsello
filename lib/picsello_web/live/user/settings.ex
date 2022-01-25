@@ -22,7 +22,8 @@ defmodule PicselloWeb.Live.User.Settings do
         submit_changed_password: false,
         sign_out: false,
         page_title: "Settings",
-        organization_name_changeset: organization_name_changeset(user)
+        organization_name_changeset: organization_name_changeset(user),
+        time_zone_changeset: time_zone_changeset(user)
       )
     )
     |> ok()
@@ -44,6 +45,11 @@ defmodule PicselloWeb.Live.User.Settings do
   defp organization_name_changeset(user, params \\ %{}) do
     user.organization
     |> Organization.name_changeset(params)
+  end
+
+  defp time_zone_changeset(user, params \\ %{}) do
+    user
+    |> User.time_zone_changeset(params)
   end
 
   @impl true
@@ -94,6 +100,22 @@ defmodule PicselloWeb.Live.User.Settings do
       |> Map.put(:action, :validate)
 
     socket |> assign(:organization_name_changeset, changeset) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_time_zone",
+          "user" => user_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset =
+      time_zone_changeset(user, user_params)
+      |> Map.put(:action, :validate)
+
+    socket |> assign(:time_zone_changeset, changeset) |> noreply()
   end
 
   @impl true
@@ -162,13 +184,35 @@ defmodule PicselloWeb.Live.User.Settings do
     changeset = organization_name_changeset(user, organization_params)
 
     case Repo.update(changeset) do
-      {:ok, organization} ->
+      {:ok, _organization} ->
         socket
         |> put_flash(:success, "Business name changed successfully")
         |> noreply()
 
       {:error, changeset} ->
         socket |> assign(organization_name_changeset: changeset) |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_time_zone",
+          "user" => user_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset = time_zone_changeset(user, user_params)
+
+    case Repo.update(changeset) do
+      {:ok, _user} ->
+        socket
+        |> put_flash(:success, "Timezone changed successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(time_zone_changeset: changeset) |> noreply()
     end
   end
 
@@ -246,4 +290,11 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp show_pricing_tab?,
     do: Enum.member?(Application.get_env(:picsello, :feature_flags, []), :show_pricing_tab)
+
+  def time_zone_options() do
+    TzExtra.countries_time_zones()
+    |> Enum.sort_by(&{&1.utc_offset, &1.time_zone})
+    |> Enum.map(&{"(GMT#{&1.pretty_utc_offset}) #{&1.time_zone}", &1.time_zone})
+    |> Enum.uniq()
+  end
 end

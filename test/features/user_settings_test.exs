@@ -6,6 +6,7 @@ defmodule Picsello.UserSettingsTest do
   setup do
     user =
       insert(:user,
+        time_zone: "America/Sao_Paulo",
         organization: %{
           name: "Mary Jane Photography",
           slug: "mary-jane-photos"
@@ -43,5 +44,20 @@ defmodule Picsello.UserSettingsTest do
     |> visit("/photographer/mary-jane-photos")
     |> assert_text("What we offer")
     |> assert_path("/photographer/mj-photography")
+  end
+
+  feature "updates timezone", %{session: session, user: user} do
+    session
+    |> click(link("Settings"))
+    |> assert_value(select("Timezone"), "America/Sao_Paulo")
+    |> find(select("Timezone"), &click(&1, option("(GMT-05:00) America/New_York")))
+    |> click(button("Change timezone"))
+    |> assert_flash(:success, text: "Timezone changed successfully")
+
+    user = user |> Repo.reload()
+
+    assert %{
+             time_zone: "America/New_York"
+           } = user
   end
 end
