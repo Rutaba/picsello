@@ -14,6 +14,7 @@ defmodule Picsello.WHCC.Shipping do
     |> Enum.map(fn %{id: id, name: name, base: base, percent: percent} ->
       %{id: id, name: name, price: Money.add(base, Money.multiply(price, percent / 100))}
     end)
+    |> Enum.sort_by(& &1.price.amount)
   end
 
   defmodule Option do
@@ -24,18 +25,8 @@ defmodule Picsello.WHCC.Shipping do
   def all(),
     do: [
       %Option{
-        id: 1,
-        name: "Economy",
-        base: Money.new(355),
-        percent: 5,
-        size: &fits?(&1, {8, 12}),
-        category: &(&1 == "Loose Prints"),
-        attrs: [96, 545],
-        prio: 5
-      },
-      %Option{
         id: 2,
-        name: "Economy Trackable Small Format",
+        name: "Standard loose print shipping (2-6 days)",
         base: Money.new(535),
         percent: 6,
         size: &fits?(&1, {8, 12}),
@@ -45,33 +36,43 @@ defmodule Picsello.WHCC.Shipping do
       },
       %Option{
         id: 3,
-        name: "Economy Trackable",
+        name: "Standard shipping (2-6 days)",
         base: Money.new(790),
         percent: 9,
         size: &any/1,
         category: &any/1,
         attrs: [96, 546],
-        prio: 2
+        prio: 5
       },
       %Option{
         id: 4,
-        name: "WD - 3 days or less",
+        name: "3-days shipping",
         base: Money.new(1125),
         percent: 10,
         size: &any/1,
         category: &any/1,
         attrs: [96, 100],
-        prio: 3
+        prio: 2
       },
       %Option{
         id: 5,
-        name: "WD - NDS or 2 day",
+        name: "2-days shipping",
         base: Money.new(2160),
         percent: 15,
         size: &any/1,
         category: &any/1,
         attrs: [96, 101],
-        prio: 4
+        prio: 3
+      },
+      %Option{
+        id: 1,
+        name: "Economy",
+        base: Money.new(355),
+        percent: 5,
+        size: &fits?(&1, {8, 12}),
+        category: &(&1 == "Loose Prints"),
+        attrs: [96, 545],
+        prio: 7
       },
       %Option{
         id: 6,
@@ -81,7 +82,7 @@ defmodule Picsello.WHCC.Shipping do
         size: &any/1,
         category: &any/1,
         attrs: [96, 1729],
-        prio: 5
+        prio: 7
       },
       %Option{
         id: 7,
@@ -91,18 +92,18 @@ defmodule Picsello.WHCC.Shipping do
         size: &any/1,
         category: &any/1,
         attrs: [96, 1728],
-        prio: 5
-      },
-      %Option{
-        id: 8,
-        name: "Drop Ship",
-        base: Money.new(750),
-        percent: 0,
-        size: &any/1,
-        category: &(&1 in ["Albums", "Books"]),
-        attrs: [553, 548],
-        prio: 1
+        prio: 7
       }
+      #      %Option{
+      #        id: 8,
+      #        name: "Drop Ship",
+      #        base: Money.new(750),
+      #        percent: 0,
+      #        size: &any/1,
+      #        category: &(&1 in ["Albums", "Books"]),
+      #        attrs: [553, 548],
+      #        prio: 10
+      #      }
     ]
 
   defp any(_), do: true
