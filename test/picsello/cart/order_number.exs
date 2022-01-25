@@ -35,7 +35,7 @@ defmodule Picsello.Cart.OrderNumberTest do
 
   describe "string to int" do
     test "string flow" do
-      number = 12345
+      number = 12_345
       string = number |> Integer.to_string()
       int = number |> from_number()
 
