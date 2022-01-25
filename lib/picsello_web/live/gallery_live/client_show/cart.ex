@@ -97,8 +97,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "click",
         %{"option-uid" => option_uid, "product-editor-id" => editor_id},
-        %{assigns: %{step: :shipping_opts, order: %{products: products}}} =
-          socket
+        %{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket
       ) do
     product = Enum.find(products, fn p -> p.editor_details.editor_id == editor_id end)
 
@@ -109,18 +108,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   @impl true
-  def handle_info(:process_ordering_tasks, %{assigns: %{ordering_tasks: tasks}} = socket) do
-    tasks
-    |> Map.values()
-    |> Task.yield_many(0)
-
-    socket
-    |> noreply
-  end
-
-  @impl true
-  def handle_info({ref, product}, %{assigns: %{ordering_tasks: tasks}} = socket) do
-    Process.demonitor(ref, [:flush])
+  def handle_info({_ref, product}, %{assigns: %{ordering_tasks: tasks}} = socket) do
+    Task.shutdown(tasks[product.editor_details.editor_id], :brutal_kill)
 
     socket
     |> assign(:order, Cart.store_cart_products_checkout([product]))
@@ -138,10 +127,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp schedule_products_ordering(socket, %{}) do
     socket
+    |> noreply()
   end
 
   defp schedule_products_ordering(
-         %{assigns: %{gallery: gallery, order: order, ordering_tasks: ordering_tasks}} = socket,
+         %{
+           assigns: %{
+             gallery: gallery,
+             order: %{delivery_info: delivery_info},
+             ordering_tasks: ordering_tasks
+           }
+         } = socket,
          products
        ) do
     account_id = Galleries.account_id(gallery)
@@ -154,25 +150,31 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           task -> Task.shutdown(task, :brutal_kill)
         end
 
+        shipping_options = product_shipping_options(socket, product)
+
         Map.put(
           tasks,
           product.editor_details.editor_id,
           Task.async(fn ->
-            shipping_options = product_shipping_options(socket, product)
-
-            Cart.order_product(product, account_id,
-              ship_to: form_ship_address(order.delivery_info),
-              return_to: return_to_address(),
-              attributes: Shipping.to_attributes(shipping_options)
-            )
+            try do
+              order_product(product, account_id, delivery_info, shipping_options)
+            rescue
+              _ -> order_product(product, account_id, delivery_info, shipping_options)
+            end
           end)
         )
       end)
 
-    Process.send_after(self(), :process_ordering_tasks, 50)
-
     socket
     |> assign(:ordering_tasks, tasks)
+  end
+
+  defp order_product(product, account_id, delivery_info, shipping_options) do
+    Cart.order_product(product, account_id,
+      ship_to: form_ship_address(delivery_info),
+      return_to: return_to_address(),
+      attributes: Shipping.to_attributes(shipping_options)
+    )
   end
 
   defp update_shipping_opts(%{assigns: %{shipping_opts: opts}} = socket, option_uid, editor_id) do
