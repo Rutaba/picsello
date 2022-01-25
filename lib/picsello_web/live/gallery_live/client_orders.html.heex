@@ -24,7 +24,7 @@
                         <span class="font-semibold lg:font-normal"><%= order.number %></span>
                     </p>
                     <p class="absolute top-5 right-5 lg:static">
-                    <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.id) do %>
+                    <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.number) do %>
                         <p class="text-blue-planning-300">View details</p>
                     <% end %>
                     </p>
