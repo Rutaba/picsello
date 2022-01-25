@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
   alias Picsello.Cart
   alias Picsello.Cart.Order
+  alias Picsello.Cart.OrderNumber
   alias Picsello.GalleryProducts
   alias Picsello.Galleries
 
@@ -15,11 +16,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   def handle_params(
-        %{"order_id" => order_id},
+        %{"order_number" => order_number},
         _,
         %{assigns: %{gallery: gallery, live_action: :paid}} = socket
       ) do
-    order_id = to_integer(order_id)
+    order_id = order_number |> OrderNumber.from_number()
 
     case Cart.get_unconfirmed_order(gallery.id) do
       {:ok, %{id: ^order_id} = order} ->
@@ -42,13 +43,24 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       _ ->
         socket
         |> push_patch(
-          to: Routes.gallery_client_order_path(socket, :show, gallery.client_link_hash, order_id)
+          to:
+            Routes.gallery_client_order_path(
+              socket,
+              :show,
+              gallery.client_link_hash,
+              order_number
+            )
         )
         |> noreply()
     end
   end
 
-  def handle_params(%{"order_id" => order_id}, _, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_params(
+        %{"order_number" => order_number},
+        _,
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    order_id = order_number |> OrderNumber.from_number()
     %Order{} = order = Cart.get_placed_gallery_order(order_id, gallery.id)
 
     gallery = Galleries.populate_organization_user(gallery)

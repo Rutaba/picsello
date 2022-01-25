@@ -172,11 +172,18 @@ defmodule Picsello.Cart do
     product
     |> Order.create_changeset(attrs)
     |> Repo.insert!()
+    |> set_order_number()
   end
 
   defp place_product_in_order(%Order{} = order, %CartProduct{} = product, attrs) do
     order
     |> Order.update_changeset(product, attrs)
+    |> Repo.update!()
+  end
+
+  def set_order_number(order) do
+    order
+    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
     |> Repo.update!()
   end
 end
