@@ -29,6 +29,14 @@ defmodule PicselloWeb.Live.Profile do
     |> assign_defaults(session)
     |> assign_current_organization()
     |> assign_start_prices()
+    |> allow_upload(
+      :logo,
+      accept: ~w(.svg .png),
+      max_entries: 1,
+      external: &preflight/2,
+      auto_upload: true
+    )
+    |> subscribe_image_process()
     |> ok()
   end
 
@@ -37,7 +45,30 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <div class="flex-grow pb-16 md:pb-32">
       <div class="px-6 py-4 md:py-8 md:px-16 center-container">
-        <.photographer_logo color={@color} photographer={@photographer} />
+        <%= if @edit do %>
+          <div class={classes("flex justify-left items-center", %{"hidden" => Enum.any?(@uploads.logo.entries)})}>
+            <.photographer_logo {assigns} />
+            <p class="mx-5 text-2xl font-bold">or</p>
+            <form id="logo-form" phx-submit="save-logo" phx-change="validate-logo" class="flex items-center p-4 font-bold border border-blue-planning-300 border-2 border-dashed rounded-lg" phx-drop-target={@uploads.logo.ref}>
+              <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
+              <div>
+                Drag your logo or
+                <label class="text-blue-planning-300">
+                  <%= live_file_input @uploads.logo, class: "hidden" %>
+                  browse
+                  <p class="text-sm font-normal text-base-250">Supports PNG or SVG</p>
+                </label>
+              </div>
+            </form>
+          </div>
+          <%= for %{progress: progress} <- @uploads.logo.entries do %>
+            <div class="w-52 h-2 rounded-lg bg-base-200">
+              <div class="h-full bg-green-finances-300 rounded-lg" style={"width: #{progress}%"}></div>
+            </div>
+          <% end %>
+        <% else %>
+          <.photographer_logo {assigns} />
+        <% end %>
       </div>
 
       <hr class="border-base-200">
@@ -166,11 +197,28 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   @impl true
+  def handle_event("validate-logo", _params, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_event("save-logo", _params, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
   def handle_info({:update, organization}, socket) do
     socket
     |> assign_organization(organization)
     |> assign_start_prices()
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:image_ready, organization}, socket) do
+    consume_uploaded_entries(socket, :logo, fn _, _ -> ok(nil) end)
+
+    socket |> assign_organization(organization) |> noreply()
   end
 
   defp website_url(nil), do: "#"
@@ -223,12 +271,17 @@ defmodule PicselloWeb.Live.Profile do
     """
   end
 
+  defp preflight(image, %{assigns: %{organization: organization}} = socket) do
+    {:ok, meta, organization} = Profiles.preflight(image, organization)
+    {:ok, meta, assign(socket, organization: organization)}
+  end
+
   defp assign_current_organization(%{assigns: %{current_user: current_user}} = socket) do
     organization = Profiles.find_organization_by(user: current_user)
     assign_organization(socket, organization)
   end
 
-  def assign_start_prices(%{assigns: %{organization: organization}} = socket) do
+  defp assign_start_prices(%{assigns: %{organization: organization}} = socket) do
     start_prices =
       Packages.templates_for_organization(organization)
       |> Enum.group_by(& &1.job_type)
@@ -247,5 +300,11 @@ defmodule PicselloWeb.Live.Profile do
     else
       socket
     end
+  end
+
+  defp subscribe_image_process(%{assigns: %{organization: organization}} = socket) do
+    Profiles.subscribe_to_photo_processed(organization)
+
+    socket
   end
 end

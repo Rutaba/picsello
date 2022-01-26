@@ -38,7 +38,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
           Back
         </.live_link>
         <div class="hidden md:flex justify-center">
-          <.photographer_logo color={@color} photographer={@photographer} />
+          <.photographer_logo {assigns} />
         </div>
         <div class="md:hidden col-span-2 flex justify-end">
           <a class="btn-primary text-center py-2"href="#contact-form">Let's chat</a>

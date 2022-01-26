@@ -24,7 +24,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
 
   def handle_message(_, %Message{} = message, _) do
     with {:ok, data} <- Jason.decode(message.data),
-         :ok <- handle_completed_context(data) do
+         :ok <- do_handle_message(data) do
       Message.update_data(message, fn _ -> data end)
     else
       {:error, :unknown_context_structure} ->
@@ -41,9 +41,19 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     end
   end
 
-  def handle_completed_context(%{"task" => %{"photoId" => photo_id}} = context) do
+  defp do_handle_message(%{"task" => task} = context) do
     {:ok, photo} = Context.save_processed(context)
-    Logger.info("Photo has been processed [#{photo_id}]")
+
+    task
+    |> case do
+      %{"photoId" => photoId} ->
+        "Photo has been processed [#{photo_id}]"
+
+      %{"processCoverPhoto" => true, "originalPath" => path} ->
+        "Cover photo [#{path}] has been processed"
+    end
+    |> Logger.info()
+
     Context.notify_processed(context, photo)
 
     :ok
@@ -51,17 +61,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     _ -> :error
   end
 
-  def handle_completed_context(
-        %{"task" => %{"processCoverPhoto" => true, "originalPath" => path}} = context
-      ) do
-    {:ok, photo} = Context.save_processed(context)
-    Logger.info("Cover photo [#{path}] has been processed")
-    Context.notify_processed(context, photo)
-
-    :ok
-  rescue
-    _ -> :error
+  defp do_handle_message(%{"path" => "" <> path, "metadata" => %{"version-id" => "" <> id}}) do
+    Picsello.Profiles.handle_photo_processed_message(path, id)
   end
-
-  def handle_completed_context(_), do: {:error, :unknown_context_structure}
 end

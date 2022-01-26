@@ -104,6 +104,10 @@ config :picsello, :packages,
     cost_of_living: System.get_env("PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE")
   ]
 
+config :picsello, :profile_images,
+  bucket: System.get_env("PUBLIC_BUCKET"),
+  static_host: System.get_env("GOOGLE_PUBLIC_IMAGE_HOST")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

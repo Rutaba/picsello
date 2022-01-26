@@ -5,6 +5,7 @@ import { debuglog } from 'util';
 import path from 'path';
 
 const debugEvent = debuglog('event');
+const debugMessage = debuglog('message');
 
 const resize = (bucketName, inFilename, outFilename, resize, metadata) =>
   new Promise((resolve, reject) => {
@@ -20,11 +21,12 @@ const resize = (bucketName, inFilename, outFilename, resize, metadata) =>
         reject(e);
       })
       .on('finish', (_) => {
-        resolve({ ...metadata, name: outFilename, bucket: bucket.name });
+        resolve({ ...metadata, name: outFilename, bucket: bucketName });
       });
   });
 
 function publish(response, pubSubTopic) {
+  debugMessage(response);
   const pubSubClient = new PubSub();
   const dataBuffer = Buffer.from(JSON.stringify(response));
 
@@ -42,23 +44,29 @@ export async function processProfileImage(event, _meta) {
 
   const { bucket: bucketName, name, metadata, contentType } = event;
 
-  const {
-    ['out-filename']: outFilename,
-    resize: resizeJson,
-    ...publishMetadata
-  } = metadata;
+  if (metadata) {
+    const {
+      ['out-filename']: outFilename,
+      resize: resizeJson,
+      ['pubsub-topic']: topic,
+      ...messageMetadata
+    } = metadata;
 
-  if (outFilename && resizeJson)
-    return await resize(bucketName, name, outFilename, JSON.parse(resizeJson), {
-      contentType,
-      metadata: publishMetadata,
-    });
+    const { name: resizedFilename } = await resize(
+      bucketName,
+      name,
+      outFilename,
+      JSON.parse(resizeJson),
+      {
+        contentType,
+      }
+    );
 
-  const { ['pubsub-topic']: topic, ...messageMetadata } = publishMetadata;
-
-  if (topic)
     return await publish(
-      { path: path.join(bucketName, name), metadata: messageMetadata },
+      {
+        path: path.join(bucketName, resizedFilename),
+        metadata: messageMetadata,
+      },
       topic
     );
   }
