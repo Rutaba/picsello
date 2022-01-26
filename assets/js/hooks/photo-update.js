@@ -12,7 +12,7 @@ export default {
    */
   updatePhotoImage(id, url) {
     const img = document.querySelector(`#photo-${id} img`)
-    if (img.src && img.src != url) {
+    if (img && img.src && img.src != url) {
       img.src = url
     }
   },
