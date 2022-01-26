@@ -16,13 +16,15 @@ defmodule Picsello.Cart.CartProduct do
     field :whcc_confirmation, :string
     field :whcc_processing, :map
     field :whcc_tracking, :map
+    field :created_at, :integer
   end
 
   def new(details, price, base_price) do
     %__MODULE__{
       editor_details: details,
       price: price,
-      base_price: base_price
+      base_price: base_price,
+      created_at: System.os_time(:millisecond)
     }
   end
 

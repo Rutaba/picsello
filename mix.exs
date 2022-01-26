@@ -64,6 +64,7 @@ defmodule Picsello.MixProject do
         {:telemetry_poller, "~> 0.5.1"},
         {:tesla, "~> 1.4.3"},
         {:tz, "~> 0.20"},
+        {:tz_extra, "~> 0.20.1"},
         {:ueberauth_google, "~> 0.10"},
         {:packmatic, "~> 1.1.2"},
         {:gcs_sign, "~> 1.0"},

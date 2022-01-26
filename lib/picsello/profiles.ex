@@ -163,7 +163,23 @@ defmodule Picsello.Profiles do
   def find_organization_by(slug: slug) do
     from(
       o in Organization,
-      where: o.slug == ^slug and fragment("coalesce((profile -> 'is_enabled')::boolean, true)"),
+      where:
+        (o.slug == ^slug or o.previous_slug == ^slug) and
+          fragment("coalesce((profile -> 'is_enabled')::boolean, true)"),
+      order_by:
+        fragment(
+          """
+          case
+            when ?.slug = ? then 0
+            when ?.previous_slug = ? then 1
+          end asc
+          """,
+          o,
+          ^slug,
+          o,
+          ^slug
+        ),
+      limit: 1,
       preload: [:user]
     )
     |> Repo.one!()
