@@ -17,11 +17,19 @@ config :picsello, Picsello.Repo,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
 secret_key_base =
-  System.get_env("SECRET_KEY_BASE") ||
-    raise """
-    environment variable SECRET_KEY_BASE is missing.
-    You can generate one by calling: mix phx.gen.secret
-    """
+  for(suffix <- ["", "_PART_1", "_PART_2"], reduce: "") do
+    key -> "#{key}#{System.get_env("SECRET_KEY_BASE#{suffix}")}"
+  end
+  |> case do
+    "" ->
+      raise """
+      environment variable SECRET_KEY_BASE is missing.
+      You can generate one by calling: mix phx.gen.secret
+      """
+
+    key ->
+      key
+  end
 
 config :picsello, PicselloWeb.Endpoint,
   http: [
