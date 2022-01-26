@@ -13,8 +13,8 @@
         <div class="font-bold text-xl lg:text-3xl py-5 lg:pt-14 lg:pb-10">Your shopping cart</div>
         <div class="grid gridWrapper">
             <div class="col-span-1 mb-4 subTotal">
-                <div class="p-5 border rounded-lg flex flex-col">
-                    <div class="text-lg lg:text-xl">
+                <div class="p-5 border darkerBorder rounded-lg flex flex-col">
+                    <div class="text-xl">
                         <%= unless Enum.empty?(@order.products) do %>
                         Subtotal:
                         <% else %>
@@ -22,10 +22,10 @@
                         <% end %>
                         <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
                     </div>
-                    <button type="submit" class="btn-primary text-base lg:text-lg mt-5" phx-click="continue">Continue</button>
+                    <button type="submit" class="btn-primary text-lg mt-5" phx-click="continue">Continue</button>
                 </div>
             </div>
-            <div class="col-span-2 lg:mr-4 py-6 xl:py-0">
+            <div class="col-span-2 lg:mr-6 py-6 xl:py-0">
                 <%= for product <- @order.products do %>
                 <.live_component
                 module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
@@ -44,8 +44,8 @@
                 <% end %>
             </div>
             <div class="col-span-1">
-                <div class="p-5 border rounded-lg flex flex-col">
-                    <div class="text-lg lg:text-xl">
+                <div class="p-5 border darkerBorder rounded-lg flex flex-col">
+                    <div class="text-xl">
                         <%= unless Enum.empty?(@order.products) do %>
                         Subtotal:
                         <% else %>
@@ -53,7 +53,7 @@
                         <% end %>
                         <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
                     </div>
-                    <button type="submit" class="btn-primary text-base lg:text-lg mt-5" phx-click="continue">Continue</button>
+                    <button type="submit" class="btn-primary text-lg mt-5" phx-click="continue">Continue</button>
                 </div>
             </div>
         </div>
@@ -63,20 +63,20 @@
         <div class="max-w-screen-xl w-full m-auto">
             <h2 class="text-xl lg:text-3xl font-bold py-5 lg:pt-14 lg:pb-10">Enter your shipping information</h2>
             <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
-            <div class="border border-gray-200 rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
+            <div class="border darkerBorder rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
                 <div class="flex flex-col md:flex-row">
                     <div class="flex flex-col flex-1 md:mr-4">
-                        <label for="email" class="text-sm font-bold pb-2 leading-8">Email address</label>
-                        <%= text_input f, :email, id: "email", class: "border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                        <label for="email" class="text-base md:text-sm font-bold pb-2 leading-8">Email address</label>
+                        <%= text_input f, :email, id: "email", class: "border border-gray-100 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                     </div>
                     <div class="flex flex-col flex-1">
-                        <label for="name" class="text-sm font-bold pb-2 leading-8">Name</label>
-                        <%= text_input f, :name, id: "name", class: "border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                        <label for="name" class="text-base md:text-sm font-bold pb-2 leading-8">Name</label>
+                        <%= text_input f, :name, id: "name", class: "border border-gray-100 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                     </div>
                 </div>
                 <div class="mt-6">
                     <!-- this block should be hidden in case non physical products-->
-                    <p class="text-sm font-bold">Shipping address</p>
+                    <p class="text-base md:text-sm font-bold">Shipping address</p>
                     <%= inputs_for f, :address, fn fp -> %>
                     <div class="pt-4">
                         <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
@@ -98,11 +98,11 @@
                     <% end %>
                 </div>
             </div>
-            <div class="border border-gray-200 rounded-lg w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
-                <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span><%= @order.subtotal_cost %></span></p>
-                <hr class="my-4">
+            <div class="border darkerBorder rounded-lg w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
+                <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+                <hr class="my-4 border-base-200">
                 <p class="text-xl">Total: <span class="font-bold"><%= @order.subtotal_cost %></span></p>
-                <%= submit "Continue", class: "btn-primary w-full mt-5", disabled: !@delivery_info_changeset.valid? %>
+                <%= submit "Continue", class: "btn-primary w-full text-lg mt-5", disabled: !@delivery_info_changeset.valid? %>
             </div>
             </.form>
         </div>
@@ -111,10 +111,10 @@
         <%= if @step == :shipping_opts do %>
         <div class="font-bold text-xl lg:text-3xl py-5 lg:pt-14 lg:pb-10">Shipping options</div>
         <div class="flex flex-col-reverse xl:flex-row xl:justify-between w-full">
-            <button type="submit" class=" lg:hidden btn-primary mt-5 w-full" phx-click="checkout">Check out with Stripe</button>
-            <div class="xl:border rounded-lg border-base-200 xl:divide-y divide-base-200 w-full xl:max-w-screen-xl xl:px-6 xl:mr-6 shippingOptions__infoBlock">
+            <button type="submit" class="lg:hidden btn-primary mt-5 w-full text-lg" phx-click="checkout">Check out with Stripe</button>
+            <div class="xl:border rounded-lg darkerBorder xl:divide-y xl:divide-base-200 w-full xl:w-2/3 xl:mr-6 xl:px-6 shippingOptions__infoBlock">
                 <%= for product <- @order.products do %>
-                <div class="flex flex-col lg:flex-row py-4 rounded-lg border border-base-200 xl:border-0 mb-5 xl:mb-0">
+                <div class="flex flex-col lg:flex-row py-4 rounded-lg border darkerBorder xl:border-0 mb-5 xl:mb-0">
                     <div class="lg:w-3/5">
                         <.live_component
                         module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
@@ -124,21 +124,20 @@
                         has_buttons={false}
                         />
                     </div>
-                    <div class="border-t pt-5 lx:pt-2 mx-6 lg:px-0 lg:border-l lg:border-t-0 border-gray-200 lg:pl-9 deliveryOptions__wrapper">
-                        <p class="font-medium text-base pb-5">Choose a delivery option:</p>
+                    <div class="border-t pt-5 pb-3 lg:pb-0 lg:pt-2 mx-5 lg:mx-0 lg:px-0 lg:border-l lg:border-t-0 border-gray-200 lg:pl-9 deliveryOptions__wrapper lg:w-2/5">
+                        <p class="font-medium text-lg md:text-base pb-5 font-medium">Choose a delivery option:</p>
                         <.display_shipping_opts let={option} options={shipping_opts_for_product(@shipping_opts, product)}>
-                        <div class="flex mb-2">
+                        <div class="flex mb-6 lg:mb-2 last:mb-0">
                             <input
-                                style="margin-top:4px"
                                 type="radio" phx-click="click"
                                 id={shipping_option_uid(option)}
                                 name="ship_option"
                                 phx-value-option-uid={shipping_option_uid(option)}
                                 phx-value-product-editor-id={product.editor_details.editor_id}
                                 checked={is_current_shipping_option?(@shipping_opts, option, product)}>
-                            <div class="ml-4 w-auto xl:w-11/12">
-                                <label for={shipping_option_uid(option)} class="text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
-                                <label for={shipping_option_uid(option)} class="text-green-finances-300 text-sm font-medium"><%= shipping_option_cost(option) %></label><br>
+                            <div class="ml-4 flex w-full lg:block">
+                                <label for={shipping_option_uid(option)} class="text-base md:text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
+                                <label for={shipping_option_uid(option)} class="text-green-finances-300 text-base md:text-sm font-medium ml-auto lg:ml-0"><%= shipping_option_cost(option) %></label><br>
                             </div>
                         </div>
                         </.display_shipping_opts>
@@ -146,12 +145,12 @@
                 </div>
                 <% end %>
             </div>
-            <div class="rounded-lg border border-base-200 w-full xl:max-w-md xl:w-1/3 px-4 py-6 mb-9 xl:mt-0 self-start">
-                <p class="text-black text-opacity-80 text-lg">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+            <div class="rounded-lg border darkerBorder w-full xl:max-w-md xl:w-1/3 px-4 py-6 mb-9 xl:mt-0 self-start">
+                <p class="text-black text-opacity-80 text-lg pb-2">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
                 <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= @shipping_cost %></span></p>
                 <hr class="my-4">
                 <div class="text-xl">Total: <span class="font-bold ml-2"><%= Money.add(@order.subtotal_cost, @shipping_cost) %></span></div>
-                <button type="submit" class="btn-primary mt-5 w-full" phx-click="checkout">Check out with Stripe</button>
+                <button type="submit" class="btn-primary text-lg mt-5 w-full" phx-click="checkout">Check out with Stripe</button>
             </div>
         </div>
         <% end %>
