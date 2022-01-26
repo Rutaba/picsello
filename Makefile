@@ -24,14 +24,14 @@ console: ## Opens the App console.
 outdated: ## Shows outdated packages.
 	mix hex.outdated
 
-mix.lock: mix.exs
-	mix deps.get
-
-assets/package-lock.json: assets/package.json
+assets/node_modules: assets/package-lock.json
 	npm install --prefix=assets
 
-setup: mix.lock
-setup: assets/package-lock.json
+deps: mix.lock
+	mix deps.get
+
+setup: assets/node_modules
+setup: deps
 setup: ## Setup the App.
 	mix deps.unlock --unused
 	mix compile
