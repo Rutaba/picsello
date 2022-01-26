@@ -2,13 +2,13 @@
   <form action="#" phx-submit="submit" phx-change="validate" phx-target={ @myself }>
     <.close_x />
 
-    <.banner title="Questionnaire" job={@job} package={@package}>
+    <.banner title="Questionnaire" job={@job} package={@package} read_only={@read_only}>
       <%= if @answer.id do %>
         <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
       <% end %>
     </.banner>
 
-    <fieldset class={classes(%{"opacity-50" => @read_only})} disabled={@read_only}>
+    <fieldset class={classes(%{"opacity-75" => @read_only})} disabled={@read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
           <dt class="pt-4">
@@ -87,7 +87,7 @@
           Save
         </button>
       <% end %>
-      <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+      <button class="btn-secondary" title="close" type="button" phx-click="modal" phx-value-action="close">
         Close
       </button>
     </.footer>

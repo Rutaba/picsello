@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, Questionnaire.Answer}
+  alias Picsello.{Repo, Questionnaire, Questionnaire.Answer}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
 
@@ -126,6 +126,23 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       questionnaire: questionnaire,
       photographer: photographer,
       proposal: proposal
+    })
+  end
+
+  def open_modal_from_lead(socket, job, package) do
+    questionnaire = job |> Questionnaire.for_job() |> Repo.one!()
+
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: true,
+      job: job,
+      package: package,
+      answer: %Answer{
+        answers: List.duplicate([], Enum.count(questionnaire.questions))
+      },
+      questionnaire: questionnaire,
+      photographer: socket.assigns.current_user,
+      proposal: nil
     })
   end
 end
