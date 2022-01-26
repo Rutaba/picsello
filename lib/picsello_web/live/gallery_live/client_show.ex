@@ -8,11 +8,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   import PicselloWeb.GalleryLive.Shared
 
+  alias Phoenix.PubSub
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
   alias Picsello.Cart
 
   @per_page 12
+
+  @impl true
+  def mount(_params, _session, socket) do
+    socket
+    |> assign(:photo_updates, "false")
+    |> ok()
+  end
 
   @impl true
   def handle_params(
@@ -41,6 +49,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         } = socket
       ) do
     gallery = Galleries.populate_organization_user(gallery)
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+    end
 
     socket
     |> assign(:gallery, gallery)
@@ -213,6 +225,23 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
     socket
     |> redirect(external: created_editor.url)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:photo_processed, _, photo},
+        socket
+      ) do
+    photo_update =
+      %{
+        id: photo.id,
+        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
+      }
+      |> Jason.encode!()
+
+    socket
+    |> assign(:photo_updates, photo_update)
     |> noreply()
   end
 

@@ -38,10 +38,12 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     end
   end
 
-  def handle_completed_context(%{"task" => %{"photoId" => photo_id, "PID" => _}} = context) do
+  def handle_completed_context(%{"task" => %{"photoId" => photo_id}} = context) do
     Logger.info("Photo has been processed [#{photo_id}]")
-    Context.save_processed(context)
-    Context.notify_processed(context)
+
+    {:ok, photo} = Context.save_processed(context)
+    Context.notify_processed(context, photo)
+
     :ok
   end
 
