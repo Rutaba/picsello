@@ -1,17 +1,21 @@
 defmodule PicselloWeb.BookingProposalLive.Shared do
   @moduledoc false
   use Phoenix.Component
-  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1]
+  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
   alias Picsello.{Job, Package, Packages}
 
   def banner(assigns) do
     ~H"""
+    <%= if assigns[:read_only] do %>
+      <.badge color={:gray}>Read-only</.badge>
+    <% end %>
+
     <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
 
     <div class="py-4 bg-blue-planning-100 modal-banner">
       <div class="text-2xl font-bold text-blue-planning-300">
-        <h2><%= Job.name @job %> Shoot <%= @package.name %></h2>
+        <h2><%= Job.name @job %> Shoot <%= if @package, do: @package.name %></h2>
       </div>
 
       <%= render_slot @inner_block%>

@@ -105,6 +105,10 @@
           <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
           <div class="pl-3">
             <h3 class="input-label">Questionnaire included</h3>
+            <button phx-click="open-questionnaire" class="mt-2 btn-primary py-1 px-3 flex items-center text-xs">
+              View questionnaire
+              <.icon name="forth" class="w-3 h-3 ml-2 stroke-current" />
+            </button>
           </div>
         </label>
 
@@ -122,7 +126,7 @@
             <div class="max-w-max">
               <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
                   current_user: @current_user,
-                  class: "w-full mt-2 btn-primary py-1 px-3 intro-stripe",
+                  class: "w-full mt-2 btn-primary py-1 px-3 text-xs intro-stripe",
                   return_url: Routes.job_url(@socket, @live_action, @job.id),
                   stripe_status: @stripe_status %>
               </div>

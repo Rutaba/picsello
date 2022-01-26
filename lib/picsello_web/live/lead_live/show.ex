@@ -111,6 +111,17 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_event(
+        "open-questionnaire",
+        %{},
+        %{assigns: %{job: job, package: package}} = socket
+      ) do
+    socket
+    |> PicselloWeb.BookingProposalLive.QuestionnaireComponent.open_modal_from_lead(job, package)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
