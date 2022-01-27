@@ -5,7 +5,7 @@ defmodule Picsello.Repo.Migrations.UpdateOtherQuestionnaire do
     execute(
       """
         update questionnaires
-        set questions = jsonb_set(questions, '{0,prompt}', '"What shoot is this?"', true)
+        set questions = jsonb_set(questions, '{0,prompt}', '"Tell me about your shoot"', true)
         where job_type = 'other'
         and questions->0->>'prompt' = 'Shoot type';
       """,
@@ -13,7 +13,7 @@ defmodule Picsello.Repo.Migrations.UpdateOtherQuestionnaire do
         update questionnaires
         set questions = jsonb_set(questions, '{0,prompt}', '"Shoot type"', true)
         where job_type = 'other'
-        and questions->0->>'prompt' = 'What shoot is this?';
+        and questions->0->>'prompt' = 'Tell me about your shoot';
       """
     )
   end
