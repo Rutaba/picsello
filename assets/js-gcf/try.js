@@ -32,13 +32,13 @@ const fullTask = {
 
 const watermarkTask = {
     "bucket": "picsello-staging",
-    "originalPath": "galleries/6/original/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
-    "photoId": 156,
-    "previewPath": "galleries/6/preview/5db2b5f5-8e69-41ca-a1a4-beafcad77304.png",
+    "originalPath": "galleries/107/original/ebdcbe52-4c0c-4cd6-a1e1-cc4ed37671c9.jpg",
+    "photoId": 186,
+    "previewPath": "galleries/107/preview/6e081734-6c38-45d3-a990-31c3f32891b2.jpg",
     "pubSubTopic": "projects/celtic-rite-323300/topics/lukianov-processed-photos",
-    "watermarkText": "Water Mark",
-    "watermarkedOriginalPath": "galleries/6/watermarked/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
-    "watermarkedPreviewPath": "galleries/6/watermarked_preview/dd40d42a-712c-4ab8-acde-076d143a2b37.png",
+    "watermarkText": "2...",
+    "watermarkedOriginalPath": "galleries/107/watermarked/f1a78263-2ba7-4753-baff-b12b8c2fbd9a.jpg",
+    "watermarkedPreviewPath": "galleries/107/watermarked_preview/5b2c42e7-54ea-47e7-8d2a-d67a02d14e10.jpg",
 }
 
 

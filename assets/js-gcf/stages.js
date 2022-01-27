@@ -195,7 +195,7 @@ export const watermarkStage = async context => {
             .toFile(wmLayer)
 
         await original.image
-            .resize({width: originalMeta.width})
+            .resize({width: originalMeta.width, height: originalMeta.height, kernel: 'nearest'})
             .composite([{input: wmLayer}])
             .toFile(watermarkedFilename)
 
