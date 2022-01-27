@@ -392,6 +392,10 @@
     @apply opacity-100;
 }
 
+.darkerBorder{
+    border-color: #C9C9C9;
+}
+
 .removeBtn {
     @apply opacity-0
     left-4
@@ -499,7 +503,12 @@
     height: 16px;
 }
 
+.deliveryOptions__wrapper input[name="ship_option"] {
+    margin-top: 4px;
+}
+
 .deliveryOptions__wrapper input[type="radio"] {
+    min-width:1.25rem;
     @apply appearance-none
     h-5
     w-5
@@ -513,7 +522,6 @@
     justify-center
     outline-none
     box-border
-
 }
 
 .deliveryOptions__wrapper input[type="radio"] label {
@@ -543,10 +551,6 @@
         max-width: 1440px;
         height: 95vh;
         max-height: 894px;
-    }
-
-    .shippingOptions__infoBlock {
-        max-width: 835px;
     }
 
 }

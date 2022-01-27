@@ -10,8 +10,16 @@
     @apply w-auto
 }
 
-.shippingOptions__infoBlock  select{
-    @apply w-full
+.cartImg__small {
+    width: 160px;
+    @apply max-h-full
+    overflow-hidden
+}
+
+.cartImg__small img {
+    height: 130px;
+    @apply w-auto
+    max-w-full
 }
 
 .gridWrapper {
@@ -20,6 +28,10 @@
 
 .subTotal {
     @apply hidden
+}
+
+.shippingOptions__select {
+    @apply py-1
 }
 
 @media screen and (max-width: 1280px) {
@@ -39,18 +51,27 @@
 
     .cartImg {
         max-width: 165px;
-        @apply pb-20
+        @apply pb-16
+    }
+
+    .cartImg img {
+        height: 132px;
     }
 
     .cartPanel {
        @apply absolute
-        bottom-5
+        bottom-0
         left-0
         right-0
         w-full
     }
 
-    .cartImg img {
-        height: 132px;
+    .cartImg__small {
+        @apply mb-16
+    }
+
+    .shippingOptions__infoBlock  .shippingOptions__select {
+        @apply w-full
+        py-2
     }
 }
