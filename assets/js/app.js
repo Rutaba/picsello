@@ -32,6 +32,7 @@ import IntroJS from './hooks/intro';
 import MasonryGrid from './hooks/masonry-grid';
 import PercentMask from './hooks/percent-mask';
 import Phone from './hooks/phone';
+import PhotoUpdate from './hooks/photo-update';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import Preview from './hooks/preview';
 import PriceMask from './hooks/price-mask';
@@ -123,6 +124,7 @@ const Hooks = {
   Modal,
   PercentMask,
   Phone,
+  PhotoUpdate,
   PlacesAutocomplete,
   PrefixHttp,
   Preview,

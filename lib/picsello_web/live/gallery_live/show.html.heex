@@ -144,6 +144,13 @@
             is_gallery_category_page: false%>
         <% end %>
     </div>
+    <div style="display: none">
+      <div
+        id="photo-update-listener"
+        phx-hook="PhotoUpdate"
+        data-photo-updates={@photo_updates}
+      ></div>
+    </div>
 </div>
 <div class="bottomBar">
     <div class="gallery__container flex justify-between items-center">

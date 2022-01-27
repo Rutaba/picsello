@@ -97,5 +97,12 @@ class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @g
                 is_gallery_category_page: false %>
             <% end %>
         </div>
+        <div style="display: none">
+          <div
+            id="photo-update-listener"
+            phx-hook="PhotoUpdate"
+            data-photo-updates={@photo_updates}
+          ></div>
+        </div>
     </div>
 </div>

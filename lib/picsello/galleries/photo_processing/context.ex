@@ -19,7 +19,6 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def simple_task_by_photo(%Photo{} = photo) do
     %{
-      "PID" => serialize(self()),
       "photoId" => photo.id,
       "bucket" => @bucket,
       "pubSubTopic" => @output_topic,
@@ -37,7 +36,6 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       end
 
     %{
-      "PID" => serialize(self()),
       "photoId" => photo.id,
       "bucket" => @bucket,
       "pubSubTopic" => @output_topic,
@@ -123,28 +121,16 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       })
   end
 
-  def notify_processed(%{"task" => %{"PID" => serialized_pid}} = context) do
-    serialized_pid
-    |> deserialize()
-    |> send({:photo_processed, context})
+  def notify_processed(context, photo) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "gallery:#{photo.gallery_id}",
+      {:photo_processed, context, photo}
+    )
   rescue
     _err ->
       :ignored
   end
 
   def notify_processed(_), do: :ignored
-
-  @spec serialize(term) :: binary
-  defp serialize(term) do
-    term
-    |> :erlang.term_to_binary()
-    |> Base.url_encode64()
-  end
-
-  @spec deserialize(binary) :: term
-  defp deserialize(str) when is_binary(str) do
-    str
-    |> Base.url_decode64!()
-    |> :erlang.binary_to_term()
-  end
 end
