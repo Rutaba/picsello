@@ -5,6 +5,17 @@ defmodule Picsello.ViewLeadTest do
   setup :authenticated
 
   setup %{user: user} do
+    insert(:questionnaire,
+      job_type: "family",
+      questions: [
+        %{
+          type: "textarea",
+          prompt: "What do you like to do as a family?",
+          optional: false
+        }
+      ]
+    )
+
     [
       leads:
         for(
@@ -44,7 +55,7 @@ defmodule Picsello.ViewLeadTest do
     |> assert_text("Email scheduled for #{first_reminder_on}")
   end
 
-  feature "user view inbox card on lead page", %{
+  feature "user views inbox card on lead page", %{
     session: session,
     leads: [lead | _]
   } do
@@ -58,5 +69,14 @@ defmodule Picsello.ViewLeadTest do
     |> assert_path(Routes.inbox_path(PicselloWeb.Endpoint, :show, lead.id))
     |> assert_has(testid("thread-card", count: 1))
     |> find(testid("thread-card"), &assert_text(&1, "Rick Sanchez Family"))
+  end
+
+  feature "users views questionnaire", %{session: session, leads: [lead | _]} do
+    session
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> assert_text("BOOKING SUMMARY")
+    |> click(button("View questionnaire"))
+    |> assert_text("Read-only")
+    |> assert_text("What do you like to do as a family?")
   end
 end

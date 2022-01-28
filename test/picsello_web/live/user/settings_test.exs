@@ -31,19 +31,20 @@ defmodule PicselloWeb.Live.User.SettingsTest do
       assert redirected_to(conn) == Routes.user_session_path(conn, :new)
     end
 
-    test "only shows sign out form if user signed up via google", %{conn: conn, user: user} do
+    test "does not show email/password forms if user signed up via google", %{
+      conn: conn,
+      user: user
+    } do
       user
       |> Ecto.Changeset.cast(%{sign_up_auth_provider: :google}, [:sign_up_auth_provider])
       |> Picsello.Repo.update!()
 
       {:ok, _view, html} = live(conn, Routes.user_settings_path(conn, :edit))
-      sign_out_path = Routes.user_session_path(conn, :delete)
 
-      assert [^sign_out_path] =
+      assert ["update_name", "update_time_zone"] =
                html
                |> Floki.parse_fragment!()
-               |> Floki.attribute("main > :not(header) form", "action")
-               |> Enum.uniq()
+               |> Floki.attribute("input[name='action']", "value")
     end
   end
 

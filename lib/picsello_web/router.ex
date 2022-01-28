@@ -133,6 +133,7 @@ defmodule PicselloWeb.Router do
            as: :preview
 
       live "/galleries/:id", GalleryLive.Show, :show
+      live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id/settings", GalleryLive.Settings, :settings
     end
@@ -167,8 +168,8 @@ defmodule PicselloWeb.Router do
 
       live "/:hash", GalleryLive.ClientShow, :show
       live "/:hash/orders", GalleryLive.ClientOrders, :show
-      live "/:hash/orders/:order_id", GalleryLive.ClientOrder, :show
-      live "/:hash/orders/:order_id/paid", GalleryLive.ClientOrder, :paid
+      live "/:hash/orders/:order_number", GalleryLive.ClientOrder, :show
+      live "/:hash/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
       live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
       post "/:hash/downloads", GalleryDownloadsController, :download
       post "/:hash/login", GallerySessionController, :put

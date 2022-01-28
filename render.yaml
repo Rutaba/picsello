@@ -1,0 +1,22 @@
+previewsEnabled: true
+previewsExpireAfterDays: 7
+services:
+  - type: web
+    name: picsello-staging
+    env: elixir
+    buildCommand: ./build.sh
+    startCommand: _build/prod/rel/picsello/bin/picsello start
+    healthCheckPath: /health_check
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: picsello_staging_13
+          property: connectionString
+      -  key: SECRET_KEY_BASE_PART_1
+         generateValue: true
+      -  key: SECRET_KEY_BASE_PART_2
+         generateValue: true
+      - fromGroup: staging
+    autoDeploy: false
+databases:
+  - name: picsello_staging_13

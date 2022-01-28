@@ -102,8 +102,10 @@ defmodule Picsello.Cart do
   end
 
   def get_orders(gallery_id) do
-    from(order in Order, where: order.gallery_id == ^gallery_id and order.placed == true,
-      order_by: [desc: order.id])
+    from(order in Order,
+      where: order.gallery_id == ^gallery_id and order.placed == true,
+      order_by: [desc: order.id]
+    )
     |> Repo.all()
   end
 
@@ -170,11 +172,18 @@ defmodule Picsello.Cart do
     product
     |> Order.create_changeset(attrs)
     |> Repo.insert!()
+    |> set_order_number()
   end
 
   defp place_product_in_order(%Order{} = order, %CartProduct{} = product, attrs) do
     order
     |> Order.update_changeset(product, attrs)
+    |> Repo.update!()
+  end
+
+  def set_order_number(order) do
+    order
+    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
     |> Repo.update!()
   end
 end

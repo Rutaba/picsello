@@ -18,6 +18,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
     |> assign_start_prices()
+    |> maybe_redirect_slug(slug)
     |> ok()
   end
 
@@ -33,8 +34,6 @@ defmodule PicselloWeb.Live.Profile do
 
   @impl true
   def render(assigns) do
-    pricing_params = if assigns.edit, do: %{edit: true}, else: %{}
-
     ~H"""
     <div class="flex-grow pb-16 md:pb-32">
       <div class="px-6 py-4 md:py-8 md:px-16 center-container">
@@ -61,7 +60,7 @@ defmodule PicselloWeb.Live.Profile do
 
           <div class="w-auto">
             <%= for job_type <- @job_types do %>
-              <.live_link to={Routes.profile_pricing_job_type_path(@socket, :index, @organization.slug, job_type, pricing_params)} {testid("job-type")} class={"flex my-4 p-4 items-center rounded-lg bg-[#fafafa] border border-white hover:border-base-250"}>
+              <.maybe_disabled_link edit={@edit} to={Routes.profile_pricing_job_type_path(@socket, :index, @organization.slug, job_type)} {testid("job-type")} class={classes("flex my-4 p-4 items-center rounded-lg bg-[#fafafa] border border-white", %{"hover:border-base-250" => !@edit})}>
                 <.icon name={job_type} style={"color: #{@color};"} class="mr-6 fill-current w-9 h-9" />
                 <dl class="flex flex-col">
                   <dt class="font-semibold whitespace-nowrap"><%= dyn_gettext job_type %></dt>
@@ -71,13 +70,13 @@ defmodule PicselloWeb.Live.Profile do
                       <dd class="whitespace-nowrap">Starting at <%= Money.to_string(price, fractional_unit: false) %></dd>
                   <% end %>
                 </dl>
-              </.live_link>
+              </.maybe_disabled_link>
             <% end %>
           </div>
 
-          <.live_link to={Routes.profile_pricing_path(@socket, :index, @organization.slug, pricing_params)} class={"btn-primary text-center py-2 px-8 mt-2 md:self-start"}>
+          <.maybe_disabled_link edit={@edit} to={Routes.profile_pricing_path(@socket, :index, @organization.slug)} class={"btn-primary text-center py-2 px-8 mt-2 md:self-start"}>
             See full price list
-          </.live_link>
+          </.maybe_disabled_link>
 
           <%= if @website || @edit do %>
             <div class="flex items-center mt-auto pt-6">
@@ -112,6 +111,30 @@ defmodule PicselloWeb.Live.Profile do
     <%= if @edit do %>
       <.edit_footer url={@url} />
     <% end %>
+    """
+  end
+
+  def maybe_disabled_link(%{edit: true} = assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:__changed__, :inner_block, :edit, :to]))
+
+    ~H"""
+    <div {@rest}>
+      <%= render_block(@inner_block) %>
+    </div>
+    """
+  end
+
+  def maybe_disabled_link(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:__changed__, :inner_block, :edit]))
+
+    ~H"""
+    <.live_link {@rest}>
+      <%= render_block(@inner_block) %>
+    </.live_link>
     """
   end
 
@@ -216,5 +239,13 @@ defmodule PicselloWeb.Live.Profile do
       |> Enum.into(%{})
 
     socket |> assign(:start_prices, start_prices)
+  end
+
+  defp maybe_redirect_slug(%{assigns: %{organization: organization}} = socket, current_slug) do
+    if current_slug != organization.slug do
+      push_redirect(socket, to: Routes.profile_path(socket, :index, organization.slug))
+    else
+      socket
+    end
   end
 end

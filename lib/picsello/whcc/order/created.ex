@@ -16,7 +16,7 @@ defmodule Picsello.WHCC.Order.Created do
   def new(%{
         "ConfirmationID" => confirmation,
         "EntryID" => entry,
-        "NumberOfOrders" => 1,
+        "NumberOfOrders" => _,
         "Orders" => [
           %{
             "Products" => products,

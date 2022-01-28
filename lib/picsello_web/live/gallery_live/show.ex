@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     ]
 
   import PicselloWeb.LiveHelpers
+
+  alias Phoenix.PubSub
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
@@ -33,6 +35,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       :ok,
       socket
       |> assign(:upload_bucket, @bucket)
+      |> assign(:photo_updates, "false")
       |> allow_upload(:cover_photo, @upload_options)
     }
   end
@@ -40,6 +43,10 @@ defmodule PicselloWeb.GalleryLive.Show do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+    end
 
     products =
       Picsello.CategoryTemplate.all()
@@ -278,23 +285,21 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_info(
-        {
-          :photo_processed,
-          %{
-            "task" => %{
-              "photoId" => photo_id
-            }
-          }
-        },
-        %{
-          assigns: %{
-            modal_pid: modal_pid
-          }
-        } = socket
+        {:photo_processed, %{"task" => %{"photoId" => photo_id}}, photo},
+        %{assigns: %{modal_pid: modal_pid}} = socket
       ) do
     send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
 
-    noreply(socket)
+    photo_update =
+      %{
+        id: photo.id,
+        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
+      }
+      |> Jason.encode!()
+
+    socket
+    |> assign(:photo_updates, photo_update)
+    |> noreply()
   end
 
   def handle_info({:photo_processed, _}, socket), do: noreply(socket)

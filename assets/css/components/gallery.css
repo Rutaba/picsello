@@ -1,12 +1,12 @@
 .gallery__coverImg {
-    height:223px;
+    height: 223px;
     @apply bg-base-200
     bg-cover
     bg-center
     relative;
 }
 
-.gallery__coverImg.active::after{
+.gallery__coverImg.active::after {
     content: '';
     background: linear-gradient(180deg, rgba(31, 28, 30, 0) 25.56%, rgba(31, 28, 30, 0.6) 66.71%);
     @apply absolute
@@ -39,10 +39,20 @@
     height: 178px;
 }
 
-/*.preview {
-    width: 603px;
-    height: 650px
-}*/
+.preview__shadow {
+    position: relative;
+}
+
+.preview__shadow::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    box-shadow: 0px 10px 12px 0px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
 
 .productPreview__client > li > .productPreview_photo {
     @apply relative
@@ -95,6 +105,15 @@
     @apply opacity-40;
 }
 
+.product-image {
+    height: 70vh;
+}
+
+.previewImg {
+    filter: drop-shadow(0px 4.61642px 8.08233px rgba(115, 115, 115, 0.34));
+    transform: rotate(-0.27deg);
+    max-width: 300px;
+}
 .settings__wrapper > div {
     @apply border-2
     border-solid
@@ -365,8 +384,16 @@
     rounded-lg;
 }
 
+.item-content.preview .galleryItem:before{
+    background: none;
+}
+
 .galleryItem:hover:before {
     @apply opacity-100;
+}
+
+.darkerBorder{
+    border-color: #C9C9C9;
 }
 
 .removeBtn {
@@ -461,12 +488,12 @@
 
 .customInvalidOption,
 .customInvalidOption option {
-   @apply text-base-300
+    @apply text-base-300
 }
 
 .customInvalidOption:invalid,
 .customInvalidOption option[value=""] {
-   @apply text-base-250
+    @apply text-base-250
 }
 
 .cartItemsAmount {
@@ -476,12 +503,12 @@
     height: 16px;
 }
 
-.darkerBorder {
-    border: 1px solid #C9C9C9;
-    @apply rounded-lg
+.deliveryOptions__wrapper input[name="ship_option"] {
+    margin-top: 4px;
 }
 
-.deliveryOptions__wrapper input[type="radio"]{
+.deliveryOptions__wrapper input[type="radio"] {
+    min-width:1.25rem;
     @apply appearance-none
     h-5
     w-5
@@ -495,14 +522,13 @@
     justify-center
     outline-none
     box-border
-
 }
 
-.deliveryOptions__wrapper input[type="radio"] label{
+.deliveryOptions__wrapper input[type="radio"] label {
     @apply text-green-finances-300
 }
 
-.deliveryOptions__wrapper input[type="radio"]:after{
+.deliveryOptions__wrapper input[type="radio"]:after {
     content: "";
     @apply h-3
     w-3
@@ -511,8 +537,8 @@
     hidden
 }
 
-.deliveryOptions__wrapper input[type="radio"]:checked:after{
-  @apply inline-block
+.deliveryOptions__wrapper input[type="radio"]:checked:after {
+    @apply inline-block
 }
 
 .shippingOptions__infoBlock {
@@ -527,9 +553,6 @@
         max-height: 894px;
     }
 
-    .shippingOptions__infoBlock{
-        max-width: 835px;
-    }
 }
 
 @media screen and (min-width: 1024px) {
@@ -578,11 +601,11 @@
 
 @media screen and (max-width: 1024px) {
     .choose-product {
-        @apply inline-grid
+        @apply grid
     }
 
     .choose-product-item {
-       @apply w-full
+        @apply w-full
     }
 }
 
@@ -598,11 +621,6 @@
     .choose-product-item {
         @apply w-1/2
     }
-
-  /*  .preview {
-        width: 603px;
-        height: 650px;
-    }*/
 
     .gallery__coverImg {
         height: 566px;

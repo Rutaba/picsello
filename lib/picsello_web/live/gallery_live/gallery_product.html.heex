@@ -1,5 +1,5 @@
-<div class=" bg-base-200">
-    <div class="gallery__container py-11 flex">
+<div class="bg-base-200">
+    <div class="p-11 flex">
             <div class="circleBtn mr-9">
               <ul>
                 <li>
@@ -12,33 +12,44 @@
             </div>
             <span class="text-4xl font-bold text-base-300"><%= @gallery.name %></span>
         </div>
-
 </div>
 
-<div class="gallery__container pt-36 pb-14 grid grid-cols-2 flex">
-    <div class="flex flex-col">
-        <div>
+  <div class="py-10 px-6 mobileGalleryButtons xl:hidden">
+        <p>Mobile view is not supported for Gallery, but you can still manage settings.</p>
+        <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
+        <%= live_redirect "Manage settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %>
+        </button>
+        <button class="btn-secondary py-3.5 w-full max-w-screen-md mt-4">
+        <%= live_redirect "Back to job", to: Routes.job_path(@socket, :jobs, @gallery.job_id) %>
+        </button>
+    </div>
+
+    <div class="hidden xl:block">
+
+<div class="max-w-screen-lg	mx-auto py-8 pt-14 pb-14 grid grid-cols-3 grid-rows-preview flex">
+  <div class="col-span-3">
             <span class="text-base font-bold">Product preview</span>
             <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
                 <use href="/images/icons.svg#gallery-info"></use>
             </svg>
         </div>
-        <div id="preview" class="photos__rect flex justify-center items-center preview mt-2" phx-hook="Preview">
-            <canvas id="canvas" width="200" height="200" class="edit"></canvas>
-        </div>
-    </div>
-    <div class="description ml-16">
-        <h1 class="text-4xl font-bold text-orange-inbox-300 mt-8">Prints</h1>
-        <p class="py-12 border-b">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
+ <div id="preview" class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
+            <canvas id="canvas" width="300" height="200" class="edit"></canvas>
+  </div>
+
+    <div class="description ml-11 row-span-2 col-span-2">
+        <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
+         "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}>Prints</h1>
+        <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary mt-11 px-11 py-3.5 float-right cursor-pointer",
+            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary",
                 disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
        </.form>
     </div>
 </div>
 
-<div id="gallery_product_form" class="gallery__container pb-32">
+<div id="gallery_product_form" class="p-11 preview__shadow">
     <div
         phx-hook="MasonryGrid"
         phx-update="append"
@@ -49,17 +60,20 @@
         data-favorites-count={ @favorites_count }
         data-is-sortable="false"
         data-has-more-photos={ "#{@has_more_photos}" }
+        data-photo-width="200"
     >
     <%= for photo <- @photos do %>
         <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
             id: photo.id,
             photo: photo,
+            photo_width: 200,
             is_likable: false,
-            is_removable: true,
+            is_removable: false,
             is_removed: false,
             is_gallery_category_page: true,
             preview_photo_id: @preview_photo_id
         %>
     <% end %>
     </div>
+</div>
 </div>

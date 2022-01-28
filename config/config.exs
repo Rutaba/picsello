@@ -77,7 +77,14 @@ config :picsello, :whcc,
   url: System.get_env("WHCC_URL"),
   key: System.get_env("WHCC_KEY"),
   secret: System.get_env("WHCC_SECRET"),
-  webhook_url: System.get_env("WHCC_WEBHOOK_URL", "")
+  webhook_url:
+    System.get_env(
+      "WHCC_WEBHOOK_URL",
+      case System.get_env("RENDER_EXTERNAL_URL") do
+        nil -> ""
+        host -> host <> "/whcc/webhook"
+      end
+    )
 
 config :picsello, Oban,
   repo: Picsello.Repo,

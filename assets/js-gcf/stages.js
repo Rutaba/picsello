@@ -178,24 +178,27 @@ export const watermarkStage = async context => {
             )
             .toFile(wmPattern)
 
-
-        await sharp({
-                create: {
-                    width: originalMeta.width,
-                    height: originalMeta.height,
-                    channels: 4,
-                    background: { r: 255, g: 255, b: 255, alpha: 1 }
-                }
-            })
+        const layer  = await sharp({ create: {
+                width: originalMeta.width,
+                height: originalMeta.height,
+                channels: 4,
+                background: { r: 255, g: 255, b: 255, alpha: 1 }
+            }})
             .png()
+            .toBuffer();
+
+        const composed_layer = await sharp(layer)
             .composite([{input: wmPattern}])
+            .toBuffer()
+
+        await sharp(composed_layer)
             .removeAlpha()
             .linear(-1, 255)
             .ensureAlpha(0.25)
             .toFile(wmLayer)
 
         await original.image
-            .resize({width: originalMeta.width})
+            .resize({width: originalMeta.width, height: originalMeta.height, kernel: 'nearest'})
             .composite([{input: wmLayer}])
             .toFile(watermarkedFilename)
 
@@ -209,12 +212,8 @@ export const watermarkStage = async context => {
         context.artifacts.isWatermarkedUploaded = true;
 
         return context;
-
     }
-
-
     return context;
-
 };
 
 export const cleanupStage = context => {

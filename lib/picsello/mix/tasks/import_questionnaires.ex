@@ -138,7 +138,11 @@ defmodule Mix.Tasks.ImportQuestionnaires do
       },
       %{
         questions: [
-          %{prompt: "Shoot type", type: :text, placeholder: "e.g. Headshot, Birthday party"},
+          %{
+            prompt: "Tell me about your shoot",
+            type: :text,
+            placeholder: "e.g. Headshot, Birthday party"
+          },
           %{
             prompt:
               "Who will we be photographing during our session?  (if you have children in the shoot, please include their ages)",

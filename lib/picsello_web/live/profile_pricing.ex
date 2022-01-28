@@ -7,13 +7,10 @@ defmodule PicselloWeb.Live.ProfilePricing do
     only: [assign_organization_by_slug: 2, photographer_logo: 1, profile_footer: 1]
 
   @impl true
-  def mount(%{"organization_slug" => slug} = params, session, socket) do
-    edit = Map.get(params, "edit")
-
+  def mount(%{"organization_slug" => slug}, session, socket) do
     socket
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
-    |> assign(:edit, edit == "true")
     |> ok()
   end
 
@@ -36,7 +33,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
     ~H"""
     <div>
       <div class="grid grid-cols-3 center-container p-6">
-        <.live_link to={if @edit, do: Routes.profile_settings_path(@socket, :edit), else: Routes.profile_path(@socket, :index, @organization.slug)} class="flex items-center">
+        <.live_link to={Routes.profile_path(@socket, :index, @organization.slug)} class="flex items-center">
           <.icon name="back" class="w-2 h-3 stroke-current mr-4" />
           Back
         </.live_link>
@@ -65,7 +62,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
       </div>
 
       <div class="flex flex-col items-center my-10">
-        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: [@job_type] %>
+        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_type: @job_type, job_types: @job_types %>
       </div>
 
       <.profile_footer color={@color} photographer={@photographer} organization={@organization} />

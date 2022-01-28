@@ -9,6 +9,7 @@ defmodule Picsello.Organization do
     field(:name, :string)
     field(:stripe_account_id, :string)
     field(:slug, :string)
+    field(:previous_slug, :string)
     embeds_one(:profile, Profile, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
@@ -38,6 +39,18 @@ defmodule Picsello.Organization do
         nil -> put_change(changeset, :slug, changeset |> get_field(:name) |> build_slug())
         _ -> changeset
       end
+    end)
+    |> unique_constraint(:slug)
+  end
+
+  def name_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [:name])
+    |> validate_required([:name])
+    |> prepare_changes(fn changeset ->
+      changeset
+      |> put_change(:previous_slug, changeset |> get_field(:slug))
+      |> put_change(:slug, changeset |> get_field(:name) |> build_slug())
     end)
     |> unique_constraint(:slug)
   end

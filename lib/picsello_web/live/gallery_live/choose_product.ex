@@ -48,6 +48,17 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   end
 
   @impl true
+  def handle_event("keydown", %{"key" => "ArrowLeft"}, socket),
+    do: __MODULE__.handle_event("prev", [], socket)
+
+  @impl true
+  def handle_event("keydown", %{"key" => "ArrowRight"}, socket),
+    do: __MODULE__.handle_event("next", [], socket)
+
+  @impl true
+  def handle_event("keydown", _, socket), do: socket |> noreply
+
+  @impl true
   def handle_event("close", _, socket) do
     socket
     |> close_modal()
