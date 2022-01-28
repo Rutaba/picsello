@@ -106,9 +106,6 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/leads")
-    |> execute_script("""
-    document.querySelector('#float-menu-help').style.display = 'none';
-    """)
     |> assert_text("Results: 1 – 12 of 13")
     |> assert_has(css("main > ul > li", count: 12))
     |> assert_has(css("button:disabled[title='Previous page']"))
