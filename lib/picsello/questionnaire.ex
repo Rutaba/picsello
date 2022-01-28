@@ -29,7 +29,7 @@ defmodule Picsello.Questionnaire do
   end
 
   schema "questionnaires" do
-    embeds_many(:questions, Question)
+    embeds_many(:questions, Question, on_replace: :delete)
     field(:job_type, :string)
 
     timestamps()
