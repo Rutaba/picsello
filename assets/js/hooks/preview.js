@@ -23,7 +23,6 @@ const Preview = {
         if (typeof (coord) == 'string') {
             coord = JSON.parse(coord)
         }
-
         const screenWidth = window.innerWidth;
         const canvas = document.getElementById(canvasId);
         const smallHeight = canvas.dataset.small
@@ -47,7 +46,7 @@ const Preview = {
                 }
             }
 
-            const cw = ratio ? canvas.height * ratio : canvas.width;
+            const cw = canvas.width;
             const ch = canvas.height;
 
             canvas.width = cw
@@ -63,15 +62,28 @@ const Preview = {
                 const kw = cw / frameW;
                 const kh = ch / frameH;
 
+                ctx.drawImage(frame, 0, 0, cw, ch);
+
                 const renderImageWithFrame = function () {
+
                     const width = (w * kw) < 10 && cw || (w * kw);
                     const height = (h * kh) < 10 && ch || (h * kh);
 
-                    const lty = ch * kfh;
-                    const ltx = cw * kfw;
-
-                    ctx.drawImage(frame, 0, 0, cw, ch);
-                    ctx.drawImage(preview, ltx, lty, width, height);
+                    let gk = w/h;
+                    let sk = preview.width/preview.height
+                    if(sk < gk){
+                        let preview_width = sk * height;
+                        let preview_height = height;
+                        let lty = ch * kfh;
+                        let ltx = (cw * kfw) + (width - (preview_width))/2;
+                        ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
+                    } else if(gk < sk){
+                        let preview_height = width / sk;
+                        let preview_width = width;
+                        let lty = (ch * kfh) + (height - (preview_height))/2;
+                        let ltx = cw * kfw;
+                        ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
+                    }
                 }
 
                 const preview = new Image();
