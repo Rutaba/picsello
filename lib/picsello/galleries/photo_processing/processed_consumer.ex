@@ -47,5 +47,14 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     :ok
   end
 
+  def handle_completed_context(%{"task" => %{"galleryId" => gallery_id}} = context) do
+    Logger.info("Cover photo of gallery [#{gallery_id}] has been processed")
+
+    {:ok, photo} = Context.save_processed(context)
+    Context.notify_processed(context, photo)
+
+    :ok
+  end
+
   def handle_completed_context(_), do: {:error, :unknown_context_structure}
 end

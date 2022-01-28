@@ -70,7 +70,7 @@ export const downloadStage = context => {
 }
 
 export const aspectStage = context => {
-    if (context.task && context.task.previewPath && context.artifacts.original.image) {
+    if (context.task && context.artifacts.original.image) {
         return context.artifacts.original.image
             .metadata()
             .then(data => {
