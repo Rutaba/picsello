@@ -178,7 +178,6 @@ export const watermarkStage = async context => {
             )
             .toFile(wmPattern)
 
-
         await sharp({
                 create: {
                     width: originalMeta.width,
@@ -188,6 +187,7 @@ export const watermarkStage = async context => {
                 }
             })
             .png()
+            .resize({width: originalMeta.width, height: originalMeta.height, kernel: 'nearest'})
             .composite([{input: wmPattern}])
             .removeAlpha()
             .linear(-1, 255)
