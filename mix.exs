@@ -70,6 +70,7 @@ defmodule Picsello.MixProject do
         {:gcs_sign, "~> 1.0"},
         {:broadway_cloud_pub_sub, "~> 0.7.0"},
         {:goth, "~> 1.0"},
+        {:google_api_pub_sub, "~> 0.34.1"},
         {:google_api_storage, "~> 0.32.0"},
         {:google_api_sheets, "~> 0.29.2"},
         {:elixir_uuid, "~> 1.2"},

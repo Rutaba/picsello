@@ -62,13 +62,20 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: System.get_env("GOOGLE_CLIENT_ID"),
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
+add_suffix = fn key ->
+  [key, "PUBSUB_SUFFIX"]
+  |> Enum.map(&System.get_env/1)
+  |> Enum.reject(&is_nil/1)
+  |> Enum.join("--")
+end
+
 config :picsello,
   photo_output_subscription: {
     BroadwayCloudPubSub.Producer,
-    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION"), on_failure: :nack
+    subscription: add_suffix.("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION"), on_failure: :nack
   },
   photo_processing_input_topic: System.get_env("PHOTO_PROCESSING_INPUT_TOPIC"),
-  photo_processing_output_topic: System.get_env("PHOTO_PROCESSING_OUTPUT_TOPIC"),
+  photo_processing_output_topic: add_suffix.("PHOTO_PROCESSING_OUTPUT_TOPIC"),
   photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET")
 
 config :picsello, :whcc,

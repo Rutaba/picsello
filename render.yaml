@@ -16,6 +16,8 @@ services:
          generateValue: true
       -  key: SECRET_KEY_BASE_PART_2
          generateValue: true
+      -  key: PUBSUB_SUFFIX
+         generateValue: true
       - fromGroup: staging
     autoDeploy: false
 databases:

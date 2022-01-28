@@ -6,7 +6,6 @@ import { randomUUID } from 'crypto';
 const VERSION_ID = randomUUID();
 
 new PubSub()
-  .topic(process.env.PHOTO_PROCESSING_OUTPUT_TOPIC)
   .subscription(process.env.PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION)
   .on('message', (message) => {
     const data = JSON.parse(message.data.toString());
