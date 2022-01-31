@@ -10,6 +10,7 @@
   "dependencies": {
     "@google-cloud/pubsub": "^2.18.1",
     "@google-cloud/storage": "^5.15.4",
+    "mime": "^3.0.0",
     "sharp": "^0.29.2"
   }
 }

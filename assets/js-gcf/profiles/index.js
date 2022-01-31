@@ -3,6 +3,7 @@ import { Storage } from '@google-cloud/storage';
 import { PubSub } from '@google-cloud/pubsub';
 import { debuglog } from 'util';
 import path from 'path';
+import mime from 'mime';
 
 const debugEvent = debuglog('event');
 const debugMessage = debuglog('message');
@@ -58,7 +59,7 @@ export async function processProfileImage(event, _meta) {
       outFilename,
       JSON.parse(resizeJson),
       {
-        contentType,
+        contentType: mime.getType(outFilename) || contentType,
       }
     );
 
