@@ -26,6 +26,18 @@ defmodule Picsello.GalleryProducts do
     |> Repo.all()
   end
 
+  def is_preview(photo_id) do
+    from(product in GalleryProduct,
+      where: product.preview_photo_id == ^photo_id)
+    |> Repo.all() |> length
+  end
+
+  def set_nil_for_preview_photo_id(photo_id) do
+    from(p in Picsello.Galleries.GalleryProduct,
+      where: p.preview_photo_id == ^photo_id)
+    |> Repo.update_all(set: [preview_photo_id: nil])
+  end
+
   @doc """
   Product sourcing and creation.
   """
