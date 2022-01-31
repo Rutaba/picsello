@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.{Photo, Watermark}
+  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto}
   alias Picsello.Job
 
   @status_options [
@@ -13,8 +13,6 @@ defmodule Picsello.Galleries.Gallery do
   schema "galleries" do
     field :name, :string
     field(:status, :string, @status_options)
-    field :cover_photo_id, :string
-    field :cover_photo_aspect_ratio, :float
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
@@ -23,6 +21,7 @@ defmodule Picsello.Galleries.Gallery do
     belongs_to(:job, Job)
     has_many(:photos, Photo)
     has_one(:watermark, Watermark)
+    embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
 
     timestamps(type: :utc_datetime)
   end
@@ -33,9 +32,7 @@ defmodule Picsello.Galleries.Gallery do
     :status,
     :expired_at,
     :client_link_hash,
-    :total_count,
-    :cover_photo_id,
-    :cover_photo_aspect_ratio
+    :total_count
   ]
   @update_attrs [
     :name,
@@ -43,9 +40,7 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :password,
     :client_link_hash,
-    :total_count,
-    :cover_photo_id,
-    :cover_photo_aspect_ratio
+    :total_count
   ]
   @required_attrs [:name, :job_id, :status, :password]
 
@@ -91,6 +86,18 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> cast(attrs, [:password])
     |> validate_required([:password])
+  end
+
+  def save_cover_photo_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [])
+    |> cast_embed(:cover_photo, with: {CoverPhoto, :changeset, [gallery.id]}, required: true)
+  end
+
+  def delete_cover_photo_changeset(gallery) do
+    gallery
+    |> change()
+    |> put_embed(:cover_photo, nil)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string

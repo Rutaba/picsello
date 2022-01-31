@@ -256,10 +256,10 @@ defmodule PicselloWeb.LiveHelpers do
   def to_integer(int) when is_integer(int), do: int
   def to_integer(bin) when is_binary(bin), do: String.to_integer(bin)
 
-  def display_cover_photo(key) when is_binary(key),
-    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
+  def display_cover_photo(nil), do: nil
 
-  def display_cover_photo(_key), do: nil
+  def display_cover_photo(photo),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(photo.id)
 
   def display_photo(key) when is_binary(key) do
     Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)

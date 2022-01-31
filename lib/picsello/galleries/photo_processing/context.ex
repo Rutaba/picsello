@@ -12,6 +12,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
+  alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Watermark
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
@@ -52,6 +53,15 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     photo
     |> full_task_by_photo(watermark)
     |> Map.drop(["previewPath"])
+  end
+
+  def task_by_cover_photo(path) do
+    %{
+      "processCoverPhoto" => true,
+      "bucket" => @bucket,
+      "pubSubTopic" => @output_topic,
+      "originalPath" => path
+    }
   end
 
   def save_processed(%{
@@ -121,11 +131,44 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       })
   end
 
-  def notify_processed(context, photo) do
+  def save_processed(%{
+        "task" => %{
+          "processCoverPhoto" => true,
+          "originalPath" => path
+        },
+        "artifacts" => %{
+          "aspectRatio" => aspect_ratio,
+          "width" => width,
+          "height" => height
+        }
+      }) do
+    path
+    |> CoverPhoto.get_gallery_id_from_path()
+    |> Galleries.get_gallery!()
+    |> Galleries.save_gallery_cover_photo(%{
+      cover_photo: %{id: path, aspect_ratio: aspect_ratio, width: width, height: height}
+    })
+    |> then(fn %{cover_photo: photo} -> {:ok, photo} end)
+  rescue
+    _ -> :error
+  end
+
+  def notify_processed(context, %Photo{} = photo) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
       "gallery:#{photo.gallery_id}",
       {:photo_processed, context, photo}
+    )
+  rescue
+    _err ->
+      :ignored
+  end
+
+  def notify_processed(context, %CoverPhoto{} = photo) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "gallery:#{photo.gallery_id}",
+      {:cover_photo_processed, context, photo}
     )
   rescue
     _err ->

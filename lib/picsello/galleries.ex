@@ -533,6 +533,18 @@ defmodule Picsello.Galleries do
   def gallery_text_watermark_change(nil, attrs),
     do: Watermark.text_changeset(%Watermark{}, attrs)
 
+  def save_gallery_cover_photo(gallery, attrs \\ %{}) do
+    gallery
+    |> Gallery.save_cover_photo_changeset(attrs)
+    |> Repo.update!()
+  end
+
+  def delete_gallery_cover_photo(gallery) do
+    gallery
+    |> Gallery.delete_cover_photo_changeset()
+    |> Repo.update!()
+  end
+
   @doc """
   Creates session token for the gallery client.
   """
