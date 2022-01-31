@@ -49,21 +49,22 @@ defmodule PicselloWeb.Live.Profile do
           <div class={classes("flex justify-left items-center", %{"hidden" => Enum.any?(@uploads.logo.entries)})}>
             <.photographer_logo {assigns} />
             <p class="mx-5 text-2xl font-bold">or</p>
-            <form id="logo-form" phx-submit="save-logo" phx-change="validate-logo" class="flex items-center p-4 font-bold border border-blue-planning-300 border-2 border-dashed rounded-lg" phx-drop-target={@uploads.logo.ref}>
-              <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
-              <div>
-                Drag your logo or
-                <label class="text-blue-planning-300">
-                  <%= live_file_input @uploads.logo, class: "hidden" %>
-                  browse
+            <form id="logo-form" phx-submit="save-logo" phx-change="validate-logo" phx-drop-target={@uploads.logo.ref}>
+              <label class="flex items-center p-4 font-bold border border-blue-planning-300 border-2 border-dashed rounded-lg cursor-pointer">
+                <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
+
+                <div>
+                  Drag your logo or
+                  <span class="text-blue-planning-300">browse</span>
                   <p class="text-sm font-normal text-base-250">Supports PNG or SVG</p>
-                </label>
-              </div>
+                  <%= live_file_input @uploads.logo, class: "hidden" %>
+                </div>
+              </label>
             </form>
           </div>
           <%= for %{progress: progress} <- @uploads.logo.entries do %>
             <div class="w-52 h-2 rounded-lg bg-base-200">
-              <div class="h-full bg-green-finances-300 rounded-lg" style={"width: #{progress}%"}></div>
+              <div class="h-full bg-green-finances-300 rounded-lg" style={"width: #{progress / 2}%"}></div>
             </div>
           <% end %>
         <% else %>
