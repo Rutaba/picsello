@@ -84,8 +84,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
               "Prints",
               "Greeting cards",
               "Albums",
-              "Wall Art",
-              "Online"
+              "Wall Art"
             ]
           }
         ],
@@ -112,8 +111,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
               "Prints",
               "Greeting cards",
               "Albums",
-              "Wall Art",
-              "Online"
+              "Wall Art"
             ]
           },
           %{
@@ -156,16 +154,41 @@ defmodule Mix.Tasks.ImportQuestionnaires do
               "Prints",
               "Greeting cards",
               "Albums",
-              "Wall Art",
-              "Online"
+              "Wall Art"
             ]
           }
         ],
         job_type: "other"
+      },
+      %{
+        questions: [
+          %{
+            prompt: "Who will we be photographing during our session?",
+            type: :textarea
+          },
+          %{prompt: "What is your vision/goals for the shoot?", type: :textarea},
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        job_type: "boudoir"
       }
     ]
-    |> Enum.each(fn questionnaire ->
-      Questionnaire.changeset(%Questionnaire{}, questionnaire) |> Repo.insert!()
+    |> Enum.each(fn attrs ->
+      questionnaire = Repo.get_by(Questionnaire, job_type: attrs.job_type)
+
+      if questionnaire do
+        questionnaire |> Questionnaire.changeset(attrs) |> Repo.update!()
+      else
+        Questionnaire.changeset(%Questionnaire{}, attrs) |> Repo.insert!()
+      end
     end)
   end
 
