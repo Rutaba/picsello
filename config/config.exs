@@ -63,8 +63,10 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
 add_suffix = fn key ->
-  [key, "PUBSUB_SUFFIX"]
-  |> Enum.map(&System.get_env/1)
+  [
+    System.get_env(key),
+    System.get_env("RENDER_EXTERNAL_URL", "") |> URI.parse() |> Map.get(:host)
+  ]
   |> Enum.reject(&is_nil/1)
   |> Enum.join("--")
 end
