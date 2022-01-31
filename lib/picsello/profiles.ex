@@ -277,7 +277,7 @@ defmodule Picsello.Profiles do
             "resize" => Jason.encode!(%{height: 104, withoutEnlargement: true}),
             "pubsub-topic" => output_topic(),
             "version-id" => image.uuid,
-            "out-filename" => to_filename(organization, image, image.uuid, ["resized"])
+            "out-filename" => to_filename(organization, image, "#{image.uuid}.png", ["resized"])
           }
           |> meta_fields()
           |> Enum.into(%{
@@ -297,6 +297,15 @@ defmodule Picsello.Profiles do
     {:ok, meta, organization}
   end
 
+  defp to_filename(organization, %{client_type: content_type} = image, name),
+    do:
+      to_filename(
+        organization,
+        image,
+        Enum.join([name, content_type |> MIME.extensions() |> hd], "."),
+        []
+      )
+
   defp to_filename(
          %{slug: slug},
          %{
@@ -304,19 +313,12 @@ defmodule Picsello.Profiles do
            client_type: content_type
          },
          name,
-         subdir \\ []
+         subdir
        ),
        do:
-         Path.join(
-           Enum.concat([
-             [
-               slug,
-               Atom.to_string(upload_type)
-             ],
-             subdir,
-             [Enum.join([name, content_type |> MIME.extensions() |> hd], ".")]
-           ])
-         )
+         [[slug, Atom.to_string(upload_type)], subdir, [name]]
+         |> Enum.concat()
+         |> Path.join()
 
   defp meta_fields(fields),
     do:
