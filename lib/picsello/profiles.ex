@@ -309,8 +309,7 @@ defmodule Picsello.Profiles do
   defp to_filename(
          %{slug: slug},
          %{
-           upload_config: upload_type,
-           client_type: content_type
+           upload_config: upload_type
          },
          name,
          subdir

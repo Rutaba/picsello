@@ -46,7 +46,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
 
     task
     |> case do
-      %{"photoId" => photoId} ->
+      %{"photoId" => photo_id} ->
         "Photo has been processed [#{photo_id}]"
 
       %{"processCoverPhoto" => true, "originalPath" => path} ->

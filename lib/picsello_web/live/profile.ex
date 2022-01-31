@@ -198,9 +198,20 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   @impl true
-  def handle_event("validate-logo", _params, socket) do
-    socket |> noreply()
+  def handle_event(
+        "validate-logo",
+        _params,
+        %{assigns: %{uploads: %{logo: %{entries: [entry]}}}} = socket
+      ) do
+    if entry.valid? do
+      socket |> noreply()
+    else
+      socket |> cancel_upload(:logo, entry.ref) |> noreply()
+    end
   end
+
+  @impl true
+  def handle_event("validate-logo", _params, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("save-logo", _params, socket) do
