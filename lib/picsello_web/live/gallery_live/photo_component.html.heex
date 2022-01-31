@@ -14,7 +14,7 @@
     class="galleryItem"
     phx-click={toggle_border(@id, @is_gallery_category_page)}
     phx-click-away={JS.hide(to: "#photo-#{@id} > .checker")
-        |> JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:rounded-md before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected", 
+        |> JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:rounded-md before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
         to: "#item-#{@id}")}
 >
     <img
@@ -57,7 +57,7 @@
     <% end %>
     <% end %>
         <div class="bg-blue-planning-300 flex justify-center items-center stroke-1 w-5 h-5 rounded absolute right-4 top-4 z-10 hidden checker">
-            <.icon name="checkmark" class="w-4 h-3 m-auto" />
+            <.icon name="checkmark" class="w-4 h-3 m-auto absolute left-0.5 bottom-1" />
         </div>
  </div>
  </div>
