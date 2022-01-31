@@ -19,4 +19,14 @@ defmodule Picsello.Galleries.CoverPhoto do
     |> validate_required([:id])
     |> put_change(:gallery_id, gallery_id)
   end
+
+  def original_path(gallery_id, uuid),
+    do: "galleries/#{gallery_id}/#{uuid}"
+  
+  def get_gallery_id_from_path(path) do 
+    path
+    |> Path.relative_to("galleries")
+    |> Path.split()
+    |> List.first()
+  end
 end

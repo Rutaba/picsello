@@ -245,20 +245,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
-  def handle_info({:cover_photo_processed, %{"task" => %{"galleryId" => gallery_id}}, _}, socket) do
+  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(
       :gallery,
-      gallery_id
+      gallery.id
       |> Galleries.get_gallery!()
       |> Galleries.populate_organization_user()
     )
     |> noreply()
   end
-
-  def handle_info({:photo_processed, _}, socket), do: noreply(socket)
-
-  def handle_info({:cover_photo_processed, _}, socket), do: noreply(socket)
 
   defp place_product_in_cart(
          %{

@@ -55,12 +55,12 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     |> Map.drop(["previewPath"])
   end
 
-  def task_by_cover_photo(id, gallery_id) do
+  def task_by_cover_photo(path) do
     %{
-      "galleryId" => gallery_id,
+      "processCoverPhoto" => true,
       "bucket" => @bucket,
       "pubSubTopic" => @output_topic,
-      "originalPath" => id
+      "originalPath" => path
     }
   end
 
@@ -133,8 +133,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def save_processed(%{
         "task" => %{
-          "galleryId" => gallery_id,
-          "originalPath" => id
+          "processCoverPhoto" => true,
+          "originalPath" => path
         },
         "artifacts" => %{
           "aspectRatio" => aspect_ratio,
@@ -142,12 +142,15 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
           "height" => height
         }
       }) do
-    gallery_id
+    path
+    |> CoverPhoto.get_gallery_id_from_path()
     |> Galleries.get_gallery!()
     |> Galleries.save_gallery_cover_photo(%{
-      cover_photo: %{id: id, aspect_ratio: aspect_ratio, width: width, height: height}
+      cover_photo: %{id: path, aspect_ratio: aspect_ratio, width: width, height: height}
     })
     |> then(fn %{cover_photo: photo} -> {:ok, photo} end)
+  rescue
+    _ -> :error
   end
 
   def notify_processed(context, %Photo{} = photo) do

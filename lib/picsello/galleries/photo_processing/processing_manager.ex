@@ -17,8 +17,8 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
   def update_watermark(%Photo{} = photo, %Watermark{} = watermark),
     do: Context.watermark_task_by_photo(photo, watermark) |> send()
 
-  def process_cover_photo(id, gallery_id),
-    do: Context.task_by_cover_photo(id, gallery_id) |> send()
+  def process_cover_photo(path),
+    do: Context.task_by_cover_photo(path) |> send()
 
   defp send(task) do
     topic = Application.get_env(:picsello, :photo_processing_input_topic)

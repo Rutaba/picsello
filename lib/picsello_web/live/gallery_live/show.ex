@@ -9,6 +9,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   alias Phoenix.PubSub
   alias Picsello.Galleries
+  alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.GalleryProducts
@@ -304,16 +305,12 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:cover_photo_processed, %{"task" => %{"galleryId" => gallery_id}}, _}, socket) do
+  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(:gallery, Galleries.get_gallery!(gallery_id))
+    |> assign(:gallery, Galleries.get_gallery!(gallery.id))
     |> assign(:cover_photo_processing, false)
     |> noreply()
   end
-
-  def handle_info({:photo_processed, _}, socket), do: noreply(socket)
-
-  def handle_info({:cover_photo_processed, _}, socket), do: noreply(socket)
 
   def handle_info({:photo_click, _}, socket), do: noreply(socket)
 
@@ -389,7 +386,8 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
     if entry.done? do
-      ProcessingManager.process_cover_photo(entry.uuid, gallery.id)
+      CoverPhoto.original_path(gallery.id, entry.uuid)
+      |> ProcessingManager.process_cover_photo()
 
       socket
       |> assign(:cover_photo_processing, true)
@@ -400,8 +398,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     end
   end
 
-  def presign_cover_entry(entry, socket) do
-    key = entry.uuid
+  def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
+    key = CoverPhoto.original_path(gallery.id, entry.uuid)
 
     sign_opts = [
       expires_in: 600,
