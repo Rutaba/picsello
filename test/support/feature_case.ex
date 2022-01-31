@@ -188,6 +188,14 @@ defmodule Picsello.FeatureCase do
     def assert_enabled(session, %Wallaby.Query{} = query),
       do: assert_enabled(session, find(session, query))
 
+    def assert_inner_text(session, %Wallaby.Query{} = query, text) do
+      session
+      |> find(query, fn el ->
+        inner_html = Wallaby.Element.attr(el, "innerHTML")
+        assert inner_html |> Floki.text(deep: true) =~ text
+      end)
+    end
+
     def navigate_to_forgot_password(session) do
       session
       |> visit("/")

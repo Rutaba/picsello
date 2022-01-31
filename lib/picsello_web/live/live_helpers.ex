@@ -190,9 +190,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def live_link(%{} = assigns) do
     ~H"""
-    <%= assigns |> Map.drop([:__changed__, :inner_block]) |> Enum.to_list |> live_redirect do %>
-      <%= render_block(@inner_block) %>
-    <% end %>
+    <%= assigns |> Map.drop([:__changed__, :inner_block]) |> Enum.to_list |> live_redirect do %><%= render_block(@inner_block) %><% end %>
     """
   end
 
