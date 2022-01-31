@@ -56,6 +56,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(checkbox("Questionnaire included", selected: true))
       |> click(button("Finish booking proposal"))
       |> click(@send_email_button)
+      |> click(button("Close"))
 
       assert_receive {:delivered_email, email}
       url = email |> email_substitutions |> Map.get("url")
@@ -80,7 +81,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     feature "client clicks link in booking proposal email", %{
       lead: lead,
       proposal: proposal,
-      sessions: [_, client_session],
+      sessions: [photographer_session, client_session],
       url: url,
       user: user
     } do
@@ -119,13 +120,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_disabled(@invoice_button)
       |> assert_text("Below are details for")
       |> click(link("Message Photography LLC"))
-      |> fill_in(text_field("Subject line"),
-        with: "This field is required here, but ignored in the inbox."
-      )
       |> fill_in(css("#editor > div"), with: "actual message")
       |> wait_for_enabled_submit_button()
-      |> click(button("Send Email"))
-      |> assert_text("Photography LLC will reply to #{lead.client.email}")
+      |> click(button("Send"))
+      |> assert_text("Your message has been sent")
+      |> click(button("Close"))
       |> click(button("To-Do Proposal"))
       |> assert_has(
         definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
@@ -255,6 +254,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         )
       )
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
+
+      photographer_session
+      |> click(button("Go to inbox"))
+      |> assert_text("actual message")
     end
 
     @sessions 2
