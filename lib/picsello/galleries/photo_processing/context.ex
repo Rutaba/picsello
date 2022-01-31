@@ -90,6 +90,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
         watermarked_url: watermark_path,
         watermarked_preview_url: watermarked_preview_path
       })
+  rescue
+    _ -> :error
   end
 
   def save_processed(%{
@@ -110,6 +112,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
         width: width,
         preview_url: preview_url
       })
+  rescue
+    _ -> :error
   end
 
   def save_processed(%{
@@ -129,6 +133,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
         watermarked_url: watermark_path,
         watermarked_preview_url: watermarked_preview_path
       })
+  rescue
+    _ -> :error
   end
 
   def save_processed(%{

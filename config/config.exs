@@ -65,7 +65,7 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
 config :picsello,
   photo_output_subscription: {
     BroadwayCloudPubSub.Producer,
-    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION")
+    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION"), on_failure: :nack
   },
   photo_processing_input_topic: System.get_env("PHOTO_PROCESSING_INPUT_TOPIC"),
   photo_processing_output_topic: System.get_env("PHOTO_PROCESSING_OUTPUT_TOPIC"),
