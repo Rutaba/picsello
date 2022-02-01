@@ -22,8 +22,8 @@ defmodule Picsello.Galleries.CoverPhoto do
 
   def original_path(gallery_id, uuid),
     do: "galleries/#{gallery_id}/#{uuid}"
-  
-  def get_gallery_id_from_path(path) do 
+
+  def get_gallery_id_from_path(path) do
     path
     |> Path.relative_to("galleries")
     |> Path.split()
