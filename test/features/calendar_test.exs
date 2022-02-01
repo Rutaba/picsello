@@ -6,6 +6,9 @@ defmodule Picsello.CalendarTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
+    # dates before the first suday or after the last saturday will be shown on adjacent months
+    a_time_only_shown_this_month = DateTime.utc_now() |> Map.put(:day, 15)
+
     job =
       insert(:lead, %{
         user: user,
@@ -18,7 +21,7 @@ defmodule Picsello.CalendarTest do
     insert(:shoot,
       name: "Shoot 1",
       job: job,
-      starts_at: DateTime.utc_now()
+      starts_at: a_time_only_shown_this_month
     )
 
     job |> promote_to_job()
@@ -35,7 +38,7 @@ defmodule Picsello.CalendarTest do
     insert(:shoot,
       name: "Shoot 2",
       job: lead,
-      starts_at: DateTime.utc_now()
+      starts_at: a_time_only_shown_this_month
     )
 
     old_lead =
