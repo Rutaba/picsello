@@ -69,6 +69,7 @@ const Preview = {
 
                     let gk = w/h;
                     let sk = preview.width/preview.height
+
                     if(sk < gk){
                         let preview_width = width;
                         let preview_height = width / sk;
