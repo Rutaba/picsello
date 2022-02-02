@@ -5,6 +5,7 @@ defmodule Picsello.WHCC.Adapter do
   @callback designs() :: [Picsello.WHCC.Design.t()]
   @callback design_details(Picsello.WHCC.Design.t()) :: Picsello.WHCC.Design.t()
   @callback editor(map()) :: Picsello.WHCC.CreatedEditor.t()
+  @callback get_existing_editor(String.t(), String.t()) :: Picsello.WHCC.CreatedEditor.t()
   @callback editor_details(String.t(), String.t()) :: Picsello.WHCC.Editor.Details.t()
   @callback editor_export(String.t(), String.t()) :: Picsello.WHCC.Editor.Export.t()
   @callback create_order(String.t(), String.t(), Keyword.t()) :: Picsello.WHCC.Order.Created.t()
@@ -20,6 +21,7 @@ defmodule Picsello.WHCC.Adapter do
   def design_details(design), do: impl().design_details(design)
 
   def editor(data), do: impl().editor(data)
+  def get_existing_editor(account_id, id), do: impl().get_existing_editor(account_id, id)
   def editor_details(account_id, id), do: impl().editor_details(account_id, id)
   def editor_export(account_id, id), do: impl().editor_export(account_id, id)
 

@@ -35,25 +35,11 @@ defmodule Picsello.Cart.Order do
     |> foreign_key_constraint(:gallery_id)
   end
 
-  def update_changeset(
-        %__MODULE__{products: products} = order,
-        %CartProduct{price: price} = product,
-        attrs \\ %{}
-      ) do
-    product_already_exist =
-      Enum.find_value(products, fn %{editor_details: %{editor_id: editor_id}} ->
-        editor_id == product.editor_details.editor_id
-      end)
-
-    if product_already_exist do
-      order
-      |> change()
-    else
-      order
-      |> cast(attrs, [])
-      |> cast_subtotal_cost({:add, price})
-      |> put_embed(:products, products ++ [product])
-    end
+  def update_changeset(%__MODULE__{} = order, %CartProduct{price: price} = product, attrs \\ %{}) do
+    order
+    |> cast(attrs, [])
+    |> replace_products([product])
+    |> cast_subtotal_cost({:add, price})
   end
 
   def change_products(
