@@ -7,6 +7,7 @@ defmodule Picsello.Galleries do
   alias Picsello.Repo
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken}
+  alias Picsello.GalleryProducts
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Workers.CleanStore
 
@@ -321,9 +322,8 @@ defmodule Picsello.Galleries do
   Removes the photo from DB and all its versions from cloud bucket.
   """
   def delete_photo(%Photo{} = photo) do
-    if Picsello.GalleryProducts.is_preview(photo.id) > 0 do
-      Picsello.GalleryProducts.set_nil_for_preview_photo_id(photo.id)
-    end
+
+    GalleryProducts.check_is_photo_selected_as_preview(photo.id)
 
     Repo.delete(photo)
 
