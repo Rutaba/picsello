@@ -81,6 +81,25 @@ defmodule Picsello.Cart do
   end
 
   @doc """
+  Deletes the product from order. Deletes order if order has only the one product.
+  """
+  def delete_product(%Order{products: [_product]} = order, _editor_id) do
+    order
+    |> Repo.delete!()
+    |> order_with_state()
+  end
+
+  def delete_product(%Order{} = order, editor_id) do
+    order
+    |> Order.delete_product_changeset(editor_id)
+    |> Repo.update!()
+    |> order_with_state()
+  end
+
+  defp order_with_state(%Order{__meta__: %Ecto.Schema.Metadata{state: state}} = order),
+    do: {state, order}
+
+  @doc """
   Gets the current order for gallery.
   """
   def get_unconfirmed_order(gallery_id) do
