@@ -17,9 +17,9 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
   defstruct photo_entries: %{},
             entries: %{},
             upload_speed: 100_000,
-            processing_speed: 50_000
+            processing_speed: 50_000_000_000_000_000_000
 
-  @upload_factor 0.608
+  @upload_factor 1
 
   def add_entry(%__MODULE__{} = progress, entry) do
     put_in(
