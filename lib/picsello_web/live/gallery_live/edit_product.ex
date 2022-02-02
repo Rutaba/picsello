@@ -42,9 +42,10 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
   def handle_event(
         "customize_and_buy",
         _,
-        %{assigns: %{current_whcc_product: whcc_product, photo: photo}} = socket
+        %{assigns: %{current_whcc_product: whcc_product, photo: photo, whcc_product_size: size}} =
+          socket
       ) do
-    send(self(), {:customize_and_buy_product, whcc_product, photo})
+    send(self(), {:customize_and_buy_product, whcc_product, photo, size})
 
     socket |> noreply()
   end
@@ -79,7 +80,7 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
 
   defp product_size_options(%{sizes: sizes}) do
     sizes
-    |> Enum.map(fn option -> [key: option["id"], value: option["name"]] end)
+    |> Enum.map(fn option -> [key: option["name"], value: option["id"]] end)
   end
 
   defp initial_size_option(options) do
