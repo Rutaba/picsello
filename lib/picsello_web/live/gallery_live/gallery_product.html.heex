@@ -39,7 +39,7 @@
 
     <div class="description ml-11 row-span-2 col-span-2">
         <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
-         "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}>Prints</h1>
+         "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}><%=  @title %></h1>
         <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
