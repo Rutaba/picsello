@@ -322,7 +322,6 @@ defmodule Picsello.Galleries do
   Removes the photo from DB and all its versions from cloud bucket.
   """
   def delete_photo(%Photo{} = photo) do
-
     GalleryProducts.check_is_photo_selected_as_preview(photo.id)
 
     Repo.delete(photo)

@@ -28,7 +28,8 @@ defmodule Picsello.GalleryProducts do
 
   def check_is_photo_selected_as_preview(photo_id) do
     from(p in Picsello.Galleries.GalleryProduct,
-      where: p.preview_photo_id == ^photo_id)
+      where: p.preview_photo_id == ^photo_id
+    )
     |> Repo.update_all(set: [preview_photo_id: nil])
   end
 

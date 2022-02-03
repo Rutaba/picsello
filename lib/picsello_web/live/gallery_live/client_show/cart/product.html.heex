@@ -13,7 +13,7 @@
       </select>
       <%= if @has_buttons do %>
         <button type="button" class="font-semibold text-lg text-blue-planning-300 mx-7">Edit</button>
-        <button type="button" class="font-semibold text-lg text-blue-planning-300">Delete</button>
+        <button type="button" class="font-semibold text-lg text-blue-planning-300" phx-click="delete_product" phx-value-editor-id={@product.editor_details.editor_id}>Delete</button>
       <% end %>
     </div>
   </div>
