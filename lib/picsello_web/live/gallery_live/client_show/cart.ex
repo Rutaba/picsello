@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.Cart
+  alias Picsello.WHCC
   alias Picsello.WHCC.Shipping
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
@@ -37,6 +38,21 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     socket
     |> assign(:step, :delivery_info)
     |> assign(:delivery_info_changeset, Cart.order_delivery_info_change(order))
+    |> noreply()
+  end
+
+  def handle_event(
+        "edit_product",
+        %{"editor-id" => editor_id},
+        %{assigns: %{step: :product_list, gallery: gallery}} = socket
+      ) do
+    %{url: url} =
+      gallery
+      |> Galleries.account_id()
+      |> WHCC.get_existing_editor(editor_id)
+
+    socket
+    |> redirect(external: url)
     |> noreply()
   end
 
