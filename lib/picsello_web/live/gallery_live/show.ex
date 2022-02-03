@@ -12,6 +12,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Galleries.PhotoProcessing.Waiter
   alias Picsello.GalleryProducts
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
@@ -268,12 +269,16 @@ defmodule PicselloWeb.GalleryLive.Show do
         {:message_composed, message_changeset},
         %{
           assigns: %{
-            job: job
+            job: job,
+            gallery: gallery
           }
         } = socket
       ) do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+         :ok <-
+           Waiter.postpone(gallery.id, fn ->
+             ClientNotifier.deliver_email(message, job.client.email)
+           end) do
       socket
       |> close_modal()
       |> noreply()
