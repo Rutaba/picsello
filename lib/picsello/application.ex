@@ -28,7 +28,8 @@ defmodule Picsello.Application do
       # {Picsello.Worker, arg}
       # Gallery workers
       Picsello.Galleries.Workers.PositionNormalizer,
-      {Picsello.Galleries.PhotoProcessing.ProcessedConsumer, [producer_module: producer_module]}
+      {Picsello.Galleries.PhotoProcessing.ProcessedConsumer, [producer_module: producer_module]},
+      Picsello.Galleries.PhotoProcessing.Waiter
     ]
 
     events = [[:oban, :job, :start], [:oban, :job, :stop], [:oban, :job, :exception]]
