@@ -88,6 +88,15 @@ defmodule Picsello.Cart.Order do
     changeset |> put_embed(:products, products_to_store)
   end
 
+  def delete_product_changeset(%__MODULE__{products: products} = order, editor_id) do
+    order
+    |> change()
+    |> put_embed(
+      :products,
+      Enum.filter(products, fn product -> product.editor_details.editor_id != editor_id end)
+    )
+  end
+
   defp cast_subtotal_cost(changeset, {:default, amount}),
     do: put_change(changeset, :subtotal_cost, amount)
 

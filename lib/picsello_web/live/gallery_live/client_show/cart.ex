@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   alias Picsello.WHCC.Shipping
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
+  alias PicselloWeb.GalleryLive.ClientMenuComponent
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -20,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         |> assign(:order, order)
         |> assign(:step, :product_list)
         |> assign_cart_count(gallery)
+        |> assign(:client_menu_id, "clientMenu")
         |> ok()
 
       _ ->
@@ -52,6 +54,37 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     socket
     |> redirect(external: url)
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "delete_product",
+        %{"editor-id" => editor_id},
+        %{
+          assigns: %{
+            step: :product_list,
+            order: order,
+            gallery: gallery,
+            client_menu_id: client_menu_id,
+            cart_count: count
+          }
+        } = socket
+      ) do
+    case Cart.delete_product(order, editor_id) do
+      {:deleted, _} ->
+        socket
+        |> push_redirect(
+          to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash)
+        )
+        |> noreply()
+
+      {:loaded, order} ->
+        send_update(ClientMenuComponent, id: client_menu_id, cart_count: count - 1)
+
+        socket
+        |> assign(:order, order)
+        |> noreply()
+    end
   end
 
   @impl true
