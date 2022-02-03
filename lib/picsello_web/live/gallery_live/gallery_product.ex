@@ -146,11 +146,13 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   @impl true
   def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
+    galery_products = GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
 
-    if GalleryProducts.get(%{:id => to_integer(gallery_product_id)}) == nil do
+    if galery_products == nil do
       {:noreply, redirect(socket, to: "/")}
     else
       socket
+      |> assign(:title, galery_products.category_template.title)
       |> assign(:gallery, gallery)
       |> assign(:gallery_product_id, gallery_product_id)
       |> assign(:page, 0)
