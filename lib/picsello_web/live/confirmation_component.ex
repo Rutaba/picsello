@@ -3,20 +3,20 @@ defmodule PicselloWeb.ConfirmationComponent do
 
   use PicselloWeb, :live_component
 
+  @default_assigns %{
+    close_label: "Close",
+    close_class: "btn-secondary",
+    confirm_event: nil,
+    confirm_label: "Yes",
+    confirm_class: "btn-warning",
+    icon: "confetti",
+    subtitle: nil
+  }
+
   @impl true
   def update(assigns, socket) do
     socket
-    |> assign(
-      Enum.into(assigns, %{
-        close_label: "Close",
-        close_class: "btn-secondary",
-        confirm_event: nil,
-        confirm_label: "Yes",
-        confirm_class: "btn-warning",
-        icon: "confetti",
-        subtitle: nil
-      })
-    )
+    |> assign(Enum.into(assigns, @default_assigns))
     |> ok()
   end
 
