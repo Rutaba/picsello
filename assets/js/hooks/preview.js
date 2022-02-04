@@ -49,7 +49,7 @@ const Preview = {
             const cw = canvas.width;
             const ch = canvas.height;
 
-            canvas.width = cw
+            canvas.width = cw;
 
             frame.onload = function () {
                 const frameW = frame.width;
@@ -62,8 +62,6 @@ const Preview = {
                 const kw = cw / frameW;
                 const kh = ch / frameH;
 
-                ctx.drawImage(frame, 0, 0, cw, ch);
-
                 const renderImageWithFrame = function () {
 
                     const width = (w * kw) < 10 && cw || (w * kw);
@@ -71,21 +69,22 @@ const Preview = {
 
                     let gk = w/h;
                     let sk = preview.width/preview.height
+
                     if(sk < gk){
-                        let preview_width = sk * height;
-                        let preview_height = height;
-                        let lty = ch * kfh;
-                        let ltx = (cw * kfw) + (width - (preview_width))/2;
-                        ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
-                    } else if(gk < sk){
-                        let preview_height = width / sk;
                         let preview_width = width;
+                        let preview_height = width / sk;
                         let lty = (ch * kfh) + (height - (preview_height))/2;
                         let ltx = cw * kfw;
                         ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
+                    } else if(gk < sk){
+                        let preview_height = height;
+                        let preview_width = height * sk;
+                        let lty = ch * kfh;
+                        let ltx = (cw * kfw) + (width - (preview_width))/2;
+                        ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
                     }
+                    ctx.drawImage(frame, 0, 0, cw, ch);
                 }
-
                 const preview = new Image();
                 preview.onload = renderImageWithFrame
                 preview.src = preview_name;
@@ -93,7 +92,6 @@ const Preview = {
                 Preview.preview = preview
                 Preview.renderImageWithFrame = renderImageWithFrame
             }
-
             frame.src = "/images/" + frame_name;
         }
     },

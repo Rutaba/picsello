@@ -21,6 +21,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
+  def handle_event("open-compose", %{}, socket), do: open_compose(socket)
+
+  @impl true
   def handle_event(
         "open-" <> page,
         %{},
@@ -68,6 +71,40 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()
   end
+
+  @impl true
+  def handle_info(
+        {:message_composed, changeset},
+        %{
+          assigns: %{
+            organization: %{name: organization_name},
+            job: %{id: job_id}
+          }
+        } = socket
+      ) do
+    flash =
+      changeset
+      |> Ecto.Changeset.change(job_id: job_id, outbound: false)
+      |> Ecto.Changeset.apply_changes()
+      |> Repo.insert()
+      |> case do
+        {:ok, _} ->
+          &PicselloWeb.ConfirmationComponent.open(&1, %{
+            title: "Contact #{organization_name}",
+            subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
+            confirm_label: "Send another",
+            confirm_event: "send_another"
+          })
+
+        {:error, _} ->
+          &(&1 |> close_modal() |> put_flash(:error, "Message not sent."))
+      end
+
+    socket |> flash.() |> noreply()
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "send_another"}, socket), do: open_compose(socket)
 
   def open_page_modal(%{assigns: %{proposal: proposal}} = socket, page, read_only \\ false)
       when page in @pages do
@@ -172,6 +209,18 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   defp invoice_disabled?(%BookingProposal{accepted_at: accepted_at, signed_at: signed_at}) do
     is_nil(accepted_at) || is_nil(signed_at)
   end
+
+  defp open_compose(%{assigns: %{organization: %{name: organization_name}, job: job}} = socket),
+    do:
+      socket
+      |> PicselloWeb.ClientMessageComponent.open(%{
+        modal_title: "Contact #{organization_name}",
+        show_client_email: false,
+        show_subject: false,
+        subject: "#{Job.name(job)} proposal",
+        send_button: "Send"
+      })
+      |> noreply()
 
   defp payments(), do: Application.get_env(:picsello, :payments)
 end

@@ -5,7 +5,7 @@ defmodule Picsello.Contacts do
 
   def find_all_by(user: user) do
     from(c in Client,
-      where: c.organization_id == ^user.organization_id,
+      where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
       order_by: [asc: c.name, asc: c.email]
     )
     |> Repo.all()
@@ -27,5 +27,11 @@ defmodule Picsello.Contacts do
 
   def save_contact(contact, attrs) do
     edit_contact_changeset(contact, attrs) |> Repo.update()
+  end
+
+  def archive_contact(id) do
+    Repo.get(Client, id)
+    |> Client.archive_changeset()
+    |> Repo.update()
   end
 end

@@ -64,7 +64,10 @@
     <%# use phx-drop-target with the upload ref to enable file drag and drop %>
     <div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper px-4" id="UploadEntries" phx-update={@update_mode}>
         <%= for entry <- @uploads.photo.entries do %>
-        <div class="uploadEntry grid grid-cols-5 pb-4 items-center" id={entry.uuid}>
+        <div
+            id={entry.uuid}
+            class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"hidden" => progress_for_entry(@progress, entry) == 100 })}
+        >
             <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
 
             <%# entry.progress will update automatically for in-flight entries %>

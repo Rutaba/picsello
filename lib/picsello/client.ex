@@ -9,6 +9,7 @@ defmodule Picsello.Client do
     field :name, :string
     field :phone, :string
     field :stripe_customer_id, :string
+    field :archived_at, :utc_datetime
     belongs_to(:organization, Organization)
 
     timestamps()
@@ -47,6 +48,11 @@ defmodule Picsello.Client do
 
   def assign_stripe_customer_changeset(%__MODULE__{} = client, "" <> stripe_customer_id),
     do: client |> change(stripe_customer_id: stripe_customer_id)
+
+  def archive_changeset(%__MODULE__{} = client) do
+    client
+    |> change(archived_at: DateTime.utc_now() |> DateTime.truncate(:second))
+  end
 
   @doc "just make sure there are 10 digits in there somewhere"
   def valid_phone(field, value) do

@@ -164,4 +164,30 @@ defmodule Picsello.UserManagesContactsTest do
     |> assert_has(testid("subheader", text: "(555) 123-4567"))
     |> assert_has(testid("notes", text: "things to know about"))
   end
+
+  feature "user archives contact", %{
+    session: session,
+    user: user
+  } do
+    insert(:client,
+      user: user,
+      name: "Elizabeth Taylor"
+    )
+
+    insert(:client,
+      user: user,
+      name: "Mary Jane"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Contacts"))
+    |> assert_text("Manage your 2 contacts")
+    |> click(button("Manage", count: 2, at: 0))
+    |> click(button("Archive"))
+    |> click(button("Yes, archive"))
+    |> assert_flash(:success, text: "Contact archived successfully")
+    |> assert_text("Manage your 1 contact")
+    |> assert_text("Mary Jane")
+  end
 end

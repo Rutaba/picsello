@@ -66,7 +66,15 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   end
 
   @impl true
-  def handle_event("cancel-upload", %{"ref" => ref} = entry, socket) do
+  def handle_event(
+        "cancel-upload",
+        %{"ref" => ref},
+        %{assigns: %{uploads: %{photo: %{entries: entries}}}} = socket
+      ) do
+    entry =
+      entries
+      |> Enum.find(&(&1.ref == ref))
+
     socket
     |> assign(:update_mode, "replace")
     |> assign(:progress, GalleryUploadProgress.remove_entry(socket.assigns.progress, entry))

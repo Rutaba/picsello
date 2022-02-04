@@ -13,4 +13,11 @@ defmodule Picsello.WHCC.CreatedEditor do
       editor_id: editor_id |> to_string()
     }
   end
+
+  def build(editor_id, url) do
+    %__MODULE__{
+      url: url |> to_string(),
+      editor_id: editor_id |> to_string()
+    }
+  end
 end
