@@ -62,17 +62,32 @@ defmodule Picsello.GalleryProducts do
   @doc """
   Gets WHCC products with size params.
   """
+
+  @product_sizes """
+  select
+  products.id as product_id,
+  jsonb_agg(
+  jsonb_build_object('id', attributes.id, 'name', attributes.name)
+  order by
+    (metadata -> 'height') :: decimal * (metadata -> 'width') :: decimal
+  ) as sizes
+  from
+  products,
+  jsonb_to_recordset(products.attribute_categories) as attribute_categories(attributes jsonb, name text, _id text),
+  jsonb_to_recordset(attribute_categories.attributes) as attributes(name text, id text, metadata jsonb)
+  where
+  attribute_categories._id = 'size'
+  group by
+  products.id
+  """
+
   def get_whcc_products(category_id) do
     from(product in Product,
       where: product.category_id == ^category_id and is_nil(product.deleted_at),
+      inner_join: sizes in fragment(@product_sizes),
+      on: sizes.product_id == product.id,
       order_by: [asc: product.position],
-      select:
-        merge(product, %{
-          sizes:
-            fragment(
-              ~s|SELECT object->'attributes' FROM jsonb_array_elements(attribute_categories) AS object WHERE object->>'_id' = 'size'|
-            )
-        })
+      select: merge(product, %{sizes: sizes.sizes})
     )
     |> Repo.all()
   end

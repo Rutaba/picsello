@@ -80,12 +80,12 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
 
   defp product_size_options(%{sizes: sizes}) do
     sizes
-    |> Enum.map(fn option -> [key: option["name"], value: option["id"]] end)
+    |> Enum.map(&{Map.get(&1, "name"), Map.get(&1, "id")})
   end
 
   defp initial_size_option(options) do
     options
     |> List.first()
-    |> then(fn option -> option[:key] end)
+    |> elem(1)
   end
 end
