@@ -287,12 +287,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_info(
-        {:photo_processed, %{"task" => %{"photoId" => photo_id}}, photo},
-        %{assigns: %{modal_pid: modal_pid}} = socket
-      ) do
-    send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
-
+  def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{
         id: photo.id,

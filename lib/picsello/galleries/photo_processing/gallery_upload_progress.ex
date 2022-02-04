@@ -16,10 +16,7 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
 
   defstruct photo_entries: %{},
             entries: %{},
-            upload_speed: 100_000,
-            processing_speed: 50_000
-
-  @upload_factor 0.608
+            since: DateTime.utc_now()
 
   def add_entry(%__MODULE__{} = progress, entry) do
     put_in(
@@ -39,116 +36,54 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
     |> put_in([:entries], progress.entries |> Map.delete(entry.uuid))
   end
 
-  def complete_upload(%__MODULE__{} = progress, entry, now \\ DateTime.utc_now()) do
-    %{size: size, uploading_since: since} = progress.entries[entry.uuid]
-
-    new_speed =
-      progress.upload_speed
-      |> avg_speed_add(
-        Enum.count(progress.entries, fn {_, %{is_uploaded: x}} -> x end),
-        speed(size, {now, since})
-      )
-
+  def complete_upload(%__MODULE__{} = progress, entry, _now \\ DateTime.utc_now()) do
     progress
     |> put_in([:entries, entry.uuid, :is_uploaded], true)
-    |> put_in([:entries, entry.uuid, :processing_since], DateTime.utc_now())
-    |> put_in([:upload_speed], new_speed)
+    |> put_in([:entries, entry.uuid, :progress], 100)
   end
 
-  def link_photo(%__MODULE__{} = progress, entry, photo_id) do
-    put_in(progress, [:photo_entries, photo_id], entry.uuid)
+  def track_progress(%__MODULE__{} = progress, entry) do
+    progress
+    |> put_in([:entries, entry.uuid, :progress], entry.progress)
   end
 
-  def complete_processing(%__MODULE__{} = progress, photo_id, now \\ DateTime.utc_now()) do
-    case progress.photo_entries[photo_id] do
-      nil ->
-        progress
-
-      uuid ->
-        %{size: size, processing_since: since} = progress.entries[uuid]
-
-        new_speed =
-          progress.processing_speed
-          |> avg_speed_add(
-            Enum.count(progress.entries, fn {_, %{is_processed: x}} -> x end),
-            speed(size, {now, since})
-          )
-
-        progress
-        |> put_in([:entries, uuid, :is_processed], true)
-        |> put_in([:processing_speed], new_speed)
-    end
-  end
-
-  def progress_for_entry(%__MODULE__{} = progress, entry, now \\ DateTime.utc_now()) do
-    cond do
-      progress.entries[entry.uuid].is_processed ->
-        100
-
-      progress.entries[entry.uuid].is_uploaded ->
-        passed = DateTime.diff(now, progress.entries[entry.uuid].processing_since, :millisecond)
-        part = min(progress.processing_speed * passed / 1000 / entry.client_size, 0.97)
-        100 * (@upload_factor + (1 - @upload_factor) * part)
-
-      true ->
-        entry.progress * @upload_factor
-    end
+  def progress_for_entry(%__MODULE__{} = progress, entry) do
+    item = get_in(progress, [:entries, entry.uuid])
+    (item.is_uploaded && 100) || entry.progress
   end
 
   def total_progress(%__MODULE__{} = progress) do
-    count = Enum.count(progress.entries)
-
-    done =
-      progress.entries
-      |> Enum.map(fn
-        {_, %{is_processed: true}} -> 1
-        {_, %{is_uploaded: true}} -> @upload_factor
-        _ -> 0
-      end)
-      |> Enum.sum()
-
-    trunc(100 * done / count)
+    progress.entries
+    |> Enum.reduce({0, 0}, fn {_, %{size: size, progress: progress}}, {done, total} ->
+      {done + size * progress, total + size}
+    end)
+    |> then(fn {done, total} -> trunc(done / total) end)
   end
 
-  def estimate_remaining(progress, now) do
-    progress.entries
-    |> Enum.map(fn
-      {_, %{is_processed: true}} ->
-        0
-
-      {_, %{is_uploaded: true, size: size, processing_since: since}} ->
-        passed = DateTime.diff(now, since, :millisecond)
-        est = size * 1000 / progress.processing_speed
-        (est - passed) / 1000
-
-      {_, %{is_uploaded: false, size: size, uploading_since: since}} ->
-        passed = DateTime.diff(now, since, :millisecond)
-        est = size * 1000 / progress.upload_speed
-        est_processing = size / progress.processing_speed
-        est_processing + (est - passed) / 1000
-
-      _ ->
-        -10_000
-    end)
-    |> Enum.max()
+  def estimate_remaining(%{since: since} = progress, now) do
+    progress
+    |> total_progress()
     |> then(fn
+      0 ->
+        -1
+
+      done ->
+        passed = DateTime.diff(now, since, :millisecond)
+        (100 - done) * passed / done / 1000
+    end)
+    |> then(fn
+      s when s > 3600 -> "#{trunc(s / 360) / 10} hours"
       s when s > 120 -> "#{trunc(s / 60)} minutes"
-      s when s < 10 -> "few seconds"
+      s when s < 5 -> "few seconds"
+      -1 -> "n/a"
       s -> "#{trunc(s)} seconds"
     end)
   end
 
-  defp speed(size, {now, since}), do: trunc(size * 1000 / DateTime.diff(now, since, :millisecond))
-
-  defp avg_speed_add(old_speed, count, speed),
-    do: trunc((old_speed * count + speed) / (count + 1))
-
   defp new_entry(entry),
     do: %{
       is_uploaded: false,
-      is_processed: false,
-      uploading_since: DateTime.utc_now(),
-      processing_since: nil,
-      size: entry.client_size
+      size: entry.client_size,
+      progress: 0
     }
 end
