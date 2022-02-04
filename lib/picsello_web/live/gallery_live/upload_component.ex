@@ -13,7 +13,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @upload_options [
     accept: ~w(.jpg .jpeg .png),
     max_entries: 1500,
-    max_concurrent: 1,
     max_file_size: 104_857_600,
     auto_upload: true,
     external: &__MODULE__.presign_entry/2,
