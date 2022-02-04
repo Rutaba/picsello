@@ -41,8 +41,8 @@ export default {
 
       if (text && text.trim().length === 0) {
         htmlInput.value = '';
-        htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
+      htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
 
       if (textInput) {
         textInput.value = text;

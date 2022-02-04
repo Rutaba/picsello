@@ -245,7 +245,7 @@ defmodule Picsello.Factory do
   end
 
   def proposal_factory(attrs) do
-    %BookingProposal{job: fn -> build(:lead) end}
+    %BookingProposal{job: fn -> build(:lead, %{user: insert(:user)}) end}
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end

@@ -251,6 +251,7 @@ defmodule PicselloWeb.Live.User.Settings do
         <:link hide={!show_pricing_tab?()} to={{:pricing, :index}} >Gallery Store Pricing</:link>
         <:link to={{:profile_settings, :index}} >Public Profile</:link>
         <:link to={{:contacts, :index}} >Contacts</:link>
+        <:link to={{:brand_settings, :index}} >Brand</:link>
       </._settings_nav>
       <hr />
 
