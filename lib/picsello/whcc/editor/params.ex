@@ -64,7 +64,8 @@ defmodule Picsello.WHCC.Editor.Params do
         "hidePricing" => true,
         "studioName" => name,
         "markupType" => "PERCENT",
-        "markupAmount" => 0
+        "markupAmount" => 0,
+        "disableUploads" => true
       }
     }
   end
