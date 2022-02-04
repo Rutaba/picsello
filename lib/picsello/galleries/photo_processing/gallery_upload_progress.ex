@@ -17,10 +17,8 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
   defstruct photo_entries: %{},
             entries: %{},
             upload_speed: 100_000,
-            processing_speed: 50_000_000_000_000_000_000
+            processing_speed: 50_000_000_000_000_000_000,
             since: nil
-
-  @upload_factor 1
 
   def add_entry(%__MODULE__{} = progress, entry) do
     put_in(
@@ -88,17 +86,17 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
       done ->
         passed = DateTime.diff(now, since, :millisecond) / 1000
 
-        if passed < 3 do
+        if passed < 1 do
           -1
         else
           (1 - done) * passed / done
         end
     end)
     |> then(fn
+      -1 -> "n/a"
       s when s > 3600 -> "#{trunc(s / 360) / 10} hours"
       s when s > 120 -> "#{trunc(s / 60)} minutes"
       s when s < 5 -> "few seconds"
-      -1 -> "n/a"
       s -> "#{trunc(s)} seconds"
     end)
   end
