@@ -34,21 +34,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      |> allow_upload(:photo, @upload_options)}
   end
 
-  #  @impl true
-  #  def update(%{a_photo_processed: photo_id}, %{assigns: %{progress: progress}} = socket) do
-  #    socket
-  #    |> assign(:progress, GalleryUploadProgress.complete_processing(progress, photo_id))
-  #    |> assign_overall_progress()
-  #    |> ok()
-  #  end
-  #
-  #  @impl true
-  #  def update(new_assigns, socket) do
-  #    socket
-  #    |> assign(new_assigns)
-  #    |> ok()
-  #  end
-  #
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
     gallery = Galleries.load_watermark_in_gallery(gallery)
@@ -114,12 +99,16 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         progress:
           progress
           |> GalleryUploadProgress.complete_upload(entry)
-          |> GalleryUploadProgress.link_photo(entry, photo.id)
       )
       |> assign_overall_progress()
       |> noreply()
     else
       socket
+      |> assign(
+        progress:
+          progress
+          |> GalleryUploadProgress.track_progress(entry)
+      )
       |> assign_overall_progress()
       |> noreply()
     end
