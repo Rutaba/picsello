@@ -15,14 +15,23 @@ When you create your `.env`, be sure to add `PHOTO_PROCESSING_OUTPUT_TOPIC`, `PH
 6. This will redirect you to your topic page. It has full topic subscription name at bottom, use it as `PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION` env variable.
 7. Fill `PHOTO_PROCESSING_OUTPUT_TOPIC` env variable with Topic ID "`your_last_name`-processed-photos".
 
-
-
-
-To start the dev server:
+## To start the dev server:
 
     make server
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+
+## Things to sync in the console:
+
+#### WHCC Products
+1. Have the following `ENV` vars setup `WHCC_KEY`, `WHCC_SECRET`, and `WHCC_URL`
+2. Run `make console`
+3. Run `Picsello.WHCC.sync()`
+
+#### Packages and pricing tiers
+1. Have the following `ENV` vars setup `PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE`, `PACKAGES_CALCULATOR_PRICES_RANGE` and `PACKAGES_CALCULATOR_SHEET_ID`
+2. Run `make console`
+3. Run `Picsello.Workers.SyncTiers.perform(nil)`
 
 ## Sendgrid inbound parse for development
 
