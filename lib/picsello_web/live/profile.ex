@@ -68,11 +68,14 @@ defmodule PicselloWeb.Live.Profile do
             </div>
           <% end %>
         <% else %>
-          <.photographer_logo {assigns} />
+          <div class="flex items-center justify-between">
+            <.photographer_logo {assigns} />
+            <.book_now_button />
+          </div>
         <% end %>
       </div>
 
-      <hr class="border-base-200">
+      <hr class="border-base-300 center-container">
 
       <div class="flex flex-col justify-center px-6 mt-10 md:mt-20 md:px-16 md:flex-row center-container">
         <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[40%]">
@@ -143,6 +146,15 @@ defmodule PicselloWeb.Live.Profile do
     <%= if @edit do %>
       <.edit_footer url={@url} />
     <% end %>
+    """
+  end
+
+  def book_now_button(assigns) do
+    ~H"""
+    <a href="#contact-form" class="flex items-center justify-center border border-base-300 text-sm min-w-[12rem] py-2 hover:border-base-250 hover:text-base-250">
+      Book Now
+      <.icon name="forth" class="ml-2 w-3 h-3 stroke-current" />
+    </a>
     """
   end
 
