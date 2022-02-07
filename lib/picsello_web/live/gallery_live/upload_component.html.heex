@@ -1,8 +1,30 @@
 <div class="uploadPopup" id="photo-upload-component">
   <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
-  <div class="flex items-center justify-between w-full px-12 pb-4">
-    <p class="font-bold text-xl">Upload photos to <%= @gallery.name %></p>
-    <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/></a>
+  <div class="w-full">
+    <div class="flex items-center justify-between w-full px-12 pb-4">
+      <p class="font-bold text-xl">Upload photos to <%= @gallery.name %></p>
+      <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/></a>
+    </div>
+
+    <%= if total(@uploads.photo.entries) > 0 do %>
+    <div class="bg-orange-inbox-100 w-full p-2">
+    <div class="flex justify-center items-center">
+      <.icon name="warning-orange", class="w-8 h-8" />
+      <div class="px-2">
+        Leaving this page will cancel your upload.
+        <a 
+          class="text-blue-planning-300 font-bold"
+          target="_blank" 
+          href={Routes.gallery_show_path(@socket, :show, @gallery.id)}
+        >
+          Click here
+        </a>
+        to open a new tab and continue working.
+      </div>
+    </div>
+    </div>
+    <% end %>
+
   </div>
     <%= if total(@uploads.photo.entries) > 0 do %>
     <div class="flex items-center justify-between p-12 uploadOverallStatus mb-12 w-full">
