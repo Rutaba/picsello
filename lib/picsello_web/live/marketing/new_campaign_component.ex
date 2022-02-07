@@ -12,13 +12,10 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
       socket
       |> assign_new(:changeset, fn ->
         body = """
-        We hope this email finds you well! We are getting a lot of inquiries for fall photoshoots already so we wanted to send you a reminder so you can book a shoot!
-
-        You are on the VIP list so you do get first dibs on the dates! We will be sending out another email blast next week so let us know today!
-
-        Any questions, just reply to this email, we are happy to help!
-
-        Can’t wait to photograph your family again soon!
+        <p>We hope this email finds you well! We are getting a lot of inquiries for fall photoshoots already so we wanted to send you a reminder so you can book a shoot!</p>
+        <p>You are on the VIP list so you do get first dibs on the dates! We will be sending out another email blast next week so let us know today!</p>
+        <p>Any questions, just reply to this email, we are happy to help!</p>
+        <p>Can’t wait to photograph your family again soon!</p>
         """
 
         Marketing.new_campaign_changeset(
