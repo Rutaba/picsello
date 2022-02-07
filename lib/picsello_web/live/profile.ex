@@ -77,10 +77,11 @@ defmodule PicselloWeb.Live.Profile do
 
       <hr class="border-base-300 center-container">
 
-      <div class="flex flex-col justify-center px-6 mt-10 md:mt-20 md:px-16 md:flex-row center-container">
-        <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[40%]">
-          <h1 class="text-5xl font-bold text-center lg:text-6xl md:text-left"><%= @organization.name %></h1>
+      <div class="flex flex-col justify-center px-6 mt-10 md:mt-20 md:px-16 center-container">
+        <h1 class="text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
+        <.description edit={@edit} description={@description} color={@color} />
 
+        <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[40%]">
           <div>
             <div class="flex items-center mt-12">
               <h2 class="text-lg font-bold">What we offer:</h2>
@@ -125,20 +126,8 @@ defmodule PicselloWeb.Live.Profile do
           <% end %>
         </div>
 
-        <div class="flex flex-col flex-grow">
-          <%= if @edit || @description do %>
-            <.description edit={@edit} description={@description} color={@color} />
-          <% else %>
-            <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types %>
-          <% end %>
-        </div>
+        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types %>
       </div>
-
-      <%= if @edit || @description do %>
-        <div class="flex flex-col items-center mt-8">
-          <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, header_suffix: " with #{@organization.name}", color: @color, job_types: @job_types %>
-        </div>
-      <% end %>
     </div>
 
     <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
@@ -251,7 +240,7 @@ defmodule PicselloWeb.Live.Profile do
 
   defp description(assigns) do
     ~H"""
-    <div class="border-t-8 pt-6" style={"border-color: #{@color}"}>
+    <div class="pt-6">
       <%= if @description do %>
         <div {testid("description")} class="raw_html">
           <%= raw @description %>
@@ -266,7 +255,7 @@ defmodule PicselloWeb.Live.Profile do
         </svg>
       <% end %>
       <%= if @edit do %>
-        <.icon_button class="mt-6 shadow-lg" title="edit description" phx-click="edit-description" color="blue-planning-300" icon="pencil">
+        <.icon_button class="mt-4 shadow-lg" title="edit description" phx-click="edit-description" color="blue-planning-300" icon="pencil">
           Edit Description
         </.icon_button>
       <% end %>
