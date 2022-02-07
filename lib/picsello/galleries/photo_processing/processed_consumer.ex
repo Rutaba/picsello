@@ -24,12 +24,15 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
 
   def handle_message(_, %Message{} = message, _) do
     with {:ok, data} <- Jason.decode(message.data),
-         :ok <- handle_completed_context(data) do
+         :ok <- do_handle_message(data) do
       Message.update_data(message, fn _ -> data end)
     else
       {:error, :unknown_context_structure} ->
         Logger.error("Unknown message structure in " <> message.data)
         message
+
+      :error ->
+        Message.failed(message, "Entity not found")
 
       err ->
         msg = "Failed to process PubSub message\n#{inspect(err)}\n\n#{inspect(message)}"
@@ -38,14 +41,27 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     end
   end
 
-  def handle_completed_context(%{"task" => %{"photoId" => photo_id}} = context) do
-    Logger.info("Photo has been processed [#{photo_id}]")
-
+  defp do_handle_message(%{"task" => task} = context) do
     {:ok, photo} = Context.save_processed(context)
+
+    task
+    |> case do
+      %{"photoId" => photo_id} ->
+        "Photo has been processed [#{photo_id}]"
+
+      %{"processCoverPhoto" => true, "originalPath" => path} ->
+        "Cover photo [#{path}] has been processed"
+    end
+    |> Logger.info()
+
     Context.notify_processed(context, photo)
 
     :ok
+  rescue
+    _ -> :error
   end
 
-  def handle_completed_context(_), do: {:error, :unknown_context_structure}
+  defp do_handle_message(%{"path" => "" <> path, "metadata" => %{"version-id" => "" <> id}}) do
+    Picsello.Profiles.handle_photo_processed_message(path, id)
+  end
 end

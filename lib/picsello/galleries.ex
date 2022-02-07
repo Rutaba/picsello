@@ -7,6 +7,7 @@ defmodule Picsello.Galleries do
   alias Picsello.Repo
 
   alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken}
+  alias Picsello.GalleryProducts
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Workers.CleanStore
 
@@ -321,6 +322,8 @@ defmodule Picsello.Galleries do
   Removes the photo from DB and all its versions from cloud bucket.
   """
   def delete_photo(%Photo{} = photo) do
+    GalleryProducts.check_is_photo_selected_as_preview(photo.id)
+
     Repo.delete(photo)
 
     [
@@ -532,6 +535,18 @@ defmodule Picsello.Galleries do
 
   def gallery_text_watermark_change(nil, attrs),
     do: Watermark.text_changeset(%Watermark{}, attrs)
+
+  def save_gallery_cover_photo(gallery, attrs \\ %{}) do
+    gallery
+    |> Gallery.save_cover_photo_changeset(attrs)
+    |> Repo.update!()
+  end
+
+  def delete_gallery_cover_photo(gallery) do
+    gallery
+    |> Gallery.delete_cover_photo_changeset()
+    |> Repo.update!()
+  end
 
   @doc """
   Creates session token for the gallery client.

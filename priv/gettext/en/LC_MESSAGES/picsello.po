@@ -44,7 +44,13 @@ msgid "family"
 msgstr "Family"
 
 msgid "newborn"
-msgstr "Maternity & Newborn"
+msgstr "Newborn"
+
+msgid "maternity"
+msgstr "Maternity"
+
+msgid "headshot"
+msgstr "Headshot"
 
 msgid "event"
 msgstr "Event"

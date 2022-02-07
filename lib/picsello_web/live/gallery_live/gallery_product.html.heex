@@ -27,19 +27,19 @@
     <div class="hidden xl:block">
 
 <div class="max-w-screen-lg	mx-auto py-8 pt-14 pb-14 grid grid-cols-3 grid-rows-preview flex">
-  <div class="col-span-3">
+  <!--<div class="col-span-3">
             <span class="text-base font-bold">Product preview</span>
             <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
                 <use href="/images/icons.svg#gallery-info"></use>
             </svg>
-        </div>
+        </div> -->
  <div id="preview" class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
             <canvas id="canvas" width="300" height="200" class="edit"></canvas>
   </div>
 
     <div class="description ml-11 row-span-2 col-span-2">
         <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
-         "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}>Prints</h1>
+         "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}><%=  @title %></h1>
         <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
         <.form let={f} for={@changeset} action="#" phx-submit="save">
             <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>

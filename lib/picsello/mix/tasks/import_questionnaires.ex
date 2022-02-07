@@ -73,7 +73,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           },
           %{
             prompt:
-              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand / itchy clothes)? Do they have visual sensory issues (eg. Hates the camera flash? Do they have sensitive hearing (are they super sensitive to sound, or do they have a hearing impairment? All of these things help us plan for the best shoot possible for your family.",
+              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand / itchy clothes)? Do they have visual sensory issues (eg. hates the camera flash)? Do they have sensitive hearing (are they super sensitive to sound, or do they have a hearing impairment? All of these things help us plan for the best shoot possible for your family.",
             type: :textarea
           },
           %{prompt: "What is your vision for the shoot?", type: :textarea},
@@ -84,8 +84,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
               "Prints",
               "Greeting cards",
               "Albums",
-              "Wall Art",
-              "Online"
+              "Wall Art"
             ]
           }
         ],
@@ -112,8 +111,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
               "Prints",
               "Greeting cards",
               "Albums",
-              "Wall Art",
-              "Online"
+              "Wall Art"
             ]
           },
           %{
@@ -129,7 +127,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           },
           %{
             prompt:
-              "Is there anything we need to know about your kids before we meet at the shoot?  Do they have sensory issues (e.g., hates grass/sand / itchy clothes)? Do they have visual sensory problems (eg. Hates the camera flash? Do they have sensitive hearing (are they super sensitive to sound, or are they have hearing impairments? All of these things help us plan for the best shoot possible for your family.",
+              "Is there anything we need to know about your kids before we meet at the shoot?  Do they have sensory issues (e.g., hates grass/sand / itchy clothes)? Do they have visual sensory problems (eg. hates the camera flash)? Do they have sensitive hearing (are they super sensitive to sound, or are they have hearing impairments? All of these things help us plan for the best shoot possible for your family.",
             type: :textarea,
             optional: true
           }
@@ -156,16 +154,41 @@ defmodule Mix.Tasks.ImportQuestionnaires do
               "Prints",
               "Greeting cards",
               "Albums",
-              "Wall Art",
-              "Online"
+              "Wall Art"
             ]
           }
         ],
         job_type: "other"
+      },
+      %{
+        questions: [
+          %{
+            prompt: "Who will we be photographing during our session?",
+            type: :textarea
+          },
+          %{prompt: "What is your vision/goals for the shoot?", type: :textarea},
+          %{
+            prompt: "How do you want to see these images?",
+            type: :multiselect,
+            options: [
+              "Prints",
+              "Greeting cards",
+              "Albums",
+              "Wall Art"
+            ]
+          }
+        ],
+        job_type: "boudoir"
       }
     ]
-    |> Enum.each(fn questionnaire ->
-      Questionnaire.changeset(%Questionnaire{}, questionnaire) |> Repo.insert!()
+    |> Enum.each(fn attrs ->
+      questionnaire = Repo.get_by(Questionnaire, job_type: attrs.job_type)
+
+      if questionnaire do
+        questionnaire |> Questionnaire.changeset(attrs) |> Repo.update!()
+      else
+        Questionnaire.changeset(%Questionnaire{}, attrs) |> Repo.insert!()
+      end
     end)
   end
 

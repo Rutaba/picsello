@@ -5,12 +5,28 @@ defmodule Picsello.Organization do
   import Ecto.Query, only: [from: 2]
   alias Picsello.{Package, Campaign, Client, Accounts.User, Repo, Profiles.Profile}
 
+  defmodule EmailSignature do
+    @moduledoc false
+    use Ecto.Schema
+    @primary_key false
+    embedded_schema do
+      field(:show_phone, :boolean, default: true)
+      field(:content, :string)
+    end
+
+    def changeset(signature, attrs) do
+      signature
+      |> cast(attrs, [:show_phone, :content])
+    end
+  end
+
   schema "organizations" do
     field(:name, :string)
     field(:stripe_account_id, :string)
     field(:slug, :string)
     field(:previous_slug, :string)
     embeds_one(:profile, Profile, on_replace: :update)
+    embeds_one(:email_signature, EmailSignature, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:campaigns, Campaign)
@@ -18,6 +34,12 @@ defmodule Picsello.Organization do
     has_one(:user, User)
 
     timestamps()
+  end
+
+  def email_signature_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:email_signature)
   end
 
   def registration_changeset(organization, attrs, "" <> user_name),

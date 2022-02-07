@@ -24,6 +24,7 @@ import '@fontsource/be-vietnam/600.css';
 import '@fontsource/be-vietnam/700.css';
 import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
+import Calendar from './hooks/calendar';
 import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
@@ -116,6 +117,7 @@ const TZCookie = {
 
 const Hooks = {
   AutoHeight,
+  Calendar,
   ClearInput,
   Clipboard,
   DragDrop,

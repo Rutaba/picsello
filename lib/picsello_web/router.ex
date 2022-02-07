@@ -101,6 +101,7 @@ defmodule PicselloWeb.Router do
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/contacts", Live.Contacts, :index, as: :contacts
+      live "/brand", Live.BrandSettings, :index, as: :brand_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
@@ -110,6 +111,8 @@ defmodule PicselloWeb.Router do
       live "/pricing", Live.Pricing, :index
       live "/profile/settings", Live.Profile.Settings, :index, as: :profile_settings
       live "/profile/settings/edit", Live.Profile, :edit, as: :profile_settings
+      live "/calendar", Live.Calendar, :index
+      get "/calendar-feed", CalendarFeedController, :index
 
       live "/home", HomeLive.Index, :index, as: :home
       live "/leads/:id", LeadLive.Show, :leads, as: :job

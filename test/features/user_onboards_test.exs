@@ -5,11 +5,11 @@ defmodule Picsello.UserOnboardsTest do
 
   setup :authenticated
 
-  setup do
+  setup %{session: session} do
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
     insert(:package_base_price, base_price: 300)
-    :ok
+    [session: visit(session, "/")]
   end
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)

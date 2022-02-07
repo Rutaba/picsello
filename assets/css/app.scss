@@ -83,6 +83,9 @@ html {
 }
 
 .raw_html {
+  * {
+    box-sizing: revert;
+  }
   ol {
     list-style: revert;
     padding: revert;

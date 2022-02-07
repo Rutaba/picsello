@@ -25,7 +25,7 @@
     </div>
 </div>
 <div class="hidden xl:block">
-    <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo_id)}')"} class={classes("gallery__coverImg",  %{"active" => @gallery.cover_photo_id})}>
+    <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"} class={classes("gallery__coverImg",  %{"active" => @gallery.cover_photo})}>
     <div class="gallery__container py-11 flex justify-between relative z-10">
         <div>
             <div class="circleBtn">
@@ -38,38 +38,44 @@
                     </li>
                 </ul>
             </div>
-            <%= if is_nil(@gallery.cover_photo_id) do %>
-            <div class="uploadingBlock">
-                <p class="font-bold mb-8">Upload cover photo</p>
-                <div class="dragDrop__wrapper">
-                    <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-                        <label>
-                            <div class="flex flex-col items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
-                                <.icon name="add-photos" class="w-20 h-20 text-blue-planning-300 cursor-pointer" />
-                                <div class="dragDrop__content">
-                                    <p class="font-bold"><span>Drop images or </span><span class="primary cursor-pointer">Browse</span></p>
-                                    <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                                    <p class="gray">Supports JPEG or PNG</p>
-                                </div>
-                            </div>
-                        </label>
-                    </form>
-                </div>
-            </div>
+            <%= if @cover_photo_processing do %>
+              <div class="reuploadingBlock flex justify-between">            
+                <label class="font-bold text-blue-planning-300">Processing...</label>
+              </div>
             <% else %>
-            <div class="reuploadingBlock flex justify-between">
-                <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-                    <div class="dragDrop__content">
-                        <label class="font-bold text-white">Choose a new photo
-                        <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                        </label>
+              <%= if @gallery.cover_photo do %>
+                <div class="reuploadingBlock flex justify-between">
+                  <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                      <div class="dragDrop__content">
+                          <label class="font-bold text-white">Choose a new photo
+                          <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                          </label>
+                      </div>
+                  </form>
+                  <button phx-click="delete_cover_photo_popup">
+                    <.icon name="remove-icon" class="w-5 h-5 text-base-250 cursor-pointer" />
+                  </button>
+                </div>
+              <% else %>
+                <div class="uploadingBlock">
+                    <p class="font-bold mb-8">Upload cover photo</p>
+                    <div class="dragDrop__wrapper">
+                        <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                            <label>
+                                <div class="flex flex-col items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
+                                    <.icon name="add-photos" class="w-20 h-20 text-blue-planning-300 cursor-pointer" />
+                                    <div class="dragDrop__content">
+                                        <p class="font-bold"><span>Drop images or </span><span class="primary cursor-pointer">Browse</span></p>
+                                        <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                                        <p class="gray">Supports JPEG or PNG</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </form>
                     </div>
-                </form>
-                <button phx-click="delete_cover_photo_popup">
-                <.icon name="remove-icon" class="w-5 h-5 text-base-250 cursor-pointer" />
-                </button>
-            </div>
-            <% end %>
+                </div>
+            <% end %> 
+          <% end %>            
         </div>
         <div class="w-5/12 lg:w-1/3 text-base-100 pt-36">
             <p class="w-full font-medium text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></p>
@@ -79,14 +85,14 @@
 </div>
 
 <div class="gallery__container">
-    <div class="pt-14">
+    <!--<div class="pt-14">
         <div class="font-bold text-3xl">
             Showcase photos your clients will love
             <svg width="22" height="22" class="stroke-current inline-block mr-2 rounded-full fill-current" >
                 <use href="/images/icons.svg#gallery-info"></use>
             </svg>
         </div>
-    </div>
+    </div>-->
   <div class="px-6 sm:px-0 border-b pb-14 pt-10">
   <ul class="grid gap-8 grid-cols-4 mx-auto">
     <%= for product <- @products do %>

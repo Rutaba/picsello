@@ -63,13 +63,22 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: System.get_env("GOOGLE_CLIENT_ID"),
   client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
+add_suffix = fn key ->
+  [
+    System.get_env(key),
+    System.get_env("RENDER_EXTERNAL_URL", "") |> URI.parse() |> Map.get(:host)
+  ]
+  |> Enum.reject(&is_nil/1)
+  |> Enum.join("--")
+end
+
 config :picsello,
   photo_output_subscription: {
     BroadwayCloudPubSub.Producer,
-    subscription: System.get_env("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION")
+    subscription: add_suffix.("PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION"), on_failure: :nack
   },
   photo_processing_input_topic: System.get_env("PHOTO_PROCESSING_INPUT_TOPIC"),
-  photo_processing_output_topic: System.get_env("PHOTO_PROCESSING_OUTPUT_TOPIC"),
+  photo_processing_output_topic: add_suffix.("PHOTO_PROCESSING_OUTPUT_TOPIC"),
   photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET")
 
 config :picsello, :whcc,
@@ -104,6 +113,10 @@ config :picsello, :packages,
     prices: System.get_env("PACKAGES_CALCULATOR_PRICES_RANGE"),
     cost_of_living: System.get_env("PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE")
   ]
+
+config :picsello, :profile_images,
+  bucket: System.get_env("PUBLIC_BUCKET"),
+  static_host: System.get_env("GOOGLE_PUBLIC_IMAGE_HOST")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

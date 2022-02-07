@@ -9,11 +9,13 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   alias Phoenix.PubSub
   alias Picsello.Galleries
+  alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.GalleryProducts
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.PhotoComponent
@@ -36,6 +38,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       socket
       |> assign(:upload_bucket, @bucket)
       |> assign(:photo_updates, "false")
+      |> assign(:cover_photo_processing, false)
       |> allow_upload(:cover_photo, @upload_options)
     }
   end
@@ -302,23 +305,22 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_info({:photo_processed, _}, socket), do: noreply(socket)
+  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:gallery, Galleries.get_gallery!(gallery.id))
+    |> assign(:cover_photo_processing, false)
+    |> noreply()
+  end
 
   def handle_info({:photo_click, _}, socket), do: noreply(socket)
 
   @impl true
   def handle_info(
         {:confirm_event, "delete_cover_photo"},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
+        %{assigns: %{gallery: gallery}} = socket
       ) do
-    {:ok, gallery} = Galleries.update_gallery(gallery, %{cover_photo_id: nil})
-
     socket
-    |> assign(:gallery, gallery)
+    |> assign(:gallery, Galleries.delete_gallery_cover_photo(gallery))
     |> close_modal()
     |> noreply()
   end
@@ -382,29 +384,22 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> noreply()
   end
 
-  def handle_cover_progress(:cover_photo, entry, %{assigns: assigns} = socket) do
+  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
     if entry.done? do
-      {:ok, gallery} =
-        Galleries.update_gallery(
-          assigns.gallery,
-          %{
-            cover_photo_id: entry.uuid,
-            cover_photo_aspect_ratio: 1
-          }
-        )
+      CoverPhoto.original_path(gallery.id, entry.uuid)
+      |> ProcessingManager.process_cover_photo()
 
-      {
-        :noreply,
-        socket
-        |> assign(:gallery, gallery)
-      }
+      socket
+      |> assign(:cover_photo_processing, true)
+      |> noreply()
     else
-      {:noreply, socket}
+      socket
+      |> noreply
     end
   end
 
-  def presign_cover_entry(entry, socket) do
-    key = entry.uuid
+  def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
+    key = CoverPhoto.original_path(gallery.id, entry.uuid)
 
     sign_opts = [
       expires_in: 600,

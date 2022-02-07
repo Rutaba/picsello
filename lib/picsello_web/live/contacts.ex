@@ -62,6 +62,10 @@ defmodule PicselloWeb.Live.Contacts do
                       <.icon name="three-people" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                       Create a lead
                     </button>
+                    <button title="Archive" type="button" phx-click="confirm-archive" phx-value-id={contact.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                      <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+                      Archive
+                    </button>
                   </div>
                 </div>
               </td>
@@ -117,6 +121,27 @@ defmodule PicselloWeb.Live.Contacts do
   end
 
   @impl true
+  def handle_event(
+        "confirm-archive",
+        %{"id" => id},
+        %{assigns: %{contacts: contacts}} = socket
+      ) do
+    {client_id, _} = Integer.parse(id)
+    contact = contacts |> Enum.find(&(&1.id == client_id))
+
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "archive_" <> id,
+      confirm_label: "Yes, archive",
+      icon: "warning-orange",
+      title: "Archive Contact?",
+      subtitle: "Are you sure you wish to archive #{contact.name || "this contact"}?"
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
@@ -132,5 +157,23 @@ defmodule PicselloWeb.Live.Contacts do
     |> assign_contacts()
     |> put_flash(:success, "Contact saved")
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "archive_" <> id}, socket) do
+    case Contacts.archive_contact(id) do
+      {:ok, _contact} ->
+        socket
+        |> close_modal()
+        |> put_flash(:success, "Contact archived successfully")
+        |> assign_contacts()
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:success, "Error archiving contact")
+        |> noreply()
+    end
   end
 end

@@ -3,16 +3,19 @@ defmodule PicselloWeb.ClientMessageComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Job}
 
+  @default_assigns %{
+    composed_event: :message_composed,
+    show_cc: false,
+    show_client_email: true,
+    show_subject: true,
+    send_button: "Send Email",
+    modal_title: "Send an email"
+  }
+
   @impl true
   def update(assigns, socket) do
-    defaults = %{
-      composed_event: :message_composed,
-      show_cc: false,
-      modal_title: "Send an email"
-    }
-
     socket
-    |> assign(Enum.into(assigns, defaults))
+    |> assign(Enum.into(assigns, @default_assigns))
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
@@ -27,15 +30,17 @@ defmodule PicselloWeb.ClientMessageComponent do
     <div class="modal">
       <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
 
-      <div class="pt-5 input-label">
-        Client's email
-      </div>
-      <div class="relative text-input text-base-250">
-        <%= client_email @job %>
-      </div>
+      <%= if @show_client_email do %>
+        <div class="pt-5 input-label">
+          Client's email
+        </div>
+        <div class="relative text-input text-base-250">
+          <%= client_email @job %>
+        </div>
+      <% end %>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <%= labeled_input f, :subject, label: "Subject line", wrapper_class: "mt-4", phx_debounce: "500" %>
+        <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes("mt-4", hidden: !@show_subject), phx_debounce: "500" %>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
         <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
@@ -53,7 +58,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         </div>
         <PicselloWeb.LiveModal.footer>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
-            Send Email
+            <%= @send_button %>
           </button>
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
@@ -84,11 +89,14 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @spec open(%Phoenix.LiveView.Socket{}, %{
-          optional(:subject) => binary,
+          optional(:body_html) => String.t(),
           optional(:body_text) => any,
-          optional(:body_html) => binary,
-          optional(:modal_title) => binary,
-          optional(:composed_event) => any
+          optional(:composed_event) => any,
+          optional(:modal_title) => String.t(),
+          optional(:send_button) => String.t(),
+          optional(:show_client_email) => boolean,
+          optional(:show_subject) => boolean,
+          optional(:subject) => String.t()
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
