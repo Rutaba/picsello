@@ -76,7 +76,7 @@ defmodule Picsello.PackagesTest do
 
       csvs =
         for(
-          {name, csv} <- %{
+          {name, tsv} <- %{
             prices:
               """
               Time	Experience	Type	Tier	Price	Shoots	Downloads Turnaround
@@ -105,28 +105,10 @@ defmodule Picsello.PackagesTest do
             """
           }
         ) do
-          {Application.get_env(:picsello, :packages) |> get_in([:calculator, name]),
-           csv |> String.split("\n") |> Enum.map(&String.split(&1, "\t"))}
+          {:picsello |> Application.get_env(:packages) |> get_in([:calculator, name]), tsv}
         end
 
-      Tesla.Mock.mock(fn
-        %{method: :get, url: url} ->
-          path = url |> URI.parse() |> Map.get(:path) |> URI.decode()
-
-          csvs
-          |> Enum.find_value(fn {range, data} ->
-            if String.contains?(path, range),
-              do: %Tesla.Env{
-                status: 200,
-                body:
-                  Jason.encode!(%{
-                    "values" => data,
-                    "range" => range,
-                    "majorDimension" => "ROWS"
-                  })
-              }
-          end)
-      end)
+      Picsello.Mock.mock_google_sheets(csvs)
 
       Picsello.Workers.SyncTiers.perform(nil)
 
