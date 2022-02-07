@@ -46,7 +46,7 @@
           <div class="bg-gray-100 rounded-lg shadow-md">
             <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Profile", class: "flex items-center px-6 py-4 bg-white" do %>
               <.initials_circle user={@current_user} />
-              <div class="ml-2 font-semibold">Profile</div>
+              <div class="ml-2 font-semibold">Account</div>
             <% end %>
 
             <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
