@@ -23,5 +23,5 @@ then
   pg_dump $STAGING_DATABASE_URL | psql $DATABASE_URL
 fi
 
-# Migrate db
-_build/prod/rel/picsello/bin/picsello eval "Picsello.Release.migrate"
+# Migrate db and set up pubsub
+_build/prod/rel/picsello/bin/picsello eval "Picsello.Release.prepare"

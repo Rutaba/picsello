@@ -79,22 +79,22 @@ defmodule Picsello.PackagesTest do
           {name, csv} <- %{
             prices: """
             Time	Experience	Type	Tier	Price	Shoots	Downloads Turnaround
-            Part-Time	0	Other	Bronze	$100	1	5	3 weeks
-            Full-Time	0	Other	Bronze	$200	1	5	3 weeks
-            Full-Time	0	Other	Silver	$300	1	10	3 weeks
-            Full-Time	0	Other	Gold	$400	1	20	3 weeks
-            Full-Time	1-2	Wedding	Bronze	$500	2	5	12 weeks
-            Full-Time	1-2	Wedding	Silver	$600	2	10	12 weeks
-            Full-Time	1-2	Wedding	Gold	$700	2	20	12 weeks
-            Full-Time	1-2	Family	Bronze	$800	1	5	3 weeks
-            Full-Time	1-2	Family	Silver	$900	1	10	3 weeks
-            Full-Time	1-2	Family	Gold	$1,000	1	20	3 weeks
-            Full-Time	1-2	Event	Bronze	$1,100	1	5	3 weeks
-            Full-Time	1-2	Event	Silver	$1,200	1	10	3 weeks
-            Full-Time	1-2	Event	Gold	$1,300	1	20	3 weeks
-            Full-Time	0	Wedding	Bronze	$1,4000	2	5	12 weeks
-            Full-Time	0	Wedding	Silver	$1,5000	2	10	12 weeks
-            Full-Time	0	Wedding	Gold	$1,6000	2	20	12 weeks
+            Part-Time	0	Other	Bronze	$100.00	1	5	3
+            Full-Time	0	Other	Bronze	$200.00	1	5	3
+            Full-Time	0	Other	Silver	$300.00	1	10	3
+            Full-Time	0	Other	Gold	$400.00	1	20	3
+            Full-Time	1-2	Wedding	Bronze	$500.00	2	5	12
+            Full-Time	1-2	Wedding	Silver	$600.00	2	10	12
+            Full-Time	1-2	Wedding	Gold	$700.00	2	20	12
+            Full-Time	1-2	Family	Bronze	$800.00	1	5	3
+            Full-Time	1-2	Family	Silver	$900.00	1	10	3
+            Full-Time	1-2	Family	Gold	$1,000.00	1	20	3
+            Full-Time	1-2	Event	Bronze	$1,100.00	1	5	3
+            Full-Time	1-2	Event	Silver	$1,200.00	1	10	3
+            Full-Time	1-2	Event	Gold	$1,300.00	1	20	3
+            Full-Time	0	Wedding	Bronze	$1,4000.00	2	5	12
+            Full-Time	0	Wedding	Silver	$1,5000.00	2	10	12
+            Full-Time	0	Wedding	Gold	$1,6000.00	2	20	12
             """,
             cost_of_living: """
             state percent

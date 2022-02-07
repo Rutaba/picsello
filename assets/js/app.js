@@ -140,12 +140,12 @@ const Hooks = {
 
 let Uploaders = {};
 Uploaders.GCS = function (entries, onViewError) {
-  (function bulk(items){
-    const try_next = () => 
+  (function bulk(items) {
+    const try_next = () =>
       setTimeout(() => {
-        const next = bulk.queue.shift()
+        const next = bulk.queue.shift();
         if (next) {
-          go(next)
+          go(next);
         }
       }, 10);
 
@@ -157,12 +157,18 @@ Uploaders.GCS = function (entries, onViewError) {
       formData.append('file', entry.file);
 
       let xhr = new XMLHttpRequest();
-      onViewError(() => {try_next(); xhr.abort();});
+      onViewError(() => {
+        try_next();
+        xhr.abort();
+      });
       xhr.onload = () => {
-        try_next(); 
+        try_next();
         xhr.status === 204 ? entry.progress(100) : entry.error();
-      }
-      xhr.onerror = () => {try_next(); entry.error();};
+      };
+      xhr.onerror = () => {
+        try_next();
+        entry.error();
+      };
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
           let percent = Math.round((event.loaded / event.total) * 100);
@@ -173,13 +179,12 @@ Uploaders.GCS = function (entries, onViewError) {
       });
       xhr.open('POST', url, true);
       xhr.send(formData);
-    }
+    };
 
     bulk.queue = items.splice(5);
 
-    items.forEach(go)
+    items.forEach(go);
   })(entries);
-
 };
 
 let csrfToken = document
