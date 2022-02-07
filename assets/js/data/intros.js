@@ -62,9 +62,7 @@ export default {
           'We want you to have all the tools you need to succeed! Using our marketing tools, you can create a public profile where clients can find you, and create email campaigns for your clients.',
         position: 'bottom-middle-aligned',
       },
-    ].filter((obj) => {
-      return obj?.element;
-    }),
+    ].filter((obj) => obj?.element),
   }),
   intro_inbox: (el) => ({
     showBullets: false,
