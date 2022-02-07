@@ -72,7 +72,9 @@
       <nav class="text-lg font-bold mt-4">
         <ul class="flex">
           <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
-          <li><a href="javascript:void(0)" class="ml-10" onClick="Beacon('navigate', '/ask/message'); Beacon('open');">Contact us</a></li>
+          <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
+          <li><a href="#" class="ml-10" {help_scout_output(@current_user, Application.get_env(:picsello, :help_scout_id), "help-scout-footer")}>Contact us</a></li>
+          <% end %>
         </ul>
       </nav>
       <hr class="my-8 opacity-30" />
@@ -88,14 +90,4 @@
   </footer>
 </main>
 
-<%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
-<script type="text/javascript">!function(e,t,n){function a(){var e=t.getElementsByTagName("script")[0],n=t.createElement("script");n.type="text/javascript",n.async=!0,n.src="https://beacon-v2.helpscout.net",e.parentNode.insertBefore(n,e)}if(e.Beacon=n=function(t,n,a){e.Beacon.readyQueue.push({method:t,options:n,data:a})},n.readyQueue=[],"complete"===t.readyState)return a();e.attachEvent?e.attachEvent("onload",a):e.addEventListener("load",a,!1)}(window,document,window.Beacon||function(){});</script>
-<script type="text/javascript">
-  window.Beacon('init', '<%= Application.get_env(:picsello, :help_scout_id) %>');
-  window.Beacon('config', { hideFABOnMobile: true });
-  window.Beacon('identify', {
-    name: "<%= @current_user.name %>",
-    email: "<%= @current_user.email %>",
-  });
-</script>
-<% end %>
+<.help_scout_menu current_user={@current_user} />
