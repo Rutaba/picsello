@@ -6,13 +6,13 @@
   <div class="py-7 flex flex-col justify-start lg:justify-center ml-5">
     <div class={classes("text-base font-medium", %{"lg:text-lg" => @has_buttons})}><%= @size %> <%= @whcc_product.whcc_name %></div>
     <div class={classes("text-lg font-bold mt-2.5 mb-9", %{"lg:text-xl" => @has_buttons})}><%= @product.price %></div>
-    <div class={classes("flex items-center cartPanel")}>
+    <div class="flex items-center cartPanel">
       <label for="cart-select" class={classes("text-base font-medium", %{"lg:text-lg" => @has_buttons})}>Quantity:</label>
       <select class={classes("select text-base font-bold ml-2 w-20", %{"shippingOptions__select" => !@has_buttons})} id="cart-select">
         <option value="1"><%= @product.editor_details.selections["quantity"] %></option>
       </select>
       <%= if @has_buttons do %>
-        <button type="button" class="font-semibold text-lg text-blue-planning-300 mx-7" phx-click="edit_product" phx-value-editor-id={@product.editor_details.editor_id} >Edit</button> 
+        <button type="button" class="font-semibold text-lg text-blue-planning-300 mx-7" phx-click="edit_product" phx-value-editor-id={@product.editor_details.editor_id} >Edit</button>
         <button type="button" class="font-semibold text-lg text-blue-planning-300" phx-click="delete_product" phx-value-editor-id={@product.editor_details.editor_id}>Delete</button>
       <% end %>
     </div>

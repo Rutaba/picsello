@@ -1,5 +1,5 @@
 <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"}
-class={classes("flex flex-nowrap text-left gallery__coverImg active")}>
+class={"flex flex-nowrap text-left gallery__coverImg active"}>
     <div class="gallery__container flex flex-col lg:flex-row w-full h-full justify-center">
         <div class="flex flex-wrap content-center text-base-100 pb-2 pr-2 md:pr-0 relative z-10 text-center items-end mt-auto sm:pb-60 pb-20">
             <h3 class="w-full font-medium text-base lg:text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></h3>

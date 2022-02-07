@@ -14,7 +14,6 @@ defmodule PicselloWeb.JobLive.Shared do
     Accounts.User
   }
 
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   alias PicselloWeb.Router.Helpers, as: Routes
   require Ecto.Query
 

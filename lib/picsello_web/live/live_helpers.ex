@@ -130,14 +130,13 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
+  def classes(nil), do: ""
   def classes(%{} = optionals), do: classes([], optionals)
-  def classes(constants), do: classes(constants, %{})
+  def classes([{_k, _v} | _] = optionals), do: classes([], Map.new(optionals))
+  def classes(["" <> _constant | _] = constants), do: classes(constants, %{})
 
   def classes(nil, optionals), do: classes([], optionals)
-
-  def classes("" <> constant, optionals) do
-    classes([constant], optionals)
-  end
+  def classes("" <> constant, optionals), do: classes([constant], optionals)
 
   def classes(constants, optionals) do
     [
