@@ -104,7 +104,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         socket,
         __MODULE__,
         %{
-          assigns: Enum.into(opts, Map.take(assigns, [:current_user, :job]))
+          assigns: Enum.into(opts, Map.take(assigns, [:job]))
         }
       )
 
