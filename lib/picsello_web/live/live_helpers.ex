@@ -112,7 +112,7 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: ""})
 
     ~H"""
-    <button type="button" class={"flex items-center px-2 py-1 border rounded-lg text-2m border-#{@color} #{@class}"} {@rest}>
+    <button type="button" class={"flex items-center px-2 py-1 font-sans border rounded-lg text-2m border-#{@color} #{@class}"} {@rest}>
       <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
       <%= render_block(@inner_block) %>
     </button>

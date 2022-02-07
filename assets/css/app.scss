@@ -18,6 +18,14 @@ html {
   @apply text-base-300 bg-white text-13px sm:text-16px;
 }
 
+@font-face {
+  font-family: 'Avenir LT Std';
+  src: local('AvenirLTStd-Light'), url('../static/fonts/AvenirLTStd-Light.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 // Google Maps autocomplete overrides
 .pac-container {
   top: 0px !important;

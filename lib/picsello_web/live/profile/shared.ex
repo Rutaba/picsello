@@ -79,7 +79,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
     ~H"""
       <%= case @organization.profile.logo do %>
         <% %{url: "" <> url} -> %> <img class="h-14" src={url} />
-        <% _ -> %> <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
+        <% _ -> %> <div class="text-2xl pt-3 font-bold font-client text-base-300"><%= @organization.name %></div>
       <% end %>
     """
   end

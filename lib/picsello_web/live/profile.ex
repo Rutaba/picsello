@@ -43,14 +43,14 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex-grow pb-16 md:pb-32">
+    <div class="flex-grow pb-16 md:pb-32 font-client">
       <div class="px-6 py-4 md:py-8 md:px-16 center-container">
         <%= if @edit do %>
           <div class={classes("flex justify-left items-center", %{"hidden" => Enum.any?(@uploads.logo.entries)})}>
             <.photographer_logo {assigns} />
-            <p class="mx-5 text-2xl font-bold">or</p>
+            <p class="mx-5 text-2xl font-bold font-sans">or</p>
             <form id="logo-form" phx-submit="save-logo" phx-change="validate-logo" phx-drop-target={@uploads.logo.ref}>
-              <label class="flex items-center p-4 font-bold border border-blue-planning-300 border-2 border-dashed rounded-lg cursor-pointer">
+              <label class="flex items-center p-4 font-bold font-sans border border-blue-planning-300 border-2 border-dashed rounded-lg cursor-pointer">
                 <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
 
                 <div>
