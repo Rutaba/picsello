@@ -9,6 +9,7 @@ defmodule Picsello.MarketingTest do
       user =
         insert(:user,
           name: "John Jack",
+          email: "john@example.com",
           organization: %{name: "Photo 1", slug: "photo-1", profile: %{color: color}}
         )
 
@@ -24,13 +25,13 @@ defmodule Picsello.MarketingTest do
         assert %{
                  "asm" => %{"group_id" => 123},
                  "from" => %{"email" => "noreply@picsello.com", "name" => "Photo 1"},
+                 "reply_to" => %{"email" => "john@example.com", "name" => "Photo 1"},
                  "personalizations" => [
                    %{
                      "to" => [%{"email" => "client@example.com"}],
                      "dynamic_template_data" => %{
                        "initials" => "JJ",
                        "color" => ^color,
-                       "button_url" => "http://localhost:4002/photographer/photo-1",
                        "content" => "<p>body</p>"
                      }
                    }

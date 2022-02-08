@@ -101,7 +101,7 @@ defmodule Picsello.Marketing do
       on: j.client_id == c.id,
       where:
         c.organization_id == ^organization_id and
-          is_nil(j.id),
+          is_nil(j.id) and is_nil(c.archived_at),
       select: %{id: c.id, email: c.email}
     )
   end
@@ -126,12 +126,11 @@ defmodule Picsello.Marketing do
   end
 
   defp template_variables(user, body_html) do
-    %{profile: profile} = organization = Profiles.find_organization_by(user: user)
+    %{profile: profile} = Profiles.find_organization_by(user: user)
 
     %{
       initials: User.initials(user),
       color: profile.color,
-      button_url: Profiles.public_url(organization),
       content: body_html
     }
   end
@@ -159,6 +158,7 @@ defmodule Picsello.Marketing do
     |> Enum.each(fn clients ->
       body = %{
         from: %{email: "noreply@picsello.com", name: organization.name},
+        reply_to: %{email: organization.user.email, name: organization.name},
         personalizations:
           Enum.map(clients, fn client ->
             %{
