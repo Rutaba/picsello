@@ -1,4 +1,4 @@
-import Muuri from "muuri";
+import Muuri from 'muuri';
 
 /**
  * Returns true when reached either document percent or screens to bottom threshold
@@ -8,105 +8,109 @@ import Muuri from "muuri";
  * @returns {boolean}
  */
 const isScrolledOver = (percent, screen) => {
-  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-  const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
-  const clientHeight = document.documentElement.clientHeight
+  const scrollTop =
+    document.documentElement.scrollTop || document.body.scrollTop;
+  const scrollHeight =
+    document.documentElement.scrollHeight || document.body.scrollHeight;
+  const clientHeight = document.documentElement.clientHeight;
 
-  return (scrollTop / (scrollHeight - clientHeight) * 100 > percent)
-        || (scrollTop + clientHeight > scrollHeight - screen * clientHeight)
-}
+  return (
+    (scrollTop / (scrollHeight - clientHeight)) * 100 > percent ||
+    scrollTop + clientHeight > scrollHeight - screen * clientHeight
+  );
+};
 
 /**
  *  Prepares positionChange for backend
  */
 const positionChange = (movedId, order) => {
-    const orderLen = order.length;
+  const orderLen = order.length;
 
-    if (orderLen < 2) {
-        return false;
-    }
-
-    if (order[0] == movedId) {
-        return {
-            "photo_id": movedId,
-            "type": "before",
-            "args": [order[1]]
-        }
-    }
-    if (order[orderLen-1] == movedId) {
-        return {
-            "photo_id": movedId,
-            "type": "after",
-            "args": [order[orderLen-2]]
-        }
-    }
-
-    if (orderLen < 3) {
-        return false;
-    }
-
-    for (let i = 1; i + 1 < orderLen; i += 1){
-        if (order[i] == movedId) {
-            return {
-                "photo_id": movedId,
-                "type": "between",
-                "args": [order[i-1], order[i+1]]
-            }
-        }
-    }
-
+  if (orderLen < 2) {
     return false;
-}
+  }
 
-const calculateItemsMargins = (photoWidth = 300) => {
-    const gridElement = document.querySelector("#muuri-grid");
-    const gridWidth = gridElement.offsetWidth;
-    const elementsInRow = parseInt(gridWidth / photoWidth  + '');
-    const margin = ((gridWidth - (elementsInRow * photoWidth)) / elementsInRow)
-    document.querySelectorAll('#muuri-grid .item').forEach(el => el.style.margin = `10px ${margin/2}px`)
-}
+  if (order[0] == movedId) {
+    return {
+      photo_id: movedId,
+      type: 'before',
+      args: [order[1]],
+    };
+  }
+  if (order[orderLen - 1] == movedId) {
+    return {
+      photo_id: movedId,
+      type: 'after',
+      args: [order[orderLen - 2]],
+    };
+  }
+
+  if (orderLen < 3) {
+    return false;
+  }
+
+  for (let i = 1; i + 1 < orderLen; i += 1) {
+    if (order[i] == movedId) {
+      return {
+        photo_id: movedId,
+        type: 'between',
+        args: [order[i - 1], order[i + 1]],
+      };
+    }
+  }
+
+  return false;
+};
 
 export default {
   /**
    * Current page getter
    * @returns {string}
    */
-  page() { return this.el.dataset.page },
+  page() {
+    return this.el.dataset.page;
+  },
   /**
    * Initialize masonry grid
    *
    * @returns {boolean|*}
    */
-  init_masonry () {
-    const gridElement = document.querySelector("#muuri-grid");
+  init_masonry() {
+    const gridElement = document.querySelector('#muuri-grid');
     if (gridElement) {
-        window.addEventListener('resize', ()=>  calculateItemsMargins(this.el.dataset.photoWidth))
-        calculateItemsMargins(this.el.dataset.photoWidth)
       const opts = {
         layout: {
           fillGaps: true,
+          syncWithLayout: false,
+          layoutOnResize: true,
+          layoutDuration: 100,
         },
         dragEnabled: true,
         dragStartPredicate: (item, e) => {
-          const {isFavoritesShown, isSortable} = this.el.dataset;
+          const { isFavoritesShown, isSortable } = this.el.dataset;
 
           return isSortable === 'true' && isFavoritesShown !== 'true';
-        }
+        },
       };
       const grid = new Muuri(gridElement, opts);
       grid.on('dragInit', (item) => {
-        this.itemPosition = item.getPosition()
+        this.itemPosition = item.getPosition();
       });
       grid.on('dragReleaseEnd', (item) => {
-        const order = grid.getItems().map(x => parseInt(x.getElement().id.slice(11)))
-        const movedId = item.getElement().id.slice(11)
-        const change = positionChange(movedId, order)
+        const order = grid
+          .getItems()
+          .map((x) => parseInt(x.getElement().id.slice(11)));
+        const movedId = item.getElement().id.slice(11);
+        const change = positionChange(movedId, order);
 
-        if (change && !this.isPositionEqual(this.itemPosition, item.getPosition())) {
-            this.pushEvent("update_photo_position", change)
+        if (
+          change &&
+          !this.isPositionEqual(this.itemPosition, item.getPosition())
+        ) {
+          this.pushEvent('update_photo_position', change);
         }
         this.itemPosition = false;
-      })
+      });
 
       window.grid = this.grid = grid;
 
@@ -123,40 +127,41 @@ export default {
     if (this.grid) {
       return this.grid;
     }
-    return this.init_masonry()
+    return this.init_masonry();
   },
 
   /**
    * Recollects all item elements to apply changes to the DOM to Masonry
    */
-  reload_masonry () {
+  reload_masonry() {
     const grid = this.get_grid();
     grid.remove(grid.getItems());
-    calculateItemsMargins(this.el.dataset.photoWidth)
     grid.add(document.querySelectorAll('#muuri-grid .item'));
-    },
+  },
 
   /**
    * Injects newly added photos into grid
    */
   inject_new_items() {
     const grid = this.grid;
-    const addedItemsIds = grid.getItems().map(x => x.getElement().id);
+    const addedItemsIds = grid.getItems().map((x) => x.getElement().id);
     const allItems = document.querySelectorAll('#muuri-grid .item');
-    const itemsToInject = Array.from(allItems).filter(x => !addedItemsIds.includes(x.id))
-    calculateItemsMargins(this.el.dataset.photoWidth)
+    const itemsToInject = Array.from(allItems).filter(
+      (x) => !addedItemsIds.includes(x.id)
+    );
     grid.add(itemsToInject);
-
   },
 
   /**
    * Returns true if there are more photos to load.
    * @returns {boolean}
    */
-  hasMorePhotoToLoad() { return this.el.dataset.hasMorePhotos === 'true' },
+  hasMorePhotoToLoad() {
+    return this.el.dataset.hasMorePhotos === 'true';
+  },
 
   init_remove_listener() {
-    this.handleEvent("remove_item", ({id: id}) => this.remove_item(id))
+    this.handleEvent('remove_item', ({ id: id }) => this.remove_item(id));
   },
 
   remove_item(id) {
@@ -164,15 +169,17 @@ export default {
     const itemElement = document.getElementById(`photo-item-${id}`);
     const item = grid.getItem(itemElement);
 
-    grid.remove([item], { removeElements: true })
+    grid.remove([item], { removeElements: true });
   },
 
   /**
    * Compares position objects
    */
   isPositionEqual(previousPosition, nextPosition) {
-    return previousPosition.left === nextPosition.left
-        && previousPosition.top === nextPosition.top;
+    return (
+      previousPosition.left === nextPosition.left &&
+      previousPosition.top === nextPosition.top
+    );
   },
 
   /**
@@ -180,16 +187,16 @@ export default {
    */
   mounted() {
     this.pending = this.page();
-    window.addEventListener("scroll", e => {
+    window.addEventListener('scroll', (e) => {
       if (
-        this.pending === this.page()
-        && isScrolledOver(90, 1.5)
-        && this.hasMorePhotoToLoad()
-      ){
-        this.pending = this.page() + 1
-        this.pushEvent("load-more", {})
+        this.pending === this.page() &&
+        isScrolledOver(90, 1.5) &&
+        this.hasMorePhotoToLoad()
+      ) {
+        this.pending = this.page() + 1;
+        this.pushEvent('load-more', {});
       }
-    })
+    });
 
     this.init_masonry();
     this.init_remove_listener();
@@ -198,20 +205,19 @@ export default {
   /**
    * Reconnect callback
    */
-  reconnected(){
+  reconnected() {
     this.pending = this.page();
   },
 
   /**
    * Updated callback
    */
-  updated(){
+  updated() {
     this.pending = this.page();
-    if (this.pending === "0") {
+    if (this.pending === '0') {
       this.reload_masonry();
-    }else {
+    } else {
       this.inject_new_items();
     }
-  }
+  },
 };
-

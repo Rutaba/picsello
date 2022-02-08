@@ -135,26 +135,54 @@ canvas{
   position: relative;
   width: 100%;
   box-sizing: border-box;
+
   .item {
     display: block;
     position: absolute;
- /*   margin: 10px 0;*/
     z-index: 1;
   }
+
   .item.muuri-item-dragging {
     z-index: 3;
   }
+
   .item.muuri-item-releasing {
     z-index: 2;
   }
+
   .item.muuri-item-hidden {
     z-index: 0;
   }
+
   .item-content {
     position: relative;
     overflow: hidden;
     width: 100%;
     height: 100%;
+  }
+
+  .item {
+    margin: 0.75rem;
+    width: calc(100% - 0.75rem);
+    height: 100%;
+
+    img {
+      width: 100%;
+      object-fit: cover;
+      max-width: unset;
+    }
+
+    @media (min-width: 640px) {
+      width: calc(50% - 1.5rem);
+    }
+
+    @media (min-width: 1000px) {
+      width: calc(33.33% - 1.5rem);
+    }
+
+    @media (min-width: 1200px) {
+      width: calc(25% - 1.5rem);
+    }
   }
 
   /**************************************************************************************
@@ -174,7 +202,6 @@ canvas{
 
   .item .item-content img {
     background-color: gray;
-    border-radius: 8px;
   }
 }
 
@@ -206,14 +233,6 @@ canvas{
 
 .phx-click-loading {
   @apply animate-pulse cursor-wait;
-}
-
-@media (min-width: 640px){
-  .muuri.grid {
-    .item {
-    /*  margin: 10px;*/
-    }
-  }
 }
 
 @media (min-width: 640px) {
