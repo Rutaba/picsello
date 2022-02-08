@@ -137,6 +137,7 @@ export default {
     const grid = this.get_grid();
     grid.remove(grid.getItems());
     grid.add(document.querySelectorAll('#muuri-grid .item'));
+    grid.refreshItems();
   },
 
   /**
