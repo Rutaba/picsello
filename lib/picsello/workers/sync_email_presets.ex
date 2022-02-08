@@ -29,7 +29,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
     "email template name" => :name
   }
 
-  def perform(_) do
+  def perform(type_range) do
     {:ok, %{token: token}} =
       Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets.readonly")
 
@@ -38,7 +38,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
     now = DateTime.truncate(DateTime.utc_now(), :second)
 
     rows =
-      @type_range
+      (type_range || @type_range)
       |> Enum.map(&fetch_sheet(&1, connection))
       |> Enum.concat()
       |> Enum.map(&Map.merge(&1, %{updated_at: now, inserted_at: now}))
@@ -94,7 +94,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
           ]
         rescue
           e ->
-            Logger.warn("skipping row #{row} because #{inspect(e)}")
+            Logger.warn("skipping row #{inspect(row)} because #{inspect(e)}")
             acc
         end
       end

@@ -5,11 +5,11 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @default_assigns %{
     composed_event: :message_composed,
+    modal_title: "Send an email",
+    send_button: "Send Email",
     show_cc: false,
     show_client_email: true,
-    show_subject: true,
-    send_button: "Send Email",
-    modal_title: "Send an email"
+    show_subject: true
   }
 
   @impl true
@@ -20,6 +20,12 @@ defmodule PicselloWeb.ClientMessageComponent do
       assigns
       |> Map.take([:subject, :body_text, :body_html])
       |> Picsello.ClientMessage.create_outbound_changeset()
+    end)
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      assign_new(socket, :presets, fn -> Picsello.EmailPreset.for_job(job) end)
+    end)
+    |> then(fn %{assigns: %{presets: presets}} = socket ->
+      assign(socket, preset_options: Enum.map(presets, &{&1.name, &1.id}))
     end)
     |> ok()
   end
@@ -40,7 +46,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       <% end %>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes("mt-4", hidden: !@show_subject), phx_debounce: "500" %>
+        <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
+          <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
+          <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
+        </div>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
         <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
@@ -71,6 +80,24 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
+  def handle_event(
+        "validate",
+        %{
+          "client_message" => %{"preset_id" => preset_id},
+          "_target" => ["client_message", "preset_id"]
+        },
+        %{assigns: %{presets: presets}} = socket
+      ) do
+    preset_id = String.to_integer(preset_id)
+    preset = Enum.find(presets, &(Map.get(&1, :id) == preset_id))
+
+    socket
+    |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})
+    |> push_event("quill:update", %{"text" => preset.body_template})
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"client_message" => params}, socket) do
     socket |> assign_changeset(:validate, params) |> noreply()
   end
@@ -96,7 +123,8 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:send_button) => String.t(),
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
-          optional(:subject) => String.t()
+          optional(:subject) => String.t(),
+          optional(:presets) => [%Picsello.EmailPreset{}]
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:

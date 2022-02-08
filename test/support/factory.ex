@@ -178,7 +178,7 @@ defmodule Picsello.Factory do
         end
       end
     }
-    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
+    |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
   end
 
@@ -539,4 +539,11 @@ defmodule Picsello.Factory do
     }
     |> merge_attributes(attrs)
   end
+
+  def email_preset_factory(),
+    do: %Picsello.EmailPreset{
+      subject_template: "Subjectively speaking",
+      body_template: "this is my body",
+      name: "use this email preset!"
+    }
 end
