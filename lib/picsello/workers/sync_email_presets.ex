@@ -8,28 +8,9 @@ defmodule Picsello.Workers.SyncEmailPresets do
   alias Picsello.{Repo, EmailPreset}
   import Ecto.Query, only: [from: 2]
 
-  @sheet_id "1nGpqihCY7wbhE3J7VJecu_eOQ1A7PSMIWZGfGdRq70c"
+  def perform(), do: perform(%{args: config()})
 
-  @type_range %{
-    "wedding" => "Wedding!A2:E20",
-    "family" => "Family!A2:E19",
-    "headshot" => "Headshot!A2:E19",
-    "newborn" => "Newborn!A2:E19",
-    "portrait" => "Portrait!A2:E19",
-    "boudoir" => "Boudoir!A2:E19",
-    "event" => "Event!A2:E19",
-    "mini" => "Mini Session!A2:E19",
-    "maternity" => "Maternity!A2:E19"
-  }
-
-  @sheet_column_db_column %{
-    "state" => :job_state,
-    "subject lines" => :subject_template,
-    "copy" => :body_template,
-    "email template name" => :name
-  }
-
-  def perform(type_range) do
+  def perform(%{args: config}) do
     {:ok, %{token: token}} =
       Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets.readonly")
 
@@ -37,9 +18,11 @@ defmodule Picsello.Workers.SyncEmailPresets do
 
     now = DateTime.truncate(DateTime.utc_now(), :second)
 
+    {type_ranges, config} = Map.pop(config, :type_ranges, [])
+
     rows =
-      (type_range || @type_range)
-      |> Enum.map(&fetch_sheet(&1, connection))
+      type_ranges
+      |> Enum.map(&fetch_sheet(&1, connection, config))
       |> Enum.concat()
       |> Enum.map(&Map.merge(&1, %{updated_at: now, inserted_at: now}))
 
@@ -62,14 +45,14 @@ defmodule Picsello.Workers.SyncEmailPresets do
     end)
   end
 
-  defp fetch_sheet({type, range}, connection) do
+  defp fetch_sheet({type, range}, connection, %{sheet_id: sheet_id, column_map: column_map}) do
     {:ok, %{values: [keys | rows]}} =
-      Sheets.Api.Spreadsheets.sheets_spreadsheets_values_get(connection, @sheet_id, range)
+      Sheets.Api.Spreadsheets.sheets_spreadsheets_values_get(connection, sheet_id, range)
 
     keys =
       for(
         key <- trim_all(keys),
-        do: Map.get(@sheet_column_db_column, String.downcase(key), key)
+        do: Map.get(column_map, String.downcase(key), key)
       )
 
     rows
@@ -81,7 +64,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
             keys
             |> Enum.zip(trim_all(row))
             |> Enum.into(%{job_type: type})
-            |> Map.take([:job_type | Map.values(@sheet_column_db_column)])
+            |> Map.take([:job_type | Map.values(column_map)])
             |> Map.update!(:name, &Regex.replace(~r/^DEFAULT\s*-\s*/, &1, ""))
             |> Map.update!(
               :job_state,
@@ -102,4 +85,20 @@ defmodule Picsello.Workers.SyncEmailPresets do
   end
 
   defp trim_all(list), do: Enum.map(list, &String.trim/1)
+
+  defp config do
+    Application.get_env(:picsello, :email_presets)
+    |> Keyword.update(:type_ranges, "", &URI.decode_query/1)
+    |> Keyword.update(
+      :column_map,
+      "",
+      &(&1
+        |> URI.decode_query()
+        |> Enum.map(fn {sheet_column, db_column} ->
+          {sheet_column, String.to_existing_atom(db_column)}
+        end)
+        |> Map.new())
+    )
+    |> Map.new()
+  end
 end

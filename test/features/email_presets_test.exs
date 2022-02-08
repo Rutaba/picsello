@@ -17,7 +17,18 @@ defmodule Picsello.CalendarTest do
       """
     })
 
-    Picsello.Workers.SyncEmailPresets.perform(%{"wedding" => "wedding!A1:E4"})
+    Picsello.Workers.SyncEmailPresets.perform(%{
+      args: %{
+        column_map: %{
+          "copy" => :body_template,
+          "email template name" => :name,
+          "state" => :job_state,
+          "subject lines" => :subject_template
+        },
+        sheet_id: "whatever",
+        type_ranges: %{"wedding" => "wedding!A1:E4"}
+      }
+    })
 
     [lead: insert(:lead, user: user, type: "wedding")]
   end
