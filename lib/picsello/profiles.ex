@@ -40,6 +40,7 @@ defmodule Picsello.Profiles do
       field(:website, :string)
       field(:description, :string)
       embeds_one(:logo, ProfileImage, on_replace: :update)
+      embeds_one(:main_image, ProfileImage, on_replace: :update)
     end
 
     def enabled?(%__MODULE__{is_enabled: is_enabled}), do: is_enabled
@@ -53,6 +54,7 @@ defmodule Picsello.Profiles do
           else: &1
       )
       |> cast_embed(:logo)
+      |> cast_embed(:main_image)
       |> prepare_changes(&clean_job_types/1)
       |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
     end
@@ -231,8 +233,24 @@ defmodule Picsello.Profiles do
     Phoenix.PubSub.subscribe(Picsello.PubSub, topic)
   end
 
+  defp delete_image_from_storage(url) do
+    Task.start(fn ->
+      url
+      |> URI.parse()
+      |> Map.get(:path)
+      |> Path.split()
+      |> Enum.drop(2)
+      |> Path.join()
+      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
+    end)
+  end
+
   def handle_photo_processed_message(path, id) do
-    from(org in Organization, where: fragment("profile -> 'logo' ->> 'id' = ? ", ^id))
+    image_field = if String.contains?(path, "main_image"), do: "main_image", else: "logo"
+
+    image_field_atom = String.to_atom(image_field)
+
+    from(org in Organization, where: fragment("profile -> ? ->> 'id' = ? ", ^image_field, ^id))
     |> Repo.all()
     |> case do
       [%{profile: profile} = organization] ->
@@ -240,24 +258,20 @@ defmodule Picsello.Profiles do
 
         {:ok, organization} =
           update_organization_profile(organization, %{
-            profile: %{logo: %{url: url}}
+            profile: %{image_field_atom => %{url: url}}
           })
 
         topic = "profile_photo_ready:#{organization.slug}"
 
-        Phoenix.PubSub.broadcast(Picsello.PubSub, topic, {:image_ready, organization})
+        Phoenix.PubSub.broadcast(
+          Picsello.PubSub,
+          topic,
+          {:image_ready, image_field_atom, organization}
+        )
 
-        Task.start(fn ->
-          with %{logo: %{url: "" <> old_url}} <- profile do
-            old_url
-            |> URI.parse()
-            |> Map.get(:path)
-            |> Path.split()
-            |> Enum.drop(2)
-            |> Path.join()
-            |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
-          end
-        end)
+        with %{^image_field_atom => %{url: "" <> old_url}} <- profile do
+          delete_image_from_storage(old_url)
+        end
 
       _ ->
         Logger.warn("ignoring path #{path} for version #{id}")
@@ -266,7 +280,27 @@ defmodule Picsello.Profiles do
     :ok
   end
 
-  def preflight(image, organization) do
+  def remove_photo(organization) do
+    main_image_url = organization.profile.main_image.url
+
+    {:ok, organization} =
+      update_organization_profile(organization, %{
+        profile: %{main_image: nil}
+      })
+
+    delete_image_from_storage(main_image_url)
+
+    organization
+  end
+
+  def preflight(%{upload_config: image_field} = image, organization) do
+    resize_height =
+      %{
+        logo: 104,
+        main_image: 600
+      }
+      |> Map.get(image_field)
+
     params =
       Picsello.Galleries.Workers.PhotoStorage.params_for_upload(
         expires_in: 600,
@@ -274,7 +308,7 @@ defmodule Picsello.Profiles do
         key: to_filename(organization, image, "original"),
         fields:
           %{
-            "resize" => Jason.encode!(%{height: 104, withoutEnlargement: true}),
+            "resize" => Jason.encode!(%{height: resize_height, withoutEnlargement: true}),
             "pubsub-topic" => output_topic(),
             "version-id" => image.uuid,
             "out-filename" => to_filename(organization, image, "#{image.uuid}.png", ["resized"])
@@ -291,7 +325,7 @@ defmodule Picsello.Profiles do
 
     {:ok, organization} =
       update_organization_profile(organization, %{
-        profile: %{logo: %{id: image.uuid, content_type: image.client_type}}
+        profile: %{image_field => %{id: image.uuid, content_type: image.client_type}}
       })
 
     {:ok, meta, organization}
