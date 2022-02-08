@@ -27,6 +27,7 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 1. Have the following `ENV` vars setup `WHCC_KEY`, `WHCC_SECRET`, and `WHCC_URL`
 2. Run `make console`
 3. Run `Picsello.WHCC.sync()`
+4. Run `Picsello.CategoryTemplate.seed_templates()` (for product previews)
 
 #### Packages and pricing tiers
 1. Have the following `ENV` vars setup `PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE`, `PACKAGES_CALCULATOR_PRICES_RANGE` and `PACKAGES_CALCULATOR_SHEET_ID`
