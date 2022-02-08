@@ -83,7 +83,9 @@ export default {
           fillGaps: true,
           syncWithLayout: false,
           layoutOnResize: true,
-          layoutDuration: 100,
+          layoutDuration: 0,
+          layoutEasing: 'ease-in',
+          rounding: false,
         },
         dragEnabled: true,
         dragStartPredicate: (item, e) => {
