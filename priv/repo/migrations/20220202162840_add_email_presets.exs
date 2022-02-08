@@ -8,6 +8,7 @@ defmodule Picsello.Repo.Migrations.AddEmailPresets do
       add(:subject_template, :text, null: false)
       add(:job_state, :text, null: false)
       add(:name, :text, null: false)
+      add(:position, :integer, null: false)
 
       timestamps()
     end

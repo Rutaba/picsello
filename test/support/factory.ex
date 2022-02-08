@@ -544,6 +544,7 @@ defmodule Picsello.Factory do
     do: %Picsello.EmailPreset{
       subject_template: "Subjectively speaking",
       body_template: "this is my body",
-      name: "use this email preset!"
+      name: "use this email preset!",
+      position: 0
     }
 end

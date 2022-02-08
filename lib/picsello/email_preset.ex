@@ -13,6 +13,7 @@ defmodule Picsello.EmailPreset do
     field :job_type, :string
     field :name, :string
     field :subject_template, :string
+    field :position, :integer
 
     timestamps type: :utc_datetime
   end
@@ -37,7 +38,8 @@ defmodule Picsello.EmailPreset do
         (status.is_lead and preset.job_state == :lead) or
           (not status.is_lead and
              ((preset.job_state == :job and shoot.past_count == 0) or
-                (preset.job_state == :post_shoot and shoot.past_count > 0)))
+                (preset.job_state == :post_shoot and shoot.past_count > 0))),
+      order_by: :position
     )
     |> Picsello.Repo.all()
   end

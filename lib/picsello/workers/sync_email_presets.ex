@@ -56,15 +56,17 @@ defmodule Picsello.Workers.SyncEmailPresets do
       )
 
     rows
+    |> Enum.with_index()
     |> Enum.reduce(
       [],
-      fn row, acc ->
+      fn {row, index}, acc ->
         try do
           [
             keys
             |> Enum.zip(trim_all(row))
             |> Enum.into(%{job_type: type})
             |> Map.take([:job_type | Map.values(column_map)])
+            |> Map.put(:position, index)
             |> Map.update!(:name, &Regex.replace(~r/^DEFAULT\s*-\s*/, &1, ""))
             |> Map.update!(
               :job_state,
