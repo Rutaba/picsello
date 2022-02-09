@@ -1,6 +1,5 @@
 <div
     class={!@is_removed && "item" || "hidden"}
-    data-test={!@photo.watermarked_preview_url}
     id={"photo-item-#{@photo.id}"}
     style={"
         width: #{if @photo_width, do: @photo_width, else: "#{300}px"};
