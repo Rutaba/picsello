@@ -141,7 +141,7 @@ export default {
   intro_settings: (el) => ({
     steps: [
       {
-        title: 'Profile',
+        title: 'Account',
         intro: 'Manage your Picsello account from here.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('[title="user_settings"]'),
