@@ -88,9 +88,11 @@ export default {
             `[data-step="${step}"].introjs-hintReference`
           );
 
+          console.log(hintDialog);
+
           // IntroJS does not export a decent API to remove
           // an active hint dialog, so we'll force it
-          !isHintsOnly && hintDialog?.remove();
+          hintDialog?.remove();
         });
       }
     });
