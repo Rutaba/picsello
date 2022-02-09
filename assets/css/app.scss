@@ -168,6 +168,10 @@ canvas{
     height: 100%;
     border: 4px solid white;
 
+    .galleryItem {
+        height: 100%;
+      }
+
     &:hover {
 
       .galleryItem {
@@ -179,7 +183,8 @@ canvas{
       }
     }
 
-    img {
+    img,
+    .galleryLoaderFinished {
       width: 100%;
       object-fit: cover;
       max-width: unset;
@@ -196,11 +201,33 @@ canvas{
     @media (min-width: 1200px) {
       width: calc(25% - 1.5rem);
 
-      img {
+      img,
+      .galleryLoaderFinished {
         width: 100%;
         object-fit: cover;
         max-width: unset;
+        height: 100%;
       }
+
+      .galleryItem {
+        height: 100%;
+      }
+    }
+
+    .galleryLoader {
+       background-color: #efefef;
+       display: flex;
+       height: 100%;
+       justify-content: center;
+       align-items: center;
+
+       img {
+        width: unset;
+        background-color: transparent !important;
+        object-fit: unset;
+        max-width: unset;
+        height: unset;
+       }
     }
   }
 
