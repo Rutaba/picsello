@@ -153,6 +153,7 @@ export default {
       (x) => !addedItemsIds.includes(x.id)
     );
     grid.add(itemsToInject);
+    grid.refreshItems();
   },
 
   /**
