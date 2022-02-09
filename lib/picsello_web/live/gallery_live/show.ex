@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @per_page 12
   @upload_options [
-    accept: ~w(.jpg .jpeg .png),
+    accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1,
     max_file_size: 104_857_600,
     auto_upload: true,

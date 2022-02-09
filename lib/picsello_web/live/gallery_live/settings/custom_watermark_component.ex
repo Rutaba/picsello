@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @upload_options [
-    accept: ~w(.png),
+    accept: ~w(.png image/png),
     max_entries: 1,
     max_file_size: 104_857_600,
     auto_upload: true,
