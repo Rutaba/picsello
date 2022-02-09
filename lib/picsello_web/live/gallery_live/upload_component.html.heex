@@ -6,7 +6,7 @@
       <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer"><.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/></a>
     </div>
 
-    <%= if total(@uploads.photo.entries) > 0 do %>
+    <%= if Enum.any?(@uploads.photo.entries) do %>
     <div class="bg-orange-inbox-100 w-full p-2">
     <div class="flex justify-center items-center">
       <.icon name="warning-orange", class="w-8 h-8" />
@@ -26,7 +26,7 @@
     <% end %>
 
   </div>
-    <%= if total(@uploads.photo.entries) > 0 do %>
+    <%= if Enum.any?(@uploads.photo.entries) do %>
     <div class="flex items-center justify-between p-12 uploadOverallStatus mb-12 w-full">
         <div class="flex items-center">
             <%= if @overall_progress !== 100 do %>
