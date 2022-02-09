@@ -280,15 +280,15 @@ defmodule Picsello.Profiles do
     :ok
   end
 
-  def remove_photo(organization) do
-    main_image_url = organization.profile.main_image.url
+  def remove_photo(organization, image_field) do
+    image_url = Map.get(organization.profile, image_field).url
 
     {:ok, organization} =
       update_organization_profile(organization, %{
-        profile: %{main_image: nil}
+        profile: %{image_field => nil}
       })
 
-    delete_image_from_storage(main_image_url)
+    delete_image_from_storage(image_url)
 
     organization
   end

@@ -191,11 +191,11 @@ defmodule PicselloWeb.Live.Profile do
     socket |> PicselloWeb.Live.Profile.EditDescriptionComponent.open() |> noreply()
   end
 
-  def handle_event("confirm-delete-image", %{"image-field" => "main_image"}, socket) do
+  def handle_event("confirm-delete-image", %{"image-field" => image_field}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "No! Get me out of here",
-      confirm_event: "delete-main-image",
+      confirm_event: "delete-" <> image_field,
       confirm_label: "Yes, delete",
       icon: "warning-orange",
       title: "Are you sure you want to delete this photo?"
@@ -204,10 +204,10 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   def handle_info(
-        {:confirm_event, "delete-main-image"},
+        {:confirm_event, "delete-" <> image_field},
         %{assigns: %{organization: organization}} = socket
       ) do
-    organization = Picsello.Profiles.remove_photo(organization)
+    organization = Picsello.Profiles.remove_photo(organization, String.to_atom(image_field))
 
     socket
     |> assign(:organization, organization)
@@ -270,25 +270,42 @@ defmodule PicselloWeb.Live.Profile do
 
   defp logo_image(assigns) do
     ~H"""
-    <div class="flex justify-left items-center">
+    <div class="flex justify-left items-center relative">
       <.photographer_logo organization={@organization} />
       <%= if @edit do %>
-        <p class="mx-5 text-2xl font-bold font-sans">or</p>
-        <form id="logo-form" phx-submit="save-image" phx-change="validate-image" phx-drop-target={@uploads.logo.ref}>
-          <label class="flex items-center p-4 font-bold font-sans border border-blue-planning-300 border-2 border-dashed rounded-lg cursor-pointer">
-            <div class={classes("flex", %{"hidden" => Enum.any?(@uploads.logo.entries)})}>
-              <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
-
-              <div>
-                Drag your logo or
-                <span class="text-blue-planning-300">browse</span>
-                <p class="text-sm font-normal text-base-250">Supports PNG or SVG</p>
+        <%= if @organization.profile.logo && @organization.profile.logo.url do %>
+          <form id="logo-form-existing" phx-submit="save-image" phx-change="validate-image">
+            <div class={classes("rounded-3xl bg-white shadow-lg inline-block ml-8", %{"hidden" => Enum.any?(@uploads.logo.entries)})}>
+              <label class="p-4 inline-block">
+                <span class="text-blue-planning-300 font-bold">
+                  Choose a new photo
+                </span>
                 <%= live_file_input @uploads.logo, class: "hidden" %>
-              </div>
+              </label>
+              <span phx-click="confirm-delete-image" phx-value-image-field="logo">
+                <.icon name="trash" class="relative bottom-1 w-5 h-5 mr-4 inline-block text-base-250" />
+              </span>
             </div>
-            <.progress image={@uploads.logo} class="m-4"/>
-          </label>
-        </form>
+          </form>
+          <.progress image={@uploads.logo} class="ml-8"/>
+        <% else %>
+          <p class="mx-5 text-2xl font-bold font-sans">or</p>
+          <form id="logo-form" phx-submit="save-image" phx-change="validate-image" phx-drop-target={@uploads.logo.ref}>
+            <label class="flex items-center p-4 font-bold font-sans border border-blue-planning-300 border-2 border-dashed rounded-lg cursor-pointer">
+              <div class={classes("flex", %{"hidden" => Enum.any?(@uploads.logo.entries)})}>
+                <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
+
+                <div>
+                  Drag your logo or
+                  <span class="text-blue-planning-300">browse</span>
+                  <p class="text-sm font-normal text-base-250">Supports PNG or SVG</p>
+                  <%= live_file_input @uploads.logo, class: "hidden" %>
+                </div>
+              </div>
+              <.progress image={@uploads.logo} class="m-4"/>
+            </label>
+          </form>
+        <% end %>
       <% end %>
     </div>
     """
@@ -305,15 +322,15 @@ defmodule PicselloWeb.Live.Profile do
         <%= if @image && @image.url do %>
           <form id="main-image-form-existing" phx-submit="save-image" phx-change="validate-image">
             <div class={classes("rounded-3xl bg-white shadow-lg inline-block absolute top-8 right-8", %{"hidden" => Enum.any?(@uploads.main_image.entries)})}>
-            <label class="p-4 inline-block">
-              <span class="text-blue-planning-300 font-bold">
-                Choose a new photo
+              <label class="p-4 inline-block">
+                <span class="text-blue-planning-300 font-bold">
+                  Choose a new photo
+                </span>
+                <%= live_file_input @uploads.main_image, class: "hidden" %>
+              </label>
+              <span phx-click="confirm-delete-image" phx-value-image-field="main_image">
+                <.icon name="trash" class="relative bottom-1 w-5 h-5 mr-4 inline-block text-base-250" />
               </span>
-              <%= live_file_input @uploads.main_image, class: "hidden" %>
-            </label>
-            <span phx-click="confirm-delete-image" phx-value-image-field="main_image">
-              <.icon name="trash" class="relative bottom-1 w-5 h-5 mr-4 inline-block text-base-250" />
-            </span>
             </div>
           </form>
           <div class="absolute top-8 right-8"><.progress image={@uploads.main_image}/></div>
