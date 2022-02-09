@@ -315,4 +315,7 @@ defmodule PicselloWeb.LiveHelpers do
     |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
     |> noreply()
   end
+
+  def shoot_location(%{address: address, location: location}),
+    do: address || location |> Atom.to_string() |> dyn_gettext()
 end

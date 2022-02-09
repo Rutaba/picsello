@@ -64,7 +64,7 @@ defmodule PicselloWeb.JobLive.Shoot do
           <dl class="sm:col-span-2">
             <dt class="text-sm font-bold">Shoot Location</dt>
             <dd>
-              <%= dyn_gettext @shoot.location %>
+              <%= @shoot.location |> Atom.to_string() |> dyn_gettext() %>
 
               <%= if @shoot.address do %>
                 <span class="ml-2"><%= @shoot.address %></span>

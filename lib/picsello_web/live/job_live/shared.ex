@@ -325,7 +325,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <hr class="my-3 border-top">
 
             <span class="text-gray-400">
-              <%= shoot.address || dyn_gettext shoot.location %>
+              <%= shoot_location(shoot) %>
             </span>
           <% end %>
         <% else %>

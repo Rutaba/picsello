@@ -1,7 +1,7 @@
 defmodule PicselloWeb.BookingProposalLive.Shared do
   @moduledoc false
   use Phoenix.Component
-  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1]
+  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1, shoot_location: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
   alias Picsello.{Job, Package, Packages}
 
@@ -94,13 +94,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
             starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
           </p>
 
-          <p>
-            <%= if shoot.address do %>
-              <%= shoot.address %>
-            <% else %>
-              <%= dyn_gettext(shoot.location) %>
-            <% end %>
-          </p>
+          <p><%= shoot_location(shoot) %></p>
         </div>
 
         <hr class="col-span-2">
