@@ -64,7 +64,7 @@ defmodule PicselloWeb.Live.Profile do
         <h1 class="text-2xl text-center lg:text-3xl md:text-left mt-12">About <%= @organization.name %>.</h1>
         <.description edit={@edit} description={@description} color={@color} />
 
-        <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[40%]">
+        <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[60%]">
           <div>
             <div class="flex items-center mt-12">
               <h2 class="text-lg font-bold">What we offer:</h2>
@@ -274,7 +274,7 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
-        <label class="p-4 inline-block">
+        <label class="p-3 inline-block">
           <span class="text-blue-planning-300 font-bold">
             Choose a new photo
           </span>
