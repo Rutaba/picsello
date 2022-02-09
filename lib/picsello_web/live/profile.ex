@@ -69,7 +69,7 @@ defmodule PicselloWeb.Live.Profile do
             <div class="flex items-center mt-12">
               <h2 class="text-lg font-bold">What we offer:</h2>
               <%= if @edit do %>
-                <.icon_button class="ml-5 shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
+                <.icon_button {testid("edit-photography-types-button")} class="ml-5 shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
                   Edit Photography Types
                 </.icon_button>
               <% end %>
@@ -101,7 +101,7 @@ defmodule PicselloWeb.Live.Profile do
             <div class="flex items-center mt-auto pt-6">
               <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
               <%= if @edit do %>
-                <.icon_button class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
+                <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
                   Edit Link
                 </.icon_button>
               <% end %>
@@ -380,7 +380,7 @@ defmodule PicselloWeb.Live.Profile do
         </svg>
       <% end %>
       <%= if @edit do %>
-        <.icon_button class="mt-4 shadow-lg" title="edit description" phx-click="edit-description" color="blue-planning-300" icon="pencil">
+        <.icon_button {testid("edit-description-button")} class="mt-4 shadow-lg" title="edit description" phx-click="edit-description" color="blue-planning-300" icon="pencil">
           Edit Description
         </.icon_button>
       <% end %>
