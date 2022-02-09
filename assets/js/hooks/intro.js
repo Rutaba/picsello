@@ -2,6 +2,15 @@ import introJs from 'intro.js';
 
 import intros from '../data/intros';
 
+function isMobile() {
+  const UA =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      window.navigator.userAgent
+    );
+
+  return UA || window?.matchMedia('(max-width: 480px)')?.matches || false;
+}
+
 export default {
   mounted() {
     // When using phx-hook, it requires a unique ID on the element
@@ -21,7 +30,7 @@ export default {
       hintShowButton: false,
     });
 
-    if (shouldSeeIntro) {
+    if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
 
       if (!introSteps) return;
@@ -81,7 +90,7 @@ export default {
 
           // IntroJS does not export a decent API to remove
           // an active hint dialog, so we'll force it
-          !isHintsOnly && hintDialog.remove();
+          !isHintsOnly && hintDialog?.remove();
         });
       }
     });
@@ -93,6 +102,6 @@ export default {
     // need to force remove to reset the introHints
     // for the next view
     const hintsEl = document.querySelector('.introjs-hints');
-    if (hintsEl) hintsEl.remove();
+    hintsEl?.remove();
   },
 };

@@ -1,4 +1,3 @@
-
 <div
     class={!@is_removed && "item" || "hidden"}
     id={"photo-item-#{@photo.id}"}
@@ -14,15 +13,13 @@
     class="galleryItem"
     phx-click={toggle_border(@id, @is_gallery_category_page)}
     phx-click-away={JS.hide(to: "#photo-#{@id} > .checker")
-        |> JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:rounded-md before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+        |> JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
         to: "#item-#{@id}")}
 >
     <img
         phx-click="click"
         phx-value-preview={@photo.preview_url}
         phx-value-preview_photo_id={@photo.id}
-        width={if @photo_width, do: @photo_width, else: 300}
-        height={if @photo.aspect_ratio, do: @photo_width  / @photo.aspect_ratio}
         src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
         class="relative"
     />

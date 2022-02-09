@@ -8,6 +8,7 @@
 @import "./components/forms.css";
 @import "./components/typography.css";
 @import "./components/uploadPopup.css";
+@import "./components/helpScoutFacade.css";
 @import "intro.js/introjs.css";
 @import "./components/intro.css";
 @import "quill/dist/quill.core.css";
@@ -135,26 +136,72 @@ canvas{
   position: relative;
   width: 100%;
   box-sizing: border-box;
+
   .item {
     display: block;
     position: absolute;
- /*   margin: 10px 0;*/
     z-index: 1;
   }
+
   .item.muuri-item-dragging {
     z-index: 3;
   }
+
   .item.muuri-item-releasing {
     z-index: 2;
   }
+
   .item.muuri-item-hidden {
     z-index: 0;
   }
+
   .item-content {
     position: relative;
     overflow: hidden;
     width: 100%;
     height: 100%;
+  }
+
+  .item {
+    margin: 0.75rem;
+    width: calc(100% - 1.5rem);
+    height: 100%;
+    border: 4px solid white;
+
+    &:hover {
+
+      .galleryItem {
+
+        &:before {
+          background: linear-gradient(0deg, rgba(31, 28, 30, 0.8) 0%, rgba(31, 28, 30, 0) 50%);
+          border-radius: 0px;
+        }
+      }
+    }
+
+    img {
+      width: 100%;
+      object-fit: cover;
+      max-width: unset;
+    }
+
+    @media (min-width: 640px) {
+      width: calc(50% - 1.5rem);
+    }
+
+    @media (min-width: 1100px) {
+      width: calc(33.33% - 1.5rem);
+    }
+
+    @media (min-width: 1200px) {
+      width: calc(25% - 1.5rem);
+
+      img {
+        width: 100%;
+        object-fit: cover;
+        max-width: unset;
+      }
+    }
   }
 
   /**************************************************************************************
@@ -174,7 +221,28 @@ canvas{
 
   .item .item-content img {
     background-color: gray;
-    border-radius: 8px;
+  }
+}
+
+
+// reset background gradient 
+// for photographer editing the grid
+#gallery_product_form {
+
+  .muuri.grid {
+    
+    .item {
+
+      &:hover {
+
+        .galleryItem {
+
+          &:before {
+            background: unset;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -206,14 +274,6 @@ canvas{
 
 .phx-click-loading {
   @apply animate-pulse cursor-wait;
-}
-
-@media (min-width: 640px){
-  .muuri.grid {
-    .item {
-    /*  margin: 10px;*/
-    }
-  }
 }
 
 @media (min-width: 640px) {

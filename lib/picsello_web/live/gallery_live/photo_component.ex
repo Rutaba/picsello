@@ -48,7 +48,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
       |> JS.dispatch("click", to: "#photo-#{id} > img")
       |> JS.show(to: "#photo-#{id} > .checker")
       |> JS.add_class(
-        "before:absolute before:border-8 before:border-blue-planning-300 before:rounded-md before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+        "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
         to: "#item-#{id}"
       )
     else
