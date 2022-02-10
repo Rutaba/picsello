@@ -233,7 +233,7 @@ defmodule Picsello.Packages do
               nearest(adjustment.multiplier * base.base_price, ^nearest),
               base.base_price
             ),
-          description: name.initcap,
+          description: coalesce(base.description, name.initcap),
           download_count: base.download_count,
           download_each_price: type(^default_each_price, base.base_price),
           inserted_at: now(),
