@@ -1,15 +1,7 @@
 import introJs from 'intro.js';
 
 import intros from '../data/intros';
-
-function isMobile() {
-  const UA =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      window.navigator.userAgent
-    );
-
-  return UA || window?.matchMedia('(max-width: 480px)')?.matches || false;
-}
+import isMobile from '../utils/isMobile';
 
 export default {
   mounted() {

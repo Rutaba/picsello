@@ -25,9 +25,9 @@
     px-16;
 }
 
-.gallery__container h1,
-.gallery__container h3,
-.gallery__container .gallery__button {
+.gallery__coverImg .gallery__container h1,
+.gallery__coverImg .gallery__container h3,
+.gallery__coverImg .gallery__container .gallery__button {
     text-shadow: 0px 4px 4px rgba(31, 28, 30, 0.35);
 }
 
