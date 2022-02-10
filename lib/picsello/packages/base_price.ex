@@ -4,6 +4,7 @@ defmodule Picsello.Packages.BasePrice do
 
   schema "package_base_prices" do
     field :base_price, Money.Ecto.Amount.Type
+    field :description, :string
     field :download_count, :integer
     field :full_time, :boolean
     field :job_type, :string
