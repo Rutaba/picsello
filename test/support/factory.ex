@@ -317,7 +317,12 @@ defmodule Picsello.Factory do
     %Job{
       type: "wedding",
       client: fn ->
-        build(:client, attrs |> Map.get(:client, %{}) |> Enum.into(user_attr))
+        attrs
+        |> Map.get(:client, %{})
+        |> case do
+          %Picsello.Client{id: id} = client when is_integer(id) -> client
+          client_attrs -> build(:client, client_attrs |> Enum.into(user_attr))
+        end
       end,
       package: package,
       shoots: fn ->

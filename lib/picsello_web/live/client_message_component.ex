@@ -12,6 +12,31 @@ defmodule PicselloWeb.ClientMessageComponent do
     show_subject: true
   }
 
+  defmodule PresetHelper do
+    @moduledoc """
+      functions only available in the PicselloWeb module needed to resolve mustache variables.
+      here to avoid calling PicselloWeb from Picsello.
+    """
+
+    require PicselloWeb.Gettext
+
+    def ngettext(singular, plural, count) do
+      Gettext.dngettext(PicselloWeb.Gettext, "picsello", singular, plural, count, %{})
+    end
+
+    defdelegate strftime(zone, date, format), to: PicselloWeb.LiveHelpers
+    defdelegate shoot_location(shoot), to: PicselloWeb.LiveHelpers
+
+    def profile_pricing_job_type_url(slug, type),
+      do:
+        PicselloWeb.Router.Helpers.profile_pricing_job_type_url(
+          PicselloWeb.Endpoint,
+          :index,
+          slug,
+          type
+        )
+  end
+
   @impl true
   def update(assigns, socket) do
     socket
@@ -86,10 +111,14 @@ defmodule PicselloWeb.ClientMessageComponent do
           "client_message" => %{"preset_id" => preset_id},
           "_target" => ["client_message", "preset_id"]
         },
-        %{assigns: %{presets: presets}} = socket
+        %{assigns: %{presets: presets, job: job}} = socket
       ) do
     preset_id = String.to_integer(preset_id)
-    preset = Enum.find(presets, &(Map.get(&1, :id) == preset_id))
+
+    preset =
+      presets
+      |> Enum.find(&(Map.get(&1, :id) == preset_id))
+      |> Picsello.EmailPreset.resolve_variables(job, PresetHelper)
 
     socket
     |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})

@@ -1,5 +1,5 @@
 # vim: ts=27:
-defmodule Picsello.CalendarTest do
+defmodule Picsello.EmailPresetsTest do
   use Picsello.FeatureCase, async: true
   require Ecto.Query
 
@@ -11,7 +11,7 @@ defmodule Picsello.CalendarTest do
       "wedding!A1:E4" => """
       state	subject lines	copy	email template name
       lead	hear them bells a ringin'	Hi	bells
-      lead	you know you want to.	Please pay me.	please
+      lead	Let's do this {{client_first_name}}.	Gimme a call at {{photographer_cell}}.	please
       job	thanks for the money!	Dollar bills y'all.	stacking paper
       post shoot	that was fun!	Good job everybody.	good job
       """
@@ -30,16 +30,33 @@ defmodule Picsello.CalendarTest do
       }
     })
 
-    [lead: insert(:lead, user: user, type: "wedding")]
+    [
+      lead:
+        insert(:lead,
+          user: user,
+          type: "wedding",
+          client: [name: "Elizabeth Taylor"]
+        )
+    ]
   end
 
-  feature "Photographer chooses from wedding lead presets", %{session: session, lead: lead} do
+  feature "Photographer chooses from wedding lead presets", %{
+    session: session,
+    lead: lead,
+    user: user
+  } do
     session
     |> visit("/leads/#{lead.id}")
     |> click(button("Send message"))
-    |> find(select("Select email preset"))
-    |> assert_has(css("option", count: 2))
-    |> assert_has(css("option", text: "bells"))
-    |> assert_has(css("option", text: "please"))
+    |> find(
+      select("Select email preset"),
+      &(&1
+        |> assert_has(css("option", count: 2))
+        |> assert_has(css("option", text: "bells"))
+        |> assert_has(css("option", text: "please"))
+        |> click(css("option", text: "please")))
+    )
+    |> find(css("#editor"), &assert_text(&1, "Gimme a call at #{user.onboarding.phone}"))
+    |> assert_value(text_field("Subject line"), "Let's do this Elizabeth.")
   end
 end
