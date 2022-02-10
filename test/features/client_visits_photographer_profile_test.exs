@@ -57,9 +57,9 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     session
     |> visit(profile_url)
     |> assert_text("Mary Jane Photography")
-    |> assert_text("What we offer:")
-    |> assert_has(definition("Portrait", text: "Starting at $20"))
-    |> assert_has(definition("Event", text: "Starting at $10"))
+    |> assert_text("SPECIALIZING IN:")
+    |> assert_has(testid("job-type", text: "Portrait"))
+    |> assert_has(testid("job-type", text: "Event"))
     |> assert_has(radio_button("Portrait", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))

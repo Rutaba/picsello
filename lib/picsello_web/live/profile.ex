@@ -51,63 +51,35 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex-grow pb-16 md:pb-32 font-client">
-      <div class="px-6 py-4 md:py-8 md:px-16 center-container flex flex-wrap justify-between items-center">
+    <div class="flex-grow md:mx-32 font-client">
+      <div class="flex py-2 md:py-4 px-6 md:px-12 flex-wrap justify-between items-center">
         <.logo_image uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
       </div>
 
-      <hr class="border-base-300 center-container">
+      <hr class="border-base-300">
 
-      <div class="flex flex-col justify-center px-6 mt-10 md:mt-20 md:px-16 mx-auto max-w-screen-lg">
+      <div class="flex flex-col justify-center px-6 mt-10 md:px-16 mx-auto max-w-screen-lg">
         <.main_image edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
         <h1 class="text-2xl text-center lg:text-3xl md:text-left mt-12">About <%= @organization.name %>.</h1>
-        <.description edit={@edit} description={@description} color={@color} />
+        <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
-        <div class="flex flex-col mb-10 mr-0 md:mr-10 md:max-w-[60%]">
-          <div>
-            <div class="flex items-center mt-12">
-              <h2 class="text-lg font-bold">What we offer:</h2>
-              <%= if @edit do %>
-                <.icon_button {testid("edit-photography-types-button")} class="ml-5 shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
-                  Edit Photography Types
-                </.icon_button>
-              <% end %>
-            </div>
-            <div class="w-24 h-2" style={"background-color: #{@color}"}></div>
-          </div>
+        <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
 
-          <div class="w-auto">
-            <%= for job_type <- @job_types do %>
-              <.maybe_disabled_link edit={@edit} to={Routes.profile_pricing_job_type_path(@socket, :index, @organization.slug, job_type)} {testid("job-type")} class={classes("flex my-4 p-4 items-center rounded-lg bg-[#fafafa] border border-white", %{"hover:border-base-250" => !@edit})}>
-                <.icon name={job_type} style={"color: #{@color};"} class="mr-6 fill-current w-9 h-9" />
-                <dl class="flex flex-col">
-                  <dt class="font-semibold whitespace-nowrap"><%= dyn_gettext job_type %></dt>
-                  <%= case @start_prices[job_type] do %>
-                    <% nil -> %>
-                    <% price -> %>
-                      <dd class="whitespace-nowrap">Starting at <%= Money.to_string(price, fractional_unit: false) %></dd>
-                  <% end %>
-                </dl>
-              </.maybe_disabled_link>
+        <.maybe_disabled_link edit={@edit} to={Routes.profile_pricing_path(@socket, :index, @organization.slug)} class={"btn-primary text-center py-2 px-8 mt-6 md:self-start"}>
+          See full price list
+        </.maybe_disabled_link>
+
+        <%= if @website || @edit do %>
+          <div class="flex items-center mt-auto py-6">
+            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
+            <%= if @edit do %>
+              <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
+                Edit Link
+              </.icon_button>
             <% end %>
           </div>
-
-          <.maybe_disabled_link edit={@edit} to={Routes.profile_pricing_path(@socket, :index, @organization.slug)} class={"btn-primary text-center py-2 px-8 mt-2 md:self-start"}>
-            See full price list
-          </.maybe_disabled_link>
-
-          <%= if @website || @edit do %>
-            <div class="flex items-center mt-auto pt-6">
-              <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
-              <%= if @edit do %>
-                <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
-                  Edit Link
-                </.icon_button>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
+        <% end %>
 
         <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types %>
       </div>
@@ -118,6 +90,30 @@ defmodule PicselloWeb.Live.Profile do
     <%= if @edit do %>
       <.edit_footer url={@url} />
     <% end %>
+    """
+  end
+
+  def job_types_details(assigns) do
+    ~H"""
+    <div class="flex items-center mt-16">
+      <h1 class="uppercase">Specializing In:</h1>
+      <%= if @edit do %>
+        <div class="ml-4">
+          <.icon_button {testid("edit-photography-types-button")} class="shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
+            Edit Photography Types
+          </.icon_button>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="w-auto mt-6">
+      <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
+        <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
+        <span {testid("job-type")} class="font-semibold text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
+      <% end) %>
+    </div>
+
+    <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
     """
   end
 
@@ -187,8 +183,8 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   @impl true
-  def handle_event("edit-description", %{}, socket) do
-    socket |> PicselloWeb.Live.Profile.EditDescriptionComponent.open() |> noreply()
+  def handle_event("edit-text-field-description", %{"field-name" => field_name}, socket) do
+    socket |> PicselloWeb.Live.Profile.EditDescriptionComponent.open(field_name) |> noreply()
   end
 
   @impl true
@@ -274,14 +270,14 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
-        <label class="p-3 inline-block">
-          <span class="text-blue-planning-300 font-bold">
+        <label class="p-3 inline-block cursor-pointer">
+          <span class="text-blue-planning-300 font-bold hover:opacity-75">
             Choose a new photo
           </span>
           <%= live_file_input @image, class: "hidden" %>
         </label>
-        <span phx-click="confirm-delete-image" phx-value-image-field={@image_field}>
-          <.icon name="trash" class="relative bottom-1 w-5 h-5 mr-4 inline-block text-base-250" />
+        <span phx-click="confirm-delete-image" phx-value-image-field={@image_field} class="cursor-pointer">
+          <.icon name="trash" class="relative bottom-1 w-5 h-5 mr-4 inline-block text-base-250 hover:opacity-75" />
         </span>
       </div>
     </form>
@@ -363,24 +359,25 @@ defmodule PicselloWeb.Live.Profile do
     """
   end
 
-  defp description(assigns) do
+  defp rich_text_content(assigns) do
     ~H"""
     <div class="pt-6">
-      <%= if @description do %>
-        <div {testid("description")} class="raw_html">
-          <%= raw @description %>
+      <%= if @field_value do %>
+        <div {testid(@field_name)} class="raw_html">
+          <%= raw @field_value %>
         </div>
-      <% else %>
-        <svg width="100%" preserveAspectRatio="none" height="149" viewBox="0 0 561 149" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="561" height="21" fill="#F6F6F6"/>
-          <rect y="32" width="487" height="21" fill="#F6F6F6"/>
-          <rect y="64" width="518" height="21" fill="#F6F6F6"/>
-          <rect y="96" width="533" height="21" fill="#F6F6F6"/>
-          <rect y="128" width="445" height="21" fill="#F6F6F6"/>
-        </svg>
       <% end %>
       <%= if @edit do %>
-        <.icon_button {testid("edit-description-button")} class="mt-4 shadow-lg" title="edit description" phx-click="edit-description" color="blue-planning-300" icon="pencil">
+        <%= if !@field_value do %>
+          <svg width="100%" preserveAspectRatio="none" height="149" viewBox="0 0 561 149" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="561" height="21" fill="#F6F6F6"/>
+            <rect y="32" width="487" height="21" fill="#F6F6F6"/>
+            <rect y="64" width="518" height="21" fill="#F6F6F6"/>
+            <rect y="96" width="533" height="21" fill="#F6F6F6"/>
+            <rect y="128" width="445" height="21" fill="#F6F6F6"/>
+          </svg>
+        <% end %>
+        <.icon_button {testid("edit-#{@field_name}-button")} class="mt-4 shadow-lg" title="edit description" phx-click="edit-text-field-description" phx-value-field-name={@field_name} color="blue-planning-300" icon="pencil">
           Edit Description
         </.icon_button>
       <% end %>
