@@ -84,7 +84,7 @@ const Modal = {
   },
 };
 
-const ClearInput = {
+let ClearInput = {
   mounted() {
     const { el } = this;
     const {
@@ -95,17 +95,17 @@ const ClearInput = {
         .closest('form')
         .querySelector(`*[name*='${inputName}']`);
 
-    let inputWasFocussed = false;
+      let inputWasFocussed = false;
 
     input.addEventListener('blur', (e) => {
       inputWasFocussed = e.relatedTarget === el;
     });
 
-    this.el.addEventListener('click', () => {
-      input.value = null;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      if (inputWasFocussed) input.focus();
-    });
+      this.el.addEventListener('click', () => {
+        input.value = null;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        if (inputWasFocussed) input.focus();
+      });
   },
 };
 
