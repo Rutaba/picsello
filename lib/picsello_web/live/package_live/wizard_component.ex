@@ -204,13 +204,25 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <div class="flex flex-col mt-4">
         <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
           <span>Description <%= error_tag(@f, :description) %></span>
-
-          <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-description" data-input-name={input_name(@f,:description)}>
+          <.icon_button color="red-sales-300" phx_hook="ClearInput" phx-click="" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
             Clear
           </.icon_button>
         </.input_label>
 
-        <%= input @f, :description, type: :textarea, placeholder: "Full wedding package ideal for multiple shoots across the entire wedding journey.", phx_debounce: "500" %>
+       <div class="col-span-2">
+          <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2" data-placeholder="Full wedding package ideal for multiple shoots across the entire wedding journey." data-html-field-name={input_name(@f, :description)}>
+                  <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-link"></button>
+                  </div>
+                  <div id="editor" style="min-height: 8rem;"> </div>
+                  <%= hidden_input @f, :description, phx_debounce: "500" %>
+                </div>
+              </div>
       </div>
 
       <%= if @is_template do %>
