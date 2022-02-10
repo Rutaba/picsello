@@ -1,5 +1,5 @@
 .gallery__coverImg {
-    height: 223px;
+    height: calc((4/6)*100vw);
     @apply bg-base-200
     bg-cover
     bg-center
@@ -8,7 +8,7 @@
 
 .gallery__coverImg.active::after {
     content: '';
-    background: linear-gradient(180deg, rgba(31, 28, 30, 0) 25.56%, rgba(31, 28, 30, 0.6) 66.71%);
+    background: linear-gradient(180.33deg, rgba(196, 196, 196, 0) 43%, rgba(0, 0, 0, 0.6) 99.72%, rgba(0, 0, 0, 0.732) 99.72%);
     @apply absolute
     top-0
     bottom-0
@@ -23,6 +23,16 @@
     h-full
     py-0
     px-16;
+}
+
+.gallery__container h1,
+.gallery__container h3,
+.gallery__container .gallery__button {
+    text-shadow: 0px 4px 4px rgba(31, 28, 30, 0.35);
+}
+
+.gallery__container .gallery__button  {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
 }
 
 .photos__rect {
@@ -590,10 +600,6 @@
     .photos__rect {
         height: 300px;
     }
-
-    .gallery__coverImg {
-        height: 400px;
-    }
 }
 
 @media screen and (max-width: 1024px) {
@@ -620,11 +626,11 @@
     }
 
     .gallery__coverImg {
-        height: 566px;
+        height: 100vh;
     }
 
     .gallery__coverImg.active::after {
-        background: linear-gradient(270deg, rgba(31, 28, 30, 0.7) 0%, rgba(31, 28, 30, 0) 100%);
+        background: linear-gradient(180.33deg, rgba(196, 196, 196, 0) 43%, rgba(0, 0, 0, 0.6) 99.72%, rgba(0, 0, 0, 0.732) 99.72%);
     }
 }
 
