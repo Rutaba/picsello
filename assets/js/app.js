@@ -42,6 +42,7 @@ import Quill from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
+import GalleryMobile from './hooks/gallery-mobile';
 
 const Modal = {
   mounted() {
@@ -121,6 +122,7 @@ const Hooks = {
   ClearInput,
   Clipboard,
   DragDrop,
+  GalleryMobile,
   IFrameAutoHeight,
   HelpScout,
   IntroJS,
