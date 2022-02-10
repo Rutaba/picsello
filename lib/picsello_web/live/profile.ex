@@ -18,7 +18,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(:uploads, nil)
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
-    |> assign_start_prices()
+    |> assign_job_type_packages()
     |> maybe_redirect_slug(slug)
     |> ok()
   end
@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(:edit, true)
     |> assign_defaults(session)
     |> assign_current_organization()
-    |> assign_start_prices()
+    |> assign_job_type_packages()
     |> allow_upload(
       :logo,
       accept: ~w(.svg .png),
@@ -66,12 +66,20 @@ defmodule PicselloWeb.Live.Profile do
 
         <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
 
-        <.maybe_disabled_link edit={@edit} to={Routes.profile_pricing_path(@socket, :index, @organization.slug)} class={"btn-primary text-center py-2 px-8 mt-6 md:self-start"}>
-          See full price list
-        </.maybe_disabled_link>
+
+        <h1 class="uppercase mt-20">PRICING & SERVICES:</h1>
+        <%= for {job_type, packages} <- @job_type_packages do %>
+          <h2 class="mt-10 text-2xl text-center"><%= dyn_gettext job_type %></h2>
+          <%= for package <- packages do %>
+            <.package_detail name={package.name} price={Packages.price(package)} description={package.description} download_count={package.download_count} />
+          <% end %>
+          <div class="my-4 flex justify-center">
+            <.book_now_button job_type={job_type} />
+          </div>
+        <% end %>
 
         <%= if @website || @edit do %>
-          <div class="flex items-center mt-auto py-6">
+          <div class="flex items-center justify-center mt-auto py-6">
             <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
             <%= if @edit do %>
               <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
@@ -81,7 +89,7 @@ defmodule PicselloWeb.Live.Profile do
           </div>
         <% end %>
 
-        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types %>
+        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>
     </div>
 
@@ -128,35 +136,13 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   def book_now_button(assigns) do
+    assigns = assigns |> Enum.into(%{job_type: nil})
+
     ~H"""
-    <a href="#contact-form" class="flex items-center justify-center border border-base-300 text-sm min-w-[12rem] py-2 hover:border-base-250 hover:text-base-250">
+    <a href="#contact-form" class="flex items-center justify-center border border-base-300 text-sm min-w-[12rem] py-2 hover:border-base-250 hover:text-base-250" phx-click="select-job-type" phx-value-job-type={@job_type}>
       Book Now
       <.icon name="forth" class="ml-2 w-3 h-3 stroke-current" />
     </a>
-    """
-  end
-
-  def maybe_disabled_link(%{edit: true} = assigns) do
-    assigns =
-      assigns
-      |> Map.put(:rest, Map.drop(assigns, [:__changed__, :inner_block, :edit, :to]))
-
-    ~H"""
-    <div {@rest}>
-      <%= render_block(@inner_block) %>
-    </div>
-    """
-  end
-
-  def maybe_disabled_link(assigns) do
-    assigns =
-      assigns
-      |> Map.put(:rest, Map.drop(assigns, [:__changed__, :inner_block, :edit]))
-
-    ~H"""
-    <.live_link {@rest}>
-      <%= render_block(@inner_block) %>
-    </.live_link>
     """
   end
 
@@ -166,6 +152,16 @@ defmodule PicselloWeb.Live.Profile do
     |> push_redirect(to: Routes.profile_settings_path(socket, :index))
     |> noreply()
   end
+
+  @impl true
+  def handle_event("select-job-type", %{"job-type" => job_type}, socket) do
+    socket
+    |> assign(:job_type, job_type)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("select-job-type", %{}, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("edit-job-types", %{}, socket) do
@@ -246,7 +242,7 @@ defmodule PicselloWeb.Live.Profile do
   def handle_info({:update, organization}, socket) do
     socket
     |> assign_organization(organization)
-    |> assign_start_prices()
+    |> assign_job_type_packages()
     |> noreply()
   end
 
@@ -266,7 +262,7 @@ defmodule PicselloWeb.Live.Profile do
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
         <label class="p-3 inline-block cursor-pointer">
-          <span class="text-blue-planning-300 font-bold hover:opacity-75">
+          <span class="text-blue-planning-300 font-semibold font-sans hover:opacity-75">
             Choose a new photo
           </span>
           <%= live_file_input @image, class: "hidden" %>
@@ -329,13 +325,26 @@ defmodule PicselloWeb.Live.Profile do
         <%= if @image && @image.url do %>
           <div class="absolute top-8 right-8"><.edit_image_button image={@uploads.main_image} image_field={"main_image"} /></div>
         <% else %>
-          <div class="bg-base-200 w-full aspect-h-1 aspect-w-2" >
+          <div class="bg-[#F6F6F6] w-full aspect-h-1 aspect-w-2" >
 
             <.drag_image_upload image={@image} image_upload={@uploads.main_image} supports="JPG or PNG" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
           </div>
         <% end %>
 
       <% end %>
+    </div>
+    """
+  end
+
+  defp package_detail(assigns) do
+    ~H"""
+    <div {testid("package-detail")}>
+      <div class="flex justify-between font-bold text-xl pt-14">
+        <div><%= @name %></div>
+        <div><%= Money.to_string(@price, fractional_unit: false) %></div>
+      </div>
+
+      <div class="mt-4 whitespace-pre-line"><%= @description %></div>
     </div>
     """
   end
@@ -408,17 +417,12 @@ defmodule PicselloWeb.Live.Profile do
     assign_organization(socket, organization)
   end
 
-  defp assign_start_prices(%{assigns: %{organization: organization}} = socket) do
-    start_prices =
+  defp assign_job_type_packages(%{assigns: %{organization: organization}} = socket) do
+    packages =
       Packages.templates_for_organization(organization)
       |> Enum.group_by(& &1.job_type)
-      |> Enum.map(fn {job_type, packages} ->
-        min_price = packages |> Enum.map(&Packages.price/1) |> Enum.sort() |> hd
-        {job_type, min_price}
-      end)
-      |> Enum.into(%{})
 
-    socket |> assign(:start_prices, start_prices)
+    socket |> assign(:job_type_packages, packages) |> assign(:job_type, nil)
   end
 
   defp maybe_redirect_slug(%{assigns: %{organization: organization}} = socket, current_slug) do

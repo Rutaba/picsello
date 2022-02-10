@@ -19,8 +19,6 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
     <div class="border rounded-lg p-9 border-base-200">
       <h2 class="text-3xl font-bold max-w-md">Get in touch<%= @header_suffix %></h2>
 
-      <div class="w-1/3 h-2 mt-4 lg:w-1/4" style={"background-color: #{@color}"}></div>
-
       <%= if @changeset do %>
         <.form for={@changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" id="contact-form" phx_target={@myself}>
           <div class="flex flex-col mt-3">
