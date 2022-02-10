@@ -48,20 +48,6 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
   end
 
-  feature "user edits color", %{session: session, color: color} do
-    session
-    |> assert_has(link("Settings"))
-    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("SPECIALIZING IN:")
-    |> click(button("Change color"))
-    |> within_modal(&click(&1, css("li.aspect-h-1.aspect-w-1:nth-child(3)")))
-    |> click(button("Save"))
-    |> assert_has(css("svg[style*='color: #{color}']", count: 0))
-    |> assert_has(
-      css("svg[style*='color: #{Picsello.Profiles.Profile.colors() |> Enum.at(2)}']", count: 2)
-    )
-  end
-
   feature "user edits job types", %{session: session} do
     session
     |> assert_has(link("Settings"))

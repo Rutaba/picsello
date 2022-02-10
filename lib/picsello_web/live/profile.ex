@@ -168,11 +168,6 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   @impl true
-  def handle_event("edit-color", %{}, socket) do
-    socket |> PicselloWeb.Live.Profile.EditColorComponent.open() |> noreply()
-  end
-
-  @impl true
   def handle_event("edit-job-types", %{}, socket) do
     socket |> PicselloWeb.Live.Profile.EditJobTypeComponent.open() |> noreply()
   end
@@ -394,9 +389,6 @@ defmodule PicselloWeb.Live.Profile do
           Close
         </button>
         <div class="flex flex-row-reverse gap-4 sm:flex-row justify-between">
-          <button class="btn-primary my-2 border-white ml-auto w-full sm:w-auto" title="change color" type="button" phx-click="edit-color">
-            Change color
-          </button>
           <a href={@url} class="btn-secondary my-2 w-full sm:w-auto hover:bg-base-200 text-center" target="_blank" rel="noopener noreferrer">
             View
           </a>
