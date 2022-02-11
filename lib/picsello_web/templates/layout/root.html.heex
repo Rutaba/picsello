@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
@@ -16,6 +15,7 @@
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn,"/css/app.css")}/>
     <link rel="icon" type="image/png" sizes="32x32" href={Routes.static_path(@conn,"/favicon-32x32.png")}>
     <link rel="icon" type="image/png" sizes="16x16" href={Routes.static_path(@conn,"/favicon-16x16.png")}>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/js/app.js")}></script>
     <%= if Application.get_env(:picsello, :google_analytics_api_key) do %>
     <PicselloWeb.LayoutView.google_analytics gaId={Application.get_env(:picsello, :google_analytics_api_key)} />
