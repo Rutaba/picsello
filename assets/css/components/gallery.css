@@ -553,12 +553,18 @@
 }
 
 .choose-product__modal{
+    width: 95vw;
     @apply bg-base-100
-    w-screen
-    h-full
     max-h-screen
+    h-auto
     py-5
     overflow-y-auto
+    fixed
+    top-0
+    left-0
+    right-0
+    mx-auto
+    rounded-lg
 }
 
 .choose-product__btn{
@@ -599,11 +605,11 @@
     }
 
     .choose-product__modal{
-        width: 95vw;
         max-width: 1440px;
         height: 95vh;
         max-height: 894px;
         @apply
+        relative
         pb-20
         pt-12
         pr-16

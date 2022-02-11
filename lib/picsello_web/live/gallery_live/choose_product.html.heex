@@ -1,20 +1,17 @@
 <div>
-  <div class="relative z-10">
+  <div class="choose-product__modal">
     <a href="#" phx-click="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
       <.icon name="close-x" class="w-4 h-4 lg:w-5 lg:h-5 stroke-current stroke-2" />
     </a>
-  </div>
-
-  <div class="choose-product__modal">
   <p class="text-2xl text-base-300 font-bold px-5 pt-10 pb-5 lg:hidden">Select an option below</p>
-    <div class="choose-product h-full lg:overflow-y-scroll w-full flex flex-col lg:flex-row justify-between px-5 lg:px-0 lg:pl-16 xl:pl-20">
+    <div class="choose-product lg:h-full lg:overflow-y-scroll w-full flex flex-col lg:flex-row lg:justify-between px-5 lg:px-0 lg:pl-16 xl:pl-20">
       <div class="choose-product-item w-full h-96 lg:h-full lg:w-7/12 mb-5 lg:mb-0 relative">
         <div id="wrapper" class="wrapper h-full flex-row justify-center flex">
           <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="choose-product__btn left-0 top-1/2 transform -translate-y-1/2  transform -translate-x-1/4 swiper-button-prev">
-            <.icon name="back-blue" class="w-8 h-8 stroke-blue-planning-300 cursor-pointer" />
+            <.icon name="back" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
           </div>
           <div phx-click="next" phx-target={@myself} class="choose-product__btn right-0 top-1/2 transform -translate-y-1/2  transform translate-x-1/4 swiper-button-next">
-            <.icon name="forth-blue" class="w-8 h-8 stroke-blue-planning-300 cursor-pointer" />
+            <.icon name="forth" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
           </div>
           <img src={ @url } class="max-w-full">
             <!--<span class="likeBtn absolute right-8 bottom-8">
