@@ -256,14 +256,14 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def overview_card(assigns) do
-    assigns = assigns |> Enum.into(%{button_text: nil, button_click: nil})
+    assigns = assigns |> Enum.into(%{button_text: nil, button_click: nil, hint_content: nil})
 
     ~H"""
       <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
           <div class="mb-4 font-bold">
             <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
-            <%= @title %>
+            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </div>
 
           <%= render_block(@inner_block) %>
