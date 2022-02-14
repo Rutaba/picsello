@@ -36,7 +36,8 @@ defmodule Picsello.JobIndexTest do
 
   feature "empty jobs", %{session: session, job: job, proposal: proposal, shoot: shoot} do
     session
-    |> visit("/jobs")
+    |> click(css("#hamburger-menu"))
+    |> click(link("Jobs"))
     |> refute_has(link("Go to your leads"))
     |> refute_has(Query.link("Create a lead"))
 
@@ -53,7 +54,7 @@ defmodule Picsello.JobIndexTest do
 
   feature "empty leads", %{session: session, lead: lead} do
     session
-    |> visit("/leads")
+    |> click(link("Leads"))
     |> click(link("Create a lead"))
     |> assert_has(css("h1", text: "Create a lead"))
 
