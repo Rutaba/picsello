@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
     assigns = assigns |> Enum.into(%{header_suffix: ""})
 
     ~H"""
-    <div class="border rounded-lg p-9 border-base-200">
+    <div class="border p-9 border-base-200">
       <h2 class="text-3xl font-bold max-w-md">Get in touch<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
@@ -24,20 +24,20 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
-            <%= input f, :name, placeholder: "Type your first and last name...", class: "p-5", phx_debounce: 300 %>
+            <%= input f, :name, placeholder: "Type your first and last name...", phx_debounce: 300 %>
           </div>
 
           <div class="flex flex-col lg:flex-row">
             <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
               <%= label_for f, :email, label: "Your email", class: "py-2 font-bold" %>
 
-              <%= input f, :email, type: :email_input, placeholder: "Type email...", class: "p-5", phx_debounce: 300 %>
+              <%= input f, :email, type: :email_input, placeholder: "Type email...", phx_debounce: 300 %>
             </div>
 
             <div class="flex flex-col flex-1 mt-3">
               <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-bold" %>
 
-              <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", class: "p-5", phx_debounce: 300, phx_hook: "Phone" %>
+              <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", phx_debounce: 300, phx_hook: "Phone" %>
             </div>
           </div>
 
@@ -45,17 +45,17 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
             <%= label_for f, :job_type, label: "What photography type are you interested in?", class: "py-2 font-bold col-span-1 lg:col-span-2" %>
 
             <%= for job_type <- @job_types do %>
-              <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} />
+              <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} color="black" class="rounded-none" />
             <% end %>
           </div>
 
           <div class="flex flex-col mt-7">
             <%= label_for f, :message, label: "Your message", class: "py-2 font-bold" %>
 
-            <%= input f, :message, type: :textarea, placeholder: "Type your message...", class: "p-5", rows: 5, phx_debounce: 300 %>
+            <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, phx_debounce: 300 %>
           </div>
 
-          <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
+          <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-client-primary">Submit</button></div>
         </.form>
       <% else %>
         <div class="flex items-center mt-14 min-w-max">

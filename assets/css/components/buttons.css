@@ -22,4 +22,8 @@
   .btn-warning {
     @apply btn-primary bg-red-sales-300 border-red-sales-300 focus:ring-red-sales-300 hover:bg-red-sales-200;
   }
+
+  .btn-client-primary {
+    @apply border border-base-300 text-sm py-2 px-6 hover:border-base-250 hover:text-base-250 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 }

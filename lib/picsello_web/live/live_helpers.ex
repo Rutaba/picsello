@@ -208,19 +208,25 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  @job_type_colors %{
+    "blue" => {"bg-blue-planning-100", "border-blue-planning-300", "bg-blue-planning-300"},
+    "black" => {"bg-base-200", "border-base-300", "bg-base-300"}
+  }
   def job_type_option(assigns) do
-    assigns = Enum.into(assigns, %{disabled: false})
+    assigns = Enum.into(assigns, %{disabled: false, class: "", color: "blue"})
+
+    {bg_light, border_dark, bg_dark} = @job_type_colors |> Map.get(assigns.color)
 
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
-        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
+        "flex items-center p-2 border rounded-lg hover:#{bg_light} hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base #{@class}",
+        %{"#{border_dark} #{bg_light}" => @checked}
       )}>
         <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
-          %{"bg-blue-planning-300 text-white" => @checked, "bg-base-200" => !@checked}
+          %{"#{bg_dark} text-white" => @checked, "bg-base-200" => !@checked}
         )}>
           <.icon name={@job_type} class="fill-current" width="14" height="14" />
         </div>

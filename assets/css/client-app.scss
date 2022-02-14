@@ -1,3 +1,24 @@
+.client-app {
+  @apply font-client;
+
+  .text-input,
+  .select,
+  .checkbox {
+    @apply rounded-none focus:border-black focus:ring-black;
+  }
+
+  .text-input-invalid:not(.phx-no-feedback) {
+    @apply border-red-sales-300
+      bg-red-sales-100
+      focus:border-red-sales-300;
+  }
+  .select-invalid > select:not(.phx-no-feedback) {
+    @apply border-red-sales-300
+      bg-red-sales-100
+      focus:border-red-sales-300;
+  }
+}
+
 .photo-frame-container {
   position: relative;
   &:before,

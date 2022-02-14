@@ -51,7 +51,7 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex-grow md:mx-32 font-client">
+    <div class="flex-grow md:mx-32 client-app">
       <div class="flex py-2 md:py-4 px-6 md:px-12 flex-wrap justify-between items-center">
         <.logo_image uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
@@ -139,7 +139,7 @@ defmodule PicselloWeb.Live.Profile do
     assigns = assigns |> Enum.into(%{job_type: nil})
 
     ~H"""
-    <a href="#contact-form" class="flex items-center justify-center border border-base-300 text-sm min-w-[12rem] py-2 hover:border-base-250 hover:text-base-250" phx-click="select-job-type" phx-value-job-type={@job_type}>
+    <a href="#contact-form" class="btn-client-primary flex items-center justify-center min-w-[12rem]" phx-click="select-job-type" phx-value-job-type={@job_type}>
       Book Now
       <.icon name="forth" class="ml-2 w-3 h-3 stroke-current" />
     </a>
