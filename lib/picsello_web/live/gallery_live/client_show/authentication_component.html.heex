@@ -1,5 +1,5 @@
-<div class="min-h-screen flex flex-col">
-    <div class="container sm:max-w-sm mx-auto flex-1 flex flex-col items-center justify-start pt-0 sm:pt-36 px-0 sm:px-2">
+<div class={classes("min-h-screen w-screen flex flex-col p-20 md:p-0", %{"bg-white" => !@gallery.cover_photo})}>
+    <div class="container sm:max-w-sm mx-auto flex-1 flex flex-col items-center md:justify-start justify-center pt-0 sm:pt-36 px-0 sm:px-2">
         <div class="bg-white p-6 rounded-lg shadow-md text-black w-full">
             <h1 class="mb-4 text-3xl font-medium text-start">Enter the password to view the gallery</h1>
             <p class="text-base">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>
