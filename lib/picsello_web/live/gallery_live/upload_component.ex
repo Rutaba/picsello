@@ -11,7 +11,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @upload_options [
-    accept: ~w(.jpg .jpeg .png),
+    accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 50,
     max_file_size: 104_857_600,
     auto_upload: true,
