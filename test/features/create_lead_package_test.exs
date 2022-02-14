@@ -25,7 +25,7 @@ defmodule Picsello.CreateLeadPackageTest do
     )
     |> click(checkbox("Include download credits"))
     |> fill_in(text_field("download_count"), with: "2")
-    |> assert_has(definition("Total Price", text: "$104.00"))
+    |> assert_has(definition("Total Price", text: "$100.00"))
   end
 
   feature "user without package templates creates a package", %{session: session, user: user} do

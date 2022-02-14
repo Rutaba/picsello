@@ -303,10 +303,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
                   <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
                 </div>
-
-                <%= if d |> current() |> Map.get(:includes_credits) do %>
-                  <div class="self-end mt-8 sm:self-start sm:mt-0">+<%= downloads_total(@f) %></div>
-                <% end %>
               </div>
             </div>
           <% end %>
@@ -530,8 +526,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     Enum.join([sign, Money.abs(adjustment)])
   end
-
-  defp downloads_total(form), do: form |> current() |> Package.downloads_price()
 
   defp total_price(form), do: form |> current() |> Package.price()
 
