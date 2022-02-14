@@ -140,10 +140,11 @@ const Hooks = {
 
 let Uploaders = {};
 Uploaders.GCS = function (entries, onViewError) {
-  (function bulk(items) {
+  (function (items) {
+    let queue = []
     const try_next = () =>
       setTimeout(() => {
-        const next = bulk.queue.shift();
+        const next = queue.shift();
         if (next) {
           go(next);
         }
@@ -181,7 +182,7 @@ Uploaders.GCS = function (entries, onViewError) {
       xhr.send(formData);
     };
 
-    bulk.queue = items.splice(5);
+    queue = items.splice(5);
 
     items.forEach(go);
   })(entries);

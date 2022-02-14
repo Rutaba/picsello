@@ -12,6 +12,8 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
 
   """
 
+  import PicselloWeb.Gettext
+
   use StructAccess
 
   defstruct photo_entries: %{},
@@ -92,10 +94,9 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
     end)
     |> then(fn
       -1 -> "n/a"
-      s when s > 3600 -> "#{trunc(s / 360) / 10} hours"
-      s when s > 120 -> "#{trunc(s / 60)} minutes"
-      s when s < 5 -> "few seconds"
-      s -> "#{trunc(s)} seconds"
+      s when s > 3600 -> ngettext("%{count} hour", "%{count} hours", trunc(s / 360) / 10)
+      s when s > 120 -> ngettext("%{count} minute", "%{count} minutes", trunc(s / 60))
+      s -> ngettext("%{count} second", "%{count} seconds", max(trunc(s), 0))
     end)
   end
 
