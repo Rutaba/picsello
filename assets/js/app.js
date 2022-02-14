@@ -29,6 +29,7 @@ import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
+import HelpScout from './hooks/help-scout';
 import IntroJS from './hooks/intro';
 import MasonryGrid from './hooks/masonry-grid';
 import PercentMask from './hooks/percent-mask';
@@ -41,6 +42,7 @@ import Quill from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
+import GalleryMobile from './hooks/gallery-mobile';
 
 const Modal = {
   mounted() {
@@ -120,7 +122,9 @@ const Hooks = {
   ClearInput,
   Clipboard,
   DragDrop,
+  GalleryMobile,
   IFrameAutoHeight,
+  HelpScout,
   IntroJS,
   MasonryGrid,
   Modal,

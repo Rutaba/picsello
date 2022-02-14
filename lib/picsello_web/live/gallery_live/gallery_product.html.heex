@@ -14,7 +14,8 @@
         </div>
 </div>
 
-  <div class="py-10 px-6 mobileGalleryButtons xl:hidden">
+<div phx-hook="GalleryMobile" id="gallery_mobile">
+    <div class="py-10 px-6 mobileGalleryButtons hidden galleryShowMobile">
         <p>Mobile view is not supported for Gallery, but you can still manage settings.</p>
         <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
         <%= live_redirect "Manage settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %>
@@ -24,56 +25,57 @@
         </button>
     </div>
 
-    <div class="hidden xl:block">
+    <div class="galleryHideDesktop">
 
-<div class="max-w-screen-lg	mx-auto py-8 pt-14 pb-14 grid grid-cols-3 grid-rows-preview flex">
-  <!--<div class="col-span-3">
-            <span class="text-base font-bold">Product preview</span>
-            <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
-                <use href="/images/icons.svg#gallery-info"></use>
-            </svg>
-        </div> -->
- <div id="preview" class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
-            <canvas id="canvas" width="300" height="200" class="edit"></canvas>
-  </div>
+        <div class="max-w-screen-lg	mx-auto py-8 pt-14 pb-14 grid grid-cols-3 grid-rows-preview flex">
+        <!--<div class="col-span-3">
+                    <span class="text-base font-bold">Product preview</span>
+                    <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
+                        <use href="/images/icons.svg#gallery-info"></use>
+                    </svg>
+                </div> -->
+        <div id="preview" class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
+            <canvas id="canvas" width="300" height="255" class="edit"></canvas>
+        </div>
 
-    <div class="description ml-11 row-span-2 col-span-2">
-        <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
-         "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}><%=  @title %></h1>
-        <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
-        <.form let={f} for={@changeset} action="#" phx-submit="save">
-            <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary",
-                disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
-       </.form>
+            <div class="description ml-11 row-span-2 col-span-2">
+                <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
+                "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}><%=  @title %></h1>
+                <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
+                <.form let={f} for={@changeset} action="#" phx-submit="save">
+                    <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
+                    <%= submit "Save", title: "Save", class: "save-button w-full btn-primary",
+                        disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
+            </.form>
+            </div>
+        </div>
+
+        <div id="gallery_product_form" class="p-11 preview__shadow">
+            <div
+                phx-hook="MasonryGrid"
+                phx-update="append"
+                id="muuri-grid"
+                class={"muuri grid"}
+                data-page={ @page }
+                data-total={ @gallery.total_count }
+                data-favorites-count={ @favorites_count }
+                data-is-sortable="false"
+                data-has-more-photos={ "#{@has_more_photos}" }
+                data-photo-width="200"
+            >
+            <%= for photo <- @photos do %>
+                <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo,
+                    photo_width: 200,
+                    is_likable: false,
+                    is_removable: false,
+                    is_removed: false,
+                    is_gallery_category_page: true,
+                    preview_photo_id: @preview_photo_id
+                %>
+            <% end %>
+            </div>
+        </div>
     </div>
-</div>
-
-<div id="gallery_product_form" class="p-11 preview__shadow">
-    <div
-        phx-hook="MasonryGrid"
-        phx-update="append"
-        id="muuri-grid"
-        class={"muuri grid"}
-        data-page={ @page }
-        data-total={ @gallery.total_count }
-        data-favorites-count={ @favorites_count }
-        data-is-sortable="false"
-        data-has-more-photos={ "#{@has_more_photos}" }
-        data-photo-width="200"
-    >
-    <%= for photo <- @photos do %>
-        <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-            id: photo.id,
-            photo: photo,
-            photo_width: 200,
-            is_likable: false,
-            is_removable: false,
-            is_removed: false,
-            is_gallery_category_page: true,
-            preview_photo_id: @preview_photo_id
-        %>
-    <% end %>
-    </div>
-</div>
 </div>

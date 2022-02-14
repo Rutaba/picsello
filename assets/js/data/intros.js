@@ -62,7 +62,7 @@ export default {
           'We want you to have all the tools you need to succeed! Using our marketing tools, you can create a public profile where clients can find you, and create email campaigns for your clients.',
         position: 'bottom-middle-aligned',
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM
+    ].filter((obj) => obj?.element),
   }),
   intro_inbox: (el) => ({
     showBullets: false,
@@ -74,7 +74,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('h1'),
       },
-    ],
+    ].filter((obj) => obj?.element),
   }),
   intro_marketing: (el) => ({
     steps: [
@@ -92,7 +92,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('.intro-profile'),
       },
-    ],
+    ].filter((obj) => obj?.element),
   }),
   intro_leads_empty: (el) => ({
     showBullets: false,
@@ -104,7 +104,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('.intro-leads'),
       },
-    ],
+    ].filter((obj) => obj?.element),
   }),
   intro_leads_new: (el) => ({
     steps: [
@@ -136,12 +136,12 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('.intro-finish-proposal'),
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,,
+    ].filter((obj) => obj?.element),
   }),
   intro_settings: (el) => ({
     steps: [
       {
-        title: 'Profile',
+        title: 'Account',
         intro: 'Manage your Picsello account from here.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('[title="user_settings"]'),
@@ -173,6 +173,6 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('[title="contacts"]'),
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
+    ].filter((obj) => obj?.element),
   }),
 };

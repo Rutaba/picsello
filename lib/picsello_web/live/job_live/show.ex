@@ -28,7 +28,8 @@ defmodule PicselloWeb.JobLive.Show do
           %{
             button_text: "Upload photo",
             button_click: "create-gallery",
-            inner_block: fn _, _ -> "Looks like you need to upload photos." end
+            inner_block: fn _, _ -> "Looks like you need to upload photos." end,
+            help_content: "Once your photos are ready, upload them to your client’s gallery."
           }
 
         :upload_in_progress ->

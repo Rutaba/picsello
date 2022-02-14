@@ -263,7 +263,7 @@ defmodule PicselloWeb.LiveHelpers do
     Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
   end
 
-  def display_photo(nil), do: "/images/gallery-icon.png"
+  def display_photo(nil), do: "/images/gallery-icon.svg"
 
   def initials_circle(assigns) do
     assigns =

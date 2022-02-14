@@ -1,6 +1,7 @@
 import introJs from 'intro.js';
 
 import intros from '../data/intros';
+import isMobile from '../utils/isMobile';
 
 export default {
   mounted() {
@@ -21,7 +22,7 @@ export default {
       hintShowButton: false,
     });
 
-    if (shouldSeeIntro) {
+    if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
 
       if (!introSteps) return;
@@ -79,9 +80,11 @@ export default {
             `[data-step="${step}"].introjs-hintReference`
           );
 
+          console.log(hintDialog);
+
           // IntroJS does not export a decent API to remove
           // an active hint dialog, so we'll force it
-          !isHintsOnly && hintDialog.remove();
+          hintDialog?.remove();
         });
       }
     });
@@ -93,6 +96,6 @@ export default {
     // need to force remove to reset the introHints
     // for the next view
     const hintsEl = document.querySelector('.introjs-hints');
-    if (hintsEl) hintsEl.remove();
+    hintsEl?.remove();
   },
 };

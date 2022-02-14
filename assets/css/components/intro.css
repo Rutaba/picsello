@@ -3,8 +3,10 @@
     @apply font-sans;
 }
 
-.introjs-tooltip {
-    min-width: 300px;
+@media screen and (min-width: 768px) {
+    .introjs-tooltip {
+        min-width: 300px;
+    }
 }
 
 .introjs-bullets ul li a {
@@ -52,7 +54,7 @@
 }
 
 .introjs-hint {
-    @apply pt-1 -ml-0.5;
+    @apply pt-2 -ml-0.5;
     width: 17px;
     height: 24px;
 }

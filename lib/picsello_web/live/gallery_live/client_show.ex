@@ -34,7 +34,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       ) do
     socket
     |> place_product_in_cart(whcc_editor_id)
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash))
+    |> push_redirect(
+      to: Routes.gallery_client_show_cart_path(socket, :cart, gallery.client_link_hash)
+    )
     |> noreply()
   end
 

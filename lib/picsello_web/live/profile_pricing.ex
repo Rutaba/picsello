@@ -102,7 +102,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
       <div>
         <dl class="flex mt-4">
           <dt class="underline mr-2">Description:</dt>
-          <dd><%= @description %></dd>
+          <dd class="whitespace-pre-line"><%= @description %></dd>
         </dl>
         <dl class="flex mt-4">
           <dt class="underline mr-2">Included:</dt>
