@@ -118,6 +118,10 @@ html {
   }
 }
 
+.modal-container {
+  @apply overflow-hidden rounded-t-lg sm:rounded-b-lg self-end sm:self-auto;
+}
+
 .modal {
   @apply max-w-screen-xl relative bare-modal;
 }

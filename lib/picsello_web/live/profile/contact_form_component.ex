@@ -55,7 +55,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
             <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, phx_debounce: 300 %>
           </div>
 
-          <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-client-primary">Submit</button></div>
+          <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
         </.form>
       <% else %>
         <div class="flex items-center mt-14 min-w-max">

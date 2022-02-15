@@ -17,6 +17,29 @@
       bg-red-sales-100
       focus:border-red-sales-300;
   }
+
+  .modal-container,
+  .modal,
+  .dialog {
+    @apply rounded-none;
+  }
+
+  .btn-primary {
+    @apply py-2 px-6 font-medium font-client text-base-300 bg-white border border-base-300 rounded-none hover:border-base-250 hover:text-base-300 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem];
+
+    &:after {
+      @apply ml-2 pt-0.5;
+      content: url('data:image/svg+xml; utf8, <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5L5.5 6L1.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>');
+    }
+  }
+
+  .btn-secondary {
+    @apply py-2 px-6 font-medium font-client text-base-300 bg-white border border-base-200 text-sm rounded-none hover:border-base-250 hover:text-base-250 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-row {
+    @apply flex items-center justify-between w-full p-3 font-semibold text-left border border-gray-100 rounded-none hover:bg-gray-50;
+  }
 }
 
 .photo-frame-container {
