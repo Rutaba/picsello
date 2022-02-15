@@ -237,18 +237,30 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   @badge_colors %{
-    gray: "bg-gray-200",
-    blue: "bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
-    green: "bg-green-finances-100 text-green-finances-300",
-    red: "bg-red-sales-100 text-red-sales-300"
+    filled: %{
+      gray: "rounded bg-gray-200",
+      blue: "rounded bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
+      green: "rounded bg-green-finances-100 text-green-finances-300",
+      red: "rounded bg-red-sales-100 text-red-sales-300"
+    },
+    outlined: %{
+      gray: "border border-base-250 text-base-250",
+      blue: "border border-blue-planning-300 text-blue-planning-300 group-hover:bg-white",
+      green: "border border-green-finances-300 text-green-finances-300",
+      red: "border border-red-sales-300 text-red-sales-300"
+    }
   }
 
   def badge(%{color: color} = assigns) do
+    badge_mode = assigns |> Map.get(:mode, :filled)
+
     assigns =
-      assigns |> Map.put(:color_style, Map.get(@badge_colors, color)) |> Enum.into(%{class: ""})
+      assigns
+      |> Map.put(:color_style, @badge_colors |> Map.get(badge_mode) |> Map.get(color))
+      |> Enum.into(%{class: ""})
 
     ~H"""
-    <span role="status" class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
+    <span role="status" class={"px-2 py-0.5 text-xs font-semibold #{@color_style} #{@class}"} >
       <%= render_block @inner_block %>
     </span>
     """

@@ -51,7 +51,7 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex-grow md:mx-32">
+    <div class="flex-grow md:mx-32 client-app">
       <div class="flex py-2 md:py-4 px-6 md:px-12 flex-wrap justify-between items-center">
         <.logo_image uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
@@ -91,9 +91,10 @@ defmodule PicselloWeb.Live.Profile do
 
         <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>
+
+      <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
     </div>
 
-    <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
 
     <%= if @edit do %>
       <.edit_footer url={@url} />

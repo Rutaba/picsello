@@ -24,7 +24,9 @@ defmodule PicselloWeb.ConfirmationComponent do
   def render(assigns) do
     ~H"""
     <div class="dialog">
-      <.icon name={@icon}, class="w-11 h-11" />
+      <%= if @icon do %>
+        <.icon name={@icon} class="w-11 h-11" />
+      <% end %>
 
       <h1 class="text-3xl font-semibold">
         <%= @title %>
@@ -62,13 +64,12 @@ defmodule PicselloWeb.ConfirmationComponent do
   end
 
   @spec open(%Phoenix.LiveView.Socket{}, %{
-          optional(:center) => boolean,
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:confirm_event) => any,
           optional(:confirm_label) => binary,
           optional(:confirm_class) => binary,
-          optional(:icon) => binary,
+          optional(:icon) => binary | nil,
           optional(:subtitle) => binary,
           optional(:payload) => map,
           title: binary

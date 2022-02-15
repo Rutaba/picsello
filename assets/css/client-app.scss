@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Avenir LT Std';
+  src: local('AvenirLTStd-Light'),
+    url('../static/fonts/AvenirLTStd-Light.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .client-app {
   @apply font-client;
 
@@ -5,6 +13,11 @@
   .select,
   .checkbox {
     @apply rounded-none focus:border-black focus:ring-black;
+  }
+
+  .checkbox,
+  .radio {
+    @apply text-base-300;
   }
 
   .text-input-invalid:not(.phx-no-feedback) {
@@ -39,6 +52,32 @@
 
   .btn-row {
     @apply flex items-center justify-between w-full p-3 font-semibold text-left border border-gray-100 rounded-none hover:bg-gray-50;
+  }
+
+  .ql-snow {
+    &.ql-toolbar button:hover {
+      @apply text-base-250 bg-base-200;
+    }
+
+    &.ql-toolbar button.ql-active {
+      @apply text-base-250 bg-base-200;
+    }
+
+    &.ql-container {
+      @apply border-gray-200 rounded-none;
+    }
+
+    &.ql-toolbar {
+      @apply border-gray-200 rounded-none bg-base-200 text-base-300;
+    }
+
+    .ql-tooltip {
+      @apply rounded-none;
+
+      &.ql-editing input[type='text'] {
+        @apply rounded-none focus:border-black focus:ring-black;
+      }
+    }
   }
 }
 

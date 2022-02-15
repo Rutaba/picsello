@@ -18,14 +18,6 @@ html {
   @apply text-base-300 bg-white text-13px sm:text-16px;
 }
 
-@font-face {
-  font-family: 'Avenir LT Std';
-  src: local('AvenirLTStd-Light'), url('../static/fonts/AvenirLTStd-Light.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-
 // Google Maps autocomplete overrides
 .pac-container {
   top: 0px !important;
@@ -78,11 +70,11 @@ html {
   }
 
   &.ql-toolbar {
-    @apply border-gray-200 rounded-t-lg;
+    @apply border-gray-200 rounded-t-lg bg-blue-planning-100 text-blue-planning-300;
   }
 
   .ql-tooltip {
-    @apply border-gray-200 rounded-lg;
+    @apply border-gray-200 rounded-lg ml-24;
 
     &.ql-editing input[type=text]{
       @apply text-input;
