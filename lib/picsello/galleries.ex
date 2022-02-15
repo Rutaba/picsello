@@ -50,27 +50,15 @@ defmodule Picsello.Galleries do
       iex> get_gallery_by_hash("validhash")
       %Gallery{}
 
-      iex> get_gallery!("wronghash")
+      iex> get_gallery_by_hash("wronghash")
       nil
 
   """
-  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
-  def get_gallery_by_hash!(hash) do
-    Gallery
-    |> where(client_link_hash: ^hash)
-    |> limit(1)
-    |> Repo.one!()
-  end
-
   @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
-  def get_gallery_by_hash(hash) do
-    try do
-      get_gallery_by_hash!(hash)
-    rescue
-      Ecto.NoResultsError ->
-        nil
-    end
-  end
+  def get_gallery_by_hash(hash), do: Repo.get_by(Gallery, client_link_hash: hash)
+
+  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
+  def get_gallery_by_hash!(hash), do: Repo.get_by!(Gallery, client_link_hash: hash)
 
   @doc """
   Gets single gallery by hash, with relations populated (cover_photo)

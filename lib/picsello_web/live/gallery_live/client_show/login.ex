@@ -5,10 +5,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Login do
   alias Picsello.Galleries
 
   @impl true
-  def handle_params(%{"hash" => hash}, _, socket) do
+  def mount(%{"hash" => hash}, _session, socket) do
+
     socket
-    |> open_modal(AuthenticationComponent, %{gallery: Galleries.get_gallery_by_hash(hash)})
-    |> assign(%{gallery: Galleries.get_gallery_by_hash(hash)})
-    |> noreply()
+    |> assign_new(:gallery, fn -> Galleries.get_gallery_by_hash(hash) end)
+    |> then(&open_modal(&1, AuthenticationComponent, Map.take(&1.assigns, [:gallery])))
+    |> ok()
   end
 end
