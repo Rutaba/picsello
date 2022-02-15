@@ -118,7 +118,7 @@
             <h3 class="input-label">Standard Payment</h3>
             <%= case @stripe_status do %>
               <% :charges_enabled -> %>
-                50% deposit and 50% on day of shoot.
+                50% retainer and 50% on day of shoot.
               <% :loading -> %>
               <% _ -> %>
                 You must create a Stripe account to send proposals and receive payments. After your Stripe account has been created you will return to this page.

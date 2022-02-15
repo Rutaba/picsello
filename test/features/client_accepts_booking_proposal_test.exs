@@ -159,7 +159,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("To-Do Invoice"))
       |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
-      |> assert_has(definition("50% deposit today", text: "$0.40"))
+      |> assert_has(definition("50% retainer today", text: "$0.40"))
       |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
@@ -185,7 +185,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                         products: [
                           %{
                             price_data: %{
-                              product_data: %{name: "John Newborn 50% deposit"},
+                              product_data: %{name: "John Newborn 50% retainer"},
                               unit_amount: 40
                             }
                           }
@@ -203,7 +203,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("To-Do Invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
@@ -244,7 +244,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Completed Invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("Deposit Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
