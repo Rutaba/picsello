@@ -20,6 +20,8 @@ defmodule PicselloWeb.JobLive.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.FormHelpers
+  import Phoenix.HTML.Form
   use Phoenix.Component
 
   def handle_event(
@@ -430,6 +432,41 @@ defmodule PicselloWeb.JobLive.Shared do
         </div>
       </div>
     </a>
+    """
+  end
+
+  def job_form_fields(assigns) do
+    assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
+
+    ~H"""
+    <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <%= inputs_for @form, :client, fn client_form -> %>
+        <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Elizabeth Taylor", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
+        <%= if @name != nil do %>
+          <%= hidden_input client_form, :name %>
+        <% end %>
+        <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "elizabeth.taylor@example.com", phx_debounce: "500", disabled: @email != nil %>
+        <%= if @email != nil do %>
+          <%= hidden_input client_form, :email %>
+        <% end %>
+        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
+        <%= if @phone != nil do %>
+          <%= hidden_input client_form, :phone %>
+        <% end %>
+      <% end %>
+
+      <%= labeled_select @form, :type, for(type <- @job_types, do: {humanize(type), type}), label: "Type of Photography", prompt: "Select below" %>
+
+      <div class="sm:col-span-2">
+        <div class="flex items-center justify-between mb-2">
+          <%= label_for @form, :notes, label: "Private Notes" %>
+          <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-notes" data-input-name={input_name(@form,:notes)}>
+            Clear
+          </.icon_button>
+        </div>
+        <%= input @form, :notes, type: :textarea, placeholder: "Optional notes", class: "w-full", phx_hook: "AutoHeight", phx_update: "ignore" %>
+      </div>
+    </div>
     """
   end
 
