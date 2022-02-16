@@ -40,9 +40,8 @@ defmodule Picsello.Accounts.UserToken do
   def verify_session_token_query(token) do
     query =
       from token in token_and_context_query(token, "session"),
-        join: user in assoc(token, :user),
         where: token.inserted_at > ago(@session_validity_in_days, "day"),
-        select: user
+        select: token.user_id
 
     {:ok, query}
   end
