@@ -32,7 +32,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
             <%= if @deposit_paid do %>
               <dt>Retainer Paid on <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></dt>
             <% else %>
-              <dt>50% Retainer today</dt>
+              <dt>50% retainer today</dt>
             <% end %>
             <dd><%= Package.deposit_price(@package) %></dd>
           </dl>
