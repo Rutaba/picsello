@@ -81,7 +81,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       end
 
     payment_type_desc =
-      if payment_type == :deposit
+      if payment_type == :deposit do
         :retainer
       else
         payment_type
