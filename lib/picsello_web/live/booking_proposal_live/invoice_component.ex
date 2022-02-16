@@ -80,12 +80,19 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         {:deposit, Package.remainder_price(package)}
       end
 
+    payment_type_desc =
+      if payment_type == :deposit
+        :retainer
+      else
+        payment_type
+      end
+
     line_items = [
       %{
         price_data: %{
           currency: "usd",
           product_data: %{
-            name: "#{Job.name(job)} 50% #{payment_type}"
+            name: "#{Job.name(job)} 50% #{payment_type_desc}"
           },
           unit_amount: price.amount
         },
