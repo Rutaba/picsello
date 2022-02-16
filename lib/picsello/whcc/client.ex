@@ -62,6 +62,14 @@ defmodule Picsello.WHCC.Client do
     body |> WHCC.CreatedEditor.from_map()
   end
 
+  def get_existing_editor(account_id, editor_id) do
+    {:ok, %{body: %{"url" => url}}} =
+      new(account_id)
+      |> post("/editors/#{editor_id}/edit-link", %{})
+
+    WHCC.CreatedEditor.build(editor_id, url)
+  end
+
   def editor_details(account_id, id) do
     {:ok, %{body: body}} = new(account_id) |> get("/editors/#{id}")
 

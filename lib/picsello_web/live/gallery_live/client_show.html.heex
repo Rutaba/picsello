@@ -1,15 +1,11 @@
 <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"}
-class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @gallery.cover_photo})}>
-    <div class="gallery__container flex flex-col lg:flex-row w-full h-full">
-    <div class="w-2/3 h-1/2 lg:h-full"></div>
-    <div class="lg:w-1/3 h-1/2 lg:h-full flex flex-wrap content-center text-base-100 pb-2 pr-2 md:pr-0 relative z-10">
-        <div class="w-full font-medium text-base lg:text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></div>
-        <div class="font-bold text-2xl lg:text-6xl w-full"><%= @gallery.name %></div>
-        <div class="w-full font-medium text-base lg:text-xl lg:pt-2">
-            <%= @gallery.total_count %>
-            photos
+class={classes("flex flex-nowrap text-left gallery__coverImg active")}>
+    <div class="gallery__container flex flex-col lg:flex-row w-full h-full justify-center">
+        <div class="flex flex-wrap content-center text-base-100 pb-2 pr-2 md:pr-0 relative z-10 text-center items-end mt-auto sm:pb-60 pb-20">
+            <h3 class="w-full font-medium text-base lg:text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></h3>
+            <h1 class="font-bold text-2xl lg:text-6xl w-full mb-10"><%= @gallery.name %></h1>
+            <p class="text-center w-full"><a href="#gallery" class="text-center gallery__button btn-secondary text-center bg-transparent text-white border-white hover:bg-white/10">View Gallery</a></p>
         </div>
-    </div>
     </div>
 </div>
 
@@ -41,7 +37,7 @@ class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @g
     </div>
     <% end %>
     <!-- Content -->
-    <div class="pt-5 lg:pt-16">
+    <div class="pt-5 lg:pt-16" id="gallery">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 lg:mb-16">
         <div>
             <div class="font-bold text-lg lg:text-3xl">
@@ -63,11 +59,11 @@ class={classes("flex flex-nowrap text-left gallery__coverImg",  %{"active" => @g
                     <div class="relative ml-3">
                         <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
                         <%= if @favorites_filter do %>
-                            <div class="block bg-blue-300 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute right-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                            <div class="block bg-blue-planning-100 w-14 h-8 rounded-full border border-blue-planning-300"></div>
+                            <div class="dot absolute right-1 top-1 bg-blue-planning-300 w-6 h-6 rounded-full transition"></div>
                         <% else %>
-                            <div class="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                            <div class="dot absolute left-1 top-1 bg-blue-300 w-6 h-6 rounded-full transition"></div>
+                            <div class="block bg-gray-200 w-14 h-8 rounded-full border border-blue-planning-300"></div>
+                            <div class="dot absolute left-1 top-1 bg-blue-planning-300 w-6 h-6 rounded-full transition"></div>
                         <% end %>
                     </div>
                 </label>

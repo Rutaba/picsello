@@ -55,7 +55,7 @@ defmodule PicselloWeb.LiveAuth do
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),
          true <- connected?(socket),
-         metadata when is_binary(metadata) <- get_connect_info(socket)[:user_agent] do
+         metadata when is_binary(metadata) <- get_connect_info(socket, :user_agent) do
       sandbox.allow(metadata, self())
     end
 

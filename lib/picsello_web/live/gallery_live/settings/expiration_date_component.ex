@@ -166,7 +166,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   end
 
   defp assign_options(%{assigns: %{year: year, month: month}} = socket) do
-    date_now = split_date(tomorrow())
+    date_now = split_date(today())
 
     socket
     |> assign(
@@ -239,7 +239,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   defp valid_date_controls?([year, month, day] = date, expires),
     do:
       Enum.all?(date) and
-        Date.compare(Date.new!(year, month, day), tomorrow()) != :lt and
+        Date.compare(Date.new!(year, month, day), today()) != :lt and
         (is_nil(expires) or
            Date.compare(Date.new!(year, month, day), DateTime.to_date(expires)) != :eq)
 
@@ -259,7 +259,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
       12 => "December"
     }
 
-  defp tomorrow(), do: Date.utc_today() |> Date.add(1)
+  defp today(), do: Date.utc_today()
 
   defp split_date(%Date{} = date), do: date |> Date.to_erl()
 

@@ -26,34 +26,19 @@ defmodule Picsello.Cart.Order do
     timestamps(type: :utc_datetime)
   end
 
-  def create_changeset(%CartProduct{price: price} = product, attrs \\ %{}) do
+  def create_changeset(%CartProduct{} = product, attrs \\ %{}) do
     %__MODULE__{}
     |> cast(attrs, [:gallery_id])
     |> put_embed(:products, [product])
-    |> cast_subtotal_cost({:default, price})
+    |> refresh_costs()
     |> validate_required([:gallery_id])
     |> foreign_key_constraint(:gallery_id)
   end
 
-  def update_changeset(
-        %__MODULE__{products: products} = order,
-        %CartProduct{price: price} = product,
-        attrs \\ %{}
-      ) do
-    product_already_exist =
-      Enum.find_value(products, fn %{editor_details: %{editor_id: editor_id}} ->
-        editor_id == product.editor_details.editor_id
-      end)
-
-    if product_already_exist do
-      order
-      |> change()
-    else
-      order
-      |> cast(attrs, [])
-      |> cast_subtotal_cost({:add, price})
-      |> put_embed(:products, products ++ [product])
-    end
+  def update_changeset(%__MODULE__{} = order, %CartProduct{} = product, attrs \\ %{}) do
+    order
+    |> cast(attrs, [])
+    |> replace_products([product])
   end
 
   def change_products(
@@ -64,6 +49,7 @@ defmodule Picsello.Cart.Order do
     order
     |> cast(attrs, [])
     |> put_embed(:products, products)
+    |> refresh_costs()
   end
 
   def checkout_changeset(%__MODULE__{} = order, products, attrs \\ %{}) do
@@ -79,6 +65,7 @@ defmodule Picsello.Cart.Order do
     order
     |> cast(attrs, [:placed, :placed_at])
     |> put_embed(:products, confirmed_products)
+    |> refresh_costs()
   end
 
   def store_delivery_info(order, delivery_info_changeset) do
@@ -99,15 +86,19 @@ defmodule Picsello.Cart.Order do
       (products_to_remain ++ new_products)
       |> Enum.sort(&(&1.created_at < &2.created_at))
 
-    changeset |> put_embed(:products, products_to_store)
+    changeset
+    |> put_embed(:products, products_to_store)
+    |> refresh_costs()
   end
 
-  defp cast_subtotal_cost(changeset, {:default, amount}),
-    do: put_change(changeset, :subtotal_cost, amount)
-
-  defp cast_subtotal_cost(changeset, {:add, amount}) do
-    current_total_cost = get_field(changeset, :subtotal_cost)
-    put_change(changeset, :subtotal_cost, Money.add(current_total_cost, amount))
+  def delete_product_changeset(%__MODULE__{products: products} = order, editor_id) do
+    order
+    |> change()
+    |> put_embed(
+      :products,
+      Enum.reject(products, fn product -> product.editor_details.editor_id == editor_id end)
+    )
+    |> refresh_costs()
   end
 
   defp cast_shipping_cost(changeset) do
@@ -136,5 +127,15 @@ defmodule Picsello.Cart.Order do
     else
       cost
     end
+  end
+
+  defp refresh_costs(changeset) do
+    changeset
+    |> then(fn set ->
+      set
+      |> get_field(:products)
+      |> Enum.reduce(Money.new(0), fn product, acc -> Money.add(acc, product.price) end)
+      |> then(&put_change(set, :subtotal_cost, &1))
+    end)
   end
 end

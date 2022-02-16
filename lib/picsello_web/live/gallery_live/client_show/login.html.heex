@@ -1,1 +1,1 @@
-<div class="w-screen h-screen bg-black"></div>
+<div class={classes("w-screen h-screen bg-no-repeat bg-cover bg-center", %{"bg-white" => !@gallery.cover_photo})}style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"}></div>

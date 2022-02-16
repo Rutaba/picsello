@@ -38,7 +38,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
           Back
         </.live_link>
         <div class="hidden md:flex justify-center">
-          <.photographer_logo color={@color} photographer={@photographer} />
+          <.photographer_logo {assigns} />
         </div>
         <div class="md:hidden col-span-2 flex justify-end">
           <a class="btn-primary text-center py-2"href="#contact-form">Let's chat</a>
@@ -102,7 +102,7 @@ defmodule PicselloWeb.Live.ProfilePricing do
       <div>
         <dl class="flex mt-4">
           <dt class="underline mr-2">Description:</dt>
-          <dd><%= @description %></dd>
+          <dd class="whitespace-pre-line"><%= @description %></dd>
         </dl>
         <dl class="flex mt-4">
           <dt class="underline mr-2">Included:</dt>

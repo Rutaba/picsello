@@ -73,7 +73,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           },
           %{
             prompt:
-              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand / itchy clothes)? Do they have visual sensory issues (eg. Hates the camera flash? Do they have sensitive hearing (are they super sensitive to sound, or do they have a hearing impairment? All of these things help us plan for the best shoot possible for your family.",
+              "Is there anything we need to know about your kids before we meet at the shoot? For example, do they have sensory issues (e.g., hate grass/sand / itchy clothes)? Do they have visual sensory issues (eg. hates the camera flash)? Do they have sensitive hearing (are they super sensitive to sound, or do they have a hearing impairment? All of these things help us plan for the best shoot possible for your family.",
             type: :textarea
           },
           %{prompt: "What is your vision for the shoot?", type: :textarea},
@@ -127,7 +127,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           },
           %{
             prompt:
-              "Is there anything we need to know about your kids before we meet at the shoot?  Do they have sensory issues (e.g., hates grass/sand / itchy clothes)? Do they have visual sensory problems (eg. Hates the camera flash? Do they have sensitive hearing (are they super sensitive to sound, or are they have hearing impairments? All of these things help us plan for the best shoot possible for your family.",
+              "Is there anything we need to know about your kids before we meet at the shoot?  Do they have sensory issues (e.g., hates grass/sand / itchy clothes)? Do they have visual sensory problems (eg. hates the camera flash)? Do they have sensitive hearing (are they super sensitive to sound, or are they have hearing impairments? All of these things help us plan for the best shoot possible for your family.",
             type: :textarea,
             optional: true
           }

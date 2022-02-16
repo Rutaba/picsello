@@ -246,11 +246,12 @@ defmodule PicselloWeb.Live.User.Settings do
 
     <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"} {intro(@current_user, "intro_settings")}>
       <._settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
-        <:link to={{:user_settings, :edit}} >Profile</:link>
+        <:link to={{:user_settings, :edit}} >Account</:link>
         <:link to={{:package_templates, :index}} >Package Templates</:link>
         <:link hide={!show_pricing_tab?()} to={{:pricing, :index}} >Gallery Store Pricing</:link>
         <:link to={{:profile_settings, :index}} >Public Profile</:link>
         <:link to={{:contacts, :index}} >Contacts</:link>
+        <:link to={{:brand_settings, :index}} >Brand</:link>
       </._settings_nav>
       <hr />
 

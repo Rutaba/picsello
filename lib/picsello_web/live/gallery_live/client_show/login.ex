@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Login do
   def handle_params(%{"hash" => hash}, _, socket) do
     socket
     |> open_modal(AuthenticationComponent, %{gallery: Galleries.get_gallery_by_hash(hash)})
+    |> assign(%{gallery: Galleries.get_gallery_by_hash(hash)})
     |> noreply()
   end
 end

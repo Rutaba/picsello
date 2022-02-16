@@ -48,7 +48,7 @@
   <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, job: @job, current_user: @current_user %>
 
   <ul class="mt-6 grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Inbox" icon="envelope-outline">
+    <.overview_card title="Inbox" icon="envelope-outline" hint_content="Check in on messages from your client, or send them a message">
       <%= if @inbox_count > 0 do %>
         <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
       <% else %>

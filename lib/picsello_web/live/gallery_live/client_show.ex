@@ -34,7 +34,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       ) do
     socket
     |> place_product_in_cart(whcc_editor_id)
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash))
+    |> push_redirect(
+      to: Routes.gallery_client_show_cart_path(socket, :cart, gallery.client_link_hash)
+    )
     |> noreply()
   end
 
@@ -206,10 +208,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   end
 
   def handle_info(
-        {:customize_and_buy_product, whcc_product, photo},
+        {:customize_and_buy_product, whcc_product, photo, size},
         %{
           assigns: %{
-            gallery: gallery
+            gallery: gallery,
+            favorites_filter: favorites
           }
         } = socket
       ) do
@@ -220,7 +223,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         complete_url:
           Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
             "?editorId=%EDITOR_ID%",
-        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash)
+        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
+        size: size,
+        favorites_only: favorites
       )
 
     socket

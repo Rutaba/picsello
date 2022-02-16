@@ -77,14 +77,17 @@ defmodule PicselloWeb.Live.Profile.Shared do
 
   def photographer_logo(assigns) do
     ~H"""
-      <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
+      <%= case @organization.profile.logo do %>
+        <% %{url: "" <> url} -> %> <img class="h-14" src={url} />
+        <% _ -> %> <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
+      <% end %>
     """
   end
 
   def profile_footer(assigns) do
     ~H"""
      <footer class="px-6 md:px-16 center-container border-t-8" style={"border-color: #{@color}"}>
-      <div class="flex justify-center py-8 md:justify-start md:py-14"><.photographer_logo color={@color} photographer={@photographer} /></div>
+      <div class="flex justify-center py-8 md:justify-start md:py-14"><.photographer_logo {assigns} /></div>
 
       <div class="flex flex-col items-center justify-start pt-6 mb-8 border-t md:flex-row md:justify-between border-base-250 text-base-300 opacity-30">
         <span>© <%= Date.utc_today().year %> <%= @organization.name %></span>
