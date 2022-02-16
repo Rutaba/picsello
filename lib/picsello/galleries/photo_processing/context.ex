@@ -13,7 +13,6 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   alias Picsello.Galleries
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Photo
-  alias Picsello.Galleries.PhotoProcessing.Waiter
   alias Picsello.Galleries.Watermark
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
@@ -166,8 +165,6 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       "gallery:#{photo.gallery_id}",
       {:photo_processed, context, photo}
     )
-
-    Waiter.complete_tracking(photo.gallery_id, photo.id)
   rescue
     _err ->
       :ignored
