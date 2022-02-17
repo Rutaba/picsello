@@ -69,7 +69,7 @@ defmodule PicselloWeb.Live.Profile do
 
         <h1 class="uppercase mt-20">PRICING & SERVICES:</h1>
         <%= for {job_type, packages} <- @job_type_packages do %>
-          <h2 class="mt-10 text-2xl text-center"><%= dyn_gettext job_type %></h2>
+          <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
           <%= for package <- packages do %>
             <.package_detail name={package.name} price={Packages.price(package)} description={package.description} download_count={package.download_count} />
           <% end %>

@@ -53,7 +53,7 @@ defmodule Picsello.JobIndexTest do
 
   feature "empty leads", %{session: session, lead: lead} do
     session
-    |> visit("/leads")
+    |> click(link("Leads"))
     |> click(link("Create a lead"))
     |> assert_has(css("h1", text: "Create a lead"))
 

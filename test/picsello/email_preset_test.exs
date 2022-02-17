@@ -115,8 +115,7 @@ defmodule Picsello.EmailPresetTest do
                |> Map.get(:body_template)
                |> Jason.decode!()
 
-      assert "/photographer/kloster-oberzell/pricing/wedding" =
-               pricing_guide_link |> URI.parse() |> Map.get(:path)
+      assert String.ends_with?(pricing_guide_link, "/photographer/kloster-oberzell#wedding")
 
       assert_proposal_link(proposal_link, proposal_id)
     end

@@ -29,12 +29,14 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     def profile_pricing_job_type_url(slug, type),
       do:
-        PicselloWeb.Router.Helpers.profile_pricing_job_type_url(
-          PicselloWeb.Endpoint,
+        PicselloWeb.Endpoint
+        |> PicselloWeb.Router.Helpers.profile_url(
           :index,
-          slug,
-          type
+          slug
         )
+        |> URI.parse()
+        |> Map.put(:fragment, type)
+        |> URI.to_string()
   end
 
   @impl true
