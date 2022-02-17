@@ -36,7 +36,8 @@ defmodule Picsello.JobIndexTest do
 
   feature "empty jobs", %{session: session, job: job, proposal: proposal, shoot: shoot} do
     session
-    |> visit("/jobs")
+    |> click(css("#hamburger-menu"))
+    |> click(link("Jobs"))
     |> refute_has(link("Go to your leads"))
     |> refute_has(Query.link("Create a lead"))
 

@@ -186,14 +186,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     ~H"""
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-7">
         <%= labeled_input @f, :name, label: "Title", placeholder: "Wedding Deluxe, or 1 Hour Portrait Session", phx_debounce: "500", wrapper_class: "mt-4" %>
-        <%= labeled_select @f, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", phx_update: "ignore" %>
-        <div class="mt-4 flex flex-col">
-          <%= label_for @f, :turnaround_weeks, label: "Image Turnaround Time" %>
+        <div class="grid gap-2 grid-cols-2 sm:contents">
+          <%= labeled_select @f, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", class: "py-3", phx_update: "ignore" %>
 
-          <div>
-            <%= input @f, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
+          <div class="mt-4 flex flex-col">
+            <%= label_for @f, :turnaround_weeks, label: "Image Turnaround Time" %>
 
-            <%= ngettext("week", "weeks", Ecto.Changeset.get_field(@changeset, :turnaround_weeks)) %>
+            <div>
+              <%= input @f, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
+
+              <%= ngettext("week", "weeks", Ecto.Changeset.get_field(@changeset, :turnaround_weeks)) %>
+            </div>
           </div>
         </div>
       </div>
@@ -303,10 +306,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
                   <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
                 </div>
-
-                <%= if d |> current() |> Map.get(:includes_credits) do %>
-                  <div class="self-end mt-8 sm:self-start sm:mt-0">+<%= downloads_total(@f) %></div>
-                <% end %>
               </div>
             </div>
           <% end %>
@@ -530,8 +529,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     Enum.join([sign, Money.abs(adjustment)])
   end
-
-  defp downloads_total(form), do: form |> current() |> Package.downloads_price()
 
   defp total_price(form), do: form |> current() |> Package.price()
 
