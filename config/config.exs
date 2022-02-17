@@ -118,6 +118,11 @@ config :picsello, :profile_images,
   bucket: System.get_env("PUBLIC_BUCKET"),
   static_host: System.get_env("GOOGLE_PUBLIC_IMAGE_HOST")
 
+config :picsello, :email_presets,
+  sheet_id: System.get_env("EMAIL_PRESET_SHEET_ID"),
+  type_ranges: System.get_env("EMAIL_PRESET_TYPE_RANGES"),
+  column_map: System.get_env("EMAIL_PRESET_COLUMN_MAP")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

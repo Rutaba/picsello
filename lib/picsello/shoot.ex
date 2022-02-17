@@ -3,7 +3,7 @@ defmodule Picsello.Shoot do
   use Ecto.Schema
   import Ecto.{Changeset, Query}
 
-  @locations ~w[studio on_location home]
+  @locations ~w[studio on_location home]a
   @durations [15, 30, 45, 60, 90, 120, 180, 240, 300, 360]
 
   def locations(), do: @locations
@@ -11,7 +11,7 @@ defmodule Picsello.Shoot do
 
   schema "shoots" do
     field :duration_minutes, :integer
-    field :location, :string
+    field :location, Ecto.Enum, values: @locations
     field :name, :string
     field :notes, :string
     field :starts_at, :utc_datetime
