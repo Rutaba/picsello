@@ -176,7 +176,6 @@ defmodule PicselloWeb.GalleryLive.Show do
       ) do
     socket
     |> ConfirmationComponent.open(%{
-      center: true,
       close_label: "No, go back",
       confirm_event: "delete_cover_photo",
       confirm_label: "Yes, delete",
@@ -199,7 +198,6 @@ defmodule PicselloWeb.GalleryLive.Show do
       ) do
     socket
     |> ConfirmationComponent.open(%{
-      center: true,
       close_label: "No, go back",
       confirm_event: "delete_photo",
       confirm_label: "Yes, delete",

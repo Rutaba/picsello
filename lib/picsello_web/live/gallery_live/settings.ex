@@ -34,7 +34,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
   def handle_event("open_watermark_deletion_popup", _, socket) do
     socket
     |> ConfirmationComponent.open(%{
-      center: true,
       close_label: "No, go back",
       confirm_event: "delete_watermark",
       confirm_label: "Yes, delete",

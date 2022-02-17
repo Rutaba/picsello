@@ -75,7 +75,7 @@ defmodule PicselloWeb.LiveModal do
     ~H"""
     <div role="dialog" id="modal-wrapper" phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/20 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
       <%= if @modal.state != :closed do %>
-        <div class={classes("overflow-hidden rounded-t-lg sm:rounded-b-lg", %{"rounded-b-lg" => @modal.assigns[:center], "self-end sm:self-auto" => !@modal.assigns[:center]})}>
+        <div class="modal-container">
           <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
         </div>
       <% end %>

@@ -43,7 +43,7 @@ defmodule Picsello.UserSettingsTest do
 
     session
     |> visit("/photographer/mary-jane-photos")
-    |> assert_text("What we offer")
+    |> assert_text("SPECIALIZING IN")
     |> assert_path("/photographer/mj-photography")
   end
 

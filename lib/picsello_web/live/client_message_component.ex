@@ -44,7 +44,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
         <label class="block mt-4 input-label" for="editor">Message</label>
         <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
-          <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
+          <div id="toolbar">
             <button class="ql-bold"></button>
             <button class="ql-italic"></button>
             <button class="ql-underline"></button>

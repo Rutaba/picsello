@@ -1,7 +1,6 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-
 @import "./components/buttons.css";
 @import "components/gallery.css";
 @import "./components/shoppingCart.css";
@@ -13,6 +12,7 @@
 @import "./components/intro.css";
 @import "quill/dist/quill.core.css";
 @import "quill/dist/quill.snow.css";
+@import "./client-app.scss";
 
 html {
   @apply text-base-300 bg-white text-13px sm:text-16px;
@@ -70,11 +70,11 @@ html {
   }
 
   &.ql-toolbar {
-    @apply border-gray-200 rounded-t-lg;
+    @apply border-gray-200 rounded-t-lg bg-blue-planning-100 text-blue-planning-300;
   }
 
   .ql-tooltip {
-    @apply border-gray-200 rounded-lg;
+    @apply border-gray-200 rounded-lg ml-24;
 
     &.ql-editing input[type=text]{
       @apply text-input;
@@ -108,6 +108,10 @@ html {
   .bare-modal {
     @apply bg-white w-[92vw] max-h-[85vh] overflow-auto rounded-t-lg p-6 sm:p-8;
   }
+}
+
+.modal-container {
+  @apply overflow-hidden rounded-t-lg sm:rounded-b-lg self-end sm:self-auto;
 }
 
 .modal {

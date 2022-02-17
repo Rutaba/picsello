@@ -1,80 +1,106 @@
 <%= if @proposal do %>
-  <div class="bg-base-300">
-    <h1 class="max-w-2xl px-8 py-4 mx-auto text-2xl font-bold text-white"><%= @organization.name %></h1>
-  </div>
+  <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
+    <div class="flex">
+      <.photographer_logo organization={@organization} />
+    </div>
+    <hr class="border-gray-100 my-8">
 
-  <div class="max-w-2xl px-8 pt-6 mx-auto">
-    <h2 class="text-3xl font-bold"><%= Job.name @job %> Shoot <%= @package.name %></h2>
+    <h2 class="text-5xl md:mt-12">Welcome.</h2>
 
-    <%= if BookingProposal.remainder_paid?(@proposal) do %>
-      <p class="mt-2 mb-6 text-lg">
-        Thanks for your business!
-      </p>
-    <% else %>
-      <p class="mt-2 mb-6 text-lg">
-        Below are details for the <%= Job.name @job %> shoot. Please review and approve or sign where needed.
-      </p>
-    <% end %>
+    <div class="grid md:grid-cols-2 gap-5">
+      <div class="md:mr-24">
+        <p class="whitespace-pre-line">
+          <%= if BookingProposal.remainder_paid?(@proposal) do %>
+            Thank you <%= @job.client.name %>,
 
-    <h3 class="text-sm text-gray-400 uppercase">Have questions?</h3>
-    <a class="block pt-2 link" phx-click="open-compose" href="#">Message <%= @organization.name %></a>
+            Your session fee has been paid in full. We are looking forward to capturing this most special day for you.
 
-    <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
-      <div class="flex flex-col items-start w-full">
-        <%= if @proposal.accepted_at do %>
-          <.badge class="mb-1" color={:green}>Completed</.badge>
-        <% else %>
-          <.badge class="mb-1" color={:red}>To-Do</.badge>
-        <% end %>
-        <div class="flex items-center justify-between w-full">
-          Proposal
-          <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-        </div>
-      </div>
-    </button>
-
-    <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
-      <div class="flex flex-col items-start w-full">
-        <%= if @proposal.signed_at do %>
-          <.badge class="mb-1" color={:green}>Completed</.badge>
-        <% else %>
-          <.badge class="mb-1" color={:red}>To-Do</.badge>
-        <% end %>
-        <div class="flex items-center justify-between w-full">
-          Contract
-          <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-        </div>
-      </div>
-    </button>
-
-    <%= if @proposal.questionnaire_id do %>
-      <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
-        <div class="flex flex-col items-start w-full">
-          <%= if @answer do %>
-            <.badge class="mb-1" color={:green}>Completed</.badge>
+            Thank you for choosing <%= @organization.name %>.
           <% else %>
-            <.badge class="mb-1" color={:red}>To-Do</.badge>
-          <% end %>
-          <div class="flex items-center justify-between w-full">
-            Questionnaire
-            <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-          </div>
-        </div>
-      </button>
-    <% end %>
+            Let’s get your shoot booked!
 
-    <button title="Invoice" type="button" {if invoice_disabled?(@proposal), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal)})} disabled={invoice_disabled?(@proposal)}>
-      <div class="flex flex-col items-start w-full">
-        <%= if BookingProposal.remainder_paid?(@proposal) do %>
-          <.badge class="mb-1" color={:green}>Completed</.badge>
-        <% else %>
-          <.badge class="mb-1" color={:red}>To-Do</.badge>
-        <% end %>
-        <div class="flex items-center justify-between w-full">
-          Invoice
-          <.icon name="forth" class="w-4 h-4 stroke-current"/>
-        </div>
+            We are so excited to work with you!
+
+            Your session will not be considered officially booked until the contract is signed and a retainer is paid. Once you are officially booked, the date and time of your photo session will be held for you and all other inquiries will be declined. When you’re officially booked, look for a confirmation email from us with more details about your session.
+
+            We can’t wait to capture this time for you!
+
+            <span><%= @organization.name %></span>
+          <% end %>
+        </p>
+        <hr class="border-gray-100 my-8">
+        <h3 class="uppercase text-base-250">Have Questions?</h3>
+        <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#">Message <%= @organization.name %></a>
       </div>
-    </button>
+      <div class="md:border md:border-gray-100 sm:px-10 lg:px-20 py-12">
+        <h3 class="text-3xl md:mr-20">Here’s how to officially book your photo session:</h3>
+        <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
+          <div class="flex flex-col items-start w-full">
+            <%= if @proposal.accepted_at do %>
+              <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+            <% else %>
+              <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+            <% end %>
+            <div class="flex items-center justify-between w-full">
+              Review your proposal
+              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+            </div>
+          </div>
+        </button>
+
+        <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
+          <div class="flex flex-col items-start w-full">
+            <%= if @proposal.signed_at do %>
+              <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+            <% else %>
+              <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+            <% end %>
+            <div class="flex items-center justify-between w-full">
+              Read and agree to your contract
+              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+            </div>
+          </div>
+        </button>
+
+        <%= if @proposal.questionnaire_id do %>
+          <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
+            <div class="flex flex-col items-start w-full">
+              <%= if @answer do %>
+                <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+              <% else %>
+                <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+              <% end %>
+              <div class="flex items-center justify-between w-full">
+                Fill out the initial questionnaire
+                <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+              </div>
+            </div>
+          </button>
+        <% end %>
+
+        <button title="Invoice" type="button" {if invoice_disabled?(@proposal), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal)})} disabled={invoice_disabled?(@proposal)}>
+          <div class="flex flex-col items-start w-full">
+            <%= if BookingProposal.remainder_paid?(@proposal) do %>
+              <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+            <% else %>
+              <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+            <% end %>
+            <div class="flex items-center justify-between w-full">
+              Pay your
+              <%= cond do %>
+               <% !BookingProposal.deposit_paid?(@proposal) -> %>retainer
+               <% !BookingProposal.remainder_paid?(@proposal) -> %> remainder
+               <% true -> %> invoice
+              <% end %>
+              <.icon name="forth" class="w-4 h-4 stroke-current"/>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+    <footer class="mt-auto px-8 center-container">
+      <hr class="border-gray-100">
+      <p class="uppercase mt-6 text-xs mb-8">© <%= Date.utc_today().year %> by <%= @organization.name %></p>
+    </footer>
   </div>
 <% end %>

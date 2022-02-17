@@ -9,13 +9,13 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumerTest do
   end
 
   describe "profile photo processed" do
-    test "updates the profile" do
+    test "updates the profile logo" do
       version_id = "123"
-      path = "bucket/path.ext"
+      path = "bucket/logo/path.ext"
 
       org =
         insert(:organization,
-          profile: %{logo: %{id: version_id, url: "http://example.com/bucket/old.ext"}}
+          profile: %{logo: %{id: version_id, url: "http://example.com/bucket/logo/old.ext"}}
         )
 
       Picsello.Profiles.subscribe_to_photo_processed(org)
@@ -27,7 +27,30 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumerTest do
       assert %{profile: %{logo: %{url: url}}} = updated_org = Picsello.Repo.reload!(org)
       assert %{path: "/" <> ^path} = URI.parse(url)
 
-      assert_receive {:image_ready, ^updated_org}
+      assert_receive {:image_ready, :logo, ^updated_org}
+    end
+
+    test "updates the profile main image" do
+      version_id = "123"
+      path = "bucket/main_image/path.ext"
+
+      org =
+        insert(:organization,
+          profile: %{
+            main_image: %{id: version_id, url: "http://example.com/bucket/main_image/old.ext"}
+          }
+        )
+
+      Picsello.Profiles.subscribe_to_photo_processed(org)
+
+      ref = test_message(%{"path" => path, "metadata" => %{"version-id" => version_id}})
+
+      assert_receive {:ack, ^ref, _, _}
+
+      assert %{profile: %{main_image: %{url: url}}} = updated_org = Picsello.Repo.reload!(org)
+      assert %{path: "/" <> ^path} = URI.parse(url)
+
+      assert_receive {:image_ready, :main_image, ^updated_org}
     end
   end
 end
