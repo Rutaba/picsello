@@ -53,7 +53,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       assign_new(socket, :presets, fn -> Picsello.EmailPreset.for_job(job) end)
     end)
     |> then(fn %{assigns: %{presets: presets}} = socket ->
-      assign(socket, preset_options: Enum.map(presets, &{&1.name, &1.id}))
+      assign(socket, preset_options: [{"", ""} | Enum.map(presets, &{&1.name, &1.id})])
     end)
     |> ok()
   end
@@ -104,16 +104,20 @@ defmodule PicselloWeb.ClientMessageComponent do
         },
         %{assigns: %{presets: presets, job: job}} = socket
       ) do
-    preset_id = String.to_integer(preset_id)
-
     preset =
-      presets
-      |> Enum.find(&(Map.get(&1, :id) == preset_id))
-      |> Picsello.EmailPreset.resolve_variables(job, PresetHelper)
+      case Integer.parse(preset_id) do
+        :error ->
+          %{subject_template: "", body_template: ""}
+
+        {preset_id, _} ->
+          presets
+          |> Enum.find(&(Map.get(&1, :id) == preset_id))
+          |> Picsello.EmailPreset.resolve_variables(job, PresetHelper)
+      end
 
     socket
     |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})
-    |> push_event("quill:update", %{"text" => preset.body_template})
+    |> push_event("quill:update", %{"html" => preset.body_template})
     |> noreply()
   end
 

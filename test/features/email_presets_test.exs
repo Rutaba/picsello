@@ -11,7 +11,7 @@ defmodule Picsello.EmailPresetsTest do
       "wedding!A1:E4" => """
       state	subject lines	copy	email template name
       lead	hear them bells a ringin'	Hi	bells
-      lead	Let's do this {{client_first_name}}.	Gimme a call at {{photographer_cell}}.	please
+      lead	You owe me {{invoice_amount}}, {{client_first_name}}.	Gimme a call at <strong>{{photographer_cell}}</strong>.	please
       job	thanks for the money!	Dollar bills y'all.	stacking paper
       post shoot	that was fun!	Good job everybody.	good job
       """
@@ -51,12 +51,14 @@ defmodule Picsello.EmailPresetsTest do
     |> find(
       select("Select email preset"),
       &(&1
-        |> assert_has(css("option", count: 2))
+        |> assert_has(css("option", count: 3))
         |> assert_has(css("option", text: "bells"))
         |> assert_has(css("option", text: "please"))
         |> click(css("option", text: "please")))
     )
-    |> find(css("#editor"), &assert_text(&1, "Gimme a call at #{user.onboarding.phone}"))
-    |> assert_value(text_field("Subject line"), "Let's do this Elizabeth.")
+    |> assert_has(css("#editor strong", text: user.onboarding.phone))
+    |> assert_value(text_field("Subject line"), "You owe me , Elizabeth.")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Send Email"))
   end
 end
