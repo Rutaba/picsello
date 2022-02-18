@@ -26,12 +26,12 @@
 
       <div class="choose-product-item lg:w-5/12 relative">
       <div class="lg:w-11/12 flex flex-col ml-auto">
-      <p class="text-2xl text-base-300 font-bold mb-6 hidden lg:block">Select an option below</p>
+      <p class="text-2xl text-base-300 font-bold mb-6 hidden lg:pt-2 lg:block">Select an option below</p>
           <%= for template <- @templates do %>
-          <div class="p-5 xl:p-7 border darkerBorder rounded mb-4 lg:mb-5">
+          <div class="p-5 xl:p-7 border darkerBorder rounded mb-4 lg:mb-7">
             <div class="flex justify-between items-center">
               <div class="flex flex-col">
-                <p class="font-semibold text-lg pb-1 text-base-300">
+                <p class="font-semibold text-lg pb-1.5 text-base-300">
                  <%= if template.title === "Framed Prints" do %>
                      Wall Art
                  <% else %>
@@ -49,8 +49,8 @@
             </div>
           </div>
           <% end %>
-          <div class="p-5 xl:p-7 border darkerBorder rounded flex justify-between items-center">
-              <p class="font-semibold text-lg pb-1 text-base-300">Digital download</p>
+          <div class="px-5 py-7 xl:px-7 xl:py-9 border darkerBorder rounded flex justify-between items-center">
+              <p class="font-semibold text-lg text-base-300">Digital download</p>
                <button phx-click="product_preview_photo_click" phx-target={@myself} class="btn-primary py-3.5 px-10">Select</button>
           </div>
            </div>
