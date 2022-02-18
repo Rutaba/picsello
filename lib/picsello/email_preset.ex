@@ -160,13 +160,9 @@ defmodule Picsello.EmailPreset do
           &with(
             %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
             do: """
-            <a
-              style="display:inline-block;background:#1F1C1E;color:#ffffff;font-family:Be Vietnam, Arial;font-size:18px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:20px 30px;mso-padding-alt:0px;border-radius:12px;"
-              target="_blank"
-              href="#{Picsello.BookingProposal.url(proposal_id)}"
-            >
-              View Proposal
-            </a>
+            <a style="display:inline-block;background:#1F1C1E;color:#ffffff;font-family:Be Vietnam, Arial;font-size:18px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:20px 30px;mso-padding-alt:0px;border-radius:12px;"
+               target="_blank"
+               href="#{Picsello.BookingProposal.url(proposal_id)}">View Proposal</a>
             """
           ),
         "wardrobe_guide_link" => &noop/1,

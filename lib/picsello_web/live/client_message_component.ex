@@ -52,8 +52,12 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> then(fn %{assigns: %{job: job}} = socket ->
       assign_new(socket, :presets, fn -> Picsello.EmailPreset.for_job(job) end)
     end)
-    |> then(fn %{assigns: %{presets: presets}} = socket ->
-      assign(socket, preset_options: [{"", ""} | Enum.map(presets, &{&1.name, &1.id})])
+    |> then(fn
+      %{assigns: %{presets: [_ | _] = presets}} = socket ->
+        assign(socket, preset_options: [{"none", ""} | Enum.map(presets, &{&1.name, &1.id})])
+
+      socket ->
+        assign(socket, preset_options: [])
     end)
     |> ok()
   end

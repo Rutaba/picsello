@@ -2,6 +2,7 @@
 defmodule Picsello.EmailPresetsTest do
   use Picsello.FeatureCase, async: true
   require Ecto.Query
+  import Money.Sigils
 
   setup :onboarded
   setup :authenticated
@@ -11,7 +12,7 @@ defmodule Picsello.EmailPresetsTest do
       "wedding!A1:E4" => """
       state	subject lines	copy	email template name
       lead	hear them bells a ringin'	Hi	bells
-      lead	You owe me {{invoice_amount}}, {{client_first_name}}.	Gimme a call at <strong>{{photographer_cell}}</strong>.	please
+      lead	You owe me {{invoice_amount}}, {{{client_first_name}}}.	Gimme a call at <strong>{{photographer_cell}}</strong>.	please
       job	thanks for the money!	Dollar bills y'all.	stacking paper
       post shoot	that was fun!	Good job everybody.	good job
       """
@@ -35,7 +36,8 @@ defmodule Picsello.EmailPresetsTest do
         insert(:lead,
           user: user,
           type: "wedding",
-          client: [name: "Elizabeth Taylor"]
+          client: [name: "Elizab&th Taylor"],
+          package: %{base_price: ~M[10000]USD}
         )
     ]
   end
@@ -57,7 +59,7 @@ defmodule Picsello.EmailPresetsTest do
         |> click(css("option", text: "please")))
     )
     |> assert_has(css("#editor strong", text: user.onboarding.phone))
-    |> assert_value(text_field("Subject line"), "You owe me , Elizabeth.")
+    |> assert_value(text_field("Subject line"), "You owe me $100.00, Elizab&th.")
     |> wait_for_enabled_submit_button()
     |> click(button("Send Email"))
   end
