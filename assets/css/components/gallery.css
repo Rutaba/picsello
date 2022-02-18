@@ -582,23 +582,13 @@
 }
 
 @media screen and (min-width: 1280px) {
-    /*
-    .editProductPopup {
-        width: 95vw;
-        max-width: 1440px;
-        height: 95vh;
-        max-height: 894px;
-    }
-    */
-
-    .choose-product__modal{
+  .choose-product__modal{
         @apply pr-20
     }
 
     .editProductPopup__img{
         max-height: 750px;
     }
-
 }
 
 @media screen and (min-width: 1024px) {
@@ -657,13 +647,6 @@
     .choose-product-item {
         @apply w-full
     }
-
-  /*  .editProductPopup {
-        width: 95vw;
-        max-width: 1440px;
-        height: 95vh;
-        max-height: 894px;
-    }*/
 }
 
 @media screen and (min-width: 1024px) {
