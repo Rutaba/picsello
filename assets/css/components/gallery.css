@@ -239,7 +239,7 @@
     text-2xl
     font-bold
     text-right;
-    max-width: 50px;
+    max-width: 48px;
 }
 
 .circleBtn ul {
@@ -263,8 +263,8 @@
     z-10
     no-underline
     box-border
-    left-4;
-    bottom: 1.1rem;
+    left-4
+    bottom-4;
     background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 5) 33%, rgba(255, 255, 255, 1) 33%);
 }
 
@@ -281,10 +281,11 @@
 
 .circleBtn ul li a {
     @apply relative
-    block
-    py-1.5
+    flex
+    items-center
+    py-2
     px-4;
-    min-width: 50px;
+    min-width: 48px;
 }
 
 .circleBtn ul span {
@@ -300,7 +301,6 @@
     text-center
     text-2xl
     max-w-0
-    pb-1.5
     no-underline
     box-border
     align-top
