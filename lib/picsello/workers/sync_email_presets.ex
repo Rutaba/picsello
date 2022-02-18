@@ -10,7 +10,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
 
   def perform(), do: perform(%{args: config()})
 
-  def perform(%{args: config}) do
+  def perform(%{args: %{type_ranges: %{}} = config}) do
     {:ok, %{token: token}} =
       Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets.readonly")
 
@@ -44,6 +44,8 @@ defmodule Picsello.Workers.SyncEmailPresets do
       |> Repo.delete_all()
     end)
   end
+
+  def perform(_), do: perform()
 
   defp fetch_sheet({type, range}, connection, %{sheet_id: sheet_id, column_map: column_map}) do
     {:ok, %{values: [keys | rows]}} =
