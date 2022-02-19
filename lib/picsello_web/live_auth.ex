@@ -44,6 +44,7 @@ defmodule PicselloWeb.LiveAuth do
   defp authenticate_gallery(socket, %{"hash" => hash}) do
     socket |> assign(gallery: Galleries.get_gallery_by_hash(hash))
   end
+
   defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do
     socket
     |> assign(
@@ -93,15 +94,10 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp authenticate_gallery_for_photographer(
-         %{assigns: %{gallery: gallery}} = socket, %{"password" => password}
+         %{assigns: %{gallery: gallery}} = socket,
+         %{"password" => password}
        ) do
-    valid? =
-      if gallery.password == password do
-        Galleries.build_gallery_session_token(gallery)
-        true
-      else
-        false
-      end
+    valid? = if gallery.password == password, do: true, else: false
     socket |> assign(authenticated: valid?)
   end
 
