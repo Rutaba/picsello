@@ -19,7 +19,13 @@
     <%= if @has_product_info do %>
     <div class="grid grid-cols-5">
         <div class="flex flex-col col-span-3">
-            <div class="pt-3 pb-1.5 font-bold text-sm lg:text-xl"><%= @category_template.title %></div>
+            <div class="pt-3 pb-1.5 font-bold text-sm lg:text-xl">
+            <%= if @category_template.title === "Framed Prints" do %>
+               Wall Art
+            <% else %>
+               <%= @category_template.title %>
+            <% end %>
+            </div>
             <div class="photos__price text-xs lg:text-base text-base-250" >From <%= Money.to_string(@category_template.price) %></div>
         </div>
         <%= if @edit_product_link do %>
