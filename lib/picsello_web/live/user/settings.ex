@@ -252,6 +252,7 @@ defmodule PicselloWeb.Live.User.Settings do
         <:link to={{:profile_settings, :index}} >Public Profile</:link>
         <:link to={{:contacts, :index}} >Contacts</:link>
         <:link to={{:brand_settings, :index}} >Brand</:link>
+        <:link to={{:finance_settings, :index}} >Finances</:link>
       </._settings_nav>
       <hr />
 
