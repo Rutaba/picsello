@@ -588,8 +588,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp credit(form), do: form |> current() |> Package.print_credits()
 
-  defp downloads_total(form), do: form |> current() |> Package.downloads_price()
-
   defp total_price(form), do: form |> current() |> Package.price()
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
