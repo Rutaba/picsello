@@ -45,8 +45,9 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   def quill_input(assigns) do
-    html_field =  assigns |> Map.get(:html_field)
-    text_field =  assigns |> Map.get(:text_field)
+    html_field = assigns |> Map.get(:html_field)
+    text_field = assigns |> Map.get(:text_field)
+
     ~H"""
     <div class="col-span-2">
       <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2" data-placeholder={assigns |> Map.get(:placeholder)}

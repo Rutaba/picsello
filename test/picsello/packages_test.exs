@@ -166,6 +166,8 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Keepsake Wedding",
                  base_price: %Money{amount: 58_000},
+                 print_credits: %Money{amount: 0},
+                 buy_all: %Money{amount: 0},
                  download_count: 10,
                  shoot_count: 2,
                  turnaround_weeks: 12
