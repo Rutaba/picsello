@@ -2,12 +2,12 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
   import PicselloWeb.LiveHelpers
-  alias Picsello.{Galleries, CategoryTemplate}
+  alias Picsello.{Galleries, Category}
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id, photo_ids: photo_ids}, socket) do
     photo = Galleries.get_photo(photo_id)
-    templates = CategoryTemplate.all_with_gallery_products(gallery.id)
+    templates = Category.all_with_gallery_products(gallery.id)
 
     socket
     |> assign(:gallery_id, gallery.id)

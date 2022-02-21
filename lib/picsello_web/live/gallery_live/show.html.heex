@@ -105,12 +105,13 @@
         <ul class="grid gap-8 grid-cols-4 mx-auto">
           <%= for product <- @products do %>
             <.live_component
-              module={PicselloWeb.GalleryLive.ProductPreviewComponent}
+              category={product.category}
+              edit_product_link={Routes.preview_path(@socket, :preview, product.gallery_id, product.id)}
+              has_info={true}
               id={product.id}
+              module={PicselloWeb.GalleryLive.ProductPreviewComponent}
               photo={product.preview_photo}
-              category_template={product.category_template}
-              edit_product_link={Routes.preview_path(@socket, :preview, product.gallery_id, product.id, product.category_template.id)}
-              has_info={true}/>
+              photo={product.preview_photo} />
           <% end %>
         </ul>
       </div>

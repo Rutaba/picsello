@@ -8,7 +8,7 @@ defmodule Picsello.GalleryProducts do
 
   def get(fields) do
     Repo.get_by(GalleryProduct, fields)
-    |> Repo.preload([:preview_photo, :category_template])
+    |> Repo.preload([:preview_photo, :category])
   end
 
   @doc """
@@ -16,12 +16,10 @@ defmodule Picsello.GalleryProducts do
   """
   def get_gallery_products(gallery_id) do
     from(product in GalleryProduct,
-      where: product.gallery_id == ^gallery_id and not is_nil(product.preview_photo_id),
-      inner_join: preview_photo in Picsello.Galleries.Photo,
-      on: product.preview_photo_id == preview_photo.id,
-      inner_join: category_template in Picsello.CategoryTemplate,
-      on: product.category_template_id == category_template.id,
-      select_merge: %{preview_photo: preview_photo, category_template: category_template}
+      inner_join: preview_photo in assoc(product, :preview_photo),
+      inner_join: category in assoc(product, :category),
+      where: product.gallery_id == ^gallery_id,
+      select_merge: %{preview_photo: preview_photo, category: category}
     )
     |> Repo.all()
   end
@@ -36,27 +34,28 @@ defmodule Picsello.GalleryProducts do
   @doc """
   Product sourcing and creation.
   """
-  def get_or_create_gallery_product(gallery_id, category_template_id) do
-    get_gallery_product(gallery_id, category_template_id)
+  def get_or_create_gallery_product(gallery_id, category_id) do
+    get_gallery_product(gallery_id, category_id)
     |> case do
       nil ->
-        Repo.insert!(%GalleryProduct{
+        %GalleryProduct{
           gallery_id: gallery_id,
-          category_template_id: category_template_id
-        })
+          category_id: category_id
+        }
+        |> Repo.insert!()
 
       product ->
         product
     end
-    |> Repo.preload([:preview_photo, :category_template])
+    |> Repo.preload([:preview_photo, :category])
   end
 
   @doc """
   Product search.
   """
-  def get_gallery_product(gallery_id, category_template_id) do
+  def get_gallery_product(gallery_id, category_id) do
     GalleryProduct
-    |> Repo.get_by(gallery_id: gallery_id, category_template_id: category_template_id)
+    |> Repo.get_by(gallery_id: gallery_id, category_id: category_id)
   end
 
   @doc """

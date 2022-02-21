@@ -52,7 +52,7 @@ defmodule PicselloWeb.GalleryLive.Show do
     end
 
     products =
-      Picsello.CategoryTemplate.all()
+      Galleries.categories()
       |> Enum.map(fn template ->
         GalleryProducts.get_or_create_gallery_product(gallery.id, template.id)
       end)

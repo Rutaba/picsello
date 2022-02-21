@@ -120,7 +120,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> open_modal(
       PicselloWeb.GalleryLive.EditProduct,
       %{
-        category_template: gallery_product.category_template,
+        category: gallery_product.category,
         photo: gallery_product.preview_photo
       }
     )
@@ -136,15 +136,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
     template_id = template_id |> to_integer()
 
-    category_template =
+    category =
       GalleryProducts.get(id: template_id)
-      |> then(& &1.category_template)
+      |> then(& &1.category)
 
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.EditProduct,
       %{
-        category_template: category_template,
+        category: category,
         photo: photo
       }
     )

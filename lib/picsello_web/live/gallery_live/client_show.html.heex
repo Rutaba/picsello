@@ -36,10 +36,10 @@
         <ul class="grid gap-4 sm:gap-8 grid-cols-2 xl:grid-cols-4 mx-auto pb-8 lg:pb-14 pt-5 lg:pt-10 border-b productPreview__client">
             <%= for product <- @products do %>
             <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
-            id={product.id}
-            photo={product.preview_photo}
-            category_template={product.category_template}
-            click_params={product.id}
+                id={product.id}
+                photo={product.preview_photo}
+                category={product.category}
+                click_params={product.id}
             />
             <% end %>
         </ul>

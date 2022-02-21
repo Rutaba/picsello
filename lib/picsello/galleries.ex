@@ -621,4 +621,6 @@ defmodule Picsello.Galleries do
     gallery
     |> Repo.preload(job: [client: [organization: :user]])
   end
+
+  def categories, do: Picsello.Category.active() |> Repo.all()
 end

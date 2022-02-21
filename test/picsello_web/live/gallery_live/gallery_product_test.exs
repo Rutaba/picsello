@@ -4,43 +4,12 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   use Picsello.FeatureCase, async: true
 
   alias Picsello.Repo
-  alias Picsello.Galleries.Gallery
-  alias Picsello.Galleries.GalleryProduct
   alias Picsello.Galleries.Photo
-  alias Picsello.Category
-  alias Picsello.CategoryTemplate
-  require Logger
 
   setup do
-    if Repo.aggregate(Category, :count) < 1 do
-      frames = Picsello.CategoryTemplate.frames()
-
-      Enum.each(frames, fn row ->
-        length = Repo.aggregate(Category, :count)
-
-        category =
-          Repo.insert(%Category{
-            name: row.category_name,
-            icon: "example_icon",
-            position: length,
-            whcc_id: Integer.to_string(length),
-            whcc_name: "example_name"
-          })
-
-        case category do
-          {:ok, %{id: category_id}} ->
-            Repo.insert(%CategoryTemplate{
-              name: row.name,
-              corners: row.corners,
-              price: row.price,
-              category_id: category_id
-            })
-
-          x ->
-            Logger.error("category_template seed was not inserted. #{x}")
-        end
-      end)
-    end
+    Enum.each(Picsello.Category.frame_images(), fn frame_image ->
+      insert(:category, frame_image: frame_image)
+    end)
 
     :ok
   end
@@ -54,29 +23,15 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   test "redirect from galleries", %{session: session} do
     %{gallery_id: id} = set_gallery_product()
-    frame = Picsello.CategoryTemplate.frames() |> List.first()
-    %{id: template_id} = Repo.get_by(Picsello.CategoryTemplates, %{name: frame.name})
+    frame = Picsello.Category.frame_images() |> hd
+    %{id: category_id} = Repo.get_by(Picsello.Category, frame_image: frame)
 
     session
     |> visit("/galleries/#{id}")
-    |> click(css(".prod-link#{template_id}"))
+    |> click(css(".prod-link#{category_id}"))
     |> find(css(".item-content"))
   end
 
-  #  test "save preview gallery product", %{session: session} do
-  #    %{id: g_product_id, gallery_id: gallery_id} = set_gallery_product()
-  #
-  #    session
-  #    |> visit("/galleries/#{gallery_id}/product/#{g_product_id}")
-  #    |> click(css(".item-content"))
-  #    |> click(css(".save-button"))
-  #
-  #    %{preview_photo: %{name: url}} =
-  #      Repo.get_by(GalleryProduct, %{id: g_product_id}) |> Repo.preload([:preview_photo])
-  #
-  #    assert "card_blank.png" == url
-  #  end
-  #
   test "grid load", %{session: session, gallery: %{id: gallery_id, client_link_hash: hash}} do
     photos = :lists.map(fn _ -> :rand.uniform(999_999) end, :lists.seq(1, 22))
 
@@ -102,20 +57,19 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   end
 
   def set_gallery_product() do
-    %{id: job_id} = insert(:lead)
-    %{id: id} = insert(%Gallery{name: "testGalleryName", job_id: job_id})
+    gallery = insert(:gallery, name: "testGalleryName", job: insert(:lead))
     photo_url = "card_blank.png"
 
-    insert(%Photo{
-      gallery_id: id,
+    insert(:photo,
+      gallery: gallery,
       preview_url: photo_url,
       original_url: photo_url,
       name: photo_url,
       position: 1
-    })
+    )
 
-    template = Repo.all(CategoryTemplate) |> hd
+    category = Picsello.Category |> Repo.all() |> hd
 
-    insert(%GalleryProduct{gallery_id: id, category_template_id: template.id})
+    insert(:gallery_product, gallery: gallery, category: category)
   end
 end
