@@ -57,7 +57,7 @@ export const downloadStage = context => {
     if (context.task && context.task.bucket && context.task.originalPath) {
         const filename = tmpFileName(context.task.originalPath)
         return downloadInto(context.task.bucket, context.task.originalPath, filename)
-            .then(() => {
+            .then(async () => {
                 context.artifacts.original.downloaded = true;
                 context.artifacts.original.filename = filename;
                 context.artifacts.original.image = sharp(filename);
@@ -74,10 +74,16 @@ export const aspectStage = context => {
         return context.artifacts.original.image
             .metadata()
             .then(data => {
-                context.artifacts.aspectRatio = data.width / data.height;
-                context.artifacts.width = data.width;
-                context.artifacts.height = data.height;
 
+                if (data.orientation && data.orientation > 4) {
+                  context.artifacts.aspectRatio = data.height / data.width;
+                  context.artifacts.width = data.height;
+                  context.artifacts.height = data.width;
+                } else {
+                  context.artifacts.aspectRatio = data.width / data.height;
+                  context.artifacts.width = data.width;
+                  context.artifacts.height = data.height;
+                }
                 return context;
             })
     }
@@ -92,6 +98,7 @@ export const previewStage = context => {
         const previewFilename = tmpFileName(task.previewPath)
         return original.image
             .resize({width: previewWidth})
+            .withMetadata()
             .toFile(previewFilename)
             .then(() => {
                 return uploadTo(previewFilename, task.bucket, task.previewPath)
@@ -165,12 +172,15 @@ export const watermarkStage = async context => {
         const wmLayer = tmpFileName(task.watermarkPath + ".layer.png")
 
         const originalMeta = await original.image.metadata()
+        const [width, height] = originalMeta.orientation && originalMeta.orientation > 4
+              ? [originalMeta.height, originalMeta.width]
+              : [originalMeta.width, originalMeta.height]
 
         await watermark.image
             .linear(0, 0)
             .resize(
-                Math.floor(originalMeta.width * ratio),
-                Math.floor(originalMeta.height * ratio),
+                Math.floor(width * ratio),
+                Math.floor(height * ratio),
                 {
                     fit: 'contain',
                     background: { r: 0, g: 0, b: 0, alpha: 0 }
@@ -179,8 +189,8 @@ export const watermarkStage = async context => {
             .toFile(wmPattern)
 
         const layer  = await sharp({ create: {
-                width: originalMeta.width,
-                height: originalMeta.height,
+                width: width,
+                height: height,
                 channels: 4,
                 background: { r: 255, g: 255, b: 255, alpha: 1 }
             }})
@@ -198,7 +208,8 @@ export const watermarkStage = async context => {
             .toFile(wmLayer)
 
         await original.image
-            .resize({width: originalMeta.width, height: originalMeta.height, kernel: 'nearest'})
+            .rotate()
+            .resize({width: width, height: height, kernel: 'nearest'})
             .composite([{input: wmLayer}])
             .toFile(watermarkedFilename)
 
