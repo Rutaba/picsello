@@ -101,19 +101,11 @@ const ClearInput = {
       inputWasFocussed = e.relatedTarget === el;
     });
 
-<<<<<<< HEAD
       this.el.addEventListener('click', () => {
         input.value = null;
         input.dispatchEvent(new Event('input', { bubbles: true }));
         if (inputWasFocussed) input.focus();
       });
-=======
-    this.el.addEventListener('click', () => {
-      input.value = null;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      if (inputWasFocussed) input.focus();
-    });
->>>>>>> dd482509 (feat: Quill input handling, make separate component)
   },
 };
 

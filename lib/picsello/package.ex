@@ -49,7 +49,7 @@ defmodule Picsello.Package do
   end
 
   def archive_changeset(package),
-      do: change(package, %{archived_at: DateTime.truncate(DateTime.utc_now(), :second)})
+    do: change(package, %{archived_at: DateTime.truncate(DateTime.utc_now(), :second)})
 
   defp choose_template(package, attrs, _opts \\ []) do
     package |> cast(attrs, [:package_template_id])
@@ -111,10 +111,10 @@ defmodule Picsello.Package do
   def print_credits(%__MODULE__{print_credits: credits}), do: credits
 
   def adjusted_base_price(%__MODULE__{base_multiplier: multiplier} = package),
-      do: package |> base_price() |> Money.multiply(multiplier)
+    do: package |> base_price() |> Money.multiply(multiplier)
 
   def base_adjustment(%__MODULE__{} = package),
-      do: package |> adjusted_base_price() |> Money.subtract(base_price(package))
+    do: package |> adjusted_base_price() |> Money.subtract(base_price(package))
 
   def price(%__MODULE__{} = package) do
     Enum.reduce(
@@ -136,13 +136,13 @@ defmodule Picsello.Package do
     from(package in __MODULE__,
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
-        is_nil(package.archived_at),
+          is_nil(package.archived_at),
       order_by: [desc: package.inserted_at]
     )
   end
 
   def templates_for_user(%User{organization_id: organization_id}),
-      do: templates_for_organization_id(organization_id)
+    do: templates_for_organization_id(organization_id)
 
   def templates_for_user(user, type) when type != nil do
     from(template in templates_for_user(user), where: template.job_type == ^type)
