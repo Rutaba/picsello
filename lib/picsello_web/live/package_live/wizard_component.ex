@@ -214,12 +214,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
           <span>Description <%= error_tag(@f, :description) %></span>
-
           <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
             Clear
           </.icon_button>
         </.input_label>
-
         <.quill_input f={@f} style={"min-height: 8rem;"} html_field={:description} placeholder={"Full wedding package ideal for multiple shoots across the entire wedding journey."} />
       </div>
 
