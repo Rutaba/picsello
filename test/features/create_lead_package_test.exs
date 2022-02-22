@@ -1,5 +1,7 @@
 defmodule Picsello.CreateLeadPackageTest do
   use Picsello.FeatureCase, async: true
+  import Phoenix.HTML, only: [safe_to_string: 1]
+  import Phoenix.HTML.Format, only: [text_to_html: 1]
   alias Picsello.{Repo, Package}
 
   setup :onboarded
@@ -7,25 +9,45 @@ defmodule Picsello.CreateLeadPackageTest do
 
   @add_package_button testid("add-package-from-shoot")
 
+  defp scroll_page(session, testid) do
+    session
+    |> execute_script("document.querySelector('[id=\"#{testid}\"]').scrollIntoView()")
+  end
+
   def fill_in_package_form(session) do
     session
     |> assert_text("Add a Package: Provide Details")
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> fill_in(text_field("Description"), with: "My greatest wedding package")
+    |> click(css("div.ql-editor"))
+    |> send_keys(["My greatest wedding package"])
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(text_field("Base Price"), with: "$100")
+    |> scroll_page("package_pricing_is_enabled")
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
-    |> click(checkbox("Include download credits"))
-    |> fill_in(text_field("download_count"), with: "2")
-    |> assert_has(definition("Total Price", text: "$100.00"))
+    |> click(checkbox("download_includes_credits"))
+    |> find(
+      text_field("download_count"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
+    )
+    |> click(checkbox("package_pricing_is_buy_all"))
+    |> find(
+      text_field("package[buy_all]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
+    )
+    |> click(checkbox("package_pricing_is_enabled"))
+    |> find(
+      text_field("package[print_credits]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
+    )
+    |> assert_has(definition("Total Price", text: "$134.00"))
   end
 
   feature "user without package templates creates a package", %{session: session, user: user} do
@@ -42,13 +64,19 @@ defmodule Picsello.CreateLeadPackageTest do
 
     base_price = Money.new(10_000)
     download_each_price = Money.new(200)
+    buy_all = Money.new(1000)
+    print_credits = Money.new(3000)
+
+    description = "<p>My greatest wedding package</p>"
 
     assert %Package{
              name: "Wedding Deluxe",
              shoot_count: 2,
-             description: "My greatest wedding package",
+             description: ^description,
              base_price: ^base_price,
              download_count: 2,
+             buy_all: ^buy_all,
+             print_credits: ^print_credits,
              download_each_price: ^download_each_price
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
   end
@@ -56,10 +84,23 @@ defmodule Picsello.CreateLeadPackageTest do
   feature "user with package templates sees them", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
-    insert(:package_template, user: user, job_type: "wedding", name: "best wedding")
-    insert(:package_template, user: user, job_type: "wedding", name: "lame wedding")
+    insert(:package_template,
+      user: user,
+      job_type: "wedding",
+      name: "best wedding",
+      buy_all: 20,
+      print_credits: 20
+    )
 
-    insert(:package_template, user: user, job_type: "other")
+    insert(:package_template,
+      user: user,
+      job_type: "wedding",
+      name: "lame wedding",
+      buy_all: 20,
+      print_credits: 20
+    )
+
+    insert(:package_template, user: user, job_type: "other", buy_all: 20, print_credits: 20)
 
     selected_card = css("[data-testid='template-card'] > .border-blue-planning-300")
 
@@ -84,7 +125,13 @@ defmodule Picsello.CreateLeadPackageTest do
   feature "user with package templates creates new package", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
-    insert(:package_template, user: user, job_type: "wedding", name: "best wedding")
+    insert(:package_template,
+      user: user,
+      job_type: "wedding",
+      name: "best wedding",
+      buy_all: 20,
+      print_credits: 20
+    )
 
     session
     |> visit("/leads/#{lead.id}")
@@ -105,6 +152,8 @@ defmodule Picsello.CreateLeadPackageTest do
 
     base_price = Money.new(10_000)
     download_each_price = Money.new(200)
+    buy_all = Money.new(5000)
+    print_credits = Money.new(1500)
 
     template =
       insert(:package_template,
@@ -114,6 +163,8 @@ defmodule Picsello.CreateLeadPackageTest do
         shoot_count: 1,
         description: "desc",
         base_price: base_price,
+        buy_all: buy_all,
+        print_credits: print_credits,
         download_count: 1,
         download_each_price: download_each_price
       )
@@ -134,6 +185,8 @@ defmodule Picsello.CreateLeadPackageTest do
              shoot_count: 1,
              description: "desc",
              base_price: ^base_price,
+             buy_all: ^buy_all,
+             print_credits: ^print_credits,
              download_count: 1,
              download_each_price: ^download_each_price,
              package_template_id: ^template_id
@@ -145,6 +198,8 @@ defmodule Picsello.CreateLeadPackageTest do
 
     base_price = Money.new(10_000)
     download_each_price = Money.new(200)
+    buy_all = Money.new(0)
+    print_credits = Money.new(0)
 
     template =
       insert(:package_template,
@@ -154,6 +209,8 @@ defmodule Picsello.CreateLeadPackageTest do
         shoot_count: 2,
         description: "desc",
         base_price: base_price,
+        buy_all: buy_all,
+        print_credits: print_credits,
         download_count: 1,
         download_each_price: download_each_price
       )
@@ -165,7 +222,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Customize"))
     |> assert_value(text_field("Title"), "best wedding")
     |> assert_value(select("# of Shoots"), "2")
-    |> assert_value(text_field("Description"), "desc")
+    |> click(css("div.ql-editor"))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
@@ -185,9 +242,11 @@ defmodule Picsello.CreateLeadPackageTest do
              name: "Wedding Deluxe",
              job_type: nil,
              shoot_count: 2,
-             description: "desc",
+             description: "<p>desc</p>",
              base_price: ^base_price,
              download_count: 1,
+             buy_all: ^buy_all,
+             print_credits: ^print_credits,
              download_each_price: ^download_each_price,
              package_template_id: ^template_id
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
@@ -202,20 +261,39 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("Title"), with: " ")
     |> assert_has(css("label", text: "Title can't be blank"))
-    |> fill_in(text_field("Description"), with: " ")
+    |> click(css("div.ql-editor"))
+    |> send_keys([" "])
     |> assert_has(css("label", text: "Description can't be blank"))
     |> assert_has(css("button:disabled[type='submit']"))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> fill_in(text_field("Description"), with: "My greatest wedding package")
+    |> click(css("div.ql-editor"))
+    |> send_keys(["My greatest wedding package"])
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_disabled_submit(text: "Save")
     |> fill_in(text_field("Base Price"), with: " ")
-    |> click(checkbox("Include download credits"))
-    |> fill_in(text_field("download_count"), with: " ")
+    |> scroll_page("package_pricing_is_enabled")
     |> click(checkbox("Set my own download price"))
-    |> fill_in(text_field("download_each_price"), with: " ")
+    |> find(
+      text_field("download_each_price"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
+    )
+    |> click(checkbox("download_includes_credits"))
+    |> find(
+      text_field("download_count"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
+    )
+    |> click(checkbox("package_pricing_is_buy_all"))
+    |> find(
+      text_field("package[buy_all]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
+    )
+    |> click(checkbox("package_pricing_is_enabled"))
+    |> find(
+      text_field("package[print_credits]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
+    )
     |> assert_has(definition("Total Price", text: "$0.00"))
     |> assert_disabled_submit()
   end
@@ -230,7 +308,8 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_disabled_submit()
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> fill_in(text_field("Description"), with: "My greatest wedding package")
+    |> click(css("div.ql-editor"))
+    |> send_keys(["My greatest wedding package"])
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_has(testid("step-number", text: "Step 2"))
