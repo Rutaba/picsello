@@ -530,4 +530,20 @@ defmodule Picsello.AccountsTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "user_stripe_setup_complete?/1" do
+    test "returns true if strip account setup complete" do
+      org = insert(:organization, stripe_account_id: "abc")
+      user = insert(:user, organization: org)
+
+      assert Accounts.user_stripe_setup_complete?(user) == true
+    end
+
+    test "returns false if strip account setup not complete" do
+      org = insert(:organization, stripe_account_id: nil)
+      user = insert(:user, organization: org)
+
+      assert Accounts.user_stripe_setup_complete?(user) == false
+    end
+  end
 end

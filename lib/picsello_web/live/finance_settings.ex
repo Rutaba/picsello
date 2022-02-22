@@ -3,9 +3,12 @@ defmodule PicselloWeb.Live.FinanceSettings do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
+  alias Picsello.Accounts
+
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: _user}} = socket) do
     socket
+    |> add_stripe_button_details()
     |> ok()
   end
 
@@ -52,12 +55,22 @@ defmodule PicselloWeb.Live.FinanceSettings do
           <.card title="Stripe Account">
             <p>Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
             <div class="text-right">
-              <button type="button" phx-click="render-stripe-account" class="px-8 text-center btn-primary">Go to Stripe account</button>
+              <%= button @stripe_button.text, to: @stripe_button.url, method: "get", target: "_blank", class: "px-8 text-center btn-primary" %>
             </div>
           </.card>
         </div>
       </div>
     </.settings_nav>
     """
+  end
+
+  def add_stripe_button_details(%{assigns: %{current_user: user}} = socket) do
+    stripe_button =
+      if Accounts.user_stripe_setup_complete?(user),
+        do: %{text: "Go to Stripe account", url: "https://dashboard.stripe.com/"},
+        else: %{text: "Set up stripe", url: "/users/settings/stripe-refresh"}
+
+    socket
+    |> assign(:stripe_button, stripe_button)
   end
 end
