@@ -38,7 +38,7 @@ import PhotoUpdate from './hooks/photo-update';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import Preview from './hooks/preview';
 import PriceMask from './hooks/price-mask';
-import Quill from './hooks/quill';
+import Quill, {ClearQuillInput} from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
@@ -92,13 +92,13 @@ const ClearInput = {
     } = el;
 
     const input = this.el
-      .closest('form')
-      .querySelector(`*[name*='${inputName}']`);
+        .closest('form')
+        .querySelector(`*[name*='${inputName}']`);
 
     let inputWasFocussed = false;
 
     input.addEventListener('blur', (e) => {
-      inputWasFocussed = e.relatedTarget == el;
+      inputWasFocussed = e.relatedTarget === el;
     });
 
     this.el.addEventListener('click', () => {
@@ -111,7 +111,7 @@ const ClearInput = {
 
 const TZCookie = {
   mounted() {
-    const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+    const {timeZone} = Intl.DateTimeFormat().resolvedOptions();
     document.cookie = `time_zone=${timeZone}; path=/`;
   },
 };
@@ -120,6 +120,7 @@ const Hooks = {
   AutoHeight,
   Calendar,
   ClearInput,
+  ClearQuillInput,
   Clipboard,
   DragDrop,
   GalleryMobile,
