@@ -57,7 +57,7 @@ export const downloadStage = context => {
     if (context.task && context.task.bucket && context.task.originalPath) {
         const filename = tmpFileName(context.task.originalPath)
         return downloadInto(context.task.bucket, context.task.originalPath, filename)
-            .then(async () => {
+            .then(() => {
                 context.artifacts.original.downloaded = true;
                 context.artifacts.original.filename = filename;
                 context.artifacts.original.image = sharp(filename);
