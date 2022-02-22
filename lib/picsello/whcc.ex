@@ -204,6 +204,30 @@ defmodule Picsello.WHCC do
     end)
   end
 
+  def mark_up_price(%{whcc_id: @area_markup_category}, %{
+        metadata: %{"height" => height, "width" => width}
+      }) do
+    [{_, dollars} | _] = Enum.sort_by(@area_markups, &abs(height * width - elem(&1, 0)))
+    Money.new(dollars * 100)
+  end
+
+  def mark_up_price(%{default_markup: default_markup}, %{price: price}) do
+    nearest = 500
+
+    price
+    |> Money.multiply(default_markup)
+    |> Map.update!(:amount, fn cents ->
+      cents
+      |> Decimal.new()
+      |> Decimal.div(nearest)
+      |> Decimal.round()
+      |> Decimal.mult(nearest)
+      |> Decimal.to_integer()
+    end)
+  end
+
+  defdelegate cheapest_selections(product), to: Picsello.WHCC.Product
+
   defp variations(%{variations: variations}),
     do:
       for(

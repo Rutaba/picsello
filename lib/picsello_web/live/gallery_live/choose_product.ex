@@ -2,21 +2,23 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
   import PicselloWeb.LiveHelpers
-  alias Picsello.{Galleries, Category}
+  alias Picsello.{Galleries, GalleryProducts}
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id, photo_ids: photo_ids}, socket) do
     photo = Galleries.get_photo(photo_id)
-    templates = Category.all_with_gallery_products(gallery.id)
+    products = GalleryProducts.get_gallery_products(gallery.id)
 
     socket
-    |> assign(:gallery_id, gallery.id)
-    |> assign(:templates, templates)
-    |> assign(:photo_client_liked, photo.client_liked)
-    |> assign(:url, path(photo.watermarked_preview_url || photo.preview_url))
-    |> assign(:photo_ids, photo_ids)
-    |> assign(:photo_id, photo.id)
-    |> ok
+    |> assign(
+      gallery_id: gallery.id,
+      photo_client_liked: photo.client_liked,
+      photo_id: photo.id,
+      photo_ids: photo_ids,
+      products: products,
+      url: path(photo.watermarked_preview_url || photo.preview_url)
+    )
+    |> ok()
   end
 
   @impl true
@@ -63,5 +65,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     socket
     |> close_modal()
     |> noreply()
+  end
+
+  defp min_price(category) do
+    Picsello.Category.min_price(category)
   end
 end

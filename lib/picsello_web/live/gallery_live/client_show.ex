@@ -57,16 +57,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     end
 
     socket
-    |> assign(:gallery, gallery)
-    |> assign(:page_title, "Show Gallery")
-    |> assign(:products, GalleryProducts.get_gallery_products(gallery.id))
-    |> assign(:page, 0)
-    |> assign(:update_mode, "append")
-    |> assign(:favorites_filter, false)
-    |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+    |> assign(
+      creator: Galleries.get_gallery_creator(gallery),
+      favorites_count: Galleries.gallery_favorites_count(gallery),
+      favorites_filter: false,
+      gallery: gallery,
+      page: 0,
+      page_title: "Show Gallery",
+      products: GalleryProducts.get_gallery_products(gallery.id),
+      update_mode: "append"
+    )
     |> assign_cart_count(gallery)
     |> assign_photos()
-    |> assign(:creator, Galleries.get_gallery_creator(gallery))
     |> noreply()
   end
 

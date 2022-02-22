@@ -44,21 +44,15 @@ defmodule Picsello.Category do
     @preview_templates |> Map.get(frame_image(category))
   end
 
-  def frame_image(%{frame_image: frame_image}), do: frame_image || "card_blank.png"
-
-  def all_with_gallery_products(gallery_id) do
-    from(category in __MODULE__,
-      join: gp in assoc(category, :gallery_products),
-      where: not is_nil(gp.preview_photo_id) and gp.gallery_id == ^gallery_id,
-      select: %{
-        name: category.name,
-        cid: category.id,
-        title: category.name,
-        gid: gp.id,
-        frame_image: category.frame_image
-      }
-    )
-    |> Picsello.Repo.all()
-    |> Enum.map(&Map.merge(&1, %{corners: __MODULE__.coords(&1), price: Money.new(0)}))
+  def min_price(%{products: [_ | _] = products} = category) do
+    products
+    |> Enum.map(fn product ->
+      Picsello.WHCC.mark_up_price(category, Picsello.WHCC.cheapest_selections(product))
+    end)
+    |> Enum.min(fn -> Money.new(0) end)
   end
+
+  def min_price(category), do: category |> Picsello.Repo.preload(:products) |> min_price()
+
+  def frame_image(%{frame_image: frame_image}), do: frame_image || "card_blank.png"
 end

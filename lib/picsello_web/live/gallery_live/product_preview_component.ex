@@ -1,7 +1,6 @@
 defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  import PicselloWeb.LiveHelpers
 
   @default_assigns %{
     edit_product_link: nil,
@@ -44,7 +43,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     )
   end
 
-  defp min_price(_category), do: Money.new(0)
+  defp min_price(category), do: Picsello.Category.min_price(category)
 
   defp to_event_args(category),
     do: %{

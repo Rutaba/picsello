@@ -8,7 +8,13 @@ defmodule Picsello.Mock do
     @callback auth(Plug.Conn.t()) :: Ueberauth.Auth.t()
   end
 
-  def all(), do: [Picsello.MockAuthStrategy, Picsello.MockBambooAdapter, Picsello.MockPayments]
+  def all(),
+    do: [
+      Picsello.MockAuthStrategy,
+      Picsello.MockBambooAdapter,
+      Picsello.MockPayments,
+      Picsello.MockWHCCClient
+    ]
 
   def setup do
     Mox.defmock(Picsello.MockPayments, for: Picsello.Payments)

@@ -547,11 +547,13 @@ defmodule Picsello.Factory do
     |> merge_attributes(attrs)
   end
 
-  def email_preset_factory(),
+  def email_preset_factory,
     do: %Picsello.EmailPreset{
       subject_template: "Subjectively speaking",
       body_template: "this is my body",
       name: "use this email preset!",
       position: 0
     }
+
+  def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
 end
