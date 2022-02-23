@@ -1,6 +1,7 @@
-<%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main" class="pb-10">
+<main role="main" class="client-app min-h-screen">
   <%= flash(@flash) %>
 
   <%= @inner_content %>
+
+  <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 </main>

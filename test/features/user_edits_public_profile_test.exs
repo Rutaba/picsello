@@ -37,8 +37,8 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> click(button("Customize Profile"))
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("Mary Jane Photography")
-    |> assert_text("What we offer:")
-    |> assert_has(definition("Portrait", text: "Starting at $20"))
+    |> assert_text("SPECIALIZING IN:")
+    |> assert_text("Portrait")
     |> assert_text("Event")
     |> assert_has(radio_button("Portrait", visible: false))
     |> assert_has(radio_button("Event", visible: false))
@@ -48,29 +48,15 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
   end
 
-  feature "user edits color", %{session: session, color: color} do
-    session
-    |> assert_has(link("Settings"))
-    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("What we offer:")
-    |> assert_has(css("svg[style*='color: #{color}']", count: 2))
-    |> click(button("Change color"))
-    |> within_modal(&click(&1, css("li.aspect-h-1.aspect-w-1:nth-child(3)")))
-    |> click(button("Save"))
-    |> assert_has(css("svg[style*='color: #{color}']", count: 0))
-    |> assert_has(
-      css("svg[style*='color: #{Picsello.Profiles.Profile.colors() |> Enum.at(2)}']", count: 2)
-    )
-  end
-
   feature "user edits job types", %{session: session} do
     session
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("What we offer:")
+    |> assert_text("SPECIALIZING IN:")
     |> assert_has(testid("job-type", count: 2))
     |> assert_has(testid("job-type", text: "Portrait"))
     |> assert_has(testid("job-type", text: "Event"))
+    |> scroll_into_view("edit-photography-types-button")
     |> click(button("Edit Photography Types"))
     |> within_modal(&click(&1, css("label", text: "Event")))
     |> within_modal(&click(&1, css("label", text: "Family")))
@@ -84,9 +70,10 @@ defmodule Picsello.UserEditsPublicProfileTest do
     session
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("What we offer:")
+    |> assert_text("SPECIALIZING IN:")
     |> assert_has(css("a[href='https://photos.example.com']", text: "See our full portfolio"))
     |> resize_window(1280, 900)
+    |> scroll_into_view("edit-link-button")
     |> click(button("Edit Link"))
     |> fill_in(text_field("organization_profile_website"), with: "http://google.com")
     |> click(button("Save"))
@@ -101,19 +88,25 @@ defmodule Picsello.UserEditsPublicProfileTest do
     session
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("What we offer:")
-    |> click(button("Edit Description"))
+    |> assert_text("SPECIALIZING IN:")
+    |> scroll_into_view("edit-description-button")
+    |> click(testid("edit-description-button"))
     |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
     |> send_keys(["my description"])
     |> click(button("Save"))
     |> assert_has(testid("description", text: "my description"))
   end
 
-  feature "user can't go to pricing page", %{session: session} do
+  feature "user edits job types description", %{session: session} do
     session
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_has(button("Edit Photography Types"))
-    |> click(css("div.btn-primary", text: "See full price list"))
+    |> assert_text("SPECIALIZING IN:")
+    |> scroll_into_view("edit-job_types_description-button")
+    |> click(testid("edit-job_types_description-button"))
+    |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
+    |> send_keys(["my description"])
+    |> click(button("Save"))
+    |> assert_has(testid("job_types_description", text: "my description"))
   end
 end

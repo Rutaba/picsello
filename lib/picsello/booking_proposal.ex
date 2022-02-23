@@ -93,6 +93,6 @@ defmodule Picsello.BookingProposal do
   def remainder_due_on(%__MODULE__{} = proposal) do
     %{job: %{shoots: shoots}} = Repo.preload(proposal, job: :shoots)
 
-    shoots |> Enum.map(&Map.get(&1, :starts_at)) |> Enum.min(DateTime)
+    shoots |> Enum.map(&Map.get(&1, :starts_at)) |> Enum.min(DateTime, fn -> nil end)
   end
 end

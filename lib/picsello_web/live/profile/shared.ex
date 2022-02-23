@@ -38,9 +38,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
       open_modal(
         socket,
         module,
-        %{
-          assigns: Map.take(assigns, [:organization])
-        }
+        %{assigns: assigns |> Map.drop([:flash])}
       )
 
   def assign_changeset(
@@ -68,6 +66,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
       organization: organization,
       color: profile.color,
       description: profile.description,
+      job_types_description: profile.job_types_description,
       website: profile.website,
       photographer: user,
       job_types: profile.job_types,
@@ -78,15 +77,15 @@ defmodule PicselloWeb.Live.Profile.Shared do
   def photographer_logo(assigns) do
     ~H"""
       <%= case @organization.profile.logo do %>
-        <% %{url: "" <> url} -> %> <img class="h-14" src={url} />
-        <% _ -> %> <.initials_circle style={"background-color: #{@color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@photographer} />
+        <% %{url: "" <> url} -> %> <img class="h-16" src={url} />
+        <% _ -> %> <h1 class="text-3xl pt-3 font-bold font-client text-base-300"><%= @organization.name %></h1>
       <% end %>
     """
   end
 
   def profile_footer(assigns) do
     ~H"""
-     <footer class="px-6 md:px-16 center-container border-t-8" style={"border-color: #{@color}"}>
+     <footer class="px-6 md:px-16 mt-10 center-container">
       <div class="flex justify-center py-8 md:justify-start md:py-14"><.photographer_logo {assigns} /></div>
 
       <div class="flex flex-col items-center justify-start pt-6 mb-8 border-t md:flex-row md:justify-between border-base-250 text-base-300 opacity-30">

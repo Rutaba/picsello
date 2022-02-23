@@ -1,4 +1,4 @@
-<div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-5 fixed left-0 top-0 right-0 xl:static" id="edit-product-component">
+<div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-5 fixed left-0 top-0 right-0 lg:static" id="edit-product-component">
   <div class="flex justify-between pt-4 mb-4">
     <a href="#" phx-click="click" phx-value-preview_photo_id={@photo.id} phx-target="#hamburger-menu" class="inline-block xl cursor-pointer">
        <.icon name="arrow-left" class="w-4 h-4 lg:w-5 lg:h-5" />
@@ -17,7 +17,13 @@
                        />
     </div>
     <div class="lg:w-2/4 w-full lg:pl-16 lg:pr-12 px-0 h-full flex flex-col pt-14 flex-start">
-      <h3 class="text-4xl font-bold productType"><%= @category_template.title %></h3>
+      <h3 class="text-4xl font-bold productType">
+      <%= if @category_template.title === "Framed Prints" do %>
+          Wall Art
+      <% else %>
+          <%= @category_template.title %>
+      <% end %>
+      </h3>
       <%= if length(@whcc_products) > 1 do %>
         <div>
           <h6 class="text-base font-bold pt-7 pb-3.5">Type</h6>
@@ -26,7 +32,7 @@
               <%= if product === @current_whcc_product do %>
                 <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} ><%= product.whcc_name %></button>
               <% else %>
-                <button phx-click="update-print-type" phx-target={@myself} phx-value-product-id={product.id} class={classes("btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100")}><%= product.whcc_name %></button>
+                <button phx-click="update-print-type" phx-target={@myself} phx-value-product-id={product.id} class="btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100"><%= product.whcc_name %></button>
               <% end %>
             <% end %>
           </div>

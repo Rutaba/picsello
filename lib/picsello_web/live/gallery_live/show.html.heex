@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="galleryHideDesktop">
-        <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"} class={classes("gallery__coverImg active")}>
+        <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"} class="gallery__coverImg active">
         <div class="gallery__container py-11 flex flex-wrap justify-between relative z-10">
             <div>
                 <div class="circleBtn">
@@ -167,10 +167,10 @@
                 <.icon name="settings" class="w-6 h-6 text-base-100" />
                 <span class="pl-3" ><%= live_redirect "Gallery Settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %></span>
                 </button>
-                <!-- <button class="bottomBar__btn">
+                <button class="bottomBar__btn">
                     <img class="mr-3" src="/images/gallery-icon.png" alt="gallery" width="21" height="26"/>
-                    <span>View gallery</span>
-                    </button> -->
+                    <span><%= live_redirect "Preview gallery", to: Routes.gallery_client_show_path(@socket, :show, assigns.gallery |> Map.get(:client_link_hash), password: assigns.gallery |> Map.get(:password)) %></span>
+                </button>
             </div>
             <div class="flex">
                 <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">

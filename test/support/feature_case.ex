@@ -7,6 +7,11 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
+    def scroll_into_view(session, testid) do
+      session
+      |> execute_script("document.querySelector('[data-testid=\"#{testid}\"]').scrollIntoView()")
+    end
+
     def fill_in_date(session, field, opts \\ []) do
       date = Keyword.get(opts, :with)
       input = find(session, field)

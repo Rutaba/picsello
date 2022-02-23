@@ -296,7 +296,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     Map.has_key?(ordering_tasks, product.editor_details.editor_id)
   end
 
-  defp shipping_option_uid(%{id: id}), do: id
+  defp shipping_option_uid(%{id: id}), do: "#{id}"
   defp shipping_option_cost(%{price: price}), do: price
   defp shipping_option_label(%{name: label}), do: label
 

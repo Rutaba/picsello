@@ -1,20 +1,20 @@
 defmodule PicselloWeb.BookingProposalLive.Shared do
   @moduledoc false
   use Phoenix.Component
-  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1]
+  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1, shoot_location: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
   alias Picsello.{Job, Package, Packages}
 
   def banner(assigns) do
     ~H"""
     <%= if assigns[:read_only] do %>
-      <.badge color={:gray}>Read-only</.badge>
+      <.badge color={:gray} mode={:outlined}>Read-only</.badge>
     <% end %>
 
     <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
 
-    <div class="py-4 bg-blue-planning-100 modal-banner">
-      <div class="text-2xl font-bold text-blue-planning-300">
+    <div class="py-4 bg-base-200 modal-banner">
+      <div class="text-2xl font-bold">
         <h2><%= Job.name @job %> Shoot <%= if @package, do: @package.name %></h2>
       </div>
 
@@ -94,13 +94,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
             starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
           </p>
 
-          <p>
-            <%= if shoot.address do %>
-              <%= shoot.address %>
-            <% else %>
-              <%= dyn_gettext(shoot.location) %>
-            <% end %>
-          </p>
+          <p><%= shoot_location(shoot) %></p>
         </div>
 
         <hr class="col-span-2">

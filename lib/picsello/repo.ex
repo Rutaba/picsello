@@ -14,7 +14,7 @@ defmodule Picsello.Repo do
 
     defmacro now() do
       quote do
-        fragment("now()")
+        fragment("now() at time zone 'utc'")
       end
     end
 

@@ -1,16 +1,21 @@
 defmodule Picsello.Repo.Migrations.RenameTierNames do
   use Ecto.Migration
 
-  def change do
+  def up do
     execute("ALTER TABLE package_base_prices DROP CONSTRAINT package_base_prices_tier_fkey")
+    tiers = [bronse: "essential", silver: "keepsake", gold: "heirloom"]
 
-    execute("update package_base_prices set tier = 'essential' where tier = 'bronze'")
-    execute("update package_base_prices set tier = 'keepsake' where tier = 'silver'")
-    execute("update package_base_prices set tier = 'heirloom' where tier = 'gold'")
+    for({old_name, new_name} <- tiers) do
+      execute("update package_base_prices set tier = '#{new_name}' where tier = '#{old_name}'")
+    end
+
+    execute(
+      "delete from package_base_prices where tier not in (#{tiers |> Keyword.values() |> Enum.map(&"'#{&1}'") |> Enum.join(",")})"
+    )
 
     values =
       for(
-        {name, position} <- ~w(essential keepsake heirloom) |> Enum.with_index(),
+        {name, position} <- Keyword.values(tiers) |> Enum.with_index(),
         do: "('#{name}',#{position})"
       )
       |> Enum.join(",")
@@ -26,4 +31,6 @@ defmodule Picsello.Repo.Migrations.RenameTierNames do
       modify(:tier, references(:package_tiers, column: :name, type: :string))
     end
   end
+
+  def down, do: nil
 end
