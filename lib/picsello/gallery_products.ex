@@ -20,7 +20,8 @@ defmodule Picsello.GalleryProducts do
       inner_join: category in assoc(product, :category),
       where: product.gallery_id == ^gallery_id,
       select_merge: %{preview_photo: preview_photo, category: category},
-      preload: [category: :products]
+      preload: [category: :products],
+      order_by: category.position
     )
     |> Repo.all()
   end

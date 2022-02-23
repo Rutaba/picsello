@@ -113,17 +113,18 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_has(button("Check out with Stripe"))
   end
 
-  # feature "client reviews the placed order", %{session: session, gallery: gallery, order: order} do
-  #   session
-  #   |> visit("/gallery/#{gallery.client_link_hash}/orders/#{order.number}")
-  #   |> assert_text("My orders")
-  #   |> assert_text("Order number #{order.number}")
-  #   |> assert_text("Your order will be sent to:")
-  #   |> assert_text(order.delivery_info.name)
-  #   |> assert_text(order.delivery_info.address.addr1)
-  #   |> assert_text(
-  #     order.delivery_info.address.city <>
-  #       ", " <> order.delivery_info.address.state <> " " <> order.delivery_info.address.zip
-  #   )
-  # end
+  @tag :skip
+  feature "client reviews the placed order", %{session: session, gallery: gallery, order: order} do
+    session
+    |> visit("/gallery/#{gallery.client_link_hash}/orders/#{order.number}")
+    |> assert_text("My orders")
+    |> assert_text("Order number #{order.number}")
+    |> assert_text("Your order will be sent to:")
+    |> assert_text(order.delivery_info.name)
+    |> assert_text(order.delivery_info.address.addr1)
+    |> assert_text(
+      order.delivery_info.address.city <>
+        ", " <> order.delivery_info.address.state <> " " <> order.delivery_info.address.zip
+    )
+  end
 end
