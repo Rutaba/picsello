@@ -1,7 +1,5 @@
 defmodule Picsello.CreateLeadPackageTest do
   use Picsello.FeatureCase, async: true
-  import Phoenix.HTML, only: [safe_to_string: 1]
-  import Phoenix.HTML.Format, only: [text_to_html: 1]
   alias Picsello.{Repo, Package}
 
   setup :onboarded

@@ -41,6 +41,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> click(css("div.ql-editor"))
     |> send_keys(["My greatest wedding package"])
+    |> scroll_into_view("modal-buttons")
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -51,6 +52,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
+    |> scroll_into_view("download-test-id")
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),
@@ -103,7 +105,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> assert_text("downloads are valued at #{Download.default_each_price()}")
         |> click(radio_button("Do not charge for downloads"))
         |> Kernel.tap(fn modal ->
-          refute Regex.match?(~r/downloads are valued/, Element.text(modal))
+          refute Regex.match?(~r/Charge for downloadss/, Element.text(modal))
         end)
         |> wait_for_enabled_submit_button()
         |> click(button("Save")))
@@ -120,7 +122,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         template
         | name: "Wedding Super Deluxe",
           description: "<p>Package description</p>",
-          download_each_price: %Money{amount: 0}
+          download_each_price: %Money{amount: 5000}
       }
       |> Map.take([:id | form_fields])
 

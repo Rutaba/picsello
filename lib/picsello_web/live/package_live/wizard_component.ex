@@ -278,7 +278,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <% d = form_for(@download, "#") %>
 
-        <div class="mt-6 sm:mt-9">
+        <div class="mt-6 sm:mt-9"  {testid("download-test-id")}>
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Downloads</h2>
           <%= if d |> current() |> Map.get(:is_enabled) do %>
             Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
