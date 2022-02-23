@@ -75,6 +75,7 @@ html {
 
   .ql-tooltip {
     @apply border-gray-200 rounded-lg ml-24;
+    margin-left: 8rem;
 
     &.ql-editing input[type=text]{
       @apply text-input;
