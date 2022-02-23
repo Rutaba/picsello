@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Login do
 
   @impl true
   def mount(%{"hash" => hash}, _session, socket) do
-
     socket
     |> assign_new(:gallery, fn -> Galleries.get_gallery_by_hash(hash) end)
     |> then(&open_modal(&1, AuthenticationComponent, Map.take(&1.assigns, [:gallery])))

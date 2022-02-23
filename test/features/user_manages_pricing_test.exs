@@ -1,6 +1,5 @@
 defmodule Picsello.UserManagesPricingTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.Repo
 
   setup :onboarded
   setup :authenticated
