@@ -46,6 +46,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         ]
       })
 
+    insert(:email_preset, job_type: lead.type, job_state: :lead)
+
     [lead: lead]
   end
 
@@ -55,6 +57,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> visit("/leads/#{lead.id}")
       |> click(checkbox("Questionnaire included", selected: true))
       |> click(button("Finish booking proposal"))
+      |> assert_has(@send_email_button)
+      |> refute_has(select("Select email preset"))
       |> click(@send_email_button)
       |> click(button("Close"))
 

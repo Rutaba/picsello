@@ -70,6 +70,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(:job, job)
     |> PicselloWeb.ClientMessageComponent.open(%{
       composed_event: :proposal_message_composed,
+      presets: [],
       body_html: body,
       body_text: body,
       subject: subject
