@@ -44,15 +44,5 @@ defmodule Picsello.Category do
     @preview_templates |> Map.get(frame_image(category))
   end
 
-  def min_price(%{products: [_ | _] = products} = category) do
-    products
-    |> Enum.map(fn product ->
-      Picsello.WHCC.mark_up_price(category, Picsello.WHCC.cheapest_selections(product))
-    end)
-    |> Enum.min(fn -> Money.new(0) end)
-  end
-
-  def min_price(category), do: category |> Picsello.Repo.preload(:products) |> min_price()
-
   def frame_image(%{frame_image: frame_image}), do: frame_image || "card_blank.png"
 end

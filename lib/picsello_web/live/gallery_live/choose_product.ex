@@ -67,7 +67,5 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply()
   end
 
-  defp min_price(category) do
-    Picsello.Category.min_price(category)
-  end
+  defdelegate min_price(category), to: Picsello.WHCC
 end

@@ -43,7 +43,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     )
   end
 
-  defp min_price(category), do: Picsello.Category.min_price(category)
+  defdelegate min_price(category), to: Picsello.WHCC
 
   defp to_event_args(category),
     do: %{

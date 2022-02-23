@@ -18,7 +18,6 @@ defmodule Picsello.WHCC do
   @area_markup_category "h3GrtaTf5ipFicdrJ"
 
   import Ecto.Query, only: [from: 2]
-  import Picsello.Repo.CustomMacros
 
   alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor.Params, WHCC.Editor.Details}
 
@@ -171,15 +170,13 @@ defmodule Picsello.WHCC do
 
   def mark_up_price(
         %Details{product_id: product_id, selections: selections},
-        %Money{amount: cents}
+        %Money{} = price
       ) do
-    nearest = 500
-
     from(category in Picsello.Category,
       join: product in assoc(category, :products),
       where: product.whcc_id == ^product_id,
       select: %{
-        default_price: cast_money(nearest(category.default_markup * ^cents, ^nearest)),
+        default_markup: category.default_markup,
         attribute_categories: product.attribute_categories,
         category_whcc_id: category.whcc_id
       }
@@ -189,18 +186,20 @@ defmodule Picsello.WHCC do
       %{category_whcc_id: @area_markup_category, attribute_categories: attribute_categories} ->
         size = Map.get(selections, "size")
 
-        [selected_area] =
+        [metadata] =
           for(
             %{"name" => "size", "attributes" => attributes} <- attribute_categories,
-            %{"id" => ^size, "metadata" => %{"height" => height, "width" => width}} <- attributes,
-            do: height * width
+            %{"id" => ^size, "metadata" => %{"height" => _, "width" => _} = metadata} <-
+              attributes,
+            do: metadata
           )
 
-        [{_, dollars} | _] = Enum.sort_by(@area_markups, &abs(selected_area - elem(&1, 0)))
-        Money.new(dollars * 100) |> Money.multiply(Map.get(selections, "quantity", 1))
+        %{whcc_id: @area_markup_category}
+        |> mark_up_price(%{metadata: metadata})
+        |> Money.multiply(Map.get(selections, "quantity", 1))
 
-      %{default_price: default_price} ->
-        default_price
+      row ->
+        mark_up_price(row, %{price: price})
     end)
   end
 
@@ -208,15 +207,25 @@ defmodule Picsello.WHCC do
         metadata: %{"height" => height, "width" => width}
       }) do
     [{_, dollars} | _] = Enum.sort_by(@area_markups, &abs(height * width - elem(&1, 0)))
-    Money.new(dollars * 100)
+    Money.new(dollars * 100) |> round_to_nearest(500)
   end
 
   def mark_up_price(%{default_markup: default_markup}, %{price: price}) do
-    nearest = 500
-
     price
     |> Money.multiply(default_markup)
-    |> Map.update!(:amount, fn cents ->
+    |> round_to_nearest(500)
+  end
+
+  def min_price(%{products: [_ | _] = products} = category) do
+    products
+    |> Enum.map(fn product ->
+      Picsello.WHCC.mark_up_price(category, Picsello.WHCC.cheapest_selections(product))
+    end)
+    |> Enum.min(fn -> Money.new(0) end)
+  end
+
+  defp round_to_nearest(money, nearest) do
+    Map.update!(money, :amount, fn cents ->
       cents
       |> Decimal.new()
       |> Decimal.div(nearest)

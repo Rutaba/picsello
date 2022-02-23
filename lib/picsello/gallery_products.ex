@@ -7,8 +7,9 @@ defmodule Picsello.GalleryProducts do
   alias Picsello.Galleries.GalleryProduct
 
   def get(fields) do
-    Repo.get_by(GalleryProduct, fields)
-    |> Repo.preload([:preview_photo, :category])
+    GalleryProduct
+    |> Repo.get_by(fields)
+    |> Repo.preload([:preview_photo, category: :products])
   end
 
   @doc """
@@ -49,7 +50,7 @@ defmodule Picsello.GalleryProducts do
       product ->
         product
     end
-    |> Repo.preload([:preview_photo, :category])
+    |> Repo.preload([:preview_photo, category: :products])
   end
 
   @doc """

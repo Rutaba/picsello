@@ -8,7 +8,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   setup do
     Enum.each(Picsello.Category.frame_images(), fn frame_image ->
-      insert(:category, frame_image: frame_image)
+      insert(:product, category: insert(:category, frame_image: frame_image))
     end)
 
     :ok
