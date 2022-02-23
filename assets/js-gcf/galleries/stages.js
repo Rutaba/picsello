@@ -6,7 +6,7 @@ import {Storage} from "@google-cloud/storage";
 import {PubSub} from "@google-cloud/pubsub";
 import {loadFont, convert} from "./font.js"
 
-const previewWidth = 760;
+const previewWidth = 1024;
 
 
 /*******************************************************************************/
