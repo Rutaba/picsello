@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: _user}} = socket) do
@@ -58,22 +58,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
         </div>
       </div>
     </.settings_nav>
-    """
-  end
-
-  def card(assigns) do
-    assigns = Enum.into(assigns, %{class: ""})
-
-    ~H"""
-    <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
-      <div class="w-4 border-r bg-blue-planning-300" />
-
-      <div class="flex flex-col justify-between w-full p-4">
-        <h1 class="mb-2 text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
-
-        <%= render_slot(@inner_block) %>
-      </div>
-    </div>
     """
   end
 end
