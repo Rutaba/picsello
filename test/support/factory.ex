@@ -15,6 +15,7 @@ defmodule Picsello.Factory do
     CampaignClient,
     ClientMessage,
     Onboardings,
+    PaymentSchedule,
     Repo,
     Shoot,
     Accounts.User,
@@ -252,6 +253,16 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def payment_schedule_factory(attrs) do
+    %PaymentSchedule{
+      due_at: DateTime.utc_now(),
+      price: Money.new(500),
+      job: fn -> build(:lead, %{user: insert(:user)}) end
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def client_message_factory(attrs) do
     %ClientMessage{
       subject: "here is what i propose",
@@ -275,14 +286,28 @@ defmodule Picsello.Factory do
   end
 
   def promote_to_job(%Job{} = job) do
-    %{package: %{shoot_count: shoot_count}, shoots: shoots} =
+    %{package: %{shoot_count: shoot_count} = package, shoots: shoots} =
       Repo.preload(job, [:package, :shoots], force: true)
 
     insert(:proposal,
       job: job,
-      deposit_paid_at: DateTime.utc_now(),
       accepted_at: DateTime.utc_now(),
       signed_at: DateTime.utc_now()
+    )
+
+    price = package |> Package.price() |> Money.multiply(0.5)
+
+    insert(:payment_schedule,
+      job: job,
+      paid_at: DateTime.utc_now(),
+      due_at: DateTime.utc_now(),
+      price: price
+    )
+
+    insert(:payment_schedule,
+      job: job,
+      due_at: DateTime.utc_now() |> DateTime.add(7 * 24 * 60 * 60),
+      price: price
     )
 
     insert_list(shoot_count - Enum.count(shoots), :shoot, job: job)

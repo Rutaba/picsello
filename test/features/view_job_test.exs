@@ -1,7 +1,7 @@
 defmodule Picsello.ViewJobTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.{Repo, BookingProposal}
+  alias Picsello.{Repo, BookingProposal, PaymentSchedule}
   import Ecto.Query
 
   def with_completed_questionnaire(
@@ -23,8 +23,9 @@ defmodule Picsello.ViewJobTest do
     proposal
   end
 
-  def with_remainder_paid(proposal) do
-    proposal |> BookingProposal.remainder_paid_changeset() |> Repo.update!()
+  def with_remainder_paid(job) do
+    from(p in PaymentSchedule, where: p.job_id == ^job.id)
+    |> Repo.update_all(set: [paid_at: DateTime.utc_now() |> DateTime.truncate(:second)])
   end
 
   setup :onboarded
@@ -91,13 +92,13 @@ defmodule Picsello.ViewJobTest do
     |> assert_has(definition("Private Notes", text: "here are my 2nd private notes"))
   end
 
-  feature "user views finances card", %{session: session, job: job, proposal: proposal} do
+  feature "user views finances card", %{session: session, job: job} do
     session
     |> find(testid("overview-Finances"))
     |> assert_has(definition("Paid", text: "$5"))
     |> assert_has(definition("Owed", text: "$5"))
 
-    proposal |> with_remainder_paid()
+    job |> with_remainder_paid()
 
     session
     |> visit("/jobs/#{job.id}")
