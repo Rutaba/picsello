@@ -40,7 +40,7 @@
                     </ul>
                 </div>
                 <%= if @cover_photo_processing do %>
-                <div class="reuploadingBlock flex justify-between">            
+                <div class="reuploadingBlock flex justify-between">
                     <label class="font-bold text-blue-planning-300">Processing...</label>
                 </div>
                 <% else %>
@@ -75,8 +75,8 @@
                             </form>
                         </div>
                     </div>
-                <% end %> 
-            <% end %>            
+                <% end %>
+            <% end %>
             </div>
             <div class="text-base-100 pt-36 w-full text-center mt-auto sm:pb-60 pb-20">
                 <h3 class="w-full font-medium text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></h3>
@@ -164,18 +164,18 @@
         <div class="gallery__container flex justify-between items-center">
             <div class="flex">
                 <button class="bottomBar__btn mr-3">
-                <.icon name="settings" class="w-6 h-6 text-base-100" />
-                <span class="pl-3" ><%= live_redirect "Gallery Settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %></span>
+                    <.icon name="settings" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3" ><%= live_redirect "Gallery Settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %></span>
                 </button>
                 <button class="bottomBar__btn">
-                    <img class="mr-3" src="/images/gallery-icon.png" alt="gallery" width="21" height="26"/>
-                    <span><%= live_redirect "Preview gallery", to: Routes.gallery_client_show_path(@socket, :show, assigns.gallery |> Map.get(:client_link_hash), password: assigns.gallery |> Map.get(:password)) %></span>
+                    <.icon name="settings" class="w-6 h-6 text-base-100" />
+                    <span><%= live_redirect "Preview gallery", to: Routes.gallery_client_show_path(@socket, :show, @gallery.client_link_hash || "", password: @gallery.password) %></span>
                 </button>
             </div>
             <div class="flex">
                 <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
-                <.icon name="add-photos" class="w-6 h-6 text-base-100" />
-                <span class="pl-3">Add photos</span>
+                    <.icon name="add-photos" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Add photos</span>
                 </button>
                 <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
             </div>
