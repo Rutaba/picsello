@@ -147,7 +147,7 @@ defmodule Picsello.EmailPreset do
         "session_date" =>
           &with(
             %{starts_at: starts_at} <- next_shoot(&1),
-            do: strftime(&1, starts_at, "%b %d, %Y")
+            do: strftime(&1, starts_at, "%B %d, %Y")
           ),
         "session_location" =>
           &with(

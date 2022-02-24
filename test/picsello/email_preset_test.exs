@@ -66,7 +66,8 @@ defmodule Picsello.EmailPresetTest do
 
       %{id: proposal_id} = insert(:proposal, job: job)
 
-      due_date = "Feb 09, #{next_year}"
+      due_date = "Feb 08, #{next_year}"
+      session_date = "February 09, #{next_year}"
 
       assert %{
                "brand_sentence" => "",
@@ -82,7 +83,7 @@ defmodule Picsello.EmailPresetTest do
                "photography_company_s_name" => "Kloster Oberzell",
                "pricing_guide_link" => pricing_guide_link,
                "review_link" => "",
-               "session_date" => ^due_date,
+               "session_date" => ^session_date,
                "session_location" => "In Studio",
                "session_time" => "5:00 pm"
              } =
