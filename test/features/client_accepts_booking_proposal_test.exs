@@ -48,6 +48,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     insert(:email_preset, job_type: lead.type, job_state: :lead)
 
+    insert(:email_preset,
+      job_type: lead.type,
+      job_state: :booking_proposal,
+      subject_template: "here is what I propose",
+      body_template: "let us party."
+    )
+
     [lead: lead]
   end
 
@@ -59,6 +66,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Finish booking proposal"))
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
+      |> assert_value(text_field("Subject line"), "here is what I propose")
+      |> assert_has(css("#editor", text: "let us party."))
       |> click(@send_email_button)
       |> click(button("Close"))
 
@@ -318,6 +327,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
+    |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
@@ -364,6 +374,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
+    |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}

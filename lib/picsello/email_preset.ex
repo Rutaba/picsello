@@ -5,7 +5,7 @@ defmodule Picsello.EmailPreset do
   import Ecto.Query, only: [from: 2]
   import Picsello.Repo.CustomMacros
 
-  @job_states ~w(post_shoot job lead)a
+  @job_states ~w(post_shoot booking_proposal job lead)a
 
   schema "email_presets" do
     field :body_template, :string

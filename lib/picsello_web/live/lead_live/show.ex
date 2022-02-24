@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LeadLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
+  require Logger
 
   alias Picsello.{
     Job,
@@ -60,19 +61,26 @@ defmodule PicselloWeb.LeadLive.Show do
         %{},
         %{assigns: %{job: job}} = socket
       ) do
-    %{client: %{organization: %{name: organization_name}, name: client_name}} =
-      job = Repo.preload(job, client: :organization)
+    %{body_template: body_html, subject_template: subject} =
+      case Repo.get_by(Picsello.EmailPreset, job_type: job.type, job_state: :booking_proposal) do
+        nil ->
+          Logger.warn("No booking proposal email preset for #{job.type}")
+          %{body_template: "", subject_template: ""}
 
-    subject = "Booking proposal from #{organization_name}"
-    body = "Hello #{client_name}.\r\n\r\nYou have a booking proposal from #{organization_name}."
+        preset ->
+          Picsello.EmailPreset.resolve_variables(
+            preset,
+            job,
+            PicselloWeb.ClientMessageComponent.PresetHelper
+          )
+      end
 
     socket
     |> assign(:job, job)
     |> PicselloWeb.ClientMessageComponent.open(%{
       composed_event: :proposal_message_composed,
       presets: [],
-      body_html: body,
-      body_text: body,
+      body_html: body_html,
       subject: subject
     })
     |> noreply()
