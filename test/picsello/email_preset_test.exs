@@ -73,7 +73,7 @@ defmodule Picsello.EmailPresetTest do
                "delivery_expectations_sentence" => "",
                "delivery_time" => "2 weeks",
                "email_signature" => "",
-               "invoice_amount" => "$22.00",
+               "invoice_amount" => "$20.00",
                "invoice_due_date" => ^due_date,
                "invoice_link" => proposal_link,
                "mini_session_link" => "",

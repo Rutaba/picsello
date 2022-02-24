@@ -3,7 +3,6 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
   use PicselloWeb, :live_component
   alias Picsello.{Repo, BookingProposal, Package, Job}
-  import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
   require Logger
@@ -23,7 +22,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         <.close_x />
 
         <.banner title="Invoice" job={@job} package={@package}>
-          <p><%= raw @package.description %></p>
+          <p><%= @package.description %></p>
         </.banner>
 
         <.items {assigns}>

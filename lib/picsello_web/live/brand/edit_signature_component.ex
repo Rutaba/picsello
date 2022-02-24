@@ -3,7 +3,6 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Organization, Repo}
   import PicselloWeb.Live.Brand.Shared, only: [email_signature_preview: 1]
-  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -33,9 +32,20 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
 
               <div class="col-span-2">
                 <div class="input-label">Extra content</div>
-
-                <.quill_input f={e} style={"min-height: 8rem;"} html_field={:content} placeholder={"Start typing…"} />
+                <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2" data-placeholder="Start typing…" data-html-field-name={input_name(e, :content)}>
+                  <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-link"></button>
+                  </div>
+                  <div id="editor" style="min-height: 8rem;"> </div>
+                  <%= hidden_input e, :content, phx_debounce: "500" %>
+                </div>
               </div>
+
               <label class="flex flex-col justify-center">
                 <div class="input-label">Show your phone number?</div>
                 <div class="mt-2 flex items-center">

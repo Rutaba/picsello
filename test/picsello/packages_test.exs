@@ -121,8 +121,6 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Essential Event",
                  base_price: %Money{amount: 106_500},
-                 print_credits: %Money{amount: 0},
-                 buy_all: %Money{amount: 0},
                  download_count: 5,
                  shoot_count: 1,
                  turnaround_weeks: 3
@@ -130,8 +128,6 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Essential Wedding",
                  base_price: %Money{amount: 48_500},
-                 print_credits: %Money{amount: 0},
-                 buy_all: %Money{amount: 0},
                  download_count: 5,
                  shoot_count: 2,
                  turnaround_weeks: 12
@@ -139,8 +135,6 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Heirloom Event",
                  base_price: %Money{amount: 126_000},
-                 print_credits: %Money{amount: 0},
-                 buy_all: %Money{amount: 0},
                  download_count: 20,
                  shoot_count: 1,
                  turnaround_weeks: 3
@@ -148,8 +142,6 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Heirloom Wedding",
                  base_price: %Money{amount: 68_000},
-                 print_credits: %Money{amount: 0},
-                 buy_all: %Money{amount: 0},
                  download_count: 20,
                  shoot_count: 2,
                  turnaround_weeks: 12
@@ -157,8 +149,6 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Keepsake Event",
                  base_price: %Money{amount: 116_500},
-                 print_credits: %Money{amount: 0},
-                 buy_all: %Money{amount: 0},
                  download_count: 10,
                  shoot_count: 1,
                  turnaround_weeks: 3
@@ -166,8 +156,6 @@ defmodule Picsello.PackagesTest do
                %{
                  name: "Keepsake Wedding",
                  base_price: %Money{amount: 58_000},
-                 print_credits: %Money{amount: 0},
-                 buy_all: %Money{amount: 0},
                  download_count: 10,
                  shoot_count: 2,
                  turnaround_weeks: 12
