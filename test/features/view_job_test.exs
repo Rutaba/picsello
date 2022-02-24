@@ -94,15 +94,15 @@ defmodule Picsello.ViewJobTest do
   feature "user views finances card", %{session: session, job: job, proposal: proposal} do
     session
     |> find(testid("overview-Finances"))
-    |> assert_has(definition("Paid", text: "$5"))
-    |> assert_has(definition("Owed", text: "$5"))
+    |> assert_has(definition("Paid", text: "$6"))
+    |> assert_has(definition("Owed", text: "$6"))
 
     proposal |> with_remainder_paid()
 
     session
     |> visit("/jobs/#{job.id}")
     |> find(testid("overview-Finances"))
-    |> assert_has(definition("Paid", text: "$10"))
+    |> assert_has(definition("Paid", text: "$12"))
     |> assert_has(css("dt", count: 1))
   end
 

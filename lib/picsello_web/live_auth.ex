@@ -14,6 +14,7 @@ defmodule PicselloWeb.LiveAuth do
     |> allow_sandbox()
     |> authenticate_gallery(params)
     |> authenticate_gallery_client(session)
+    |> authenticate_gallery_for_photographer(params)
     |> maybe_redirect_to_client_login(params)
   end
 
@@ -91,6 +92,16 @@ defmodule PicselloWeb.LiveAuth do
         socket |> push_redirect(to: Routes.onboarding_path(socket, :index)) |> halt()
     end
   end
+
+  defp authenticate_gallery_for_photographer(
+         %{assigns: %{gallery: gallery}} = socket,
+         %{"password" => password}
+       ) do
+    valid? = if gallery.password == password, do: true, else: false
+    socket |> assign(authenticated: valid?)
+  end
+
+  defp authenticate_gallery_for_photographer(socket, _), do: socket
 
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}

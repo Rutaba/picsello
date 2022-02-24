@@ -97,16 +97,16 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(testid("description", text: "my description"))
   end
 
-  feature "user edits job types description", %{session: session} do
-    session
-    |> assert_has(link("Settings"))
-    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("SPECIALIZING IN:")
-    |> scroll_into_view("edit-job_types_description-button")
-    |> click(testid("edit-job_types_description-button"))
-    |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
-    |> send_keys(["my description"])
-    |> click(button("Save"))
-    |> assert_has(testid("job_types_description", text: "my description"))
-  end
+  #  feature "user edits job types description", %{session: session} do
+  #    session
+  #    |> assert_has(link("Settings"))
+  #    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
+  #    |> assert_text("SPECIALIZING IN:")
+  #    |> scroll_into_view("edit-job_types_description-button")
+  #    |> click(testid("edit-job_types_description-button"))
+  #    |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
+  #    |> send_keys(["my description"])
+  #    |> click(button("Save"))
+  #    |> assert_has(testid("job_types_description", text: "my description"))
+  #  end
 end
