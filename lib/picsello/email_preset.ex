@@ -114,7 +114,10 @@ defmodule Picsello.EmailPreset do
         # handled in sendgrid template
         "email_signature" => &noop/1,
         "invoice_amount" =>
-          &with(%Picsello.Package{} = package <- package(&1), do: Picsello.Package.price(package)),
+          &with(
+            %Picsello.Package{} = package <- package(&1),
+            do: Picsello.Package.remainder_price(package)
+          ),
         "invoice_due_date" =>
           &with(
             %{job: job} <- &1,
