@@ -135,7 +135,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(definition("Email:", text: "photographer@example.com"))
       |> assert_has(definition("Package:", text: "My Package"))
       |> assert_text("20% discount applied")
-      |> assert_has(definition("Total", text: "$0.80"))
+      |> assert_has(definition("Total", text: "$2.80"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
       |> assert_has(testid("shoot-title", text: "September 30, 2021"))
       |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
@@ -158,9 +158,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(button("Completed Read and agree to your contract"))
       |> click(button("To-Do Pay your retainer"))
       |> assert_text("20% discount applied")
-      |> assert_has(definition("Total", text: "$0.80"))
-      |> assert_has(definition("50% retainer today", text: "$0.40"))
-      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
+      |> assert_has(definition("Total", text: "$2.80"))
+      |> assert_has(definition("50% retainer today", text: "$1.40"))
+      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$1.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -186,7 +186,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                           %{
                             price_data: %{
                               product_data: %{name: "John Newborn 50% retainer"},
-                              unit_amount: 40
+                              unit_amount: 140
                             }
                           }
                         ]
@@ -201,13 +201,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Got it"))
       |> assert_text("Let’s get your shoot booked")
       |> click(button("To-Do Pay your remainder"))
-      |> assert_has(definition("Total", text: "$0.80"))
+      |> assert_has(definition("Total", text: "$2.80"))
       |> assert_has(
         definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.40"
+          text: "$1.40"
         )
       )
-      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
+      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$1.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -230,7 +230,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                           %{
                             price_data: %{
                               product_data: %{name: "John Newborn 50% remainder"},
-                              unit_amount: 40
+                              unit_amount: 140
                             }
                           }
                         ]
@@ -242,15 +242,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Got it"))
       |> assert_text("Your session fee has been paid in full")
       |> click(button("Completed Pay your invoice"))
-      |> assert_has(definition("Total", text: "$0.80"))
+      |> assert_has(definition("Total", text: "$2.80"))
       |> assert_has(
         definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.40"
+          text: "$1.40"
         )
       )
       |> assert_has(
         definition("Remainder Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.40"
+          text: "$1.40"
         )
       )
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))

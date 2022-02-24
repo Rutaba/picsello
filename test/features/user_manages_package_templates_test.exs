@@ -122,7 +122,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         template
         | name: "Wedding Super Deluxe",
           description: "<p>Package description</p>",
-          download_each_price: %Money{amount: 5000}
+          download_each_price: %Money{amount: 0}
       }
       |> Map.take([:id | form_fields])
 
