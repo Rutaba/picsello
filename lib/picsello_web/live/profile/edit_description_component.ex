@@ -1,7 +1,6 @@
 defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
 
   @impl true
   def render(assigns) do
@@ -10,8 +9,20 @@ defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
       <h1 class="text-3xl font-bold">Edit Description</h1>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+
         <%= for p <- inputs_for(f, :profile) do %>
-          <.quill_input f={p} style={"min-height: 4rem;"} html_field={:description} placeholder={"Start typing…"} />
+          <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-4" data-placeholder="Start typing…" data-html-field-name={input_name(p, @field_name)}>
+            <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
+              <button class="ql-bold"></button>
+              <button class="ql-italic"></button>
+              <button class="ql-underline"></button>
+              <button class="ql-list" value="bullet"></button>
+              <button class="ql-list" value="ordered"></button>
+              <button class="ql-link"></button>
+            </div>
+            <div id="editor" style="min-height: 4rem;"> </div>
+            <%= hidden_input p, @field_name, phx_debounce: "500" %>
+          </div>
         <% end %>
 
         <PicselloWeb.LiveModal.footer />

@@ -2,16 +2,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-
-  alias Picsello.{
-    Package,
-    Packages,
-    Packages.Multiplier,
-    Packages.Download,
-    Packages.PackagePricing
-  }
-
-  import PicselloWeb.PackageLive.Shared, only: [package_card: 1, quill_input: 1]
+  alias Picsello.{Package, Packages, Packages.Multiplier, Packages.Download}
+  import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
@@ -22,7 +14,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
-    |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> choose_initial_step()
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
     |> assign_changeset(%{})
@@ -85,7 +76,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <.step name={@step} f={f} {assigns} />
 
         <.footer>
-          <.step_buttons name={@step} form={f} is_valid={Enum.all?([@download, @package_pricing, @multiplier, @changeset], &(&1.valid?))} myself={@myself} />
+          <.step_buttons name={@step} form={f} is_valid={Enum.all?([@download, @multiplier, @changeset], &(&1.valid?))} myself={@myself} />
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
@@ -211,14 +202,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       </div>
 
       <div class="flex flex-col mt-4">
-
         <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
           <span>Description <%= error_tag(@f, :description) %></span>
-          <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
+
+          <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-description" data-input-name={input_name(@f,:description)}>
             Clear
           </.icon_button>
         </.input_label>
-        <.quill_input f={@f} style={"min-height: 8rem;"} html_field={:description} placeholder={"Full wedding package ideal for multiple shoots across the entire wedding journey."} />
+
+        <%= input @f, :description, type: :textarea, placeholder: "Full wedding package ideal for multiple shoots across the entire wedding journey.", phx_debounce: "500" %>
       </div>
 
       <%= if @is_template do %>
@@ -278,7 +270,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <% d = form_for(@download, "#") %>
 
-        <div class="mt-6 sm:mt-9"  {testid("download-test-id")}>
+        <div class="mt-6 sm:mt-9">
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Downloads</h2>
           <%= if d |> current() |> Map.get(:is_enabled) do %>
             Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
@@ -315,18 +307,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                   <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
                 </div>
               </div>
-
-          <% p = form_for(@package_pricing, "#") %>
-
-              <label class="flex items-center mt-3">
-                <%= checkbox(p, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
-
-                Set a "buy them all"price
-              </label>
-
-              <%= if p |> current() |> Map.get(:is_buy_all) do %>
-                <%= input(@f, :buy_all, placeholder: "$0.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-              <% end %>
             </div>
           <% end %>
 
@@ -335,33 +315,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
             Do not charge for downloads
           </label>
-
-        <div class="mt-6 sm:mt-9">
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Print Credits</h2>
         </div>
-
-      <div class="flex flex-col justify-between mt-6 sm:flex-row ">
-
-      <% p = form_for(@package_pricing, "#") %>
-
-        <div class="flex flex-row space-x-8">
-          <label class="flex items-center">
-            <%= checkbox(p, :is_enabled, class: "w-5 h-5 mr-2.5 checkbox") %>
-
-            Add
-          </label>
-
-          <%= if p |> current() |> Map.get(:is_enabled) do %>
-            <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-
-            <div class="flex items-center">Gallery store credit</div>
-          <% end %>
-        </div>
-        <%= if p |> current() |> Map.get(:is_enabled) do %>
-          <div class="flex items-center justify-end	 sm:mt-0">+<%= credit(@f) %></div>
-        <% end %>
-      </div>
-    </div>
 
         <hr class="w-full mt-8"/>
       </div>
@@ -534,12 +488,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     do: Packages.build_package_changeset(socket.assigns, params)
 
   defp assign_changeset(socket, params, action \\ nil) do
-    package_pricing_changeset =
-      socket.assigns.package_pricing
-      |> PackagePricing.changeset(
-        Map.get(params, "package_pricing", package_pricing_params(socket.assigns.package))
-      )
-
     multiplier_changeset =
       socket.assigns.package.base_multiplier
       |> Multiplier.from_decimal()
@@ -556,7 +504,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     package_params =
       params
       |> Map.get("package", %{})
-      |> PackagePricing.handle_package_params(params)
       |> Map.merge(%{
         "base_multiplier" => multiplier_changeset |> current() |> Multiplier.to_decimal(),
         "download_count" => Download.count(download),
@@ -568,7 +515,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     assign(socket,
       changeset: changeset,
       multiplier: multiplier_changeset,
-      package_pricing: package_pricing_changeset,
       download: download_changeset
     )
   end
@@ -584,43 +530,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Enum.join([sign, Money.abs(adjustment)])
   end
 
-  defp credit(form), do: form |> current() |> Package.print_credits()
-
   defp total_price(form), do: form |> current() |> Package.price()
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defp download_price(form),
     do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
-
-  defp package_pricing_params(package) do
-    print_credits =
-      case package |> Map.get(:print_credits) do
-        nil ->
-          %{is_enabled: false}
-
-        %Money{} = value ->
-          if Money.positive?(value),
-            do: %{is_enabled: true},
-            else: %{
-              is_enabled: false
-            }
-
-        %{} ->
-          %{}
-      end
-
-    case package |> Map.get(:buy_all) do
-      nil ->
-        Map.merge(print_credits, %{is_buy_all: false})
-
-      %Money{} = value ->
-        if Money.positive?(value),
-          do: Map.merge(print_credits, %{is_buy_all: true}),
-          else: Map.merge(print_credits, %{is_buy_all: false})
-
-      %{} ->
-        %{}
-    end
-  end
 end
