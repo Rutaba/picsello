@@ -163,13 +163,13 @@
     <div class="bottomBar">
         <div class="gallery__container flex justify-between items-center">
             <div class="flex">
-                <button class="bottomBar__btn mr-3">
+                <button class="bottomBar__btn mr-3" phx-click="gallery_settings">
                     <.icon name="settings" class="w-6 h-6 text-base-100" />
-                    <span class="pl-3" ><%= live_redirect "Gallery Settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %></span>
+                    <span class="pl-3">Gallery Settings</span>
                 </button>
-                <button class="bottomBar__btn">
+                <button class="bottomBar__btn mr-3" phx-click="preview_gallery">
                     <.icon name="settings" class="w-6 h-6 text-base-100" />
-                    <span><%= live_redirect "Preview gallery", to: Routes.gallery_client_show_path(@socket, :show, @gallery.client_link_hash || "", password: @gallery.password) %></span>
+                    <span>Preview Gallery</span>
                 </button>
             </div>
             <div class="flex">
