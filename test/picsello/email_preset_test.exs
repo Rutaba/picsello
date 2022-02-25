@@ -122,6 +122,13 @@ defmodule Picsello.EmailPresetTest do
       assert_proposal_link(proposal_link, proposal_id)
     end
 
+    def href(string),
+      do:
+        string
+        |> Floki.parse_fragment!()
+        |> Floki.attribute("href")
+        |> hd
+
     test "resolves html" do
       job = insert(:lead)
       %{id: proposal_id} = insert(:proposal, job: job)
@@ -129,13 +136,33 @@ defmodule Picsello.EmailPresetTest do
       %{body_template: view_proposal_button} =
         resolve_variables("hi", "{{{view_proposal_button}}}", job)
 
-      proposal_link =
-        view_proposal_button
-        |> Floki.parse_fragment!()
-        |> Floki.attribute("href")
-        |> hd
+      view_proposal_button |> href() |> assert_proposal_link(proposal_id)
+    end
 
-      assert_proposal_link(proposal_link, proposal_id)
+    test "does sections" do
+      job = insert(:lead)
+
+      assert %{body_template: "invariant.\n"} =
+               resolve_variables(
+                 "hi",
+                 """
+                 invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
+                 """,
+                 job
+               )
+
+      %{id: proposal_id} = insert(:proposal, job: job)
+
+      %{body_template: proposal_link} =
+        resolve_variables(
+          "hi",
+          """
+          invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
+          """,
+          job
+        )
+
+      proposal_link |> href() |> assert_proposal_link(proposal_id)
     end
   end
 end

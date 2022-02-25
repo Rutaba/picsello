@@ -116,13 +116,11 @@ defmodule Picsello.Marketing do
   def template_preview(user, body_html) do
     {:ok, %{body: body}} = SendgridClient.marketing_template_id() |> SendgridClient.get_template()
 
-    template =
-      body
-      |> Map.get("versions")
-      |> Enum.find(&(Map.get(&1, "active") == 1))
-      |> Map.get("html_content")
-
-    Mustache.render(template, template_variables(user, body_html))
+    body
+    |> Map.get("versions")
+    |> Enum.find(&(Map.get(&1, "active") == 1))
+    |> Map.get("html_content")
+    |> :bbmustache.render(template_variables(user, body_html), key_type: :atom)
   end
 
   defp template_variables(user, body_html) do

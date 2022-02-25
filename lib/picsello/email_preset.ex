@@ -51,6 +51,23 @@ defmodule Picsello.EmailPreset do
 
     def new(job, helpers), do: %__MODULE__{job: job, helpers: helpers}
 
+    def to_map(%__MODULE__{job: job} = resolver) do
+      resolver = %{
+        resolver
+        | job:
+            Picsello.Repo.preload(job, [
+              :booking_proposals,
+              :package,
+              :shoots,
+              client: [organization: :user]
+            ])
+      }
+
+      for {key, func} <- vars(), into: %{} do
+        {key, func.(resolver)}
+      end
+    end
+
     def fetch(%__MODULE__{} = resolver, key) do
       case Map.fetch(vars(), key) do
         {:ok, f} -> {:ok, f.(resolver)}
@@ -134,8 +151,12 @@ defmodule Picsello.EmailPreset do
             %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
             do: Picsello.BookingProposal.url(proposal_id)
           ),
-        "mini_session_link" => fn _job -> nil end,
-        "photographer_cell" => &photographer(&1).onboarding.phone,
+        "mini_session_link" => &noop/1,
+        "photographer_cell" =>
+          &case photographer(&1) do
+            %Picsello.Accounts.User{onboarding: %{phone: "" <> phone}} -> phone
+            _ -> nil
+          end,
         "photography_company_s_name" => &organization(&1).name,
         "pricing_guide_link" => fn resolver ->
           helpers(resolver).profile_pricing_job_type_url(
@@ -174,12 +195,15 @@ defmodule Picsello.EmailPreset do
   end
 
   def resolve_variables(%__MODULE__{} = preset, job, helpers) do
-    resolver = Resolver.new(job, helpers)
+    data = job |> Resolver.new(helpers) |> Resolver.to_map()
 
     %{
       preset
-      | body_template: Mustache.render(preset.body_template, resolver),
-        subject_template: Mustache.render(preset.subject_template, resolver)
+      | body_template: render(preset.body_template, data),
+        subject_template: render(preset.subject_template, data)
     }
   end
+
+  defp render(template, data),
+    do: :bbmustache.render(template, data, key_type: :binary, value_serializer: &to_string/1)
 end
