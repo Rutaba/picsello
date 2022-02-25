@@ -97,13 +97,6 @@ defmodule Picsello.Package do
     |> validate_money(:buy_all)
   end
 
-  def downloads_price(%__MODULE__{download_each_price: price, download_count: count})
-      when nil in [price, count],
-      do: Money.new(0)
-
-  def downloads_price(%__MODULE__{download_each_price: each_price, download_count: count}),
-    do: Money.multiply(each_price, count)
-
   def base_price(%__MODULE__{base_price: nil}), do: Money.new(0)
   def base_price(%__MODULE__{base_price: base}), do: base
 
@@ -116,13 +109,7 @@ defmodule Picsello.Package do
   def base_adjustment(%__MODULE__{} = package),
     do: package |> adjusted_base_price() |> Money.subtract(base_price(package))
 
-  def price(%__MODULE__{} = package) do
-    Enum.reduce(
-      [&adjusted_base_price/1, &print_credits/1],
-      Money.new(0),
-      &(package |> &1.() |> Money.add(&2))
-    )
-  end
+  def price(%__MODULE__{} = package), do: adjusted_base_price(package)
 
   def deposit_price(%__MODULE__{} = package) do
     package |> price() |> Money.multiply(0.5)

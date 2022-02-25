@@ -60,7 +60,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
     |> click(checkbox("Include download credits"))
     |> fill_in(text_field("download_count"), with: "2")
-    |> assert_has(definition("Total Price", text: "$134.00"))
+    |> assert_has(definition("Total Price", text: "$130.00"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))

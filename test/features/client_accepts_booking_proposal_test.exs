@@ -1,6 +1,6 @@
 defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Job, Repo, Organization, BookingProposal}
+  alias Picsello.{Repo, Organization, BookingProposal}
 
   @send_email_button button("Send Email")
   @invoice_button button("Invoice")

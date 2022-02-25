@@ -25,11 +25,9 @@ defmodule PicselloWeb.LiveAuth do
     |> cont()
   end
 
-  defp mount(socket, %{"user_token" => user_token}) do
+  defp mount(socket, session) do
     socket
-    |> assign_new(:current_user, fn ->
-      Accounts.get_user_by_session_token(user_token)
-    end)
+    |> assign_current_user(session)
     |> then(fn
       %{assigns: %{current_user: nil}} = socket ->
         socket |> redirect(to: Routes.user_session_path(socket, :new)) |> halt()
@@ -39,10 +37,17 @@ defmodule PicselloWeb.LiveAuth do
     end)
   end
 
-  defp mount(socket, _session), do: socket |> halt()
+  defp assign_current_user(socket, %{"user_token" => user_token}) do
+    socket
+    |> assign_new(:current_user, fn ->
+      Accounts.get_user_by_session_token(user_token)
+    end)
+  end
+
+  defp assign_current_user(socket, _session), do: socket
 
   defp authenticate_gallery(socket, %{"hash" => hash}) do
-    socket |> assign(gallery: Galleries.get_gallery_by_hash(hash))
+    socket |> assign(gallery: Galleries.get_gallery_by_hash!(hash))
   end
 
   defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do
@@ -95,12 +100,20 @@ defmodule PicselloWeb.LiveAuth do
 
   defp authenticate_gallery_for_photographer(
          %{assigns: %{gallery: gallery}} = socket,
-         %{"preview" => "true"},
-         %{"user_token" => user_token}
+         %{},
+         session
        ) do
     gallery_user = gallery |> Galleries.populate_organization_user()
-    current_user = Accounts.get_user_by_session_token(user_token)
-    socket |> assign(authenticated: validate_photographer(current_user, gallery_user))
+
+    socket
+    |> assign_current_user(session)
+    |> then(fn
+      %{assigns: %{current_user: current_user}} = socket ->
+        socket |> assign(authenticated: validate_photographer(current_user, gallery_user))
+
+      socket ->
+        socket
+    end)
   end
 
   defp validate_photographer(%{id: current_user}, %{
