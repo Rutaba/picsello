@@ -47,7 +47,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
                 <% end %>
               </div>
 
-              <%= select_field f, :location, for(location <- Shoot.locations(), do: {dyn_gettext(location), location }), prompt: "Select below" %>
+            <%= select_field f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below" %>
             </div>
 
             <%= if @address_field do %>

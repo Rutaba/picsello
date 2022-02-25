@@ -30,9 +30,9 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
           <dl class={classes("flex justify-between", %{"text-green-finances-300" => @deposit_paid, "font-bold" => !@deposit_paid})}>
             <%= if @deposit_paid do %>
-              <dt>Deposit Paid on <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></dt>
+              <dt>Retainer Paid on <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></dt>
             <% else %>
-              <dt>50% deposit today</dt>
+              <dt>50% retainer today</dt>
             <% end %>
             <dd><%= Package.deposit_price(@package) %></dd>
           </dl>
@@ -80,12 +80,19 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         {:deposit, Package.remainder_price(package)}
       end
 
+    payment_type_desc =
+      if payment_type == :deposit do
+        :retainer
+      else
+        payment_type
+      end
+
     line_items = [
       %{
         price_data: %{
           currency: "usd",
           product_data: %{
-            name: "#{Job.name(job)} 50% #{payment_type}"
+            name: "#{Job.name(job)} 50% #{payment_type_desc}"
           },
           unit_amount: price.amount
         },
