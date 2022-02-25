@@ -14,7 +14,7 @@ defmodule PicselloWeb.LiveAuth do
     |> allow_sandbox()
     |> authenticate_gallery(params)
     |> authenticate_gallery_client(session)
-    |> authenticate_gallery_for_photographer(params)
+    |> authenticate_gallery_for_photographer(params, session)
     |> maybe_redirect_to_client_login(params)
   end
 
@@ -95,13 +95,21 @@ defmodule PicselloWeb.LiveAuth do
 
   defp authenticate_gallery_for_photographer(
          %{assigns: %{gallery: gallery}} = socket,
-         %{"password" => password}
+         %{"preview" => "true"},
+         %{"user_token" => user_token}
        ) do
-    valid? = if gallery.password == password, do: true, else: false
-    socket |> assign(authenticated: valid?)
+    gallery_user = gallery |> Galleries.populate_organization_user()
+    current_user = Accounts.get_user_by_session_token(user_token)
+    socket |> assign(authenticated: validate_photographer(current_user, gallery_user))
   end
 
-  defp authenticate_gallery_for_photographer(socket, _), do: socket
+  defp validate_photographer(%{id: current_user}, %{
+         job: %{client: %{organization: %{user: %{id: photographer}}}}
+       }) do
+    current_user == photographer
+  end
+
+  defp validate_photographer(_, _), do: false
 
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}

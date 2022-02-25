@@ -118,7 +118,7 @@ defmodule Picsello.Package do
 
   def price(%__MODULE__{} = package) do
     Enum.reduce(
-      [&adjusted_base_price/1, &downloads_price/1, &print_credits/1],
+      [&adjusted_base_price/1, &print_credits/1],
       Money.new(0),
       &(package |> &1.() |> Money.add(&2))
     )

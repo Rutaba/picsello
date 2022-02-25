@@ -52,7 +52,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
-    |> scroll_into_view("download-test-id")
+    |> scroll_into_view("download")
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),
