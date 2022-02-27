@@ -23,7 +23,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         <.close_x />
 
         <.banner title="Invoice" job={@job} package={@package}>
-          <p><%= raw @package.description %></p>
+          <p class="raw_html"><%= raw @package.description %></p>
         </.banner>
 
         <.items {assigns}>

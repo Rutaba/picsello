@@ -25,7 +25,7 @@ defmodule PicselloWeb.LiveAuth do
     |> cont()
   end
 
-  defp mount(socket, session) do
+  defp mount(socket, %{"user_token" => _user_token} = session) do
     socket
     |> assign_current_user(session)
     |> then(fn
@@ -36,6 +36,8 @@ defmodule PicselloWeb.LiveAuth do
         maybe_redirect_to_onboarding(socket)
     end)
   end
+
+  defp mount(socket, _session), do: socket |> halt()
 
   defp assign_current_user(socket, %{"user_token" => user_token}) do
     socket
@@ -54,7 +56,10 @@ defmodule PicselloWeb.LiveAuth do
     socket
     |> assign(
       authenticated:
-        Galleries.session_exists_with_token?(gallery.id, session["gallery_session_token"])
+        Galleries.session_exists_with_token?(
+          gallery.id,
+          Map.get(session, "gallery_session_token")
+        )
     )
   end
 

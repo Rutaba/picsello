@@ -21,7 +21,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
         <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
 
-        <p class="mb-2 line-clamp-2"><%= raw @package.description %></p>
+        <p class="mb-2 line-clamp-2 raw_html"><%= raw @package.description %></p>
 
         <dl class="flex flex-row-reverse items-center justify-end mt-auto">
           <dt class="ml-2 text-gray-500">Downloadable photos</dt>

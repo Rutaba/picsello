@@ -120,7 +120,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       |> Map.get(:client_link_hash)
 
     socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash, preview: true))
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
     |> noreply()
   end
 

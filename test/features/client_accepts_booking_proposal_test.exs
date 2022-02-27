@@ -1,6 +1,6 @@
 defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Organization, BookingProposal}
+  alias Picsello.{Repo, Organization, BookingProposal, Job}
 
   @send_email_button button("Send Email")
   @invoice_button button("Invoice")
@@ -260,110 +260,110 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_text("actual message")
     end
 
-    #    @sessions 2
-    #    feature "client pays - webhook is late", %{
-    #      sessions: [photographer_session, client_session],
-    #      lead: lead,
-    #      proposal: %{id: proposal_id},
-    #      url: url
-    #    } do
-    #      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
-    #        {:ok,
-    #         %Stripe.Session{
-    #           client_reference_id: "proposal_#{proposal_id}",
-    #           metadata: %{"paying_for" => "deposit"}
-    #         }}
-    #      end)
-    #
-    #      client_session
-    #      |> visit(url)
-    #      |> assert_has(css("h2", text: "Welcome."))
-    #      |> click(button("To-Do Review your proposal"))
-    #      |> click(button("Accept Quote"))
-    #      |> click(button("To-Do Read and agree to your contract"))
-    #      |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
-    #      |> wait_for_enabled_submit_button()
-    #      |> click(button("Accept Contract"))
-    #      |> click(button("To-Do Pay your retainer"))
-    #      |> click(button("Pay Invoice"))
-    #      |> assert_url_contains("stripe-checkout")
-    #
-    #      assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
-    #
-    #      client_session
-    #      |> visit(stripe_success_url)
-    #      |> assert_has(css("h1", text: "Thank you"))
-    #      |> assert_has(css("h1", text: "Your session is now booked."))
-    #
-    #      photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
-    #    end
-    #  end
-    #
-    #  @sessions 2
-    #  feature "client fills out booking proposal questionnaire", %{
-    #    sessions: [photographer_session, client_session],
-    #    lead: lead
-    #  } do
-    #    insert(:questionnaire)
-    #
-    #    photographer_session
-    #    |> visit("/leads/#{lead.id}")
-    #    |> click(button("Finish booking proposal"))
-    #    |> click(@send_email_button)
-    #
-    #    assert_receive {:delivered_email, email}
-    #    url = email |> email_substitutions |> Map.get("url")
-    #
-    #    client_session
-    #    |> visit(url)
-    #    |> assert_disabled(@invoice_button)
-    #    |> click(button("To-Do Review your proposal"))
-    #    |> click(button("Accept Quote"))
-    #    |> assert_disabled(@invoice_button)
-    #    |> click(button("To-Do Read and agree to your contract"))
-    #    |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
-    #    |> wait_for_enabled_submit_button()
-    #    |> click(button("Accept Contract"))
-    #    |> assert_enabled(@invoice_button)
-    #    |> click(button("To-Do Fill out the initial questionnaire"))
-    #    |> click(checkbox("My partner", selected: false))
-    #    |> click(button("Close"))
-    #    |> click(button("To-Do Fill out the initial questionnaire"))
-    #    |> visit(url)
-    #    |> click(button("To-Do Fill out the initial questionnaire"))
-    #    |> click(checkbox("My partner", selected: false))
-    #    |> assert_has(css("button:disabled", text: "Save"))
-    #    |> fill_in(text_field("why?"), with: "it's the best.")
-    #    |> click(css("label", text: "Of course"))
-    #    |> fill_in(text_field("Describe it"), with: "it's great.")
-    #    |> fill_in_date(text_field("When"), with: ~D[2021-10-10])
-    #    |> fill_in(text_field("Email"), with: "email@example.com")
-    #    |> fill_in(text_field("Phone"), with: "(255) 123-1234")
-    #    |> wait_for_enabled_submit_button()
-    #    |> click(button("Save"))
-    #    |> click(button("Completed Fill out the initial questionnaire"))
-    #    |> assert_has(checkbox("My partner", selected: true))
-    #  end
-    #
-    #  @sessions 2
-    #  feature "client accesses proposal for archived lead", %{
-    #    sessions: [photographer_session, client_session],
-    #    lead: lead
-    #  } do
-    #    insert(:questionnaire)
-    #
-    #    photographer_session
-    #    |> visit("/leads/#{lead.id}")
-    #    |> click(button("Finish booking proposal"))
-    #    |> click(@send_email_button)
-    #
-    #    assert_receive {:delivered_email, email}
-    #    url = email |> email_substitutions |> Map.get("url")
-    #
-    #    lead |> Job.archive_changeset() |> Repo.update!()
-    #
-    #    client_session
-    #    |> visit(url)
-    #    |> assert_flash(:error, text: "not available")
+    @sessions 2
+    feature "client pays - webhook is late", %{
+      sessions: [photographer_session, client_session],
+      lead: lead,
+      proposal: %{id: proposal_id},
+      url: url
+    } do
+      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+        {:ok,
+         %Stripe.Session{
+           client_reference_id: "proposal_#{proposal_id}",
+           metadata: %{"paying_for" => "deposit"}
+         }}
+      end)
+
+      client_session
+      |> visit(url)
+      |> assert_has(css("h2", text: "Welcome."))
+      |> click(button("To-Do Review your proposal"))
+      |> click(button("Accept Quote"))
+      |> click(button("To-Do Read and agree to your contract"))
+      |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Accept Contract"))
+      |> click(button("To-Do Pay your retainer"))
+      |> click(button("Pay Invoice"))
+      |> assert_url_contains("stripe-checkout")
+
+      assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
+
+      client_session
+      |> visit(stripe_success_url)
+      |> assert_has(css("h1", text: "Thank you"))
+      |> assert_has(css("h1", text: "Your session is now booked."))
+
+      photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
+    end
+  end
+
+  @sessions 2
+  feature "client fills out booking proposal questionnaire", %{
+    sessions: [photographer_session, client_session],
+    lead: lead
+  } do
+    insert(:questionnaire)
+
+    photographer_session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Finish booking proposal"))
+    |> click(@send_email_button)
+
+    assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
+
+    client_session
+    |> visit(url)
+    |> assert_disabled(@invoice_button)
+    |> click(button("To-Do Review your proposal"))
+    |> click(button("Accept Quote"))
+    |> assert_disabled(@invoice_button)
+    |> click(button("To-Do Read and agree to your contract"))
+    |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Accept Contract"))
+    |> assert_enabled(@invoice_button)
+    |> click(button("To-Do Fill out the initial questionnaire"))
+    |> click(checkbox("My partner", selected: false))
+    |> click(button("Close"))
+    |> click(button("To-Do Fill out the initial questionnaire"))
+    |> visit(url)
+    |> click(button("To-Do Fill out the initial questionnaire"))
+    |> click(checkbox("My partner", selected: false))
+    |> assert_has(css("button:disabled", text: "Save"))
+    |> fill_in(text_field("why?"), with: "it's the best.")
+    |> click(css("label", text: "Of course"))
+    |> fill_in(text_field("Describe it"), with: "it's great.")
+    |> fill_in_date(text_field("When"), with: ~D[2021-10-10])
+    |> fill_in(text_field("Email"), with: "email@example.com")
+    |> fill_in(text_field("Phone"), with: "(255) 123-1234")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> click(button("Completed Fill out the initial questionnaire"))
+    |> assert_has(checkbox("My partner", selected: true))
+  end
+
+  @sessions 2
+  feature "client accesses proposal for archived lead", %{
+    sessions: [photographer_session, client_session],
+    lead: lead
+  } do
+    insert(:questionnaire)
+
+    photographer_session
+    |> visit("/leads/#{lead.id}")
+    |> click(button("Finish booking proposal"))
+    |> click(@send_email_button)
+
+    assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
+
+    lead |> Job.archive_changeset() |> Repo.update!()
+
+    client_session
+    |> visit(url)
+    |> assert_flash(:error, text: "not available")
   end
 end

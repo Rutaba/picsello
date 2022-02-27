@@ -3,6 +3,8 @@ defmodule PicselloWeb.LiveAuthTest do
 
   import Phoenix.LiveViewTest
 
+  alias Picsello.Galleries
+
   setup do
     [user: insert(:user)]
   end
@@ -50,10 +52,16 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :gallery_client" do
     setup %{conn: conn} do
-      gallery = insert(:gallery)
+      conn = conn |> Phoenix.ConnTest.init_test_session(%{})
+
+      user = insert(:user)
+      job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
+      gallery = insert(:gallery, %{name: "Test Client Weeding", job: job})
 
       [
+        conn: conn,
         gallery: gallery,
+        user: user,
         show_path: Routes.gallery_client_show_path(conn, :show, gallery.client_link_hash)
       ]
     end
@@ -66,8 +74,6 @@ defmodule PicselloWeb.LiveAuthTest do
       end
     end
 
-    # FIXME: need tests around auth behavior on /gallery/:hash/login
-
     test "/gallery/:hash not authenticated client or user", %{
       conn: conn,
       gallery: gallery,
@@ -79,16 +85,44 @@ defmodule PicselloWeb.LiveAuthTest do
       assert {:error, {:live_redirect, %{to: ^gallery_login_path}}} = live(conn, show_path)
     end
 
-    test "/gallery/:hash authenticated photographer, not your gallery" do
-      # should show password dialog (302?)
+    test "/gallery/:hash authenticated photographer, not your gallery", %{
+      conn: conn,
+      gallery: gallery,
+      show_path: show_path
+    } do
+      user = insert(:user)
+
+      gallery_login_path =
+        Routes.gallery_client_show_login_path(conn, :login, gallery.client_link_hash)
+
+      assert {:error, {:live_redirect, %{flash: %{}, to: ^gallery_login_path}}} =
+               conn
+               |> log_in_user(onboard!(user))
+               |> live(show_path)
     end
 
-    test "/gallery/:hash authenticated client" do
-      # should render gallery (200?)
+    test "/gallery/:hash authenticated client", %{
+      conn: conn,
+      gallery: gallery,
+      show_path: show_path
+    } do
+      {:ok, gallery_session} = Galleries.build_gallery_session_token(gallery)
+
+      assert {:ok, _view, _html} =
+               conn
+               |> Plug.Conn.put_session("gallery_session_token", gallery_session.token)
+               |> live(show_path)
     end
 
-    test "/gallery/:hash authenticated photographer, your gallery" do
-      # should render gallery (200?)
+    test "/gallery/:hash authenticated photographer, your gallery", %{
+      conn: conn,
+      show_path: show_path,
+      user: user
+    } do
+      assert {:ok, _view, _html} =
+               conn
+               |> log_in_user(onboard!(user))
+               |> live(show_path)
     end
   end
 end
