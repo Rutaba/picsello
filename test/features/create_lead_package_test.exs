@@ -45,7 +45,7 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("package[print_credits]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
     )
-    |> assert_has(definition("Total Price", text: "$134.00"))
+    |> assert_has(definition("Total Price", text: "$100.00"))
   end
 
   feature "user without package templates creates a package", %{session: session, user: user} do
