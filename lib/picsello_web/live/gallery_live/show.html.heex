@@ -40,7 +40,7 @@
                     </ul>
                 </div>
                 <%= if @cover_photo_processing do %>
-                <div class="reuploadingBlock flex justify-between">            
+                <div class="reuploadingBlock flex justify-between">
                     <label class="font-bold text-blue-planning-300">Processing...</label>
                 </div>
                 <% else %>
@@ -75,10 +75,10 @@
                             </form>
                         </div>
                     </div>
-                <% end %> 
-            <% end %>            
+                <% end %>
+            <% end %>
             </div>
-            <div class="text-base-100 pt-36 w-full text-center mt-auto sm:pb-60 pb-20">
+            <div class="text-base-100 w-full text-center mt-auto sm:pb-60 pb-20">
                 <h3 class="w-full font-medium text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></h3>
                 <h1 class="font-bold text-6xl w-full mb-10"><%= @gallery.name %></h1>
                 <p class="text-center w-full"><a href="#gallery" class="text-center gallery__button btn-secondary text-center bg-transparent text-white border-white hover:bg-white/10">View Gallery</a></p>
@@ -163,19 +163,19 @@
     <div class="bottomBar">
         <div class="gallery__container flex justify-between items-center">
             <div class="flex">
-                <button class="bottomBar__btn mr-3">
-                <.icon name="settings" class="w-6 h-6 text-base-100" />
-                <span class="pl-3" ><%= live_redirect "Gallery Settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %></span>
+                <button class="bottomBar__btn mr-3" phx-click="gallery_settings">
+                    <.icon name="settings" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Gallery Settings</span>
                 </button>
-                <!-- <button class="bottomBar__btn">
-                    <img class="mr-3" src="/images/gallery-icon.png" alt="gallery" width="21" height="26"/>
-                    <span>View gallery</span>
-                    </button> -->
+                <button class="bottomBar__btn mr-3" phx-click="preview_gallery">
+                    <.icon name="eye" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Preview Gallery</span>
+                </button>
             </div>
             <div class="flex">
                 <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
-                <.icon name="add-photos" class="w-6 h-6 text-base-100" />
-                <span class="pl-3">Add photos</span>
+                    <.icon name="add-photos" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Add photos</span>
                 </button>
                 <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
             </div>

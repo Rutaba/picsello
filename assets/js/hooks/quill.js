@@ -58,3 +58,13 @@ export default {
     quill.root.innerHTML = htmlInput.value;
   },
 };
+
+export const ClearQuillInput = {
+  mounted() {
+    this.el.addEventListener('click', () => {
+      const element = document.querySelector(".ql-editor");
+      element.innerHTML = "";
+      element.classList.add("ql-blank")
+    });
+  },
+};

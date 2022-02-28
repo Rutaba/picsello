@@ -106,6 +106,41 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event(
+        "preview_gallery",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    socket
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "gallery_settings",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "load-more",
         _,
         %{

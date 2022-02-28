@@ -16,6 +16,8 @@ defmodule Picsello.Package do
     field :job_type, :string
     field :name, :string
     field :shoot_count, :integer
+    field :print_credits, Money.Ecto.Amount.Type
+    field :buy_all, Money.Ecto.Amount.Type
     field :turnaround_weeks, :integer, default: 1
 
     belongs_to(:organization, Picsello.Organization)
@@ -55,7 +57,10 @@ defmodule Picsello.Package do
 
   defp create_details(package, attrs, opts \\ []) do
     package
-    |> cast(attrs, ~w[description name organization_id shoot_count turnaround_weeks]a)
+    |> cast(
+      attrs,
+      ~w[description name organization_id shoot_count print_credits turnaround_weeks]a
+    )
     |> validate_required(~w[description name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
     |> validate_number(:turnaround_weeks, greater_than_or_equal_to: 1)
@@ -80,20 +85,23 @@ defmodule Picsello.Package do
 
   defp update_pricing(package, attrs, _opts \\ []) do
     package
-    |> cast(attrs, [
-      :base_price,
-      :download_count,
-      :download_each_price,
-      :base_multiplier
-    ])
-    |> validate_required([:base_price, :download_count, :download_each_price])
+    |> cast(
+      attrs,
+      ~w[base_price download_count download_each_price base_multiplier print_credits buy_all]a
+    )
+    |> validate_required(~w[base_price download_count download_each_price]a)
     |> validate_money(:base_price)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
+    |> validate_money(:print_credits)
+    |> validate_money(:buy_all)
   end
 
   def base_price(%__MODULE__{base_price: nil}), do: Money.new(0)
   def base_price(%__MODULE__{base_price: base}), do: base
+
+  def print_credits(%__MODULE__{print_credits: nil}), do: Money.new(0)
+  def print_credits(%__MODULE__{print_credits: credits}), do: credits
 
   def adjusted_base_price(%__MODULE__{base_multiplier: multiplier} = package),
     do: package |> base_price() |> Money.multiply(multiplier)

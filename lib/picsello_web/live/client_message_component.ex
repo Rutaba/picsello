@@ -2,6 +2,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Job}
+  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -79,20 +80,8 @@ defmodule PicselloWeb.ClientMessageComponent do
         </div>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
-          <div id="toolbar">
-            <button class="ql-bold"></button>
-            <button class="ql-italic"></button>
-            <button class="ql-underline"></button>
-            <button class="ql-list" value="bullet"></button>
-            <button class="ql-list" value="ordered"></button>
-            <button class="ql-link"></button>
-          </div>
-          <div id="editor" style="min-height: 4rem;"> </div>
-          <%= hidden_input f, :body_text, phx_debounce: "500" %>
-          <%= hidden_input f, :body_html, phx_debounce: "500" %>
-        </div>
-        <PicselloWeb.LiveModal.footer>
+        <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} />
+     <PicselloWeb.LiveModal.footer>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
