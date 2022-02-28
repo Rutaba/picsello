@@ -73,6 +73,8 @@ defmodule Picsello.ClientOrdersTest do
       %Picsello.WHCC.Order.Created{total: "69"}
     end)
 
+    Picsello.PhotoStorageMock |> Mox.stub(:path_to_url, & &1)
+
     session
     |> assert_text(gallery.name)
     |> click(link("View Gallery"))

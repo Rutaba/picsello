@@ -13,13 +13,15 @@ defmodule Picsello.Mock do
       Picsello.MockAuthStrategy,
       Picsello.MockBambooAdapter,
       Picsello.MockPayments,
-      Picsello.MockWHCCClient
+      Picsello.MockWHCCClient,
+      Picsello.PhotoStorageMock
     ]
 
   def setup do
     Mox.defmock(Picsello.MockPayments, for: Picsello.Payments)
     Mox.defmock(Picsello.MockBambooAdapter, for: Bamboo.Adapter)
     Mox.defmock(Picsello.MockWHCCClient, for: Picsello.WHCC.Adapter)
+    Mox.defmock(Picsello.PhotoStorageMock, for: Picsello.Galleries.Workers.PhotoStorage)
 
     Mox.defmock(Picsello.MockAuthStrategy,
       for: [Ueberauth.Strategy, UeberauthStrategyBehaviorPatch]
