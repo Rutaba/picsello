@@ -76,7 +76,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
 
     session
     |> visit(session |> find(testid("url")) |> Element.text())
-    |> assert_text("Not Found")
+    |> assert_has(testid("404-page", text: "Whoops! We lost that page in our camera bag."))
   end
 
   feature "selects job type if there is only one", %{
