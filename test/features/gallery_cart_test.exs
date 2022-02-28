@@ -39,7 +39,7 @@ defmodule Picsello.GalleryCartTest do
     fill_gallery_cart(gallery)
 
     Mox.stub(Picsello.MockWHCCClient, :create_order, fn _account_id, _editor_id, _opts ->
-      %Picsello.WHCC.Order.Created{}
+      %Picsello.WHCC.Order.Created{total: "0"}
     end)
 
     session
