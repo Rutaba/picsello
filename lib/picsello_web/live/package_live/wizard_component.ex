@@ -321,7 +321,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <label class="flex items-center mt-3">
                 <%= checkbox(p, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
 
-                Set a "buy them all"price
+                Set a "buy them all" price
               </label>
 
               <%= if p |> current() |> Map.get(:is_buy_all) do %>
