@@ -215,10 +215,8 @@ defmodule Picsello.FeatureCase do
     end
 
     def authenticated_gallery_client(%{session: session}) do
-      session
-      |> authenticated_gallery()
-      |> Enum.into(%{})
-      |> authenticated_gallery_client()
+      job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
+      authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
     def authenticated_gallery(%{session: session}) do
