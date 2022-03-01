@@ -219,7 +219,7 @@ defmodule Picsello.WHCC do
   def min_price(%{products: [_ | _] = products} = category) do
     products
     |> Enum.map(fn product ->
-      Picsello.WHCC.mark_up_price(category, Picsello.WHCC.cheapest_selections(product))
+      mark_up_price(category, cheapest_selections(product))
     end)
     |> Enum.min(fn -> Money.new(0) end)
   end

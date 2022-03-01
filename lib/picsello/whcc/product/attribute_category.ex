@@ -1,5 +1,5 @@
 defmodule Picsello.WHCC.Product.AttributeCategory do
-  @moduledoc "find the cleapest set of selections for a product's attribute categories"
+  @moduledoc "find the cheapest set of selections for a product's attribute categories"
 
   def cheapest_selections(%{"attributes" => attributes} = category, valid_selections) do
     attributes
