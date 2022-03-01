@@ -261,7 +261,10 @@ defmodule PicselloWeb.GalleryLive.Show do
       |> Galleries.set_gallery_hash()
       |> Map.get(:client_link_hash)
 
-    gallery = Picsello.Repo.preload(gallery, job: :client)
+    gallery =
+      gallery.id
+      |> Galleries.get_gallery!()
+      |> Picsello.Repo.preload(job: :client)
 
     link = Routes.gallery_client_show_url(socket, :show, hash)
     client_name = gallery.job.client.name
@@ -287,7 +290,6 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     socket
     |> assign(:job, gallery.job)
-    |> assign(:gallery, gallery)
     |> PicselloWeb.ClientMessageComponent.open(%{
       body_html: html,
       body_text: text,
