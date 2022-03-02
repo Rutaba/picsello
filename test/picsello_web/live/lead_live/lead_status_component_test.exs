@@ -76,7 +76,8 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
     end
 
     test "when status is :deposit_paid", %{lead: lead, user: user} do
-      _proposal = insert(:proposal, %{job: lead, deposit_paid_at: DateTime.utc_now()})
+      _proposal = insert(:proposal, %{job: lead})
+      insert(:payment_schedule, job: lead, paid_at: DateTime.utc_now())
 
       component = render_component(LeadStatusComponent, job: lead, current_user: user)
 

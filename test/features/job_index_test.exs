@@ -43,6 +43,7 @@ defmodule Picsello.JobIndexTest do
 
     Repo.delete(proposal)
     Repo.delete(shoot)
+    Repo.delete_all(Picsello.PaymentSchedule)
     Repo.delete(job)
 
     session
