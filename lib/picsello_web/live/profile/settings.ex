@@ -14,7 +14,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} intro_id="intro_settings_public_profile">
       <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
           <h1 class="text-2xl font-bold">Public Profile</h1>

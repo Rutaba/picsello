@@ -239,12 +239,12 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   def settings_nav(assigns) do
-    assigns = assigns |> Enum.into(%{container_class: ""})
+    assigns = assigns |> Enum.into(%{container_class: "", intro_id: nil})
 
     ~H"""
     <div class="bg-blue-planning-100"><h1 class="px-6 py-8 text-3xl font-bold center-container">Your Settings</h1></div>
 
-    <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"} {intro(@current_user, "intro_settings")}>
+    <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"} {if @intro_id, do: intro(@current_user, @intro_id), else: []}>
       <._settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
         <:link to={{:user_settings, :edit}} >Account</:link>
         <:link to={{:package_templates, :index}} >Package Templates</:link>
