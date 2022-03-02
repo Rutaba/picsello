@@ -4,12 +4,12 @@ defmodule Picsello.Galleries do
   """
 
   import Ecto.Query, warn: false
-  alias Picsello.Repo
 
-  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken}
-  alias Picsello.GalleryProducts
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.{Repo, GalleryProducts, Category, Galleries}
   alias Picsello.Workers.CleanStore
+  alias Galleries.PhotoProcessing.ProcessingManager
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  import Repo.CustomMacros
 
   @doc """
   Returns the list of galleries.
@@ -105,9 +105,32 @@ defmodule Picsello.Galleries do
 
   """
   def create_gallery(attrs \\ %{}) do
-    %Gallery{}
-    |> Gallery.create_changeset(attrs)
-    |> Repo.insert()
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Ecto.Multi.insert_all(
+      :gallery_products,
+      GalleryProduct,
+      fn %{
+           gallery: %{
+             id: gallery_id
+           }
+         } ->
+        from(category in (Category.active() |> Category.shown()),
+          select: %{
+            inserted_at: now(),
+            updated_at: now(),
+            gallery_id: ^gallery_id,
+            category_id: category.id
+          }
+        )
+      end
+    )
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{gallery: gallery}} -> {:ok, gallery}
+      {:error, :gallery, changeset, _} -> {:error, changeset}
+      other -> other
+    end
   end
 
   @doc """
@@ -622,5 +645,6 @@ defmodule Picsello.Galleries do
     |> Repo.preload(job: [client: [organization: :user]])
   end
 
-  def categories, do: Picsello.Category.active() |> Repo.all()
+  def products(%{id: gallery_id}),
+    do: Picsello.GalleryProducts.get_gallery_products(gallery_id, :with_or_without_previews)
 end

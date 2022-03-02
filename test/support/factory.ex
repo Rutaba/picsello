@@ -379,7 +379,8 @@ defmodule Picsello.Factory do
       name: "cool shirts",
       position: sequence(:category_position, & &1),
       icon: "book",
-      default_markup: 2.0
+      default_markup: 2.0,
+      hidden: false
     }
 
   def product_factory,

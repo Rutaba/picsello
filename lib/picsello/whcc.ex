@@ -265,10 +265,9 @@ defmodule Picsello.WHCC do
 
   defp categories_query(),
     do:
-      from(category in Picsello.Category.active(),
-        where: not category.hidden,
-        order_by: [asc: category.position]
-      )
+      Picsello.Category.active()
+      |> Picsello.Category.shown()
+      |> Picsello.Category.order_by_position()
 
   defp async_stream(enum, f) do
     enum

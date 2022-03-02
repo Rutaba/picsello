@@ -3,32 +3,43 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.Repo
   alias Picsello.Galleries.Photo
 
   setup do
-    Enum.each(Picsello.Category.frame_images(), fn frame_image ->
-      insert(:product, category: insert(:category, frame_image: frame_image))
-    end)
+    gallery = insert(:gallery, %{name: "Test Client Wedding"})
 
-    :ok
-  end
+    products =
+      Enum.map(Picsello.Category.frame_images(), fn frame_image ->
+        :category
+        |> insert(frame_image: frame_image)
+        |> Kernel.then(fn category ->
+          insert(:product, category: category)
 
-  setup do
-    [gallery: insert(:gallery, %{name: "Test Client Wedding"})]
+          insert(:gallery_product,
+            category: category,
+            gallery: gallery
+          )
+        end)
+      end)
+
+    insert(:photo, gallery: gallery)
+
+    [gallery: gallery, products: products]
   end
 
   setup :onboarded
   setup :authenticated
 
-  test "redirect from galleries", %{session: session} do
-    %{gallery_id: id} = set_gallery_product()
-    frame = Picsello.Category.frame_images() |> hd
-    %{id: category_id} = Repo.get_by(Picsello.Category, frame_image: frame)
-
+  test "redirect from galleries", %{
+    session: session,
+    gallery: %{id: gallery_id},
+    products: [%{category_id: category_id, id: product_id} | _]
+  } do
     session
-    |> visit("/galleries/#{id}")
-    |> click(css(".prod-link#{category_id}"))
+    |> visit("/galleries/#{gallery_id}")
+    # "Edit this" link is behind bottom bar
+    |> force_simulate_click(css(".prod-link#{category_id}"))
+    |> assert_path("/galleries/#{gallery_id}/product/#{product_id}")
     |> find(css(".item-content"))
   end
 
@@ -54,22 +65,5 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
       name: photo_url,
       position: 1
     })
-  end
-
-  def set_gallery_product() do
-    gallery = insert(:gallery, name: "testGalleryName", job: insert(:lead))
-    photo_url = "card_blank.png"
-
-    insert(:photo,
-      gallery: gallery,
-      preview_url: photo_url,
-      original_url: photo_url,
-      name: photo_url,
-      position: 1
-    )
-
-    category = Picsello.Category |> Repo.all() |> hd
-
-    insert(:gallery_product, gallery: gallery, category: category)
   end
 end

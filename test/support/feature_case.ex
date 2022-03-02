@@ -42,6 +42,17 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def force_simulate_click(session, query) do
+      case Wallaby.Query.compile(query) do
+        {:css, selector} ->
+          execute_script(
+            session,
+            "document.querySelector(arguments[0]).click()",
+            [selector]
+          )
+      end
+    end
+
     def post(session, path, body, headers \\ []) do
       HTTPoison.post(
         PicselloWeb.Endpoint.url() <> path,

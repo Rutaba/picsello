@@ -28,7 +28,13 @@ defmodule Picsello.Category do
 
   def frame_images(), do: Map.keys(@preview_templates)
 
-  def active, do: from(category in __MODULE__, where: is_nil(category.deleted_at))
+  def active(query \\ __MODULE__),
+    do: where(query, [category], is_nil(category.deleted_at))
+
+  def shown(query \\ __MODULE__), do: where(query, [category], not category.hidden)
+
+  def order_by_position(query \\ __MODULE__),
+    do: order_by(query, [category], asc: category.position)
 
   def changeset(category, attrs \\ %{}) do
     category

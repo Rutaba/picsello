@@ -25,14 +25,6 @@ defmodule Picsello.ClientOrdersTest do
 
   setup :authenticated_gallery_client
 
-  def force_simulate_click(session, selector) do
-    execute_script(
-      session,
-      "document.querySelector(arguments[0]).click()",
-      [selector]
-    )
-  end
-
   feature "get to editor", %{session: session, gallery: %{id: gallery_id} = gallery} do
     {gallery_product_id, whcc_product_id} =
       from(whcc_product in Picsello.Product,
@@ -78,7 +70,7 @@ defmodule Picsello.ClientOrdersTest do
     session
     |> assert_text(gallery.name)
     |> click(link("View Gallery"))
-    |> force_simulate_click("#muuri-grid > div:first-child img")
+    |> force_simulate_click(css("#muuri-grid > div:first-child img"))
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [

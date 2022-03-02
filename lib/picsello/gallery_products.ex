@@ -15,16 +15,25 @@ defmodule Picsello.GalleryProducts do
   @doc """
   Get all the gallery products that are ready for review
   """
-  def get_gallery_products(gallery_id) do
-    from(product in GalleryProduct,
+  def get_gallery_products(gallery_id, opts \\ :with_previews) do
+    gallery_id |> gallery_products_query(opts) |> Repo.all()
+  end
+
+  defp gallery_products_query(gallery_id, :with_previews) do
+    from(product in gallery_products_query(gallery_id, :with_or_without_previews),
       inner_join: preview_photo in assoc(product, :preview_photo),
+      select_merge: %{preview_photo: preview_photo}
+    )
+  end
+
+  defp gallery_products_query(gallery_id, :with_or_without_previews) do
+    from(product in GalleryProduct,
       inner_join: category in assoc(product, :category),
-      where: product.gallery_id == ^gallery_id,
-      select_merge: %{preview_photo: preview_photo, category: category},
-      preload: [category: :products],
+      where:
+        product.gallery_id == ^gallery_id and not category.hidden and is_nil(category.deleted_at),
+      preload: [:preview_photo, category: :products],
       order_by: category.position
     )
-    |> Repo.all()
   end
 
   def check_is_photo_selected_as_preview(photo_id) do
