@@ -147,7 +147,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_profile h1'),
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
+    ].filter((obj) => obj?.element),
   }),
   intro_settings_packages: (el) => ({
     showBullets: false,
@@ -158,7 +158,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_packages h1'),
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
+    ].filter((obj) => obj?.element),
   }),
   intro_settings_pricing: (el) => ({
     showBullets: false,
@@ -170,7 +170,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_pricing h1'),
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
+    ].filter((obj) => obj?.element),
   }),
   intro_settings_public_profile: (el) => ({
     showBullets: false,
@@ -182,7 +182,7 @@ export default {
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_public_profile h1'),
       },
-    ].filter((obj) => obj?.element), // Hack to filter out steps that don't exist in the DOM,
+    ].filter((obj) => obj?.element),
   }),
   intro_settings_contacts: (el) => ({
     showBullets: false,
