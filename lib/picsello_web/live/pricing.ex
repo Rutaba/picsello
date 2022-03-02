@@ -11,9 +11,9 @@ defmodule PicselloWeb.Live.Pricing do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
-      <div class="my-5" {intro(@current_user, "intro_settings_pricing")}>
-        <h1 class="text-2xl font-bold"><span class="intro-settings-pricing">Gallery Store Pricing</span></h1>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28" intro_id="intro_settings_pricing">
+      <div class="my-5">
+        <h1 class="text-2xl font-bold">Gallery Store Pricing</h1>
 
         <p class="max-w-2xl my-2">
           Customize markup pricing for products clients can purchase through you.
