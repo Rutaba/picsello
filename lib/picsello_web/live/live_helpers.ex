@@ -112,7 +112,7 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: ""})
 
     ~H"""
-    <button type="button" class={"flex items-center px-2 py-1 border rounded-lg text-2m border-#{@color} #{@class}"} {@rest}>
+    <button type="button" class={"flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 text-2m border-#{@color} #{@class}"} {@rest}>
       <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
       <%= render_block(@inner_block) %>
     </button>
@@ -130,14 +130,13 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
+  def classes(nil), do: ""
   def classes(%{} = optionals), do: classes([], optionals)
-  def classes(constants), do: classes(constants, %{})
+  def classes([{_k, _v} | _] = optionals), do: classes([], Map.new(optionals))
+  def classes(["" <> _constant | _] = constants), do: classes(constants, %{})
 
   def classes(nil, optionals), do: classes([], optionals)
-
-  def classes("" <> constant, optionals) do
-    classes([constant], optionals)
-  end
+  def classes("" <> constant, optionals), do: classes([constant], optionals)
 
   def classes(constants, optionals) do
     [
@@ -208,19 +207,25 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  @job_type_colors %{
+    "blue" => {"bg-blue-planning-100", "border-blue-planning-300", "bg-blue-planning-300"},
+    "black" => {"bg-base-200", "border-base-300", "bg-base-300"}
+  }
   def job_type_option(assigns) do
-    assigns = Enum.into(assigns, %{disabled: false})
+    assigns = Enum.into(assigns, %{disabled: false, class: "", color: "blue"})
+
+    {bg_light, border_dark, bg_dark} = @job_type_colors |> Map.get(assigns.color)
 
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base",
-        %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
+        "flex items-center p-2 border rounded-lg hover:#{bg_light} hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base #{@class}",
+        %{"#{border_dark} #{bg_light}" => @checked}
       )}>
         <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
-          %{"bg-blue-planning-300 text-white" => @checked, "bg-base-200" => !@checked}
+          %{"#{bg_dark} text-white" => @checked, "bg-base-200" => !@checked}
         )}>
           <.icon name={@job_type} class="fill-current" width="14" height="14" />
         </div>
@@ -231,18 +236,30 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   @badge_colors %{
-    gray: "bg-gray-200",
-    blue: "bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
-    green: "bg-green-finances-100 text-green-finances-300",
-    red: "bg-red-sales-100 text-red-sales-300"
+    filled: %{
+      gray: "rounded bg-gray-200",
+      blue: "rounded bg-blue-planning-100 text-blue-planning-300 group-hover:bg-white",
+      green: "rounded bg-green-finances-100 text-green-finances-300",
+      red: "rounded bg-red-sales-100 text-red-sales-300"
+    },
+    outlined: %{
+      gray: "border border-base-250 text-base-250",
+      blue: "border border-blue-planning-300 text-blue-planning-300 group-hover:bg-white",
+      green: "border border-green-finances-300 text-green-finances-300",
+      red: "border border-red-sales-300 text-red-sales-300"
+    }
   }
 
   def badge(%{color: color} = assigns) do
+    badge_mode = assigns |> Map.get(:mode, :filled)
+
     assigns =
-      assigns |> Map.put(:color_style, Map.get(@badge_colors, color)) |> Enum.into(%{class: ""})
+      assigns
+      |> Map.put(:color_style, @badge_colors |> Map.get(badge_mode) |> Map.get(color))
+      |> Enum.into(%{class: ""})
 
     ~H"""
-    <span role="status" class={"px-2 py-0.5 text-xs font-semibold rounded #{@color_style} #{@class}"} >
+    <span role="status" class={"px-2 py-0.5 text-xs font-semibold #{@color_style} #{@class}"} >
       <%= render_block @inner_block %>
     </span>
     """
@@ -263,7 +280,7 @@ defmodule PicselloWeb.LiveHelpers do
     Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
   end
 
-  def display_photo(nil), do: "/images/gallery-icon.png"
+  def display_photo(nil), do: "/images/gallery-icon.svg"
 
   def initials_circle(assigns) do
     assigns =
@@ -316,4 +333,7 @@ defmodule PicselloWeb.LiveHelpers do
     |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
     |> noreply()
   end
+
+  def shoot_location(%{address: address, location: location}),
+    do: address || location |> Atom.to_string() |> dyn_gettext()
 end

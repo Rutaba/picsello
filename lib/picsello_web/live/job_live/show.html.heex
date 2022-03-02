@@ -24,9 +24,9 @@
 
 <.subheader package={@package} job={@job} />
 
-<div class="p-6 center-container">
+<div class="p-6 center-container" {intro_hints_only("intro_hints_only_cards")}>
   <ul class="grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder" button_click="open-compose" >
+    <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder" button_click="open-compose" hint_content="See the status of payment from your client at a glance. If they're past due or you to need to follow up, send them a reminder message.">
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
         <%= if BookingProposal.remainder_paid?(@proposal) do %>
@@ -38,7 +38,7 @@
         <% end %>
       </dl>
     </.overview_card>
-    <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox" button_click="open-inbox">
+    <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox" button_click="open-inbox" hint_content="Check in on messages from your client, or send them a message">
       <%= if @inbox_count > 0 do %>
         <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
       <% else %>

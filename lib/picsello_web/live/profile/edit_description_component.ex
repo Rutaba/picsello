@@ -1,6 +1,7 @@
 defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
 
   @impl true
   def render(assigns) do
@@ -9,20 +10,8 @@ defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
       <h1 class="text-3xl font-bold">Edit Description</h1>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-
         <%= for p <- inputs_for(f, :profile) do %>
-          <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-4" data-placeholder="Start typing…" data-html-field-name={input_name(p, :description)}>
-            <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
-              <button class="ql-bold"></button>
-              <button class="ql-italic"></button>
-              <button class="ql-underline"></button>
-              <button class="ql-list" value="bullet"></button>
-              <button class="ql-list" value="ordered"></button>
-              <button class="ql-link"></button>
-            </div>
-            <div id="editor" style="min-height: 4rem;"> </div>
-            <%= hidden_input p, :description, phx_debounce: "500" %>
-          </div>
+          <.quill_input f={p} style={"min-height: 4rem;"} html_field={@field_name} placeholder={"Start typing…"} />
         <% end %>
 
         <PicselloWeb.LiveModal.footer />
@@ -37,5 +26,9 @@ defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.Live.Profile.Shared
 
-  def open(socket), do: PicselloWeb.Live.Profile.Shared.open(socket, __MODULE__)
+  def open(socket, field_name) do
+    socket
+    |> assign(:field_name, String.to_atom(field_name))
+    |> PicselloWeb.Live.Profile.Shared.open(__MODULE__)
+  end
 end

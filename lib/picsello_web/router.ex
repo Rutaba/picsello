@@ -153,35 +153,25 @@ defmodule PicselloWeb.Router do
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
 
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
-
-    live "/photographer/:organization_slug/pricing", Live.ProfilePricing, :index,
-      as: :profile_pricing
-
-    live "/photographer/:organization_slug/pricing/:job_type", Live.ProfilePricing, :index,
-      as: :profile_pricing_job_type
   end
 
-  pipeline :require_authenticated_gallery do
-    plug PicselloWeb.Plugs.GalleryAuth
-  end
-
-  scope "/gallery", PicselloWeb do
+  scope "/gallery/:hash", PicselloWeb do
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
-      pipe_through [:browser, :require_authenticated_gallery]
+      pipe_through [:browser]
 
-      live "/:hash", GalleryLive.ClientShow, :show
-      live "/:hash/orders", GalleryLive.ClientOrders, :show
-      live "/:hash/orders/:order_number", GalleryLive.ClientOrder, :show
-      live "/:hash/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
-      live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
-      post "/:hash/downloads", GalleryDownloadsController, :download
-      post "/:hash/login", GallerySessionController, :put
+      live "/", GalleryLive.ClientShow, :show
+      live "/orders", GalleryLive.ClientOrders, :show
+      live "/orders/:order_number", GalleryLive.ClientOrder, :show
+      live "/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
+      live "/cart", GalleryLive.ClientShow.Cart, :cart
+      post "/downloads", GalleryDownloadsController, :download
+      post "/login", GallerySessionController, :put
     end
   end
 
   scope "/gallery", PicselloWeb do
     live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
-      pipe_through [:browser, :require_authenticated_gallery]
+      pipe_through [:browser]
 
       live "/:hash/login", GalleryLive.ClientShow.Login, :login
     end

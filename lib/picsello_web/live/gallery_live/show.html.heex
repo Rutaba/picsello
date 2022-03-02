@@ -1,182 +1,185 @@
-<div class="xl:hidden">
-    <div class="bg-base-200 p-6">
-        <div class="flex items-center justify-between w-40">
-            <div class="circleBtn">
-                <ul>
-                    <li>
-                        <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
-                        <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
-                        <span>Gallery</span>
-                        <% end %>
-                    </li>
-                </ul>
+<div phx-hook="GalleryMobile" id="gallery_mobile">
+    <div class="hidden galleryShowMobile">
+        <div class="bg-base-200 p-6">
+            <div class="flex items-center justify-between w-40">
+                <div class="circleBtn">
+                    <ul>
+                        <li>
+                            <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+                            <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
+                            <span>Gallery</span>
+                            <% end %>
+                        </li>
+                    </ul>
+                </div>
+                <span class="text-2xl font-bold text-base-300">Gallery</span>
             </div>
-            <span class="text-2xl font-bold text-base-300">Gallery</span>
+        </div>
+        <div class="py-10 px-6 mobileGalleryButtons">
+            <p>Mobile view is not supported for Gallery, but you can still manage settings.</p>
+            <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
+            <%= live_redirect "Manage settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %>
+            </button>
+            <button class="btn-secondary py-3.5 w-full max-w-screen-md mt-4">
+            <%= live_redirect "Back to job", to: Routes.job_path(@socket, :jobs, @gallery.job_id) %>
+            </button>
         </div>
     </div>
-    <div class="py-10 px-6 mobileGalleryButtons">
-        <p>Mobile view is not supported for Gallery, but you can still manage settings.</p>
-        <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
-        <%= live_redirect "Manage settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %>
-        </button>
-        <button class="btn-secondary py-3.5 w-full max-w-screen-md mt-4">
-        <%= live_redirect "Back to job", to: Routes.job_path(@socket, :jobs, @gallery.job_id) %>
-        </button>
-    </div>
-</div>
-<div class="hidden xl:block">
-    <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"} class={classes("gallery__coverImg",  %{"active" => @gallery.cover_photo})}>
-    <div class="gallery__container py-11 flex justify-between relative z-10">
-        <div>
-            <div class="circleBtn">
-                <ul>
-                    <li>
-                        <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
-                        <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
-                        <span>Back to job</span>
-                        <% end %>
-                    </li>
-                </ul>
-            </div>
-            <%= if @cover_photo_processing do %>
-              <div class="reuploadingBlock flex justify-between">            
-                <label class="font-bold text-blue-planning-300">Processing...</label>
-              </div>
-            <% else %>
-              <%= if @gallery.cover_photo do %>
+    <div class="galleryHideDesktop">
+        <div style={"background-image: url('#{display_cover_photo(@gallery.cover_photo)}')"} class="gallery__coverImg active">
+        <div class="gallery__container py-11 flex flex-wrap justify-between relative z-10">
+            <div>
+                <div class="circleBtn">
+                    <ul>
+                        <li>
+                            <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+                            <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
+                            <span>Back to job</span>
+                            <% end %>
+                        </li>
+                    </ul>
+                </div>
+                <%= if @cover_photo_processing do %>
                 <div class="reuploadingBlock flex justify-between">
-                  <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-                      <div class="dragDrop__content">
-                          <label class="font-bold text-white">Choose a new photo
-                          <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                          </label>
-                      </div>
-                  </form>
-                  <button phx-click="delete_cover_photo_popup">
-                    <.icon name="remove-icon" class="w-5 h-5 text-base-250 cursor-pointer" />
-                  </button>
+                    <label class="font-bold text-blue-planning-300">Processing...</label>
                 </div>
-              <% else %>
-                <div class="uploadingBlock">
-                    <p class="font-bold mb-8">Upload cover photo</p>
-                    <div class="dragDrop__wrapper">
-                        <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-                            <label>
-                                <div class="flex flex-col items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
-                                    <.icon name="add-photos" class="w-20 h-20 text-blue-planning-300 cursor-pointer" />
-                                    <div class="dragDrop__content">
-                                        <p class="font-bold"><span>Drop images or </span><span class="primary cursor-pointer">Browse</span></p>
-                                        <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                                        <p class="gray">Supports JPEG or PNG</p>
-                                    </div>
-                                </div>
+                <% else %>
+                <%= if @gallery.cover_photo do %>
+                    <div class="reuploadingBlock flex justify-between">
+                    <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                        <div class="dragDrop__content">
+                            <label class="font-bold text-white">Choose a new photo
+                            <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
                             </label>
-                        </form>
+                        </div>
+                    </form>
+                    <button phx-click="delete_cover_photo_popup">
+                        <.icon name="remove-icon" class="w-5 h-5 text-base-250 cursor-pointer" />
+                    </button>
                     </div>
-                </div>
-            <% end %> 
-          <% end %>            
-        </div>
-        <div class="w-5/12 lg:w-1/3 text-base-100 pt-36">
-            <p class="w-full font-medium text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></p>
-            <p class="font-bold text-6xl w-full"><%= @gallery.name %></p>
-        </div>
-    </div>
-</div>
-
-<div class="gallery__container">
-    <!--<div class="pt-14">
-        <div class="font-bold text-3xl">
-            Showcase photos your clients will love
-            <svg width="22" height="22" class="stroke-current inline-block mr-2 rounded-full fill-current" >
-                <use href="/images/icons.svg#gallery-info"></use>
-            </svg>
-        </div>
-    </div>-->
-  <div class="px-6 sm:px-0 border-b pb-14 pt-10">
-  <ul class="grid gap-8 grid-cols-4 mx-auto">
-    <%= for product <- @products do %>
-      <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
-                      id={product.id}
-                      photo={product.preview_photo}
-                      category_template={product.category_template}
-                      edit_product_link={Routes.preview_path(@socket, :preview, product.gallery_id, product.id, product.category_template.id)}
-                      has_info={true}/>
-    <% end %>
-    </ul>
-  </div>
-</div>
-
-
-<div class="gallery__container pb-32">
-    <%= if @live_action in [:edit] do %>
-    <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
-        id: @gallery.id,
-        title: @page_title,
-        action: @live_action,
-        gallery: @gallery,
-        return_to: Routes.gallery_show_path(@socket, :show, @gallery) %>
-    <% end %>
-    <div class="py-16">
-        <div class="font-bold text-3xl">
-            <%= @gallery.name %> Gallery
-        </div>
-        <div class="text-xl text-gray-400">
-            <%= @gallery.total_count %>
-            photos
+                <% else %>
+                    <div class="uploadingBlock">
+                        <p class="font-bold mb-8">Upload cover photo</p>
+                        <div class="dragDrop__wrapper">
+                            <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                                <label>
+                                    <div class="flex flex-col items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
+                                        <.icon name="add-photos" class="w-20 h-20 text-blue-planning-300 cursor-pointer" />
+                                        <div class="dragDrop__content">
+                                            <p class="font-bold"><span>Drop images or </span><span class="primary cursor-pointer">Browse</span></p>
+                                            <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                                            <p class="gray">Supports JPEG or PNG</p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </form>
+                        </div>
+                    </div>
+                <% end %>
+            <% end %>
+            </div>
+            <div class="text-base-100 w-full text-center mt-auto sm:pb-60 pb-20">
+                <h3 class="w-full font-medium text-2xl"><%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %></h3>
+                <h1 class="font-bold text-6xl w-full mb-10"><%= @gallery.name %></h1>
+                <p class="text-center w-full"><a href="#gallery" class="text-center gallery__button btn-secondary text-center bg-transparent text-white border-white hover:bg-white/10">View Gallery</a></p>
+            </div>
         </div>
     </div>
-    <div
-        phx-hook="MasonryGrid"
-        phx-update={@update_mode}
-        id="muuri-grid"
-        class="muuri grid"
-        data-page={@page}
-        data-total={@gallery.total_count}
-        data-favorites-count={@favorites_count}
-        data-is-favorites-shown={ "#{@favorites_filter}" }
-        data-is-sortable="true"
-        data-has-more-photos={ "#{@has_more_photos}" }
-        data-photo-width="300"
-        >
-        <%= for photo <- @photos do %>
-        <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-            id: photo.id,
-            photo: photo,
-            photo_width: 300,
-            is_likable: false,
-            is_removable: true,
-            is_removed: false,
-            is_gallery_category_page: false%>
+
+    <div class="gallery__container">
+        <!--<div class="pt-14">
+            <div class="font-bold text-3xl">
+                Showcase photos your clients will love
+                <svg width="22" height="22" class="stroke-current inline-block mr-2 rounded-full fill-current" >
+                    <use href="/images/icons.svg#gallery-info"></use>
+                </svg>
+            </div>
+        </div>-->
+    <div class="px-6 sm:px-0 border-b pb-14 pt-10">
+    <ul class="grid gap-8 grid-cols-4 mx-auto">
+        <%= for product <- @products do %>
+        <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent}
+                        id={product.id}
+                        photo={product.preview_photo}
+                        category_template={product.category_template}
+                        edit_product_link={Routes.preview_path(@socket, :preview, product.gallery_id, product.id, product.category_template.id)}
+                        has_info={true}/>
         <% end %>
+        </ul>
     </div>
-    <div style="display: none">
-      <div
-        id="photo-update-listener"
-        phx-hook="PhotoUpdate"
-        data-photo-updates={@photo_updates}
-      ></div>
     </div>
-</div>
-<div class="bottomBar">
-    <div class="gallery__container flex justify-between items-center">
-        <div class="flex">
-            <button class="bottomBar__btn mr-3">
-            <.icon name="settings" class="w-6 h-6 text-base-100" />
-            <span class="pl-3" ><%= live_redirect "Gallery Settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %></span>
-            </button>
-            <!-- <button class="bottomBar__btn">
-                <img class="mr-3" src="/images/gallery-icon.png" alt="gallery" width="21" height="26"/>
-                <span>View gallery</span>
-                </button> -->
+
+
+    <div class="gallery__container pb-32" id="gallery">
+        <%= if @live_action in [:edit] do %>
+        <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
+            id: @gallery.id,
+            title: @page_title,
+            action: @live_action,
+            gallery: @gallery,
+            return_to: Routes.gallery_show_path(@socket, :show, @gallery) %>
+        <% end %>
+        <div class="py-16">
+            <div class="font-bold text-3xl">
+                <%= @gallery.name %> Gallery
+            </div>
+            <div class="text-xl text-gray-400">
+                <%= @gallery.total_count %>
+                photos
+            </div>
         </div>
-        <div class="flex">
-            <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
-            <.icon name="add-photos" class="w-6 h-6 text-base-100" />
-            <span class="pl-3">Add photos</span>
-            </button>
-            <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
+        <div
+            phx-hook="MasonryGrid"
+            phx-update={@update_mode}
+            id="muuri-grid"
+            class="muuri grid"
+            data-page={@page}
+            data-total={@gallery.total_count}
+            data-favorites-count={@favorites_count}
+            data-is-favorites-shown={ "#{@favorites_filter}" }
+            data-is-sortable="true"
+            data-has-more-photos={ "#{@has_more_photos}" }
+            data-photo-width="300"
+            >
+            <%= for photo <- @photos do %>
+            <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                id: photo.id,
+                photo: photo,
+                photo_width: 300,
+                is_likable: false,
+                is_removable: true,
+                is_removed: false,
+                is_gallery_category_page: false%>
+            <% end %>
+        </div>
+        <div style="display: none">
+        <div
+            id="photo-update-listener"
+            phx-hook="PhotoUpdate"
+            data-photo-updates={@photo_updates}
+        ></div>
         </div>
     </div>
-</div>
+    <div class="bottomBar">
+        <div class="gallery__container flex justify-between items-center">
+            <div class="flex">
+                <button class="bottomBar__btn mr-3" phx-click="gallery_settings">
+                    <.icon name="settings" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Gallery Settings</span>
+                </button>
+                <button class="bottomBar__btn mr-3" phx-click="preview_gallery">
+                    <.icon name="eye" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Preview Gallery</span>
+                </button>
+            </div>
+            <div class="flex">
+                <button class="bottomBar__btn mr-3" phx-click="open_upload_popup">
+                    <.icon name="add-photos" class="w-6 h-6 text-base-100" />
+                    <span class="pl-3">Add photos</span>
+                </button>
+                <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
+            </div>
+        </div>
+    </div>
+    </div>
 </div>

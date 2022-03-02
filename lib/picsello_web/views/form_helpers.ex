@@ -112,7 +112,7 @@ defmodule PicselloWeb.FormHelpers do
         Keyword.drop(opts, [:wrapper_class, :input_class, :label_class, :label])
 
     content_tag :div,
-      class: classes([Keyword.get_values(opts, :wrapper_class), "flex", "flex-col"]) do
+      class: classes(Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]) do
       [
         label_for(form, field, label_opts),
         input(form, field, input_opts)

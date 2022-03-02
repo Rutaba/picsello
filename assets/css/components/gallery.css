@@ -1,5 +1,5 @@
 .gallery__coverImg {
-    height: 223px;
+    height: calc((4/6)*100vw);
     @apply bg-base-200
     bg-cover
     bg-center
@@ -8,7 +8,7 @@
 
 .gallery__coverImg.active::after {
     content: '';
-    background: linear-gradient(180deg, rgba(31, 28, 30, 0) 25.56%, rgba(31, 28, 30, 0.6) 66.71%);
+    background: linear-gradient(180.33deg, rgba(196, 196, 196, 0) 43%, rgba(0, 0, 0, 0.6) 99.72%, rgba(0, 0, 0, 0.732) 99.72%);
     @apply absolute
     top-0
     bottom-0
@@ -25,13 +25,20 @@
     px-16;
 }
 
+.gallery__coverImg .gallery__container h1,
+.gallery__coverImg .gallery__container h3,
+.gallery__coverImg .gallery__container .gallery__button {
+    text-shadow: 0px 4px 4px rgba(31, 28, 30, 0.35);
+}
+
+.gallery__container .gallery__button  {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
+}
+
 .photos__rect {
     background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
     height: 170px;
-    @apply rounded-lg
-    flex
-    w-auto
-    max-w-full
+    @apply flex w-auto max-w-full;
 }
 
 .frame {
@@ -232,7 +239,7 @@
     text-2xl
     font-bold
     text-right;
-    max-width: 50px;
+    max-width: 48px;
 }
 
 .circleBtn ul {
@@ -256,8 +263,8 @@
     z-10
     no-underline
     box-border
-    left-4;
-    bottom: 1.1rem;
+    left-4
+    bottom-4;
     background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 5) 33%, rgba(255, 255, 255, 1) 33%);
 }
 
@@ -274,10 +281,11 @@
 
 .circleBtn ul li a {
     @apply relative
-    block
-    py-1.5
+    flex
+    items-center
+    py-2
     px-4;
-    min-width: 50px;
+    min-width: 48px;
 }
 
 .circleBtn ul span {
@@ -293,7 +301,6 @@
     text-center
     text-2xl
     max-w-0
-    pb-1.5
     no-underline
     box-border
     align-top
@@ -414,10 +421,12 @@
 }
 
 .editProductPopup {
+    width: 95vw;
+    max-width: 1440px;
+    height: 95vh;
+    max-height: 894px;
     @apply
     box-border
-    h-full
-    w-full;
 }
 
 .editProductPopup__img {
@@ -545,20 +554,62 @@
     max-width: 100%;
 }
 
+.choose-product__modal{
+    width: 95vw;
+    @apply bg-base-100
+    max-h-screen
+    h-auto
+    py-5
+    overflow-y-auto
+    fixed
+    top-0
+    left-0
+    right-0
+    mx-auto
+}
+
+.choose-product__btn{
+    filter: drop-shadow(0px 4px 14px rgba(0, 0, 0, 0.15));
+    @apply w-12
+    h-12
+    flex
+    justify-center
+    items-center
+    absolute
+    bg-base-100
+    rounded-full
+    z-50
+}
+
 @media screen and (min-width: 1280px) {
-    .editProductPopup {
-        width: 95vw;
-        max-width: 1440px;
-        height: 95vh;
-        max-height: 894px;
+  .choose-product__modal{
+        @apply pr-20
     }
 
+    .editProductPopup__img{
+        max-height: 750px;
+    }
 }
 
 @media screen and (min-width: 1024px) {
     .editProductPopup__content {
         height: 754px;
         max-height: 89%;
+    }
+
+    .choose-product__modal{
+        max-width: 1440px;
+        height: 95vh;
+        max-height: 894px;
+        @apply
+        relative
+        pb-20
+        pt-14
+        pr-16
+    }
+
+    .choose-product-item{
+        max-width: 700px;
     }
 }
 
@@ -580,22 +631,11 @@
         @apply pl-8
         pr-4;
     }
-
-    .editProductPopup {
-        width: 95vw;
-        max-width: 1440px;
-        height: 95vh;
-        max-height: 894px;
-    }
 }
 
 @media screen and (min-width: 640px) {
     .photos__rect {
         height: 300px;
-    }
-
-    .gallery__coverImg {
-        height: 400px;
     }
 }
 
@@ -623,11 +663,11 @@
     }
 
     .gallery__coverImg {
-        height: 566px;
+        height: 100vh;
     }
 
     .gallery__coverImg.active::after {
-        background: linear-gradient(270deg, rgba(31, 28, 30, 0.7) 0%, rgba(31, 28, 30, 0) 100%);
+        background: linear-gradient(180.33deg, rgba(196, 196, 196, 0) 43%, rgba(0, 0, 0, 0.6) 99.72%, rgba(0, 0, 0, 0.732) 99.72%);
     }
 }
 

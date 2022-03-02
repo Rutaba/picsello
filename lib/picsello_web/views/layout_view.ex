@@ -86,6 +86,46 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
+  def help_scout_output(current_user, help_scout_id, id) do
+    [
+      phx_hook: "HelpScout",
+      data_id: help_scout_id,
+      id: id,
+      data_email: current_user.email,
+      data_name: current_user.name
+    ]
+  end
+
+  def help_scout_menu(assigns) do
+    ~H"""
+    <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
+    <div id="float-menu-help" class="cursor-pointer hidden md:blockhidden md:block" phx-hook="ToggleContent">
+      <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
+        <.icon name="question-mark-help-scout" class="w-6 h-6" />
+      </div>
+      <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
+        <nav class="flex flex-col w-64 ml-8 mr-16 my-11 overflow-hidden bg-white rounded-lg shadow-md">
+          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, Application.get_env(:picsello, :help_scout_id), "help-scout-1")}>
+            <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
+            Help Center
+          </a>
+          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, Application.get_env(:picsello, :help_scout_id_business), "help-scout-2")}>
+            <.icon name="camera-laptop" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
+            Business Coaching
+          </a>
+          <div class="p-4 pl-12 text-sm text-white uppercase bg-blue-planning-300">
+          Help
+          </div>
+        </nav>
+        <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
+          <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
+        </div>
+      </div>
+    </div>
+    <% end %>
+    """
+  end
+
   def side_nav(socket, current_user) do
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},

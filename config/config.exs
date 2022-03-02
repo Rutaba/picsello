@@ -48,6 +48,7 @@ config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFIC
 config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
 config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
+config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
@@ -116,6 +117,11 @@ config :picsello, :packages,
 config :picsello, :profile_images,
   bucket: System.get_env("PUBLIC_BUCKET"),
   static_host: System.get_env("GOOGLE_PUBLIC_IMAGE_HOST")
+
+config :picsello, :email_presets,
+  sheet_id: System.get_env("EMAIL_PRESET_SHEET_ID"),
+  type_ranges: System.get_env("EMAIL_PRESET_TYPE_RANGES"),
+  column_map: System.get_env("EMAIL_PRESET_COLUMN_MAP")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

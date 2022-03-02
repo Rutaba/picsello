@@ -48,7 +48,7 @@
   <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, job: @job, current_user: @current_user %>
 
   <ul class="mt-6 grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Inbox" icon="envelope-outline">
+    <.overview_card title="Inbox" icon="envelope-outline" hint_content="Check in on messages from your client, or send them a message">
       <%= if @inbox_count > 0 do %>
         <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
       <% else %>
@@ -118,7 +118,7 @@
             <h3 class="input-label">Standard Payment</h3>
             <%= case @stripe_status do %>
               <% :charges_enabled -> %>
-                50% deposit and 50% on day of shoot.
+                50% retainer and 50% on day of shoot.
               <% :loading -> %>
               <% _ -> %>
                 You must create a Stripe account to send proposals and receive payments. After your Stripe account has been created you will return to this page.

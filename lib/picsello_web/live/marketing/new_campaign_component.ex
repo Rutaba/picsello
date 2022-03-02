@@ -2,6 +2,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Marketing
+  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -12,13 +13,10 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
       socket
       |> assign_new(:changeset, fn ->
         body = """
-        We hope this email finds you well! We are getting a lot of inquiries for fall photoshoots already so we wanted to send you a reminder so you can book a shoot!
-
-        You are on the VIP list so you do get first dibs on the dates! We will be sending out another email blast next week so let us know today!
-
-        Any questions, just reply to this email, we are happy to help!
-
-        Can’t wait to photograph your family again soon!
+        <p>We hope this email finds you well! We are getting a lot of inquiries for fall photoshoots already so we wanted to send you a reminder so you can book a shoot!</p>
+        <p>You are on the VIP list so you do get first dibs on the dates! We will be sending out another email blast next week so let us know today!</p>
+        <p>Any questions, just reply to this email, we are happy to help!</p>
+        <p>Can’t wait to photograph your family again soon!</p>
         """
 
         Marketing.new_campaign_changeset(
@@ -60,19 +58,8 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
           </div>
 
           <label class="block mt-4 input-label" for="editor">Message</label>
-          <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2" data-placeholder="Start typing…" data-text-field-name={input_name(f, :body_text)} data-html-field-name={input_name(f, :body_html)}>
-            <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
-              <button class="ql-bold"></button>
-              <button class="ql-italic"></button>
-              <button class="ql-underline"></button>
-              <button class="ql-list" value="bullet"></button>
-              <button class="ql-list" value="ordered"></button>
-              <button class="ql-link"></button>
-            </div>
-            <div id="editor" style="min-height: 4rem;"> </div>
-            <%= hidden_input f, :body_text, phx_debounce: "500" %>
-            <%= hidden_input f, :body_html, phx_debounce: "500" %>
-          </div>
+
+          <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} placeholder={"Start typing…"} />
         </fieldset>
 
         <%= if @review do %>

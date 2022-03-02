@@ -1,25 +1,31 @@
-<li class="flex flex-col justify-between rounded-lg" phx-hook="Preview">
+<li class="flex flex-col justify-between" phx-hook="Preview">
     <%= if @click_params do %>
     <div phx-click="product_preview_photo_click" phx-value-params={@click_params} class="productPreview_photo">
-        <div class="photos__rect rounded-lg p-4 sm:p-8 flex justify-center items-center">
+        <div class="photos__rect p-4 sm:p-8 flex justify-center items-center">
             <canvas id={"canvas#{@category_template.id}"} width="200" height="170"></canvas>
         </div>
     </div>
     <% else %>
     <%= if @has_product_info do %>
-    <div class="photos__rect rounded-lg p-4 sm:p-8 flex justify-center items-center">
+    <div class="photos__rect p-4 sm:p-8 flex justify-center items-center">
         <canvas id={"canvas#{@category_template.id}"} width="200" height="170"></canvas>
     </div>
     <% else %>
-    <div class="photos__rect rounded-lg flex justify-center items-center">
-        <canvas id={"canvas#{@category_template.id}"} width="450" height="300" data-small="180"></canvas>
+    <div class="photos__rect xl:h-96 flex justify-center items-center">
+        <canvas id={"canvas#{@category_template.id}"} width="452" height="384"></canvas>
     </div>
     <% end %>
     <% end %>
     <%= if @has_product_info do %>
     <div class="grid grid-cols-5">
         <div class="flex flex-col col-span-3">
-            <div class="pt-3 pb-1.5 font-bold text-sm lg:text-xl"><%= @category_template.title %></div>
+            <div class="pt-3 pb-1.5 font-bold text-sm lg:text-xl">
+            <%= if @category_template.title === "Framed Prints" do %>
+               Wall Art
+            <% else %>
+               <%= @category_template.title %>
+            <% end %>
+            </div>
             <div class="photos__price text-xs lg:text-base text-base-250" >From <%= Money.to_string(@category_template.price) %></div>
         </div>
         <%= if @edit_product_link do %>

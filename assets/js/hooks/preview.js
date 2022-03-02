@@ -23,19 +23,14 @@ const Preview = {
         if (typeof (coord) == 'string') {
             coord = JSON.parse(coord)
         }
-        const screenWidth = window.innerWidth;
+
         const canvas = document.getElementById(canvasId);
-        const smallHeight = canvas.dataset.small
 
         if (canvas.getContext) {
             const ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const frame = new Image();
-
-            if (screenWidth < 640) {
-                canvas.height = smallHeight || 80
-            }
 
             if (canvas.classList.contains('edit')) {
                 const selectedImage = document.querySelector('.selected img');

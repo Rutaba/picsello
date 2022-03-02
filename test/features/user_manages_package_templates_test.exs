@@ -13,7 +13,13 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   end
 
   feature "view list", %{session: session, user: user} do
-    insert(:package_template, user: user, name: "Deluxe Template", download_count: 5)
+    insert(:package_template,
+      user: user,
+      name: "Deluxe Template",
+      download_count: 5,
+      buy_all: 20,
+      print_credits: 20
+    )
 
     session
     |> click(link("Settings"))
@@ -33,7 +39,9 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_value(text_field("Image Turnaround Time"), "1")
     |> fill_in(text_field("Image Turnaround Time"), with: "2")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> fill_in(text_field("Description"), with: "My greatest wedding package")
+    |> click(css("div.ql-editor"))
+    |> send_keys(["My greatest wedding package"])
+    |> scroll_into_view("modal-buttons")
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -44,6 +52,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
+    |> scroll_into_view("download")
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),
@@ -51,7 +60,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
     |> click(checkbox("Include download credits"))
     |> fill_in(text_field("download_count"), with: "2")
-    |> assert_has(definition("Total Price", text: "$134.00"))
+    |> assert_has(definition("Total Price", text: "$130.00"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
@@ -62,7 +71,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert %Package{
              name: "Wedding Deluxe",
              shoot_count: 2,
-             description: "My greatest wedding package",
+             description: "<p>My greatest wedding package</p>",
              base_price: %Money{amount: 10_000},
              download_count: 2,
              download_each_price: %Money{amount: 200},
@@ -72,7 +81,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   end
 
   feature "edit", %{session: session, user: user} do
-    template = insert(:package_template, user: user)
+    template = insert(:package_template, user: user, print_credits: 20, buy_all: 20)
 
     session
     |> click(link("Settings"))
@@ -91,6 +100,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> wait_for_enabled_submit_button()
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
+        |> scroll_into_view("download")
         |> assert_has(radio_button("Do not charge for downloads", checked: true))
         |> click(radio_button("Charge for downloads", checked: false))
         |> assert_text("downloads are valued at #{Download.default_each_price()}")
@@ -106,10 +116,15 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
     form_fields =
-      ~w(base_price description job_type name download_count download_each_price shoot_count)a
+      ~w(base_price job_type name download_count download_each_price shoot_count buy_all print_credits)a
 
     updated =
-      %{template | name: "Wedding Super Deluxe", download_each_price: %Money{amount: 0}}
+      %{
+        template
+        | name: "Wedding Super Deluxe",
+          description: "<p>Package description</p>",
+          download_each_price: %Money{amount: 0}
+      }
       |> Map.take([:id | form_fields])
 
     assert ^updated =
@@ -120,7 +135,13 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     type = JobType.all() |> hd
 
     for name <- ~w(deluxe lame) do
-      insert(:package_template, user: user, job_type: type, name: name)
+      insert(:package_template,
+        user: user,
+        job_type: type,
+        name: name,
+        buy_all: 20,
+        print_credits: 20
+      )
     end
 
     lead = insert(:lead, user: user, type: type)

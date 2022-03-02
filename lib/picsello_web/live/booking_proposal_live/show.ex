@@ -4,6 +4,11 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   require Logger
   alias Picsello.{Repo, BookingProposal, Job}
 
+  import PicselloWeb.Live.Profile.Shared,
+    only: [
+      photographer_logo: 1
+    ]
+
   @max_age 60 * 60 * 24 * 365 * 10
 
   @pages ~w(details contract questionnaire invoice)
@@ -92,7 +97,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
           &PicselloWeb.ConfirmationComponent.open(&1, %{
             title: "Contact #{organization_name}",
             subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
+            icon: nil,
             confirm_label: "Send another",
+            confirm_class: "btn-primary",
             confirm_event: "send_another"
           })
 
@@ -134,6 +141,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         subtitle:
           "We are so excited to be working with you, thank you for your business. See you soon.",
         close_label: "Got it",
+        icon: nil,
         close_class: "btn-primary"
       })
     else
@@ -147,6 +155,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       |> PicselloWeb.ConfirmationComponent.open(%{
         title: "Paid in full. Thank you!",
         subtitle: "Now it’s time to make some memories.",
+        icon: nil,
         close_label: "Got it",
         close_class: "btn-primary"
       })
@@ -218,6 +227,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         show_client_email: false,
         show_subject: false,
         subject: "#{Job.name(job)} proposal",
+        presets: [],
         send_button: "Send"
       })
       |> noreply()

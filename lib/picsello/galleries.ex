@@ -54,12 +54,22 @@ defmodule Picsello.Galleries do
       nil
 
   """
-  @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
-  def get_gallery_by_hash(hash) do
+  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
+  def get_gallery_by_hash!(hash) do
     Gallery
     |> where(client_link_hash: ^hash)
     |> limit(1)
-    |> Repo.one()
+    |> Repo.one!()
+  end
+
+  @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
+  def get_gallery_by_hash(hash) do
+    try do
+      get_gallery_by_hash!(hash)
+    rescue
+      Ecto.NoResultsError ->
+        nil
+    end
   end
 
   @doc """

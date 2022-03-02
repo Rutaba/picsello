@@ -15,6 +15,38 @@ defmodule Picsello.Packages do
 
   import Ecto.Query, only: [from: 2]
 
+  defmodule PackagePricing do
+    @moduledoc "For setting buy_all and print_credits price"
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @primary_key false
+    embedded_schema do
+      field(:is_enabled, :boolean)
+      field(:is_buy_all, :boolean)
+    end
+
+    def changeset(package_pricing \\ %__MODULE__{}, attrs) do
+      package_pricing
+      |> cast(attrs, [:is_enabled, :is_buy_all])
+    end
+
+    def handle_package_params(package, params) do
+      package =
+        case Map.get(params, "package_pricing", %{})
+             |> Map.get("is_enabled") do
+          "false" -> Map.put(package, "print_credits", Money.new(0))
+          _ -> package
+        end
+
+      case Map.get(params, "package_pricing", %{})
+           |> Map.get("is_buy_all") do
+        "false" -> Map.put(package, "buy_all", Money.new(0))
+        _ -> package
+      end
+    end
+  end
+
   defmodule Multiplier do
     @moduledoc false
     use Ecto.Schema
@@ -216,6 +248,7 @@ defmodule Picsello.Packages do
       )
 
     nearest = 500
+    zero_price = Money.new(0)
 
     templates_query =
       from(base in BasePrice,
@@ -233,11 +266,13 @@ defmodule Picsello.Packages do
               nearest(adjustment.multiplier * base.base_price, ^nearest),
               base.base_price
             ),
-          description: name.initcap,
+          description: coalesce(base.description, name.initcap),
           download_count: base.download_count,
           download_each_price: type(^default_each_price, base.base_price),
           inserted_at: now(),
           job_type: base.job_type,
+          buy_all: type(^zero_price, base.buy_all),
+          print_credits: type(^zero_price, base.print_credits),
           name: name.initcap,
           organization_id: type(^organization_id, base.id),
           shoot_count: base.shoot_count,

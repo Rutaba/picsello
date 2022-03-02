@@ -122,10 +122,12 @@ defmodule Picsello.Factory do
   def package_factory(attrs) do
     %Package{
       base_price: 1000,
+      buy_all: 5000,
+      print_credits: 200,
       download_count: 0,
       download_each_price: 0,
       name: "Package name",
-      description: "Package description",
+      description: "<p>Package description</p>",
       shoot_count: 2,
       turnaround_weeks: 1,
       organization: fn ->
@@ -178,7 +180,7 @@ defmodule Picsello.Factory do
         end
       end
     }
-    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
+    |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
   end
 
@@ -317,7 +319,12 @@ defmodule Picsello.Factory do
     %Job{
       type: "wedding",
       client: fn ->
-        build(:client, attrs |> Map.get(:client, %{}) |> Enum.into(user_attr))
+        attrs
+        |> Map.get(:client, %{})
+        |> case do
+          %Picsello.Client{id: id} = client when is_integer(id) -> client
+          client_attrs -> build(:client, client_attrs |> Enum.into(user_attr))
+        end
       end,
       package: package,
       shoots: fn ->
@@ -539,4 +546,12 @@ defmodule Picsello.Factory do
     }
     |> merge_attributes(attrs)
   end
+
+  def email_preset_factory(),
+    do: %Picsello.EmailPreset{
+      subject_template: "Subjectively speaking",
+      body_template: "this is my body",
+      name: "use this email preset!",
+      position: 0
+    }
 end

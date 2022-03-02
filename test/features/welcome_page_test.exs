@@ -31,10 +31,10 @@ defmodule Picsello.WelcomePageTest do
       |> assert_has(css("nav a.font-bold", text: "Lead"))
     end
 
-    feature "user goes to profile page from initials menu", %{session: session} do
+    feature "user goes to account page from initials menu", %{session: session} do
       session
       |> click(css("div[title='Morty Smith']"))
-      |> click(link("Profile"))
+      |> click(link("Account"))
       |> assert_path(Routes.user_settings_path(PicselloWeb.Endpoint, :edit))
     end
 

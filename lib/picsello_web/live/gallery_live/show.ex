@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @per_page 12
   @upload_options [
-    accept: ~w(.jpg .jpeg .png),
+    accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1,
     max_file_size: 104_857_600,
     auto_upload: true,
@@ -106,6 +106,41 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event(
+        "preview_gallery",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    socket
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "gallery_settings",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "load-more",
         _,
         %{
@@ -176,7 +211,6 @@ defmodule PicselloWeb.GalleryLive.Show do
       ) do
     socket
     |> ConfirmationComponent.open(%{
-      center: true,
       close_label: "No, go back",
       confirm_event: "delete_cover_photo",
       confirm_label: "Yes, delete",
@@ -199,7 +233,6 @@ defmodule PicselloWeb.GalleryLive.Show do
       ) do
     socket
     |> ConfirmationComponent.open(%{
-      center: true,
       close_label: "No, go back",
       confirm_event: "delete_photo",
       confirm_label: "Yes, delete",
@@ -287,12 +320,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   end
 
   @impl true
-  def handle_info(
-        {:photo_processed, %{"task" => %{"photoId" => photo_id}}, photo},
-        %{assigns: %{modal_pid: modal_pid}} = socket
-      ) do
-    send_update(modal_pid, UploadComponent, id: UploadComponent, a_photo_processed: photo_id)
-
+  def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{
         id: photo.id,

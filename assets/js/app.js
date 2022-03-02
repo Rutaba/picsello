@@ -29,6 +29,7 @@ import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
+import HelpScout from './hooks/help-scout';
 import IntroJS from './hooks/intro';
 import MasonryGrid from './hooks/masonry-grid';
 import PercentMask from './hooks/percent-mask';
@@ -37,10 +38,11 @@ import PhotoUpdate from './hooks/photo-update';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import Preview from './hooks/preview';
 import PriceMask from './hooks/price-mask';
-import Quill from './hooks/quill';
+import Quill, {ClearQuillInput} from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
+import GalleryMobile from './hooks/gallery-mobile';
 
 const Modal = {
   mounted() {
@@ -90,26 +92,26 @@ const ClearInput = {
     } = el;
 
     const input = this.el
-      .closest('form')
-      .querySelector(`*[name*='${inputName}']`);
+        .closest('form')
+        .querySelector(`*[name*='${inputName}']`);
 
     let inputWasFocussed = false;
 
     input.addEventListener('blur', (e) => {
-      inputWasFocussed = e.relatedTarget == el;
+      inputWasFocussed = e.relatedTarget === el;
     });
 
-    this.el.addEventListener('click', () => {
-      input.value = null;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      if (inputWasFocussed) input.focus();
-    });
+      this.el.addEventListener('click', () => {
+        input.value = null;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        if (inputWasFocussed) input.focus();
+      });
   },
 };
 
 const TZCookie = {
   mounted() {
-    const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+    const {timeZone} = Intl.DateTimeFormat().resolvedOptions();
     document.cookie = `time_zone=${timeZone}; path=/`;
   },
 };
@@ -118,9 +120,12 @@ const Hooks = {
   AutoHeight,
   Calendar,
   ClearInput,
+  ClearQuillInput,
   Clipboard,
   DragDrop,
+  GalleryMobile,
   IFrameAutoHeight,
+  HelpScout,
   IntroJS,
   MasonryGrid,
   Modal,
@@ -140,29 +145,52 @@ const Hooks = {
 
 let Uploaders = {};
 Uploaders.GCS = function (entries, onViewError) {
-  entries.forEach((entry) => {
-    let formData = new FormData();
-    let { url, fields } = entry.meta;
-
-    Object.entries(fields).forEach(([key, val]) => formData.append(key, val));
-    formData.append('file', entry.file);
-
-    let xhr = new XMLHttpRequest();
-    onViewError(() => xhr.abort());
-    xhr.onload = () =>
-      xhr.status === 204 ? entry.progress(100) : entry.error();
-    xhr.onerror = () => entry.error();
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        let percent = Math.round((event.loaded / event.total) * 100);
-        if (percent < 100) {
-          entry.progress(percent);
+  (function (items) {
+    let queue = []
+    const try_next = () =>
+      setTimeout(() => {
+        const next = queue.shift();
+        if (next) {
+          go(next);
         }
-      }
-    });
-    xhr.open('POST', url, true);
-    xhr.send(formData);
-  });
+      }, 10);
+
+    const go = (entry) => {
+      let formData = new FormData();
+      let { url, fields } = entry.meta;
+
+      Object.entries(fields).forEach(([key, val]) => formData.append(key, val));
+      formData.append('file', entry.file);
+
+      let xhr = new XMLHttpRequest();
+      onViewError(() => {
+        try_next();
+        xhr.abort();
+      });
+      xhr.onload = () => {
+        try_next();
+        xhr.status === 204 ? entry.progress(100) : entry.error();
+      };
+      xhr.onerror = () => {
+        try_next();
+        entry.error();
+      };
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          let percent = Math.round((event.loaded / event.total) * 100);
+          if (percent < 100) {
+            entry.progress(percent);
+          }
+        }
+      });
+      xhr.open('POST', url, true);
+      xhr.send(formData);
+    };
+
+    queue = items.splice(5);
+
+    items.forEach(go);
+  })(entries);
 };
 
 let csrfToken = document

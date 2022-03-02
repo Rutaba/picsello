@@ -11,8 +11,8 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   alias Picsello.Galleries.Workers.PhotoStorage
 
   @upload_options [
-    accept: ~w(.jpg .jpeg .png),
-    max_entries: 50,
+    accept: ~w(.jpg .jpeg .png image/jpeg image/png),
+    max_entries: 1500,
     max_file_size: 104_857_600,
     auto_upload: true,
     external: &__MODULE__.presign_entry/2,
@@ -33,21 +33,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
      |> allow_upload(:photo, @upload_options)}
   end
 
-  #  @impl true
-  #  def update(%{a_photo_processed: photo_id}, %{assigns: %{progress: progress}} = socket) do
-  #    socket
-  #    |> assign(:progress, GalleryUploadProgress.complete_processing(progress, photo_id))
-  #    |> assign_overall_progress()
-  #    |> ok()
-  #  end
-  #
-  #  @impl true
-  #  def update(new_assigns, socket) do
-  #    socket
-  #    |> assign(new_assigns)
-  #    |> ok()
-  #  end
-  #
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
     gallery = Galleries.load_watermark_in_gallery(gallery)
@@ -113,12 +98,16 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         progress:
           progress
           |> GalleryUploadProgress.complete_upload(entry)
-          |> GalleryUploadProgress.link_photo(entry, photo.id)
       )
       |> assign_overall_progress()
       |> noreply()
     else
       socket
+      |> assign(
+        progress:
+          progress
+          |> GalleryUploadProgress.track_progress(entry)
+      )
       |> assign_overall_progress()
       |> noreply()
     end
@@ -128,7 +117,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
 
     sign_opts = [
-      expires_in: 600,
+      expires_in: 144_000,
       bucket: socket.assigns.upload_bucket,
       key: key,
       fields: %{

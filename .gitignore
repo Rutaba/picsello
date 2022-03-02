@@ -42,3 +42,5 @@ npm-debug.log
 .idea
 *.iml
 .DS_Store
+service-account.json
+.credo.exs

@@ -14,6 +14,7 @@ defmodule PicselloWeb.LiveAuth do
     |> allow_sandbox()
     |> authenticate_gallery(params)
     |> authenticate_gallery_client(session)
+    |> authenticate_gallery_for_photographer(params, session)
     |> maybe_redirect_to_client_login(params)
   end
 
@@ -24,11 +25,9 @@ defmodule PicselloWeb.LiveAuth do
     |> cont()
   end
 
-  defp mount(socket, %{"user_token" => user_token}) do
+  defp mount(socket, %{"user_token" => _user_token} = session) do
     socket
-    |> assign_new(:current_user, fn ->
-      Accounts.get_user_by_session_token(user_token)
-    end)
+    |> assign_current_user(session)
     |> then(fn
       %{assigns: %{current_user: nil}} = socket ->
         socket |> redirect(to: Routes.user_session_path(socket, :new)) |> halt()
@@ -40,15 +39,27 @@ defmodule PicselloWeb.LiveAuth do
 
   defp mount(socket, _session), do: socket |> halt()
 
+  defp assign_current_user(socket, %{"user_token" => user_token}) do
+    socket
+    |> assign_new(:current_user, fn ->
+      Accounts.get_user_by_session_token(user_token)
+    end)
+  end
+
+  defp assign_current_user(socket, _session), do: socket
+
   defp authenticate_gallery(socket, %{"hash" => hash}) do
-    socket |> assign(gallery: Galleries.get_gallery_by_hash(hash))
+    socket |> assign(gallery: Galleries.get_gallery_by_hash!(hash))
   end
 
   defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do
     socket
     |> assign(
       authenticated:
-        Galleries.session_exists_with_token?(gallery.id, session["gallery_session_token"])
+        Galleries.session_exists_with_token?(
+          gallery.id,
+          Map.get(session, "gallery_session_token")
+        )
     )
   end
 
@@ -91,6 +102,32 @@ defmodule PicselloWeb.LiveAuth do
         socket |> push_redirect(to: Routes.onboarding_path(socket, :index)) |> halt()
     end
   end
+
+  defp authenticate_gallery_for_photographer(
+         %{assigns: %{gallery: gallery}} = socket,
+         %{},
+         session
+       ) do
+    gallery_user = gallery |> Galleries.populate_organization_user()
+
+    socket
+    |> assign_current_user(session)
+    |> then(fn
+      %{assigns: %{current_user: current_user}} = socket ->
+        socket |> assign(authenticated: validate_photographer(current_user, gallery_user))
+
+      socket ->
+        socket
+    end)
+  end
+
+  defp validate_photographer(%{id: current_user}, %{
+         job: %{client: %{organization: %{user: %{id: photographer}}}}
+       }) do
+    current_user == photographer
+  end
+
+  defp validate_photographer(_, _), do: false
 
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}

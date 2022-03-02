@@ -14,7 +14,6 @@ defmodule PicselloWeb.JobLive.Shared do
     Accounts.User
   }
 
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   alias PicselloWeb.Router.Helpers, as: Routes
   require Ecto.Query
 
@@ -256,14 +255,14 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def overview_card(assigns) do
-    assigns = assigns |> Enum.into(%{button_text: nil, button_click: nil})
+    assigns = assigns |> Enum.into(%{button_text: nil, button_click: nil, hint_content: nil})
 
     ~H"""
       <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
         <div>
           <div class="mb-4 font-bold">
             <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
-            <%= @title %>
+            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </div>
 
           <%= render_block(@inner_block) %>
@@ -326,7 +325,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <hr class="my-3 border-top">
 
             <span class="text-gray-400">
-              <%= shoot.address || dyn_gettext shoot.location %>
+              <%= shoot_location(shoot) %>
             </span>
           <% end %>
         <% else %>

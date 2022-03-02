@@ -35,6 +35,7 @@ export default {
       placeholder,
       theme: 'snow',
     });
+
     quill.on('text-change', () => {
       htmlInput.value = quill.root.innerHTML;
       const text = quill.getText();
@@ -49,6 +50,21 @@ export default {
         textInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
+
+    this.handleEvent('quill:update', ({ text }) => {
+      quill.setText(text);
+    });
+
     quill.root.innerHTML = htmlInput.value;
+  },
+};
+
+export const ClearQuillInput = {
+  mounted() {
+    this.el.addEventListener('click', () => {
+      const element = document.querySelector(".ql-editor");
+      element.innerHTML = "";
+      element.classList.add("ql-blank")
+    });
   },
 };
