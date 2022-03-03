@@ -77,8 +77,8 @@
                 </div>
                 <div class="mt-6">
                     <!-- this block should be hidden in case non physical products-->
-                    <p class="text-base md:text-sm font-bold">Shipping address</p>
-                    <%= inputs_for f, :address, fn fp -> %>
+                    <%= for fp <- inputs_for(f, :address) do %>
+                    <%= label_for fp, :addr1, label: "Shipping address", class: "text-base md:text-sm font-bold" %>
                     <div class="pt-4">
                         <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                     </div>
@@ -119,7 +119,7 @@
                     <div class="lg:w-3/5">
                         <.live_component
                         module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-                        id={product.editor_details.editor_id}
+                        id={to_string(product.editor_details.editor_id)}
                         product={product}
                         has_border={false}
                         has_buttons={false}

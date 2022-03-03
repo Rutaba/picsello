@@ -332,4 +332,27 @@ defmodule Picsello.WHCCTest do
       assert %Money{amount: 7000} = Picsello.WHCC.mark_up_price(details, total)
     end
   end
+
+  describe "cheapest_selections" do
+    test "finds the cheapest selections for each product" do
+      selections =
+        for(
+          %{"_id" => id} = product <- read_fixture("products"),
+          do:
+            product
+            |> Picsello.WHCC.Product.from_map()
+            |> Picsello.WHCC.Product.add_details(read_fixture("products/#{id}"))
+        )
+        |> Enum.map(&Picsello.WHCC.cheapest_selections/1)
+
+      assert [
+               %{
+                 metadata: %{},
+                 price: %Money{amount: 2050, currency: :USD},
+                 selections: %{"size" => "5x5"}
+               }
+               | _
+             ] = selections
+    end
+  end
 end

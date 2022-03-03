@@ -404,7 +404,8 @@ defmodule Picsello.Factory do
       name: "cool shirts",
       position: sequence(:category_position, & &1),
       icon: "book",
-      default_markup: 2.0
+      default_markup: 2.0,
+      hidden: false
     }
 
   def product_factory,
@@ -572,11 +573,13 @@ defmodule Picsello.Factory do
     |> merge_attributes(attrs)
   end
 
-  def email_preset_factory(),
+  def email_preset_factory,
     do: %Picsello.EmailPreset{
       subject_template: "Subjectively speaking",
       body_template: "this is my body",
       name: "use this email preset!",
       position: 0
     }
+
+  def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
 end
