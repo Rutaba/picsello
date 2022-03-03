@@ -5,10 +5,24 @@ defmodule PicselloWeb.GalleryLive.Settings do
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
   alias PicselloWeb.ConfirmationComponent
+  alias PicselloWeb.GalleryLive.UploadComponent
+
+  @upload_options [
+    accept: ~w(.jpg .jpeg .png image/jpeg image/png),
+    max_entries: 1,
+    max_file_size: 104_857_600,
+    auto_upload: true,
+    external: &__MODULE__.presign_cover_entry/2,
+    progress: &__MODULE__.handle_cover_progress/3
+  ]
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {
+      :ok,
+      socket
+      |> allow_upload(:cover_photo, @upload_options)
+    }
   end
 
   @impl true

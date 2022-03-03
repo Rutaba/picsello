@@ -1,170 +1,138 @@
 .gallery__coverImg {
-    height: calc((4/6)*100vw);
-    @apply bg-base-200
-    bg-cover
-    bg-center
-    relative;
+  height: calc((4 / 6) * 100vw);
+  @apply relative bg-center bg-cover bg-base-200;
 }
 
 .gallery__coverImg.active::after {
-    content: '';
-    background: linear-gradient(180.33deg, rgba(196, 196, 196, 0) 43%, rgba(0, 0, 0, 0.6) 99.72%, rgba(0, 0, 0, 0.732) 99.72%);
-    @apply absolute
-    top-0
-    bottom-0
-    left-0
-    right-0
+  content: '';
+  background: linear-gradient(
+    180.33deg,
+    rgba(196, 196, 196, 0) 43%,
+    rgba(0, 0, 0, 0.6) 99.72%,
+    rgba(0, 0, 0, 0.732) 99.72%
+  );
+  @apply absolute top-0 bottom-0 left-0 right-0;
 }
 
 .gallery__container {
-    max-width: 1440px;
-    @apply my-0
-    mx-auto
-    h-full
-    py-0
-    px-16;
+  max-width: 1440px;
+  @apply h-full px-16 py-0 mx-auto my-0;
 }
 
 .gallery__coverImg .gallery__container h1,
 .gallery__coverImg .gallery__container h3,
 .gallery__coverImg .gallery__container .gallery__button {
-    text-shadow: 0px 4px 4px rgba(31, 28, 30, 0.35);
+  text-shadow: 0px 4px 4px rgba(31, 28, 30, 0.35);
 }
 
-.gallery__container .gallery__button  {
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
+.gallery__container .gallery__button {
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
 }
 
 .photos__rect {
-    background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
-    height: 170px;
-    @apply flex w-auto max-w-full;
+  background: linear-gradient(131.5deg, #f5f6f8 -0.97%, #ededed 100%);
+  height: 170px;
+  @apply flex w-auto max-w-full;
 }
 
 .frame {
-    width: 219px;
-    height: 178px;
+  width: 219px;
+  height: 178px;
 }
 
 .preview__shadow {
-    position: relative;
+  position: relative;
 }
 
 .preview__shadow::before {
-    content: "";
-    position: absolute;
-    top: -10px;
-    left: 0;
-    width: 100%;
-    height: 10px;
-    box-shadow: 0px 10px 12px 0px rgba(0, 0, 0, 0.15);
-    z-index: 100;
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  box-shadow: 0px 10px 12px 0px rgba(0, 0, 0, 0.15);
+  z-index: 100;
 }
 
 .productPreview__client > li > .productPreview_photo {
-    @apply relative
-    cursor-pointer
+  @apply relative cursor-pointer;
 }
 
 .productPreview__client > li > .productPreview_photo::before {
-    content: '';
-    background: linear-gradient(0deg, rgba(31, 28, 30, 0.65) 0%, rgba(31, 28, 30, 0.065) 100%);
-    @apply absolute
-    block
-    top-0
-    w-full
-    h-full
-    transition-all
-    duration-300
-    opacity-0
-    z-10
-    rounded-lg;
+  content: '';
+  background: linear-gradient(
+    0deg,
+    rgba(31, 28, 30, 0.65) 0%,
+    rgba(31, 28, 30, 0.065) 100%
+  );
+  @apply absolute top-0 z-10 block w-full h-full transition-all duration-300 rounded-lg opacity-0;
 }
 
 .productPreview__client > li > .productPreview_photo::after {
-    content: 'View product';
-    @apply absolute
-    text-base-100
-    text-center
-    flex
-    h-12
-    items-center
-    justify-center
-    bottom-4
-    left-1/2
-    border
-    border-base-100
-    -translate-x-1/2
-    p-4
-    w-11/12
-    transition-all
-    duration-300
-    opacity-0
-    z-20
-    rounded-lg;
+  content: 'View product';
+  @apply absolute z-20 flex items-center justify-center w-11/12 h-12 p-4 text-center transition-all duration-300 -translate-x-1/2 border rounded-lg opacity-0 text-base-100 bottom-4 left-1/2 border-base-100;
 }
 
 .productPreview__client > li:hover > .productPreview_photo::before {
-    @apply opacity-100;
+  @apply opacity-100;
 }
 
 .productPreview__client > li:hover > .productPreview_photo::after {
-    @apply opacity-40;
+  @apply opacity-40;
 }
 
 .product-image {
-    max-height: 70vh;
+  max-height: 70vh;
 }
 
 .previewImg {
-    filter: drop-shadow(0px 4.61642px 8.08233px rgba(115, 115, 115, 0.34));
-    transform: rotate(-0.27deg);
-    max-width: 300px;
+  filter: drop-shadow(0px 4.61642px 8.08233px rgba(115, 115, 115, 0.34));
+  transform: rotate(-0.27deg);
+  max-width: 300px;
 }
 .settings__wrapper > div {
-    @apply border-2
-    border-solid
-    border-base-200
-    rounded-lg
-    pt-4
-    pr-6
-    pb-6
-    pl-9;
-    max-width: 562px;
-    background: linear-gradient(to right, #4DAAC6 17px, #EFEFEF 17px, #EFEFEF 19px, #FFFFFF 19px);
+  @apply pt-4 pb-6 pr-6 border-2 border-solid rounded-lg border-base-200 pl-9;
+  max-width: 562px;
+  background: linear-gradient(
+    to right,
+    #4daac6 17px,
+    #efefef 17px,
+    #efefef 19px,
+    #ffffff 19px
+  );
+}
+
+.settings__wrapper2 > div {
+  @apply pt-4 pb-6 pr-6 border-2 border-solid rounded-lg border-base-200 pl-9;
+  background: linear-gradient(
+    to right,
+    #4daac6 17px,
+    #efefef 17px,
+    #efefef 19px,
+    #ffffff 19px
+  );
+}
+
+.settings__wrapper2 h3 {
+  @apply pb-4 text-2xl font-bold text-blue-planning-300;
 }
 
 .settings__wrapper h3 {
-    @apply text-blue-planning-300
-    font-bold
-    text-2xl
-    pb-4;
+  @apply pb-4 text-2xl font-bold text-blue-planning-300;
 }
 
 .gallerySettingsInput {
-    @apply w-full
-    h-14
-    bg-base-200
-    border-2
-    border-solid
-    border-base-200
-    rounded-lg
-    p-4
-    text-base
-    text-base-250;
+  @apply w-full p-4 text-base border-2 border-solid rounded-lg h-14 bg-base-200 border-base-200 text-base-250;
 }
 
 .gallerySettingsInput:focus {
-    @apply border-2
-    border-solid
-    border-blue-planning-300
-    text-base-300
-    outline-none;
-    box-shadow: 0 0 1px #4DAAC6;
+  @apply border-2 border-solid outline-none border-blue-planning-300 text-base-300;
+  box-shadow: 0 0 1px #4daac6;
 }
 
 .watermarkTypeBtn {
-    @apply text-blue-planning-300
+  @apply text-blue-planning-300
     font-bold
     text-base
     py-1.5
@@ -172,44 +140,31 @@
 }
 
 .watermarkTypeBtn.active {
-    @apply text-base-300
-    bg-blue-planning-100
-    rounded-lg;
+  @apply rounded-lg text-base-300 bg-blue-planning-100;
 }
 
 .customWatermarkPopup {
-    max-height: 95vh;
-    @apply bg-base-100
-    overflow-y-auto
-    mx-auto
-    my-0;
+  max-height: 95vh;
+  @apply mx-auto my-0 overflow-y-auto bg-base-100;
 }
 
 .customWatermarkPopup .uploadingList__wrapper progress {
-    @apply w-5/12;
+  @apply w-5/12;
 }
 
 .errorWatermarkMessage {
-    background-color: rgba(225, 102, 47, .1);
-    @apply rounded-lg;
+  background-color: rgba(225, 102, 47, 0.1);
+  @apply rounded-lg;
 }
 
 .uploadingBlock {
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
-    @apply h-80
-    w-80
-    bg-base-100
-    rounded-xl
-    mt-14
-    pt-4
-    px-6
-    pb-9
-    text-base-350;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
+  @apply px-6 pt-4 h-80 w-80 bg-base-100 rounded-xl mt-14 pb-9 text-base-350;
 }
 
 .reuploadingBlock {
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
-    @apply bg-base-100
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
+  @apply bg-base-100
     h-12
     w-80
     text-base-350
@@ -221,42 +176,30 @@
 }
 
 .uploadingBlock > p {
-    @apply text-2xl;
+  @apply text-2xl;
 }
 
 .uploadingBlock .dragDrop__wrapper {
-    @apply border-2
-    border-dashed
-    border-blue-planning-300
-    rounded-lg
-    w-full
-    h-48;
+  @apply w-full h-48 border-2 border-dashed rounded-lg border-blue-planning-300;
 }
 
 .circleBtn {
-    @apply relative
-    left-0
-    text-2xl
-    font-bold
-    text-right;
-    max-width: 48px;
+  @apply relative left-0 text-2xl font-bold text-right;
+  max-width: 48px;
 }
 
 .circleBtn ul {
-    max-width: 75px;
-    @apply pb-0
-    m-0
-    list-none;
+  max-width: 75px;
+  @apply pb-0 m-0 list-none;
 }
 
 .circleBtn ul:after {
-    content: "";
-    @apply block
-    clear-both;
+  content: '';
+  @apply block clear-both;
 }
 
 .circleBtn svg {
-    @apply py-3.5
+  @apply py-3.5
     -m-5
     text-center
     absolute
@@ -265,386 +208,317 @@
     box-border
     left-4
     bottom-4;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 5) 33%, rgba(255, 255, 255, 1) 33%);
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 5) 33%,
+    rgba(255, 255, 255, 1) 33%
+  );
 }
 
 .circleBtn ul li {
-    @apply bg-base-100
-    p-0
-    w-auto
-    text-center
-    overflow-hidden
-    float-left
-    rounded-full;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
+  @apply float-left w-auto p-0 overflow-hidden text-center rounded-full bg-base-100;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
 }
 
 .circleBtn ul li a {
-    @apply relative
-    flex
-    items-center
-    py-2
-    px-4;
-    min-width: 48px;
+  @apply relative flex items-center px-4 py-2;
+  min-width: 48px;
 }
 
 .circleBtn ul span {
-    @apply relative
-    z-10
-    mr-0
-    pr-0
-    whitespace-nowrap
-    inline-block
-    w-auto
-    opacity-0
-    text-base-300
-    text-center
-    text-2xl
-    max-w-0
-    no-underline
-    box-border
-    align-top
-    transition-all
-    duration-300
-    text-base-300;
+  @apply box-border relative z-10 inline-block w-auto pr-0 mr-0 text-2xl text-center no-underline align-top transition-all duration-300 opacity-0 whitespace-nowrap text-base-300 max-w-0;
 }
 
 .circleBtn li:hover {
-    @apply cursor-pointer;
+  @apply cursor-pointer;
 }
 
 .circleBtn li:hover span {
-    @apply mr-0
-    opacity-100
-    w-auto
-    pl-8;
-    max-width: 500px;
+  @apply w-auto pl-8 mr-0 opacity-100;
+  max-width: 500px;
 }
 
 .bottomBar {
-    @apply fixed
-    bottom-0
-    left-0
-    right-0
-    w-full
-    bg-base-300
-    z-10
-    opacity-95
-    h-32;
-    box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.15);
+  @apply fixed bottom-0 left-0 right-0 z-10 w-full h-32 bg-base-300 opacity-95;
+  box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.15);
 }
 
 .bottomBar__btn {
-    @apply text-base-100
-    font-semibold
-    text-center
-    cursor-pointer
-    flex
-    items-center
-    border
-    border-solid
-    border-base-100
-    rounded-lg
-    text-lg
-    px-6
-    py-4;
+  @apply flex items-center px-6 py-4 text-lg font-semibold text-center border border-solid rounded-lg cursor-pointer text-base-100 border-base-100;
 }
 
+.navBar__btn {
+    @apply flex items-center px-2 py-2 text-sm font-semibold text-center border border-solid rounded-lg shadow-xl cursor-pointer text-base-300 border-base-100;
+    border-color: #4daac6
+  }
+
 .bottomBar__btn.btn-secondary {
-    @apply border-base-100;
+  @apply border-base-100;
 }
 
 .bottomBar__btn.btn-secondary:hover {
-    @apply text-base-100;
+  @apply text-base-100;
 }
 
 .galleryItem .likeBtn {
-    @apply opacity-0
-    absolute;
+  @apply absolute opacity-0;
 }
 
 .galleryItem:hover .removeBtn,
 .galleryItem:hover .likeBtn {
-    @apply opacity-100;
+  @apply opacity-100;
 }
 
 .galleryItem:hover img {
-    @apply bg-transparent !important;
+  @apply bg-transparent !important;
 }
 
 .galleryItem img {
-    @apply object-cover;
+  @apply object-cover;
 }
 
 .galleryItem:before {
-    content: '';
-    background: linear-gradient(0deg, rgba(31, 28, 30, 0.65) 0%, rgba(31, 28, 30, 0.065) 100%);
-    @apply absolute
-    block
-    top-0
-    w-full
-    h-full
-    transition-all
-    duration-300
-    opacity-0
-    z-10
-    rounded-lg;
+  content: '';
+  background: linear-gradient(
+    0deg,
+    rgba(31, 28, 30, 0.65) 0%,
+    rgba(31, 28, 30, 0.065) 100%
+  );
+  @apply absolute top-0 z-10 block w-full h-full transition-all duration-300 rounded-lg opacity-0;
 }
 
-.item-content.preview .galleryItem:before{
-    background: none;
+.item-content.preview .galleryItem:before {
+  background: none;
 }
 
 .galleryItem:hover:before {
-    @apply opacity-100;
+  @apply opacity-100;
+}
+
+.darkerBorder {
+  border-color: #c9c9c9;
 }
 
 .removeBtn {
-    @apply opacity-0
-    left-4
-    bottom-4
-    z-10;
+  @apply z-10 opacity-0 left-4 bottom-4;
 }
 
 .likeBtn {
-    @apply right-4
-    bottom-3
-    z-10;
+  @apply z-10 right-4 bottom-3;
 }
 
 .likeBtn img {
-    @apply bg-transparent !important;
+  @apply bg-transparent !important;
 }
 
 .editProductPopup {
-    width: 95vw;
-    max-width: 1440px;
-    height: 95vh;
-    max-height: 894px;
-    @apply
-    box-border
+  width: 95vw;
+  max-width: 1440px;
+  height: 95vh;
+  max-height: 894px;
+  @apply box-border;
 }
 
 .editProductPopup__img {
-    background: linear-gradient(131.5deg, #F5F6F8 -0.97%, #EDEDED 100%);
+  background: linear-gradient(131.5deg, #f5f6f8 -0.97%, #ededed 100%);
 }
 
 .editProductPopup__content {
-    max-height: 90%;
+  max-height: 90%;
 }
 
 .errorPwdMsg ~ div > .relative input {
-    @apply border
-    border-solid
-    border-red-error-300
-    rounded-lg
+  @apply border border-solid rounded-lg border-red-error-300;
 }
 
 .mobileGalleryButtons a {
-    @apply inline-block
-    w-full
-    h-full;
+  @apply inline-block w-full h-full;
+}
+
+.gridTemplateOrder {
+  grid-template-columns: 110px minmax(80px, 1fr) auto;
 }
 
 .productType:first-letter {
-    text-transform: uppercase;
+  text-transform: uppercase;
 }
 
 .customSelect select {
-    @apply text-base-300
-    appearance-none
-    border-0
-    rounded-none
-    w-full
-    bg-transparent
-    px-4
-    h-11
-    focus:outline-none
-    cursor-pointer
+  @apply w-full px-4 bg-transparent border-0 rounded-none appearance-none cursor-pointer text-base-300 h-11 focus:outline-none;
 }
 
 .customSelect {
-    @apply
-    w-full
-    inline-block
-    border
-    border-solid
-    border-base-200
-    rounded-lg
-    relative
-    overflow-hidden
-    h-11
+  @apply relative inline-block w-full overflow-hidden border border-solid rounded-lg border-base-200 h-11;
 }
 
 .customSelect::after {
-    content: '';
-    background: url('/images/chevron-thin-right.svg') no-repeat;
-    width: 16px;
-    height: 9px;
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-25%);
+  content: '';
+  background: url('/images/chevron-thin-right.svg') no-repeat;
+  width: 16px;
+  height: 9px;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-25%);
 }
 
 .customInvalidOption,
 .customInvalidOption option {
-    @apply text-base-300
+  @apply text-base-300;
 }
 
 .customInvalidOption:invalid,
-.customInvalidOption option[value=""] {
-    @apply text-base-250
+.customInvalidOption option[value=''] {
+  @apply text-base-250;
 }
 
-.deliveryOptions__wrapper input[name="ship_option"] {
-    margin-top: 4px;
+.cartItemsAmount {
+  font-size: 10px;
+  line-height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
-.deliveryOptions__wrapper input[type="radio"] {
-    min-width:1.25rem;
-    @apply appearance-none
-    h-5
-    w-5
-    bg-base-100
-    border
-    border-blue-planning-300
-    rounded-full
-    cursor-pointer
-    inline-flex
-    items-center
-    justify-center
-    outline-none
-    box-border
+.deliveryOptions__wrapper input[name='ship_option'] {
+  margin-top: 4px;
 }
 
-.deliveryOptions__wrapper input[type="radio"] label {
-    @apply text-green-finances-300
+.deliveryOptions__wrapper input[type='radio'] {
+  min-width: 1.25rem;
+  @apply box-border inline-flex items-center justify-center w-5 h-5 border rounded-full outline-none appearance-none cursor-pointer bg-base-100 border-blue-planning-300;
 }
 
-.deliveryOptions__wrapper input[type="radio"]:after {
-    content: "";
-    @apply h-3
-    w-3
-    rounded-full
-    bg-blue-planning-300
-    hidden
+.deliveryOptions__wrapper input[type='radio'] label {
+  @apply text-green-finances-300;
 }
 
-.deliveryOptions__wrapper input[type="radio"]:checked:after {
-    @apply inline-block
+.deliveryOptions__wrapper input[type='radio']:after {
+  content: '';
+  @apply hidden w-3 h-3 rounded-full bg-blue-planning-300;
+}
+
+.deliveryOptions__wrapper input[type='radio']:checked:after {
+  @apply inline-block;
 }
 
 .shippingOptions__infoBlock {
-    max-width: 100%;
+  max-width: 100%;
 }
 
-.choose-product__modal{
-    width: 95vw;
-    @apply bg-base-100
-    max-h-screen
-    h-auto
-    py-5
-    overflow-y-auto
-    fixed
-    top-0
-    left-0
-    right-0
-    mx-auto
+.choose-product__modal {
+  width: 95vw;
+  @apply fixed top-0 left-0 right-0 h-auto max-h-screen py-5 mx-auto overflow-y-auto bg-base-100;
 }
 
-.choose-product__btn{
-    filter: drop-shadow(0px 4px 14px rgba(0, 0, 0, 0.15));
-    @apply w-12
-    h-12
-    flex
-    justify-center
-    items-center
-    absolute
-    bg-base-100
-    rounded-full
-    z-50
+.choose-product__btn {
+  filter: drop-shadow(0px 4px 14px rgba(0, 0, 0, 0.15));
+  @apply absolute z-50 flex items-center justify-center w-12 h-12 rounded-full bg-base-100;
 }
 
 @media screen and (min-width: 1280px) {
-  .choose-product__modal{
-        @apply pr-20
-    }
+  .choose-product__modal {
+    @apply pr-20;
+  }
 
-    .editProductPopup__img{
-        max-height: 750px;
-    }
+  .editProductPopup__img {
+    max-height: 750px;
+  }
 }
 
 @media screen and (min-width: 1024px) {
-    .editProductPopup__content {
-        height: 754px;
-        max-height: 89%;
-    }
+  .editProductPopup__content {
+    height: 754px;
+    max-height: 89%;
+  }
 
-    .choose-product__modal{
-        max-width: 1440px;
-        height: 95vh;
-        max-height: 894px;
-        @apply
-        relative
-        pb-20
-        pt-14
-        pr-16
-    }
+  .choose-product__modal {
+    max-width: 1440px;
+    height: 95vh;
+    max-height: 894px;
+    @apply relative pb-20 pr-16 pt-14;
+  }
 
-    .choose-product-item{
-        max-width: 700px;
-    }
+  .choose-product-item {
+    max-width: 700px;
+  }
 }
 
 @media screen and (max-width: 640px) {
-    .circleBtn ul li a {
-        min-width: 40px;
-    }
+  .circleBtn ul li a {
+    min-width: 40px;
+  }
 
-    .circleBtn img {
-        @apply pl-2.5;
-    }
+  .circleBtn img {
+    @apply pl-2.5;
+  }
 
-    .gallery__container {
-        @apply px-4;
-    }
+  .gallery__container {
+    @apply px-4;
+  }
 
-    .settings__wrapper > div {
-        background: linear-gradient(to right, #4DAAC6 12px, #EFEFEF 12px, #EFEFEF 15px, #FFFFFF 15px);
-        @apply pl-8
-        pr-4;
-    }
+  .settings__wrapper > div {
+    background: linear-gradient(
+      to right,
+      #4daac6 12px,
+      #efefef 12px,
+      #efefef 15px,
+      #ffffff 15px
+    );
+    @apply pl-8 pr-4;
+  }
+
+  .settings__wrapper2 > div {
+    background: linear-gradient(
+      to right,
+      #4daac6 12px,
+      #efefef 12px,
+      #efefef 15px,
+      #ffffff 15px
+    );
+    @apply pl-8 pr-4;
+  }
 }
 
 @media screen and (min-width: 640px) {
-    .photos__rect {
-        height: 300px;
-    }
+  .photos__rect {
+    height: 300px;
+  }
 }
 
 @media screen and (max-width: 1024px) {
-    .choose-product-item {
-        @apply w-full
-    }
+  .choose-product {
+    @apply grid;
+  }
+
+  .choose-product-item {
+    @apply w-full;
+  }
 }
 
 @media screen and (min-width: 1024px) {
-    .customWatermarkPopup {
-        max-height: 950px;
-    }
+  .choose-product {
+    @apply flex;
+  }
 
-    .choose-product-item {
-        @apply w-1/2
-    }
+  .customWatermarkPopup {
+    max-height: 950px;
+  }
 
-    .gallery__coverImg {
-        height: 100vh;
-    }
+  .choose-product-item {
+    @apply w-1/2;
+  }
 
-    .gallery__coverImg.active::after {
-        background: linear-gradient(180.33deg, rgba(196, 196, 196, 0) 43%, rgba(0, 0, 0, 0.6) 99.72%, rgba(0, 0, 0, 0.732) 99.72%);
-    }
+  .gallery__coverImg {
+    height: 100vh;
+  }
+
+  .gallery__coverImg.active::after {
+    background: linear-gradient(
+      180.33deg,
+      rgba(196, 196, 196, 0) 43%,
+      rgba(0, 0, 0, 0.6) 99.72%,
+      rgba(0, 0, 0, 0.732) 99.72%
+    );
+  }
 }
-
