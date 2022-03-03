@@ -17,7 +17,6 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
   describe "general render" do
     test "connected mount", %{conn: conn, gallery: gallery} do
       {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}/settings")
-      assert html |> Floki.text() =~ "Gallery Settings"
       assert html |> Floki.text() =~ "Gallery name"
       assert html |> Floki.text() =~ "Gallery password"
       assert html |> Floki.text() =~ "Custom watermark"
