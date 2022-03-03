@@ -40,10 +40,16 @@ defmodule Picsello.Mock do
           body:
             Jason.encode!(%{
               "values" =>
-                tsv
-                |> String.trim()
-                |> String.split("\n")
-                |> Enum.map(&String.split(&1, "\t")),
+                case tsv do
+                  "" <> _tsv ->
+                    tsv
+                    |> String.trim()
+                    |> String.split("\n")
+                    |> Enum.map(&String.split(&1, "\t"))
+
+                  [[_headers | _] | _] ->
+                    tsv
+                end,
               "range" => range,
               "majorDimension" => "ROWS"
             })

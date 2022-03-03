@@ -62,12 +62,17 @@ defmodule Picsello.EmailPresetTest do
         |> Picsello.Repo.reload!()
 
       insert(:shoot, starts_at: shoot_starts_at, job: job, location: :studio)
-      insert(:payment_schedule, due_at: shoot_starts_at, job: job)
+
+      insert(:payment_schedule,
+        due_at: shoot_starts_at |> DateTime.add(-24 * 60 * 60),
+        job: job,
+        price: ~M[1000]USD
+      )
 
       %{id: proposal_id} = insert(:proposal, job: job)
 
-      due_date = "Feb 08, #{next_year}"
-      session_date = "February 09, #{next_year}"
+      due_date = "Feb 8, #{next_year}"
+      session_date = "February 9, #{next_year}"
 
       assert %{
                "brand_sentence" => "",

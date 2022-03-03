@@ -130,20 +130,15 @@ defmodule Picsello.EmailPreset do
           ),
         # handled in sendgrid template
         "email_signature" => &noop/1,
-        "invoice_amount" =>
-          &with(
-            %Picsello.Package{} = package <- package(&1),
-            do: Picsello.Package.remainder_price(package)
-          ),
+        "invoice_amount" => &Picsello.PaymentSchedules.remainder_price(&1.job),
         "invoice_due_date" =>
           &with(
-            %{job: job} <- &1,
-            %DateTime{} = due_on <- Picsello.PaymentSchedules.remainder_due_on(job),
+            %DateTime{} = due_on <- Picsello.PaymentSchedules.remainder_due_on(&1.job),
             do:
               strftime(
                 &1,
                 due_on,
-                "%b %d, %Y"
+                "%b %-d, %Y"
               )
           ),
         "invoice_link" =>
@@ -168,7 +163,7 @@ defmodule Picsello.EmailPreset do
         "session_date" =>
           &with(
             %{starts_at: starts_at} <- next_shoot(&1),
-            do: strftime(&1, starts_at, "%B %d, %Y")
+            do: strftime(&1, starts_at, "%B %-d, %Y")
           ),
         "session_location" =>
           &with(
