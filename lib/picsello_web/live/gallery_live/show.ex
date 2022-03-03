@@ -50,11 +50,19 @@ defmodule PicselloWeb.GalleryLive.Show do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    url = Routes.gallery_client_show_path(socket, :show, hash)
+
     socket
     |> assign(
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
+      url: url,
       page: 0,
       page_title: page_title(socket.assigns.live_action),
       products: Galleries.products(gallery),
@@ -96,26 +104,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     send(self(), :open_modal)
 
     socket
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "preview_gallery",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
     |> noreply()
   end
 
