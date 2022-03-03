@@ -1,19 +1,19 @@
 defmodule PicselloWeb.GalleryLive.Settings do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
+  import PicselloWeb.GalleryLive.Show, only: [presign_cover_entry: 2, handle_cover_progress: 3]
 
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
   alias PicselloWeb.ConfirmationComponent
-  alias PicselloWeb.GalleryLive.UploadComponent
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1,
     max_file_size: 104_857_600,
     auto_upload: true,
-    external: &__MODULE__.presign_cover_entry/2,
-    progress: &__MODULE__.handle_cover_progress/3
+    external: &presign_cover_entry/2,
+    progress: &handle_cover_progress/3
   ]
 
   @impl true
