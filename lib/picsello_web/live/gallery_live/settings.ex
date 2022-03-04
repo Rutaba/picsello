@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.Settings do
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
   alias PicselloWeb.ConfirmationComponent
+  alias Picsello.Galleries.CoverPhoto
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -15,14 +17,82 @@ defmodule PicselloWeb.GalleryLive.Settings do
     external: &presign_cover_entry/2,
     progress: &handle_cover_progress/3
   ]
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
   def mount(_params, _session, socket) do
     {
       :ok,
       socket
+      |> assign(:upload_bucket, @bucket)
+      |> assign(:cover_photo_processing, false)
       |> allow_upload(:cover_photo, @upload_options)
     }
+  end
+
+  @impl true
+  def handle_event("start", _params, socket) do
+    socket.assigns.uploads.cover_photo
+    |> case do
+      %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
+      _ -> {:noreply, socket}
+    end
+  end
+
+
+  @impl true
+  def handle_event(
+        "delete_cover_photo_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete_cover_photo",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this photo?",
+      subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
+    })
+    |> noreply()
+  end
+
+  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:gallery, Galleries.get_gallery!(gallery.id))
+    |> assign(:cover_photo_processing, false)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "delete_cover_photo"},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> assign(:gallery, Galleries.delete_gallery_cover_photo(gallery))
+    |> close_modal()
+    |> noreply()
+  end
+
+
+  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
+    if entry.done? do
+      CoverPhoto.original_path(gallery.id, entry.uuid)
+      |> ProcessingManager.process_cover_photo()
+
+      socket
+      |> assign(:cover_photo_processing, true)
+      |> noreply()
+    else
+      socket
+      |> noreply
+    end
   end
 
   @impl true
