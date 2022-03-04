@@ -141,13 +141,14 @@ defmodule Picsello.Cart do
   end
 
   def order_with_editor(editor_id) do
+    arg = %{id: editor_id}
+
     from(order in Order,
-      join: p in fragment("unnest(?)", order.products),
       where:
         fragment(
-          "?->'editor_details'->>'editor_id' = ?",
-          p,
-          ^editor_id
+          ~s|jsonb_path_exists(?, '$[*] \\? (@.editor_details.editor_id == $id)', ?)|,
+          order.products,
+          ^arg
         )
     )
     |> Repo.one()
