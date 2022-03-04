@@ -31,6 +31,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
 
   defp send(task) do
     topic = Application.get_env(:picsello, :photo_processing_input_topic)
+    IO.inspect(topic)
 
     result =
       Kane.Message.publish(
