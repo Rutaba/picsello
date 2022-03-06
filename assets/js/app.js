@@ -42,6 +42,7 @@ import Quill, {ClearQuillInput} from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
+import ToggleDynamic from './hooks/toggle-dynamic';
 import GalleryMobile from './hooks/gallery-mobile';
 
 const Modal = {
@@ -101,11 +102,11 @@ const ClearInput = {
       inputWasFocussed = e.relatedTarget === el;
     });
 
-      this.el.addEventListener('click', () => {
-        input.value = null;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        if (inputWasFocussed) input.focus();
-      });
+    this.el.addEventListener('click', () => {
+      input.value = null;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      if (inputWasFocussed) input.focus();
+    });
   },
 };
 
@@ -141,6 +142,7 @@ const Hooks = {
   Select,
   TZCookie,
   ToggleContent,
+  ToggleDynamic,
 };
 
 let Uploaders = {};
