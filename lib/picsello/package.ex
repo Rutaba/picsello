@@ -87,7 +87,7 @@ defmodule Picsello.Package do
       if Keyword.get(opts, :skip_description) do
         changeset
       else
-        changeset |> validate_required(~w[description])
+        changeset |> validate_required(~w[description]a)
       end
     end)
     |> then(fn changeset ->

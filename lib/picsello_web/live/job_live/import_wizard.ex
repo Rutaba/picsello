@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Job, Package, Packages.Download, Packages.PackagePricing}
+  alias Picsello.{Job, Package, Packages.Download, Packages.PackagePricing, Repo, BookingProposal}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1]
 
@@ -116,7 +116,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
   def step(%{step: :get_started} = assigns) do
     ~H"""
-    <div class="flex overflow-hidden border border-base-200 rounded-lg mt-8">
+    <div {testid("import-job-card")} class="flex overflow-hidden border border-base-200 rounded-lg mt-8">
       <div class="w-4 border-r border-base-200 bg-blue-planning-300" />
 
       <div class="flex p-6 items-start w-full">
@@ -158,8 +158,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         <button class="btn-primary px-8" title="Next" type="submit" disabled={!@job_changeset.valid?} phx-disable-with="Next">
           Next
         </button>
-        <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>
-          Go back
+        <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+          Cancel
         </button>
       </.footer>
     </.form>
@@ -203,10 +203,10 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </div>
       </div>
 
-      <div class="flex justify-between mt-4 font-bold text-lg">
-        <h3>Remaining balance to collect with Picsello</h3>
-        <p class="sm:w-32 w-full text-center text-green-finances-300"><%= total_remaining_amount(@package_changeset) %></p>
-      </div>
+      <dl class="flex justify-between mt-4 font-bold text-lg">
+        <dt>Remaining balance to collect with Picsello</dt>
+        <dd class="sm:w-32 w-full text-center text-green-finances-300"><%= total_remaining_amount(@package_changeset) %></dd>
+      </dl>
 
       <hr class="mt-4 border-gray-100">
 
@@ -230,22 +230,24 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       <h3 class="font-bold">Balance to collect: <%= total_remaining_amount(@package_changeset) %></h3>
 
       <%= inputs_for f, :payment_schedules, fn p -> %>
-        <div class="mt-4 flex items-center">
-          <div class="mb-2 text-xl font-bold">Payment <%= p.index + 1 %></div>
+        <div {testid("payment-#{p.index + 1}")}>
+          <div class="mt-4 flex items-center">
+            <div class="mb-2 text-xl font-bold">Payment <%= p.index + 1 %></div>
 
-          <%= if p.index > 0 do %>
-            <.icon_button class="ml-8" title="remove" phx-click="remove-payment" phx-target={@myself} color="red-sales-300" icon="trash">
-              Remove
-            </.icon_button>
-          <% end %>
-        </div>
-
-        <div class="flex flex-wrap mb-8 w-full">
-          <div class="w-full sm:w-auto">
-            <%= labeled_input p, :due_date, label: "Due", type: :date_input, placeholder: "mm/dd/yyyy", class: "sm:w-64 w-full px-4 text-lg" %>
+            <%= if p.index > 0 do %>
+              <.icon_button class="ml-8" title="remove" phx-click="remove-payment" phx-target={@myself} color="red-sales-300" icon="trash">
+                Remove
+              </.icon_button>
+            <% end %>
           </div>
-          <div class="sm:ml-16 w-full sm:w-auto">
-            <%= labeled_input p, :price, label: "Payment amount", placeholder: "$0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+
+          <div class="flex flex-wrap mb-8 w-full">
+            <div class="w-full sm:w-auto">
+              <%= labeled_input p, :due_date, label: "Due", type: :date_input, placeholder: "mm/dd/yyyy", class: "sm:w-64 w-full px-4 text-lg" %>
+            </div>
+            <div class="sm:ml-16 w-full sm:w-auto">
+              <%= labeled_input p, :price, label: "Payment amount", placeholder: "$0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+            </div>
           </div>
         </div>
       <% end %>
@@ -256,7 +258,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </button>
       <% end %>
 
-      <div class="mb-2 text-xl font-bold">
+      <div class="text-xl font-bold">
         Remaining to collect:
         <%= case remaining_to_collect(@payments_changeset) do %>
           <% value -> %>
@@ -267,6 +269,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           <% end %>
         <% end %>
       </div>
+      <p class="italic font-light text-sm mb-2">limit two payments</p>
 
       <.footer>
         <button class="btn-primary px-8" title="Next" type="submit" disabled={!@payments_changeset.valid?} phx-disable-with="Next">
@@ -404,6 +407,49 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         socket
     end
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("submit", %{}, %{assigns: %{step: :invoice} = assigns} = socket) do
+    result =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:job, assigns.job_changeset |> Map.put(:action, nil))
+      |> Ecto.Multi.insert(:package, assigns.package_changeset |> Map.put(:action, nil))
+      |> Ecto.Multi.update(:job_update, fn changes ->
+        Job.add_package_changeset(changes.job, %{package_id: changes.package.id})
+      end)
+      |> Ecto.Multi.insert(:proposal, fn changes ->
+        BookingProposal.create_changeset(%{job_id: changes.job.id})
+      end)
+      |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn changes ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        assigns.payments_changeset
+        |> current()
+        |> Map.get(:payment_schedules)
+        |> Enum.map(fn payment_schedule ->
+          {:ok, due_at} =
+            payment_schedule.due_date
+            |> DateTime.new(~T[00:00:00])
+
+          %{
+            price: payment_schedule.price,
+            due_at: due_at,
+            job_id: changes.job.id,
+            inserted_at: now,
+            updated_at: now
+          }
+        end)
+      end)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{job: %Job{id: job_id}}} ->
+        socket |> push_redirect(to: Routes.job_path(socket, :jobs, job_id)) |> noreply()
+
+      {:error, _} ->
+        socket |> noreply()
+    end
   end
 
   defp assign_job_changeset(
