@@ -137,7 +137,8 @@ defmodule PicselloWeb.Router do
       live "/inbox", InboxLive.Index, :index, as: :inbox
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
-      live "/album", AlbumLive.Overview, :show
+      live "/album", AlbumLive.Photos, :show
+      live "/albums", AlbumLive.Overview, :show
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
