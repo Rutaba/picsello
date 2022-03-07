@@ -214,7 +214,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
       <.footer>
         <button class="btn-primary px-8" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
-          Next
+          <%= if need_to_specify_payments?(@package_changeset), do: "Next", else: "Save" %>
         </button>
         <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>
           Go back
@@ -392,25 +392,34 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           payments_changeset: payments_changeset
         }
       } ->
-        socket
-        |> assign(
-          step: :invoice,
-          payments_changeset:
-            payments_changeset
-            |> Ecto.Changeset.put_change(
-              :remaining_price,
-              total_remaining_amount(package_changeset)
-            )
-        )
+        if need_to_specify_payments?(package_changeset) do
+          socket
+          |> assign(
+            step: :invoice,
+            payments_changeset:
+              payments_changeset
+              |> Ecto.Changeset.put_change(
+                :remaining_price,
+                total_remaining_amount(package_changeset)
+              )
+          )
+          |> noreply()
+        else
+          import_job(socket)
+        end
 
       socket ->
         socket
+        |> noreply()
     end
-    |> noreply()
   end
 
   @impl true
-  def handle_event("submit", %{}, %{assigns: %{step: :invoice} = assigns} = socket) do
+  def handle_event("submit", %{}, %{assigns: %{step: :invoice}} = socket) do
+    import_job(socket)
+  end
+
+  defp import_job(%{assigns: assigns} = socket) do
     result =
       Ecto.Multi.new()
       |> Ecto.Multi.insert(:job, assigns.job_changeset |> Map.put(:action, nil))
@@ -421,6 +430,21 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       |> Ecto.Multi.insert(:proposal, fn changes ->
         BookingProposal.create_changeset(%{job_id: changes.job.id})
       end)
+      |> maybe_insert_payment_schedules(socket)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{job: %Job{id: job_id}}} ->
+        socket |> push_redirect(to: Routes.job_path(socket, :jobs, job_id)) |> noreply()
+
+      {:error, _} ->
+        socket |> noreply()
+    end
+  end
+
+  defp maybe_insert_payment_schedules(multi_changes, %{assigns: assigns}) do
+    if need_to_specify_payments?(assigns.package_changeset) do
+      multi_changes
       |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn changes ->
         now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -441,14 +465,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           }
         end)
       end)
-      |> Repo.transaction()
-
-    case result do
-      {:ok, %{job: %Job{id: job_id}}} ->
-        socket |> push_redirect(to: Routes.job_path(socket, :jobs, job_id)) |> noreply()
-
-      {:error, _} ->
-        socket |> noreply()
+    else
+      multi_changes
     end
   end
 
@@ -541,5 +559,9 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       end)
 
     Money.subtract(remaining_price, total_collected)
+  end
+
+  defp need_to_specify_payments?(package_changeset) do
+    !(package_changeset |> total_remaining_amount() |> Money.zero?())
   end
 end

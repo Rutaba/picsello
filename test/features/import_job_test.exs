@@ -162,6 +162,36 @@ defmodule Picsello.ImportJobTest do
            ] = job.payment_schedules
   end
 
+  feature "user imports job without payments", %{session: session} do
+    session
+    |> click(testid("jobs-card"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> fill_in_client_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in_package_form()
+    |> fill_in(text_field("The amount you’ve already collected"), with: "$1000")
+    |> assert_has(definition("Remaining balance to collect with Picsello", text: "$0.00"))
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+
+    base_price = Money.new(100_000)
+
+    job = Repo.one(Job) |> Repo.preload([:package, :payment_schedules])
+
+    assert %Package{
+             base_price: ^base_price,
+             collected_price: ^base_price
+           } = job.package
+
+    assert [] = job.payment_schedules
+  end
+
   feature "user sees validation errors when importing job", %{session: session} do
     session
     |> click(testid("jobs-card"))
