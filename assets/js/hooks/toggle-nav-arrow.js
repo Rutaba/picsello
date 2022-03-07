@@ -7,14 +7,19 @@ export default {
     const attr = '.' + el.getAttribute('target-class');
     const content = el.querySelectorAll(attr);
 
-    el.addEventListener('click', (e) => {
-      content.forEach((element, i) => {
-        element.classList.add('hidden');
-      });      
-      e.target.nextElementSibling.classList.remove('hidden')
-    });
+    
+    function onClose() {}
 
-    this.modal = Modal({el});
+    function isClosed() {
+      el.addEventListener('click', (e) => {
+        content.forEach((element, i) => {
+          element.classList.add('hidden');
+        });      
+        e.target.nextElementSibling.classList.remove('hidden')
+      });
+    }
+
+    this.modal = Modal({el, onClose, isClosed});
   },
 
   destroyed() {

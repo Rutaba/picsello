@@ -11,18 +11,16 @@
                Back to job
             </button>
          </div>
-         <div id="gallery-name" phx-hook="ToggleMulti" target-class="toggle-content" class="mt-4">
-            <p class="toggle-content font-bold text-3xl text-base-300">Kate Family Gallery</p>
-            <input type="text" phx-debounce="1000" class="toggle-content hidden w-full mt-4 text-input" name="gallery_title" value="" placeholder="Kate Family Gallery" />         
-            <div class="mt-4">
-               <button type="button" class="toggle-content hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg">Save</button>
-               <button type="button" class="toggle-content flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg"  icon="pencil">
-                  <svg class="w-4 h-4 mr-1 fill-current text-blue-planning-300">
-                     <use href="/images/icons.svg#pencil"></use>
-                  </svg>
-                  Edit gallery name
-               </button>
-            </div>
+         <div class="mt-4">
+            <p class="toggle-input font-bold text-3xl text-base-300">Kate Family Gallery</p>
+            <input type="text" phx-debounce="1000" class="toggle-content hidden w-full text-input" name="gallery_title" value="" placeholder="Kate Family Gallery" />         
+            <button id="gallery-name" phx-hook="ToggleSiblings" target-class="toggle-content" type="button" class="toggle-content hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg">Save</button>
+            <button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-input" type="button" class="toggle-input flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg"  icon="pencil">
+               <svg class="w-4 h-4 mr-1 fill-current text-blue-planning-300">
+                  <use href="/images/icons.svg#pencil"></use>
+               </svg>
+               Edit gallery name
+            </button>
          </div>
          <div id="album-nav" phx-hook="ToggleNavArrow" target-class="arrow" class="grid-container bg-gray-100 grid w-80 p-5 mt-6 rounded-lg grid-cols-1 gap-y-1">
             <div class="grid-item rounded-lg bg-gray-200 font-bold">
