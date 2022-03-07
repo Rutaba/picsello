@@ -11,6 +11,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Messages,
     Notifiers.ClientNotifier,
     Package,
+    PaymentSchedules,
     Accounts.User
   }
 
@@ -396,7 +397,7 @@ defmodule PicselloWeb.JobLive.Shared do
           <%= if @proposal.questionnaire_id do %>
             <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
           <% end %>
-          <.proposal_details_item title="Invoice" icon="document" status="Completed" date={@proposal.remainder_paid_at} current_user={@current_user} action="invoice" />
+          <.proposal_details_item title="Invoice" icon="document" status="Completed" date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
         </div>
       </div>
     """
@@ -461,7 +462,7 @@ defmodule PicselloWeb.JobLive.Shared do
   defp do_assign_job(socket, job) do
     socket
     |> assign(
-      job: job |> Map.drop([:package]),
+      job: job,
       page_title: job |> Job.name(),
       package: job.package
     )

@@ -29,12 +29,12 @@
     <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder" button_click="open-compose" hint_content="See the status of payment from your client at a glance. If they're past due or you to need to follow up, send them a reminder message.">
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
-        <%= if BookingProposal.remainder_paid?(@proposal) do %>
-          <dd class="font-bold row-start-2 text-green-finances-300"><%= Package.price(@package) |> Money.to_string(fractional_unit: false) %></dd>
+        <%= if PaymentSchedules.all_paid?(@job) do %>
+          <dd class="font-bold row-start-2 text-green-finances-300"><%= PaymentSchedules.total_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
         <% else %>
-          <dd class="font-bold row-start-2 text-green-finances-300"><%= Package.deposit_price(@package) |> Money.to_string(fractional_unit: false) %></dd>
+          <dd class="font-bold row-start-2 text-green-finances-300"><%= PaymentSchedules.paid_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
           <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Owed</dt>
-          <dd class="font-bold row-start-2 text-red-sales-300"><%= Package.remainder_price(@package) |> Money.to_string(fractional_unit: false) %></dd>
+          <dd class="font-bold row-start-2 text-red-sales-300"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
         <% end %>
       </dl>
     </.overview_card>
@@ -56,5 +56,5 @@
 
   <h2 class="mt-8 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Booking Details</h2>
 
-  <.proposal_details proposal={@proposal} current_user={@current_user} />
+  <.proposal_details job={@job} proposal={@proposal} current_user={@current_user} />
 </div>

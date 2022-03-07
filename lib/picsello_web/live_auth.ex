@@ -49,7 +49,7 @@ defmodule PicselloWeb.LiveAuth do
   defp assign_current_user(socket, _session), do: socket
 
   defp authenticate_gallery(socket, %{"hash" => hash}) do
-    socket |> assign(gallery: Galleries.get_gallery_by_hash!(hash))
+    socket |> assign_new(:gallery, fn -> Galleries.get_gallery_by_hash!(hash) end)
   end
 
   defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do

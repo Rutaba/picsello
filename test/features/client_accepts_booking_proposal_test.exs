@@ -1,6 +1,6 @@
 defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Organization, BookingProposal, Job}
+  alias Picsello.{Job, Repo, Organization, BookingProposal, PaymentSchedule}
 
   @send_email_button button("Send Email")
   @invoice_button button("Invoice")
@@ -40,7 +40,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           %{
             name: "Shoot 1",
             address: "320 1st st",
-            starts_at: ~U[2021-09-30 19:00:00Z],
+            starts_at: ~U[2029-09-30 19:00:00Z],
             duration_minutes: 15
           }
         ]
@@ -98,19 +98,21 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
          }}
       end)
 
+      [deposit_payment, remainder_payment] = Picsello.PaymentSchedules.payment_schedules(lead)
+
       Picsello.MockPayments
       |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
-           metadata: %{"paying_for" => "deposit"}
+           metadata: %{"paying_for" => deposit_payment.id}
          }}
       end)
       |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
-           metadata: %{"paying_for" => "remainder"}
+           metadata: %{"paying_for" => remainder_payment.id}
          }}
       end)
 
@@ -137,7 +139,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
-      |> assert_has(testid("shoot-title", text: "September 30, 2021"))
+      |> assert_has(testid("shoot-title", text: "September 30, 2029"))
       |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
       |> assert_has(testid("shoot-description", text: "320 1st st"))
       |> click(button("Accept Quote"))
@@ -160,14 +162,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(definition("50% retainer today", text: "$0.40"))
-      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
+      |> assert_has(definition("Remainder Due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
-      refute proposal |> Repo.reload() |> BookingProposal.deposit_paid?()
+      refute deposit_payment |> Repo.reload() |> then(&PaymentSchedule.paid?/1)
 
       client_session
-      |> post("/stripe/connect-webhooks", "deposit", [
+      |> post("/stripe/connect-webhooks", "#{deposit_payment.id}", [
         {"stripe-signature", "love, stripe"}
       ])
 
@@ -178,10 +180,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       assert String.ends_with?(email_link, "/jobs")
 
+      deposit_payment_id = deposit_payment.id
+
       assert_receive {:checkout_linked,
                       %{
                         success_url: stripe_success_url,
-                        metadata: %{"paying_for" => :deposit},
+                        metadata: %{"paying_for" => ^deposit_payment_id},
                         products: [
                           %{
                             price_data: %{
@@ -192,7 +196,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                         ]
                       }}
 
-      assert proposal |> Repo.reload() |> BookingProposal.deposit_paid?()
+      assert deposit_payment |> Repo.reload() |> PaymentSchedule.paid?()
 
       client_session
       |> visit(stripe_success_url)
@@ -207,25 +211,24 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           text: "$0.40"
         )
       )
-      |> assert_has(definition("Remainder Due on Sep 30, 2021", text: "$0.40"))
+      |> assert_has(definition("Remainder Due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
-      refute proposal
-             |> Repo.reload()
-             |> BookingProposal.remainder_paid?()
+      refute remainder_payment |> Repo.reload() |> PaymentSchedule.paid?()
 
       client_session
-      |> post("/stripe/connect-webhooks", "remainder", [
+      |> post("/stripe/connect-webhooks", "#{remainder_payment.id}", [
         {"stripe-signature", "love, stripe"}
       ])
 
-      assert proposal |> Repo.reload() |> BookingProposal.remainder_paid?()
+      assert remainder_payment |> Repo.reload() |> PaymentSchedule.paid?()
+      remainder_payment_id = remainder_payment.id
 
       assert_receive {:checkout_linked,
                       %{
                         success_url: stripe_success_url,
-                        metadata: %{"paying_for" => :remainder},
+                        metadata: %{"paying_for" => ^remainder_payment_id},
                         products: [
                           %{
                             price_data: %{
@@ -267,11 +270,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
+      [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
+
       Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal_id}",
-           metadata: %{"paying_for" => "deposit"}
+           metadata: %{"paying_for" => deposit_payment.id}
          }}
       end)
 

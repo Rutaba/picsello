@@ -8,12 +8,20 @@ defmodule Picsello.Mock do
     @callback auth(Plug.Conn.t()) :: Ueberauth.Auth.t()
   end
 
-  def all(), do: [Picsello.MockAuthStrategy, Picsello.MockBambooAdapter, Picsello.MockPayments]
+  def all(),
+    do: [
+      Picsello.MockAuthStrategy,
+      Picsello.MockBambooAdapter,
+      Picsello.MockPayments,
+      Picsello.MockWHCCClient,
+      Picsello.PhotoStorageMock
+    ]
 
   def setup do
     Mox.defmock(Picsello.MockPayments, for: Picsello.Payments)
     Mox.defmock(Picsello.MockBambooAdapter, for: Bamboo.Adapter)
     Mox.defmock(Picsello.MockWHCCClient, for: Picsello.WHCC.Adapter)
+    Mox.defmock(Picsello.PhotoStorageMock, for: Picsello.Galleries.Workers.PhotoStorage)
 
     Mox.defmock(Picsello.MockAuthStrategy,
       for: [Ueberauth.Strategy, UeberauthStrategyBehaviorPatch]

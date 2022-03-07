@@ -60,3 +60,4 @@ config :picsello, :feature_flags, ~w[sync_whcc_design_details show_pricing_tab]a
 config :tesla, adapter: Tesla.Mock
 
 config :picsello, :photo_output_subscription, {Broadway.DummyProducer, []}
+config :picsello, :photo_storage_service, Picsello.PhotoStorageMock

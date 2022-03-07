@@ -111,14 +111,6 @@ defmodule Picsello.Package do
 
   def price(%__MODULE__{} = package), do: adjusted_base_price(package)
 
-  def deposit_price(%__MODULE__{} = package) do
-    package |> price() |> Money.multiply(0.5)
-  end
-
-  def remainder_price(%__MODULE__{} = package) do
-    package |> price() |> Money.subtract(deposit_price(package))
-  end
-
   def templates_for_organization_id(organization_id) do
     from(package in __MODULE__,
       where:
