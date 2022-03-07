@@ -51,6 +51,10 @@
     <path d="M1,1l8,9l-8,9" stroke-width="2" fill="none" stroke="currentColor"/>
   </svg>
 
+  <svg id="square-forth" viewBox="0 0 7 12" >
+    <path d="M1.5 1.5L5.5 6L1.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="square" fill="none"/>
+  </svg>
+
   <svg id="down" viewBox="0 0 20 10">
     <path d="M1,1l9,8l9,-8" fill="none"/>
   </svg>

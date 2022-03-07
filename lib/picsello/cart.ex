@@ -69,14 +69,30 @@ defmodule Picsello.Cart do
   end
 
   @doc """
-  Puts the product in the cart.
+  Puts the product or digital in the cart.
   """
-  def place_product(%CartProduct{} = product, gallery_id) do
+  def place_product(product, gallery_id) do
     params = %{gallery_id: gallery_id}
 
     case get_unconfirmed_order(gallery_id) do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
+    end
+  end
+
+  def contains_digital?(%Order{digitals: digitals}, photo_id) when is_integer(photo_id),
+    do:
+      Enum.any?(
+        digitals,
+        &(Map.get(&1, :photo_id) == photo_id)
+      )
+
+  def contains_digital?(nil, _), do: false
+
+  def contains_digital?(gallery_id, photo_id) do
+    case(get_unconfirmed_order(gallery_id)) do
+      {:ok, order} -> contains_digital?(order, photo_id)
+      _ -> false
     end
   end
 
@@ -104,7 +120,7 @@ defmodule Picsello.Cart do
   """
   def get_unconfirmed_order(gallery_id) do
     from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == false
+      where: order.gallery_id == ^gallery_id and not order.placed
     )
     |> Repo.one()
     |> case do
@@ -188,14 +204,14 @@ defmodule Picsello.Cart do
     end
   end
 
-  defp create_order_with_product(%CartProduct{} = product, attrs) do
+  defp create_order_with_product(product, attrs) do
     product
     |> Order.create_changeset(attrs)
     |> Repo.insert!()
     |> set_order_number()
   end
 
-  defp place_product_in_order(%Order{} = order, %CartProduct{} = product, attrs) do
+  defp place_product_in_order(%Order{} = order, product, attrs) do
     order
     |> Order.update_changeset(product, attrs)
     |> Repo.update!()
