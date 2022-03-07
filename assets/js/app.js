@@ -43,6 +43,7 @@ import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleNavArrow from './hooks/toggle-nav-arrow';
+import ToggleMulti from './hooks/toggle-multi';
 import GalleryMobile from './hooks/gallery-mobile';
 
 const Modal = {
@@ -143,6 +144,7 @@ const Hooks = {
   TZCookie,
   ToggleContent,
   ToggleNavArrow,
+  ToggleMulti,
 };
 
 let Uploaders = {};

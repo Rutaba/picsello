@@ -11,12 +11,12 @@
                Back to job
             </button>
          </div>
-         <div class="mt-4">
-            <p class="font-bold text-3xl text-base-300">Kate Family Gallery</p>
-            <input type="text" phx-debounce="1000" class="w-full text-input hidden" name="gallery_title" value="" placeholder="Kate Family Gallery" />         
+         <div id="gallery-name" phx-hook="ToggleMulti" target-class="toggle-content" class="mt-4">
+            <p class="toggle-content font-bold text-3xl text-base-300">Kate Family Gallery</p>
+            <input type="text" phx-debounce="1000" class="toggle-content hidden w-full mt-4 text-input" name="gallery_title" value="" placeholder="Kate Family Gallery" />         
             <div class="mt-4">
-               <button type="button" class="hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg">Save</button>
-               <button type="button" class="flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg"  icon="pencil">
+               <button type="button" class="toggle-content hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg">Save</button>
+               <button type="button" class="toggle-content flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg"  icon="pencil">
                   <svg class="w-4 h-4 mr-1 fill-current text-blue-planning-300">
                      <use href="/images/icons.svg#pencil"></use>
                   </svg>
