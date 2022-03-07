@@ -1,0 +1,40 @@
+<content>
+<div class= "h-full bg-gray-100 pr-12 pl-12 pt-28 pb-32">
+    
+    <div class="flex flex-col justify-between md:flex-row">
+        <h1 class="flex items-center text-4xl font-bold lg:justify-start pl-4">
+            Albums
+        </h1>
+
+        <button type="button" class="px-4 py-2 flex items-center border border-blue-planning-300 bg-white rounded-lg shadow-lg hover:opacity-75">
+            <svg class="w-4 h-4 mr-1 text-bold fill-current text-blue-planning-300">
+                <use href="/images/icons.svg#plus"></use>
+            </svg>
+        Add Album
+        </button>
+    </div>
+
+    <div class="grid pt-8 pb-6 center-container lg:grid-cols-2">
+        <div class="flex flex-col justify-start md:flex-row gap-x-5 pl-4">
+            <span class=" flex self-end text-2xl float-left text-gray-400">0 albums</span>
+        </div>
+    </div>
+
+    <div class="uploadingBlock border border-2 border-blue-planning-300 shadow-none border-dashed mt-3 w-2/5">
+            <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                <label>
+                    <div class="flex items-center justify-center gap-4 dragDrop h-full" id="dropzone" phx-hook="DragDrop" phx-drop-target="phx-Ftn4UHTwc6Lw0SbB">
+                        <img class="w-10" src="/images/add-icon.png"/>
+                        <div class="dragDrop__content">
+                            <p class="font-bold mb-2 text-md text-xl">
+                                Add album
+                            </p>
+                            <input accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="dragDropInput" data-phx-active-refs="" data-phx-done-refs="" data-phx-preflighted-refs="" data-phx-update="ignore" data-phx-upload-ref="phx-Ftn4UHTwc6Lw0SbB" id="phx-Ftn4UHTwc6Lw0SbB" name="cover_photo" phx-hook="Phoenix.LiveFileUpload" type="file">
+                        </div>
+                    </div>
+                </label>
+            </form>
+        </div>
+
+</div>
+</content>
