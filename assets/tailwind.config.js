@@ -71,6 +71,9 @@ module.exports = {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
         client: ['"Avenir LT Std"'],
       },
+      width: {
+        '128': '32rem',
+      },
       spacing: {
         '5vw': '5vw',
       },

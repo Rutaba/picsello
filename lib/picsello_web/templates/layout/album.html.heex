@@ -1,28 +1,30 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main">
+<main>
    <%= flash(@flash) %>
-   <div class="w-1/4 h-full border-r-2 bg-white absolute">
-      <div class="pt-4 pb-2 px-6 ml-3">
-         <div class="flex items-center mt-4 mb-8">
-            <button class="mb-30 w-150 h-50 font-bold rounded-3xl p-3 pr-4 pl-4 text-black bg-white shadow-lg cursor-pointer">
-            <span class="fc-icon text-blue-planning-300 text-xl fc-icon-chevron-left"></span>
-            <span class="text-lg pb-10">Back to job</span>
-            </button>
-         </div>
-         <div class="grow mb-1">
-            <p class="font-bold text-3xl text-base-300">Kate Family Gallery</p>
-            <input type="text" phx-debounce="1000" class="w-full text-input hidden" name="gallery_title" value="" placeholder="Kate Family Gallery" />
-            <button class="hidden flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg">Save</button>
-         </div>
-         <div class="flex items-center mb-4">
-            <button type="button" class="flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg"  icon="pencil">
+   <section class="flex">
+      <div class="flex flex-col w-128 h-screen px-5 py-6 overflow-y-auto border-r-2 bg-white">
+         <div class="items-center">
+            <button type="button" class="flex items-center font-bold rounded-3xl py-3 px-4 text-black bg-white shadow-lg cursor-pointer font-sans border hover:opacity-75"  icon="pencil">
                <svg class="w-4 h-4 mr-1 fill-current text-blue-planning-300">
-                  <use href="/images/icons.svg#pencil"></use>
+                  <use href="/images/icons.svg#back"></use>
                </svg>
-               Edit gallery name
+               Back to job
             </button>
          </div>
-         <div id="album-nav" phx-hook="ToggleDynamic" target-class="arrow" class="grid-container bg-gray-100 grid w-64 p-5 mt-8 rounded-lg grid-cols-1 gap-y-1 shadow-lg">
+         <div class="mt-4">
+            <p class="font-bold text-3xl text-base-300">Kate Family Gallery</p>
+            <input type="text" phx-debounce="1000" class="w-full text-input hidden" name="gallery_title" value="" placeholder="Kate Family Gallery" />         
+            <div class="mt-4">
+               <button type="button" class="hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg">Save</button>
+               <button type="button" class="flex items-center px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg"  icon="pencil">
+                  <svg class="w-4 h-4 mr-1 fill-current text-blue-planning-300">
+                     <use href="/images/icons.svg#pencil"></use>
+                  </svg>
+                  Edit gallery name
+               </button>
+            </div>
+         </div>
+         <div id="album-nav" phx-hook="ToggleDynamic" target-class="arrow" class="grid-container bg-gray-100 grid w-80 p-5 mt-6 rounded-lg grid-cols-1 gap-y-1 shadow-lg">
             <div class="grid-item rounded-lg bg-gray-200 font-bold">
                <a class="flex items-center text-sm py-4 px-2 h-12 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded hover:text-blue-planning-300 transition duration-300 ease-in-out" href="#!">
                   <div class="flex items-center justify-center rounded-full bg-blue-planning-300 w-8 h-8 flex-shrink-0">
@@ -106,14 +108,16 @@
                </div>
          </div>
       </div>
-   </div>
-   <div class="flex-1"> <%= @inner_content %> </div>
-   <div class="bottomBar h-24">
-      <div class="gallery__container flex justify-between items-center">
-         <div class="flex">
-            <button class="text-white mr-3"><span class="pl-3">Preview gallery</span></button>
-            <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
+      <div class="w-full h-full"> <%= @inner_content %> </div>
+   </section>
+   <footer>
+      <div class="bottomBar h-20">
+         <div class="gallery__container flex justify-between items-center float-right">
+            <div class="flex">
+               <button class="text-white mr-3"><span class="pl-3">Preview gallery</span></button>
+               <button class="py-2 px-3 rounded bg-white" phx-click="client-link">Share gallery</button>
+            </div>
          </div>
       </div>
-   </div>
+   </footer>
 </main>
