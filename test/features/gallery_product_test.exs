@@ -8,6 +8,8 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   setup do
     gallery = insert(:gallery, %{name: "Test Client Wedding"})
 
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+
     products =
       Enum.map(Picsello.Category.frame_images(), fn frame_image ->
         :category

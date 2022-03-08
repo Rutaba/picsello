@@ -1,4 +1,5 @@
 {:ok, _} = Picsello.Sandbox.PidMap.start()
+Picsello.Sandbox.Broadway.attach(Picsello.Repo)
 for app <- [:ex_machina, :wallaby], do: {:ok, _} = Application.ensure_all_started(app)
 Ecto.Adapters.SQL.Sandbox.mode(Picsello.Repo, :manual)
 Application.put_env(:wallaby, :base_url, PicselloWeb.Endpoint.url())

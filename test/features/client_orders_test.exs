@@ -16,7 +16,7 @@ defmodule Picsello.ClientOrdersTest do
       )
 
     for category <- Picsello.Repo.all(Picsello.Category) do
-      preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
+      preview_photo = insert(:photo, gallery: gallery, preview_url: "/fake.jpg")
 
       insert(:gallery_product,
         category: category,
@@ -24,6 +24,8 @@ defmodule Picsello.ClientOrdersTest do
         gallery: gallery
       )
     end
+
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     [gallery: gallery]
   end

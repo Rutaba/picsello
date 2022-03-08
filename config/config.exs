@@ -123,6 +123,8 @@ config :picsello, :email_presets,
   type_ranges: System.get_env("EMAIL_PRESET_TYPE_RANGES"),
   column_map: System.get_env("EMAIL_PRESET_COLUMN_MAP")
 
+config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorage.Impl
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

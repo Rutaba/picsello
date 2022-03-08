@@ -4,12 +4,20 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumerTest do
   def test_message(message) do
     Broadway.test_message(
       Picsello.Galleries.PhotoProcessing.ProcessedConsumer,
-      Jason.encode!(message)
+      Jason.encode!(message),
+      metadata: %{sandbox: self()}
     )
   end
 
+  setup do
+    "" <> bucket = Keyword.get(Application.get_env(:picsello, :profile_images), :bucket)
+    [bucket: bucket]
+  end
+
   describe "profile photo processed" do
-    test "updates the profile logo" do
+    test "updates the profile logo", %{bucket: bucket} do
+      Mox.expect(Picsello.PhotoStorageMock, :delete, fn "logo/old.ext", ^bucket -> :ok end)
+
       version_id = "123"
       path = "bucket/logo/path.ext"
 
@@ -30,7 +38,8 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumerTest do
       assert_receive {:image_ready, :logo, ^updated_org}
     end
 
-    test "updates the profile main image" do
+    test "updates the profile main image", %{bucket: bucket} do
+      Mox.expect(Picsello.PhotoStorageMock, :delete, fn "main_image/old.ext", ^bucket -> :ok end)
       version_id = "123"
       path = "bucket/main_image/path.ext"
 
