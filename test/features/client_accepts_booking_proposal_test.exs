@@ -158,11 +158,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
       |> assert_has(button("Completed Read and agree to your contract"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Pay your invoice"))
       |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
-      |> assert_has(definition("50% retainer today", text: "$0.40"))
-      |> assert_has(definition("Remainder Due on Sep 29, 2029", text: "$0.40"))
+      |> assert_has(definition("50% retainer due today", text: "$0.40"))
+      |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -204,14 +204,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("h1", text: "Your session is now booked."))
       |> click(button("Got it"))
       |> assert_text("Let’s get your shoot booked")
-      |> click(button("To-Do Pay your remainder"))
+      |> click(button("To-Do Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
-      |> assert_has(definition("Remainder Due on Sep 29, 2029", text: "$0.40"))
+      |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -247,12 +247,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Completed Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
       |> assert_has(
-        definition("Remainder Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("50% remainder paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
@@ -289,7 +289,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Pay your invoice"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 

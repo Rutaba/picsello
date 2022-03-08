@@ -257,6 +257,7 @@ defmodule Picsello.Factory do
     %PaymentSchedule{
       due_at: DateTime.utc_now(),
       price: Money.new(500),
+      description: "invoice",
       job: fn -> build(:lead, %{user: insert(:user)}) end
     }
     |> merge_attributes(attrs)

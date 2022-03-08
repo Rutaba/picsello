@@ -74,6 +74,16 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
+    |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
+    |> assert_has(testid("shoot-card", count: 2, at: 1, text: "Missing information"))
+    |> assert_text("Your job was imported on")
+    |> assert_inner_text(css("a[title='Standard Contract']"), "External")
+    |> assert_inner_text(css("a[title='Questionnaire']"), "External")
+    |> assert_inner_text(css("a[title='Invoice']"), "Pending")
+    |> click(css("a[title='Invoice']"))
+    |> assert_has(definition("Previously collected", text: "$200.00"))
+    |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
+    |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))
 
     base_price = Money.new(100_000)
     download_each_price = Money.new(200)
@@ -114,11 +124,13 @@ defmodule Picsello.ImportJobTest do
     assert [
              %PaymentSchedule{
                due_at: ~U[2030-01-01 00:00:00Z],
-               price: ^payment1_price
+               price: ^payment1_price,
+               description: "Payment 1"
              },
              %PaymentSchedule{
                due_at: ~U[2030-02-01 00:00:00Z],
-               price: ^payment2_price
+               price: ^payment2_price,
+               description: "Payment 2"
              }
            ] = job.payment_schedules
 
@@ -157,7 +169,8 @@ defmodule Picsello.ImportJobTest do
     assert [
              %PaymentSchedule{
                due_at: ~U[2030-01-01 00:00:00Z],
-               price: ^payment1_price
+               price: ^payment1_price,
+               description: "Payment 1"
              }
            ] = job.payment_schedules
   end
@@ -242,5 +255,88 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
+  end
+
+  feature "client pays invoice from imported job", %{session: session} do
+    session
+    |> click(testid("jobs-card"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> fill_in_client_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in_package_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> fill_in_payments_form()
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> click(css("div[title='Mary Jane']"))
+    |> click(button("Logout"))
+    |> assert_path("/")
+
+    %{booking_proposals: [proposal], payment_schedules: [%{id: payment_id} = payment | _]} =
+      Repo.one(Job) |> Repo.preload([:booking_proposals, :payment_schedules])
+
+    url = BookingProposal.url(proposal.id)
+
+    test_pid = self()
+
+    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, products, opts ->
+      send(
+        test_pid,
+        {:checkout_linked, opts |> Enum.into(%{products: products})}
+      )
+
+      {:ok, "https://example.com/stripe-checkout"}
+    end)
+
+    Picsello.MockPayments
+    |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+      {:ok,
+       %Stripe.Session{
+         client_reference_id: "proposal_#{proposal.id}",
+         metadata: %{"paying_for" => payment_id}
+       }}
+    end)
+
+    session
+    |> visit(url)
+    |> assert_has(button("Proposal", count: 0))
+    |> assert_has(button("Contract", count: 0))
+    |> assert_has(button("Questionnaire", count: 0))
+    |> assert_has(button("Invoice", count: 1))
+    |> click(button("Invoice"))
+    |> assert_has(definition("Previously collected", text: "$200.00"))
+    |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
+    |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))
+    |> click(button("Pay Invoice"))
+    |> assert_url_contains("stripe-checkout")
+
+    assert_receive {:checkout_linked,
+                    %{
+                      success_url: stripe_success_url,
+                      metadata: %{"paying_for" => ^payment_id},
+                      products: [
+                        %{
+                          price_data: %{
+                            product_data: %{name: "Elizabeth Taylor Wedding Payment 1"},
+                            unit_amount: 30_000
+                          }
+                        }
+                      ]
+                    }}
+
+    session
+    |> visit(stripe_success_url)
+    |> assert_text("Thank you! Your sessions are now booked")
+
+    %{paid_at: time} = payment |> Repo.reload!()
+    refute is_nil(time)
   end
 end

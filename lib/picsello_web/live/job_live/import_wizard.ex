@@ -451,7 +451,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         assigns.payments_changeset
         |> current()
         |> Map.get(:payment_schedules)
-        |> Enum.map(fn payment_schedule ->
+        |> Enum.with_index()
+        |> Enum.map(fn {payment_schedule, i} ->
           {:ok, due_at} =
             payment_schedule.due_date
             |> DateTime.new(~T[00:00:00])
@@ -461,7 +462,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
             due_at: due_at,
             job_id: changes.job.id,
             inserted_at: now,
-            updated_at: now
+            updated_at: now,
+            description: "Payment #{i + 1}"
           }
         end)
       end)

@@ -92,6 +92,9 @@ defmodule Picsello.Job do
     is_lead
   end
 
+  def imported?(%__MODULE__{job_status: %{current_status: current_status}}),
+    do: current_status == :imported
+
   def leads(query \\ __MODULE__) do
     from(job in query, join: status in assoc(job, :job_status), where: status.is_lead)
   end
