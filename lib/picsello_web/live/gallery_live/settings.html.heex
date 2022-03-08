@@ -67,7 +67,7 @@
       </div>
       <div class="flex flex-col mx-4 settings__wrapper2 xl:mx-12 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
 
-      <%= if !@cover_photo_processing do %>
+      <%= if @cover_photo_processing do %>
                   <div class="flex justify-between w-full h-full mt-4 reuploadingBlock">  
                    <h3>Cover photo</h3>          
                       <label class="font-bold text-blue-planning-300">Processing...</label>
@@ -125,7 +125,7 @@
                       gallery: @gallery %>
       </div>
 
-      <div class="flex flex-col mb-2 galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
+      <div class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
         <h3>Custom watermark</h3>
         <%= if @gallery.watermark do %>
           <%= if @gallery.watermark.type == "image" do %>
@@ -157,6 +157,12 @@
         <% end %>
       </div>              
 
+      <div class="flex flex-col mb-12 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
+        <h3>Delete Gallery</h3>
+        <p>If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
+        <button phx-click="open_gallery_deletion_popup" class="justify-center w-full py-3 border border-black mt-7" id="deleteGalleryPopupButton">Delete Gallery</button>
+      </div> 
+      
       </div>
       </div>
     </div>

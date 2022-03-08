@@ -5,7 +5,9 @@ defmodule Picsello.Galleries do
 
   import Ecto.Query, warn: false
 
-  alias Picsello.{Repo, GalleryProducts, Category, Galleries}
+  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  alias Picsello.GalleryProducts
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
@@ -228,9 +230,29 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
-    Repo.delete(gallery)
+    Ecto.Multi.new()
+    |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
+    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
+    |> Ecto.Multi.delete_all(:photos, Ecto.assoc(gallery, :photos))
+    |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
+    |> Ecto.Multi.delete(:gallery, gallery)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{gallery: gallery}} ->  {:ok, gallery}
+      {:error, reason} -> reason
+    end)
+
+    # Repo.delete(gallery.photos)
+    # Repo.delete(gallery)
   end
 
+  defp gallery_products_query(gallery) do
+    from(gp in GalleryProduct, where: gp.gallery_id == ^gallery.id)
+  end
+
+  defp gallery_products_query(gallery) do
+    from(gp in GalleryProduct, where: gp.gallery_id == ^gallery.id)
+  end
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking gallery changes.
 

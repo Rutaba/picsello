@@ -39,7 +39,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
     end
   end
 
-
   @impl true
   def handle_event(
         "delete_cover_photo_popup",
@@ -62,11 +61,53 @@ defmodule PicselloWeb.GalleryLive.Settings do
     |> noreply()
   end
 
+  @impl true
+  def handle_event(
+        "open_gallery_deletion_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete_gallery",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete gallery?",
+      subtitle:
+        "Are you sure you wish to permanently delete #{gallery.name} gallery, and the #{gallery.total_count} photos it contains?"
+    })
+    |> noreply()
+  end
+
   def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:gallery, Galleries.get_gallery!(gallery.id))
     |> assign(:cover_photo_processing, false)
     |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "delete_gallery"},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    case Galleries.delete_gallery(gallery) do
+      {:ok, _gallery} ->
+        socket
+        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
+        |> put_flash(:success, "The gallery has been deleted.")
+        |> noreply()
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not delete gallery.")
+        |> close_modal()
+        |> noreply()
+    end
   end
 
   @impl true
@@ -79,7 +120,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
     |> close_modal()
     |> noreply()
   end
-
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
     if entry.done? do
