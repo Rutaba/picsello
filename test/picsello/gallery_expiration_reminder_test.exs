@@ -1,6 +1,6 @@
 defmodule Picsello.GalleryExpirationReminderTest do
   use Picsello.DataCase, async: true
-  alias Picsello.{Galleries.Gallery, ClientMessage, GalleryExpirationReminder, Repo}
+  alias Picsello.{Galleries, ClientMessage, GalleryExpirationReminder, Repo}
   require Ecto.Query
 
   setup do
@@ -30,14 +30,14 @@ defmodule Picsello.GalleryExpirationReminderTest do
 
       expiration = now |> DateTime.add(3 * day()) |> DateTime.add(10)
 
-      Gallery.create_changeset(%Gallery{}, %{
+      Galleries.Gallery.create_changeset(%Galleries.Gallery{}, %{
         job_id: job_id,
         name: "12345Gallery",
         status: "expired",
         expired_at: expiration
       })
       |> Repo.insert!()
-      |> IO.inspect()
+      |> Galleries.set_gallery_hash()
 
       :ok =
         now
@@ -51,18 +51,16 @@ defmodule Picsello.GalleryExpirationReminderTest do
                email |> email_substitutions()
 
       assert "Gallery Expiration Reminder" == subject
-      assert String.starts_with?(body_html, "<p>Hi Johann Zahn,</p>")
-      assert String.starts_with?(body_text, "Hi Johann Zahn,\n")
+      assert String.starts_with?(body_html, "<p>Hello Johann Zahn,</p>")
+      assert String.starts_with?(body_text, "Hello Johann Zahn,\n")
     end
 
-    test "delivers no emails before the expiration date", %{now: now} do
-      todo = true
-      assert todo = false
+    test "delivers no emails before the expiration date", %{now: _now} do
+      assert false
     end
 
-    test "delivers no email when status is expired but date is not expired", %{now: now} do
-      todo = true
-      assert todo = false
+    test "delivers no email when status is expired but date is not expired", %{now: _now} do
+      assert false
     end
 
     def day(), do: 24 * 60 * 60

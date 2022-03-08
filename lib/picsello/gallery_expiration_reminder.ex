@@ -18,15 +18,24 @@ defmodule Picsello.GalleryExpirationReminder do
     |> Enum.each(&maybe_send_message(now, &1))
   end
 
-  defp maybe_send_message(_, %Picsello.Galleries.Gallery{job_id: job_id}) do
+  defp maybe_send_message(_, %Picsello.Galleries.Gallery{
+         job_id: job_id,
+         password: password,
+         expired_at: expired_at,
+         client_link_hash: client_link_hash
+       }) do
+    # link = Routes.gallery_client_show_url(socket, :show, hash)
+
     copy = """
-    Hi <%= client_name %>,
+    Hello <%= client_name %>,
 
-    I hope your week is going well so far. I know life gets busy, but I wanted to reach out and touch base to see if there are any questions I can answer for you regarding the booking proposal! If you have any questions, just let me know, and I would be happy to answer them.
+    Your gallery is is about to expire! Please log into your gallery and make your selections before the gallery expires on <%= expired_at %>
 
-    Thank you,
+    A reminder your photos are password-protected, so you will need to use this password to view: <%= password %>
 
-    <%= organization_name %>
+    You can log into your private gallery to see all of your images <a href="#{PicselloWeb.Endpoint.url()}/gallery/#{client_link_hash}">here</a>.
+
+    It’s been a delight working with you and I can’t wait to hear what you think!
     """
 
     {client_name, client_email, organization_name} =
@@ -41,13 +50,19 @@ defmodule Picsello.GalleryExpirationReminder do
         )
       )
 
-    body = EEx.eval_string(copy, organization_name: organization_name, client_name: client_name)
+    body =
+      EEx.eval_string(copy,
+        organization_name: organization_name,
+        client_name: client_name,
+        password: password,
+        expired_at: expired_at,
+        client_link_hash: client_link_hash
+      )
 
     %{subject: "Gallery Expiration Reminder", body_text: body}
     |> ClientMessage.create_outbound_changeset()
     |> Ecto.Changeset.put_change(:job_id, job_id)
     |> Ecto.Changeset.put_change(:scheduled, true)
-    |> IO.inspect()
     |> Repo.insert!()
     |> ClientNotifier.deliver_email(client_email)
   end
