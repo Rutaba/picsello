@@ -4,10 +4,38 @@ defmodule Picsello.GalleryExpirationReminderTest do
   require Ecto.Query
 
   setup do
+    now = DateTime.utc_now()
+
+    user =
+      insert(:user,
+        email: "photographer@example.com",
+        organization: params_for(:organization, name: "Photography LLC")
+      )
+      |> onboard!
+
+    %{id: job_id} =
+      insert(
+        :lead,
+        %{
+          user: user,
+          type: "wedding",
+          client: %{name: "Johann Zahn"}
+        }
+      )
+
+    Galleries.Gallery.create_changeset(%Galleries.Gallery{}, %{
+      job_id: job_id,
+      name: "12345Gallery",
+      status: "active"
+    })
+    |> Galleries.Gallery.expire_changeset(%{expired_at: now |> DateTime.add(7 * day())})
+    |> Repo.insert!()
+    |> Galleries.set_gallery_hash()
+
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     :ok
 
-    [now: DateTime.utc_now()]
+    [now: now, job_id: job_id]
   end
 
   def messages_by_job,
@@ -16,33 +44,18 @@ defmodule Picsello.GalleryExpirationReminderTest do
       |> Repo.all()
       |> Enum.into(%{})
 
+  def messages_by_expiration_subject(job_id),
+    do:
+      from(r in ClientMessage,
+        where: r.subject == "Gallery Expiration Reminder" and r.job_id == ^job_id
+      )
+      |> Repo.all()
+      |> Enum.count()
+
   describe "deliver_all" do
     test "delivers messages to expired galleries", %{now: now} do
-      organization = insert(:organization, name: "Kloster Oberzell", slug: "kloster-oberzell")
-      insert(:user, organization: organization, onboarding: %{phone: "(918) 555-1234"})
-
-      %{id: job_id} =
-        insert(:lead,
-          type: "wedding",
-          client: insert(:client, name: "Johann Zahn", organization: organization)
-        )
-        |> Picsello.Repo.reload!()
-
-      expiration = now |> DateTime.add(3 * day()) |> DateTime.add(10)
-
-      Galleries.Gallery.create_changeset(%Galleries.Gallery{}, %{
-        job_id: job_id,
-        name: "12345Gallery",
-        status: "expired",
-        expired_at: expiration
-      })
-      |> Repo.insert!()
-      |> Galleries.set_gallery_hash()
-
       :ok =
         now
-        |> DateTime.add(3 * day())
-        |> DateTime.add(10)
         |> GalleryExpirationReminder.deliver_all()
 
       assert_receive {:delivered_email, email}
@@ -55,12 +68,27 @@ defmodule Picsello.GalleryExpirationReminderTest do
       assert String.starts_with?(body_text, "Hello Johann Zahn,\n")
     end
 
-    test "delivers no emails before the expiration date", %{now: _now} do
-      assert false
+    test "delivers no emails before the expiration date", %{now: now} do
+      :ok =
+        now
+        |> DateTime.add(-10)
+        |> GalleryExpirationReminder.deliver_all()
+
+      assert %{} == messages_by_job()
     end
 
-    test "delivers no email when status is expired but date is not expired", %{now: _now} do
-      assert false
+    test "delivers no emails when an expiration reminder has already been sent", %{
+      now: now,
+      job_id: job_id
+    } do
+      GalleryExpirationReminder.deliver_all(now)
+      GalleryExpirationReminder.deliver_all(now)
+
+      :ok =
+        now
+        |> GalleryExpirationReminder.deliver_all()
+
+      assert messages_by_expiration_subject(job_id) == 1
     end
 
     def day(), do: 24 * 60 * 60
