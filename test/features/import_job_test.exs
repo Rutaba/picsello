@@ -25,7 +25,7 @@ defmodule Picsello.ImportJobTest do
     )
     |> fill_in(text_field("The amount you’ve already collected"), with: "$200")
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
-    |> scroll_into_view(id: "download_is_enabled_false")
+    |> scroll_into_view(css("#download_is_enabled_false"))
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),

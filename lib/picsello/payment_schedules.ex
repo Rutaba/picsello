@@ -79,14 +79,12 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def past_due?(%PaymentSchedule{due_at: due_at}) do
-    diff = DateTime.diff(due_at, DateTime.utc_now(), :millisecond) / 1000
-    diff < 0
+    :lt == DateTime.compare(due_at, DateTime.utc_now())
   end
 
   def payment_schedules(job) do
     Repo.preload(job, [:payment_schedules])
     |> Map.get(:payment_schedules)
-    |> Enum.sort_by(& &1.due_at)
   end
 
   defp remainder_payment(job) do

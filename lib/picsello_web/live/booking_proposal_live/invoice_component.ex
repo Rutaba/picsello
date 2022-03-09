@@ -81,6 +81,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     ]
 
     case payments().checkout_link(proposal, line_items,
+           # manually interpolate here to not encode the brackets
            success_url: "#{BookingProposal.url(proposal.id)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: BookingProposal.url(proposal.id),
            metadata: %{"paying_for" => payment.id}

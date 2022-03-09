@@ -22,7 +22,7 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
 
     job = insert(:lead, user: user) |> promote_to_job() |> Repo.preload(:payment_schedules)
     proposal = insert(:proposal, job: job)
-    [deposit_payment, remainder_payment] = job.payment_schedules |> Enum.sort_by(& &1.due_at)
+    [deposit_payment, remainder_payment] = job.payment_schedules
 
     Repo.update_all(PaymentSchedule, set: [paid_at: nil])
 

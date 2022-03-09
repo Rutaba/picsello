@@ -7,27 +7,14 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
-    def scroll_into_view(session, "" <> testid) do
-      scroll_into_view(session, testid: testid)
-    end
-
-    def scroll_into_view(session, opts) do
-      id = Keyword.get(opts, :id)
-      testid = Keyword.get(opts, :testid)
-
-      cond do
-        id != nil ->
+    def scroll_into_view(session, query) do
+      case Wallaby.Query.compile(query) do
+        {:css, css_selector} ->
           session
-          |> execute_script("document.querySelector('##{id}').scrollIntoView()")
+          |> execute_script("document.querySelector(`#{css_selector}`).scrollIntoView()")
 
-        testid != nil ->
-          session
-          |> execute_script(
-            "document.querySelector('[data-testid=\"#{testid}\"]').scrollIntoView()"
-          )
-
-        true ->
-          raise "Provide option for id or testid"
+        {type, _selector} ->
+          raise "#{type} not supported. Use a css selector"
       end
     end
 
