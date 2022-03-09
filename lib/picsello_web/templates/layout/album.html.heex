@@ -3,13 +3,15 @@
    <%= flash(@flash) %>
    <section class="flex">
       <div class="flex flex-col w-128 h-screen px-5 py-6 overflow-y-auto border-r-2 bg-white">
-         <div class="items-center">
-            <button type="button" class="flex items-center font-bold rounded-3xl py-3 px-4 text-black bg-white shadow-lg cursor-pointer font-sans border hover:opacity-75"  icon="pencil">
-               <svg class="w-4 h-4 mr-1 fill-current text-blue-planning-300">
-                  <use href="/images/icons.svg#back"></use>
-               </svg>
-               Back to job
-            </button>
+         <div class="circleBtn">
+            <ul>
+               <li>
+                  <%= live_redirect to: Routes.job_path(@socket, :jobs, 4) do %>
+                  <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
+                  <span>Back to job</span>
+                  <% end %>
+               </li>
+            </ul>
          </div>
          <div class="mt-4">
             <p class="toggle-input font-bold text-3xl text-base-300">Kate Family Gallery</p>
