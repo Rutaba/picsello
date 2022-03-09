@@ -30,7 +30,14 @@ const toggleMenu = (state = 'none') => {
   document.querySelector('#float-menu-help').style.display = state;
 };
 
-const initHelpScout = (helpScoutId, currentUserEmail, currentUserName) => {
+const initHelpScout = (
+  helpScoutId,
+  currentUserEmail,
+  currentUserName,
+  article,
+  subject,
+  text
+) => {
   const beaconIsOpen =
     window?.Beacon && window?.Beacon('info')?.status?.isOpened;
 
@@ -44,6 +51,16 @@ const initHelpScout = (helpScoutId, currentUserEmail, currentUserName) => {
       name: currentUserName,
       email: currentUserEmail,
     });
+
+    if (article) {
+      window?.Beacon('config', { mode: 'neutral' });
+      window?.Beacon('suggest', [article]);
+      window?.Beacon('prefill', {
+        subject,
+        text,
+      });
+    }
+
     // attach listener to instance
     // to reset facade when user closes
     window.Beacon('on', 'close', () => {
@@ -62,6 +79,9 @@ export default {
     const helpScoutId = el.dataset.id;
     const currentUserEmail = el.dataset.email;
     const currentUserName = el.dataset.name;
+    const article = el.dataset.article;
+    const subject = el.dataset.subject;
+    const text = el.dataset.text;
     const beaconIsOpen =
       window?.Beacon && window?.Beacon('info')?.status?.isOpened;
 
@@ -75,7 +95,14 @@ export default {
       e.preventDefault();
       toggleMenu();
       loadHelpScout();
-      initHelpScout(helpScoutId, currentUserEmail, currentUserName);
+      initHelpScout(
+        helpScoutId,
+        currentUserEmail,
+        currentUserName,
+        article,
+        subject,
+        text
+      );
     });
   },
 };
