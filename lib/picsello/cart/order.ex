@@ -16,7 +16,7 @@ defmodule Picsello.Cart.Order do
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
 
-    embeds_many :digitals, Digital do
+    embeds_many :digitals, Digital, on_replace: :delete do
       field :photo_id, :integer
       field :preview_url, :string
       field :price, Money.Ecto.Amount.Type
@@ -52,22 +52,25 @@ defmodule Picsello.Cart.Order do
 
   def update_changeset(order, product, attrs \\ %{})
 
-  def update_changeset(%__MODULE__{} = order, %CartProduct{} = product, attrs) do
+  def update_changeset(order, %CartProduct{} = product, attrs) do
     order
     |> cast(attrs, [])
     |> replace_products([product])
   end
 
-  def update_changeset(%__MODULE__{} = order, %Digital{} = digital, attrs) do
+  def update_changeset(order, %Digital{} = digital, attrs) do
     order
     |> cast(attrs, [])
-    |> put_embed(
-      :digitals,
-      [digital | order.digitals]
-      |> Enum.reverse()
-      |> Enum.uniq_by(& &1.photo_id)
-      |> Enum.reverse()
-    )
+    |> then(fn changeset ->
+      put_embed(
+        changeset,
+        :digitals,
+        [digital | get_field(changeset, :digitals, [])]
+        |> Enum.reverse()
+        |> Enum.uniq_by(& &1.photo_id)
+        |> Enum.reverse()
+      )
+    end)
     |> refresh_costs()
   end
 
@@ -121,13 +124,19 @@ defmodule Picsello.Cart.Order do
     |> refresh_costs()
   end
 
-  def delete_product_changeset(%__MODULE__{products: products} = order, editor_id) do
+  def delete_product_changeset(%__MODULE__{products: products, digitals: digitals} = order, opts) do
+    {embed, values} =
+      case opts do
+        [editor_id: editor_id] ->
+          {:products, Enum.reject(products, &(&1.editor_details.editor_id == editor_id))}
+
+        [digital_id: digital_id] ->
+          {:digitals, Enum.reject(digitals, &(&1.id == digital_id))}
+      end
+
     order
     |> change()
-    |> put_embed(
-      :products,
-      Enum.reject(products, fn product -> product.editor_details.editor_id == editor_id end)
-    )
+    |> put_embed(embed, values)
     |> refresh_costs()
   end
 

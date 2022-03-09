@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.GalleryProductTest do
+defmodule Picsello.GalleryProductTest do
   @moduledoc false
 
   use Picsello.FeatureCase, async: true

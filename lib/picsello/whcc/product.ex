@@ -46,6 +46,26 @@ defmodule Picsello.WHCC.Product do
     end
   end
 
+  def selection_details(
+        %{attribute_categories: attribute_categories} = _product,
+        %{} = selections
+      ) do
+    map =
+      for(
+        %{"_id" => category_id, "attributes" => attributes} <- attribute_categories,
+        into: %{}
+      ) do
+        {category_id,
+         for(%{"id" => attribute_id} = attribute <- attributes, into: %{}) do
+           {attribute_id, attribute}
+         end}
+      end
+
+    for({category_id, attribute_id} <- selections, into: %{}) do
+      {category_id, get_in(map, [category_id, attribute_id])}
+    end
+  end
+
   defp merge_selections(a, b),
     do:
       Map.merge(a, b, fn

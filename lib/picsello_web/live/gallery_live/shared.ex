@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{} = order}} = socket, _) do
     socket
-    |> assign(cart_count: Enum.count(order.products) + Enum.count(order.digitals))
+    |> assign(cart_count: Picsello.Cart.item_count(order))
   end
 
   def assign_cart_count(socket, gallery) do
