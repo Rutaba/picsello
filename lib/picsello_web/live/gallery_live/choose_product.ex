@@ -71,7 +71,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     assigns = Enum.into(assigns, %{min_price: nil})
 
     ~H"""
-    <div {testid("product_option_#{@testid}")} class="p-5 xl:p-7 border darkerBorder rounded mb-4 lg:mb-7">
+    <div {testid("product_option_#{@testid}")} class="p-5 xl:p-7 border border-base-225 rounded mb-4 lg:mb-7">
       <div class="flex justify-between items-center">
         <div class="flex flex-col mr-2">
           <p class="font-semibold text-lg text-base-300"><%= @title %></p>

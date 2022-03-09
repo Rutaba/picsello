@@ -399,10 +399,6 @@
     @apply opacity-100;
 }
 
-.darkerBorder{
-    border-color: #C9C9C9;
-}
-
 .removeBtn {
     @apply opacity-0
     left-4

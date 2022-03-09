@@ -261,7 +261,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp summary(assigns) do
     ~H"""
-    <div class="p-5 border darkerBorder flex flex-col">
+    <div class="p-5 border border-base-225 flex flex-col">
       <div class="text-xl">
         <%= unless Enum.empty?(@order.products) do %> Subtotal: <% else %> Total: <% end %>
 
