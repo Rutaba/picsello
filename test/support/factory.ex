@@ -550,6 +550,11 @@ defmodule Picsello.Factory do
     }
   end
 
+  def order_factory,
+    do:
+      %Picsello.Cart.Order{subtotal_cost: Money.new(500), gallery: fn -> build(:gallery) end}
+      |> evaluate_lazy_attributes()
+
   def confirmed_order_factory(attrs) do
     %Picsello.Cart.Order{
       delivery_info: %Picsello.Cart.DeliveryInfo{

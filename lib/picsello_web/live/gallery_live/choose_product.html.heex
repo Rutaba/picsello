@@ -17,7 +17,7 @@
             <.icon name="forth" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
           </div>
 
-          <img src={ @url } class="max-w-full">
+          <img src={ url(@photo) } class="max-w-full">
         </div>
       </div>
 
@@ -26,24 +26,31 @@
           <p class="text-2xl text-base-300 font-bold mb-6 hidden lg:pt-2 lg:block">Select an option below</p>
 
           <%= for %{category: category, id: gallery_product_id} <- @products do %>
-            <div {testid("product_option_#{gallery_product_id}")} class="p-5 xl:p-7 border darkerBorder rounded mb-4 lg:mb-7">
-              <div class="flex justify-between items-center">
-                <div class="flex flex-col">
-                  <p class="font-semibold text-lg pb-1.5 text-base-300"><%= category.name %></p>
+            <.option
+              testid={gallery_product_id}
+              title={category.name}
+              min_price={min_price(category)}
+            }>
+              <:button
+                phx-click="product_preview_photo_click"
+                phx-target="*[role=main]"
+                phx-value-template-id={gallery_product_id}
+                phx-value-photo-id={@photo.id}>
+                Select
+              </:button>
+            </.option>
+          <% end %>
 
-                  <p class="font-semibold text-base text-base-300 text-opacity-60"> <%= min_price(category) %></p>
-                </div>
-
-                <button
-                  phx-click="product_preview_photo_click"
-                  phx-target="#hamburger-menu"
-                  phx-value-template_id={gallery_product_id}
-                  phx-value-photo_id={@photo_id}
-                  class="btn-primary py-3.5 px-10">
-                  Select
-                </button>
-              </div>
-            </div>
+          <%= if @digital_in_cart do %>
+            <.option testid={"digital_download"} title="Digital Download">
+              <:button disabled>In cart</:button>
+            </.option>
+          <% else %>
+            <.option testid={"digital_download"} title="Digital Download" min_price={@download_each_price}>
+              <:button phx-target={@myself} phx-click="digital_add_to_cart">
+                Add to cart
+              </:button>
+            </.option>
           <% end %>
         </div>
       </div>

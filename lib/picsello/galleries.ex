@@ -645,6 +645,16 @@ defmodule Picsello.Galleries do
     |> Repo.preload(job: [client: [organization: :user]])
   end
 
+  def download_each_price(%{job_id: job_id}) do
+    from(package in Picsello.Package,
+      join: job in assoc(package, :jobs),
+      where: job.id == ^job_id,
+      select: struct(package, [:download_each_price])
+    )
+    |> Repo.one()
+    |> Map.get(:download_each_price)
+  end
+
   def products(%{id: gallery_id}),
     do: Picsello.GalleryProducts.get_gallery_products(gallery_id, :with_or_without_previews)
 end

@@ -22,6 +22,7 @@ defmodule Picsello.Package do
 
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
+    has_many(:jobs, Picsello.Job)
 
     timestamps()
   end
