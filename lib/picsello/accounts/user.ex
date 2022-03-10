@@ -16,6 +16,7 @@ defmodule Picsello.Accounts.User do
     field :password, :string, virtual: true
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
+    field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
 
     belongs_to(:organization, Picsello.Organization)
@@ -186,6 +187,9 @@ defmodule Picsello.Accounts.User do
     |> change()
     |> put_embed(:onboarding, %{completed_at: DateTime.utc_now()})
   end
+
+  def assign_stripe_customer_changeset(%__MODULE__{} = user, "" <> stripe_customer_id),
+    do: user |> change(stripe_customer_id: stripe_customer_id)
 
   @doc """
   Verifies the password.

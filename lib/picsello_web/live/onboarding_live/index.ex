@@ -1,17 +1,17 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
-  alias Picsello.{Repo, JobType, Onboardings}
+  require Logger
+  alias Picsello.{Repo, JobType, Onboardings, Subscriptions, Accounts.User, Payments}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket
     |> assign_step(2)
-    |> then(fn %{assigns: %{current_user: user}} = socket ->
-      assign(socket, current_user: Repo.preload(user, :organization))
-    end)
+    |> assign(:loading_stripe, false)
     |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
+    |> maybe_show_trial(params)
     |> ok()
   end
 
@@ -34,6 +34,26 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
+  def handle_event("save", %{}, %{assigns: %{step: 6}} = socket) do
+    case Payments.checkout_link(
+           socket.assigns.current_user,
+           Subscriptions.monthly_subscription_type(),
+           # manually interpolate here to not encode the brackets
+           success_url:
+             "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+           cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
+           trial_days: 90
+         ) do
+      {:ok, url} ->
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  @impl true
   def handle_event("save", %{"user" => params}, %{assigns: %{step: step}} = socket) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, user} ->
@@ -46,6 +66,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event("go-dashboard", %{}, socket) do
+    socket
+    |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+    |> noreply()
   end
 
   @impl true
@@ -63,8 +90,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <% else %>
               <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
-            <button type="submit" phx-disable-with="Saving..." disabled={!@changeset.valid?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
-              <%= if @step == 5, do: "Finish", else: "Next" %>
+            <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
+              <%= if @step == 6, do: "Start Trial", else: "Next" %>
             </button>
           </div>
         </.form>
@@ -203,6 +230,36 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
+  defp step(%{step: 6} = assigns) do
+    ~H"""
+    <%= for org <- inputs_for(@f, :organization) do %>
+      <%= hidden_inputs_for org %>
+    <% end %>
+
+    <hr class="mb-4" />
+    <p class="font-bold">Why do you need my credit card for a trial?</p>
+    <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
+    <hr class="my-4" />
+    <p class="font-bold">When will I be charged?</p>
+    <p>After 3-months, your subscription will be $50/month. (You can change to annual if you prefer in account settings.)</p>
+
+    <%= if User.onboarded?(@current_user) do %>
+      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+        <div class="dialog rounded-lg">
+          <.icon name="confetti" class="w-11 h-11" />
+
+          <h1 class="text-3xl font-semibold">Your 3-month free trial has started!</h1>
+          <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
+
+          <button class={"w-full mt-6 btn-primary"} type="button" phx-click="go-dashboard">
+            Go to my dashboard
+          </button>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
   defdelegate software_options(), to: Onboardings
 
   defp assign_step(socket, 2) do
@@ -250,10 +307,16 @@ defmodule PicselloWeb.OnboardingLive.Index do
     )
   end
 
-  defp assign_step(%{assigns: %{current_user: current_user}} = socket, _) do
+  defp assign_step(socket, 6) do
     socket
-    |> assign(current_user: Onboardings.complete!(current_user))
-    |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+    |> assign(
+      step: 6,
+      color_class: "bg-blue-gallery-200",
+      step_title: "Start your 3-month free trial",
+      subtitle:
+        "Explore and learn Picsello at your own pace. Pricing simplified. One plan, all features.",
+      page_title: "Onboarding Step 6"
+    )
   end
 
   defp build_changeset(%{assigns: %{current_user: user, step: step}}, params, action \\ nil) do
@@ -276,7 +339,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
           <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
-              <%= for step <- 1..5 do %>
+              <%= for step <- 1..6 do %>
                 <li class={classes(
                   "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
                   %{ @color_class => step == @step, "bg-gray-200" => step != @step }
@@ -294,6 +357,48 @@ defmodule PicselloWeb.OnboardingLive.Index do
     </div>
     """
   end
+
+  @impl true
+  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
+    with {:ok, session} <-
+           Payments.retrieve_session(stripe_session_id, []),
+         {:ok, subscription} <-
+           Payments.retrieve_subscription(session.subscription, []),
+         {:ok, _} <- Payments.handle_subscription(subscription) do
+      socket
+      |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
+      |> noreply()
+    else
+      e ->
+        Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
+
+        socket
+        |> put_flash(:error, "Couldn't fetch your Stripe sessoin. Please try again")
+        |> noreply()
+    end
+  end
+
+  defp maybe_show_trial(socket, %{
+         "session_id" => "" <> session_id
+       }) do
+    if connected?(socket),
+      do: send(self(), {:stripe_session_id, session_id})
+
+    socket
+    |> assign(:loading_stripe, true)
+    |> assign_step(6)
+  end
+
+  defp maybe_show_trial(socket, %{"step" => "trial"}) do
+    if socket.assigns.changeset.valid? do
+      socket
+      |> assign_step(6)
+    else
+      socket
+    end
+  end
+
+  defp maybe_show_trial(socket, %{}), do: socket
 
   defdelegate job_types(), to: JobType, as: :all
   defdelegate colors(), to: Picsello.Profiles

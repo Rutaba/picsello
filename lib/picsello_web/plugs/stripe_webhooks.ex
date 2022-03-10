@@ -11,6 +11,11 @@ defmodule PicselloWeb.Plugs.StripeWebhooks do
     handle_request(conn, signing_secret)
   end
 
+  def call(%{request_path: "/stripe/app-webhooks"} = conn, _) do
+    signing_secret = Application.get_env(:stripity_stripe, :app_signing_secret)
+    handle_request(conn, signing_secret)
+  end
+
   def call(conn, _), do: conn
 
   defp handle_request(conn, signing_secret) do

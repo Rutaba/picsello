@@ -1,4 +1,4 @@
-defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
+defmodule PicselloWeb.StripeWebhooksControllerTest do
   use PicselloWeb.ConnCase, async: true
   alias Picsello.{Repo, PaymentSchedule}
 
@@ -40,7 +40,7 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
   def make_request(conn) do
     conn
     |> put_req_header("stripe-signature", "love, stripe")
-    |> post(Routes.stripe_connect_webhooks_path(conn, :webhooks), %{})
+    |> post(Routes.stripe_webhooks_path(conn, :connect_webhooks), %{})
   end
 
   describe "deposit webhook" do

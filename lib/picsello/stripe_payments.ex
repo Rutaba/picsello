@@ -21,6 +21,12 @@ defmodule Picsello.StripePayments do
   defdelegate retrieve_session(id, opts), to: Stripe.Session, as: :retrieve
 
   @impl Payments
+  defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
+
+  @impl Payments
+  defdelegate list_prices(params), to: Stripe.Price, as: :list
+
+  @impl Payments
   defdelegate construct_event(body, stripe_signature, signing_secret), to: Stripe.Webhook
 
   @impl Payments

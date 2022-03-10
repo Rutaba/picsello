@@ -588,4 +588,11 @@ defmodule Picsello.Factory do
     }
 
   def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
+
+  def subscription_type_factory,
+    do: %Picsello.SubscriptionType{
+      stripe_price_id: "price_123",
+      recurring_interval: "month",
+      price: 500
+    }
 end
