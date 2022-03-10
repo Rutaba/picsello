@@ -1,7 +1,8 @@
 defmodule PicselloWeb.GalleryLive.Shared do
   @moduledoc "Shared function among gallery liveViews"
 
-  import Phoenix.LiveView, only: [assign: 2]
+  use Phoenix.Component
+  import PicselloWeb.LiveHelpers, only: [icon: 1]
 
   def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{} = order}} = socket, _) do
     socket
@@ -16,5 +17,22 @@ defmodule PicselloWeb.GalleryLive.Shared do
       _ ->
         socket |> assign(cart_count: 0, order: nil)
     end
+  end
+
+  def button(assigns) do
+    assigns = Map.put_new(assigns, :class, "")
+    button_attrs = Map.drop(assigns, [:inner_block, :__changed__, :class])
+
+    ~H"""
+    <button {button_attrs} class={"#{@class}
+        flex flex-row items-center justify-center p-2 font-medium font-client text-base-300 bg-white border border-base-300 min-w-[12rem]
+        hover:border-base-250 hover:text-base-300
+        disabled:border-base-250 disabled:text-base-250 disabled:cursor-not-allowed disabled:opacity-60
+    "}>
+      <%= render_slot(@inner_block) %>
+
+      <.icon name="square-forth" class="ml-2 h-3 w-2 stroke-current" />
+    </button>
+    """
   end
 end

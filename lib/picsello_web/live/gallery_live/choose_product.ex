@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
-  import PicselloWeb.LiveHelpers
+  import PicselloWeb.GalleryLive.Shared, only: [button: 1]
   alias Picsello.{Galleries, GalleryProducts}
 
   @impl true
@@ -82,15 +82,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         </div>
 
         <%= for button <- @button do %>
-            <button {Map.drop(button, [:inner_block])} class="
-              flex flex-row items-center justify-center p-2 font-medium font-client text-base-300 bg-white border border-base-300 rounded-none min-w-[12rem]
-              hover:border-base-250 hover:text-base-300
-              disabled:border-base-250 disabled:text-base-250 disabled:cursor-not-allowed disabled:opacity-60
-            ">
-            <%= render_slot(button) %>
-
-            <.icon name="square-forth" class="ml-2 h-3 w-2 stroke-current" />
-          </button>
+          <.button {button}><%= render_slot(button) %></.button>
         <% end %>
       </div>
     </div>
