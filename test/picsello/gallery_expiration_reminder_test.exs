@@ -44,14 +44,6 @@ defmodule Picsello.GalleryExpirationReminderTest do
       |> Repo.all()
       |> Enum.into(%{})
 
-  def messages_by_expiration_subject(job_id),
-    do:
-      from(r in ClientMessage,
-        where: r.subject == "Gallery Expiration Reminder" and r.job_id == ^job_id
-      )
-      |> Repo.all()
-      |> Enum.count()
-
   describe "deliver_all" do
     test "delivers messages to expired galleries", %{now: now} do
       :ok =
@@ -88,7 +80,8 @@ defmodule Picsello.GalleryExpirationReminderTest do
         now
         |> GalleryExpirationReminder.deliver_all()
 
-      assert messages_by_expiration_subject(job_id) == 1
+      assert [%{job_id: ^job_id, subject: "Gallery Expiration Reminder"}] =
+               Repo.all(ClientMessage)
     end
 
     def day(), do: 24 * 60 * 60
