@@ -73,7 +73,7 @@
         <ul class="flex">
           <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
           <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
-          <li><a href="#" class="ml-10" {help_scout_output(@current_user, Application.get_env(:picsello, :help_scout_id), "help-scout-footer")}>Contact us</a></li>
+          <li><a href="#" class="ml-10" {help_scout_output(@current_user, :help_scout_id, %{})}>Contact us</a></li>
           <% end %>
         </ul>
       </nav>
