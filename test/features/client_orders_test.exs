@@ -141,6 +141,17 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> assert_path(gallery_path)
       |> refute_has(link("cart"))
+      |> click_first_photo()
+      |> click(button("Add to cart"))
+      |> click(link("cart"))
+      |> click(button("Continue"))
+      |> assert_has(css("h2", text: "Enter digital delivery information"))
+      |> assert_text("Digitals (1): $25.00")
+      |> assert_text("Total: $25.00")
+      |> fill_in(text_field("Email"), with: "brian@example.com")
+      |> fill_in(text_field("Name"), with: "Brian")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Continue"))
     end
   end
 

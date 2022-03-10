@@ -73,63 +73,74 @@
         </div>
       <% :delivery_info -> %>
         <div class="max-w-screen-xl w-full m-auto">
-          <h2 class="text-xl lg:text-3xl font-bold py-5 lg:pt-14 lg:pb-10">Enter your shipping information</h2>
+          <h2 class="text-xl lg:text-3xl font-extrabold py-5 lg:pt-14 lg:pb-10">Enter <%= if only_digitals?(@order), do: "digital delivery", else: "your shipping" %> information</h2>
 
           <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
-            <div class="border border-base-225 rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
-              <div class="flex flex-col md:flex-row">
+            <div class="border border-base-225 w-full xl:w-2/3 px-6 py-8 xl:mr-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="flex flex-col flex-1 md:mr-4">
-                  <label for="email" class="text-base md:text-sm font-bold pb-2 leading-8">Email address</label>
+                  <label for={input_id(f, :email)} class="text-base md:text-sm font-extrabold pb-2 leading-8">Email address</label>
 
-                  <%= text_input f, :email, id: "email", class: "border border-gray-100 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                  <%= email_input f, :email, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                 </div>
 
                 <div class="flex flex-col flex-1">
-                  <label for="name" class="text-base md:text-sm font-bold pb-2 leading-8">Name</label>
+                  <label for={input_id(f, :name)} class="text-base md:text-sm font-bold pb-2 leading-8">Name</label>
 
-                  <%= text_input f, :name, id: "name", class: "border border-gray-100 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                  <%= text_input f, :name, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                 </div>
-              </div>
 
-              <div class="mt-6">
-                <!-- this block should be hidden in case non physical products-->
 
-                <%= for fp <- inputs_for(f, :address) do %>
-                  <%= label_for fp, :addr1, label: "Shipping address", class: "text-base md:text-sm font-bold" %>
-
-                  <div class="pt-4">
-                    <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-
-                  <div class="pt-4">
-                    <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-
-                  <div class="flex pt-4">
-                    <div class="mr-4 w-1/2">
-                      <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                    </div>
-
-                    <div class="w-1/2">
-                      <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                    </div>
-                  </div>
-
-                  <div class="customSelect mt-4 cursor-pointer">
-                    <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 rounded focus:outline-none h-12 px-3"  %>
+                <%= if Enum.any?(@order.digitals) do %>
+                  <div class="col-span-1 md:col-span-2 font-medium">
+                    We’ll email you a link for your digital products! This link will never expire.
                   </div>
                 <% end %>
               </div>
+
+              <%= unless only_digitals?(@order) do %>
+                <div class="mt-6">
+                  <%= for fp <- inputs_for(f, :address) do %>
+                    <%= label_for fp, :addr1, label: "Shipping address", class: "text-base md:text-sm font-bold" %>
+
+                    <div class="pt-4">
+                      <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+
+                    <div class="pt-4">
+                      <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+
+                    <div class="flex pt-4">
+                      <div class="mr-4 w-1/2">
+                        <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                      </div>
+
+                      <div class="w-1/2">
+                        <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                      </div>
+                    </div>
+
+                    <div class="customSelect mt-4 cursor-pointer">
+                      <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 focus:outline-none h-12 px-3"  %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
 
-            <div class="border border-base-225 rounded-lg w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
-              <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+            <div class="border border-base-225 w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
+              <%= for {label, count, subtotal} <- summary_counts(@order), count > 0 do %>
+                <p class="capitalize text-xl">
+                  <%= label %> (<span><%= count %></span>): <span class="font-medium text-base-300"><%= subtotal %></span>
+                </p>
+              <% end %>
 
               <hr class="my-4 border-base-200">
 
-              <p class="text-xl">Total: <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+              <p class="text-2xl font-medium mb-5">Total: <span class="font-extrabold"><%= @order.subtotal_cost %></span></p>
 
-              <button type="submit" class="btn-primary w-full text-lg mt-5" disabled={!@delivery_info_changeset.valid?}>Continue</button>
+              <.button type="submit" class="w-full" disabled={!@delivery_info_changeset.valid?}>Continue</.button>
             </div>
           </.form>
         </div>

@@ -365,5 +365,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
     do: Map.get(selections, "quantity", 1)
 
+  defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
   defdelegate product_name(product), to: Cart
+  defdelegate summary_counts(order), to: Cart
 end

@@ -322,4 +322,13 @@ defmodule Picsello.Cart do
 
   def item_count(%{products: products, digitals: digitals}),
     do: Enum.count(products) + Enum.count(digitals)
+
+  def summary_counts(order) do
+    for(key <- [:products, :digitals]) do
+      collection = Map.get(order, key)
+
+      {key, Enum.count(collection),
+       Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))}
+    end
+  end
 end
