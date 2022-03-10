@@ -210,6 +210,8 @@ defmodule PicselloWeb.JobLive.Shared do
   def subheader(assigns) do
     ~H"""
     <div {testid("subheader")} class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white" {intro_hints_only("intro_hints_only")}>
+      <hr class="hidden border-gray-200 lg:block col-span-2"/>
+
       <div class="flex flex-col lg:items-center lg:flex-row">
         <%= if @package do %>
           <div class="flex justify-between min-w-0 lg:flex-row lg:justify-start">

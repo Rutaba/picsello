@@ -1,4 +1,4 @@
-<header class="bg-blue-planning-100">
+<header>
   <div class="p-6 pb-2 lg:pb-6 center-container">
     <.crumbs>
       <:crumb to={Routes.job_path(@socket, @live_action)}>
@@ -8,11 +8,9 @@
       <:crumb><%= Job.name @job %></:crumb>
     </.crumbs>
 
-    <hr class="mt-2 border-white" />
+    <.status_badge job_status={@job.job_status} class="inline-block mt-8" />
 
-    <.status_badge job_status={@job.job_status} class="inline-block mt-7" />
-
-    <h1 class="flex items-center justify-between text-3xl font-bold lg:justify-start">
+    <h1 class="flex items-center justify-between text-4xl font-bold lg:justify-start">
       <%= Job.name @job %>
 
       <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-planning-300 text-blue-planning-300">

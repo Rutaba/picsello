@@ -137,7 +137,7 @@ defmodule PicselloWeb.HomeLive.Index do
              button_label: "Resend email",
              button_class: "btn-primary",
              color: "red-sales-300",
-             class: "intro-confirmation"
+             class: "intro-confirmation border-red-sales-300"
            }},
           {leads_empty?,
            %{
@@ -146,8 +146,8 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Leads are the first step to getting started with Picsello.",
              icon: "three-people",
              button_label: "Create your first lead",
-             button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300",
+             button_class: "btn-secondary",
+             color: "",
              class: "intro-first-lead"
            }},
           {stripe_status != :charges_enabled,
@@ -157,7 +157,7 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "We use Stripe to make payment collection as seamless as possible for you.",
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
-             button_class: "btn-secondary bg-blue-planning-100",
+             button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-stripe"
            }},
@@ -168,7 +168,7 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",
              button_label: "See available resources",
-             button_class: "btn-secondary bg-blue-planning-100",
+             button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-resources"
            }}

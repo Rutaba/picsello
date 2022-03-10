@@ -194,7 +194,7 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def crumbs(assigns) do
-    assigns = Enum.into(assigns, %{class: "text-xs text-blue-planning-200"})
+    assigns = Enum.into(assigns, %{class: "text-xs text-base-250"})
 
     ~H"""
     <div class={@class}>

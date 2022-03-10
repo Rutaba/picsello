@@ -15,8 +15,8 @@ defmodule PicselloWeb.Live.Marketing do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="bg-purple-marketing-100">
-      <h1 class="px-6 py-8 text-3xl font-semibold center-container">Marketing</h1>
+    <header>
+      <h1 class="px-6 py-10 text-4xl font-semibold center-container">Marketing</h1>
     </header>
     <div class="px-6 center-container" {intro(@current_user, "intro_marketing")}>
       <div class="mx-0 mt-8 pb-32 sm:pb-0 grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-6">
