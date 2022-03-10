@@ -62,14 +62,13 @@ defmodule Picsello.Cart.Order do
     order
     |> cast(attrs, [])
     |> then(fn changeset ->
-      put_embed(
-        changeset,
-        :digitals,
-        [digital | get_field(changeset, :digitals, [])]
-        |> Enum.reverse()
-        |> Enum.uniq_by(& &1.photo_id)
-        |> Enum.reverse()
-      )
+      digitals = get_field(changeset, :digitals, [])
+
+      if Enum.any?(digitals, &(&1.photo_id == digital.photo_id)) do
+        changeset
+      else
+        put_embed(changeset, :digitals, [digital | digitals])
+      end
     end)
     |> refresh_costs()
   end
