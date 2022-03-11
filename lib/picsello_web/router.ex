@@ -147,8 +147,8 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
-
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+    live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
   scope "/gallery/:hash", PicselloWeb do
