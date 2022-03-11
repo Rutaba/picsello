@@ -180,38 +180,41 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
       <hr class="mt-8 border-gray-100">
 
-      <h2 class="mt-4 mb-2 text-xl font-bold">Package Base Price</h2>
+      <h2 class="mt-4 mb-2 text-xl font-bold">Package Price</h2>
       <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
         <label for={input_id(f, :base_price)}>
           The amount you’ve charged for your job <p>(including download credits)</p>
         </label>
         <div class="w-full sm:w-auto flex items-center justify-end mt-6">
           <span class="text-base-250 font-bold text-2xl mx-3">+</span>
-          <%= input f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg sm:mt-0 text-center", phx_hook: "PriceMask" %>
+          <%= input f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
       <div class="mt-4 flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
         <label for={input_id(f, :print_credits)}>
           How much of the creative session fee is for print credits?
         </label>
-        <%= input f, :print_credits, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 text-center", phx_hook: "PriceMask" %>
+        <div class="w-full sm:w-auto flex items-center justify-end mt-6">
+          <span class="text-base-250 font-bold text-2xl mx-4">&nbsp;</span>
+          <%= input f, :print_credits, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+        </div>
       </div>
 
-      <hr class="mt-4 border-gray-100">
+      <hr class="mt-4 hidden sm:block border-gray-100">
 
-      <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
+      <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto mt-4 sm:mt-0">
         <label for={input_id(f, :collected_price)}>
           The amount you’ve already collected
         </label>
         <div class="w-full sm:w-auto flex items-center justify-end mt-6">
           <span class="text-base-250 font-bold text-2xl mx-3">-</span>
-          <%= input f, :collected_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg sm:mt-0 text-center", phx_hook: "PriceMask" %>
+          <%= input f, :collected_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
 
-      <dl class="flex justify-between mt-4 font-bold text-lg">
+      <dl class="flex flex-col sm:flex-row justify-between mt-4 font-bold text-lg">
         <dt>Remaining balance to collect with Picsello</dt>
-        <dd class="sm:w-32 w-full text-center text-green-finances-300"><%= total_remaining_amount(@package_changeset) %></dd>
+        <dd class="sm:w-32 w-full text-center text-green-finances-300 bg-green-finances-100 bg-opacity-30 p-6 py-2 rounded-lg mt-2 sm:mt-0"><%= total_remaining_amount(@package_changeset) %></dd>
       </dl>
 
       <hr class="mt-4 border-gray-100">
