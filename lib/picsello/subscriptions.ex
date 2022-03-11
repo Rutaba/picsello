@@ -1,5 +1,6 @@
 defmodule Picsello.Subscriptions do
-  alias Picsello.{Repo, SubscriptionType, Payments}
+  @moduledoc false
+  alias Picsello.{Repo, SubscriptionType, Payments, Subscription}
 
   def monthly_subscription_type() do
     Repo.get_by!(SubscriptionType, recurring_interval: "month")
@@ -21,4 +22,10 @@ defmodule Picsello.Subscriptions do
       )
     end
   end
+
+  def next_payment?(%Subscription{} = subscription),
+    do: subscription.active && !subscription.cancel_at
+
+  def monthly?(%Subscription{recurring_interval: recurring_interval}),
+    do: recurring_interval == "month"
 end

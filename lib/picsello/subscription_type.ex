@@ -1,11 +1,12 @@
 defmodule Picsello.SubscriptionType do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
   @recurring_intervals ["month", "year"]
 
   schema "subscription_types" do
-    field :price, :integer
+    field :price, Money.Ecto.Amount.Type
     field :stripe_price_id, :string
     field :recurring_interval, :string
 

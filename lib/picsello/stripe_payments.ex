@@ -15,6 +15,9 @@ defmodule Picsello.StripePayments do
   defdelegate create_account(params, opts), to: Stripe.Account, as: :create
 
   @impl Payments
+  def create_billing_portal_session(params), do: Stripe.BillingPortal.Session.create(params)
+
+  @impl Payments
   defdelegate create_customer(params, opts), to: Stripe.Customer, as: :create
 
   @impl Payments

@@ -1,4 +1,5 @@
 defmodule Picsello.SubscriptionEvent do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.{Accounts.User, SubscriptionType}

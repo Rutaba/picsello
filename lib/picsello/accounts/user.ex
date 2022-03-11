@@ -18,7 +18,7 @@ defmodule Picsello.Accounts.User do
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
-
+    has_one(:subscription, Picsello.Subscription)
     belongs_to(:organization, Picsello.Organization)
 
     timestamps()
