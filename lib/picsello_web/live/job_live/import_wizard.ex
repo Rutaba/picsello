@@ -119,31 +119,37 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     <div {testid("import-job-card")} class="flex overflow-hidden border border-base-200 rounded-lg mt-8">
       <div class="w-4 border-r border-base-200 bg-blue-planning-300" />
 
-      <div class="flex p-6 items-start w-full">
-        <.icon name="camera-check" class="w-12 h-12 text-blue-planning-300 mt-2" />
-        <div class="flex flex-col ml-4">
-          <h1 class="font-bold text-2xl">Import a job</h1>
+      <div class="flex flex-col sm:flex-row p-6 items-start w-full">
+        <div class="flex">
+          <.icon name="camera-check" class="w-12 h-12 text-blue-planning-300 mt-2" />
+          <h1 class="font-bold sm:hidden text-2xl ml-4 mt-2">Import a job</h1>
+        </div>
+        <div class="flex flex-col sm:ml-4">
+          <h1 class="font-bold text-2xl hidden sm:block">Import a job</h1>
 
           <p class="mt-1 mr-2 max-w-xl">
             Use this option if you have shoot dates confirmed, have partial/scheduled payment, client contact info, and a form of a contract or questionnaire.
           </p>
         </div>
-        <button type="button" class="btn-primary self-center ml-auto px-8" phx-click="go-job-details" phx-target={@myself}>Next</button>
+        <button type="button" class="btn-primary self-center w-full sm:w-auto mt-6 sm:mt-0 ml-auto px-8" phx-click="go-job-details" phx-target={@myself}>Next</button>
       </div>
     </div>
     <div class="flex overflow-hidden border border-base-200 rounded-lg mt-6">
       <div class="w-4 border-r border-base-200 bg-base-200" />
 
-      <div class="flex p-6 items-start w-full">
-        <.icon name="three-people" class="w-12 h-12 text-blue-planning-300 mt-2" />
-        <div class="flex flex-col ml-4">
-          <h1 class="font-bold text-2xl">Create a lead</h1>
+      <div class="flex p-6 flex-col sm:flex-row items-start w-full">
+        <div class="flex">
+          <.icon name="three-people" class="w-12 h-12 text-blue-planning-300 mt-2" />
+          <h1 class="font-bold sm:hidden text-2xl ml-4 mt-2">Create a lead</h1>
+        </div>
+        <div class="flex flex-col sm:ml-4">
+          <h1 class="font-bold text-2xl hidden sm:block">Create a lead</h1>
 
           <p class="mt-1 mr-2 max-w-xl">
             Use this option if you have client contact info, are trying to book this person for a session/job but haven’t confirmed yet, and/or you aren’t ready to charge.
           </p>
         </div>
-        <button type="button" class="btn-secondary self-center ml-auto px-8" phx-click="create-lead" phx-target={@myself}>Next</button>
+        <button type="button" class="btn-secondary self-center w-full sm:w-auto mt-6 sm:mt-0 ml-auto px-8" phx-click="create-lead" phx-target={@myself}>Next</button>
       </div>
     </div>
     """
