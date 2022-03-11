@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     {:ok,
      socket
      |> assign(:upload_bucket, @bucket)
+     |> assign(:toggle, "show")
      |> assign(:overall_progress, 0)
      |> assign(:estimate, "n/a")
      |> assign(:uploaded_files, 0)
@@ -36,7 +37,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
     gallery = Galleries.load_watermark_in_gallery(gallery)
-
+    IO.puts("\n\n########## DEBUG ##########\n socket: #{inspect(socket, pretty: true)} \n########## DEBUG ##########\n\n")
     socket =
       Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)

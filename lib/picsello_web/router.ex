@@ -137,18 +137,19 @@ defmodule PicselloWeb.Router do
       live "/inbox", InboxLive.Index, :index, as: :inbox
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
-      live "/photo", AlbumLive.Photos, :show
-      live "/photos", AlbumLive.Overview, :show
+      # live "/photo", AlbumLive.Photos, :show
+      # live "/photos", AlbumLive.Overview, :show
 
-#      live "/album", AlbumLive.Photos, :show
-      live "/albums", AlbumLive.Albums, :show
+      # live "/album", AlbumLive.Photos, :show
+      # live "/albums", AlbumLive.Albums, :show
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
 
       live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
         as: :preview
 
-      live "/galleries/:id", GalleryLive.Show, :show
+      live "/galleries/:id", GalleryLive.Photos, :show
+#      live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id/settings", GalleryLive.Settings, :settings

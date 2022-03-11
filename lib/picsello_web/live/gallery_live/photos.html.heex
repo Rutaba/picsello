@@ -1,0 +1,83 @@
+<div class="root flex">
+<%= live_component PicselloWeb.GalleryLive.SideNavComponent, id: @gallery.id, gallery: @gallery %>
+  <div class="w-full h-full bg-gray-100">
+    <div class= "pr-20 pl-10 pb-10 pt-20">
+      <div class="flex flex-col justify-between md:flex-row">
+        <h1 class="flex items-center text-4xl font-bold lg:justify-start">
+            Photos
+        </h1>
+
+        <button type="button" phx-click="open_upload_popup" class="px-4 py-2 flex items-center border border-blue-planning-300 bg-white rounded-lg shadow-lg hover:opacity-75">
+          <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+        Add Photos
+        </button>
+      </div>
+<%= #if @gallery.total_count <= 0 do %>
+    <div class="text-blue-planning-300 mt-14 mb-14 text-center justify-between text-2xl font-bold">
+        Oops, there's nothing here - upload photos now to get started!
+    </div>
+    <div class="dragDrop__wrapper overflow-hidden h-96">
+        <form id="dragDrop-form" phx-submit="save" phx-change="start">
+            <div class="dragDrop"
+                 id="dropzone"
+                 phx-hook="DragDrop"
+                 phx-drop-target={@uploads.photo.ref}
+            >
+            <label class="w-full h-full flex flex-col items-center justify-center gap-8 cursor-pointer">
+                <div class="mx-auto max-w-xs">
+                    <img src="/images/drag-drop-img.png" width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
+                    <div class="dragDrop__content">
+                        <p class="text-center">
+                            <span class="font-bold">Drop images or </span>
+                            <span class="font-bold primary cursor-pointer">Browse</span>
+                                <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                        </p>
+                        <p class="text-center gray">Supports JPEG or PNG</p>
+                    </div>
+                </div>
+           </label>
+            </div>
+        </form>
+    </div>
+    
+<%= #else %>
+    <div class="gallery__container pb-32" id="gallery">
+      <%= if @live_action in [:edit] do %>
+        <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
+          id: @gallery.id,
+          title: @page_title,
+          action: @live_action,
+          gallery: @gallery,
+          return_to: Routes.gallery_photos_path(@socket, :show, @gallery) %>
+      <% end %>
+
+      <div
+        phx-hook="MasonryGrid"
+        phx-update={@update_mode}
+        id="muuri-grid"
+        class="muuri grid"
+        data-page={@page}
+        data-total={@gallery.total_count}
+        data-favorites-count={@favorites_count}
+        data-is-favorites-shown={ "#{@favorites_filter}" }
+        data-is-sortable="true"
+        data-has-more-photos={ "#{@has_more_photos}" }
+        data-photo-width="300">
+        <%= for photo <- @photos do %>
+          <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+            id: photo.id,
+            photo: photo,
+            photo_width: 300,
+            is_likable: false,
+            is_removable: true,
+            is_removed: false,
+            is_gallery_category_page: false%>
+        <%= end %>
+      </div>
+
+      <div style="display: none"><div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates} ></div></div>
+    </div>
+    <%= #end %>
+    </div>
+  </div>
+</div>
