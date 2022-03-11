@@ -2,6 +2,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
+  alias Picsello.Payments
 
   require Logger
 
@@ -68,7 +69,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
       ) do
     refresh_url = socket |> Routes.user_settings_url(:stripe_refresh)
 
-    case payments().link(current_user, refresh_url: refresh_url, return_url: return_url) do
+    case Payments.link(current_user, refresh_url: refresh_url, return_url: return_url) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
 
@@ -77,6 +78,4 @@ defmodule PicselloWeb.StripeOnboardingComponent do
         socket |> put_flash(:error, "Couldn't link stripe account.") |> noreply()
     end
   end
-
-  defp payments, do: Application.get_env(:picsello, :payments)
 end

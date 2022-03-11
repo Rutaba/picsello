@@ -184,13 +184,16 @@ defmodule Picsello.FeatureCase do
     end
 
     def assert_url_contains(session, url_fragment) do
-      retry(fn ->
-        if session |> current_url |> String.contains?(url_fragment),
-          do: {:ok, nil},
-          else: {:error, nil}
-      end)
+      retry(
+        fn ->
+          if session |> current_url |> String.contains?(url_fragment),
+            do: {:ok, nil},
+            else: {:error, nil}
+        end,
+        :erlang.monotonic_time(:milli_seconds) + 500
+      )
 
-      url = session |> current_url()
+      url = current_url(session)
 
       assert String.contains?(url, url_fragment), "expected #{url} to contain #{url_fragment}"
 

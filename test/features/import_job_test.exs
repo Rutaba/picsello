@@ -289,10 +289,10 @@ defmodule Picsello.ImportJobTest do
 
     test_pid = self()
 
-    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, products, opts ->
+    Mox.stub(Picsello.MockPayments, :checkout_link, fn params, opts ->
       send(
         test_pid,
-        {:checkout_linked, opts |> Enum.into(%{products: products})}
+        {:checkout_linked, opts |> Enum.into(params)}
       )
 
       {:ok, "https://example.com/stripe-checkout"}
@@ -324,7 +324,7 @@ defmodule Picsello.ImportJobTest do
                     %{
                       success_url: stripe_success_url,
                       metadata: %{"paying_for" => ^payment_id},
-                      products: [
+                      line_items: [
                         %{
                           price_data: %{
                             product_data: %{name: "Elizabeth Taylor Wedding Payment 1"},
