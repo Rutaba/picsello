@@ -412,7 +412,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           <% end %>
           <%= if PaymentSchedules.has_payments?(@job) do %>
-            <.proposal_details_item title="Invoice" icon="document" status="Completed" date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
+            <.proposal_details_item title="Invoice" icon="document" status="Completed" pending_status={if Job.imported?(@job), do: nil, else: "Pending"} date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
           <% end %>
         </div>
       </div>
@@ -429,7 +429,7 @@ defmodule PicselloWeb.JobLive.Shared do
     assigns = assigns |> Enum.into(%{action: nil, date: nil, pending_status: "Pending"})
 
     ~H"""
-    <a class={classes("flex items-center p-2 rounded", %{"cursor-pointer hover:bg-blue-planning-100" => @action != nil})} href="#" title={@title} {if @action, do: %{phx_click: "open-proposal", phx_value_action: @action}, else: %{}}>
+    <a class={classes("flex items-center p-2 rounded", %{"cursor-pointer hover:bg-blue-planning-100" => @action != nil, "cursor-default" => !@action})} href="#" title={@title} {if @action, do: %{phx_click: "open-proposal", phx_value_action: @action}, else: %{}}>
       <.circle radius="8" class="flex-shrink-0">
         <.icon name={@icon} width="14" height="14" />
       </.circle>

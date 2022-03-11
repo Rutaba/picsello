@@ -79,7 +79,6 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Your job was imported on")
     |> assert_inner_text(css("a[title='Standard Contract']"), "External")
     |> assert_inner_text(css("a[title='Questionnaire']"), "External")
-    |> assert_inner_text(css("a[title='Invoice']"), "Pending")
     |> click(css("a[title='Invoice']"))
     |> assert_has(definition("Previously collected", text: "$200.00"))
     |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
