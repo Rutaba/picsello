@@ -45,7 +45,7 @@
   <div class="px-6 pb-6 center-container">
     <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
 
-    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
       <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card" hint_content={if @leads_empty? do "Create your first lead! We’ll help you log your potential client’s contact info and guide you through the process of sending them a proposal. Once they accept, your lead will become a job!" end}>
         <%= if @leads_empty? do %>
         <p class="my-2">
@@ -54,7 +54,7 @@
 
         <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
         <% else %>
-        <ul class="my-2 grid grid-flow-col auto-cols-fr gap-2">
+        <ul class="grid grid-flow-col gap-2 my-2 auto-cols-fr">
         <%= for {lead_state, number} <- @lead_stats do %>
           <li class="text-center"><span class="font-bold"><%= number %></span> <%= lead_state %> <%= ngettext "lead", "leads", number %></li>
         <% end %>
@@ -87,7 +87,7 @@
 
     <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
 
-    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
       <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">
         <p class="my-2">
           <%= if @inbox_count > 0 do %>
@@ -108,7 +108,7 @@
 
   <div id="float-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
     <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
-      <.icon name="close-x" class="w-6 h-6 stroke-current rotate-45 stroke-2" />
+      <.icon name="close-x" class="w-6 h-6 rotate-45 stroke-current stroke-2" />
     </div>
     <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
       <nav class="flex flex-col w-64 m-8 overflow-hidden bg-white rounded-lg shadow-md">

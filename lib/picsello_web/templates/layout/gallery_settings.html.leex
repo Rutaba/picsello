@@ -1,0 +1,81 @@
+<main role="main" class="min-h-screen client-app">
+  <%= flash(@flash) %>
+  <div class="flex flex-col">
+    <div class="flex flex-row">
+      <div class="w-1/3">
+        <div class="mx-4">
+          <div class="flex flex-col p-6 mx-8">
+            <div class="flex items-center justify-between w-40" style="font-family: sans-serif">
+              <div class="circleBtn">
+                <ul>
+                  <li>
+                    <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+                    <.icon name="back" class="stroke-current w-14 h-14 text-blue-planning-300" />
+                    <span>Back to the job</span>
+                    <% end %>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <span class="mx-2 mt-6 text-3xl font-bold" style="font-family: sans-serif"><%= @gallery.name %></span>
+            <button class="mx-2 mt-2 mb-8 navBar__btn w-max">
+            <.icon name="pencil" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
+            <span class="pl-3">Edit gallery name</span>
+            </button>
+            <div class="flex">
+              <aside class="w-full" aria-label="Sidebar" style="font-family: sans-serif">
+                <div class="px-3 py-4 overflow-y-auto bg-gray-100 rounded-lg">
+                  <ul class="space-y-2">
+                    <li class="bg-gray-200 rounded-lg">
+                      <a href="#" phx-click="select_overview" class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <img class="w-4 h-4" src="/images/globe-icon.png"/>
+                      <span class="ml-3 font-bold">Overview</span>
+                      </a>
+                    </li>
+                    <li class="bg-gray-200 rounded-lg">
+                      <a href="#" class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <.icon name="three-people" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
+                      <span class="ml-3 font-bold">Photos</span>
+                      </a>
+                    </li>
+                    <li class="bg-gray-200 rounded-lg">
+                      <a href="#" phx-click="select_album" class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <.icon name="gallery" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
+                      <span class="ml-3 font-bold">Albums</span>
+                      </a>
+                    </li>
+                    <li class="bg-gray-200 rounded-lg">
+                      <a href="#" class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <img class="w-4 h-4" src="/images/shop-icon.png"/>
+                      <span class="ml-3 font-bold">Product previews</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </aside>
+              <div class="inline-block w-6 mt-5 overflow-hidden">
+                <div class="h-16 origin-top-left transform rotate-45 bg-gray-100 "></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-2/3 bg-base-200">
+        <div class="mx-8 mt-10">
+          <%= @inner_content %>
+        </div>
+      </div>
+    </div>
+    <div class="relative opacity-100 bottomBar">
+      <div class="flex items-center justify-end gallery__container">
+        <div class="flex">
+          <button class="mr-3">
+          <span class="pl-3 mr-3 text-white">Preview gallery</span>
+          </button>
+          <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
+</main>

@@ -163,6 +163,15 @@
   @apply px-6 pt-4 h-80 w-80 bg-base-100 rounded-xl mt-14 pb-9 text-base-350;
 }
 
+/* border-2 border-dashed rounded-lg */
+.albumBlockButton {
+  @apply  px-6 pt-4 border-2 border-dashed rounded-lg h-full w-full bg-base-100 mt-14 pb-9 text-base-350 border-blue-planning-300;
+}
+
+.albumBlock {
+  @apply  px-3 pt-4 border-2 rounded-t-lg bg-base-100 mt-14 pb-3 text-base-350;
+}
+
 .reuploadingBlock {
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
   @apply bg-base-100

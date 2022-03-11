@@ -55,7 +55,7 @@
     <% end %>
   </div>
 <% else %>
-<ul class="p-6 center-container grid gap-5 lg:grid-cols-3 sm:grid-cols-2">
+<ul class="grid gap-5 p-6 center-container lg:grid-cols-3 sm:grid-cols-2">
 <%= for job <- @jobs do %>
   <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
     <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block group", title: Job.name(job) do %>
