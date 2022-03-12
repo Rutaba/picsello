@@ -66,6 +66,12 @@
     transition-all
     duration-300;
 }
+#dragDrop-form-1, .dragDrop {
+    @apply h-full
+    w-full
+    transition-all
+    duration-300;
+}
 
 .dragDrop.active {
     @apply bg-blue-planning-100;

@@ -6,20 +6,41 @@
         <h1 class="flex items-center text-4xl font-bold lg:justify-start">
             Photos
         </h1>
-
-        <button type="button" phx-click="open_upload_popup" class="px-4 py-2 flex items-center border border-blue-planning-300 bg-white rounded-lg shadow-lg hover:opacity-75">
+<%#
+        <button type="button" class="px-4 py-2 flex items-center border border-blue-planning-300 bg-white rounded-lg shadow-lg hover:opacity-75">
           <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
-        Add Photos
-        </button>
+          Add photos %>
+        <form id="dragDrop-form" phx-submit="save" phx-change="start">
+            <div class="dragDrop"
+                 id="dropzone"
+                 phx-hook="DragDrop"
+                 phx-drop-target={@uploads.photo.ref}
+            >
+            <label class="flex flex-col items-center float-right justify-center cursor-pointer">
+                <div class="mx-auto max-w-xs">
+                    <div class="dragDrop__content">
+                        <p class="text-center">
+                        <div class="px-4 py-2 flex items-center border border-blue-planning-300 bg-white rounded-lg shadow-lg hover:opacity-75">
+                        <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+                        Add photos
+                        </div>
+                          <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                        </p>
+                    </div>
+                </div>
+           </label>
+            </div>
+        </form>
+        <%# </button> %>
       </div>
 <%= #if @gallery.total_count <= 0 do %>
     <div class="text-blue-planning-300 mt-14 mb-14 text-center justify-between text-2xl font-bold">
         Oops, there's nothing here - upload photos now to get started!
     </div>
     <div class="dragDrop__wrapper overflow-hidden h-96">
-        <form id="dragDrop-form" phx-submit="save" phx-change="start">
+        <form id="dragDrop-form-1" phx-submit="save" phx-change="start">
             <div class="dragDrop"
-                 id="dropzone"
+                 id="dropzone-1"
                  phx-hook="DragDrop"
                  phx-drop-target={@uploads.photo.ref}
             >
@@ -39,7 +60,7 @@
             </div>
         </form>
     </div>
-    
+
 <%= #else %>
     <div class="gallery__container pb-32" id="gallery">
       <%= if @live_action in [:edit] do %>

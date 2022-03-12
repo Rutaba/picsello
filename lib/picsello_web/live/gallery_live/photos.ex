@@ -88,28 +88,29 @@ defmodule PicselloWeb.GalleryLive.Photos do
   # upload start
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: %{id: id}}} = socket) do
-#    gallery = Galleries.get_gallery!(id)
-#    if connected?(socket) do
-#      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-#    end
-#
-#    socket =
-#      Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
-#        %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-#        _, socket -> socket
-#      end)
-#
+   gallery = Galleries.get_gallery!(id)
+   gallery = Galleries.load_watermark_in_gallery(gallery)
+  #  if connected?(socket) do
+  #    PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+  #  end
+
+   socket =
+     Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
+       %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+       _, socket -> socket
+     end)
+
     socket
-#    |> assign(
-#         :progress,
-#         Enum.reduce(
-#           socket.assigns.uploads.photo.entries,
-#           socket.assigns.progress,
-#           fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
-#         )
-#       )
-#    |> assign(:update_mode, "prepend")
-#    |> assign(:gallery, gallery)
+   |> assign(
+        :progress,
+        Enum.reduce(
+          socket.assigns.uploads.photo.entries,
+          socket.assigns.progress,
+          fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
+        )
+      )
+   |> assign(:update_mode, "prepend")
+   |> assign(:gallery, gallery)
     |> noreply()
   end
 
@@ -145,7 +146,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
       ) do
     if entry.done? do
       {:ok, photo} = create_photo(gallery, entry)
-
+      IO.inspect(photo)
+      IO.inspect(gallery.watermark)
       start_photo_processing(photo, gallery.watermark)
 
       socket
@@ -218,6 +220,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     ProcessingManager.start(photo, watermark)
   end
   # upload end
+
   # @impl true
   # def handle_event("start", _params, socket) do
   #   socket.assigns.uploads.cover_photo
@@ -549,19 +552,19 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
-  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
-    if entry.done? do
-      CoverPhoto.original_path(gallery.id, entry.uuid)
-      |> ProcessingManager.process_cover_photo()
+  # def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
+  #   if entry.done? do
+  #     CoverPhoto.original_path(gallery.id, entry.uuid)
+  #     |> ProcessingManager.process_cover_photo()
 
-      socket
-      |> assign(:cover_photo_processing, true)
-      |> noreply()
-    else
-      socket
-      |> noreply
-    end
-  end
+  #     socket
+  #     |> assign(:cover_photo_processing, true)
+  #     |> noreply()
+  #   else
+  #     socket
+  #     |> noreply
+  #   end
+  # end
 
   def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = CoverPhoto.original_path(gallery.id, entry.uuid)
