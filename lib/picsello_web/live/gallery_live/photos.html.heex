@@ -52,7 +52,98 @@
           </form>
         <%# </button> %>
       </div>
-<%= #if @gallery.total_count <= 0 do %>
+
+
+
+    <div class="items-center rounded-lg bg-orange-inbox-100 cursor-pointer mt-4 shadow-lg flex" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
+      <div class="flex justify-center pl-5 pb-1">
+        <svg class="w-4 h-4 stroke-2" style="">
+        <use href="/images/icons.svg#warning-orange"></use>
+      </svg>
+      </div>
+      <div class="flex-grow p-4">2 photos failed to upload. <button class="font-bold primary text-blue-planning-300 cursor-pointer">Click here</button> to resolve errors.</div>
+    </div>
+
+      
+      <div class="grid pt-8 pb-6 center-container lg:grid-cols-2">
+        <div class="flex flex-col justify-start md:flex-row gap-x-5">
+
+          <div class="rounded-md bg-white font-bold h-8 cursor-pointer">
+            <div id="select" class="relative"phx-hook="ToggleContent">
+              <div class="flex items-center text-sm px-2 w-24 h-8 overflow-hidden text-ellipsis whitespace-nowrap rounded-md hover:text-blue-planning-300 transition duration-300 ease-in-out cursor-pointer">
+                  <div class="mx-3">
+                    <span>Select</span>
+                  </div>
+                  <svg aria-hidden="true" focusable="false" data-prefix="fas" class="w-3 h-3 ml-auto mr-1" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                    <path fill="currentColor" d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
+                  </svg>
+              </div>
+              <ul class="toggle-content absolute mt-2 rounded-md z-30 w-24 hidden bg-white">
+                  <li class="relative">
+                    <button href="#!" class="flex items-center text-xs w-24 py-4 pl-4 pr-6 h-6 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded-md hover:bg-blue-planning-100 transition duration-300 ease-in-out">All</button>
+                  </li>
+                  <li class="relative">
+                    <button href="#!" class="flex items-center text-xs w-24 py-4 pl-4 pr-6 h-6 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded-md hover:bg-blue-planning-100 transition duration-300 ease-in-out">Favorite</button>
+                  </li>
+                  <li class="relative">
+                    <button href="#!" class="flex items-center text-xs w-24 py-4 pl-4 pr-6 h-6 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded-md hover:bg-blue-planning-100 transition duration-300 ease-in-out">None</button>
+                  </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="rounded-md bg-white font-bold h-8 cursor-pointer">
+            <div id="actions" class="relative"phx-hook="ToggleContent">
+              <div class="flex items-center text-sm px-2 w-36 h-8 overflow-hidden text-ellipsis whitespace-nowrap rounded-md hover:text-blue-planning-300 transition duration-300 ease-in-out cursor-pointer">
+                  <div class="mx-3">
+                    <span>Actions</span>
+                  </div>
+                  <svg aria-hidden="true" focusable="false" data-prefix="fas" class="w-3 h-3 ml-auto mr-1" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                    <path fill="currentColor" d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
+                  </svg>
+              </div>
+              <ul class="toggle-content absolute mt-2 rounded-md z-30 w-36 hidden bg-white">
+                  <li class="relative">
+                    <button href="#!" class="flex items-center text-xs w-36 py-4 pl-4 pr-6 h-6 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded-md hover:bg-blue-planning-100 transition duration-300 ease-in-out">Move to album 1</button>
+                  </li>
+                  <li class="relative">
+                    <button href="#!" class="flex items-center text-xs w-36 py-4 pl-4 pr-6 h-6 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded-md hover:bg-blue-planning-100 transition duration-300 ease-in-out">Move to album 2</button>
+                  </li>
+                  <li class="flex items-center bg-gray-300 rounded-b-md">
+                    <button href="#!" class="flex w-32 items-center text-xs py-4 pl-4 h-6 overflow-hidden text-gray-700 text-ellipsis transition duration-300 ease-in-out"> 
+                    Delete
+                    </button>
+                    <.icon name="trash" class="flex w-3 h-3 mr-3 text-red-400 hover:opacity-75" />
+                    
+                  </li>
+              </ul>
+            </div>
+          </div>     
+        </div>
+
+        <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end">
+            <label class="flex items-center float-right cursor-pointer">
+                <div class="text-sm lg:text-lg">Show favorites only
+                </div>
+                <div class="relative ml-3">
+                    <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
+                    <div class="block bg-gray-200 w-12 h-6 rounded-full border border-blue-planning-300">
+                    </div>
+                    <div class="dot absolute left-1 top-1 bg-blue-planning-300 w-4 h-4 rounded-full transition">
+                    </div>
+                </div>
+            </label>
+        </div>
+      </div>
+
+   
+
+
+
+
+
+
+<%= if @gallery.total_count <= 0 do %>
     <div class="text-blue-planning-300 mt-14 mb-14 text-center justify-between text-2xl font-bold">
         Oops, there's nothing here - upload photos now to get started!
     </div>
@@ -80,7 +171,7 @@
         </form>
     </div>
 
-<%= #else %>
+<%= else %>
     <div class="gallery__container pb-32" id="gallery">
       <%= if @live_action in [:edit] do %>
         <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
@@ -117,7 +208,7 @@
 
       <div style="display: none"><div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates} ></div></div>
     </div>
-    <%= #end %>
+    <%= end %>
     </div>
   </div>
 </div>
