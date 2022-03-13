@@ -276,8 +276,10 @@
 }
 
 .galleryItem:hover .removeBtn,
-.galleryItem:hover .likeBtn {
-  @apply opacity-100;
+.galleryItem:hover .likeBtn,
+.galleryItem:hover .viewBtn
+ {
+    @apply opacity-100;
 }
 
 .galleryItem:hover img {
@@ -312,6 +314,13 @@
 
 .removeBtn {
   @apply z-10 opacity-0 left-4 bottom-4;
+}
+
+.viewBtn{
+    left: 1rem;
+    top: 1rem;
+    z-index: 10;
+    opacity: 0;
 }
 
 .likeBtn {

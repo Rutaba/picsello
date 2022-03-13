@@ -231,8 +231,30 @@ defmodule PicselloWeb.GalleryLive.Photos do
   # end
 
   @impl true
-  def handle_event("click", _, socket) do
+  def handle_event(
+        "view",
+        %{"preview_photo_id" => photo_id},
+        %{
+          assigns: %{
+            gallery: gallery,
+            favorites_filter: favorites_filter
+          }
+        } = socket
+      ) do
+    photo_ids =
+      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
+
     socket
+    |> open_modal(
+         PicselloWeb.GalleryLive.ViewPhoto,
+         %{
+           gallery: gallery,
+           photo_id: photo_id,
+           photo_ids:
+             CLL.init(photo_ids)
+             |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
+         }
+       )
     |> noreply
   end
 

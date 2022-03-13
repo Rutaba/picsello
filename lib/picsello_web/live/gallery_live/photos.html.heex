@@ -1,5 +1,5 @@
 <div class="root flex">
-<%= live_component PicselloWeb.GalleryLive.SideNavComponent, id: @gallery.id, gallery: @gallery %> 
+<%= live_component PicselloWeb.GalleryLive.SideNavComponent, id: @gallery.id, gallery: @gallery %>
   <div class="w-full h-full bg-gray-100">
 
     <div class="fixed right-20 top-4 z-20">
@@ -64,7 +64,6 @@
       <div class="flex-grow p-4">2 photos failed to upload. <button class="font-bold primary text-blue-planning-300 cursor-pointer">Click here</button> to resolve errors.</div>
     </div>
 
-      
       <div class="grid pt-8 center-container lg:grid-cols-2">
         <div class="flex flex-col justify-start md:flex-row gap-x-5">
 
@@ -113,15 +112,15 @@
                     <button href="#!" class="flex items-center w-64 py-4 pl-2 pr-6 h-6 overflow-hidden text-gray-700 text-ellipsis whitespace-nowrap rounded-md hover:bg-blue-planning-100 transition duration-300 ease-in-out">Move to album 2</button>
                   </li>
                   <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
-                    <button href="#!" class="flex w-64 items-center py-4 pl-2 h-6 overflow-hidden text-gray-700 text-ellipsis transition duration-300 ease-in-out"> 
+                    <button href="#!" class="flex w-64 items-center py-4 pl-2 h-6 overflow-hidden text-gray-700 text-ellipsis transition duration-300 ease-in-out">
                     Delete
                     </button>
                     <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
-                    
+
                   </li>
               </ul>
             </div>
-          </div>     
+          </div>
         </div>
 
         <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end">
@@ -138,9 +137,6 @@
             </label>
         </div>
       </div>
-
-   
-
 
 <%= if @gallery.total_count <= 0 do %>
     <div class="text-blue-planning-300 mt-14 mb-14 text-center justify-between text-2xl font-bold">
@@ -181,7 +177,7 @@
           return_to: Routes.gallery_photos_path(@socket, :show, @gallery) %>
       <% end %>
 
-      <div
+ <div
         phx-hook="MasonryGrid"
         phx-update={@update_mode}
         id="muuri-grid"
@@ -193,20 +189,21 @@
         data-is-sortable="true"
         data-has-more-photos={ "#{@has_more_photos}" }
         data-photo-width="300">
-        <%= for photo <- @photos do %>
-          <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+        <%= for photo <- @photos do%>
+        <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
             id: photo.id,
             photo: photo,
             photo_width: 300,
             is_likable: false,
             is_removable: true,
             is_removed: false,
+            is_viewable: true,
             is_gallery_category_page: false%>
-        <%= end %>
+            <%= end %>
       </div>
 
       <div style="display: none"><div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates} ></div></div>
-    </div>
+</div>
     <%= end %>
     </div>
   </div>
