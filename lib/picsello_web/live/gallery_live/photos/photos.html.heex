@@ -185,7 +185,7 @@
         data-has-more-photos={ "#{@has_more_photos}" }
         data-photo-width="300">
         <%= for photo <- @photos do%>
-        <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+        <%= live_component PicselloWeb.GalleryLive.Photos.PhotoComponent,
             id: photo.id,
             photo: photo,
             photo_width: 300,
@@ -193,7 +193,8 @@
             is_removable: true,
             is_removed: false,
             is_viewable: true,
-            is_gallery_category_page: true
+            is_previewable: true,
+            is_gallery_category_page: false
         %>
         <%= end %>
 

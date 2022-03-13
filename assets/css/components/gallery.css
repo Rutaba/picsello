@@ -281,6 +281,7 @@
 
 .galleryItem:hover .removeBtn,
 .galleryItem:hover .likeBtn,
+.galleryItem:hover .meatballs,
 .galleryItem:hover .viewBtn
  {
     @apply opacity-100;
@@ -322,6 +323,13 @@
 
 .viewBtn{
     left: 1rem;
+    top: 1rem;
+    z-index: 10;
+    opacity: 0;
+}
+
+.meatballs{
+    right: 1rem;
     top: 1rem;
     z-index: 10;
     opacity: 0;
