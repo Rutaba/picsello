@@ -4,10 +4,11 @@ defmodule PicselloWeb.GalleryLive.SideNavComponent do
   alias Picsello.Galleries
 
   @impl true
-  def update(%{id: id, gallery: gallery}, socket) do
+  def update(%{id: id, gallery: gallery, total_progress: total_progress}, socket) do
     {:ok,
      socket
      |> assign(:id, id)
+     |> assign(:total_progress, total_progress || 0)
      |> assign(:gallery, gallery)
      |> assign_gallery_changeset()}
   end

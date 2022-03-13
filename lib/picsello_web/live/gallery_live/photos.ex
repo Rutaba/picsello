@@ -42,6 +42,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:upload_bucket, @bucket)
       |> assign(:overall_progress, 0)
       |> assign(:estimate, "n/a")
+      |> assign(:upload_toast, "hidden")
+      |> assign(:error_toast, "hidden")
       |> assign(:uploaded_files, 0)
       |> assign(:progress, %GalleryUploadProgress{})
       |> assign(:update_mode, "prepend")
@@ -52,13 +54,14 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
+    IO.inspect("reached 1")
     gallery = Galleries.get_gallery!(id)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
-    socket
+    a=socket
     |> assign(
          favorites_count: Galleries.gallery_favorites_count(gallery),
          favorites_filter: false,
@@ -81,26 +84,30 @@ defmodule PicselloWeb.GalleryLive.Photos do
       socket ->
         socket
     end)
-    |> noreply()
+    a |> noreply()
   end
 
 
   # upload start
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: %{id: id}}} = socket) do
+    IO.inspect("reached 2")
    gallery = Galleries.get_gallery!(id)
    gallery = Galleries.load_watermark_in_gallery(gallery)
   #  if connected?(socket) do
   #    PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
   #  end
 
-   socket =
-     Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
-       %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-       _, socket -> socket
-     end)
+  IO.inspect(socket.assigns.uploads)
+  #  socket =
+  #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
+  #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+  #      _, socket -> socket
+  #    end)
 
-    socket
+
+
+  socket
    |> assign(
         :progress,
         Enum.reduce(
@@ -138,6 +145,20 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
+  @impl true
+  def handle_event("upload_toast", _, socket) do
+    socket
+    |> assign(:upload_toast, "hidden")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("error_toast", _, socket) do
+    socket
+    |> assign(:error_toast, "hidden")
+    |> noreply()
+  end
+
   def handle_progress(
         :photo,
         entry,
@@ -146,11 +167,12 @@ defmodule PicselloWeb.GalleryLive.Photos do
       ) do
     if entry.done? do
       {:ok, photo} = create_photo(gallery, entry)
-      IO.inspect(photo)
-      IO.inspect(gallery.watermark)
+      IO.inspect("reached 3")
+
       start_photo_processing(photo, gallery.watermark)
 
       socket
+      |> assign(:upload_toast, "")
       |> assign(uploaded_files: uploaded_files + 1)
       |> assign(
            progress:
@@ -194,7 +216,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
+  defp assign_overall_progress(%{assigns: %{progress: progress, gallery: gallery}} = socket) do
     total_progress = GalleryUploadProgress.total_progress(progress)
     estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
 
@@ -570,7 +592,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     Galleries.normalize_gallery_photo_positions(gallery.id)
 
     socket
-    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
+    # |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
     |> noreply()
   end
 
