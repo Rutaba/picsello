@@ -220,9 +220,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
     total_progress = GalleryUploadProgress.total_progress(progress)
     estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
 
-    if total_progress == 100 do
-      send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
-    end
+    # if total_progress == 100 do
+    #   send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
+    # end
 
     socket
     |> assign(:overall_progress, total_progress)
@@ -251,6 +251,12 @@ defmodule PicselloWeb.GalleryLive.Photos do
   #        _ -> {:noreply, socket}
   #      end
   # end
+
+  @impl true
+  def handle_event("click", _, socket) do
+    socket
+    |> noreply
+  end
 
   @impl true
   def handle_event(
