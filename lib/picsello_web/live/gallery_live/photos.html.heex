@@ -2,7 +2,7 @@
 <%= live_component PicselloWeb.GalleryLive.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress) %>
   <div class="w-full h-full bg-gray-100">
     <div>
-    <div phx-click="toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
+    <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
         <div class="font-bold rounded-lg cursor-pointer flex bg-white shadow-lg">
           <div class="flex items-center justify-center pl-2 rounded-lg bg-white">
             <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
@@ -109,7 +109,6 @@
                     Delete
                     </button>
                     <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
-
                   </li>
               </ul>
             </div>
@@ -122,10 +121,13 @@
                 </div>
                 <div class="relative ml-3">
                     <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
-                    <div class="block bg-gray-200 w-12 h-6 rounded-full border border-blue-planning-300">
-                    </div>
-                    <div class="dot absolute left-1 top-1 bg-blue-planning-300 w-4 h-4 rounded-full transition">
-                    </div>
+                    <%= if @favorites_filter do %>
+                    <div class="block bg-blue-planning-100 w-12 h-6 rounded-full border border-blue-planning-300"></div>
+                    <div class="dot absolute right-1 top-1 bg-blue-planning-300 w-4 h-4 rounded-full transition"></div>
+                    <% else %>
+                        <div class="block bg-gray-200 w-12 h-6 rounded-full border border-blue-planning-300"></div>
+                        <div class="dot absolute left-1 top-1 bg-blue-planning-300 w-4 h-4 rounded-full transition"></div>
+                    <% end %>
                 </div>
             </label>
         </div>
@@ -187,13 +189,14 @@
             id: photo.id,
             photo: photo,
             photo_width: 300,
-            is_likable: false,
+            is_likable: true,
             is_removable: true,
             is_removed: false,
             is_viewable: true,
-            is_gallery_category_page: false 
+            is_gallery_category_page: true
         %>
         <%= end %>
+
       </div>
 
       <div style="display: none"><div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates} ></div></div>
