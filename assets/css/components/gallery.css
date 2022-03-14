@@ -335,6 +335,12 @@
     opacity: 0;
 }
 
+.meatballsdropdown{
+    right: 1rem;
+    top: 3rem;
+    z-index: 10;
+}
+
 .likeBtn {
   @apply z-10 right-4 bottom-3;
 }

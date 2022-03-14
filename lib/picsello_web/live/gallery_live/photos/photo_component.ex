@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
         do: :increase_favorites_count,
         else: :reduce_favorites_count
 
-    send(self(), favorites_update)
+#    send(self(), favorites_update)
 
     socket |> noreply()
   end
