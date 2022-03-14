@@ -36,7 +36,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def mount(_params, _session, socket) do
-#     check it assign(:photo_updates, "false")
     {
       :ok,
       socket
@@ -48,6 +47,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:uploaded_files, 0)
       |> assign(:progress, %GalleryUploadProgress{})
       |> assign(:photo_updates, "false")
+      |> assign(:update_mode, "append")
       |> allow_upload(:photo, @upload_options)
     }
   end
@@ -68,8 +68,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
          gallery: gallery,
          page: 0,
          page_title: page_title(socket.assigns.live_action),
-         products: Galleries.products(gallery),
-         update_mode: "append"
+         products: Galleries.products(gallery)
        )
     |> assign_photos()
     |> then(fn
@@ -242,15 +241,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     ProcessingManager.start(photo, watermark)
   end
   # upload end
-
-  # @impl true
-  # def handle_event("start", _params, socket) do
-  #   socket.assigns.uploads.cover_photo
-  #   |> case do
-  #        %{valid?: false, ref: ref} -> {:noreply, cancel_upload(socket, :cover_photo, ref)}
-  #        _ -> {:noreply, socket}
-  #      end
-  # end
 
   @impl true
   def handle_event("upload-failed", _, socket) do
@@ -609,11 +599,10 @@ defmodule PicselloWeb.GalleryLive.Photos do
     Galleries.update_gallery_photo_count(gallery.id)
 
     Galleries.normalize_gallery_photo_positions(gallery.id)
-    # gallery = Galleries.get_gallery!(gallery.id)
+#    gallery = Galleries.get_gallery!(gallery.id)
     # IO.inspect(gallery)
     socket
-    # |> assign(:gallery, gallery)
-    # |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
+#    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
     |> noreply()
   end
 
