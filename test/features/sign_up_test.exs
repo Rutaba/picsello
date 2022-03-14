@@ -4,6 +4,13 @@ defmodule Picsello.SignUpTest do
   alias Picsello.{Repo, Accounts.User}
 
   setup do
+    Tesla.Mock.mock_global(fn %{method: :put} ->
+      %Tesla.Env{
+        status: 202,
+        body: %{"job_id" => "1234"}
+      }
+    end)
+
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     :ok
   end
