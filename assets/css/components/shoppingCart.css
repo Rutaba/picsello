@@ -22,26 +22,8 @@
     max-w-full
 }
 
-.gridWrapper {
-    @apply grid-cols-3
-}
-
-.subTotal {
-    @apply hidden
-}
-
 .shippingOptions__select {
     @apply py-1
-}
-
-@media screen and (max-width: 1280px) {
-    .gridWrapper {
-        @apply grid-cols-1
-    }
-
-    .subTotal {
-        @apply block
-    }
 }
 
 @media screen and (max-width: 768px) {

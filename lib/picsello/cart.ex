@@ -99,16 +99,16 @@ defmodule Picsello.Cart do
   @doc """
   Deletes the product from order. Deletes order if order has only the one product.
   """
-  def delete_product(%Order{products: [_product]} = order, _editor_id) do
-    order
-    |> Repo.delete!()
-    |> order_with_state()
-  end
-
   def delete_product(%Order{} = order, editor_id) do
-    order
-    |> Order.delete_product_changeset(editor_id)
-    |> Repo.update!()
+    case item_count(order) do
+      1 ->
+        order |> Repo.delete!()
+
+      _ ->
+        order
+        |> Order.delete_product_changeset(editor_id)
+        |> Repo.update!()
+    end
     |> order_with_state()
   end
 
@@ -126,6 +126,32 @@ defmodule Picsello.Cart do
     |> case do
       %Order{} = order -> {:ok, order}
       _ -> {:error, :no_unconfirmed_order}
+    end
+  end
+
+  def get_unconfirmed_order(gallery_id, :preload_products) do
+    case get_unconfirmed_order(gallery_id) do
+      {:ok, %{products: [_ | _] = products} = order} ->
+        ids = for(%{editor_details: %{product_id: id}} <- products, do: id)
+
+        products_by_whcc_id =
+          from(product in Picsello.Product, where: product.whcc_id in ^ids)
+          |> Repo.all()
+          |> Enum.map(&{&1.whcc_id, &1})
+          |> Map.new()
+
+        {:ok,
+         %{
+           order
+           | products:
+               for(
+                 %{editor_details: %{product_id: id}} = product <- products,
+                 do: %{product | whcc_product: Map.get(products_by_whcc_id, id)}
+               )
+         }}
+
+      error ->
+        error
     end
   end
 
@@ -222,4 +248,7 @@ defmodule Picsello.Cart do
     |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
     |> Repo.update!()
   end
+
+  def item_count(%{products: products, digitals: digitals}),
+    do: Enum.count(products) + Enum.count(digitals)
 end

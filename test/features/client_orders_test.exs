@@ -16,7 +16,7 @@ defmodule Picsello.ClientOrdersTest do
       )
 
     for category <- Picsello.Repo.all(Picsello.Category) do
-      preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
+      preview_photo = insert(:photo, gallery: gallery, preview_url: "/fake.jpg")
 
       insert(:gallery_product,
         category: category,
@@ -24,6 +24,8 @@ defmodule Picsello.ClientOrdersTest do
         gallery: gallery
       )
     end
+
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     [gallery: gallery]
   end
@@ -103,7 +105,7 @@ defmodule Picsello.ClientOrdersTest do
     |> click(button("Customize & buy"))
     |> assert_url_contains("cart")
     |> assert_text("Cart Review")
-    |> click(button("Continue", count: 2, at: 1))
+    |> click(button("Continue"))
     |> fill_in(text_field("Email address"), with: "client@example.com")
     |> fill_in(text_field("Name"), with: "brian")
     |> fill_in(text_field("Shipping address"), with: "123 w main st")
@@ -117,6 +119,8 @@ defmodule Picsello.ClientOrdersTest do
 
   describe "digital downloads" do
     feature "add to cart", %{session: session, gallery: gallery} do
+      gallery_path = current_path(session)
+
       session
       |> assert_text(gallery.name)
       |> click(link("View Gallery"))
@@ -126,6 +130,17 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(link("cart", text: "1"))
       |> click_first_photo()
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
+      |> click(link("close"))
+      |> click(link("cart"))
+      |> find(css("*[data-testid^='digital-']"), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_has(css("img[src='/fake.jpg']"))
+        |> assert_text("$25.00")
+        |> click(button("Delete"))
+      end)
+      |> assert_path(gallery_path)
+      |> refute_has(link("cart"))
     end
   end
 

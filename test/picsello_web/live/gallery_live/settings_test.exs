@@ -6,6 +6,11 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
 
   setup %{conn: conn} do
     conn = conn |> log_in_user(insert(:user) |> onboard!)
+
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:params_for_upload, fn _ -> [] end)
+
     %{conn: conn, gallery: insert(:gallery, %{name: "Diego Santos Weeding"})}
   end
 

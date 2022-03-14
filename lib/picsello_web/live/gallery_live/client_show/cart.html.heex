@@ -14,27 +14,59 @@
   <div class="gallery__container">
     <%= case @step do %>
       <% :product_list -> %>
-        <div class="font-bold text-xl lg:text-3xl py-5 lg:pt-14 lg:pb-10">Cart Review</div>
+        <div class="font-extrabold text-xl lg:text-3xl py-5 lg:pt-14 lg:pb-10">Cart Review</div>
 
-        <div class="grid gridWrapper">
-          <div class="col-span-1 mb-4 subTotal"><.summary order={@order} /></div>
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-5">
+          <div class="col-span-1 block lg:hidden"><.summary order={@order} /></div>
 
-          <div class="col-span-2 lg:mr-6 py-6 xl:py-0">
+          <div class="col-span-1 lg:col-span-2">
             <%= for product <- @order.products do %>
-              <.live_component
-                module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
-                id={product.editor_details.editor_id}
-                product={product}
-                has_border={true} />
+              <div {testid("product-#{product_id(product)}")} class="border darkerBorder mb-5">
+                <div class="mx-8 py-8">
+                  <.item_image item={product} class="float-left" />
+
+                  <div class="py-4 md:py-8">
+                    <div class="text-lg">
+                      <%= product_size(product) %> <%= product_name(product) %>
+                    </div>
+
+                    <div class="text-2xl font-extrabold mt-2.5"><%= product.price %></div>
+                  </div>
+
+                  <div class="clear-left md:clear-none pt-4 md:pt-0">
+                    <label>Quantity:</label>
+
+                    <select class="select text-base font-bold ml-2 w-20">
+                      <option value="1"><%= product_quantity(product) %></option>
+                    </select>
+
+                    <button type="button" class="font-semibold text-lg text-blue-planning-300 mx-7" phx-click="edit_product" phx-value-editor-id={product_id(product)}>Edit</button>
+
+                    <button type="button" class="font-semibold text-lg text-blue-planning-300" phx-click="delete" phx-value-editor-id={product_id(product)}>Delete</button>
+                  </div>
+                  <div class="clear-both"></div>
+                </div>
+              </div>
             <% end %>
 
-            <%= for digital_download <- @order.digitals do %>
-              <.live_component
-                module={PicselloWeb.GalleryLive.ClientShow.Cart.DigitalDownload}
-                id={digital_download.id}
-                digital_download={digital_download}
-                has_border={true} />
-            <% end %>
+            <div class="border darkerBorder">
+              <%= for digital <- @order.digitals do %>
+                <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
+                  <.item_image item={digital} />
+
+                  <div class="py-0 md:py-7">
+                    <div class="text-lg">Digital download</div>
+
+                    <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9"><%= digital.price %></div>
+
+                    <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
+                      Delete
+                    </button>
+                  </div>
+
+                </div>
+              <% end %>
+            </div>
           </div>
 
           <div class="col-span-1"><.summary order={@order} /></div>
@@ -98,7 +130,7 @@
 
               <p class="text-xl">Total: <span class="font-bold"><%= @order.subtotal_cost %></span></p>
 
-              <%= submit "Continue", class: "btn-primary w-full text-lg mt-5", disabled: !@delivery_info_changeset.valid? %>
+              <button type="submit" class="btn-primary w-full text-lg mt-5" disabled={!@delivery_info_changeset.valid?}>Continue</button>
             </div>
           </.form>
         </div>
@@ -136,15 +168,17 @@
                       <div class="ml-4 flex w-full lg:block">
                         <label for={shipping_option_uid(option)} class="text-base md:text-sm font-semibold cursor-pointer"><%= shipping_option_label(option) %></label><br>
 
-                        <%= if is_current_shipping_option?(@shipping_opts, option, product) do %>
-                          <%= if is_product_ordering?(@ordering_tasks, product) do %>
-                            <label for={shipping_option_uid(option)} class="text-green-finances-300 text-base md:text-sm font-medium ml-auto lg:ml-0">updating...</label><br>
+                        <label for={shipping_option_uid(option)} class="text-green-finances-300 text-base md:text-sm font-medium ml-auto lg:ml-0">
+                          <%= if is_current_shipping_option?(@shipping_opts, option, product) do %>
+                            <%= if is_product_ordering?(@ordering_tasks, product) do %>
+                              updating...
+                            <% else %>
+                              <%= product.whcc_order.total |> Money.parse!() |> Money.subtract(product.base_price) %>
+                            <% end %>
                           <% else %>
-                            <label for={shipping_option_uid(option)} class="text-green-finances-300 text-base md:text-sm font-medium ml-auto lg:ml-0"><%= Money.parse!(product.whcc_order.total) |> Money.subtract(product.base_price) %></label><br>
+                            from <%= shipping_option_cost(option) %>
                           <% end %>
-                        <% else %>
-                          <label for={shipping_option_uid(option)} class="text-green-finances-300 text-base md:text-sm font-medium ml-auto lg:ml-0">from <%= shipping_option_cost(option) %></label><br>
-                        <% end %>
+                        </label><br>
                       </div>
                     </div>
                   </.display_shipping_opts>

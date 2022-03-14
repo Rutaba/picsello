@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.GalleryProductTest do
+defmodule Picsello.GalleryProductTest do
   @moduledoc false
 
   use Picsello.FeatureCase, async: true
@@ -7,6 +7,8 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
 
   setup do
     gallery = insert(:gallery, %{name: "Test Client Wedding"})
+
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     products =
       Enum.map(Picsello.Category.frame_images(), fn frame_image ->
