@@ -324,7 +324,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <%= shoot.name %>
               </div>
 
-              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
+              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
             </div>
 
             <div class="font-semibold text-blue-planning-300"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
@@ -344,7 +344,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 Shoot <%= shoot_number %>
               </div>
 
-              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300" />
+              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
             </div>
           </button>
         <% end %>
@@ -435,7 +435,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="flex items-center font-bold">
           <%= @title %>
           <%= if @action do %>
-            <.icon name="forth" class="w-3 h-3 ml-2 stroke-current text-base-300" />
+            <.icon name="forth" class="w-3 h-3 ml-2 stroke-current stroke-2 text-base-300" />
           <% end %>
         </div>
         <div class="text-xs text-gray-500">

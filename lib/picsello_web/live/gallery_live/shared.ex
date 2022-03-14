@@ -31,7 +31,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     "}>
       <%= render_slot(@inner_block) %>
 
-      <.icon name="square-forth" class="ml-2 h-3 w-2 stroke-current" />
+      <.icon name="forth" class="ml-2 h-3 w-2 stroke-current stroke-[3px]" />
     </button>
     """
   end

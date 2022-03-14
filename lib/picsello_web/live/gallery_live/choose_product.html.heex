@@ -10,11 +10,11 @@
       <div class="choose-product-item w-full h-96 lg:h-full lg:w-7/12 mb-5 lg:mb-0 relative">
         <div id="wrapper" class="wrapper h-full flex-row justify-center flex">
           <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="choose-product__btn left-0 top-1/2 transform -translate-y-1/2  transform -translate-x-1/4 swiper-button-prev">
-            <.icon name="back" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
+            <.icon name="back" class="w-8 h-8 text-blue-planning-300 cursor-pointer stroke-2" />
           </div>
 
           <div phx-click="next" phx-target={@myself} class="choose-product__btn right-0 top-1/2 transform -translate-y-1/2  transform translate-x-1/4 swiper-button-next">
-            <.icon name="forth" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
+            <.icon name="forth" class="w-8 h-8 text-blue-planning-300 cursor-pointer stroke-[3px]" />
           </div>
 
           <img src={ url(@photo) } class="max-w-full">
