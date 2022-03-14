@@ -243,6 +243,11 @@ defmodule Picsello.FeatureCase do
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
+    def authenticated_gallery(%{session: session}) do
+      job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
+      [session: session, gallery: insert(:gallery, job: job)]
+    end
+
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do
       path = "/gallery/#{gallery.client_link_hash}"
 

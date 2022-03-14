@@ -11,8 +11,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   """
 
   alias Picsello.Galleries
-  alias Picsello.Galleries.Photo
   alias Picsello.Galleries.CoverPhoto
+  alias Picsello.Galleries.Photo
   alias Picsello.Galleries.Watermark
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
