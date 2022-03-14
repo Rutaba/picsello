@@ -1,12 +1,11 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  import PicselloWeb.GalleryLive.Shared
-
   alias Picsello.{Cart, Payments, WHCC, Galleries, GalleryProducts}
   alias Cart.CartProduct
   alias WHCC.Shipping
   alias PicselloWeb.GalleryLive.ClientMenuComponent
+  import PicselloWeb.GalleryLive.Shared
   import Cart, only: [preview_url: 1]
 
   @impl true
@@ -37,6 +36,46 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     socket
     |> assign(:step, :delivery_info)
     |> assign(:delivery_info_changeset, Cart.order_delivery_info_change(order))
+    |> noreply()
+  end
+
+  def handle_event(
+        "continue",
+        _,
+        %{
+          assigns: %{
+            step: :delivery_info,
+            delivery_info_changeset: delivery_info_changeset,
+            order: %{products: [], digitals: [_ | _]} = order
+          }
+        } = socket
+      ) do
+    socket
+    |> assign(order: Cart.store_order_delivery_info(order, delivery_info_changeset))
+    |> then(fn socket ->
+      socket
+      |> redirect(external: checkout_link(socket))
+      |> noreply()
+    end)
+  end
+
+  def handle_event(
+        "continue",
+        _,
+        %{
+          assigns: %{
+            step: :delivery_info,
+            delivery_info_changeset: delivery_info_changeset,
+            order: %{products: products, digitals: []} = order
+          }
+        } = socket
+      ) do
+    socket
+    |> assign(:step, :shipping_opts)
+    |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
+    |> assign(:ordering_tasks, %{})
+    |> assign_shipping_opts()
+    |> schedule_products_ordering(products)
     |> noreply()
   end
 
@@ -92,26 +131,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   def handle_event(
-        "continue",
-        _,
-        %{
-          assigns: %{
-            step: :delivery_info,
-            delivery_info_changeset: delivery_info_changeset,
-            order: %{products: products} = order
-          }
-        } = socket
-      ) do
-    socket
-    |> assign(:step, :shipping_opts)
-    |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
-    |> assign(:ordering_tasks, %{})
-    |> assign_shipping_opts()
-    |> schedule_products_ordering(products)
-    |> noreply()
-  end
-
-  def handle_event(
         "validate_delivery_info",
         %{"delivery_info" => params},
         %{assigns: %{step: :delivery_info}} = socket
@@ -121,26 +140,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  def handle_event(
-        "checkout",
-        _,
-        %{
-          assigns: %{
-            step: :shipping_opts,
-            order: order,
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    {:ok, %{link: checkout_link}} =
-      Payments.checkout_link(order,
-        success_url:
-          Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.number),
-        cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
-      )
-
+  def handle_event("checkout", _, socket) do
     socket
-    |> redirect(external: checkout_link)
+    |> redirect(external: checkout_link(socket))
     |> noreply()
   end
 
@@ -165,6 +167,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(:order, Cart.store_cart_products_checkout([product]))
     |> assign(:ordering_tasks, Map.drop(tasks, [product.editor_details.editor_id]))
     |> noreply()
+  end
+
+  defp checkout_link(%{assigns: %{order: order, gallery: gallery}} = socket) do
+    {:ok, checkout_link} =
+      order
+      |> Cart.checkout_params()
+      |> Enum.into(%{
+        success_url:
+          Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.number),
+        cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
+      })
+      |> Payments.checkout_link()
+
+    checkout_link
   end
 
   defp product_shipping_options(%{assigns: %{shipping_opts: shipping_opts}}, product) do
@@ -348,16 +364,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       "Zip" => zip,
       "Country" => country
     }
-  end
-
-  defp item_image(assigns) do
-    assigns = Map.put_new(assigns, :class, "")
-
-    ~H"""
-    <div class={"#{@class} flex items-center justify-center max-w-[160px] md:max-w-[250px] w-full overflow-hidden mr-4"}>
-      <img class="h-32 w-auto md:h-48" src={preview_url(@item)}/>
-    </div>
-    """
   end
 
   defp product_id(%CartProduct{editor_details: %{editor_id: id}}), do: id

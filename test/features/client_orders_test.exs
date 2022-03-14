@@ -119,6 +119,14 @@ defmodule Picsello.ClientOrdersTest do
 
   describe "digital downloads" do
     feature "add to cart", %{session: session, gallery: gallery} do
+      test_pid = self()
+
+      Mox.stub(Picsello.MockPayments, :checkout_link, fn %{success_url: success_url} = params,
+                                                         opts ->
+        send(test_pid, {:checkout_link, params, opts})
+        {:ok, success_url}
+      end)
+
       gallery_path = current_path(session)
 
       session
@@ -152,6 +160,22 @@ defmodule Picsello.ClientOrdersTest do
       |> fill_in(text_field("Name"), with: "Brian")
       |> wait_for_enabled_submit_button()
       |> click(button("Continue"))
+
+      assert_receive(
+        {:checkout_link,
+         %{
+           customer_email: "brian@example.com",
+           line_items: [
+             %{price_data: %{product_data: %{images: ["/fake.jpg"]}, unit_amount: 2500}}
+           ]
+         }, _}
+      )
+
+      session
+      |> assert_has(css("h3", text: "Thank you for your order!"))
+      |> assert_has(css("img[src='/fake.jpg']"))
+      |> assert_text("Digital download")
+      |> refute_has(link("cart"))
     end
   end
 

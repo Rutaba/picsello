@@ -6,7 +6,6 @@ defmodule Picsello.Payments do
     Notifiers.UserNotifier,
     Organization,
     PaymentSchedule,
-    Cart.Order,
     Repo
   }
 
@@ -116,15 +115,6 @@ defmodule Picsello.Payments do
     checkout_link(stripe_params, connect_account: organization.stripe_account_id)
   end
 
-  def checkout_link(%Order{products: products, shipping_cost: shipping_cost}, opts) do
-    params = cart_checkout_params(products, shipping_cost, opts)
-
-    case checkout_link(params, []) do
-      {:ok, url} -> {:ok, %{link: url, line_items: params.line_items}}
-      error -> error
-    end
-  end
-
   def checkout_link(params, opts) do
     params =
       Enum.into(params, %{
@@ -149,29 +139,6 @@ defmodule Picsello.Payments do
 
   def construct_event(body, signature, secret),
     do: impl().construct_event(body, signature, secret)
-
-  def cart_checkout_params(products, shipping_cost, opts) do
-    cancel_url = opts |> Keyword.get(:cancel_url)
-    success_url = opts |> Keyword.get(:success_url)
-
-    %{
-      cancel_url: cancel_url,
-      success_url: success_url,
-      line_items: form_order_line_items(products),
-      shipping_options: [
-        %{
-          shipping_rate_data: %{
-            type: "fixed_amount",
-            display_name: "Shipping",
-            fixed_amount: %{
-              amount: shipping_cost.amount,
-              currency: shipping_cost.currency
-            }
-          }
-        }
-      ]
-    }
-  end
 
   @spec status(%Organization{} | %User{}) ::
           {:ok, :none | :processing | :charges_enabled | :details_submitted}
@@ -258,30 +225,6 @@ defmodule Picsello.Payments do
       {:ok, %{url: url}} -> {:ok, url}
       error -> error
     end
-  end
-
-  defp form_order_line_items(products) do
-    Enum.map(products, fn %{
-                            price: price,
-                            editor_details: %{
-                              selections: %{"quantity" => quantity},
-                              preview_url: preview_url
-                            }
-                          } = product ->
-      unit_amount = price |> Money.divide(quantity) |> List.first() |> then(& &1.amount)
-
-      %{
-        price_data: %{
-          currency: price.currency,
-          unit_amount: unit_amount,
-          product_data: %{
-            name: Picsello.Cart.product_name(product),
-            images: [preview_url]
-          }
-        },
-        quantity: quantity
-      }
-    end)
   end
 
   defp customer_id(%Client{stripe_customer_id: nil} = client) do

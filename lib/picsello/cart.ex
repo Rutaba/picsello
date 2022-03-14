@@ -4,9 +4,7 @@ defmodule Picsello.Cart do
   """
 
   import Ecto.Query
-  alias Picsello.Repo
-  alias Picsello.WHCC
-  alias Picsello.Cart.{CartProduct, Order, Order.Digital, DeliveryInfo}
+  alias Picsello.{Repo, WHCC, Cart.CartProduct, Cart.Order, Cart.DeliveryInfo, Cart.Order.Digital}
 
   def new_product(editor_id, account_id) do
     details = WHCC.editor_details(account_id, editor_id)
@@ -214,6 +212,24 @@ defmodule Picsello.Cart do
     |> Repo.update!()
   end
 
+  def set_order_number(order) do
+    order
+    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
+    |> Repo.update!()
+  end
+
+  def item_count(%{products: products, digitals: digitals}),
+    do: Enum.count(products) + Enum.count(digitals)
+
+  def summary_counts(order) do
+    for(key <- [:products, :digitals]) do
+      collection = Map.get(order, key)
+
+      {key, Enum.count(collection),
+       Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))}
+    end
+  end
+
   def checkout_params(
         %Order{products: products, digitals: digitals, shipping_cost: shipping_cost} = order
       ) do
@@ -312,23 +328,5 @@ defmodule Picsello.Cart do
     order
     |> Order.update_changeset(product, attrs)
     |> Repo.update!()
-  end
-
-  def set_order_number(order) do
-    order
-    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
-    |> Repo.update!()
-  end
-
-  def item_count(%{products: products, digitals: digitals}),
-    do: Enum.count(products) + Enum.count(digitals)
-
-  def summary_counts(order) do
-    for(key <- [:products, :digitals]) do
-      collection = Map.get(order, key)
-
-      {key, Enum.count(collection),
-       Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))}
-    end
   end
 end

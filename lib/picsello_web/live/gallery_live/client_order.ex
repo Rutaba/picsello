@@ -3,11 +3,13 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
+
   alias Picsello.Cart
   alias Picsello.Cart.Order
   alias Picsello.Cart.OrderNumber
   alias Picsello.GalleryProducts
   alias Picsello.Galleries
+  import Cart, only: [preview_url: 1]
 
   def mount(_, _, conn) do
     conn
@@ -109,4 +111,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       <a href={@url} class="cursor-pointer underline"><%= @text %></a>
     """
   end
+
+  defdelegate summary_counts(order), to: Cart
 end

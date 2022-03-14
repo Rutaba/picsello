@@ -23,9 +23,9 @@
             <%= for product <- @order.products do %>
               <div {testid("product-#{product_id(product)}")} class="border border-base-225 mb-5">
                 <div class="mx-8 py-8">
-                  <.item_image item={product} class="float-left" />
+                  <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={preview_url(product)}/>
 
-                  <div class="py-4 md:py-8">
+                  <div class="py-4 md:py-6">
                     <div class="text-lg">
                       <%= product_name(product) %>
                     </div>
@@ -33,14 +33,16 @@
                     <div class="text-2xl font-extrabold mt-2.5"><%= product.price %></div>
                   </div>
 
-                  <div class="clear-left md:clear-none pt-4 md:pt-0">
-                    <label>Quantity:</label>
+                  <div class="flex items-center flex-wrap pt-4 md:clear-none clear-left">
+                    <div class="whitespace-nowrap mb-0 md:mb-2 mr-7">
+                      <label>Quantity:</label>
 
-                    <select class="select text-base font-bold ml-2 w-20">
-                      <option value="1"><%= product_quantity(product) %></option>
-                    </select>
+                      <select class="select text-base font-bold ml-2 w-24">
+                        <option value="1"><%= product_quantity(product) %></option>
+                      </select>
+                    </div>
 
-                    <button type="button" class="font-semibold text-lg text-blue-planning-300 mx-7" phx-click="edit_product" phx-value-editor-id={product_id(product)}>Edit</button>
+                    <button type="button" class="font-semibold text-lg text-blue-planning-300 mr-7" phx-click="edit_product" phx-value-editor-id={product_id(product)}>Edit</button>
 
                     <button type="button" class="font-semibold text-lg text-blue-planning-300" phx-click="delete" phx-value-editor-id={product_id(product)}>Delete</button>
                   </div>
@@ -49,23 +51,24 @@
               </div>
             <% end %>
 
-            <div class="border border-base-225">
-              <%= for digital <- @order.digitals do %>
-                <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
-                  <.item_image item={digital} />
+      <div class={classes("border-base-225", border: Enum.any?(@order.digitals))}>
+              <div class="divide-y divide-base-200">
+                <%= for digital <- @order.digitals do %>
+                  <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
+                    <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={preview_url(digital)}/>
 
-                  <div class="py-0 md:py-7">
-                    <div class="text-lg">Digital download</div>
+                    <div class="py-0 md:py-7">
+                      <div class="text-lg">Digital download</div>
 
-                    <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9"><%= digital.price %></div>
+                      <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9"><%= digital.price %></div>
 
-                    <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
-                      Delete
-                    </button>
+                      <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
+                        Delete
+                      </button>
+                    </div>
                   </div>
-
-                </div>
-              <% end %>
+                <% end %>
+              </div>
             </div>
           </div>
 
