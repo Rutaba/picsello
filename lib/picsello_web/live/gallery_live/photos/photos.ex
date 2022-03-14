@@ -19,8 +19,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.UploadComponent
   alias PicselloWeb.ConfirmationComponent
-  alias PicselloWeb.GalleryLive.PhotoComponent
+  alias PicselloWeb.GalleryLive.Photos.PhotoComponent
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
+  alias PicselloWeb.GalleryLive.ViewPhoto
 
   @per_page 12
   @upload_options [
@@ -46,8 +47,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:error_toast, "hidden")
       |> assign(:uploaded_files, 0)
       |> assign(:progress, %GalleryUploadProgress{})
-      |> assign(:update_mode, "prepend")
-      |> assign(:photo_updates, true)
+      |> assign(:photo_updates, "false")
       |> allow_upload(:photo, @upload_options)
     }
   end
@@ -56,7 +56,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   def handle_params(%{"id" => id}, _, socket) do
     IO.inspect("reached 1")
     gallery = Galleries.get_gallery!(id)
-
+    IO.inspect(gallery)
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
@@ -94,9 +94,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
     IO.inspect("reached 2")
    gallery = Galleries.get_gallery!(id)
    gallery = Galleries.load_watermark_in_gallery(gallery)
-  #  if connected?(socket) do
-  #    PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-  #  end
+   if connected?(socket) do
+     PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+   end
 
   IO.inspect(socket.assigns.uploads)
   #  socket =
@@ -216,13 +216,13 @@ defmodule PicselloWeb.GalleryLive.Photos do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp assign_overall_progress(%{assigns: %{progress: progress, gallery: gallery}} = socket) do
+  defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
     total_progress = GalleryUploadProgress.total_progress(progress)
     estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
 
-    # if total_progress == 100 do
-    #   send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
-    # end
+    if total_progress == 100 do
+      send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
+    end
 
     socket
     |> assign(:overall_progress, total_progress)
@@ -253,6 +253,17 @@ defmodule PicselloWeb.GalleryLive.Photos do
   # end
 
   @impl true
+  def handle_event("upload-failed", _, socket) do
+    IO.inspect(socket.assigns)
+    socket
+    |> open_modal(
+         UploadComponent,
+         socket.assigns
+       )
+    |> noreply
+  end
+
+  @impl true
   def handle_event("click", _, socket) do
     socket
     |> noreply
@@ -274,7 +285,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
     socket
     |> open_modal(
-         PicselloWeb.GalleryLive.ViewPhoto,
+         ViewPhoto,
          %{
            gallery: gallery,
            photo_id: photo_id,
@@ -510,15 +521,16 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, socket) do
+  def handle_info({:photo_processed, _, photo}, %{assigns: %{gallery: gallery}} = socket) do
     photo_update =
       %{
         id: photo.id,
         url: display_photo(photo.watermarked_preview_url || photo.preview_url)
       }
       |> Jason.encode!()
-
+    IO.inspect(photo_update)
     socket
+    # |> assign(:gallery, Galleries.get_gallery!(gallery.id))
     |> assign(:photo_updates, photo_update)
     |> noreply()
   end
@@ -593,11 +605,14 @@ defmodule PicselloWeb.GalleryLive.Photos do
           }
         } = socket
       ) do
+    IO.inspect(gallery)
     Galleries.update_gallery_photo_count(gallery.id)
 
     Galleries.normalize_gallery_photo_positions(gallery.id)
-
+    # gallery = Galleries.get_gallery!(gallery.id)
+    # IO.inspect(gallery)
     socket
+    # |> assign(:gallery, gallery)
     # |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
     |> noreply()
   end

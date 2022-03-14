@@ -54,7 +54,11 @@
         <use href="/images/icons.svg#warning-orange"></use>
       </svg>
       </div>
-      <div class="flex-grow p-4">2 photos failed to upload. <button class="font-bold primary text-blue-planning-300 cursor-pointer">Click here</button> to resolve errors.</div>
+      <div class="flex-grow p-4">
+        2 photos failed to upload. 
+        <button phx-click="upload-failed" class="font-bold primary text-blue-planning-300 cursor-pointer">Click here</button>
+        to resolve errors.
+      </div>
     </div>
 
       <div class="grid pt-8 center-container lg:grid-cols-2">
@@ -132,7 +136,7 @@
             </label>
         </div>
       </div>
-
+  <%= @gallery.total_count %>
 <%= if @gallery.total_count <= 0 do %>
     <div class="text-blue-planning-300 mt-14 mb-14 text-center justify-between text-2xl font-bold">
         Oops, there's nothing here - upload photos now to get started!
@@ -160,7 +164,6 @@
             </div>
         </form>
     </div>
-
     <%= else %>
     <div class="gallery__container px-0 mx-0 pb-32" id="gallery">
       <%= if @live_action in [:edit] do %>
@@ -172,7 +175,7 @@
           return_to: Routes.gallery_photos_path(@socket, :show, @gallery) %>
       <% end %>
 
- <div
+      <div
         phx-hook="MasonryGrid"
         phx-update={@update_mode}
         id="muuri-grid"
@@ -197,11 +200,12 @@
             is_gallery_category_page: false
         %>
         <%= end %>
-
       </div>
 
-      <div style="display: none"><div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates} ></div></div>
-</div>
+      <div style="display: none">
+        <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
+      </div>
+    </div>
     <%= end %>
     </div>
   </div>
