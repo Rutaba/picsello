@@ -12,7 +12,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
   @impl true
   def mount(
-        %{"id" => gallery_id, "gallery_product_id" => gallery_product_id} = params,
+        %{"id" => gallery_id, "gallery_product_id" => gallery_product_id},
         _session,
         socket
       ) do
@@ -21,32 +21,23 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         {:ok, redirect(socket, to: "/")}
 
       preview ->
-        template = preview.category_template
-
-        url = get_preview(preview)
-
-        {frame_id, frame_name, coords} =
-          with id when id != nil <- params["frame_id"],
-               templ when templ != nil <- Repo.get(Picsello.CategoryTemplate, id) do
-            templ
-          else
-            _ -> template
-          end
-          |> then(fn x -> {x.id, x.name, x.corners} end)
-
         {:ok,
          socket
-         |> assign(:frame_id, frame_id)
-         |> assign(:frame, frame_name)
-         |> assign(:coords, inspect(coords))
-         |> assign(:preview, preview)
-         |> push_event("set_preview", %{
-           preview: url,
-           ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
-           frame: frame_name,
-           coords: coords,
-           target: "canvas"
-         })
+         |> assign(
+           frame_id: preview.category.id,
+           frame: Picsello.Category.frame_image(preview.category),
+           coords: Picsello.Category.coords(preview.category),
+           preview: preview
+         )
+         |> then(fn %{assigns: %{coords: coords, frame: frame}} = socket ->
+           push_event(socket, "set_preview", %{
+             preview: get_preview(preview),
+             ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
+             frame: frame,
+             coords: coords,
+             target: "canvas"
+           })
+         end)
          |> assign(:changeset, changeset(%{}, []))
          |> assign(:preview_photo_id, nil)}
     end
@@ -131,9 +122,9 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
     if result != nil do
       result
-      |> cast(%{preview_photo_id: preview_photo_id, category_template_id: frame_id}, [
+      |> cast(%{preview_photo_id: preview_photo_id, category_id: frame_id}, [
         :preview_photo_id,
-        :category_template_id
+        :category_id
       ])
       |> Repo.insert_or_update()
 
@@ -146,20 +137,22 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   @impl true
   def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
-    galery_products = GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
 
-    if galery_products == nil do
-      {:noreply, redirect(socket, to: "/")}
-    else
-      socket
-      |> assign(:title, galery_products.category_template.title)
-      |> assign(:gallery, gallery)
-      |> assign(:gallery_product_id, gallery_product_id)
-      |> assign(:page, 0)
-      |> assign(:favorites_filter, false)
-      |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-      |> assign_photos()
-      |> noreply()
+    GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
+    |> case do
+      nil ->
+        {:noreply, redirect(socket, to: "/")}
+
+      gallery_product ->
+        socket
+        |> assign(:title, gallery_product.category.name)
+        |> assign(:gallery, gallery)
+        |> assign(:gallery_product_id, gallery_product.id)
+        |> assign(:page, 0)
+        |> assign(:favorites_filter, false)
+        |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+        |> assign_photos()
+        |> noreply()
     end
   end
 

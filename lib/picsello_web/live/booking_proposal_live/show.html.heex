@@ -10,7 +10,7 @@
     <div class="grid md:grid-cols-2 gap-5">
       <div class="md:mr-24">
         <p class="whitespace-pre-line">
-          <%= if BookingProposal.remainder_paid?(@proposal) do %>
+          <%= if PaymentSchedules.remainder_paid?(@job) do %>
             Thank you <%= @job.client.name %>,
 
             Your session fee has been paid in full. We are looking forward to capturing this most special day for you.
@@ -80,7 +80,7 @@
 
         <button title="Invoice" type="button" {if invoice_disabled?(@proposal), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal)})} disabled={invoice_disabled?(@proposal)}>
           <div class="flex flex-col items-start w-full">
-            <%= if BookingProposal.remainder_paid?(@proposal) do %>
+            <%= if PaymentSchedules.remainder_paid?(@job) do %>
               <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
             <% else %>
               <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
@@ -88,8 +88,8 @@
             <div class="flex items-center justify-between w-full">
               Pay your
               <%= cond do %>
-               <% !BookingProposal.deposit_paid?(@proposal) -> %>retainer
-               <% !BookingProposal.remainder_paid?(@proposal) -> %> remainder
+               <% !PaymentSchedules.deposit_paid?(@job) -> %>retainer
+               <% !PaymentSchedules.remainder_paid?(@job) -> %> remainder
                <% true -> %> invoice
               <% end %>
               <.icon name="forth" class="w-4 h-4 stroke-current"/>

@@ -11,7 +11,7 @@ defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <%= for p <- inputs_for(f, :profile) do %>
-          <.quill_input f={p} style={"min-height: 4rem;"} html_field={:description} placeholder={"Start typing…"} />
+          <.quill_input f={p} style={"min-height: 4rem;"} html_field={@field_name} placeholder={"Start typing…"} />
         <% end %>
 
         <PicselloWeb.LiveModal.footer />

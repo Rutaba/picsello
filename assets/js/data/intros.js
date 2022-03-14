@@ -138,40 +138,61 @@ export default {
       },
     ].filter((obj) => obj?.element),
   }),
-  intro_settings: (el) => ({
+  intro_settings_profile: (el) => ({
+    showBullets: false,
     steps: [
       {
         title: 'Account',
         intro: 'Manage your Picsello account from here.',
         position: 'bottom-middle-aligned',
-        element: el.querySelector('[title="user_settings"]'),
+        element: el.querySelector('#intro_settings_profile h1'),
       },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_settings_packages: (el) => ({
+    showBullets: false,
+    steps: [
       {
-        title: 'Package templates',
+        title: 'Package Templates',
         intro: 'View preset packages or create your own.',
         position: 'bottom-middle-aligned',
-        element: el.querySelector('[title="package_templates"]'),
+        element: el.querySelector('#intro_settings_packages h1'),
       },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_settings_pricing: (el) => ({
+    showBullets: false,
+    steps: [
       {
-        title: 'Gallery store pricing',
+        title: 'Gallery Store Pricing',
         intro:
           'Bulk-edit your gallery offerings, or review your gallery pricing at-a-glance, with access to all your gallery pricing in one place.',
         position: 'bottom-middle-aligned',
-        element: el.querySelector('[title="pricing"]'),
+        element: el.querySelector('#intro_settings_pricing h1'),
       },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_settings_public_profile: (el) => ({
+    showBullets: false,
+    steps: [
       {
-        title: 'Public profile',
+        title: 'Public Profile',
         intro:
           'We offer a Public Profile page that will allow potential clients to contact you directly through a website that we host.',
         position: 'bottom-middle-aligned',
-        element: el.querySelector('[title="profile_settings"]'),
+        element: el.querySelector('#intro_settings_public_profile h1'),
       },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_settings_contacts: (el) => ({
+    showBullets: false,
+    steps: [
       {
         title: 'Contacts',
         intro:
           'If someone isn’t a lead yet, but you want to keep track of their contact information, you can add them as a contact here. You can also convert them into a lead later.',
         position: 'bottom-middle-aligned',
-        element: el.querySelector('[title="contacts"]'),
+        element: el.querySelector('#intro_settings_contacts h1'),
       },
     ].filter((obj) => obj?.element),
   }),

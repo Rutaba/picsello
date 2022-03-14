@@ -15,6 +15,7 @@ defmodule Picsello.Factory do
     CampaignClient,
     ClientMessage,
     Onboardings,
+    PaymentSchedule,
     Repo,
     Shoot,
     Accounts.User,
@@ -85,7 +86,7 @@ defmodule Picsello.Factory do
       state: "OK",
       intro_states:
         Enum.map(
-          ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings],
+          ~w[intro_dashboard intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings_profile intro_settings_packages intro_settings_pricing intro_settings_public_profile intro_settings_contacts],
           &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
         )
     }
@@ -252,6 +253,16 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def payment_schedule_factory(attrs) do
+    %PaymentSchedule{
+      due_at: DateTime.utc_now(),
+      price: Money.new(500),
+      job: fn -> build(:lead, %{user: insert(:user)}) end
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def client_message_factory(attrs) do
     %ClientMessage{
       subject: "here is what i propose",
@@ -275,14 +286,28 @@ defmodule Picsello.Factory do
   end
 
   def promote_to_job(%Job{} = job) do
-    %{package: %{shoot_count: shoot_count}, shoots: shoots} =
+    %{package: %{shoot_count: shoot_count} = package, shoots: shoots} =
       Repo.preload(job, [:package, :shoots], force: true)
 
     insert(:proposal,
       job: job,
-      deposit_paid_at: DateTime.utc_now(),
       accepted_at: DateTime.utc_now(),
       signed_at: DateTime.utc_now()
+    )
+
+    price = package |> Package.price() |> Money.multiply(0.5)
+
+    insert(:payment_schedule,
+      job: job,
+      paid_at: DateTime.utc_now(),
+      due_at: DateTime.utc_now(),
+      price: price
+    )
+
+    insert(:payment_schedule,
+      job: job,
+      due_at: DateTime.utc_now() |> DateTime.add(7 * 24 * 60 * 60),
+      price: price
     )
 
     insert_list(shoot_count - Enum.count(shoots), :shoot, job: job)
@@ -379,7 +404,8 @@ defmodule Picsello.Factory do
       name: "cool shirts",
       position: sequence(:category_position, & &1),
       icon: "book",
-      default_markup: 2.0
+      default_markup: 2.0,
+      hidden: false
     }
 
   def product_factory,
@@ -524,6 +550,11 @@ defmodule Picsello.Factory do
     }
   end
 
+  def order_factory,
+    do:
+      %Picsello.Cart.Order{subtotal_cost: Money.new(500), gallery: fn -> build(:gallery) end}
+      |> evaluate_lazy_attributes()
+
   def confirmed_order_factory(attrs) do
     %Picsello.Cart.Order{
       delivery_info: %Picsello.Cart.DeliveryInfo{
@@ -547,11 +578,13 @@ defmodule Picsello.Factory do
     |> merge_attributes(attrs)
   end
 
-  def email_preset_factory(),
+  def email_preset_factory,
     do: %Picsello.EmailPreset{
       subject_template: "Subjectively speaking",
       body_template: "this is my body",
       name: "use this email preset!",
       position: 0
     }
+
+  def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
 end

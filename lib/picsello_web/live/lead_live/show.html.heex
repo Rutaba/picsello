@@ -95,7 +95,7 @@
   <h2 class="mt-6 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Booking Summary</h2>
 
     <%= if @proposal do %>
-      <.proposal_details proposal={@proposal} current_user={@current_user} />
+      <.proposal_details job={@job} proposal={@proposal} current_user={@current_user} />
 
     <% else %>
       <div {testid("booking-summary")} class="w-full p-4 mt-2 border rounded-lg lg:w-1/2">
