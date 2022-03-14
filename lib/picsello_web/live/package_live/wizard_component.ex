@@ -278,7 +278,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <% d = form_for(@download, "#") %>
 
-        <div class="mt-6 sm:mt-9">
+        <div class="mt-6 sm:mt-9"  {testid("download")}>
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Downloads</h2>
           <%= if d |> current() |> Map.get(:is_enabled) do %>
             Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
@@ -321,7 +321,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <label class="flex items-center mt-3">
                 <%= checkbox(p, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
 
-                Set a "buy them all"price
+                Set a "buy them all" price
               </label>
 
               <%= if p |> current() |> Map.get(:is_buy_all) do %>
@@ -357,9 +357,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <div class="flex items-center">Gallery store credit</div>
           <% end %>
         </div>
-        <%= if p |> current() |> Map.get(:is_enabled) do %>
-          <div class="flex items-center justify-end	 sm:mt-0">+<%= credit(@f) %></div>
-        <% end %>
       </div>
     </div>
 
@@ -584,8 +581,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Enum.join([sign, Money.abs(adjustment)])
   end
 
-  defp credit(form), do: form |> current() |> Package.print_credits()
-
   defp total_price(form), do: form |> current() |> Package.price()
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
@@ -596,31 +591,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp package_pricing_params(package) do
     print_credits =
       case package |> Map.get(:print_credits) do
-        nil ->
-          %{is_enabled: false}
-
-        %Money{} = value ->
-          if Money.positive?(value),
-            do: %{is_enabled: true},
-            else: %{
-              is_enabled: false
-            }
-
-        %{} ->
-          %{}
+        nil -> %{is_enabled: false}
+        %Money{} = value -> %{is_enabled: Money.positive?(value)}
+        %{} -> %{}
       end
 
     case package |> Map.get(:buy_all) do
-      nil ->
-        Map.merge(print_credits, %{is_buy_all: false})
-
-      %Money{} = value ->
-        if Money.positive?(value),
-          do: Map.merge(print_credits, %{is_buy_all: true}),
-          else: Map.merge(print_credits, %{is_buy_all: false})
-
-      %{} ->
-        %{}
+      nil -> Map.put(print_credits, :is_buy_all, false)
+      %Money{} = value -> Map.put(print_credits, :is_buy_all, Money.positive?(value))
+      %{} -> %{}
     end
   end
 end

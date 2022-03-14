@@ -1,5 +1,5 @@
 defmodule Picsello.Payments do
-  alias Picsello.{Notifiers.UserNotifier, BookingProposal, Repo}
+  alias Picsello.{Notifiers.UserNotifier, BookingProposal, PaymentSchedule, Repo}
   alias PicselloWeb.Router.Helpers, as: Routes
   @moduledoc "behavior of (stripe) payout processor"
 
@@ -25,28 +25,19 @@ defmodule Picsello.Payments do
 
   def handle_payment(%Stripe.Session{
         client_reference_id: "proposal_" <> proposal_id,
-        metadata: %{"paying_for" => "remainder"}
-      }),
-      do:
-        with(
-          {proposal_id, _} <- Integer.parse(proposal_id),
-          do:
-            %BookingProposal{id: proposal_id}
-            |> BookingProposal.remainder_paid_changeset()
-            |> Repo.update(returning: true)
-        )
-
-  def handle_payment(%Stripe.Session{
-        client_reference_id: "proposal_" <> proposal_id,
-        metadata: %{"paying_for" => "deposit"}
+        metadata: %{"paying_for" => payment_schedule_id}
       }) do
-    with %BookingProposal{} = proposal <- Repo.get(BookingProposal, proposal_id),
-         {:ok, proposal} = update_result <-
-           proposal
-           |> BookingProposal.deposit_paid_changeset()
+    with %BookingProposal{} = proposal <-
+           Repo.get(BookingProposal, proposal_id) |> Repo.preload(job: :job_status),
+         %PaymentSchedule{} = payment_schedule <- Repo.get(PaymentSchedule, payment_schedule_id),
+         {:ok, _} = update_result <-
+           payment_schedule
+           |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
-      url = Routes.job_url(PicselloWeb.Endpoint, :jobs)
-      UserNotifier.deliver_lead_converted_to_job(proposal, url)
+      if proposal.job.job_status.is_lead do
+        url = Routes.job_url(PicselloWeb.Endpoint, :jobs)
+        UserNotifier.deliver_lead_converted_to_job(proposal, url)
+      end
 
       update_result
     else

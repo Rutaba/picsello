@@ -2,19 +2,19 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, BookingProposal, Package, Job}
+  alias Picsello.{Repo, PaymentSchedules, BookingProposal, Job}
   import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
   require Logger
 
   @impl true
-  def render(%{proposal: proposal} = assigns) do
+  def render(%{job: job} = assigns) do
     assigns =
       assigns
       |> Enum.into(%{
-        deposit_paid: BookingProposal.deposit_paid?(proposal),
-        remainder_paid: BookingProposal.remainder_paid?(proposal)
+        deposit_paid: PaymentSchedules.deposit_paid?(job),
+        remainder_paid: PaymentSchedules.remainder_paid?(job)
       })
 
     ~H"""
@@ -23,7 +23,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         <.close_x />
 
         <.banner title="Invoice" job={@job} package={@package}>
-          <p><%= raw @package.description %></p>
+          <p class="raw_html"><%= raw @package.description %></p>
         </.banner>
 
         <.items {assigns}>
@@ -31,20 +31,20 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
           <dl class={classes("flex justify-between", %{"text-green-finances-300" => @deposit_paid, "font-bold" => !@deposit_paid})}>
             <%= if @deposit_paid do %>
-              <dt>Retainer Paid on <%= strftime(@photographer.time_zone, @proposal.deposit_paid_at, "%b %d, %Y") %></dt>
+              <dt>Retainer Paid on <%= strftime(@photographer.time_zone, PaymentSchedules.deposit_paid_at(@job), "%b %d, %Y") %></dt>
             <% else %>
               <dt>50% retainer today</dt>
             <% end %>
-            <dd><%= Package.deposit_price(@package) %></dd>
+            <dd><%= PaymentSchedules.deposit_price(@job) %></dd>
           </dl>
 
           <dl class={classes("flex justify-between mt-4", %{"font-bold" => @deposit_paid && !@remainder_paid, "text-green-finances-300" => @remainder_paid})} >
             <%= if @remainder_paid do %>
-              <dt>Remainder Paid on <%= strftime(@photographer.time_zone, @proposal.remainder_paid_at, "%b %d, %Y") %></dt>
+              <dt>Remainder Paid on <%= strftime(@photographer.time_zone, PaymentSchedules.remainder_paid_at(@job), "%b %d, %Y") %></dt>
             <% else %>
-              <dt>Remainder Due on <%= strftime(@photographer.time_zone, BookingProposal.remainder_due_on(@proposal), "%b %d, %Y") %></dt>
+              <dt>Remainder Due on <%= strftime(@photographer.time_zone, PaymentSchedules.remainder_due_on(@job), "%b %d, %Y") %></dt>
             <% end %>
-            <dd><%= Package.remainder_price(@package) %></dd>
+            <dd><%= PaymentSchedules.remainder_price(@job) %></dd>
           </dl>
         </.items>
 
@@ -68,17 +68,16 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         %{},
         %{
           assigns: %{
-            package: package,
             proposal: proposal,
             job: job
           }
         } = socket
       ) do
-    {payment_type, price} =
-      if BookingProposal.deposit_paid?(proposal) do
-        {:remainder, Package.deposit_price(package)}
+    {payment_type, payment} =
+      if PaymentSchedules.deposit_paid?(job) do
+        {:remainder, PaymentSchedules.remainder_payment(job)}
       else
-        {:deposit, Package.remainder_price(package)}
+        {:deposit, PaymentSchedules.deposit_payment(job)}
       end
 
     payment_type_desc =
@@ -95,7 +94,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
           product_data: %{
             name: "#{Job.name(job)} 50% #{payment_type_desc}"
           },
-          unit_amount: price.amount
+          unit_amount: payment.price.amount
         },
         quantity: 1
       }
@@ -105,7 +104,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
            success_url:
              "#{BookingProposal.url(proposal.id, success: payment_type)}&session_id={CHECKOUT_SESSION_ID}",
            cancel_url: BookingProposal.url(proposal.id),
-           metadata: %{"paying_for" => payment_type}
+           metadata: %{"paying_for" => payment.id}
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
@@ -130,7 +129,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
     socket
     |> open_modal(__MODULE__, %{
-      read_only: read_only || BookingProposal.remainder_paid?(proposal),
+      read_only: read_only || PaymentSchedules.remainder_paid?(job),
       job: job,
       proposal: proposal,
       photographer: photographer,

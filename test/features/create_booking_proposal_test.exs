@@ -1,6 +1,14 @@
 defmodule Picsello.CreateBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Questionnaire.Answer, BookingProposal, Repo, Organization, ClientMessage}
+
+  alias Picsello.{
+    Questionnaire.Answer,
+    BookingProposal,
+    Repo,
+    Organization,
+    ClientMessage,
+    PaymentSchedule
+  }
 
   @send_email_button button("Send Email")
 
@@ -61,6 +69,9 @@ defmodule Picsello.CreateBookingProposalTest do
     assert [proposal] = Repo.all(BookingProposal)
     assert [client_message] = Repo.all(ClientMessage)
     assert client_message.job_id == proposal.job_id
+    assert [deposit_payment, remainder_payment] = Repo.all(PaymentSchedule)
+    assert deposit_payment.job_id == proposal.job_id
+    assert remainder_payment.job_id == proposal.job_id
 
     path =
       email

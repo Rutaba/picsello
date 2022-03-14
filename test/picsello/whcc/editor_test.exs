@@ -10,9 +10,6 @@ defmodule Picsello.WHCC.EditorTest do
     @some_pixels 2000
 
     test "correct creation structure building" do
-      Mox.defmock(Picsello.PhotoStorageMock, for: Picsello.Galleries.Workers.PhotoStorage)
-      Application.put_env(:picsello, :photo_storage_service, Picsello.PhotoStorageMock)
-
       product = insert(:product)
 
       photo =

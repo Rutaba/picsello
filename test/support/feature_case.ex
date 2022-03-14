@@ -42,6 +42,17 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def force_simulate_click(session, query) do
+      case Wallaby.Query.compile(query) do
+        {:css, selector} ->
+          execute_script(
+            session,
+            "document.querySelector(arguments[0]).click()",
+            [selector]
+          )
+      end
+    end
+
     def post(session, path, body, headers \\ []) do
       HTTPoison.post(
         PicselloWeb.Endpoint.url() <> path,
@@ -92,6 +103,8 @@ defmodule Picsello.FeatureCase do
       end
     end
 
+    @sign_in_path "/users/log_in"
+
     def sign_in(
           session,
           %{email: email},
@@ -103,20 +116,31 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
       |> click(button("Login"))
+      |> then(&wait_for_path_to_change_from(&1, @sign_in_path))
+    end
+
+    defp wait_for_path_to_change_from(session, path) do
+      retry(fn ->
+        if current_path(session) == path do
+          {:error, "not redirected after sign in."}
+        else
+          {:ok, nil}
+        end
+      end)
+
+      session
     end
 
     def maybe_visit_log_in(session) do
-      if current_path(session) == "/users/log_in" do
+      if current_path(session) == @sign_in_path do
         session
       else
-        session |> visit("/users/log_in")
+        session |> visit(@sign_in_path)
       end
     end
 
     def authenticated(%{session: session, user: user}) do
-      sign_in(session, user)
-
-      [session: session, user: user]
+      [session: sign_in(session, user), user: user]
     end
 
     def authenticated(%{session: session}) do
@@ -225,10 +249,13 @@ defmodule Picsello.FeatureCase do
     end
 
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do
+      path = "/gallery/#{gallery.client_link_hash}"
+
       session
-      |> visit("/gallery/#{gallery.client_link_hash}")
+      |> visit(path)
       |> fill_in(css("#login_password"), with: password)
       |> click(button("Submit"))
+      |> then(&wait_for_path_to_change_from(&1, path <> "/login"))
     end
   end
 

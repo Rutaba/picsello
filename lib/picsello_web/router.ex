@@ -102,6 +102,7 @@ defmodule PicselloWeb.Router do
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/contacts", Live.Contacts, :index, as: :contacts
       live "/brand", Live.BrandSettings, :index, as: :brand_settings
+      live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
@@ -130,11 +131,6 @@ defmodule PicselloWeb.Router do
       live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
         as: :preview
 
-      live "/galleries/:id/product/:gallery_product_id/:frame_id",
-           GalleryLive.GalleryProduct,
-           :preview,
-           as: :preview
-
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
@@ -151,31 +147,27 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
-
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+    live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
-  pipeline :require_authenticated_gallery do
-    plug PicselloWeb.Plugs.GalleryAuth
-  end
-
-  scope "/gallery", PicselloWeb do
+  scope "/gallery/:hash", PicselloWeb do
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
-      pipe_through [:browser, :require_authenticated_gallery]
+      pipe_through [:browser]
 
-      live "/:hash", GalleryLive.ClientShow, :show
-      live "/:hash/orders", GalleryLive.ClientOrders, :show
-      live "/:hash/orders/:order_number", GalleryLive.ClientOrder, :show
-      live "/:hash/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
-      live "/:hash/cart", GalleryLive.ClientShow.Cart, :cart
-      post "/:hash/downloads", GalleryDownloadsController, :download
-      post "/:hash/login", GallerySessionController, :put
+      live "/", GalleryLive.ClientShow, :show
+      live "/orders", GalleryLive.ClientOrders, :show
+      live "/orders/:order_number", GalleryLive.ClientOrder, :show
+      live "/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
+      live "/cart", GalleryLive.ClientShow.Cart, :cart
+      post "/downloads", GalleryDownloadsController, :download
+      post "/login", GallerySessionController, :put
     end
   end
 
   scope "/gallery", PicselloWeb do
     live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
-      pipe_through [:browser, :require_authenticated_gallery]
+      pipe_through [:browser]
 
       live "/:hash/login", GalleryLive.ClientShow.Login, :login
     end

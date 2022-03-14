@@ -3,58 +3,55 @@
     <a href="#" phx-click="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
       <.icon name="close-x" class="w-4 h-4 lg:w-5 lg:h-5 stroke-current stroke-2" />
     </a>
-  <p class="text-2xl text-base-300 font-bold px-5 pt-10 pb-5 lg:hidden">Select an option below</p>
+
+    <p class="text-2xl text-base-300 font-bold px-5 pt-10 pb-5 lg:hidden">Select an option below</p>
+
     <div class="choose-product lg:h-full lg:overflow-y-scroll w-full flex flex-col lg:flex-row lg:justify-between px-5 lg:px-0 lg:pl-16 xl:pl-20">
       <div class="choose-product-item w-full h-96 lg:h-full lg:w-7/12 mb-5 lg:mb-0 relative">
         <div id="wrapper" class="wrapper h-full flex-row justify-center flex">
           <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="choose-product__btn left-0 top-1/2 transform -translate-y-1/2  transform -translate-x-1/4 swiper-button-prev">
             <.icon name="back" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
           </div>
+
           <div phx-click="next" phx-target={@myself} class="choose-product__btn right-0 top-1/2 transform -translate-y-1/2  transform translate-x-1/4 swiper-button-next">
             <.icon name="forth" class="w-8 h-8 text-blue-planning-300 cursor-pointer" />
           </div>
-          <img src={ @url } class="max-w-full">
-            <!--<span class="likeBtn absolute right-8 bottom-8">
-              <%= if @photo_client_liked do %>
-                <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
-              <% else %>
-                <.icon name="heart" class="w-7 h-7 text-gray-200" />
-              <% end %>
-          </span>-->
+
+          <img src={ url(@photo) } class="max-w-full">
         </div>
       </div>
 
       <div class="choose-product-item lg:w-5/12 relative">
-      <div class="lg:w-11/12 flex flex-col ml-auto">
-      <p class="text-2xl text-base-300 font-bold mb-6 hidden lg:pt-2 lg:block">Select an option below</p>
-          <%= for template <- @templates do %>
-          <div class="p-5 xl:p-7 border darkerBorder rounded mb-4 lg:mb-7">
-            <div class="flex justify-between items-center">
-              <div class="flex flex-col">
-                <p class="font-semibold text-lg pb-1.5 text-base-300">
-                 <%= if template.title === "Framed Prints" do %>
-                     Wall Art
-                 <% else %>
-                     <%= template.title %>
-                 <% end %>
-                </p>
-                <p class="font-semibold text-base text-base-300 text-opacity-60"> <%= Money.to_string(template.price) %></p>
-              </div>
-                <button
-                  phx-click="product_preview_photo_click"
-                  phx-target="#hamburger-menu"
-                  phx-value-template_id={template.gid}
-                  phx-value-photo_id={@photo_id}
-                  class="btn-primary py-3.5 px-10">Select</button>
-            </div>
-          </div>
+        <div class="lg:w-11/12 flex flex-col ml-auto">
+          <p class="text-2xl text-base-300 font-bold mb-6 hidden lg:pt-2 lg:block">Select an option below</p>
+
+          <%= for %{category: category, id: gallery_product_id} <- @products do %>
+            <.option
+              testid={gallery_product_id}
+              title={category.name}
+              min_price={min_price(category)}
+            }>
+              <:button
+                phx-click="product_preview_photo_click"
+                phx-target="*[role=main]"
+                phx-value-template-id={gallery_product_id}
+                phx-value-photo-id={@photo.id}>
+                Select
+              </:button>
+            </.option>
           <% end %>
-          <%#
-          <div class="px-5 py-7 xl:px-7 xl:py-9 border darkerBorder rounded flex justify-between items-center">
-              <p class="font-semibold text-lg text-base-300">Digital download</p>
-               <button todo-phx-click="" phx-target={@myself} class="btn-primary py-3.5 px-10">Select</button>
-          </div>
-          %>
+
+          <%= if @digital_in_cart do %>
+            <.option testid={"digital_download"} title="Digital Download">
+              <:button disabled>In cart</:button>
+            </.option>
+          <% else %>
+            <.option testid={"digital_download"} title="Digital Download" min_price={@download_each_price}>
+              <:button phx-target={@myself} phx-click="digital_add_to_cart">
+                Add to cart
+              </:button>
+            </.option>
+          <% end %>
         </div>
       </div>
     </div>

@@ -32,7 +32,7 @@
 
     <%= if @cart_count > 0 do %>
     <div class="relative sm:ml-auto cursor-pointer">
-        <%= live_redirect to: @cart_route do %>
+        <%= live_redirect to: @cart_route, title: "cart" do %>
             <.icon name="shopping-cart" class="h-6 w-6 text-base-300" />
             <span class="absolute -top-1 -left-2 bg-blue-planning-300 text-base-100 font-bold rounded-full flex items-center justify-center cartItemsAmount">
                 <%= @cart_count %>

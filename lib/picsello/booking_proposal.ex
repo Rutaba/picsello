@@ -9,8 +9,6 @@ defmodule Picsello.BookingProposal do
     field :accepted_at, :utc_datetime
     field :signed_at, :utc_datetime
     field :signed_legal_name, :string
-    field :deposit_paid_at, :utc_datetime
-    field :remainder_paid_at, :utc_datetime
 
     belongs_to(:job, Job)
     belongs_to(:questionnaire, Questionnaire)
@@ -44,19 +42,6 @@ defmodule Picsello.BookingProposal do
     |> validate_required([:signed_at, :signed_legal_name])
   end
 
-  @doc false
-  def deposit_paid_changeset(proposal) do
-    attrs = %{deposit_paid_at: DateTime.utc_now()}
-
-    proposal
-    |> cast(attrs, [:deposit_paid_at])
-    |> validate_required([:deposit_paid_at])
-  end
-
-  def remainder_paid_changeset(proposal) do
-    change(proposal, %{remainder_paid_at: DateTime.truncate(DateTime.utc_now(), :second)})
-  end
-
   @doc "here since used from both emails and views"
   def url(proposal_id, params \\ []), do: build_url(proposal_id, :booking_proposal_url, params)
 
@@ -74,25 +59,5 @@ defmodule Picsello.BookingProposal do
 
   def for_job(job_id) do
     __MODULE__ |> where(job_id: ^job_id)
-  end
-
-  def deposit_paid(query \\ __MODULE__) do
-    query |> where([p], not is_nil(p.deposit_paid_at))
-  end
-
-  def deposit_not_paid(query \\ __MODULE__) do
-    query |> where([p], is_nil(p.deposit_paid_at))
-  end
-
-  def deposit_paid?(%__MODULE__{deposit_paid_at: nil}), do: false
-  def deposit_paid?(%__MODULE__{}), do: true
-
-  def remainder_paid?(%__MODULE__{remainder_paid_at: nil}), do: false
-  def remainder_paid?(%__MODULE__{} = proposal), do: deposit_paid?(proposal)
-
-  def remainder_due_on(%__MODULE__{} = proposal) do
-    %{job: %{shoots: shoots}} = Repo.preload(proposal, job: :shoots)
-
-    shoots |> Enum.map(&Map.get(&1, :starts_at)) |> Enum.min(DateTime, fn -> nil end)
   end
 end

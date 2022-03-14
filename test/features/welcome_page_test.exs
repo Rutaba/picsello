@@ -184,7 +184,7 @@ defmodule Picsello.WelcomePageTest do
       user: user,
       completed_at: DateTime.utc_now(),
       package: %{shoot_count: 1},
-      shoots: [%{starts_at: DateTime.add(DateTime.utc_now(), 1)}]
+      shoots: [%{starts_at: DateTime.add(DateTime.utc_now(), -1)}]
     )
     |> promote_to_job()
 

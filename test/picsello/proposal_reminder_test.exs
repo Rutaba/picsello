@@ -20,7 +20,7 @@ defmodule Picsello.ProposalReminderTest do
     test "delivers messages to only unpaid unarchived proposals", %{now: now} do
       %{job_id: unpaid_id} = insert(:proposal)
       _unpaid_archived = insert(:proposal, job: insert(:lead, archived_at: now))
-      _paid = insert(:proposal, deposit_paid_at: now)
+      _paid = insert(:lead) |> promote_to_job()
 
       :ok = now |> DateTime.add(3 * day()) |> DateTime.add(10) |> ProposalReminder.deliver_all()
 
