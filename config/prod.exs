@@ -84,12 +84,8 @@ config :picsello, Picsello.Mailer,
   update_email_template: System.get_env("SENDGRID_UPDATE_EMAIL_TEMPLATE"),
   booking_proposal_template: System.get_env("SENDGRID_BOOKING_PROPOSAL_TEMPLATE"),
   lead_to_job_template: System.get_env("SENDGRID_LEAD_TO_JOB_TEMPLATE"),
-  marketing_template: System.get_env("SENDGRID_MARKETING_TEMPLATE"),
-  marketing_unsubscribe_id: System.get_env("SENDGRID_MARKETING_UNSUBSCRIBE_ID"),
   email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
-  contact_list_transactional: System.get_env("SENDGRID_CONTACT_LIST_TRANSACTIONAL"),
-  contact_list_trial_welcome: System.get_env("SENDGRID_CONTACT_LIST_TRIAL_WELCOME"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]

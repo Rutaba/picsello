@@ -29,7 +29,7 @@ defmodule SendgridClient do
   def marketing_template_id(), do: config()[:marketing_template]
 
   def marketing_unsubscribe_id() do
-    {id, _} = config()[:marketing_unsubscribe_id] |> Integer.parse()
+    {id, _} = config()[:marketing_unsubscribe_id]
     id
   end
 

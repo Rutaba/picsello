@@ -114,6 +114,13 @@ config :picsello, :packages,
     cost_of_living: System.get_env("PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE")
   ]
 
+config :picsello, Picsello.Mailer,
+  marketing_template: System.get_env("SENDGRID_MARKETING_TEMPLATE"),
+  marketing_unsubscribe_id:
+    System.get_env("SENDGRID_MARKETING_UNSUBSCRIBE_ID") |> Integer.parse(),
+  contact_list_transactional: System.get_env("SENDGRID_CONTACT_LIST_TRANSACTIONAL"),
+  contact_list_trial_welcome: System.get_env("SENDGRID_CONTACT_LIST_TRIAL_WELCOME")
+
 config :picsello, :profile_images,
   bucket: System.get_env("PUBLIC_BUCKET"),
   static_host: System.get_env("GOOGLE_PUBLIC_IMAGE_HOST")
