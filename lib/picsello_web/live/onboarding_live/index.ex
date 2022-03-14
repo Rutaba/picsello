@@ -253,7 +253,27 @@ defmodule PicselloWeb.OnboardingLive.Index do
   defp assign_step(%{assigns: %{current_user: current_user}} = socket, _) do
     socket
     |> assign(current_user: Onboardings.complete!(current_user))
+    |> update_user_contact_trial(current_user)
     |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+  end
+
+  defp update_user_contact_trial(socket, current_user) do
+    %{
+      list_ids: SendgridClient.get_all_contact_list_env(),
+      contacts: [
+        %{
+          email: current_user.email,
+          state_province_region: current_user.onboarding.state,
+          custom_fields: %{
+            w3_T: current_user.organization.name,
+            w1_T: "trial"
+          }
+        }
+      ]
+    }
+    |> SendgridClient.add_contacts()
+
+    socket
   end
 
   defp build_changeset(%{assigns: %{current_user: user, step: step}}, params, action \\ nil) do

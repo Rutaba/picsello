@@ -6,6 +6,13 @@ defmodule Picsello.UserOnboardsTest do
   setup :authenticated
 
   setup %{session: session} do
+    Tesla.Mock.mock_global(fn %{method: :put} ->
+      %Tesla.Env{
+        status: 202,
+        body: %{"job_id" => "1234"}
+      }
+    end)
+
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
     insert(:package_base_price, base_price: 300)
