@@ -155,6 +155,9 @@ defmodule PicselloWeb.LeadLive.Show do
         :proposal,
         BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
       )
+      |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
+        Picsello.PaymentSchedules.build_payment_schedules_for_lead(job)
+      end)
       |> Ecto.Multi.insert(
         :message,
         Ecto.Changeset.put_change(message_changeset, :job_id, job.id)

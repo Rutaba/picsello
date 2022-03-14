@@ -62,6 +62,7 @@ defmodule Picsello.EmailPresetTest do
         |> Picsello.Repo.reload!()
 
       insert(:shoot, starts_at: shoot_starts_at, job: job, location: :studio)
+      insert(:payment_schedule, due_at: shoot_starts_at, job: job)
 
       %{id: proposal_id} = insert(:proposal, job: job)
 

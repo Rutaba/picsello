@@ -24,7 +24,8 @@ defmodule PicselloWeb.Live.Admin.Categories do
         <div class="col-start-4 font-bold">icon</div>
         <div class="col-start-5 font-bold">name</div>
         <div class="col-start-6 font-bold">default markup</div>
-        <div class="col-start-7 font-bold">position</div>
+        <div class="col-start-7 font-bold">frame image</div>
+        <div class="col-start-8 font-bold">position</div>
 
         <%= for(%{category: %{id: id, whcc_id: whcc_id, whcc_name: whcc_name}, changeset: changeset} <- @rows) do %>
 
@@ -38,6 +39,7 @@ defmodule PicselloWeb.Live.Admin.Categories do
               <%= input f, :icon, phx_debounce: 200 %>
               <%= input f, :name, phx_debounce: 200 %>
               <%= input f, :default_markup, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
+              <%= select f, :frame_image, [""| Picsello.Category.frame_images()], phx_debounce: 200 %>
             </.form>
 
             <div class="flex justify-evenly text-center">

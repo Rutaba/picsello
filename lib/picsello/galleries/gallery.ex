@@ -2,7 +2,7 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto}
+  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct}
   alias Picsello.Job
 
   @status_options [
@@ -20,6 +20,7 @@ defmodule Picsello.Galleries.Gallery do
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
+    has_many(:gallery_products, GalleryProduct)
     has_one(:watermark, Watermark)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
 

@@ -117,8 +117,8 @@ defmodule Picsello.EmailPreset do
           &with(%Picsello.Package{} = package <- package(&1), do: Picsello.Package.price(package)),
         "invoice_due_date" =>
           &with(
-            %Picsello.BookingProposal{} = proposal <- current_proposal(&1),
-            %DateTime{} = due_on <- Picsello.BookingProposal.remainder_due_on(proposal),
+            %{job: job} <- &1,
+            %DateTime{} = due_on <- Picsello.PaymentSchedules.remainder_due_on(job),
             do:
               strftime(
                 &1,
