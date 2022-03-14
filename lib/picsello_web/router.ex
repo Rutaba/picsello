@@ -168,8 +168,7 @@ defmodule PicselloWeb.Router do
   scope "/gallery/:hash", PicselloWeb do
     pipe_through [:api]
 
-    # WHCC preflight for secondary action requires this
-    options "/", GalleryAddAndClone, :options
+    # WHCC secondary action
     post "/", GalleryAddAndClone, :post
   end
 

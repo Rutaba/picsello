@@ -41,7 +41,7 @@ defmodule PicselloWeb.Endpoint do
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :picsello
   end
 
-  plug CORSPlug, origin: ["https://stage.dragdrop.design", ~r/.*/]
+  plug CORSPlug, origin: [~r/.*/]
 
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
