@@ -49,6 +49,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:photo_updates, "false")
       |> assign(:update_mode, "append")
       |> allow_upload(:photo, @upload_options)
+      |> assign(:selected_photos, [])
     }
   end
 
@@ -534,6 +535,19 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   def handle_info({:photo_click, _}, socket), do: noreply(socket)
 
+  def handle_info({:selected_photos, id}, %{assigns: %{selected_photos: selected_photos}} = socket) do
+
+    selected_photos = if Enum.member?(selected_photos, id) do
+      List.delete(selected_photos, id)
+    else
+      [id | selected_photos]
+    end
+
+    socket
+    |> assign(:selected_photos, selected_photos)
+    |> noreply()
+end
+
   @impl true
   def handle_info(
         {:confirm_event, "delete_cover_photo"},
@@ -550,7 +564,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
         {:confirm_event, "delete_photo", %{photo_id: id}},
         %{
           assigns: %{
-            gallery: gallery
+            gallery: gallery,
+            selected_photos: selected_photos
           }
         } = socket
       ) do
@@ -563,6 +578,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
     socket
     |> assign(:gallery, gallery)
+    |> assign(:selected_photos, List.delete(selected_photos, String.to_integer(id)))
     |> close_modal()
     |> push_event("remove_item", %{"id" => id})
     |> noreply()

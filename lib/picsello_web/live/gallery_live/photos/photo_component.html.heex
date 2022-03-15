@@ -10,11 +10,11 @@
         <div
             id={"photo-#{@id}"}
             class="galleryItem"
-            phx-click={toggle_border(@id, @is_gallery_category_page)}
-            phx-click-away={JS.hide(to: "#photo-#{@id} > .checker")
-                |> JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
-                to: "#item-#{@id}")}
-        >
+            phx-click={toggle_border(@id, @myself)}>
+        <div id={"photo-#{@id}-selected"}></div>
+        <div id={"photo-#{@id}-to-select"} photo-id={@id} style={"display: none"} class="before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected">
+        </div>
+
             <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                 <img
                     phx-click="click"

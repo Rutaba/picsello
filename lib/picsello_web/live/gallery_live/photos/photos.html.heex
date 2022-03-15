@@ -19,7 +19,9 @@
         <h1 class="flex items-center text-4xl font-bold lg:justify-start">
             Photos
         </h1>
-        <div class="ml-8 flex items-center w-80 flex-col lg:justify-start text-lg text-gray-300">0 photos selected</div>
+        <%= if total(@selected_photos) > 0 do %>
+        <div class="ml-8 flex items-center w-80 flex-col lg:justify-start text-lg text-gray-300"><%= total(@selected_photos) %> photos selected</div>
+        <%= end %>
         <%#
           <button type="button" class="px-4 py-2 flex items-center border border-blue-planning-300 bg-white rounded-lg shadow-lg hover:opacity-75">
           <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
