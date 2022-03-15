@@ -29,6 +29,10 @@ html {
   font-family: 'Be Vietnam';
 }
 
+.delete_btn{
+  @apply py-3 font-sans px-6 text-base-300 bg-white border border-base-300 rounded-lg hover:border-base-250 hover:text-base-300 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem];
+}
+
 .pac-item {
   @apply p-2;
 }
@@ -269,6 +273,10 @@ canvas {
 
 .btn-settings {
   @apply px-6 py-3 font-medium font-sans text-white bg-base-300 border border-base-300 rounded-lg hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.watermark_btn-settings {
+  @apply px-6 py-3 font-medium font-sans text-white bg-base-250 border border-base-250 rounded-lg hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 .album-btn-settings {

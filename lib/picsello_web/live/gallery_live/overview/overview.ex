@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Overview do
 
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
-  alias PicselloWeb.ConfirmationComponent
+  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
 
@@ -75,6 +75,7 @@ defmodule PicselloWeb.GalleryLive.Overview do
     socket
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
+      close_class: "delete_btn",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
