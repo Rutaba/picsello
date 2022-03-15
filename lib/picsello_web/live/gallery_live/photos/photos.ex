@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   alias Phoenix.PubSub
   alias Picsello.Galleries
+  alias Phoenix.LiveView.JS
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
@@ -196,6 +197,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
 
+
     sign_opts = [
       expires_in: 144_000,
       bucket: socket.assigns.upload_bucket,
@@ -255,9 +257,14 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
-  def handle_event("click", _, socket) do
+  def handle_event("click", _, %{assigns: %{photo: photo}} = socket) do
+    IO.inspect("===============================")
+    IO.inspect(photo)
+    IO.inspect("===============================")
+    send(self(), {:photo_click, photo})
+
     socket
-    |> noreply
+    |> noreply()
   end
 
   @impl true
@@ -489,6 +496,26 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
+#  @impl true
+#  def handle_event("select_mode", %{"action" => action}, %{assigns: %{photos: photos}} = socket) do
+#    ids =
+#      case action do
+#        "select_all" ->  photos |> Enum.into([], fn photo -> photo.id end)
+#
+#        "favourite" -> photos
+#
+#        _ -> []
+#      end
+#
+#    Enum.each(ids, fn id -> toggle_border(id) end)
+#
+#    send(self(), {:selected_photos, ids})
+#
+#    socket
+#    |> assign(:selected_photos, ids)
+#    |> noreply()
+#  end
+
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -534,6 +561,12 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   def handle_info({:photo_click, _}, socket), do: noreply(socket)
+
+  def handle_info({:selected_photos, ids}, socket) when is_list(ids) do
+    socket
+    |> assign(:selected_photos, ids)
+    |> noreply()
+  end
 
   def handle_info({:selected_photos, id}, %{assigns: %{selected_photos: selected_photos}} = socket) do
 
@@ -716,4 +749,28 @@ end
       do: url
 
   def product_preview_url(_), do: nil
+
+  defp toggle_border(js \\ %JS{}, ids, mode) do
+#    ids =
+#      photos |> Enum.into([], fn photo -> photo.id end)
+    IO.inspect("===============================")
+    IO.inspect(mode)
+    IO.inspect("===============================")
+#    Enum.map(ids, fn id ->
+#      js
+#      |> JS.dispatch("click", to: "#photo-#{id}")
+#      |> JS.show(to: "#photo-#{id}")
+#      |> JS.add_class(
+#           "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+#           to: "#photo-#{id}"
+#         )
+#    end)
+    js
+    |> JS.dispatch("click", to: "#photo-#{id}")
+    |> JS.show(to: "#photo-#{id}")
+    |> JS.add_class(
+         "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+         to: "#photo-#{id}"
+       )
+  end
 end
