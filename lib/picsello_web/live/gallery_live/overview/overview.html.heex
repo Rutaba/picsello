@@ -103,14 +103,5 @@
     </div>
     </div>
   </div>
-  <div class="relative opacity-100 bottomBar">
-    <div class="flex items-center justify-end gallery__container">
-      <div class="flex">
-        <button class="mr-3">
-        <span class="pl-3 mr-3 text-white">Preview gallery</span>
-        </button>
-        <button class="bottomBar__btn btn-secondary" phx-click="client-link">Share gallery</button>
-      </div>
-    </div>
-  </div>
+   <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent %>
 </div>
