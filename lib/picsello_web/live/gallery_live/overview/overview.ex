@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.Settings do
+defmodule PicselloWeb.GalleryLive.Overview do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Show, only: [presign_cover_entry: 2, handle_cover_progress: 3]
@@ -8,8 +8,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
   alias PicselloWeb.ConfirmationComponent
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Galleries.Album
-  alias Picsello.Repo
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -29,7 +27,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
       |> assign(:upload_bucket, @bucket)
       |> assign(:cover_photo_processing, false)
       |> allow_upload(:cover_photo, @upload_options)
-      |> assign(:overviewComponent, "overview")
       |> assign(:password_toggle, false)
     }
   end
@@ -62,28 +59,6 @@ defmodule PicselloWeb.GalleryLive.Settings do
       title: "Delete this photo?",
       subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
     })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "select_album",
-        _,
-        socket
-      ) do
-    socket
-    |> assign(:overviewComponent, "album")
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "select_overview",
-        _,
-        socket
-      ) do
-    socket
-    |> assign(:overviewComponent, "overview")
     |> noreply()
   end
 

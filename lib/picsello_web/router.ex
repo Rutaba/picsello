@@ -148,11 +148,11 @@ defmodule PicselloWeb.Router do
       live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
         as: :preview
 
-      live "/galleries/:id", GalleryLive.Photos, :show
+      live "/galleries/:id/photos", GalleryLive.Photos, :show
 #      live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
-      live "/galleries/:id/settings", GalleryLive.Settings, :settings
+      live "/galleries/:id", GalleryLive.Overview, :overview
       live "/galleries/:gallery_id/albums", GalleryLive.Albums, :albums
     end
   end
