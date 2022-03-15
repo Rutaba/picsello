@@ -58,7 +58,7 @@
             gallery: @gallery %>
       </div>
       <div class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-         <h3>Custom watermark</h3>
+         <h3>Watermark</h3>
          <%= if @gallery.watermark do %>
          <%= if @gallery.watermark.type == "image" do %>
          <div class="flex justify-between py-3">
@@ -81,16 +81,16 @@
             </div>
          </div>
          <% end %>
-         <button phx-click="open_watermark_popup" class="justify-center py-3 border border-black mt-7" id="openCustomWatermarkPopupButton">Edit custom watermark</button>
+         <button phx-click="open_watermark_popup" class="justify-center py-3 border border-black mt-7" id="openCustomWatermarkPopupButton">Edit watermark</button>
          <% else %>
          <p>Upload your logo and we’ll do the rest.</p>
-         <button phx-click="open_watermark_popup" class="justify-center py-3 border border-black mt-7" id="openCustomWatermarkPopupButton">Set custom watermark</button>
+         <button phx-click="open_watermark_popup" class="justify-center py-3 border border-black mt-7" id="openCustomWatermarkPopupButton">Set watermark</button>
          <% end %>
       </div>
       <div class="flex flex-col mb-12 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-         <h3>Delete Gallery</h3>
+         <h3>Delete gallery</h3>
          <p>If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
-         <button phx-click="open_gallery_deletion_popup" class="justify-center w-full py-3 border border-black mt-7" id="deleteGalleryPopupButton">Delete Gallery</button>
+         <button phx-click="open_gallery_deletion_popup" class="justify-center w-full py-3 border border-black mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
       </div>
    </div>
 </div>
