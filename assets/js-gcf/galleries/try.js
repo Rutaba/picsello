@@ -12,11 +12,11 @@ import { buildContext } from "./context.js";
 
 
 const simpleTask = {
-    "bucket": "picsello-staging",
-    "originalPath": "5e4a288c-ced8-43a8-84f1-a26e9e526675.jpg",
-    "photoId": 58,
-    "previewPath": "galleries/3/preview/576ad8c1-9ee7-46ab-b95e-5ea98fcb92a3.jpg",
-    "pubSubTopic": "projects/celtic-rite-323300/topics/stagging-processed-photos"
+     "bucket": "picsello-staging",
+     "originalPath": "galleries/8/original/b8b2d70a-b57a-4cfd-a5ad-dd2b2a4685e2.jpg",
+     "photoId": 1543,
+     "previewPath": "galleries/8/preview/00327dba-2dd3-4fe4-b1ad-51b241fed8ac.jpg",
+     "pubSubTopic": "lukianov-processed-photos"
 }
 
 const fullTask = {
@@ -31,14 +31,13 @@ const fullTask = {
 }
 
 const watermarkTask = {
-    "bucket": "picsello-staging",
-    "originalPath": "galleries/107/original/ebdcbe52-4c0c-4cd6-a1e1-cc4ed37671c9.jpg",
-    "photoId": 186,
-    "previewPath": "galleries/107/preview/6e081734-6c38-45d3-a990-31c3f32891b2.jpg",
-    "pubSubTopic": "projects/celtic-rite-323300/topics/lukianov-processed-photos",
-    "watermarkText": "2...",
-    "watermarkedOriginalPath": "galleries/107/watermarked/f1a78263-2ba7-4753-baff-b12b8c2fbd9a.jpg",
-    "watermarkedPreviewPath": "galleries/107/watermarked_preview/5b2c42e7-54ea-47e7-8d2a-d67a02d14e10.jpg",
+     "bucket": "picsello-staging",
+     "originalPath": "galleries/8/original/b8b2d70a-b57a-4cfd-a5ad-dd2b2a4685e2.jpg",
+     "photoId": 1543,
+     "pubSubTopic": "lukianov-processed-photos",
+     "watermarkText": "1",
+     "watermarkedOriginalPath": "galleries/8/watermarked/4b02a094-46cf-4344-875e-82f0899ad720.jpg",
+     "watermarkedPreviewPath": "galleries/8/watermarked_preview/e896b49e-69fe-4abe-827e-2e24345cd41c.jpg"
 }
 
 
