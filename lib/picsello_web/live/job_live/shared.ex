@@ -383,53 +383,47 @@ defmodule PicselloWeb.JobLive.Shared do
         }) :: %Phoenix.LiveView.Rendered{}
   def proposal_details(assigns) do
     ~H"""
-      <div class="p-2 border rounded-lg">
-        <div class="flex items-start justify-between p-2">
-          <%= if Job.imported?(@job) do %>
-            <p>Your job was imported on <%= strftime(@current_user.time_zone, @job.inserted_at, "%B %d, %Y") %>.</p>
-          <% else %>
-            <p>The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%B %d, %Y") %>.</p>
-          <% end %>
-          <%= if PaymentSchedules.has_payments?(@job) do %>
-            <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 ml-2 transition-colors" id="copy-client-link" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
-              <span>Client Link</span>
-              <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-                Copied!
-              </div>
-            </.icon_button>
-          <% end %>
-        </div>
-        <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => (Job.imported?(@job) && PaymentSchedules.has_payments?(@job)) || @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
-          <%= if Job.imported?(@job) do %>
-            <.proposal_details_item title="Proposal" icon="document" pending_status={nil} current_user={@current_user} action="details" />
-            <.proposal_details_item title="Standard Contract" icon="document" status="External" />
-            <.proposal_details_item title="Questionnaire" icon="document" status="External" />
-          <% else %>
-            <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
-            <.proposal_details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
-            <%= if @proposal.questionnaire_id do %>
-              <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
-            <% end %>
-          <% end %>
-          <%= if PaymentSchedules.has_payments?(@job) do %>
-            <.proposal_details_item title="Invoice" icon="document" status="Completed" pending_status={if Job.imported?(@job), do: nil, else: "Pending"} date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
-          <% end %>
-        </div>
+    <div {testid("proposal-details")} class="p-2 border rounded-lg">
+      <div class="flex items-start justify-between p-2">
+        <%= if Job.imported?(@job) do %>
+          <p>Your job was imported on <%= strftime(@current_user.time_zone, @job.inserted_at, "%B %d, %Y") %>.</p>
+        <% else %>
+          <p>The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%B %d, %Y") %>.</p>
+        <% end %>
+        <%= if PaymentSchedules.has_payments?(@job) do %>
+          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 ml-2 transition-colors" id="copy-client-link" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
+            <span>Client Link</span>
+            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+              Copied!
+            </div>
+          </.icon_button>
+        <% end %>
       </div>
+      <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => (Job.imported?(@job) && PaymentSchedules.has_payments?(@job)) || @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
+        <%= if Job.imported?(@job) do %>
+          <.proposal_details_item title="Proposal" icon="document" pending_status={nil} current_user={@current_user} action="details" />
+          <.proposal_details_item title="Standard Contract" icon="document" status="External" />
+          <.proposal_details_item title="Questionnaire" icon="document" status="External" />
+        <% else %>
+          <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
+          <.proposal_details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
+          <%= if @proposal.questionnaire_id do %>
+            <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
+          <% end %>
+        <% end %>
+        <%= if PaymentSchedules.has_payments?(@job) do %>
+          <.proposal_details_item title="Invoice" icon="document" status="Completed" pending_status={if Job.imported?(@job), do: nil, else: "Pending"} date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
+        <% end %>
+      </div>
+    </div>
     """
   end
 
-  @spec proposal_details_item(%{
-          title: binary(),
-          icon: binary(),
-          status: binary(),
-          current_user: %User{}
-        }) :: %Phoenix.LiveView.Rendered{}
-  def proposal_details_item(assigns) do
+  defp proposal_details_item(assigns) do
     assigns = assigns |> Enum.into(%{action: nil, date: nil, pending_status: "Pending"})
 
     ~H"""
-    <a class={classes("flex items-center p-2 rounded", %{"cursor-pointer hover:bg-blue-planning-100" => @action != nil, "cursor-default" => !@action})} href="#" title={@title} {if @action, do: %{phx_click: "open-proposal", phx_value_action: @action}, else: %{}}>
+    <.proposal_details_item_wrapper action={@action} title={@title}>
       <.circle radius="8" class="flex-shrink-0">
         <.icon name={@icon} width="14" height="14" />
       </.circle>
@@ -451,6 +445,20 @@ defmodule PicselloWeb.JobLive.Shared do
           <% end %>
         </div>
       </div>
+    </.proposal_details_item_wrapper>
+    """
+  end
+
+  defp proposal_details_item_wrapper(%{action: nil} = assigns) do
+    ~H"""
+    <div class="flex items-center p-2 rounded" title={@title}><%= render_slot(@inner_block) %></div>
+    """
+  end
+
+  defp proposal_details_item_wrapper(assigns) do
+    ~H"""
+    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" href="#" title={@title} phx-click="open-proposal" phx-value-action={@action}>
+      <%= render_slot(@inner_block) %>
     </a>
     """
   end

@@ -77,8 +77,11 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
     |> assert_has(testid("shoot-card", count: 2, at: 1, text: "Missing information"))
     |> assert_text("Your job was imported on")
-    |> assert_inner_text(css("a[title='Standard Contract']"), "External")
-    |> assert_inner_text(css("a[title='Questionnaire']"), "External")
+    |> find(testid("proposal-details"), fn details ->
+      details
+      |> assert_text("Questionnaire\nExternal")
+      |> assert_text("Standard Contract\nExternal")
+    end)
     |> click(css("a[title='Invoice']"))
     |> assert_has(definition("Previously collected", text: "$200.00"))
     |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
