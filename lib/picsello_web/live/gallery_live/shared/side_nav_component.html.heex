@@ -21,19 +21,25 @@
             <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
       </div>
-      <div id="album-nav" phx-hook="ToggleNavArrow" target-class="arrow" class="grid grid-cols-1 p-5 mt-6 font-sans bg-gray-100 rounded-lg grid-container w-80 gap-y-1">
-        <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item text-blue-planning-300">
+      <div class="grid grid-cols-1 p-5 mt-6 font-sans bg-gray-100 rounded-lg grid-container w-80 gap-y-1">
+        <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
             <div phx-click="select_overview" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
               <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
                 <.icon name="world" class="w-6 h-6" />
               </div>
               <div class="ml-3">
+                 <%= if @arrow_show == "overview" do %>
+                  <span class= "text-blue-planning-300">Overview</span>
+                <%= else %>
                   <span>Overview</span>
+                <%= end %>
               </div>
             </div>
-            <span class="arrow show">
-              <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
-            </span>
+            <%= if @arrow_show == "overview" do %>
+              <span class="arrow show">
+                <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
+              </span>
+            <%= end %>
         </div>
         <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
         <div phx-click="select_photos" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis hover:text-blue-planning-300">
@@ -42,7 +48,11 @@
                     <.icon name="photos" class="w-4 h-4" />
                   </div>
                   <div class="justify-start ml-3">
+                     <%= if @arrow_show == "photos" do %>
+                      <span class= "text-blue-planning-300">Photos</span>
+                    <%= else %>
                       <span>Photos</span>
+                    <%= end %>
                    </div>
              </div>
             <div class="flex items-center ml-auto">
@@ -67,9 +77,11 @@
                 <% end %>
             </div>
             </div>
-            <span class="hidden arrow">
-              <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
-            </span>
+            <%= if @arrow_show == "photos" do %>
+              <span class="arrow show">
+                <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
+              </span>
+            <%= end %>
         </div>
         <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
             <div id="albums" phx-hook="ToggleContent">
@@ -78,15 +90,21 @@
                     <.icon name="albums" class="w-4 h-4" />
                   </div>
                   <div class="ml-3">
-                    <span>Albums</span>
+                    <%= if @arrow_show == "albums" do %>
+                      <span class= "text-blue-planning-300">Albums</span>
+                    <%= else %>
+                      <span>Albums</span>
+                    <%= end %>
                   </div>
                   <svg aria-hidden="true" focusable="false" data-prefix="fas" class="w-3 h-3 ml-auto" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                     <path fill="currentColor" d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
                   </svg>
               </div>
-              <span class="hidden arrow">
+               <%= if @arrow_show == "albums" do %>
+              <span class="arrow show">
                 <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
+            <%= end %>
               <ul class="hidden bg-gray-100 border-2 border-gray-200 rounded-b-lg toggle-content">
                   <li class="relative">
                     <button href="#!" class="flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs text-gray-700 transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">Album 1</button>
@@ -103,12 +121,18 @@
                     <.icon name="product-preview" class="w-4 h-4" />
                   </div>
                   <div class="ml-3">
-                    <span>Product previews</span>
+                    <%= if @arrow_show == "product_previews" do %>
+                      <span class= "text-blue-planning-300">Product previews</span>
+                    <%= else %>
+                      <span>Product previews</span>
+                    <%= end %>
                   </div>
               </div>
-              <span class="hidden arrow">
+              <%= if @arrow_show == "product_previews" do %>
+              <span class="arrow show">
                 <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
+            <%= end %>
             </div>
       </div>
   </div>
