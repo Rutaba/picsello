@@ -15,12 +15,12 @@
             <p class="mt-4"><%= length(@gallery.albums) %> albums</p>
           </div>
           <div class="grid grid-cols-2 gap-2">
-              <a href="#" class="mt-4 mr-4 albumBlockButton" phx-click="open_albums_popup" >
+              <div class="mt-4 mr-4 cursor-pointer albumBlockButton" phx-click="open_albums_popup" >
                <div class="flex flex-row items-center justify-center h-full gap-2">
                  <.icon name="plus" class="w-4 h-4 text-blue-planning-300" />
                  <span class="font-bold text-1xl" style="font-family: sans-serif">Add Album</span>
                </div>
-              </a>
+              </div>
             <%= for album <- @gallery.albums do %>
             <div class="flex flex-col w-full h-full mb-2 mr-4">
               <a href="#" class="h-full mt-4 albumBlock" phx-click="open_albums_popup">
