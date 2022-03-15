@@ -8,8 +8,8 @@
             <div class="flex flex-row justify-between">
               <span class="text-4xl font-bold " style="font-family: sans-serif">Albums</span>
               <button class="mx-2 mt-2 navBar__btn w-max">
-                 <img class="w-6 h-6" src="/images/vector.png"/>
-                 <span class="pl-3" phx-click="open_albums_popup">Add Album</span>
+                 <.icon name="plus" class="w-4 h-4 text-blue-planning-300" />
+                 <span class="pl-2" phx-click="open_albums_popup">Add Album</span>
               </button>
             </div>
             <p class="mt-4"><%= length(@gallery.albums) %> albums</p>
@@ -18,7 +18,7 @@
             <%= if length(@gallery.albums) == 0 do %>
               <a href="#" class="h-56 h-full mt-4 mr-4 albumBlockButton" phx-click="open_albums_popup" >
                <div class="flex flex-row items-center justify-center h-full gap-2">
-                 <img class="w-6 h-6" src="/images/vector.png"/>
+                 <.icon name="plus" class="w-4 h-4 text-blue-planning-300" />
                  <span class="font-bold text-1xl" style="font-family: sans-serif">Add Album</span>
                </div>
               </a>
