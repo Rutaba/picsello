@@ -26,7 +26,16 @@ config :picsello, PicselloWeb.Endpoint,
 config :logger, level: :warn
 
 config :wallaby,
-  chromedriver: [headless: System.get_env("HEADLESS", "true") == "true"],
+  chromedriver:
+    [
+      headless: System.get_env("HEADLESS", "true") == "true"
+    ]
+    |> then(
+      &case System.get_env("CHROME_BINARY") do
+        "" <> path -> Keyword.put(&1, :binary, path)
+        _ -> &1
+      end
+    ),
   driver: Wallaby.Chrome,
   otp_app: :picsello,
   screenshot_on_failure: true
@@ -60,3 +69,4 @@ config :picsello, :feature_flags, ~w[sync_whcc_design_details show_pricing_tab]a
 config :tesla, adapter: Tesla.Mock
 
 config :picsello, :photo_output_subscription, {Broadway.DummyProducer, []}
+config :picsello, :photo_storage_service, Picsello.PhotoStorageMock

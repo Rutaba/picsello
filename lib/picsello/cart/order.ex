@@ -3,8 +3,7 @@ defmodule Picsello.Cart.Order do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Galleries.Gallery
-  alias Picsello.Cart.CartProduct
-  alias Picsello.Cart.DeliveryInfo
+  alias Picsello.Cart.{CartProduct, DeliveryInfo}
 
   schema "gallery_orders" do
     field :number, :integer, default: Enum.random(100_000..999_999)
@@ -26,19 +25,50 @@ defmodule Picsello.Cart.Order do
     timestamps(type: :utc_datetime)
   end
 
-  def create_changeset(%CartProduct{} = product, attrs \\ %{}) do
-    %__MODULE__{}
-    |> cast(attrs, [:gallery_id])
+  alias __MODULE__.Digital
+
+  def create_changeset(product, attrs \\ %{})
+
+  def create_changeset(%CartProduct{} = product, attrs) do
+    attrs
+    |> do_create_changeset()
     |> put_embed(:products, [product])
     |> refresh_costs()
+  end
+
+  def create_changeset(%Digital{} = digital, attrs) do
+    attrs
+    |> do_create_changeset()
+    |> put_embed(:digitals, [digital])
+    |> refresh_costs()
+  end
+
+  defp do_create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:gallery_id])
     |> validate_required([:gallery_id])
     |> foreign_key_constraint(:gallery_id)
   end
 
-  def update_changeset(%__MODULE__{} = order, %CartProduct{} = product, attrs \\ %{}) do
+  def update_changeset(order, product, attrs \\ %{})
+
+  def update_changeset(%__MODULE__{} = order, %CartProduct{} = product, attrs) do
     order
     |> cast(attrs, [])
     |> replace_products([product])
+  end
+
+  def update_changeset(%__MODULE__{} = order, %Digital{} = digital, attrs) do
+    order
+    |> cast(attrs, [])
+    |> put_embed(
+      :digitals,
+      [digital | order.digitals]
+      |> Enum.reverse()
+      |> Enum.uniq_by(& &1.photo_id)
+      |> Enum.reverse()
+    )
+    |> refresh_costs()
   end
 
   def change_products(
@@ -130,12 +160,15 @@ defmodule Picsello.Cart.Order do
   end
 
   defp refresh_costs(changeset) do
-    changeset
-    |> then(fn set ->
-      set
-      |> get_field(:products)
-      |> Enum.reduce(Money.new(0), fn product, acc -> Money.add(acc, product.price) end)
-      |> then(&put_change(set, :subtotal_cost, &1))
-    end)
+    costs =
+      for field <- [:products, :digitals], reduce: Money.new(0) do
+        acc ->
+          for(entry <- get_field(changeset, field), reduce: acc) do
+            acc ->
+              Money.add(acc, entry.price)
+          end
+      end
+
+    put_change(changeset, :subtotal_cost, costs)
   end
 end

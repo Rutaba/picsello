@@ -22,6 +22,7 @@ defmodule Picsello.Package do
 
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
+    has_many(:jobs, Picsello.Job)
 
     timestamps()
   end
@@ -110,14 +111,6 @@ defmodule Picsello.Package do
     do: package |> adjusted_base_price() |> Money.subtract(base_price(package))
 
   def price(%__MODULE__{} = package), do: adjusted_base_price(package)
-
-  def deposit_price(%__MODULE__{} = package) do
-    package |> price() |> Money.multiply(0.5)
-  end
-
-  def remainder_price(%__MODULE__{} = package) do
-    package |> price() |> Money.subtract(deposit_price(package))
-  end
 
   def templates_for_organization_id(organization_id) do
     from(package in __MODULE__,

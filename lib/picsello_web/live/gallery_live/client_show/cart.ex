@@ -258,6 +258,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     )
   end
 
+  defp summary(assigns) do
+    ~H"""
+    <div class="p-5 border darkerBorder rounded-lg flex flex-col">
+      <div class="text-xl">
+        <%= unless Enum.empty?(@order.products) do %> Subtotal: <% else %> Total: <% end %>
+
+        <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
+      </div>
+
+      <button type="submit" class="btn-primary text-lg mt-5" phx-click="continue">Continue</button>
+    </div>
+    """
+  end
+
   defp display_shipping_opts(assigns) do
     ~H"""
     <form>

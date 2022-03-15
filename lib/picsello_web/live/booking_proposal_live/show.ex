@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
-  alias Picsello.{Repo, BookingProposal, Job}
+  alias Picsello.{Repo, BookingProposal, Job, PaymentSchedules}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -51,27 +51,24 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @impl true
   def handle_info(
         {:confetti, stripe_session_id},
-        %{assigns: %{organization: organization}} = socket
+        %{assigns: %{organization: organization, job: job}} = socket
       ) do
-    {payment_type, socket} =
-      with {:ok, %{metadata: %{"paying_for" => payment_type}} = session} <-
+    socket =
+      with {:ok, session} <-
              payments().retrieve_session(stripe_session_id,
                connect_account: organization.stripe_account_id
              ),
-           {:ok, proposal} <- Picsello.Payments.handle_payment(session) do
-        {String.to_existing_atom(payment_type), socket |> assign(proposal: proposal)}
+           {:ok, _} <- Picsello.Payments.handle_payment(session) do
+        socket
       else
         e ->
           Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
-
-          {cond do
-             BookingProposal.remainder_paid?(socket.assigns.proposal) -> :remainder
-             BookingProposal.deposit_paid?(socket.assigns.proposal) -> :deposit
-           end, socket}
+          socket
       end
 
     socket
-    |> show_confetti_banner(payment_type)
+    |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
+    |> show_confetti_banner()
     # clear the success param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()
@@ -127,41 +124,28 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> apply(:open_modal_from_proposal, [socket, proposal, read_only])
   end
 
-  defp show_confetti_banner(
-         %{assigns: %{proposal: proposal, job: %{shoots: shoots}}} = socket,
-         :deposit
-       ) do
-    if BookingProposal.deposit_paid?(proposal) do
-      shoot_count = Enum.count(shoots)
+  defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots} = job}} = socket) do
+    {title, subtitle} =
+      cond do
+        PaymentSchedules.remainder_paid?(job) ->
+          {"Paid in full. Thank you!", "Now it’s time to make some memories."}
 
-      socket
-      |> PicselloWeb.ConfirmationComponent.open(%{
-        title:
-          "Thank you! Your #{ngettext("session is", "sessions are", shoot_count)} now booked.",
-        subtitle:
-          "We are so excited to be working with you, thank you for your business. See you soon.",
-        close_label: "Got it",
-        icon: nil,
-        close_class: "btn-primary"
-      })
-    else
-      socket
-    end
-  end
+        PaymentSchedules.deposit_paid?(job) ->
+          {"Thank you! Your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
+           "We are so excited to be working with you, thank you for your business. See you soon."}
 
-  defp show_confetti_banner(%{assigns: %{proposal: proposal}} = socket, :remainder) do
-    if BookingProposal.remainder_paid?(proposal) do
-      socket
-      |> PicselloWeb.ConfirmationComponent.open(%{
-        title: "Paid in full. Thank you!",
-        subtitle: "Now it’s time to make some memories.",
-        icon: nil,
-        close_label: "Got it",
-        close_class: "btn-primary"
-      })
-    else
-      socket
-    end
+        true ->
+          {"Thank you!", "We are so excited to be working with you, thank you for your business."}
+      end
+
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: title,
+      subtitle: subtitle,
+      close_label: "Got it",
+      icon: nil,
+      close_class: "btn-primary"
+    })
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
@@ -170,7 +154,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
          %{job: %{archived_at: nil}} = proposal <-
            BookingProposal
            |> Repo.get!(proposal_id)
-           |> Repo.preload([:answer, job: [:client, :shoots, package: [organization: :user]]]) do
+           |> Repo.preload([
+             :answer,
+             job: [:client, :payment_schedules, :shoots, package: [organization: :user]]
+           ]) do
       %{
         answer: answer,
         job:

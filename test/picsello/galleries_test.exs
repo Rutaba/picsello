@@ -27,6 +27,20 @@ defmodule Picsello.GalleriesTest do
       assert {:ok, %Gallery{}} = Galleries.create_gallery(Map.put(@valid_attrs, :job_id, job_id))
     end
 
+    test "create_gallery/1 with valid data creates a gallery with gallery products" do
+      %{id: job_id} = insert(:lead)
+      insert(:category, deleted_at: DateTime.utc_now())
+      insert(:category, hidden: true)
+      %{id: active_category_id} = insert(:category)
+
+      assert {:ok, %Gallery{} = gallery} =
+               Galleries.create_gallery(Map.put(@valid_attrs, :job_id, job_id))
+
+      assert %Gallery{
+               gallery_products: [%Galleries.GalleryProduct{category_id: ^active_category_id}]
+             } = Repo.preload(gallery, :gallery_products)
+    end
+
     test "create_gallery/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Galleries.create_gallery(@invalid_attrs)
     end

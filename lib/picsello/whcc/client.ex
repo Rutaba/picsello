@@ -42,15 +42,15 @@ defmodule Picsello.WHCC.Client do
   end
 
   def design_details(%WHCC.Design{id: id} = design) do
-    if Enum.member?(Application.get_env(:picsello, :feature_flags, []), :sync_whcc_design_details) do
-      design
-    else
+    if designs_enabled?() do
       {:ok,
        %{
          body: api
        }} = new() |> get("/designs/#{id}")
 
       WHCC.Design.add_details(design, api)
+    else
+      design
     end
   end
 
@@ -189,6 +189,10 @@ defmodule Picsello.WHCC.Client do
   defp expired?(expires_at) do
     DateTime.compare(DateTime.utc_now(), expires_at) in [:eq, :gt]
   end
+
+  defp designs_enabled?,
+    do:
+      Enum.member?(Application.get_env(:picsello, :feature_flags, []), :sync_whcc_design_details)
 
   defp config, do: Application.get_env(:picsello, :whcc)
 end

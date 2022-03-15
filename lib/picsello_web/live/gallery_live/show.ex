@@ -12,7 +12,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
-  alias Picsello.GalleryProducts
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
@@ -51,20 +50,24 @@ defmodule PicselloWeb.GalleryLive.Show do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
-    products =
-      Picsello.CategoryTemplate.all()
-      |> Enum.map(fn template ->
-        GalleryProducts.get_or_create_gallery_product(gallery.id, template.id)
-      end)
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    url = Routes.gallery_client_show_path(socket, :show, hash)
 
     socket
-    |> assign(:products, products)
-    |> assign(:page_title, page_title(socket.assigns.live_action))
-    |> assign(:gallery, gallery)
-    |> assign(:page, 0)
-    |> assign(:update_mode, "append")
-    |> assign(:favorites_filter, false)
-    |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+    |> assign(
+      favorites_count: Galleries.gallery_favorites_count(gallery),
+      favorites_filter: false,
+      gallery: gallery,
+      url: url,
+      page: 0,
+      page_title: page_title(socket.assigns.live_action),
+      products: Galleries.products(gallery),
+      update_mode: "append"
+    )
     |> assign_photos()
     |> then(fn
       %{
@@ -101,26 +104,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     send(self(), :open_modal)
 
     socket
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "preview_gallery",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
     |> noreply()
   end
 

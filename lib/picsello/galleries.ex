@@ -4,12 +4,12 @@ defmodule Picsello.Galleries do
   """
 
   import Ecto.Query, warn: false
-  alias Picsello.Repo
 
-  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken}
-  alias Picsello.GalleryProducts
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.{Repo, GalleryProducts, Category, Galleries}
   alias Picsello.Workers.CleanStore
+  alias Galleries.PhotoProcessing.ProcessingManager
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  import Repo.CustomMacros
 
   @doc """
   Returns the list of galleries.
@@ -50,27 +50,15 @@ defmodule Picsello.Galleries do
       iex> get_gallery_by_hash("validhash")
       %Gallery{}
 
-      iex> get_gallery!("wronghash")
+      iex> get_gallery_by_hash("wronghash")
       nil
 
   """
-  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
-  def get_gallery_by_hash!(hash) do
-    Gallery
-    |> where(client_link_hash: ^hash)
-    |> limit(1)
-    |> Repo.one!()
-  end
-
   @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
-  def get_gallery_by_hash(hash) do
-    try do
-      get_gallery_by_hash!(hash)
-    rescue
-      Ecto.NoResultsError ->
-        nil
-    end
-  end
+  def get_gallery_by_hash(hash), do: Repo.get_by(Gallery, client_link_hash: hash)
+
+  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
+  def get_gallery_by_hash!(hash), do: Repo.get_by!(Gallery, client_link_hash: hash)
 
   @doc """
   Gets single gallery by hash, with relations populated (cover_photo)
@@ -117,9 +105,32 @@ defmodule Picsello.Galleries do
 
   """
   def create_gallery(attrs \\ %{}) do
-    %Gallery{}
-    |> Gallery.create_changeset(attrs)
-    |> Repo.insert()
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Ecto.Multi.insert_all(
+      :gallery_products,
+      GalleryProduct,
+      fn %{
+           gallery: %{
+             id: gallery_id
+           }
+         } ->
+        from(category in (Category.active() |> Category.shown()),
+          select: %{
+            inserted_at: now(),
+            updated_at: now(),
+            gallery_id: ^gallery_id,
+            category_id: category.id
+          }
+        )
+      end
+    )
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{gallery: gallery}} -> {:ok, gallery}
+      {:error, :gallery, changeset, _} -> {:error, changeset}
+      other -> other
+    end
   end
 
   @doc """
@@ -633,4 +644,17 @@ defmodule Picsello.Galleries do
     gallery
     |> Repo.preload(job: [client: [organization: :user]])
   end
+
+  def download_each_price(%{job_id: job_id}) do
+    from(package in Picsello.Package,
+      join: job in assoc(package, :jobs),
+      where: job.id == ^job_id,
+      select: struct(package, [:download_each_price])
+    )
+    |> Repo.one()
+    |> Map.get(:download_each_price)
+  end
+
+  def products(%{id: gallery_id}),
+    do: Picsello.GalleryProducts.get_gallery_products(gallery_id, :with_or_without_previews)
 end

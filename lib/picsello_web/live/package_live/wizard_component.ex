@@ -357,9 +357,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <div class="flex items-center">Gallery store credit</div>
           <% end %>
         </div>
-        <%= if p |> current() |> Map.get(:is_enabled) do %>
-          <div class="flex items-center justify-end sm:mt-0">+<%= credit(@f) %></div>
-        <% end %>
       </div>
     </div>
 
@@ -583,8 +580,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     Enum.join([sign, Money.abs(adjustment)])
   end
-
-  defp credit(form), do: form |> current() |> Package.print_credits()
 
   defp total_price(form), do: form |> current() |> Package.price()
 

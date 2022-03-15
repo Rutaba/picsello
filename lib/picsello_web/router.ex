@@ -102,6 +102,7 @@ defmodule PicselloWeb.Router do
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/contacts", Live.Contacts, :index, as: :contacts
       live "/brand", Live.BrandSettings, :index, as: :brand_settings
+      live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
@@ -130,11 +131,6 @@ defmodule PicselloWeb.Router do
       live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
         as: :preview
 
-      live "/galleries/:id/product/:gallery_product_id/:frame_id",
-           GalleryLive.GalleryProduct,
-           :preview,
-           as: :preview
-
       live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
@@ -151,8 +147,8 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
-
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+    live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
   scope "/gallery/:hash", PicselloWeb do

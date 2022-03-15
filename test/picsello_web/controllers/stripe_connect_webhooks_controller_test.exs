@@ -1,6 +1,6 @@
 defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
   use PicselloWeb.ConnCase, async: true
-  alias Picsello.{Repo, BookingProposal}
+  alias Picsello.{Repo, PaymentSchedule}
 
   def stub_event(%{proposal_id: proposal_id, paying_for: paying_for}) do
     Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
@@ -19,9 +19,22 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
 
   setup do
     user = insert(:user)
-    proposal = insert(:proposal, job: promote_to_job(insert(:lead, user: user)))
 
-    [proposal: proposal, user: user]
+    job = insert(:lead, user: user) |> promote_to_job() |> Repo.preload(:payment_schedules)
+    proposal = insert(:proposal, job: job)
+    [deposit_payment, remainder_payment] = job.payment_schedules |> Enum.sort_by(& &1.due_at)
+
+    Repo.update_all(PaymentSchedule, set: [paid_at: nil])
+
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
+    [
+      proposal: proposal,
+      job: job,
+      user: user,
+      deposit_payment: deposit_payment,
+      remainder_payment: remainder_payment
+    ]
   end
 
   def make_request(conn) do
@@ -31,10 +44,8 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
   end
 
   describe "deposit webhook" do
-    setup %{proposal: proposal} do
-      stub_event(%{proposal_id: proposal.id, paying_for: "deposit"})
-
-      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+    setup %{proposal: proposal, deposit_payment: deposit_payment} do
+      stub_event(%{proposal_id: proposal.id, paying_for: deposit_payment.id})
 
       :ok
     end
@@ -45,24 +56,29 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
       assert_receive {:delivered_email, %{to: [nil: ^user_email]}}
     end
 
-    test "marks booking proposal as paid", %{conn: conn, proposal: %{id: proposal_id}} do
+    test "marks payment schedule as paid", %{conn: conn, deposit_payment: deposit_payment} do
       make_request(conn)
 
-      %{deposit_paid_at: time} = Repo.get(BookingProposal, proposal_id)
+      %{paid_at: time} = deposit_payment |> Repo.reload!()
 
       refute is_nil(time)
     end
   end
 
   describe "remainder webhook" do
-    test "marks booking proposal as paid", %{conn: conn, proposal: proposal} do
-      proposal |> BookingProposal.deposit_paid_changeset() |> Repo.update!()
+    test "marks booking proposal as paid", %{
+      conn: conn,
+      proposal: proposal,
+      deposit_payment: deposit_payment,
+      remainder_payment: remainder_payment
+    } do
+      deposit_payment |> PaymentSchedule.paid_changeset() |> Repo.update!()
 
-      stub_event(%{proposal_id: proposal.id, paying_for: "remainder"})
+      stub_event(%{proposal_id: proposal.id, paying_for: remainder_payment.id})
 
       make_request(conn)
 
-      %{remainder_paid_at: time} = Repo.get(BookingProposal, proposal.id)
+      %{paid_at: time} = remainder_payment |> Repo.reload!()
 
       refute is_nil(time)
     end

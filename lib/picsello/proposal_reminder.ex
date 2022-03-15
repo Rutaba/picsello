@@ -4,6 +4,7 @@ defmodule Picsello.ProposalReminder do
     BookingProposal,
     Client,
     Job,
+    JobStatus,
     Notifiers.ClientNotifier,
     Organization,
     ClientMessage,
@@ -33,8 +34,10 @@ defmodule Picsello.ProposalReminder do
     from(proposal in query,
       left_join: message in ClientMessage,
       on: proposal.job_id == message.job_id and message.scheduled,
+      join: job_status in JobStatus,
+      on: job_status.job_id == proposal.job_id,
       group_by: proposal.id,
-      where: is_nil(proposal.deposit_paid_at),
+      where: job_status.is_lead == true,
       select:
         {proposal.id,
          %{
