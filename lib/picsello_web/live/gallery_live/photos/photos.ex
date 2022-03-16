@@ -750,7 +750,7 @@ end
 
   def product_preview_url(_), do: nil
 
-  defp toggle_border(js \\ %JS{}, ids, mode) do
+  defp toggle_border(js \\ %JS{}, id, mode) do
 #    ids =
 #      photos |> Enum.into([], fn photo -> photo.id end)
     IO.inspect("===============================")

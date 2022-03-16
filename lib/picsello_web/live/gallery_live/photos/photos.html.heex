@@ -80,7 +80,7 @@
                 <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
                     <li class="flex items-center hover:bg-blue-planning-100">
                       <% ids = @photos |> Enum.into([], fn photo -> photo.id end) %>
-                      <button href="#!" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click={toggle_border(ids, "select_all") end}>All</button>
+                      <button href="#!" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click={toggle_border(ids, "select_all")}>All</button>
                       <.icon name="tick" class="w-6 h-5 mr-3" />
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
