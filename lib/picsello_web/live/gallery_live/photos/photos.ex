@@ -454,7 +454,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     socket
     |> assign(:selected_all, "photo-border")
     |> assign(:selected_photos, photo_ids)
-    |> assign(:show_tick, "w-6 h-5 mr-3")
     |> assign(:select_mode, "selected_all")
     |> noreply
   end
@@ -472,7 +471,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
       socket
       |> assign(:page, 0)
       |> assign(:favorites_filter, false)
-      |> assign(:show_tick, "w-6 h-5 mr-3")
       |> assign(:select_mode, "selected_none")
       |> assign_photos()
 
@@ -498,7 +496,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:selected_all, "photo-border")
     |> assign(:favorites_filter, true)
     |> assign(:selected_photos, photo_ids)
-    |> assign(:show_tick, "w-6 h-5 mr-3")
     |> assign(:select_mode, "selected_favorite")
     |> assign_photos()
     |> noreply
