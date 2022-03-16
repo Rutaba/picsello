@@ -103,9 +103,9 @@
 
             <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
             <%= for _err <- upload_errors(@uploads.photo, entry) do %>
-                <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed" data-name={entry.uuid}>
-                                <p class="error btn">Failed</p>
-                                <p class="retry btn">Retry?</p>
+                <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center" data-name={entry.uuid}>
+                                <p class="error btn items-center cursor-default">Failed</p>
+                                <p id="resume-upload" class="retry btn" phx-value-ref={entry.ref} phx-target={@myself} phx-click="resume_upload" phx-hook="ResumeUpload">Retry?</p>
                 </div>
            <% end %>
 

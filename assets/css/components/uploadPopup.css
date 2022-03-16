@@ -135,10 +135,8 @@
 }
 
 .uploadEntry .error {
-    @apply border-2
-    border-solid
-    border-red-sales-300
-    bg-red-sales-100
+    @apply bg-red-sales-100
+    cursor-default
 }
 
 .uploadEntry .retry {

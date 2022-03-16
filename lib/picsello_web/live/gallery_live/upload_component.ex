@@ -37,7 +37,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
     gallery = Galleries.load_watermark_in_gallery(gallery)
-    IO.puts("\n\n########## DEBUG ##########\n socket: #{inspect(socket, pretty: true)} \n########## DEBUG ##########\n\n")
     socket =
       Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
@@ -56,6 +55,13 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     |> assign(:update_mode, "prepend")
     |> assign(:gallery, gallery)
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("resume_upload", %{"ref" => ref}, socket) do
+      socket
+      |> push_event("resume_upload", %{id: ref})
+      |> noreply()
   end
 
   @impl true

@@ -45,6 +45,8 @@ import ToggleContent from './hooks/toggle-content';
 import ToggleNavArrow from './hooks/toggle-nav-arrow';
 import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
+import ResumeUpload from './hooks/resume_upload';
+import GallerySelector from './hooks/gallery-selector';
 
 const Modal = {
   mounted() {
@@ -145,6 +147,8 @@ const Hooks = {
   ToggleContent,
   ToggleNavArrow,
   ToggleSiblings,
+  ResumeUpload,
+  GallerySelector,
 };
 
 let Uploaders = {};
