@@ -220,6 +220,12 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(css("img[src='/fake.jpg']"))
       |> assert_text("Digital download")
       |> assert_has(css("*[title='cart']", text: "0"))
+      |> find(
+        link("Download photos"),
+        &assert(
+          Element.attr(&1, "href") == session |> current_url() |> String.replace(~r/paid$/, "zip")
+        )
+      )
       |> click(link("Home"))
       |> click(link("View Gallery"))
       |> click_first_photo()

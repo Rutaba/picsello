@@ -11,6 +11,8 @@ defmodule Picsello.Cart do
     Cart.Order,
     Cart.Order.Digital,
     Cart.OrderNumber,
+    Galleries.Gallery,
+    Galleries.Photo,
     Repo,
     WHCC
   }
@@ -173,14 +175,62 @@ defmodule Picsello.Cart do
     end
   end
 
-  def get_placed_gallery_order!(%{id: gallery_id}, order_number) do
-    order_id = order_number |> OrderNumber.from_number()
+  def get_placed_gallery_order!(order_number, gallery),
+    do: order_number |> placed_order_query(gallery) |> Repo.one!()
+
+  @spec get_purchased_photos!(String.t(), %{client_link_hash: String.t()}) ::
+          %{organization: %Picsello.Organization{}, photos: [%Photo{}]}
+  def get_purchased_photos!(order_number, %{client_link_hash: gallery_hash} = gallery) do
+    photos =
+      order_number
+      |> placed_order_query(gallery)
+      |> join(
+        :inner,
+        [orders],
+        digital in fragment("jsonb_array_elements(?)", orders.digitals),
+        as: :digital
+      )
+      |> join(:inner, [digital: digital, gallery: gallery], photo in Photo,
+        on:
+          photo.id == fragment("(? -> 'photo_id')::integer", digital) and
+            photo.gallery_id == gallery.id,
+        as: :photo
+      )
+      |> select([photo: photo], photo)
+      |> some!()
+
+    %{
+      organization:
+        from(gallery in Gallery,
+          join: org in assoc(gallery, :organization),
+          where: gallery.client_link_hash == ^gallery_hash,
+          select: org
+        )
+        |> Repo.one!(),
+      photos: photos
+    }
+  end
+
+  defp some!(query),
+    do:
+      query
+      |> Repo.all()
+      |> (case do
+            [] -> raise Ecto.NoResultsError, queryable: query
+            some -> some
+          end)
+
+  defp placed_order_query(order_number, %{client_link_hash: gallery_hash}) do
+    order_id = OrderNumber.from_number(order_number)
 
     from(order in Order,
+      as: :order,
+      join: gallery in assoc(order, :gallery),
+      as: :gallery,
       where:
-        order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and order.id == ^order_id
+        gallery.client_link_hash == ^gallery_hash and not is_nil(order.placed_at) and
+          order.id == ^order_id
     )
-    |> Repo.one!()
   end
 
   def get_orders(gallery_id) do
