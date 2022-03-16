@@ -69,8 +69,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.step_heading name={@step} is_edit={@package.id} />
 
       <%= unless @is_template do %>
-        <div class="py-4 bg-blue-planning-100 modal-banner">
-          <h2 class="text-2xl font-bold text-blue-planning-300"><%= Packages.job_name @job %></h2>
+        <div class="py-4 bg-gray-100 modal-banner">
+          <h2 class="text-2xl font-bold"><%= Packages.job_name @job %></h2>
           <%= unless @package.id do %>
             <.step_subheading name={@step} />
           <% end %>

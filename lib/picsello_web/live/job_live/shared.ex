@@ -224,12 +224,14 @@ defmodule PicselloWeb.JobLive.Shared do
               Package settings <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
             </.icon_button>
           <% end %>
+          <% else %>
+          <button type="button" class="w-full btn-primary w-max p-2 text-sm" phx-click="add-package" >Add a package</button>
         <% end %>
       </div>
 
       <hr class="border-white lg:hidden lg:col-span-2"/>
 
-      <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end">
+      <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end items-center">
         <span class="mb-3 mr-6 font-bold lg:mb-0 whitespace-nowrap"><%= @job.client.name %></span>
 
         <div class="flex">

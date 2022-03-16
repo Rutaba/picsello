@@ -25,15 +25,11 @@
           <div class="absolute -top-1.5 left-1.5">&hellip;</div>
         </button>
       </h1>
-      <%= cond do %>
-        <% is_nil(@package) -> %>
-          <button type="button" class="w-full mt-6 md:w-auto btn-primary" phx-click="add-package" >Add a package</button>
-        <% is_nil(@proposal) -> %>
-          <div class="flex flex-col justify-center">
-            You haven’t sent a proposal yet.
-            <a href="#finish-proposal" class="link">Finish booking details</a>
-          </div>
-        <% true -> %>
+      <%= if @package && @proposal == nil do %>
+        <div class="flex flex-col justify-center">
+          You haven’t sent a proposal yet.
+          <a href="#finish-proposal" class="link">Finish booking details</a>
+        </div>
       <% end %>
     </div>
   </div>
