@@ -1,5 +1,5 @@
 <div>
-  <h3>Gallery name</h3>
+  <h3 class="font-sans">Gallery name</h3>
   <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
     <%= text_input f, :name, class: "gallerySettingsInput" %>
      <div class="flex items-center justify-between w-full mt-5 lg:items-start">

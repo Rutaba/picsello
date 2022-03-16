@@ -79,9 +79,9 @@ defmodule PicselloWeb.GalleryLive.Overview do
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
-      title: "Delete gallery?",
-      subtitle:
-        "Are you sure you wish to permanently delete #{gallery.name} gallery, and the #{gallery.total_count} photos it contains?"
+      title: "Delete Gallery?",
+      gallery_name: gallery.name,
+      gallery_count: gallery.total_count
     })
     |> noreply()
   end

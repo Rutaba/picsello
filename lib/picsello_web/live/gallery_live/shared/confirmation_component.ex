@@ -10,6 +10,8 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
     confirm_label: "Yes",
     confirm_class: "btn-warning",
     icon: "confetti",
+    gallery_name: nil,
+    gallery_count: nil,
     subtitle: nil
   }
 
@@ -34,6 +36,14 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
 
       <%= if @subtitle do %>
         <p class="pt-4"><%= @subtitle %></p>
+      <% end %>
+
+      <%= if @gallery_name && @gallery_count do %>
+        <p class="pt-4 font-sans">Are you sure you wish to permanently delete
+        <span class="font-bold"><%= @gallery_name %></span>
+        gallery, and the
+        <span class="font-bold"><%= @gallery_count %> photos</span>
+        it contains?</p>
       <% end %>
 
       <%= if @confirm_event do %>
@@ -71,6 +81,8 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
           optional(:confirm_class) => binary,
           optional(:icon) => binary | nil,
           optional(:subtitle) => binary,
+          optional(:gallery_name) => binary,
+          optional(:gallery_count) => binary,
           optional(:payload) => map,
           title: binary
         }) :: %Phoenix.LiveView.Socket{}
