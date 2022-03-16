@@ -51,7 +51,5 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
   defp toggle_border(js \\ %JS{}, id, target) do
       js
       |> JS.push("select", target: target, value: %{id: id})
-      |> JS.toggle(to: "#photo-#{id}-selected")
-      |> JS.toggle(to: "#photo-#{id}-to-select")
     end
 end

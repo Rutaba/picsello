@@ -48,6 +48,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:uploaded_files, 0)
       |> assign(:progress, %GalleryUploadProgress{})
       |> assign(:photo_updates, "false")
+      |> assign(:selected_all, "false")
+      |> assign(:selected_favorite, "false")
       |> assign(:update_mode, "append")
       |> allow_upload(:photo, @upload_options)
       |> assign(:selected_photos, [])
@@ -255,12 +257,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
-  def handle_event("click", _, %{assigns: %{photo: photo}} = socket) do
-    IO.inspect("===============================")
-    IO.inspect(photo)
-    IO.inspect("===============================")
-    send(self(), {:photo_click, photo})
-
+  def handle_event("click", _, socket) do
     socket
     |> noreply()
   end
@@ -444,6 +441,62 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
+  def handle_event("selected_all", _, %{assigns: %{
+    selected_all: selected_all,
+    gallery: gallery,
+    favorites_filter: favorites_filter
+  }} = socket) do
+    photo_ids =
+      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
+
+    socket
+    |> assign(:selected_all, "photo-border")
+    |> assign(:selected_photos, photo_ids)
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("selected_none", _, %{assigns: %{selected_all: selected_all}} = socket) do
+
+    socket
+    |> then(fn
+      %{
+        assigns: %{
+          favorites_filter: true
+        }
+      } = socket ->
+      socket
+      |> assign(:page, 0)
+      |> assign(:favorites_filter, false)
+      |> assign_photos()
+
+      socket ->
+        socket
+    end)
+    |> assign(:selected_all, "false")
+    |> assign(:selected_photos, [])
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("selected_favorite", _, %{
+    assigns: %{
+      selected_favorite: selected_favorite,
+      gallery: gallery
+  }} = socket) do
+    photo_ids =
+      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: true)
+    socket
+    |> assign(:page, 0)
+    |> assign(:update_mode, "replace")
+    |> assign(:selected_all, "photo-border")
+    |> assign(:favorites_filter, true)
+    |> assign(:selected_photos, photo_ids)
+    |> assign_photos()
+    |> noreply
+  end
+
+  @impl true
   def handle_event(
         "client-link",
         _,
@@ -494,25 +547,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
-#  @impl true
-#  def handle_event("select_mode", %{"action" => action}, %{assigns: %{photos: photos}} = socket) do
-#    ids =
-#      case action do
-#        "select_all" ->  photos |> Enum.into([], fn photo -> photo.id end)
-#
-#        "favourite" -> photos
-#
-#        _ -> []
-#      end
-#
-#    Enum.each(ids, fn id -> toggle_border(id) end)
-#
-#    send(self(), {:selected_photos, ids})
-#
-#    socket
-#    |> assign(:selected_photos, ids)
-#    |> noreply()
-#  end
+
 
   def handle_info(
         {:message_composed, message_changeset},
@@ -559,12 +594,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   def handle_info({:photo_click, _}, socket), do: noreply(socket)
-
-  def handle_info({:selected_photos, ids}, socket) when is_list(ids) do
-    socket
-    |> assign(:selected_photos, ids)
-    |> noreply()
-  end
 
   def handle_info({:selected_photos, id}, %{assigns: %{selected_photos: selected_photos}} = socket) do
 
@@ -748,27 +777,4 @@ end
 
   def product_preview_url(_), do: nil
 
-  defp toggle_border(js \\ %JS{}, id, mode) do
-#    ids =
-#      photos |> Enum.into([], fn photo -> photo.id end)
-    IO.inspect("===============================")
-    IO.inspect(mode)
-    IO.inspect("===============================")
-#    Enum.map(ids, fn id ->
-#      js
-#      |> JS.dispatch("click", to: "#photo-#{id}")
-#      |> JS.show(to: "#photo-#{id}")
-#      |> JS.add_class(
-#           "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
-#           to: "#photo-#{id}"
-#         )
-#    end)
-    js
-    |> JS.dispatch("click", to: "#photo-#{id}")
-    |> JS.show(to: "#photo-#{id}")
-    |> JS.add_class(
-         "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
-         to: "#photo-#{id}"
-       )
-  end
 end

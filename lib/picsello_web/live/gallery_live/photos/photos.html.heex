@@ -80,15 +80,15 @@
                 <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
                     <li class="flex items-center hover:bg-blue-planning-100">
                       <% ids = @photos |> Enum.into([], fn photo -> photo.id end) %>
-                      <button href="#!" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click={toggle_border(ids, "select_all")}>All</button>
+                      <button id="all" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_all">All</button>
                       <.icon name="tick" class="w-6 h-5 mr-3" />
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button href="#!" class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap">Favorite</button>
+                      <button class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_favorite">Favorite</button>
                       <.icon name="tick" class="hidden w-6 h-5 mr-3" />
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button href="#!" class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap">None</button>
+                      <button class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_none">None</button>
                       <.icon name="tick" class="hidden w-6 h-5 mr-3" />
                     </li>
                 </ul>
@@ -200,7 +200,8 @@
               is_removed: false,
               is_viewable: true,
               is_meatball: true,
-              is_gallery_category_page: false
+              is_gallery_category_page: false,
+              selected_all: @selected_all
           %>
           <%= end %>
         </div>
@@ -213,5 +214,5 @@
       </div>
     </div>
   </div>
- <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent %>
+ <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
 </div>
