@@ -38,7 +38,7 @@
       border
       border-gray-200
       rounded-lg
-      p-2;
+      p-3;
   }
   .select-prompt > select {
     @apply text-gray-400;

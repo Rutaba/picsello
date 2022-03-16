@@ -49,8 +49,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/jobs")
     |> assert_text("You don't have any jobs at the moment")
-    |> click(link("Go to your leads"))
-    |> assert_path("/leads")
+    |> assert_has(link("Create a lead"))
   end
 
   feature "empty leads", %{session: session, lead: lead} do

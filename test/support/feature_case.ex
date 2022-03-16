@@ -7,9 +7,15 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
-    def scroll_into_view(session, testid) do
-      session
-      |> execute_script("document.querySelector('[data-testid=\"#{testid}\"]').scrollIntoView()")
+    def scroll_into_view(session, query) do
+      case Wallaby.Query.compile(query) do
+        {:css, css_selector} ->
+          session
+          |> execute_script("document.querySelector(`#{css_selector}`).scrollIntoView()")
+
+        {type, _selector} ->
+          raise "#{type} not supported. Use a css selector"
+      end
     end
 
     def fill_in_date(session, field, opts \\ []) do

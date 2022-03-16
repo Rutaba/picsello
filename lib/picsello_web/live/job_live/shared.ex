@@ -20,6 +20,8 @@ defmodule PicselloWeb.JobLive.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.FormHelpers
+  import Phoenix.HTML.Form
   use Phoenix.Component
 
   def handle_event(
@@ -310,7 +312,7 @@ defmodule PicselloWeb.JobLive.Shared do
     ~H"""
     <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
     <%= for {shoot_number, shoot} <- @shoots do %>
-      <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
+      <li {testid("shoot-card")} class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
         <%= if shoot do %>
           <%= live_redirect to: @shoot_path.(shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
             <div class="flex items-center justify-between text-xl font-semibold">
@@ -381,55 +383,118 @@ defmodule PicselloWeb.JobLive.Shared do
         }) :: %Phoenix.LiveView.Rendered{}
   def proposal_details(assigns) do
     ~H"""
-      <div class="p-2 border rounded-lg">
-        <div class="flex items-start justify-between p-2">
+    <div {testid("proposal-details")} class="p-2 border rounded-lg">
+      <div class="flex items-start justify-between p-2">
+        <%= if Job.imported?(@job) do %>
+          <p>Your job was imported on <%= strftime(@current_user.time_zone, @job.inserted_at, "%B %d, %Y") %>.</p>
+        <% else %>
           <p>The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%B %d, %Y") %>.</p>
+        <% end %>
+        <%= if PaymentSchedules.has_payments?(@job) do %>
           <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 ml-2 transition-colors" id="copy-client-link" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
             <span>Client Link</span>
             <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
               Copied!
             </div>
           </.icon_button>
-        </div>
-        <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
+        <% end %>
+      </div>
+      <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => (Job.imported?(@job) && PaymentSchedules.has_payments?(@job)) || @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
+        <%= if Job.imported?(@job) do %>
+          <.proposal_details_item title="Proposal" icon="document" pending_status={nil} current_user={@current_user} action="details" />
+          <.proposal_details_item title="Standard Contract" icon="document" status="External" />
+          <.proposal_details_item title="Questionnaire" icon="document" status="External" />
+        <% else %>
           <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
           <.proposal_details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
           <%= if @proposal.questionnaire_id do %>
             <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
           <% end %>
-          <.proposal_details_item title="Invoice" icon="document" status="Completed" date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
-        </div>
+        <% end %>
+        <%= if PaymentSchedules.has_payments?(@job) do %>
+          <.proposal_details_item title="Invoice" icon="document" status="Completed" pending_status={if Job.imported?(@job), do: nil, else: "Pending"} date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
+        <% end %>
       </div>
+    </div>
     """
   end
 
-  @spec proposal_details_item(%{
-          title: binary(),
-          icon: binary(),
-          status: binary(),
-          date: %DateTime{},
-          current_user: %User{}
-        }) :: %Phoenix.LiveView.Rendered{}
-  def proposal_details_item(assigns) do
+  defp proposal_details_item(assigns) do
+    assigns = assigns |> Enum.into(%{action: nil, date: nil, pending_status: "Pending"})
+
     ~H"""
-    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" href="#" phx-click="open-proposal" phx-value-action={@action} title={@title}>
+    <.proposal_details_item_wrapper action={@action} title={@title}>
       <.circle radius="8" class="flex-shrink-0">
         <.icon name={@icon} width="14" height="14" />
       </.circle>
       <div class="ml-2">
         <div class="flex items-center font-bold">
           <%= @title %>
-          <.icon name="forth" class="w-3 h-3 ml-2 stroke-current text-base-300" />
+          <%= if @action do %>
+            <.icon name="forth" class="w-3 h-3 ml-2 stroke-current text-base-300" />
+          <% end %>
         </div>
         <div class="text-xs text-gray-500">
-          <%= if @date do %>
-            <%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span>
-          <% else %>
-            Pending
+          <%= cond do %>
+            <% @date != nil -> %>
+              <%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span>
+            <% @action == nil -> %>
+              <%= @status %>
+            <% true -> %>
+              <%= @pending_status %>
           <% end %>
         </div>
       </div>
+    </.proposal_details_item_wrapper>
+    """
+  end
+
+  defp proposal_details_item_wrapper(%{action: nil} = assigns) do
+    ~H"""
+    <div class="flex items-center p-2 rounded" title={@title}><%= render_slot(@inner_block) %></div>
+    """
+  end
+
+  defp proposal_details_item_wrapper(assigns) do
+    ~H"""
+    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" href="#" title={@title} phx-click="open-proposal" phx-value-action={@action}>
+      <%= render_slot(@inner_block) %>
     </a>
+    """
+  end
+
+  def job_form_fields(assigns) do
+    assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
+
+    ~H"""
+    <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <%= inputs_for @form, :client, fn client_form -> %>
+        <%= labeled_input client_form, :name, label: "Client Name", placeholder: "Elizabeth Taylor", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
+        <%= if @name != nil do %>
+          <%= hidden_input client_form, :name %>
+        <% end %>
+        <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "elizabeth.taylor@example.com", phx_debounce: "500", disabled: @email != nil %>
+        <%= if @email != nil do %>
+          <%= hidden_input client_form, :email %>
+        <% end %>
+        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
+        <%= if @phone != nil do %>
+          <%= hidden_input client_form, :phone %>
+        <% end %>
+      <% end %>
+
+      <%= labeled_select @form, :type, for(type <- @job_types, do: {humanize(type), type}), label: "Type of Photography", prompt: "Select below" %>
+
+      <div class="sm:col-span-2">
+        <div class="flex items-center justify-between mb-2">
+          <%= label_for @form, :notes, label: "Private Notes" %>
+          <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-notes" data-input-name={input_name(@form,:notes)}>
+            Clear
+          </.icon_button>
+        </div>
+        <%= input @form, :notes, type: :textarea, placeholder: "Optional notes", class: "w-full", phx_hook: "AutoHeight", phx_update: "ignore" %>
+      </div>
+    </div>
     """
   end
 

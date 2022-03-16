@@ -10,7 +10,7 @@
     <div class="grid md:grid-cols-2 gap-5">
       <div class="md:mr-24">
         <p class="whitespace-pre-line">
-          <%= if PaymentSchedules.remainder_paid?(@job) do %>
+          <%= if PaymentSchedules.all_paid?(@job) do %>
             Thank you <%= @job.client.name %>,
 
             Your session fee has been paid in full. We are looking forward to capturing this most special day for you.
@@ -34,64 +34,62 @@
       </div>
       <div class="md:border md:border-gray-100 sm:px-10 lg:px-20 py-12">
         <h3 class="text-3xl md:mr-20">Here’s how to officially book your photo session:</h3>
-        <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
-          <div class="flex flex-col items-start w-full">
-            <%= if @proposal.accepted_at do %>
-              <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
-            <% else %>
-              <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
-            <% end %>
-            <div class="flex items-center justify-between w-full">
-              Review your proposal
-              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-            </div>
-          </div>
-        </button>
 
-        <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
-          <div class="flex flex-col items-start w-full">
-            <%= if @proposal.signed_at do %>
-              <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
-            <% else %>
-              <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
-            <% end %>
-            <div class="flex items-center justify-between w-full">
-              Read and agree to your contract
-              <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
-            </div>
-          </div>
-        </button>
-
-        <%= if @proposal.questionnaire_id do %>
-          <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
+        <%= unless Job.imported?(@job) do %>
+          <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
             <div class="flex flex-col items-start w-full">
-              <%= if @answer do %>
+              <%= if @proposal.accepted_at do %>
                 <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
               <% else %>
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
               <div class="flex items-center justify-between w-full">
-                Fill out the initial questionnaire
+                Review your proposal
                 <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
               </div>
             </div>
           </button>
+
+          <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
+            <div class="flex flex-col items-start w-full">
+              <%= if @proposal.signed_at do %>
+                <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+              <% else %>
+                <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+              <% end %>
+              <div class="flex items-center justify-between w-full">
+                Read and agree to your contract
+                <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+              </div>
+            </div>
+          </button>
+
+          <%= if @proposal.questionnaire_id do %>
+            <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
+              <div class="flex flex-col items-start w-full">
+                <%= if @answer do %>
+                  <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+                <% else %>
+                  <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+                <% end %>
+                <div class="flex items-center justify-between w-full">
+                  Fill out the initial questionnaire
+                  <%= icon_tag(@socket, "forth", class: "stroke-current h-4 w-4") %>
+                </div>
+              </div>
+            </button>
+          <% end %>
         <% end %>
 
         <button title="Invoice" type="button" {if invoice_disabled?(@proposal), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal)})} disabled={invoice_disabled?(@proposal)}>
           <div class="flex flex-col items-start w-full">
-            <%= if PaymentSchedules.remainder_paid?(@job) do %>
+            <%= if PaymentSchedules.all_paid?(@job) do %>
               <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
             <% else %>
               <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
             <% end %>
             <div class="flex items-center justify-between w-full">
-              Pay your
-              <%= cond do %>
-               <% !PaymentSchedules.deposit_paid?(@job) -> %>retainer
-               <% !PaymentSchedules.remainder_paid?(@job) -> %> remainder
-               <% true -> %> invoice
-              <% end %>
+              Pay your invoice
               <.icon name="forth" class="w-4 h-4 stroke-current"/>
             </div>
           </div>
