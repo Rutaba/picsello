@@ -18,8 +18,8 @@ defmodule PicselloWeb.Live.Admin.Categories do
     <div class="p-4">
       <h1 class="text-xl">Manage Categories</h1>
       <div class="mt-4 grid gap-2 items-center">
-        <div class="col-start-1 font-bold">WHCC ID</div>
-        <div class="col-start-2 font-bold">WHCC Name</div>
+        <div class="col-start-1 font-bold">WHCC Name</div>
+        <div class="col-start-2 font-bold">WHCC ID</div>
         <div class="col-start-3 font-bold">hidden</div>
         <div class="col-start-4 font-bold">icon</div>
         <div class="col-start-5 font-bold">name</div>
