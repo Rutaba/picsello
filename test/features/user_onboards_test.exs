@@ -6,7 +6,11 @@ defmodule Picsello.UserOnboardsTest do
   setup :authenticated
 
   setup %{session: session} do
-    Tesla.Mock.mock_global(fn %{method: :put} ->
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn %{method: :put} = request ->
+      send(test_pid, {:sendgrid_request, request})
+
       %Tesla.Env{
         status: 202,
         body: %{"job_id" => "1234"}
@@ -108,6 +112,26 @@ defmodule Picsello.UserOnboardsTest do
                }
              }
            } = user
+
+    assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert %{
+             "list_ids" => [
+               "contact-list-transactional-id",
+               "contact-list-trial-welcome-id"
+             ],
+             "contacts" => [
+               %{
+                 "first_name" => "Mary",
+                 "last_name" => "Jane",
+                 "state_province_region" => "OK",
+                 "custom_fields" => %{
+                   "w3_T" => "Photogenious",
+                   "w1_T" => "trial"
+                 }
+               }
+             ]
+           } = Jason.decode!(sendgrid_request_body)
   end
 
   feature "user logs out during onboarding", %{session: session} do

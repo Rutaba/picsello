@@ -24,15 +24,13 @@ defmodule PicselloWeb.UserRegistrationController do
   end
 
   defp add_user_to_sendgrid(user) do
-    name_split = String.split(user.name, " ", trim: true)
-
     %{
       list_ids: SendgridClient.get_all_contact_list_env(),
       contacts: [
         %{
           email: user.email,
-          first_name: List.first(name_split),
-          last_name: List.last(name_split),
+          first_name: Accounts.User.first_name(user),
+          last_name: Accounts.User.last_name(user),
           custom_fields: %{
             w4_N: user.id,
             w3_T: user.organization.name,

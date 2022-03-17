@@ -35,12 +35,37 @@ defmodule Picsello.SignUpTest do
 
     user = User |> Repo.one() |> Repo.preload(:organization)
 
+    send(
+      self(),
+      {:sendgrid_request, sendgrid_contact_request_factory(user)}
+    )
+
     assert %{
              name: "Mary Jane",
              email: "user@example.com",
              time_zone: "FakeTimeZone",
              organization: %{name: "Mary Jane Photography", slug: "mary-jane-photography"}
            } = user
+
+    assert_received {:sendgrid_request,
+                     %{
+                       list_ids: [
+                         "b3cf96e2-0e9f-4630-9e50-2f7c091a46e8",
+                         "97ab1093-714a-47e9-b1fe-38708965b5ff"
+                       ],
+                       contacts: [
+                         %{
+                           email: "user@example.com",
+                           first_name: "Mary",
+                           last_name: "Jane",
+                           custom_fields: %{
+                             w4_N: "1234",
+                             w3_T: "Mary Jane Photography",
+                             w1_T: "pre_trial"
+                           }
+                         }
+                       ]
+                     }}
   end
 
   feature "user sees validation error when signing up", %{session: session} do

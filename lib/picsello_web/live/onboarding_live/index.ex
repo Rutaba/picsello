@@ -258,6 +258,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp update_user_contact_trial(socket, current_user) do
+    IO.inspect(current_user)
+
     %{
       list_ids: SendgridClient.get_all_contact_list_env(),
       contacts: [

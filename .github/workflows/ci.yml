@@ -17,9 +17,6 @@ env:
   PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
   PHOTO_STORAGE_BUCKET: 'picsello-staging'
   PUBLIC_BUCKET: 'test-profiles'
-  SENDGRID_CONTACT_LIST_TRANSACTIONAL: 'b3cf96e2-0e9f-4630-9e50-2f7c091a46e8'
-  SENDGRID_CONTACT_LIST_TRIAL_WELCOME: '97ab1093-714a-47e9-b1fe-38708965b5ff'
-  SENDGRID_MARKETING_UNSUBSCRIBE_ID: '123'
   SHELL: /usr/bin/bash
   SLACK_ICON_EMOJI: ':camera:'
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
