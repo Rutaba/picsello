@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   use PicselloWeb, :live_component
 
   import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
+  alias Phoenix.LiveView.{Upload, UploadConfig, UploadEntry}
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
@@ -43,7 +44,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
         _, socket -> socket
       end)
-
     socket
     |> assign(
       :progress,
@@ -60,9 +60,33 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   @impl true
   def handle_event("resume_upload", %{"ref" => ref}, socket) do
+    upload_config = Map.fetch!(socket.assigns[:uploads] || %{}, :photo)
+    %UploadEntry{} = entry = UploadConfig.get_entry_by_ref(upload_config, ref)
+    entry = %UploadEntry{entry | preflighted?: false}
+    photo = %UploadConfig{
+      upload_config
+      | entries: [entry],
+        errors: []
+    }
+    uploads = put_in(socket.assigns.uploads, [:photo], photo)
+    socket = assign(socket, :__changed__, uploads)
+   # {:ok, socket, entry} = Upload.register_entry_upload(socket, photo, self(), ref)
+    # socket=Upload.unregister_completed_entry_upload(socket, photo, ref)
     socket
-    |> push_event("resume_upload", %{id: ref})
-    |> noreply()
+     |> assign(
+          :progress,
+          Enum.reduce(
+            socket.assigns.uploads.photo.entries,
+            socket.assigns.progress,
+            fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
+          )
+        )
+     |> assign(:update_mode, "prepend")
+     |> noreply()
+
+  # socket
+  #   |> push_event("resume_upload", %{id: ref})
+  #   |> noreply()
   end
 
   @impl true

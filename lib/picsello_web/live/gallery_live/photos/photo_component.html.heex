@@ -9,30 +9,30 @@
     <div id={"item-#{@id}"} class="toggle-item item-content preview relative cursor-pointer">
         <div
             id={"photo-#{@id}"}
-            class="galleryItem"
-            phx-click={toggle_border(@id, @myself)} phx-hook="GallerySelector">
+            class="galleryItem">
+            <div id={"img-#{@id}"} class="galleryItem" phx-click={toggle_border(@id, @myself)} phx-hook="GallerySelector">
+                <div id={"photo-#{@id}-selected"} photo-id={@id} class={"toggle-it " <> @selected_all}></div>
 
-            <div id={"photo-#{@id}-selected"} photo-id={@id} class={"toggle-it " <> @selected_all}></div>
-
-            <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
-                <img
-                    phx-click="click"
-                    phx-value-preview={@photo.preview_url}
-                    phx-value-preview_photo_id={@photo.id}
-                    src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
-                    class="relative"
-                />
-            <% else %>
-                <div class="galleryLoader">
+                <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                     <img
                         phx-click="click"
-                        phx-value-preview="/images/gallery-icon.svg"
+                        phx-value-preview={@photo.preview_url}
                         phx-value-preview_photo_id={@photo.id}
-                        src="/images/gallery-icon.svg"
+                        src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
                         class="relative"
                     />
-                </div>
-            <% end %>
+                <% else %>
+                    <div class="galleryLoader">
+                        <img
+                            phx-click="click"
+                            phx-value-preview="/images/gallery-icon.svg"
+                            phx-value-preview_photo_id={@photo.id}
+                            src="/images/gallery-icon.svg"
+                            class="relative"
+                        />
+                    </div>
+                <% end %>
+            </div>
             <%= if !@is_gallery_category_page do %>
                 <%= if @is_likable do %>
                     <button

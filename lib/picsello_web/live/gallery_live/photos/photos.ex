@@ -113,6 +113,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     #      _, socket -> socket
     #    end)
 
+    
     socket
     |> assign(
       :progress,
