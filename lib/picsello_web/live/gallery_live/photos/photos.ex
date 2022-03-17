@@ -6,23 +6,17 @@ defmodule PicselloWeb.GalleryLive.Photos do
     ]
 
   import PicselloWeb.LiveHelpers
-  import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
 
   alias Phoenix.PubSub
-  alias Picsello.Galleries
   alias Phoenix.LiveView.JS
-  alias Picsello.Galleries.Photo
-  alias Picsello.Galleries.CoverPhoto
-  alias Picsello.Galleries.Workers.PhotoStorage
-  alias Picsello.Galleries.Workers.PositionNormalizer
-  alias Picsello.Messages
+  alias Picsello.{Galleries, Messages}
+  alias Picsello.Galleries.{Photo, CoverPhoto}
+  alias Picsello.Galleries.Workers.{PhotoStorage, PositionNormalizer}
   alias Picsello.Notifiers.ClientNotifier
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias PicselloWeb.GalleryLive.UploadComponent
+  alias Picsello.Galleries.PhotoProcessing.{ProcessingManager, GalleryUploadProgress}
+  alias PicselloWeb.GalleryLive.{UploadComponent, ViewPhoto}
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.Photos.PhotoComponent
-  alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
-  alias PicselloWeb.GalleryLive.ViewPhoto
 
   @per_page 12
   @upload_options [
@@ -50,8 +44,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:photo_updates, "false")
       |> assign(:selected_all, "false")
       |> assign(:selected_favorite, "false")
-      |> assign(:show_tick, "w-6 h-5 mr-3")
-      |> assign(:select_mode, "selected_none")
       |> assign(:update_mode, "append")
       |> allow_upload(:photo, @upload_options)
       |> assign(:selected_photos, [])
@@ -60,60 +52,45 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
-    IO.inspect("reached 1")
     gallery = Galleries.get_gallery!(id)
-    IO.inspect(gallery)
 
-    if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-    end
+    if connected?(socket), do: PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
 
-    a =
-      socket
-      |> assign(
-        favorites_count: Galleries.gallery_favorites_count(gallery),
-        favorites_filter: false,
-        gallery: gallery,
-        page: 0,
-        page_title: page_title(socket.assigns.live_action),
-        products: Galleries.products(gallery)
-      )
-      |> assign_photos()
-      |> then(fn
-        %{
-          assigns: %{
-            live_action: :upload
-          }
-        } = socket ->
-          send(self(), :open_modal)
-          socket
+    socket
+    |> assign(
+      favorites_count: Galleries.gallery_favorites_count(gallery),
+      favorites_filter: false,
+      gallery: gallery,
+      page: 0,
+      page_title: page_title(socket.assigns.live_action),
+      products: Galleries.products(gallery)
+    )
+    |> assign_photos()
+    |> then(fn
+      %{
+        assigns: %{
+          live_action: :upload
+        }
+      } = socket ->
+        send(self(), :open_modal)
+        socket
 
-        socket ->
-          socket
-      end)
-
-    a |> noreply()
+      socket ->
+        socket
+    end)
+    |> noreply()
   end
 
-  # upload start
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: %{id: id}}} = socket) do
-    IO.inspect("reached 2")
-    gallery = Galleries.get_gallery!(id)
-    gallery = Galleries.load_watermark_in_gallery(gallery)
+    gallery = Galleries.get_gallery!(id) |> Galleries.load_watermark_in_gallery()
 
-    if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-    end
+  #  socket =
+  #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
+  #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+  #      _, socket -> socket
+  #    end)
 
-    IO.inspect(socket.assigns.uploads)
-    #  socket =
-    #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
-    #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-    #      _, socket -> socket
-    #    end)
-
-    
     socket
     |> assign(
       :progress,
@@ -165,91 +142,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:error_toast, "hidden")
     |> noreply()
   end
-
-  def handle_progress(
-        :photo,
-        entry,
-        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
-          socket
-      ) do
-    if entry.done? do
-      {:ok, photo} = create_photo(gallery, entry)
-      IO.inspect("reached 3")
-
-      start_photo_processing(photo, gallery.watermark)
-
-      socket
-      |> assign(:upload_toast, "")
-      |> assign(uploaded_files: uploaded_files + 1)
-      |> assign(
-        progress:
-          progress
-          |> GalleryUploadProgress.complete_upload(entry)
-      )
-      |> assign_overall_progress()
-      |> noreply()
-    else
-      socket
-      |> assign(
-        progress:
-          progress
-          |> GalleryUploadProgress.track_progress(entry)
-      )
-      |> assign_overall_progress()
-      |> noreply()
-    end
-  end
-
-  def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
-    key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
-
-    sign_opts = [
-      expires_in: 144_000,
-      bucket: socket.assigns.upload_bucket,
-      key: key,
-      fields: %{
-        "content-type" => entry.client_type,
-        "cache-control" => "public, max-age=@upload_options"
-      },
-      conditions: [["content-length-range", 0, 104_857_600]]
-    ]
-
-    params = PhotoStorage.params_for_upload(sign_opts)
-    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-
-    {:ok, meta, socket}
-  end
-
-  defp total(list) when is_list(list), do: list |> length
-  defp total(_), do: nil
-
-  defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
-    total_progress = GalleryUploadProgress.total_progress(progress)
-    estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
-
-    if total_progress == 100 do
-      send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
-    end
-
-    socket
-    |> assign(:overall_progress, total_progress)
-    |> assign(:estimate, estimate)
-  end
-
-  defp create_photo(gallery, entry) do
-    Galleries.create_photo(%{
-      gallery_id: gallery.id,
-      name: entry.client_name,
-      original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
-      position: (gallery.total_count || 0) + 100
-    })
-  end
-
-  defp start_photo_processing(photo, watermark) do
-    ProcessingManager.start(photo, watermark)
-  end
-
-  # upload end
 
   @impl true
   def handle_event("upload-failed", _, socket) do
@@ -452,7 +344,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
         _,
         %{
           assigns: %{
-            selected_all: selected_all,
+            selected_all: _,
             gallery: gallery,
             favorites_filter: favorites_filter
           }
@@ -464,12 +356,11 @@ defmodule PicselloWeb.GalleryLive.Photos do
     socket
     |> assign(:selected_all, "photo-border")
     |> assign(:selected_photos, photo_ids)
-    |> assign(:select_mode, "selected_all")
     |> noreply
   end
 
   @impl true
-  def handle_event("selected_none", _, %{assigns: %{selected_all: selected_all}} = socket) do
+  def handle_event("selected_none", _, %{assigns: %{selected_all: _}} = socket) do
     socket
     |> then(fn
       %{
@@ -480,7 +371,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
         socket
         |> assign(:page, 0)
         |> assign(:favorites_filter, false)
-        |> assign(:select_mode, "selected_none")
         |> assign_photos()
 
       socket ->
@@ -497,7 +387,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
         _,
         %{
           assigns: %{
-            selected_favorite: selected_favorite,
+            selected_favorite: _,
             gallery: gallery
           }
         } = socket
@@ -510,7 +400,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:selected_all, "photo-border")
     |> assign(:favorites_filter, true)
     |> assign(:selected_photos, photo_ids)
-    |> assign(:select_mode, "selected_favorite")
     |> assign_photos()
     |> noreply
   end
@@ -566,6 +455,88 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
+  def handle_progress(
+        :photo,
+        entry,
+        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
+          socket
+      ) do
+    if entry.done? do
+      {:ok, photo} = create_photo(gallery, entry)
+
+      start_photo_processing(photo, gallery.watermark)
+
+      socket
+      |> assign(:upload_toast, "")
+      |> assign(uploaded_files: uploaded_files + 1)
+      |> assign(
+           progress:
+             progress
+             |> GalleryUploadProgress.complete_upload(entry)
+         )
+      |> assign_overall_progress()
+      |> noreply()
+    else
+      socket
+      |> assign(
+           progress:
+             progress
+             |> GalleryUploadProgress.track_progress(entry)
+         )
+      |> assign_overall_progress()
+      |> noreply()
+    end
+  end
+
+  # duplicate functions, already exist in uploads
+  def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
+    key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
+
+    sign_opts = [
+      expires_in: 144_000,
+      bucket: socket.assigns.upload_bucket,
+      key: key,
+      fields: %{
+        "content-type" => entry.client_type,
+        "cache-control" => "public, max-age=@upload_options"
+      },
+      conditions: [["content-length-range", 0, 104_857_600]]
+    ]
+
+    params = PhotoStorage.params_for_upload(sign_opts)
+    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+
+    {:ok, meta, socket}
+  end
+
+  defp total(list) when is_list(list), do: list |> length
+  defp total(_), do: nil
+
+  defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
+    total_progress = GalleryUploadProgress.total_progress(progress)
+    estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
+
+    if total_progress == 100 do
+      send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
+    end
+
+    socket
+    |> assign(:overall_progress, total_progress)
+    |> assign(:estimate, estimate)
+  end
+
+  defp create_photo(gallery, entry) do
+    Galleries.create_photo(%{
+      gallery_id: gallery.id,
+      name: entry.client_name,
+      original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
+      position: (gallery.total_count || 0) + 100
+    })
+  end
+
+  defp start_photo_processing(photo, watermark), do: ProcessingManager.start(photo, watermark)
+
+
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -589,15 +560,13 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{
         id: photo.id,
         url: display_photo(photo.watermarked_preview_url || photo.preview_url)
       }
       |> Jason.encode!()
-
-    IO.inspect(photo_update)
 
     socket
     # |> assign(:gallery, Galleries.get_gallery!(gallery.id))
@@ -693,7 +662,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
           }
         } = socket
       ) do
-    IO.inspect(gallery)
     Galleries.update_gallery_photo_count(gallery.id)
 
     Galleries.normalize_gallery_photo_positions(gallery.id)
@@ -764,27 +732,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
       photos
       |> length > per_page
     )
-  end
-
-  # duplicate functions, already exist in uploads
-  def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
-    key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
-
-    sign_opts = [
-      expires_in: 144_000,
-      bucket: socket.assigns.upload_bucket,
-      key: key,
-      fields: %{
-        "content-type" => entry.client_type,
-        "cache-control" => "public, max-age=@upload_options"
-      },
-      conditions: [["content-length-range", 0, 104_857_600]]
-    ]
-
-    params = PhotoStorage.params_for_upload(sign_opts)
-    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-
-    {:ok, meta, socket}
   end
 
   defp page_title(:show), do: "Show Gallery"

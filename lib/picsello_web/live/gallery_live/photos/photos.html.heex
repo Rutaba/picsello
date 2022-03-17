@@ -22,9 +22,11 @@
           </h1>
           <%= if total(@selected_photos) > 0 do %>
           <div class="flex flex-col items-center ml-8 text-lg text-gray-300 w-80 lg:justify-start"><%= total(@selected_photos) %> photos selected</div>
-          <%= end %>
-
-
+          <% end %>
+          <%#
+            <button type="button" class="flex items-center px-4 py-2 bg-white border rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75">
+            <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+            Add photos %>
             <form id="dragDrop-form" phx-submit="save" phx-change="start">
                 <div class="dragDrop"
                     id="dropzone"
@@ -63,9 +65,8 @@
 
         <div class="grid pt-8 center-container lg:grid-cols-2">
           <div class="flex flex-col justify-start md:flex-row gap-x-5">
-
-            <div class="h-10 mb-4 font-vietnam bg-white rounded-md cursor-pointer">
-              <div id="select" class="relative"phx-hook="ToggleContent">
+            <div class="h-10 mb-4 font-bold bg-white rounded-md cursor-pointer">
+              <div id="select" class="relative" phx-hook="ToggleContent">
                 <div class="flex items-center w-32 h-10 pr-2 overflow-hidden transition duration-300 ease-in-out rounded-md cursor-pointer text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
                     <div class="mx-3">
                       <span>Select</span>
@@ -74,19 +75,19 @@
                       <path fill="currentColor" d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
                     </svg>
                 </div>
-                <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
+                <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle toggle-content">
                     <li class="flex items-center hover:bg-blue-planning-100">
                       <% ids = @photos |> Enum.into([], fn photo -> photo.id end) %>
-                      <button id="all" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_all">All</button>
-                      <.icon name="tick" class={@select_mode == "selected_all" && @show_tick || "hidden w-6 h-5 mr-3"} />
+                      <button id="all" phx-hook="SelectHighlighter" parent-class="toggle" target-class="toggle-it" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_all">All</button>
+                      <.icon name="tick" class="toggle-it hidden w-6 h-5 mr-3" />
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_favorite">Favorite</button>
-                      <.icon name="tick" class={@select_mode == "selected_favorite" && @show_tick || "hidden w-6 h-5 mr-3"} />
+                      <button id="favorite" phx-hook="SelectHighlighter" parent-class="toggle" target-class="toggle-it" class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_favorite">Favorite</button>
+                      <.icon id="select_favorite" name="tick" class="toggle-it hidden w-6 h-5 mr-3" />
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_none">None</button>
-                      <.icon name="tick" class={@select_mode == "selected_none" && @show_tick || "hidden w-6 h-5 mr-3"} />
+                      <button id="none" phx-hook="SelectHighlighter" parent-class="toggle" target-class="toggle-it" class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_none">None</button>
+                      <.icon id="selected_none" name="tick" class="toggle-it hidden w-6 h-5 mr-3" />
                     </li>
                 </ul>
               </div>
@@ -155,16 +156,16 @@
                           <p class="text-center">
                               <span class="font-bold">Drop images or </span>
                               <span class="font-bold cursor-pointer primary">Browse</span>
-                                  <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                              <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                           </p>
                           <p class="text-center gray">Supports JPEG or PNG</p>
                       </div>
                   </div>
-            </label>
+              </label>
               </div>
           </form>
       </div>
-      <%= else %>
+      <% else %>
       <div class="px-0 pb-32 mx-0 gallery__container" id="gallery">
         <%= if @live_action in [:edit] do %>
           <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
@@ -200,14 +201,14 @@
               is_gallery_category_page: false,
               selected_all: @selected_all
           %>
-          <%= end %>
+        <% end %>
         </div>
 
         <div style="display: none">
           <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
         </div>
       </div>
-      <%= end %>
+      <% end %>
       </div>
     </div>
   </div>
