@@ -122,8 +122,6 @@ defmodule Picsello.UserOnboardsTest do
              ],
              "contacts" => [
                %{
-                 "first_name" => "Mary",
-                 "last_name" => "Jane",
                  "state_province_region" => "OK",
                  "custom_fields" => %{
                    "w3_T" => "Photogenious",

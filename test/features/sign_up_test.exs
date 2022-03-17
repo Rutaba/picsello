@@ -4,7 +4,11 @@ defmodule Picsello.SignUpTest do
   alias Picsello.{Repo, Accounts.User}
 
   setup do
-    Tesla.Mock.mock_global(fn %{method: :put} ->
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn %{method: :put} = request ->
+      send(test_pid, {:sendgrid_request, request})
+
       %Tesla.Env{
         status: 202,
         body: %{"job_id" => "1234"}
@@ -35,11 +39,6 @@ defmodule Picsello.SignUpTest do
 
     user = User |> Repo.one() |> Repo.preload(:organization)
 
-    send(
-      self(),
-      {:sendgrid_request, sendgrid_contact_request_factory(user)}
-    )
-
     assert %{
              name: "Mary Jane",
              email: "user@example.com",
@@ -47,25 +46,25 @@ defmodule Picsello.SignUpTest do
              organization: %{name: "Mary Jane Photography", slug: "mary-jane-photography"}
            } = user
 
-    assert_received {:sendgrid_request,
-                     %{
-                       list_ids: [
-                         "b3cf96e2-0e9f-4630-9e50-2f7c091a46e8",
-                         "97ab1093-714a-47e9-b1fe-38708965b5ff"
-                       ],
-                       contacts: [
-                         %{
-                           email: "user@example.com",
-                           first_name: "Mary",
-                           last_name: "Jane",
-                           custom_fields: %{
-                             w4_N: "1234",
-                             w3_T: "Mary Jane Photography",
-                             w1_T: "pre_trial"
-                           }
-                         }
-                       ]
-                     }}
+    assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert %{
+             "list_ids" => [
+               "contact-list-transactional-id",
+               "contact-list-trial-welcome-id"
+             ],
+             "contacts" => [
+               %{
+                 "custom_fields" => %{
+                   "w3_T" => "Mary Jane Photography",
+                   "w1_T" => "pre_trial"
+                 },
+                 "email" => "user@example.com",
+                 "first_name" => "Mary",
+                 "last_name" => "Jane"
+               }
+             ]
+           } = Jason.decode!(sendgrid_request_body)
   end
 
   feature "user sees validation error when signing up", %{session: session} do
@@ -113,5 +112,24 @@ defmodule Picsello.SignUpTest do
     |> click(link("Sign Up"))
     |> click(link("Continue with Google"))
     |> assert_path("/onboarding")
+
+    assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert %{
+             "list_ids" => [
+               "contact-list-transactional-id",
+               "contact-list-trial-welcome-id"
+             ],
+             "contacts" => [
+               %{
+                 "custom_fields" => %{
+                   "w1_T" => "pre_trial"
+                 },
+                 "email" => "brian@example.com",
+                 "first_name" => "brian",
+                 "last_name" => nil
+               }
+             ]
+           } = Jason.decode!(sendgrid_request_body)
   end
 end

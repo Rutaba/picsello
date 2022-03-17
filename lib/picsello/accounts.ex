@@ -367,6 +367,7 @@ defmodule Picsello.Accounts do
         })
         |> Ecto.Changeset.put_change(:sign_up_auth_provider, provider)
         |> Repo.insert()
+        |> add_auth_user_to_sendgrid()
 
       user ->
         {:ok, user}
@@ -375,5 +376,31 @@ defmodule Picsello.Accounts do
 
   def generate_password(length \\ 20) do
     :crypto.strong_rand_bytes(length) |> Base.encode64() |> binary_part(0, length)
+  end
+
+  defp add_auth_user_to_sendgrid(changeset) do
+    case changeset do
+      {:ok, user} ->
+        %{
+          list_ids: SendgridClient.get_all_contact_list_env(),
+          contacts: [
+            %{
+              email: user.email,
+              first_name: User.first_name(user),
+              last_name: User.last_name(user),
+              custom_fields: %{
+                w4_N: user.id,
+                w1_T: "pre_trial"
+              }
+            }
+          ]
+        }
+        |> SendgridClient.add_contacts()
+
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 end
