@@ -238,7 +238,7 @@ defmodule Picsello.Galleries do
     |> Ecto.Multi.delete(:gallery, gallery)
     |> Repo.transaction()
     |> then(fn
-      {:ok, %{gallery: gallery}} ->  {:ok, gallery}
+      {:ok, %{gallery: gallery}} -> {:ok, gallery}
       {:error, reason} -> reason
     end)
 
@@ -253,6 +253,7 @@ defmodule Picsello.Galleries do
   defp gallery_products_query(gallery) do
     from(gp in GalleryProduct, where: gp.gallery_id == ^gallery.id)
   end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking gallery changes.
 

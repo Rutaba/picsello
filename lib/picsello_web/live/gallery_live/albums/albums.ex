@@ -70,8 +70,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
         "go_to_album_selected",
         %{},
         %{
-          assigns: %{
-          }
+          assigns: %{}
         } = socket
       ) do
     socket
@@ -84,8 +83,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
         "share_album_selected",
         %{},
         %{
-          assigns: %{
-          }
+          assigns: %{}
         } = socket
       ) do
     socket
@@ -98,8 +96,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
         "edit_album_thumbnail_selected",
         %{},
         %{
-          assigns: %{
-          }
+          assigns: %{}
         } = socket
       ) do
     socket
@@ -118,9 +115,13 @@ defmodule PicselloWeb.GalleryLive.Albums do
         } = socket
       ) do
     album = Repo.get!(Album, album_id)
+
     socket
     |> assign(:selected_item, "go_to_album_settings")
-    |> open_modal(PicselloWeb.GalleryLive.Albums.AlbumSettingsModal, %{gallery_id: gallery_id, album: album})
+    |> open_modal(PicselloWeb.GalleryLive.Albums.AlbumSettingsModal, %{
+      gallery_id: gallery_id,
+      album: album
+    })
     |> noreply()
   end
 end

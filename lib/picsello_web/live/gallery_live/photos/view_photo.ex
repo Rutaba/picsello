@@ -11,13 +11,13 @@ defmodule PicselloWeb.GalleryLive.ViewPhoto do
 
     socket
     |> assign(
-         gallery_id: gallery.id,
-         photo_client_liked: photo.client_liked,
-         photo_id: photo.id,
-         photo_ids: photo_ids,
-         products: products,
-         url: path(photo.watermarked_preview_url || photo.preview_url)
-       )
+      gallery_id: gallery.id,
+      photo_client_liked: photo.client_liked,
+      photo_id: photo.id,
+      photo_ids: photo_ids,
+      products: products,
+      url: path(photo.watermarked_preview_url || photo.preview_url)
+    )
     |> ok()
   end
 
@@ -51,11 +51,11 @@ defmodule PicselloWeb.GalleryLive.ViewPhoto do
 
   @impl true
   def handle_event("keydown", %{"key" => "ArrowLeft"}, socket),
-      do: __MODULE__.handle_event("prev", [], socket)
+    do: __MODULE__.handle_event("prev", [], socket)
 
   @impl true
   def handle_event("keydown", %{"key" => "ArrowRight"}, socket),
-      do: __MODULE__.handle_event("next", [], socket)
+    do: __MODULE__.handle_event("next", [], socket)
 
   @impl true
   def handle_event("keydown", _, socket), do: socket |> noreply

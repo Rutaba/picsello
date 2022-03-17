@@ -569,4 +569,8 @@
       rgba(0, 0, 0, 0.732) 99.72%
     );
   }
+
+  .font-vietnam {
+    font-family: "Be Vietnam";
+  }
 }

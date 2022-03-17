@@ -22,8 +22,10 @@ defmodule PicselloWeb.ConfirmationComponent do
 
   @impl true
   def render(assigns) do
+    assigns = Enum.into(assigns, %{classes: "dialog"})
+
     ~H"""
-    <div class="dialog">
+    <div class={@classes}>
       <%= if @icon do %>
         <.icon name={@icon} class="w-11 h-11" />
       <% end %>
@@ -69,6 +71,7 @@ defmodule PicselloWeb.ConfirmationComponent do
           optional(:confirm_event) => any,
           optional(:confirm_label) => binary,
           optional(:confirm_class) => binary,
+          optional(:classes) => binary | nil,
           optional(:icon) => binary | nil,
           optional(:subtitle) => binary,
           optional(:payload) => map,

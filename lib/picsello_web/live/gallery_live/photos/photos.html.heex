@@ -4,11 +4,11 @@
     <div class="w-full h-full bg-gray-100">
       <div>
       <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
-          <div class="flex font-bold bg-white rounded-lg shadow-lg cursor-pointer">
+          <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
             <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
               <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
             </div>
-            <div class="flex items-center justify-center flex-grow p-3"><%= @uploaded_files %>/<%= total(@uploads.photo.entries) %> photos uploaded successfully</div>
+            <div class="flex items-center justify-center font-vietnam flex-grow p-3"><%= @uploaded_files %>/<%= total(@uploads.photo.entries) %> photos uploaded successfully</div>
             <div class="flex items-center justify-center mr-3">
               <.icon name="close-x" class="w-3 h-3 stroke-current" />
             </div>
@@ -23,10 +23,8 @@
           <%= if total(@selected_photos) > 0 do %>
           <div class="flex flex-col items-center ml-8 text-lg text-gray-300 w-80 lg:justify-start"><%= total(@selected_photos) %> photos selected</div>
           <%= end %>
-          <%#
-            <button type="button" class="flex items-center px-4 py-2 bg-white border rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75">
-            <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
-            Add photos %>
+
+
             <form id="dragDrop-form" phx-submit="save" phx-change="start">
                 <div class="dragDrop"
                     id="dropzone"
@@ -48,7 +46,6 @@
               </label>
                 </div>
             </form>
-          <%# </button> %>
         </div>
 
       <div class="flex items-center mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
@@ -57,7 +54,7 @@
           <use href="/images/icons.svg#warning-orange"></use>
         </svg>
         </div>
-        <div class="flex-grow p-4">
+        <div class="flex-grow font-vietnam p-4">
           2 photos failed to upload.
           <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
           to resolve errors.
@@ -67,7 +64,7 @@
         <div class="grid pt-8 center-container lg:grid-cols-2">
           <div class="flex flex-col justify-start md:flex-row gap-x-5">
 
-            <div class="h-10 mb-4 font-bold bg-white rounded-md cursor-pointer">
+            <div class="h-10 mb-4 font-vietnam bg-white rounded-md cursor-pointer">
               <div id="select" class="relative"phx-hook="ToggleContent">
                 <div class="flex items-center w-32 h-10 pr-2 overflow-hidden transition duration-300 ease-in-out rounded-md cursor-pointer text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
                     <div class="mx-3">
@@ -95,7 +92,7 @@
               </div>
             </div>
 
-            <div class="h-10 mb-4 font-bold bg-white rounded-md cursor-pointer">
+            <div class="h-10 mb-4 font-vietnam bg-white rounded-md cursor-pointer">
               <div id="actions" class="relative" phx-hook="ToggleContent">
                 <div class="flex items-center w-64 h-10 pr-2 overflow-hidden transition duration-300 ease-in-out rounded-md cursor-pointer text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
                     <div class="mx-3">
@@ -123,9 +120,9 @@
             </div>
           </div>
 
-          <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end">
+          <div class="flex flex-col items-start min-w-0 lg:flex-row lg:justify-end">
               <label class="flex items-center float-right cursor-pointer">
-                  <div class="text-sm lg:text-lg">Show favorites only
+                  <div class="text-sm lg:text-lg font-vietnam">Show favorites only
                   </div>
                   <div class="relative ml-3">
                       <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
@@ -214,5 +211,5 @@
       </div>
     </div>
   </div>
- <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+ <%= # live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
 </div>

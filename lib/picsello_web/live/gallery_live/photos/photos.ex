@@ -1,9 +1,9 @@
 defmodule PicselloWeb.GalleryLive.Photos do
   @moduledoc false
   use PicselloWeb,
-      live_view: [
-        layout: "live_client"
-      ]
+    live_view: [
+      layout: "live_client"
+    ]
 
   import PicselloWeb.LiveHelpers
   import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
@@ -63,64 +63,67 @@ defmodule PicselloWeb.GalleryLive.Photos do
     IO.inspect("reached 1")
     gallery = Galleries.get_gallery!(id)
     IO.inspect(gallery)
+
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
-    a=socket
-    |> assign(
-         favorites_count: Galleries.gallery_favorites_count(gallery),
-         favorites_filter: false,
-         gallery: gallery,
-         page: 0,
-         page_title: page_title(socket.assigns.live_action),
-         products: Galleries.products(gallery)
-       )
-    |> assign_photos()
-    |> then(fn
-      %{
-        assigns: %{
-          live_action: :upload
-        }
-      } = socket ->
-        send(self(), :open_modal)
-        socket
+    a =
+      socket
+      |> assign(
+        favorites_count: Galleries.gallery_favorites_count(gallery),
+        favorites_filter: false,
+        gallery: gallery,
+        page: 0,
+        page_title: page_title(socket.assigns.live_action),
+        products: Galleries.products(gallery)
+      )
+      |> assign_photos()
+      |> then(fn
+        %{
+          assigns: %{
+            live_action: :upload
+          }
+        } = socket ->
+          send(self(), :open_modal)
+          socket
 
-      socket ->
-        socket
-    end)
+        socket ->
+          socket
+      end)
+
     a |> noreply()
   end
-
 
   # upload start
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: %{id: id}}} = socket) do
     IO.inspect("reached 2")
-   gallery = Galleries.get_gallery!(id)
-   gallery = Galleries.load_watermark_in_gallery(gallery)
-   if connected?(socket) do
-     PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-   end
+    gallery = Galleries.get_gallery!(id)
+    gallery = Galleries.load_watermark_in_gallery(gallery)
 
-  IO.inspect(socket.assigns.uploads)
-  #  socket =
-  #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
-  #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-  #      _, socket -> socket
-  #    end)
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+    end
 
-  socket
-   |> assign(
-        :progress,
-        Enum.reduce(
-          socket.assigns.uploads.photo.entries,
-          socket.assigns.progress,
-          fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
-        )
+    IO.inspect(socket.assigns.uploads)
+    #  socket =
+    #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
+    #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+    #      _, socket -> socket
+    #    end)
+
+    socket
+    |> assign(
+      :progress,
+      Enum.reduce(
+        socket.assigns.uploads.photo.entries,
+        socket.assigns.progress,
+        fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
       )
-   |> assign(:update_mode, "prepend")
-   |> assign(:gallery, gallery)
+    )
+    |> assign(:update_mode, "prepend")
+    |> assign(:gallery, gallery)
     |> noreply()
   end
 
@@ -178,19 +181,19 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:upload_toast, "")
       |> assign(uploaded_files: uploaded_files + 1)
       |> assign(
-           progress:
-             progress
-             |> GalleryUploadProgress.complete_upload(entry)
-         )
+        progress:
+          progress
+          |> GalleryUploadProgress.complete_upload(entry)
+      )
       |> assign_overall_progress()
       |> noreply()
     else
       socket
       |> assign(
-           progress:
-             progress
-             |> GalleryUploadProgress.track_progress(entry)
-         )
+        progress:
+          progress
+          |> GalleryUploadProgress.track_progress(entry)
+      )
       |> assign_overall_progress()
       |> noreply()
     end
@@ -198,7 +201,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
-
 
     sign_opts = [
       expires_in: 144_000,
@@ -245,16 +247,16 @@ defmodule PicselloWeb.GalleryLive.Photos do
   defp start_photo_processing(photo, watermark) do
     ProcessingManager.start(photo, watermark)
   end
+
   # upload end
 
   @impl true
   def handle_event("upload-failed", _, socket) do
-    IO.inspect(socket.assigns)
     socket
     |> open_modal(
-         UploadComponent,
-         socket.assigns
-       )
+      UploadComponent,
+      socket.assigns
+    )
     |> noreply
   end
 
@@ -280,15 +282,15 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
     socket
     |> open_modal(
-         ViewPhoto,
-         %{
-           gallery: gallery,
-           photo_id: photo_id,
-           photo_ids:
-             CLL.init(photo_ids)
-             |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
-         }
-       )
+      ViewPhoto,
+      %{
+        gallery: gallery,
+        photo_id: photo_id,
+        photo_ids:
+          CLL.init(photo_ids)
+          |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
+      }
+    )
     |> noreply
   end
 
@@ -431,6 +433,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
       confirm_event: "delete_photo",
+      classes: "dialog-photographer",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
       title: "Delete this photo?",
@@ -443,11 +446,17 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
-  def handle_event("selected_all", _, %{assigns: %{
-    selected_all: selected_all,
-    gallery: gallery,
-    favorites_filter: favorites_filter
-  }} = socket) do
+  def handle_event(
+        "selected_all",
+        _,
+        %{
+          assigns: %{
+            selected_all: selected_all,
+            gallery: gallery,
+            favorites_filter: favorites_filter
+          }
+        } = socket
+      ) do
     photo_ids =
       Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
 
@@ -460,7 +469,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_event("selected_none", _, %{assigns: %{selected_all: selected_all}} = socket) do
-
     socket
     |> then(fn
       %{
@@ -468,11 +476,11 @@ defmodule PicselloWeb.GalleryLive.Photos do
           favorites_filter: true
         }
       } = socket ->
-      socket
-      |> assign(:page, 0)
-      |> assign(:favorites_filter, false)
-      |> assign(:select_mode, "selected_none")
-      |> assign_photos()
+        socket
+        |> assign(:page, 0)
+        |> assign(:favorites_filter, false)
+        |> assign(:select_mode, "selected_none")
+        |> assign_photos()
 
       socket ->
         socket
@@ -483,13 +491,18 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
-  def handle_event("selected_favorite", _, %{
-    assigns: %{
-      selected_favorite: selected_favorite,
-      gallery: gallery
-  }} = socket) do
-    photo_ids =
-      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: true)
+  def handle_event(
+        "selected_favorite",
+        _,
+        %{
+          assigns: %{
+            selected_favorite: selected_favorite,
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    photo_ids = Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: true)
+
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
@@ -552,8 +565,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
-
-
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -584,7 +595,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
         url: display_photo(photo.watermarked_preview_url || photo.preview_url)
       }
       |> Jason.encode!()
+
     IO.inspect(photo_update)
+
     socket
     # |> assign(:gallery, Galleries.get_gallery!(gallery.id))
     |> assign(:photo_updates, photo_update)
@@ -600,18 +613,21 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   def handle_info({:photo_click, _}, socket), do: noreply(socket)
 
-  def handle_info({:selected_photos, id}, %{assigns: %{selected_photos: selected_photos}} = socket) do
-
-    selected_photos = if Enum.member?(selected_photos, id) do
-      List.delete(selected_photos, id)
-    else
-      [id | selected_photos]
-    end
+  def handle_info(
+        {:selected_photos, id},
+        %{assigns: %{selected_photos: selected_photos}} = socket
+      ) do
+    selected_photos =
+      if Enum.member?(selected_photos, id) do
+        List.delete(selected_photos, id)
+      else
+        [id | selected_photos]
+      end
 
     socket
     |> assign(:selected_photos, selected_photos)
     |> noreply()
-end
+  end
 
   @impl true
   def handle_info(
@@ -680,10 +696,10 @@ end
     Galleries.update_gallery_photo_count(gallery.id)
 
     Galleries.normalize_gallery_photo_positions(gallery.id)
-#    gallery = Galleries.get_gallery!(gallery.id)
+    #    gallery = Galleries.get_gallery!(gallery.id)
     # IO.inspect(gallery)
     socket
-#    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
+    #    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
     |> noreply()
   end
 
@@ -738,16 +754,17 @@ end
 
     socket
     |> assign(
-         :photos,
-         photos
-         |> Enum.take(per_page)
-       )
+      :photos,
+      photos
+      |> Enum.take(per_page)
+    )
     |> assign(
-         :has_more_photos,
-         photos
-         |> length > per_page
-       )
+      :has_more_photos,
+      photos
+      |> length > per_page
+    )
   end
+
   # duplicate functions, already exist in uploads
   def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
@@ -774,12 +791,11 @@ end
   defp page_title(:upload), do: "New Gallery"
 
   def product_preview_url(%{
-    preview_photo: %{
-      preview_url: url
-    }
-  }),
+        preview_photo: %{
+          preview_url: url
+        }
+      }),
       do: url
 
   def product_preview_url(_), do: nil
-
 end

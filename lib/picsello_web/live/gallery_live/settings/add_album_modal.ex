@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
 
     socket
     |> assign(:changeset, new)
-    |> assign(:gallery_id, assigns[:gallery_id] )
+    |> assign(:gallery_id, assigns[:gallery_id])
     |> ok()
   end
 

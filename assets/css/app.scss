@@ -139,6 +139,9 @@ html {
 .dialog {
   @apply max-w-md bare-modal;
 }
+.dialog-photographer {
+  @apply max-w-md bare-modal;
+}
 
 .badge {
   @apply px-2 py-1 font-bold text-white rounded;

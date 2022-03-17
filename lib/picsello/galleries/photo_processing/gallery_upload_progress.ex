@@ -68,7 +68,6 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
     else
       total
     end
-
   end
 
   defp done_total_progress(progress) do

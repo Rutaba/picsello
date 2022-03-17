@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
         do: :increase_favorites_count,
         else: :reduce_favorites_count
 
-#    send(self(), favorites_update)
+    #    send(self(), favorites_update)
 
     socket |> noreply()
   end
@@ -37,6 +37,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
 
   def handle_event("select", %{"id" => id}, socket) do
     send(self(), {:selected_photos, id})
+
     socket
     |> noreply()
   end
@@ -49,7 +50,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
   end
 
   defp toggle_border(js \\ %JS{}, id, target) do
-      js
-      |> JS.push("select", target: target, value: %{id: id})
-    end
+    js
+    |> JS.push("select", target: target, value: %{id: id})
+  end
 end

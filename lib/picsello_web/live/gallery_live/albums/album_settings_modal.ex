@@ -37,7 +37,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettingsModal do
     |> Repo.update()
 
     socket
-    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id, upload_toast: nil))
+    |> push_redirect(
+      to:
+        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id, upload_toast: nil)
+    )
     |> noreply()
   end
 

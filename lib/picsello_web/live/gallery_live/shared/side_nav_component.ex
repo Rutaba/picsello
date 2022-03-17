@@ -4,7 +4,10 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   alias Picsello.Galleries
 
   @impl true
-  def update(%{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show}, socket) do
+  def update(
+        %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show},
+        socket
+      ) do
     {:ok,
      socket
      |> assign(:id, id)
@@ -30,7 +33,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> assign(:gallery, gallery)
     |> noreply
   end
-
 
   @impl true
   def handle_event(
@@ -76,7 +78,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
     |> noreply()
   end
-
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
     do: socket |> assign(:changeset, Galleries.change_gallery(gallery))
