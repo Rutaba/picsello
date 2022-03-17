@@ -59,37 +59,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   end
 
   @impl true
-  def handle_event("resume_upload", %{"ref" => ref}, socket) do
-    upload_config = Map.fetch!(socket.assigns[:uploads] || %{}, :photo)
-    %UploadEntry{} = entry = UploadConfig.get_entry_by_ref(upload_config, ref)
-    entry = %UploadEntry{entry | preflighted?: false}
-    photo = %UploadConfig{
-      upload_config
-      | entries: [entry],
-        errors: []
-    }
-    uploads = put_in(socket.assigns.uploads, [:photo], photo)
-    socket = assign(socket, :__changed__, uploads)
-   # {:ok, socket, entry} = Upload.register_entry_upload(socket, photo, self(), ref)
-    # socket=Upload.unregister_completed_entry_upload(socket, photo, ref)
-    socket
-     |> assign(
-          :progress,
-          Enum.reduce(
-            socket.assigns.uploads.photo.entries,
-            socket.assigns.progress,
-            fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
-          )
-        )
-     |> assign(:update_mode, "prepend")
-     |> noreply()
-
-  # socket
-  #   |> push_event("resume_upload", %{id: ref})
-  #   |> noreply()
-  end
-
-  @impl true
   def handle_event("close", _, socket) do
     send(self(), :close_upload_popup)
 

@@ -44,6 +44,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:photo_updates, "false")
       |> assign(:selected_all, "false")
       |> assign(:selected_favorite, "false")
+      |> assign(:show_tick, "w-6 h-5 mr-3")
+      |> assign(:select_mode, "selected_none")
       |> assign(:update_mode, "append")
       |> allow_upload(:photo, @upload_options)
       |> assign(:selected_photos, [])
@@ -344,7 +346,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
         _,
         %{
           assigns: %{
-            selected_all: _,
             gallery: gallery,
             favorites_filter: favorites_filter
           }
@@ -356,6 +357,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     socket
     |> assign(:selected_all, "photo-border")
     |> assign(:selected_photos, photo_ids)
+    |> assign(:select_mode, "selected_all")
     |> noreply
   end
 
@@ -383,11 +385,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_event(
-        "selected_favorite",
-        _,
-        %{
+        "selected_favorite", _, %{
           assigns: %{
-            selected_favorite: _,
             gallery: gallery
           }
         } = socket
