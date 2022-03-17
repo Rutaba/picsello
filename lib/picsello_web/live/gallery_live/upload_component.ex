@@ -59,13 +59,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
   end
 
   @impl true
-  def handle_event("close", _, socket) do
-    send(self(), :close_upload_popup)
-
-    socket |> noreply()
-  end
-
-  @impl true
   def handle_event(
         "cancel-upload",
         %{"ref" => ref},
