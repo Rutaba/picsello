@@ -219,7 +219,7 @@ defmodule Picsello.Accounts.User do
       {<<first_initial::binary-size(1), _::binary>>, <<last_initial::binary-size(1), _::binary>>} ->
         Enum.join([first_initial, last_initial])
 
-      {<<first_initial::binary-size(1), _::binary>>, _} ->
+      {<<first_initial::binary-size(2), _::binary>>, _} ->
         first_initial
     end
     |> String.upcase()
