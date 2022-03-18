@@ -49,6 +49,7 @@ import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
+import PageScroll from "./hooks/page-scroll";
 
 const Modal = {
   mounted() {
@@ -135,6 +136,7 @@ const Hooks = {
   IntroJS,
   MasonryGrid,
   Modal,
+  PageScroll,
   PercentMask,
   Phone,
   PhotoUpdate,

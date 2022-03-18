@@ -87,13 +87,12 @@ defmodule PicselloWeb.GalleryLive.Photos do
   def handle_event("start", _params, %{assigns: %{gallery: %{id: id}}} = socket) do
     gallery = Galleries.get_gallery!(id) |> Galleries.load_watermark_in_gallery()
 
-  #  socket =
-  #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
-  #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-  #      _, socket -> socket
-  #    end)
+    #  socket =
+    #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
+    #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+    #      _, socket -> socket
+    #    end)
 
-    
     socket
     |> assign(
       :progress,
@@ -343,6 +342,31 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_event(
+        "delete_selected_photos_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete_selected_photos",
+      classes: "dialog-photographer",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this photo?",
+      subtitle: "Are you sure you wish to permanently delete the photo(s) from #{gallery.name} ?",
+      payload: %{}
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "selected_all",
         _,
         %{
@@ -386,7 +410,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_event(
-        "selected_favorite", _, %{
+        "selected_favorite",
+        _,
+        %{
           assigns: %{
             gallery: gallery
           }
@@ -470,19 +496,19 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:upload_toast, "")
       |> assign(uploaded_files: uploaded_files + 1)
       |> assign(
-           progress:
-             progress
-             |> GalleryUploadProgress.complete_upload(entry)
-         )
+        progress:
+          progress
+          |> GalleryUploadProgress.complete_upload(entry)
+      )
       |> assign_overall_progress()
       |> noreply()
     else
       socket
       |> assign(
-           progress:
-             progress
-             |> GalleryUploadProgress.track_progress(entry)
-         )
+        progress:
+          progress
+          |> GalleryUploadProgress.track_progress(entry)
+      )
       |> assign_overall_progress()
       |> noreply()
     end
@@ -535,7 +561,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   defp start_photo_processing(photo, watermark), do: ProcessingManager.start(photo, watermark)
-
 
   def handle_info(
         {:message_composed, message_changeset},
@@ -632,6 +657,36 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:selected_photos, List.delete(selected_photos, String.to_integer(id)))
     |> close_modal()
     |> push_event("remove_item", %{"id" => id})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "delete_selected_photos", _},
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Enum.each(selected_photos, fn photo_id ->
+      Galleries.get_photo(photo_id)
+      |> Galleries.delete_photo()
+
+      send_update(PhotoComponent, id: photo_id, is_removed: true)
+    end)
+
+    {:ok, gallery} =
+      Galleries.update_gallery(gallery, %{
+        total_count: gallery.total_count - total(selected_photos)
+      })
+
+    socket
+    |> assign(:gallery, gallery)
+    |> assign(:selected_photos, [])
+    |> close_modal()
+    |> push_event("remove_items", %{"ids" => selected_photos})
     |> noreply()
   end
 

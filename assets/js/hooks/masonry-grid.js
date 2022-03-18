@@ -166,6 +166,7 @@ export default {
 
   init_remove_listener() {
     this.handleEvent('remove_item', ({ id: id }) => this.remove_item(id));
+    this.handleEvent('remove_items', ({ ids: ids }) => this.remove_items(ids));
   },
 
   remove_item(id) {
@@ -174,6 +175,15 @@ export default {
     const item = grid.getItem(itemElement);
 
     grid.remove([item], { removeElements: true });
+  },
+
+  remove_items(ids) {
+    const grid = this.get_grid();
+    ids.forEach(id => {
+      const itemElement = document.getElementById(`photo-item-${id}`);
+      const item = grid.getItem(itemElement);
+      grid.remove([item], { removeElements: true });
+    });
   },
 
   /**

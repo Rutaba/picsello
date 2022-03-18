@@ -2,9 +2,11 @@
   height: calc((4 / 6) * 100vw);
   @apply relative bg-center bg-cover bg-base-200;
 }
+
 .photo-border {
   @apply before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10;
 }
+
 .gallery__coverImg.active::after {
   content: '';
   background: linear-gradient(
@@ -570,7 +572,16 @@
     );
   }
 
-  .font-vietnam {
-    font-family: "Be Vietnam";
+  .uploadBtn {
+    @apply px-4 py-2 border font-sans rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75;
+  }
+
+  .dropdown {
+    @apply h-10 pr-2 overflow-hidden transition duration-300 ease-in-out rounded-md cursor-pointer whitespace-nowrap hover:text-blue-planning-300
+  }
+
+  .scroll-shadow{
+    box-shadow: 0px 10px 14px -14px rgba(0, 0, 0, 0.15);
   }
 }
+
