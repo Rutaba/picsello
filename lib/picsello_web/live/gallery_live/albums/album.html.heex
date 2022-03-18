@@ -1,0 +1,217 @@
+<div class="flex flex-col">
+  <div class="flex root">
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos" %>
+    <div class="w-full h-full bg-gray-100">
+      <div>
+        <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
+        <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
+          <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
+            <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
+          </div>
+          <div class="flex items-center justify-center flex-grow p-3 font-vietnam"><%= @uploaded_files %>/<%= total(@uploads.photo.entries) %> photos uploaded successfully</div>
+          <div class="flex items-center justify-center mr-3">
+            <.icon name="close-x" class="w-3 h-3 stroke-current" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class= "pt-20 pb-10 pl-10 pr-20">
+      <div class="flex flex-col items-center justify-between md:flex-row">
+        <h1 class="flex items-center text-4xl font-bold lg:justify-start">
+          <%= @album.name %>
+        </h1>
+        <div class="flex flex-row items-center justify-end">
+          <%= if total(@selected_photos) > 0 do %>
+          <div class="flex flex-col items-center ml-8 text-lg text-gray-300 w-80 lg:justify-start"><%= total(@selected_photos) %> photos selected</div>
+          <%= end %>
+          <div class="flex flex-col items-center text-lg text-gray-300">
+            <button class="mx-2 mt-2 bg-white navBar__btn w-max">
+              <svg class="inline-block w-4 h-4 mr-1 text-blue-planning-300" style="">
+                <use href="/images/icons.svg#gear"></use>
+              </svg>
+              <span class="pl-2" phx-click="open_albums_popup">Album settings</span>
+            </button>
+          </div>
+          <div class="flex flex-col items-center text-lg text-gray-300">
+            <button class="mx-2 mt-2 bg-white navBar__btn w-max">
+              <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300" />
+              <span class="pl-2" phx-click="open_albums_popup">Edit thumbnail</span>
+            </button>
+          </div>
+          <div class="flex flex-col items-center text-lg text-gray-300">
+            <form class="flex lg:justify-end" id="dragDrop-form" phx-submit="save" phx-change="start">
+              <div class="dragDrop"
+                id="dropzone"
+                phx-hook="DragDrop"
+                phx-drop-target={@uploads.photo.ref}
+                >
+                <label class="flex flex-col items-center justify-center float-right cursor-pointer">
+                  <div class="max-w-xs mx-auto">
+                    <div class="mx-2 mt-2 bg-white dragDrop__content navBar__btn w-max">
+                      <p class="text-center">
+                      <div class="flex">
+                        <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+                        Add photos
+                      </div>
+                      <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+      </div>
+      <div class="grid pt-8 center-container lg:grid-cols-2">
+        <div class="flex flex-col justify-start md:flex-row gap-x-5">
+          <div class="h-10 mb-4 bg-white rounded-md cursor-pointer font-vietnam">
+            <div id="select" class="relative" phx-hook="ToggleContent">
+              <div class="flex items-center w-32 h-10 pr-2 overflow-hidden transition duration-300 ease-in-out rounded-md cursor-pointer text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
+                <div class="mx-3">
+                  <span>Select</span>
+                </div>
+                <svg aria-hidden="true" focusable="false" data-prefix="fas" class="w-3 h-3 ml-auto mr-1" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                  <path fill="currentColor" d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
+                </svg>
+              </div>
+              <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
+                <li class="flex items-center hover:bg-blue-planning-100">
+                  <% ids = @photos |> Enum.into([], fn photo -> photo.id end) %>
+                  <button id="all" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_all">All</button>
+                  <.icon name="tick" class={@select_mode == "selected_all" && @show_tick || "hidden w-6 h-5 mr-3"} />
+                </li>
+                <li class="flex items-center hover:bg-blue-planning-100">
+                  <button class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_favorite">Favorite</button>
+                  <.icon name="tick" class={@select_mode == "selected_favorite" && @show_tick || "hidden w-6 h-5 mr-3"} />
+                </li>
+                <li class="flex items-center hover:bg-blue-planning-100">
+                  <button class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_none">None</button>
+                  <.icon name="tick" class={@select_mode == "selected_none" && @show_tick || "hidden w-6 h-5 mr-3"} />
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="h-10 mb-4 bg-white rounded-md cursor-pointer font-vietnam">
+            <div id="actions" class="relative" phx-click="actions_dropdown">
+              <div class="flex items-center w-64 h-10 pr-2 overflow-hidden transition duration-300 ease-in-out rounded-md cursor-pointer text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
+                <div class="mx-3">
+                  <span>Actions</span>
+                </div>
+                <svg aria-hidden="true" focusable="false" data-prefix="fas" class="w-3 h-3 ml-auto mr-1" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                  <path fill="currentColor" d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
+                </svg>
+              </div>
+              <%= if @actions_dropdown_show do %>
+                  <ul class="absolute z-30 w-64 mt-2 bg-white rounded-md">
+                    <%= for album <- @gallery.albums do %>
+                      <li class="relative">
+                        <button href="#!" class="flex items-center w-64 h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Move to <%= album.name %></button>
+                      </li>
+                    <% end %>
+                    <li class="relative">
+                      <button href="#!" class="flex items-center w-64 h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Remove from album</button>
+                    </li>
+                    <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
+                      <button href="#!" class="flex items-center w-64 h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">
+                      Delete Selected
+                      </button>
+                      <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
+                    </li>
+                  </ul>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col items-start min-w-0 lg:flex-row lg:justify-end">
+          <label class="flex items-center float-right cursor-pointer">
+            <div class="text-sm lg:text-lg font-vietnam">Show favorites only
+            </div>
+            <div class="relative ml-3">
+              <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
+              <%= if @favorites_filter do %>
+              <div class="block w-12 h-6 border rounded-full bg-blue-planning-100 border-blue-planning-300"></div>
+              <div class="absolute w-4 h-4 transition rounded-full dot right-1 top-1 bg-blue-planning-300"></div>
+              <% else %>
+              <div class="block w-12 h-6 bg-gray-200 border rounded-full border-blue-planning-300"></div>
+              <div class="absolute w-4 h-4 transition rounded-full dot left-1 top-1 bg-blue-planning-300"></div>
+              <% end %>
+            </div>
+          </label>
+        </div>
+      </div>
+      <%= if @gallery.total_count <= 0 do %>
+      <div class="justify-between text-2xl font-bold text-center text-blue-planning-300 mt-14 mb-14">
+        Oops, there's nothing here - upload photos now to get started!
+      </div>
+      <div class="overflow-hidden dragDrop__wrapper h-96">
+        <form id="dragDrop-form-1" phx-submit="save" phx-change="start">
+          <div class="dragDrop"
+            id="dropzone-1"
+            phx-hook="DragDrop"
+            phx-drop-target={@uploads.photo.ref}
+            >
+            <label class="flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer">
+              <div class="max-w-xs mx-auto">
+                <img src="/images/drag-drop-img.png" width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
+                <div class="dragDrop__content">
+                  <p class="text-center">
+                    <span class="font-bold">Drop images or </span>
+                    <span class="font-bold cursor-pointer primary">Browse</span>
+                    <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                  </p>
+                  <p class="text-center gray">Supports JPEG or PNG</p>
+                </div>
+              </div>
+            </label>
+          </div>
+        </form>
+      </div>
+      <%= else %>
+      <div class="px-0 pb-32 mx-0 gallery__container" id="gallery">
+        <%= if @live_action in [:edit] do %>
+        <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
+          id: @gallery.id,
+          title: @page_title,
+          action: @live_action,
+          gallery: @gallery,
+          return_to: Routes.gallery_photos_path(@socket, :show, @gallery) %>
+        <% end %>
+        <div
+        phx-hook="MasonryGrid"
+        phx-update={@update_mode}
+        id="muuri-grid"
+        class="grid muuri"
+        data-page={@page}
+        data-total={@gallery.total_count}
+        data-favorites-count={@favorites_count}
+        data-is-favorites-shown={ "#{@favorites_filter}" }
+        data-is-sortable="true"
+        data-has-more-photos={ "#{@has_more_photos}" }
+        data-photo-width="300">
+        <%= for photo <- @photos do%>
+        <%= live_component PicselloWeb.GalleryLive.Photos.AlbumComponent,
+          id: photo.id,
+          photo: photo,
+          photo_width: 300,
+          is_likable: true,
+          is_removable: true,
+          is_removed: false,
+          is_viewable: true,
+          is_meatball: true,
+          is_gallery_category_page: false,
+          selected_all: @selected_all
+          %>
+        <%= end %>
+      </div>
+      <div style="display: none">
+        <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
+      </div>
+    </div>
+    <%= end %>
+  </div>
+</div>
+</div>
+<%= # live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+</div>

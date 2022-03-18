@@ -51,7 +51,7 @@
                       <.icon name="up" class="hidden w-3 h-3 mr-2 stroke-current stroke-2 close-icon" />
                 </div>
                 <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md toggle-content">
-                    <li phx-click="go_to_album_selected" class="relative flex items-center justify-between">
+                    <li phx-click="go_to_album_selected" phx-value-album={album.id} class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Go to album</button>
                       <%= if @selected_item == "go_to_album" do %>
                         <.icon name="tick" class="w-6 h-5 mr-3" />

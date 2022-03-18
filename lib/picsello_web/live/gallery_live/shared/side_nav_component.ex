@@ -14,6 +14,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
      |> assign(:total_progress, total_progress || 0)
      |> assign(:gallery, gallery)
      |> assign(:arrow_show, arrow_show)
+     |> assign(:album_dropdown_show, false)
      |> assign_gallery_changeset()}
   end
 
@@ -76,6 +77,27 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       ) do
     socket
     |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "select_albums_dropdown",
+        _,
+        %{
+          assigns: %{
+            album_dropdown_show: album_dropdown_show
+          }
+        } = socket
+      ) do
+    album_dropdown_updated =
+      case album_dropdown_show do
+        false -> true
+        true -> false
+      end
+
+    socket
+    |> assign(:album_dropdown_show, album_dropdown_updated)
     |> noreply()
   end
 

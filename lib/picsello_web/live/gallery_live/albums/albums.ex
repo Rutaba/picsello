@@ -7,7 +7,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
   alias Picsello.Repo
 
   @impl true
-  def mount(%{"gallery_id" => gallery_id}, _session, socket) do
+  def mount(%{"id" => gallery_id}, _session, socket) do
     gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:albums)
 
     {
@@ -68,13 +68,16 @@ defmodule PicselloWeb.GalleryLive.Albums do
   @impl true
   def handle_event(
         "go_to_album_selected",
-        %{},
+        %{"album" => album_id},
         %{
-          assigns: %{}
+          assigns: %{
+            gallery_id: gallery_id
+          }
         } = socket
       ) do
     socket
     |> assign(:selected_item, "go_to_album")
+    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery_id, album_id))
     |> noreply()
   end
 

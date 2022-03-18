@@ -153,7 +153,8 @@ defmodule PicselloWeb.Router do
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id", GalleryLive.Overview, :overview
-      live "/galleries/:gallery_id/albums", GalleryLive.Albums, :albums
+      live "/galleries/:id/albums", GalleryLive.Albums, :albums
+      live "/galleries/:id/albums/:album_id", GalleryLive.Album, :show
     end
   end
 

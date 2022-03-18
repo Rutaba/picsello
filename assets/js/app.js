@@ -44,6 +44,7 @@ import Select from './hooks/select';
 import SelectHighlighter from './hooks/select-highlighter';
 import ToggleContent from './hooks/toggle-content';
 import ToggleAlbumDropdown from './hooks/toggle-album-dropdown';
+import ToggleAlbumContent from './hooks/toggle-album-content';
 import ToggleNavArrow from './hooks/toggle-nav-arrow';
 import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
@@ -151,6 +152,7 @@ const Hooks = {
   TZCookie,
   ToggleContent,
   ToggleAlbumDropdown,
+  ToggleAlbumContent,
   ToggleNavArrow,
   ToggleSiblings,
   ResumeUpload,
