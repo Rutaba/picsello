@@ -115,7 +115,7 @@
               <%= if @album_dropdown_show do %>
                 <%= for album <- @gallery.albums do %>
                   <ul class="bg-gray-100 border-2 border-gray-200 rounded-b-lg">
-                        <li class="relative">
+                        <li phx-click="go_to_album_selected" phx-target={@myself} phx-value-album={album.id} class="relative">
                           <button href="#!" class="flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs text-gray-700 transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"><%= album.name %></button>
                         </li>
                   </ul>

@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.Album do
   def handle_params(%{"id" => id, "album_id" => album_id}, _, socket) do
     gallery = Galleries.get_gallery!(id) |> Repo.preload(:albums)
 
-    album = Repo.get!(Picsello.Galleries.Album, album_id)
+    album = Repo.get!(Picsello.Galleries.Album, album_id) |> Repo.preload(:photo)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
@@ -171,11 +171,11 @@ defmodule PicselloWeb.GalleryLive.Album do
   def handle_progress(
         :photo,
         entry,
-        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
+        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress, album_id: album_id}} =
           socket
       ) do
     if entry.done? do
-      {:ok, photo} = create_photo(gallery, entry)
+      {:ok, photo} = create_photo_with_album(gallery, entry, album_id)
       IO.inspect("reached 3")
 
       start_photo_processing(photo, gallery.watermark)
@@ -238,10 +238,11 @@ defmodule PicselloWeb.GalleryLive.Album do
     |> assign(:estimate, estimate)
   end
 
-  defp create_photo(gallery, entry) do
+  defp create_photo_with_album(gallery, entry, album_id) do
     Galleries.create_photo(%{
       gallery_id: gallery.id,
       name: entry.client_name,
+      album_id: album_id,
       original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
       position: (gallery.total_count || 0) + 100
     })
@@ -819,6 +820,7 @@ defmodule PicselloWeb.GalleryLive.Album do
              gallery: %{
                id: id
              },
+             album: album,
              page: page,
              favorites_filter: filter
            }
@@ -826,7 +828,7 @@ defmodule PicselloWeb.GalleryLive.Album do
          per_page \\ @per_page
        ) do
     opts = [only_favorites: filter, offset: per_page * page]
-    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+    photos = Galleries.get_album_photos(id, per_page + 1, page, album.id, opts)
 
     socket
     |> assign(

@@ -4,6 +4,7 @@ defmodule Picsello.Galleries.Album do
 
   import Ecto.Changeset
   alias Picsello.Galleries.Gallery
+  alias Picsello.Galleries.Photo
 
   schema "albums" do
     field :name, :string
@@ -11,6 +12,7 @@ defmodule Picsello.Galleries.Album do
     field :set_password, :boolean
 
     belongs_to(:gallery, Gallery)
+    has_many(:photo, Photo)
 
     timestamps(type: :utc_datetime)
   end

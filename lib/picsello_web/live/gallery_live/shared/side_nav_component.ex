@@ -2,12 +2,14 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries
+  alias Picsello.Repo
 
   @impl true
   def update(
         %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show},
         socket
       ) do
+    gallery = Repo.preload(gallery, :albums)
     {:ok,
      socket
      |> assign(:id, id)
@@ -79,6 +81,23 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
     |> noreply()
   end
+
+  @impl true
+  def handle_event(
+        "go_to_album_selected",
+        %{"album" => album_id},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> assign(:selected_item, "go_to_album")
+    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album_id))
+    |> noreply()
+  end
+
 
   @impl true
   def handle_event(
