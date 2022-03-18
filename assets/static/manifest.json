@@ -1,0 +1,21 @@
+{
+  "short_name": "Picsello",
+  "name": "Picsello: elevate your professional photography business",
+  "icons": [
+    {
+      "src": "/apple-touch-icon-144x144.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#ffffff"
+}
