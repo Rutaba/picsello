@@ -320,6 +320,7 @@ defmodule PicselloWeb.GalleryLive.Album do
 
     socket
     |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> put_flash(:success, "Photo moved successfully")
     |> noreply()
   end
 
@@ -339,6 +340,27 @@ defmodule PicselloWeb.GalleryLive.Album do
 
     socket
     |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> put_flash(:success, "Photo removed successfully")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "delete_photos",
+        _,
+        %{
+          assigns: %{
+            album: album,
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Galleries.delete_photos(selected_photos)
+
+    socket
+    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> put_flash(:success, "Photo deleted successfully")
     |> noreply()
   end
 
@@ -720,6 +742,7 @@ defmodule PicselloWeb.GalleryLive.Album do
     socket
     |> close_modal()
     |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> put_flash(:success, "Photo removed successfully")
     |> noreply()
   end
 
