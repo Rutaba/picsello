@@ -3,7 +3,6 @@
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos" %>
 
     <div class="w-full h-full bg-gray-100">
-
     <div id="page-scroll" phx-hook="PageScroll" class= "sticky bg-gray-100 top-0 z-30 pt-16 pl-10 pr-10">
         <div class="flex flex-col items-center justify-between md:flex-row">
           <div class="flex items-center text-4xl font-bold lg:justify-start">

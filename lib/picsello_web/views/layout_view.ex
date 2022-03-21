@@ -55,12 +55,12 @@ defmodule PicselloWeb.LayoutView do
           </div>
         </div>
         <% else %>
-          <div phx-click="lv:clear-flash" phx-value-key={key} class={"fixed right-10 top-2 z-40"}>
+          <div phx-click="lv:clear-flash" phx-value-key={key} class={"fixed right-52 top-7 z-40"}>
             <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
               <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
                 <.icon name={icon} class="w-6 h-6 stroke-current text-green-finances-300" />
               </div>
-              <div class="flex items-center justify-center font-sans flex-grow p-3"><%= message %></div>
+              <div class="flex items-center justify-center font-sans flex-grow px-3 py-2"><p><%= message %></p></div>
               <div class="flex items-center justify-center mr-3">
                 <.icon name="close-x" class="w-3 h-3 stroke-current" />
               </div>
