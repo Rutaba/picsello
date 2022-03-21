@@ -278,7 +278,6 @@ defmodule Picsello.FeatureCase do
       alias PicselloWeb.Router.Helpers, as: Routes
 
       setup do
-        Mox.stub_with(Picsello.MockPayments, Picsello.StripePayments)
         Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
         :ok
       end

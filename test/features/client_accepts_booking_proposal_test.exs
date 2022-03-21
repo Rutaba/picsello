@@ -119,19 +119,17 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       [deposit_payment, remainder_payment] = Picsello.PaymentSchedules.payment_schedules(lead)
 
       Picsello.MockPayments
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+      |> Mox.expect(:retrieve_session, 2, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal.id}",
            metadata: %{"paying_for" => deposit_payment.id}
          }}
       end)
-      |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
-        {:ok,
-         %Stripe.Session{
-           client_reference_id: "proposal_#{proposal.id}",
-           metadata: %{"paying_for" => remainder_payment.id}
-         }}
+      |> Mox.expect(:create_customer, fn params, [connect_account: "stripe_id"] ->
+        assert params == lead.client |> Map.take([:email, :name])
+
+        {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
       end)
 
       client_session
@@ -290,12 +288,17 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     } do
       [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
 
-      Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+      Picsello.MockPayments
+      |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
         {:ok,
          %Stripe.Session{
            client_reference_id: "proposal_#{proposal_id}",
            metadata: %{"paying_for" => deposit_payment.id}
          }}
+      end)
+      |> Mox.expect(:create_customer, fn params, [connect_account: "stripe_id"] ->
+        assert params == Map.take(lead.client, [:email, :name])
+        {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
       end)
 
       client_session

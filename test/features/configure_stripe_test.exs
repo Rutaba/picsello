@@ -16,6 +16,7 @@ defmodule Picsello.ConfigureStripeTest do
     |> Mox.stub(:create_account_link, fn _, _ ->
       {:ok, %{url: fake_stripe_config_url, id: "account-id"}}
     end)
+    |> Mox.stub(:retrieve_account, fn _ -> {:ok, %Stripe.Account{}} end)
 
     :ok
   end

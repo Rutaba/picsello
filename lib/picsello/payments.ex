@@ -70,7 +70,7 @@ defmodule Picsello.Payments do
               {:ok, Stripe.Customer.t()} | {:error, Stripe.Error.t()}
 
   @callback checkout_link(create_session(), Stripe.options()) ::
-              {:ok, String.t()}
+              {:ok, String.t()} | {:error, any}
 
   @callback construct_event(String.t(), String.t(), String.t()) ::
               {:ok, Stripe.Event.t()} | {:error, any}
