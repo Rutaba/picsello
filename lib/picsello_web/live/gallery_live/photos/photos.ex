@@ -831,7 +831,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
       "#{uploaded_files}/#{total(socket.assigns.uploads.photo.entries)} photo#{is_plural(uploaded_files)} uploaded successfully"
 
   defp move_album_success_message(selected_photos, album_id, gallery) do
-    [album | _] = gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
+    [album | _] =
+      gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
+
     photos_count = total(selected_photos)
     "#{photos_count} photo#{is_plural(photos_count)} successfully moved to #{album.name}"
   end
