@@ -29,8 +29,7 @@ defmodule PicselloWeb.LayoutView do
        "border-red-sales-300"},
       {:info, "info", "bg-blue-planning-100", "bg-blue-planning-300", "text-blue-planning-300",
        "border-blue-planning-300"},
-      {:upload_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
-      {:move_to_album_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
+      {:photo_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
       {:success, "checkmark", "bg-green-finances-100", "bg-green-finances-300",
        "text-green-finances-300", "border-green-finances-300"}
     ]

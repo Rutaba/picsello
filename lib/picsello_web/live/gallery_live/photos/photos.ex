@@ -222,6 +222,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:gallery, gallery)
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
+    |> put_flash(:photo_success, move_album_success_message(selected_photos, album_id, gallery))
     |> noreply()
   end
 
@@ -529,7 +530,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       start_photo_processing(photo, gallery.watermark)
 
       socket
-      |> put_flash(:upload_success, upload_success_message(socket, uploaded_files))
+      |> put_flash(:photo_success, upload_success_message(socket, uploaded_files))
       |> assign(uploaded_files: uploaded_files)
       |> assign(
         progress:
@@ -825,9 +826,19 @@ defmodule PicselloWeb.GalleryLive.Photos do
     )
   end
 
-  def upload_success_message(socket, uploaded_files),
+  defp upload_success_message(socket, uploaded_files),
     do:
-      "#{uploaded_files}/#{total(socket.assigns.uploads.photo.entries)} photos uploaded successfully"
+      "#{uploaded_files}/#{total(socket.assigns.uploads.photo.entries)} photo#{is_plural(uploaded_files)} uploaded successfully"
+
+  defp move_album_success_message(selected_photos, album_id, gallery) do
+    [album | _] = gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
+    photos_count = total(selected_photos)
+    "#{photos_count} photo#{is_plural(photos_count)} successfully moved to #{album.name}"
+  end
+
+  defp is_plural(count) do
+    if count > 1, do: "s"
+  end
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"
