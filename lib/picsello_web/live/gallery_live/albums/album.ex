@@ -171,8 +171,14 @@ defmodule PicselloWeb.GalleryLive.Album do
   def handle_progress(
         :photo,
         entry,
-        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress, album_id: album_id}} =
-          socket
+        %{
+          assigns: %{
+            gallery: gallery,
+            uploaded_files: uploaded_files,
+            progress: progress,
+            album_id: album_id
+          }
+        } = socket
       ) do
     if entry.done? do
       {:ok, photo} = create_photo_with_album(gallery, entry, album_id)
@@ -296,6 +302,22 @@ defmodule PicselloWeb.GalleryLive.Album do
       }
     )
     |> noreply
+  end
+
+  @impl true
+  def handle_event(
+        "move_to_album",
+        %{"album" => album_id} = _params,
+        %{
+          assigns: %{
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Galleries.update_photos_album_id(selected_photos, album_id)
+
+    socket
+    |> ok()
   end
 
   @impl true

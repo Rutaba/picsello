@@ -137,14 +137,21 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  @spec get_album_photos(id :: integer, album_id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
+  @spec get_album_photos(
+          id :: integer,
+          album_id :: integer,
+          per_page :: integer,
+          page :: integer,
+          opts :: keyword
+        ) ::
           list(Photo)
   def get_album_photos(id, per_page, page, album_id, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
     offset = Keyword.get(opts, :offset, per_page * page)
 
     select_opts =
-      if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id, album_id: album_id)
+      if(only_favorites, do: [client_liked: true], else: [])
+      |> Keyword.merge(gallery_id: id, album_id: album_id)
 
     Photo
     |> where(^select_opts)
@@ -154,6 +161,11 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  def update_photos_album_id(photo_ids, album_id) do
+    Photo
+    |> where([p], p.id in ^photo_ids)
+    |> Repo.update_all(set: [album_id: album_id])
+  end
 
   @doc """
   Creates a gallery.
