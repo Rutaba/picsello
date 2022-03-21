@@ -136,11 +136,11 @@
         </p>
       <% end %>
 
-      <%= if Money.positive?(@order.shipping_cost) do %>
+      <%= if Money.positive?(shipping_cost(@order)) do %>
         <p class="md:flex md:justify-between md:items-center text-base-300 text-opacity-80 text-base md:text-lg pt-2.5">
           <span>Shipping:</span>
 
-          <span class="font-bold md:pr-8"><%= @order.shipping_cost %></span>
+          <span class="font-bold md:pr-8"><%= shipping_cost(@order) %></span>
         </p>
       <% end %>
 
@@ -149,7 +149,7 @@
       <p class="md:flex md:justify-between md:items-center text-xl md:text-2xl text-base-300">
         <span>Total:</span>
 
-        <span class="font-bold md:pr-8"><%= Money.add(@order.shipping_cost, @order.subtotal_cost) %></span>
+    <span class="font-bold md:pr-8"><%= total_cost(@order) %></span>
       </p>
     </div>
   </div>

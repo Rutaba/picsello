@@ -4,8 +4,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [icon: 1]
 
-  def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{placed: true}}} = socket, _),
-    do: assign(socket, cart_count: 0)
+  def assign_cart_count(
+        %{assigns: %{order: %Picsello.Cart.Order{placed_at: %DateTime{}}}} = socket,
+        _
+      ),
+      do: assign(socket, cart_count: 0)
 
   def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{} = order}} = socket, _) do
     socket

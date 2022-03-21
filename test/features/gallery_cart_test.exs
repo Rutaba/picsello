@@ -1,6 +1,7 @@
 defmodule Picsello.GalleryCartTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.Cart
+  alias Cart.Order
 
   setup :authenticated_gallery_client
 
@@ -35,7 +36,7 @@ defmodule Picsello.GalleryCartTest do
     |> assert_text(Money.to_string(cart_product.price))
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
-    |> assert_text("Subtotal: " <> Money.to_string(order.subtotal_cost))
+    |> assert_text("Subtotal: " <> (order |> Order.subtotal_cost() |> Money.to_string()))
     |> assert_has(testid("product-#{cart_product.editor_details.editor_id}"))
   end
 

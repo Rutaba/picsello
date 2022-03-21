@@ -1,8 +1,6 @@
 defmodule PicselloWeb.GalleryDownloadsControllerTest do
   use PicselloWeb.ConnCase, async: true
-  alias Picsello.{Repo, Cart}
-  alias Cart.{Order, Order.Digital}
-  import Money.Sigils
+  alias Picsello.Cart
 
   describe "Get /galleries/:gallery_id/order/:order_id/zip" do
     def get_zip(conn, gallery, order) do
@@ -20,12 +18,9 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     def add_photos(order, photos) do
       for(photo <- photos, reduce: order) do
         order ->
-          Order.update_changeset(order, %Digital{
-            price: ~M[0]USD,
-            photo_id: photo.id
-          })
+          insert(:digital, order: order, photo: photo)
+          order
       end
-      |> Repo.update!()
     end
 
     @doc """
@@ -97,7 +92,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
             )
         )
 
-      order = insert(:order, gallery: gallery, placed: true)
+      order = insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
 
       [_skipped | ordered_photos] =
         insert_list(3, :photo,

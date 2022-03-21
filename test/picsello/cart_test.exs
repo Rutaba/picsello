@@ -2,7 +2,7 @@ defmodule Picsello.CartTest do
   use Picsello.DataCase, async: true
   import Money.Sigils
   alias Picsello.{Cart, Repo}
-  alias Cart.{Order, Order.Digital, CartProduct}
+  alias Cart.{Order, Digital, CartProduct}
 
   defp cart_product(opts) do
     %CartProduct{
@@ -33,11 +33,11 @@ defmodule Picsello.CartTest do
 
     test "creates an order and adds the digital", %{gallery: %{id: gallery_id}, digital: digital} do
       assert %Order{
-               subtotal_cost: ~M[100]USD,
                digitals: [cart_digital],
                gallery_id: ^gallery_id
-             } = Cart.place_product(digital, gallery_id)
+             } = order = Cart.place_product(digital, gallery_id)
 
+      assert Order.subtotal_cost(order) == ~M[100]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -49,11 +49,11 @@ defmodule Picsello.CartTest do
 
       assert %Order{
                id: ^order_id,
-               subtotal_cost: ~M[100]USD,
                digitals: [cart_digital],
                gallery_id: ^gallery_id
-             } = Cart.place_product(digital, gallery_id)
+             } = order = Cart.place_product(digital, gallery_id)
 
+      assert Order.subtotal_cost(order) == ~M[100]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -68,10 +68,11 @@ defmodule Picsello.CartTest do
       Cart.place_product(digital, gallery_id)
 
       assert %Order{
-               subtotal_cost: ~M[200]USD,
                digitals: [%{photo_id: ^digital_2_photo_id}, %{photo_id: ^digital_1_photo_id}],
                gallery_id: ^gallery_id
-             } = Cart.place_product(digital_2, gallery_id)
+             } = order = Cart.place_product(digital_2, gallery_id)
+
+      assert Order.subtotal_cost(order) == ~M[200]USD
     end
 
     test "won't add the same digital twice",
@@ -82,10 +83,11 @@ defmodule Picsello.CartTest do
       Cart.place_product(digital, gallery_id)
 
       assert %Order{
-               subtotal_cost: ~M[100]USD,
                digitals: [%{photo_id: ^digital_1_photo_id}],
                gallery_id: ^gallery_id
-             } = Cart.place_product(digital, gallery_id)
+             } = order = Cart.place_product(digital, gallery_id)
+
+      assert Order.subtotal_cost(order) == ~M[100]USD
     end
   end
 
@@ -103,16 +105,16 @@ defmodule Picsello.CartTest do
 
       assert {:loaded,
               %Order{
-                subtotal_cost: ~M[200]USD,
                 products: [%{editor_details: %{editor_id: "123"}}]
-              }} = Cart.delete_product(order, editor_id: "abc")
+              } = order} = Cart.delete_product(order, editor_id: "abc")
+
+      assert Order.subtotal_cost(order) == ~M[200]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
       digital = %Digital{
         photo_id: insert(:photo).id,
-        price: ~M[100]USD,
-        preview_url: ""
+        price: ~M[100]USD
       }
 
       order =
@@ -123,11 +125,11 @@ defmodule Picsello.CartTest do
 
       assert {:loaded,
               %Order{
-                subtotal_cost: ~M[100]USD,
                 digitals: [cart_digital],
                 products: []
-              }} = Cart.delete_product(order, editor_id: "abc")
+              } = order} = Cart.delete_product(order, editor_id: "abc")
 
+      assert Order.subtotal_cost(order) == ~M[100]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -142,27 +144,17 @@ defmodule Picsello.CartTest do
     end
 
     test "with a digital id and multiple digitals removes the digital", %{order: order} do
-      order =
-        order
-        |> Order.update_changeset(%Digital{
-          photo_id: insert(:photo).id,
-          price: ~M[200]USD,
-          preview_url: ""
-        })
-        |> Order.update_changeset(%Digital{
-          photo_id: insert(:photo).id,
-          price: ~M[100]USD,
-          preview_url: ""
-        })
-        |> Repo.update!()
-
-      %{digitals: [%{id: delete_digital_id}, %{id: remaining_digital_id}]} = order
+      %{id: delete_digital_id} = insert(:digital, order: order, position: 0, price: ~M[200]USD)
+      %{id: remaining_digital_id} = insert(:digital, order: order, position: 1, price: ~M[100]USD)
 
       assert {:loaded,
               %Order{
-                subtotal_cost: ~M[200]USD,
                 digitals: [%{id: ^remaining_digital_id}]
-              }} = Cart.delete_product(order, digital_id: delete_digital_id)
+              } = order} =
+               order
+               |> Cart.delete_product(digital_id: delete_digital_id)
+
+      assert Order.subtotal_cost(order) == ~M[100]USD
     end
 
     test "with a digital id and a product removes the digital", %{order: order} do
@@ -183,10 +175,11 @@ defmodule Picsello.CartTest do
 
       assert {:loaded,
               %Order{
-                subtotal_cost: ~M[300]USD,
                 digitals: [],
                 products: [^product]
-              }} = Cart.delete_product(order, digital_id: digital_id)
+              } = order} = Cart.delete_product(order, digital_id: digital_id)
+
+      assert Order.subtotal_cost(order) == ~M[300]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do
@@ -255,7 +248,13 @@ defmodule Picsello.CartTest do
       cart_product = build(:ordered_cart_product, %{product_id: whcc_product.whcc_id})
 
       order =
-        for product <- [cart_product, %Digital{preview_url: "digital.jpg", price: ~M[500]USD}],
+        for product <- [
+              cart_product,
+              build(:digital,
+                price: ~M[500]USD,
+                photo: insert(:photo, gallery: gallery, preview_url: "digital.jpg")
+              )
+            ],
             reduce: nil do
           _ ->
             Picsello.Cart.place_product(product, gallery.id)

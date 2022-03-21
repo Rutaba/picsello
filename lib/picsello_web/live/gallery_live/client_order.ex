@@ -95,5 +95,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
+  defdelegate shipping_cost(order), to: Cart
   defdelegate summary_counts(order), to: Cart
+  defdelegate total_cost(order), to: Cart
 end

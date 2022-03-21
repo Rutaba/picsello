@@ -15,7 +15,7 @@
                     </p>
                     <p>
                         <span class="font-semibold">Order total: </span>
-                        <%= Money.add(order.subtotal_cost, order.shipping_cost) %>
+                        <%= total_cost(order) %>
                     </p>
                 </div>
                 <div class="lg:flex items-center justify-between">

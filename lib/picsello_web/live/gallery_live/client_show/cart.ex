@@ -294,7 +294,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       <div class="text-xl">
         <%= unless Enum.empty?(@order.products) do %> Subtotal: <% else %> Total: <% end %>
 
-        <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
+        <span class="font-bold ml-2"><%= subtotal_cost(@order) %></span>
       </div>
 
       <button type="button" class="btn-primary text-lg mt-5" phx-click="continue">Continue</button>
@@ -390,6 +390,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
 
+  defdelegate cart_count(order), to: Cart, as: :item_count
   defdelegate product_name(product), to: Cart
+  defdelegate shipping_cost(order), to: Cart
+  defdelegate subtotal_cost(order), to: Cart
   defdelegate summary_counts(order), to: Cart
+  defdelegate total_cost(order), to: Cart
 end
