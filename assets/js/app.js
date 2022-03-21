@@ -41,7 +41,6 @@ import PriceMask from './hooks/price-mask';
 import Quill, {ClearQuillInput} from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
-import SelectHighlighter from './hooks/select-highlighter';
 import ToggleContent from './hooks/toggle-content';
 import ToggleAlbumDropdown from './hooks/toggle-album-dropdown';
 import ToggleAlbumContent from './hooks/toggle-album-content';
@@ -148,7 +147,6 @@ const Hooks = {
   Quill,
   ScrollIntoView,
   Select,
-  SelectHighlighter,
   TZCookie,
   ToggleContent,
   ToggleAlbumDropdown,

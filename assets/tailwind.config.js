@@ -72,7 +72,10 @@ module.exports = {
         client: ['"Avenir LT Std"'],
       },
       width: {
-        '128': '32rem',
+        '128': '384px',
+      },
+      paddingLeft: {
+        'pl-128': '400px',
       },
       spacing: {
         '5vw': '5vw',

@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   alias PicselloWeb.GalleryLive.Photos.PhotoComponent
   alias PicselloWeb.GalleryLive.Photos.ProductPreview
 
-  @per_page 16
+  @per_page 24
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1500,
@@ -42,13 +42,10 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:uploaded_files, 0)
       |> assign(:progress, %GalleryUploadProgress{})
       |> assign(:photo_updates, "false")
-      |> assign(:selected_all, "false")
-      |> assign(:selected_favorite, "false")
-      |> assign(:show_tick, "w-6 h-5 mr-3")
       |> assign(:select_mode, "selected_none")
       |> assign(:update_mode, "append")
-      |> allow_upload(:photo, @upload_options)
       |> assign(:selected_photos, [])
+      |> allow_upload(:photo, @upload_options)
     }
   end
 
@@ -409,7 +406,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
       Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
 
     socket
-    |> assign(:selected_all, "photo-border")
     |> assign(:selected_photos, photo_ids)
     |> assign(:select_mode, "selected_all")
     |> noreply
@@ -432,7 +428,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       socket ->
         socket
     end)
-    |> assign(:selected_all, "false")
+    |> assign(:select_mode, "selected_none")
     |> assign(:selected_photos, [])
     |> noreply
   end
@@ -452,7 +448,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
-    |> assign(:selected_all, "photo-border")
     |> assign(:favorites_filter, true)
     |> assign(:selected_photos, photo_ids)
     |> assign_photos()
@@ -832,6 +827,14 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   defp is_plural(count) do
     if count > 1, do: "s"
+  end
+
+  defp selected_all(select_mode) do
+    case select_mode do
+      "selected_all" -> "photo-border"
+      "selected_favorite" -> "photo-border"
+      _ -> ""
+    end
   end
 
   defp page_title(:show), do: "Show Gallery"
