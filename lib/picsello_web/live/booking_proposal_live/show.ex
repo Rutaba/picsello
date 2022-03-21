@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
-  alias Picsello.{Repo, BookingProposal, Job, PaymentSchedules}
+  alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -55,7 +55,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       ) do
     socket =
       with {:ok, session} <-
-             payments().retrieve_session(stripe_session_id,
+             Payments.retrieve_session(stripe_session_id,
                connect_account: organization.stripe_account_id
              ),
            {:ok, _} <- Picsello.Payments.handle_payment(session) do
@@ -223,6 +223,4 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         send_button: "Send"
       })
       |> noreply()
-
-  defp payments(), do: Application.get_env(:picsello, :payments)
 end

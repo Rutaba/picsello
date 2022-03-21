@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
+  alias Picsello.{Job, Payments, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
   import Ecto.Query
 
   @impl true
@@ -253,10 +253,8 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: payments().status(current_user))
+    socket |> assign(stripe_status: Payments.status(current_user))
   end
-
-  defp payments, do: Application.get_env(:picsello, :payments)
 
   defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
     Phoenix.PubSub.subscribe(
