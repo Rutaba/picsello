@@ -375,7 +375,7 @@ defmodule PicselloWeb.GalleryLive.Album do
   @impl true
   def handle_event(
         "open_album_remove_photo_popup",
-        _,
+        %{"photo" => photo_id} = _params,
         %{
           assigns: %{
             album: album
@@ -386,11 +386,14 @@ defmodule PicselloWeb.GalleryLive.Album do
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
       close_class: "delete_btn",
-      confirm_event: "remove_from_gallery",
+      confirm_event: "remove_from_album",
       confirm_label: "Yes, remove",
       icon: "warning-orange",
       title: "Remove from album?",
-      subtitle: "Are you sure you wish to remove this photo from #{album.name}?"
+      subtitle: "Are you sure you wish to remove this photo from #{album.name}?",
+      payload: %{
+        photo_id: photo_id
+      }
     })
     |> noreply()
   end
@@ -728,16 +731,16 @@ defmodule PicselloWeb.GalleryLive.Album do
   end
 
   def handle_info(
-        {:confirm_event, "remove_from_gallery"},
+        {:confirm_event, "remove_from_album", %{photo_id: photo_id}},
         %{
           assigns: %{
             album: album,
-            gallery: gallery,
-            selected_photos: selected_photos
+            gallery: gallery
           }
         } = socket
       ) do
-    Galleries.remove_photos_from_album(selected_photos)
+    photo_id = String.split(photo_id, ",")
+    Galleries.remove_photos_from_album(photo_id)
 
     socket
     |> close_modal()
