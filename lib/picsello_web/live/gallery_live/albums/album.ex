@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.Album do
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.UploadComponent
-  alias PicselloWeb.ConfirmationComponent
+  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias PicselloWeb.GalleryLive.Photos.PhotoComponent
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
   alias PicselloWeb.GalleryLive.ViewPhoto
@@ -352,12 +352,11 @@ defmodule PicselloWeb.GalleryLive.Album do
 
   @impl true
   def handle_event(
-        "open_album_deletion_popup",
+        "open_album_remove_photo_popup",
         _,
         %{
           assigns: %{
-            album: album,
-            gallery: gallery
+            album: album
           }
         } = socket
       ) do
@@ -365,13 +364,11 @@ defmodule PicselloWeb.GalleryLive.Album do
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
       close_class: "delete_btn",
-      confirm_event: "delete_gallery",
+      confirm_event: "remove_from_gallery",
       confirm_label: "Yes, remove",
       icon: "warning-orange",
       title: "Remove from album?",
-      subtitle: "Are you sure you wish to remove this photo from #{album.name} ?",
-      album_name: album.name,
-      gallery_count: gallery.total_count
+      subtitle: "Are you sure you wish to remove this photo from #{album.name}?"
     })
     |> noreply()
   end
@@ -706,6 +703,24 @@ defmodule PicselloWeb.GalleryLive.Album do
         |> close_modal()
         |> noreply()
     end
+  end
+
+  def handle_info(
+        {:confirm_event, "remove_from_gallery"},
+        %{
+          assigns: %{
+            album: album,
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Galleries.remove_photos_from_album(selected_photos)
+
+    socket
+    |> close_modal()
+    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> noreply()
   end
 
   @impl true
