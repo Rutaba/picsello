@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   import PicselloWeb.LiveHelpers
 
   alias Phoenix.PubSub
+  alias Picsello.Repo
   alias Phoenix.LiveView.JS
   alias Picsello.{Galleries, Messages}
   alias Picsello.Galleries.{Photo, CoverPhoto}
@@ -17,8 +18,9 @@ defmodule PicselloWeb.GalleryLive.Photos do
   alias PicselloWeb.GalleryLive.{UploadComponent, ViewPhoto}
   alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.Photos.PhotoComponent
+  alias PicselloWeb.GalleryLive.Photos.ProductPreview
 
-  @per_page 12
+  @per_page 16
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1500,
@@ -37,8 +39,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> assign(:upload_bucket, @bucket)
       |> assign(:overall_progress, 0)
       |> assign(:estimate, "n/a")
-      |> assign(:upload_toast, "hidden")
-      |> assign(:error_toast, "hidden")
       |> assign(:uploaded_files, 0)
       |> assign(:progress, %GalleryUploadProgress{})
       |> assign(:photo_updates, "false")
@@ -54,8 +54,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
-    gallery = Galleries.get_gallery!(id)
-
+    gallery = Galleries.get_gallery!(id) |> Repo.preload(:albums)
     if connected?(socket), do: PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
 
     socket
@@ -85,7 +84,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_event("start", _params, %{assigns: %{gallery: %{id: id}}} = socket) do
-    gallery = Galleries.get_gallery!(id) |> Galleries.load_watermark_in_gallery()
+    gallery =
+      Galleries.get_gallery!(id) |> Repo.preload(:albums) |> Galleries.load_watermark_in_gallery()
 
     #  socket =
     #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
@@ -128,20 +128,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:update_mode, "replace")
     |> assign(:progress, GalleryUploadProgress.remove_entry(socket.assigns.progress, entry))
     |> cancel_upload(:photo, ref)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("upload_toast", _, socket) do
-    socket
-    |> assign(:upload_toast, "hidden")
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("error_toast", _, socket) do
-    socket
-    |> assign(:error_toast, "hidden")
     |> noreply()
   end
 
@@ -190,6 +176,56 @@ defmodule PicselloWeb.GalleryLive.Photos do
   end
 
   @impl true
+  def handle_event(
+        "set_product_preview",
+        %{"preview_photo_id" => photo_id},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(
+      ProductPreview,
+      %{
+        gallery: gallery,
+        photo_id: photo_id
+      }
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "move_to_album",
+        %{"album_id" => album_id},
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Galleries.update_selected_photos(album_id, selected_photos)
+
+    Enum.each(selected_photos, fn photo_id ->
+      send_update(PhotoComponent, id: photo_id, is_removed: true)
+    end)
+
+    {:ok, gallery} =
+      Galleries.update_gallery(gallery, %{
+        total_count: gallery.total_count - total(selected_photos)
+      })
+
+    socket
+    |> assign(:gallery, gallery)
+    |> assign(:selected_photos, [])
+    |> push_event("remove_items", %{"ids" => selected_photos})
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("open_upload_popup", _, socket) do
     send(self(), :open_modal)
 
@@ -197,25 +233,25 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> noreply()
   end
 
-  @impl true
-  def handle_event(
-        "preview_gallery",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
-    |> noreply()
-  end
+  #  @impl true
+  #  def handle_event(
+  #        "preview_gallery",
+  #        _,
+  #        %{
+  #          assigns: %{
+  #            gallery: gallery
+  #          }
+  #        } = socket
+  #      ) do
+  #    hash =
+  #      gallery
+  #      |> Galleries.set_gallery_hash()
+  #      |> Map.get(:client_link_hash)
+  #
+  #    socket
+  #    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+  #    |> noreply()
+  #  end
 
   @impl true
   def handle_event(
@@ -488,13 +524,13 @@ defmodule PicselloWeb.GalleryLive.Photos do
           socket
       ) do
     if entry.done? do
+      uploaded_files = uploaded_files + 1
       {:ok, photo} = create_photo(gallery, entry)
-
       start_photo_processing(photo, gallery.watermark)
 
       socket
-      |> assign(:upload_toast, "")
-      |> assign(uploaded_files: uploaded_files + 1)
+      |> put_flash(:upload_success, upload_success_message(socket, uploaded_files))
+      |> assign(uploaded_files: uploaded_files)
       |> assign(
         progress:
           progress
@@ -773,7 +809,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
          } = socket,
          per_page \\ @per_page
        ) do
-    opts = [only_favorites: filter, offset: per_page * page]
+    opts = [only_favorites: filter, exclude_album: true, offset: per_page * page]
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
@@ -788,6 +824,10 @@ defmodule PicselloWeb.GalleryLive.Photos do
       |> length > per_page
     )
   end
+
+  def upload_success_message(socket, uploaded_files),
+    do:
+      "#{uploaded_files}/#{total(socket.assigns.uploads.photo.entries)} photos uploaded successfully"
 
   defp page_title(:show), do: "Show Gallery"
   defp page_title(:edit), do: "Edit Gallery"

@@ -109,13 +109,28 @@ defmodule Picsello.Galleries do
           list(Photo)
   def get_gallery_photos(id, per_page, page, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
+    exclude_album = Keyword.get(opts, :exclude_album, false)
+
+    conditions = dynamic([p], p.gallery_id == ^id)
+
+    conditions =
+      if only_favorites do
+        dynamic([p], p.client_liked == true and ^conditions)
+      else
+        conditions
+      end
+
+    conditions =
+      if exclude_album do
+        dynamic([p], is_nil(p.album_id) and ^conditions)
+      else
+        conditions
+      end
+
     offset = Keyword.get(opts, :offset, per_page * page)
 
-    select_opts =
-      if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id)
-
     Photo
-    |> where(^select_opts)
+    |> where(^conditions)
     |> order_by(asc: :position)
     |> offset(^offset)
     |> limit(^per_page)
@@ -372,6 +387,17 @@ defmodule Picsello.Galleries do
     photo
     |> Photo.update_changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  updates album_id for multiple photos.
+  """
+  def update_selected_photos(album_id, selected_photos) do
+    from(p in Photo,
+      where: p.id in ^selected_photos,
+      update: [set: [album_id: ^String.to_integer(album_id)]]
+    )
+    |> Repo.update_all([])
   end
 
   @doc """

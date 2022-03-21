@@ -29,7 +29,8 @@ defmodule PicselloWeb.LayoutView do
        "border-red-sales-300"},
       {:info, "info", "bg-blue-planning-100", "bg-blue-planning-300", "text-blue-planning-300",
        "border-blue-planning-300"},
-      {:gallery, "checkmark", "bg-white", "bg-black", "text-black", "border-black"},
+      {:upload_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
+      {:move_to_album_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
       {:success, "checkmark", "bg-green-finances-100", "bg-green-finances-300",
        "text-green-finances-300", "border-green-finances-300"}
     ]
@@ -40,19 +41,33 @@ defmodule PicselloWeb.LayoutView do
     ~H"""
     <div>
       <%= for {key, icon, bg_light, bg_dark, text_color, border_color} <- flash_styles(), message <- [live_flash(@flash, key)], message do %>
-      <div class="center-container">
-        <div class={classes(["mx-6 font-bold rounded-lg cursor-pointer m-4 flex border-2", bg_light, text_color, border_color])} role="alert" phx-click="lv:clear-flash" phx-value-key={key} title={key}>
-          <div class={classes(["flex items-center justify-center p-3", bg_dark])}>
-            <PicselloWeb.LiveHelpers.icon name={icon} class="w-6 h-6 stroke-current" />
-          </div>
+        <%= if(key in [:error, :info, :success])  do %>
+        <div class="center-container">
+          <div class={classes(["mx-6 font-bold rounded-lg cursor-pointer m-4 flex border-2", bg_light, text_color, border_color])} role="alert" phx-click="lv:clear-flash" phx-value-key={key} title={key}>
+            <div class={classes(["flex items-center justify-center p-3", bg_dark])}>
+              <PicselloWeb.LiveHelpers.icon name={icon} class="w-6 h-6 stroke-current" />
+            </div>
 
-          <div class="flex-grow p-3"><%= message %></div>
+            <div class="flex-grow p-3"><%= message %></div>
 
-          <div class={classes(["flex items-center justify-center mr-3", text_color])}}>
-            <PicselloWeb.LiveHelpers.icon name="close-x" class="w-3 h-3 stroke-current" />
+            <div class={classes(["flex items-center justify-center mr-3", text_color])}}>
+              <PicselloWeb.LiveHelpers.icon name="close-x" class="w-3 h-3 stroke-current" />
+            </div>
           </div>
         </div>
-      </div>
+        <% else %>
+          <div phx-click="lv:clear-flash" phx-value-key={key} class={"fixed right-20 top-4 z-40"}>
+            <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
+              <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
+                <.icon name={icon} class="w-6 h-6 stroke-current text-green-finances-300" />
+              </div>
+              <div class="flex items-center justify-center font-sans flex-grow p-3"><%= message %></div>
+              <div class="flex items-center justify-center mr-3">
+                <.icon name="close-x" class="w-3 h-3 stroke-current" />
+              </div>
+            </div>
+          </div>
+        <% end %>
       <% end %>
     </div>
     """
