@@ -255,15 +255,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   #  end
 
   @impl true
-  def handle_event(
-        "gallery_settings",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
+  def handle_event("gallery_settings", _, socket) do
     socket
     |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
     |> noreply()
