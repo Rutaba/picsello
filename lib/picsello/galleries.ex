@@ -167,6 +167,12 @@ defmodule Picsello.Galleries do
     |> Repo.update_all(set: [album_id: album_id])
   end
 
+  def remove_photos_from_album(photo_ids) do
+    Photo
+    |> where([p], p.id in ^photo_ids)
+    |> Repo.update_all(set: [album_id: nil])
+  end
+
   @doc """
   Creates a gallery.
 

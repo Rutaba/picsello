@@ -310,6 +310,8 @@ defmodule PicselloWeb.GalleryLive.Album do
         %{"album" => album_id} = _params,
         %{
           assigns: %{
+            album: album,
+            gallery: gallery,
             selected_photos: selected_photos
           }
         } = socket
@@ -317,7 +319,27 @@ defmodule PicselloWeb.GalleryLive.Album do
     Galleries.update_photos_album_id(selected_photos, album_id)
 
     socket
-    |> ok()
+    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "remove_from_album",
+        _,
+        %{
+          assigns: %{
+            album: album,
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Galleries.remove_photos_from_album(selected_photos)
+
+    socket
+    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
+    |> noreply()
   end
 
   @impl true
