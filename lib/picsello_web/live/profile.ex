@@ -344,7 +344,7 @@ defmodule PicselloWeb.Live.Profile do
         <div><%= Money.to_string(@price, fractional_unit: false) %></div>
       </div>
 
-      <div class="mt-4 whitespace-pre-line"><%= @description %></div>
+      <div class="mt-4 whitespace-pre-line raw_html"><%=raw @description %></div>
     </div>
     """
   end

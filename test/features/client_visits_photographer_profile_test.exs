@@ -29,7 +29,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
 
     insert(:package_template,
       name: "Silver",
-      description: "silver desc",
+      description: "<br/><p>silver</p><br/><p>desc</p>",
       download_count: 1,
       user: user,
       job_type: "event",
@@ -174,7 +174,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
   feature "checks pricing", %{session: session, profile_url: profile_url} do
     session
     |> visit(profile_url)
-    |> assert_inner_text(testid("package-detail", count: 2, at: 0), "Silver$20silver desc")
+    |> assert_inner_text(testid("package-detail", count: 2, at: 0), "Silver$20\nsilver\ndesc")
     |> assert_inner_text(testid("package-detail", count: 2, at: 1), "Gold$30gold desc")
   end
 end
