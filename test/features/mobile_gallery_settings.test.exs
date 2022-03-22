@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.GalleryProductTest do
+defmodule PicselloWeb.GalleryLive.MobileGallerySettingsTest do
   @moduledoc false
 
   use Picsello.FeatureCase, async: true
@@ -28,7 +28,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProductTest do
   setup :onboarded
   setup :authenticated
 
-  test "grid load", %{session: session, gallery: gallery} do
+  test "password updated in share gallery email", %{session: session, gallery: gallery} do
     session
     |> resize_window(600, 1000)
     |> visit("/galleries/#{gallery.id}/settings")
