@@ -37,7 +37,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def handle_event("save", %{}, %{assigns: %{step: 6}} = socket) do
     case Payments.checkout_link(
            socket.assigns.current_user,
-           Subscriptions.monthly_subscription_type(),
+           Subscriptions.monthly_subscription_plan(),
            # manually interpolate here to not encode the brackets
            success_url:
              "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",

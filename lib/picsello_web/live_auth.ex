@@ -2,7 +2,7 @@ defmodule PicselloWeb.LiveAuth do
   @moduledoc false
   import Phoenix.LiveView
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.{Accounts, Accounts.User}
+  alias Picsello.{Accounts, Accounts.User, Subscriptions}
   alias Picsello.Galleries
 
   def on_mount(:default, _params, session, socket) do
@@ -123,13 +123,23 @@ defmodule PicselloWeb.LiveAuth do
         socket |> push_redirect(to: Routes.home_path(socket, :index)) |> halt()
 
       {_, true} ->
-        socket |> cont()
+        socket |> maybe_redirect_to_home()
 
       {^onboarding_view, false} ->
         socket |> cont()
 
       {_, false} ->
         socket |> push_redirect(to: Routes.onboarding_path(socket, :index)) |> halt()
+    end
+  end
+
+  defp maybe_redirect_to_home(%{view: view, assigns: %{current_user: current_user}} = socket) do
+    views = [PicselloWeb.LiveModal, PicselloWeb.HomeLive.Index]
+
+    if !Enum.member?(views, view) && Subscriptions.subscription_expired?(current_user) do
+      socket |> push_redirect(to: Routes.home_path(socket, :index)) |> halt()
+    else
+      socket |> cont()
     end
   end
 

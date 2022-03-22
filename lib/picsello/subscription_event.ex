@@ -2,7 +2,7 @@ defmodule Picsello.SubscriptionEvent do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, SubscriptionType}
+  alias Picsello.{Accounts.User, SubscriptionPlan}
 
   schema "subscription_events" do
     field :cancel_at, :utc_datetime
@@ -10,7 +10,7 @@ defmodule Picsello.SubscriptionEvent do
     field :current_period_start, :utc_datetime
     field :status, :string
     field :stripe_subscription_id, :string
-    belongs_to :subscription_type, SubscriptionType
+    belongs_to :subscription_plan, SubscriptionPlan
     belongs_to :user, User
 
     timestamps()
@@ -25,7 +25,7 @@ defmodule Picsello.SubscriptionEvent do
       :current_period_start,
       :current_period_end,
       :user_id,
-      :subscription_type_id,
+      :subscription_plan_id,
       :cancel_at
     ])
     |> validate_required([
@@ -33,7 +33,7 @@ defmodule Picsello.SubscriptionEvent do
       :stripe_subscription_id,
       :current_period_start,
       :user_id,
-      :subscription_type_id,
+      :subscription_plan_id,
       :current_period_end
     ])
   end

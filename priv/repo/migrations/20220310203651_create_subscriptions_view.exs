@@ -13,10 +13,10 @@ defmodule Picsello.Repo.Migrations.CreateSubscriptionsView do
       se.current_period_end,
       se.current_period_start,
       se.status,
-      st.price,
-      st.recurring_interval
+      sp.price,
+      sp.recurring_interval
     from subscription_events se
-    join subscription_types st on st.id = se.subscription_type_id
+    join subscription_plans sp on sp.id = se.subscription_plan_id
     order by se.user_id, se.current_period_start desc, se.id desc
   )
   """

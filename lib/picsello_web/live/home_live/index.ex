@@ -1,19 +1,35 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Payments, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
+  require Logger
+
+  alias Picsello.{
+    Job,
+    Payments,
+    Repo,
+    Accounts,
+    Shoot,
+    Accounts.User,
+    ClientMessage,
+    Subscriptions
+  }
+
   import Ecto.Query
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket
     |> assign_stripe_status()
     |> assign(:page_title, "Work Hub")
     |> assign_counts()
     |> assign_attention_items()
     |> subscribe_inbound_messages()
+    |> maybe_show_success_subscription(params)
     |> ok()
   end
+
+  @impl true
+  def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("create-lead", %{}, socket),
@@ -55,6 +71,36 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  @impl true
+  def handle_event("subscription-checkout", %{"id" => subscription_plan_id}, socket) do
+    case Payments.checkout_link(
+           socket.assigns.current_user,
+           Subscriptions.subscription_plan_by_id(subscription_plan_id),
+           # manually interpolate here to not encode the brackets
+           success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+           cancel_url: Routes.home_url(socket, :index)
+         ) do
+      {:ok, url} ->
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  defp maybe_show_success_subscription(socket, %{
+         "session_id" => "" <> session_id
+       }) do
+    if connected?(socket),
+      do: send(self(), {:stripe_session_id, session_id})
+
+    socket
+    |> assign(:stripe_subscription_status, :loading)
+  end
+
+  defp maybe_show_success_subscription(socket, %{}), do: socket
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
@@ -208,6 +254,32 @@ defmodule PicselloWeb.HomeLive.Index do
     """
   end
 
+  def subscription_modal(assigns) do
+    ~H"""
+    <div class="fixed inset-0 z-20 bg-black bg-opacity-60 flex items-center justify-center">
+      <div class="modal rounded-lg sm:max-w-4xl">
+        <h1 class="text-3xl font-semibold">Your plan has expired</h1>
+        <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+          <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
+            <div class="border rounded-lg p-4 flex items-center justify-between">
+              <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
+              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-id={subscription_plan.id}>
+                Select this plan
+              </button>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex mt-6">
+          <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   defp job_count_by_status(user) do
     now = DateTime.utc_now()
     a_week_from_now = DateTime.add(now, 7 * 24 * 60 * 60)
@@ -250,6 +322,34 @@ defmodule PicselloWeb.HomeLive.Index do
     socket
     |> assign(:inbox_count, count + 1)
     |> noreply()
+  end
+
+  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
+    with {:ok, session} <-
+           Payments.retrieve_session(stripe_session_id, []),
+         {:ok, subscription} <-
+           Payments.retrieve_subscription(session.subscription, []),
+         {:ok, _} <- Payments.handle_subscription(subscription) do
+      socket
+      |> assign(:stripe_subscription_status, :success)
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        title: "You have subscribed to Picsello",
+        subtitle:
+          "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
+        close_label: "Close",
+        close_class: "btn-primary"
+      })
+      # clear the session_id param
+      |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+      |> noreply()
+    else
+      e ->
+        Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
+
+        socket
+        |> put_flash(:error, "Couldn't fetch your Stripe sessoin. Please try again")
+        |> noreply()
+    end
   end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do

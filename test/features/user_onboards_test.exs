@@ -9,8 +9,8 @@ defmodule Picsello.UserOnboardsTest do
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
     insert(:package_base_price, base_price: 300)
-    subscription_type = insert(:subscription_type)
-    [session: visit(session, "/"), subscription_type: subscription_type]
+    subscription_plan = insert(:subscription_plan)
+    [session: visit(session, "/"), subscription_plan: subscription_plan]
   end
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
@@ -26,7 +26,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(option("OK"))
   end
 
-  feature "user onboards", %{session: session, user: user, subscription_type: subscription_type} do
+  feature "user onboards", %{session: session, user: user, subscription_plan: subscription_plan} do
     user = Repo.preload(user, :organization)
 
     org_name_field = text_field("onboarding-step-2_organization_name")
@@ -58,7 +58,7 @@ defmodule Picsello.UserOnboardsTest do
          status: "active",
          current_period_start: DateTime.utc_now() |> DateTime.to_unix(),
          current_period_end: DateTime.utc_now() |> DateTime.add(100) |> DateTime.to_unix(),
-         plan: %{id: subscription_type.stripe_price_id},
+         plan: %{id: subscription_plan.stripe_price_id},
          customer: "cus_123"
        }}
     end)
