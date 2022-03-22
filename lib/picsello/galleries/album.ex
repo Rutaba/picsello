@@ -25,8 +25,8 @@ defmodule Picsello.Galleries.Album do
     |> validate_required(@attrs)
   end
 
-  def update_changeset(struct, attrs) do
+  def update_changeset(struct, attrs \\ %{}) do
     struct
-    |> cast(attrs, [:name, :set_password])
+    |> cast(attrs, [:name, :set_password, :password])
   end
 end
