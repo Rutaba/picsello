@@ -3,8 +3,7 @@ defmodule Picsello.Cart.Order do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Galleries.Gallery
-  alias Picsello.Cart.CartProduct
-  alias Picsello.Cart.DeliveryInfo
+  alias Picsello.Cart.{CartProduct, DeliveryInfo}
 
   schema "gallery_orders" do
     field :number, :integer, default: Enum.random(100_000..999_999)
@@ -17,7 +16,7 @@ defmodule Picsello.Cart.Order do
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
 
-    embeds_many :digitals, Digital do
+    embeds_many :digitals, Digital, on_replace: :delete do
       field :photo_id, :integer
       field :preview_url, :string
       field :price, Money.Ecto.Amount.Type
@@ -26,19 +25,52 @@ defmodule Picsello.Cart.Order do
     timestamps(type: :utc_datetime)
   end
 
-  def create_changeset(%CartProduct{} = product, attrs \\ %{}) do
-    %__MODULE__{}
-    |> cast(attrs, [:gallery_id])
+  alias __MODULE__.Digital
+
+  def create_changeset(product, attrs \\ %{})
+
+  def create_changeset(%CartProduct{} = product, attrs) do
+    attrs
+    |> do_create_changeset()
     |> put_embed(:products, [product])
     |> refresh_costs()
+  end
+
+  def create_changeset(%Digital{} = digital, attrs) do
+    attrs
+    |> do_create_changeset()
+    |> put_embed(:digitals, [digital])
+    |> refresh_costs()
+  end
+
+  defp do_create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:gallery_id])
     |> validate_required([:gallery_id])
     |> foreign_key_constraint(:gallery_id)
   end
 
-  def update_changeset(%__MODULE__{} = order, %CartProduct{} = product, attrs \\ %{}) do
+  def update_changeset(order, product, attrs \\ %{})
+
+  def update_changeset(order, %CartProduct{} = product, attrs) do
     order
     |> cast(attrs, [])
     |> replace_products([product])
+  end
+
+  def update_changeset(order, %Digital{} = digital, attrs) do
+    order
+    |> cast(attrs, [])
+    |> then(fn changeset ->
+      digitals = get_field(changeset, :digitals, [])
+
+      if Enum.any?(digitals, &(&1.photo_id == digital.photo_id)) do
+        changeset
+      else
+        put_embed(changeset, :digitals, [digital | digitals])
+      end
+    end)
+    |> refresh_costs()
   end
 
   def change_products(
@@ -91,13 +123,19 @@ defmodule Picsello.Cart.Order do
     |> refresh_costs()
   end
 
-  def delete_product_changeset(%__MODULE__{products: products} = order, editor_id) do
+  def delete_product_changeset(%__MODULE__{products: products, digitals: digitals} = order, opts) do
+    {embed, values} =
+      case opts do
+        [editor_id: editor_id] ->
+          {:products, Enum.reject(products, &(&1.editor_details.editor_id == editor_id))}
+
+        [digital_id: digital_id] ->
+          {:digitals, Enum.reject(digitals, &(&1.id == digital_id))}
+      end
+
     order
     |> change()
-    |> put_embed(
-      :products,
-      Enum.reject(products, fn product -> product.editor_details.editor_id == editor_id end)
-    )
+    |> put_embed(embed, values)
     |> refresh_costs()
   end
 
@@ -130,12 +168,15 @@ defmodule Picsello.Cart.Order do
   end
 
   defp refresh_costs(changeset) do
-    changeset
-    |> then(fn set ->
-      set
-      |> get_field(:products)
-      |> Enum.reduce(Money.new(0), fn product, acc -> Money.add(acc, product.price) end)
-      |> then(&put_change(set, :subtotal_cost, &1))
-    end)
+    costs =
+      for field <- [:products, :digitals], reduce: Money.new(0) do
+        acc ->
+          for(entry <- get_field(changeset, field), reduce: acc) do
+            acc ->
+              Money.add(acc, entry.price)
+          end
+      end
+
+    put_change(changeset, :subtotal_cost, costs)
   end
 end

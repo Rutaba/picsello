@@ -207,8 +207,15 @@ topbar.config({
   barColors: { 0: '#00ADC9' },
   shadowColor: 'rgba(0, 0, 0, .3)',
 });
-window.addEventListener('phx:page-loading-start', (_info) => topbar.show());
+let topBarScheduled = undefined;
+window.addEventListener('phx:page-loading-start', () => {
+  if (!topBarScheduled) {
+    topBarScheduled = setTimeout(() => topbar.show(), 120);
+  }
+});
 window.addEventListener('phx:page-loading-stop', (info) => {
+  clearTimeout(topBarScheduled);
+  topBarScheduled = undefined;
   topbar.hide();
   Analytics.init(info);
 });

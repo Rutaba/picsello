@@ -18,7 +18,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   end
 
   setup %{user: user} do
-    Mox.stub(Picsello.MockPayments, :status, fn _ -> :charges_enabled end)
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
 
     user.organization
     |> Organization.assign_stripe_account_changeset("stripe_id")
@@ -46,6 +48,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         ]
       })
 
+    insert(:email_preset, job_type: lead.type, job_state: :lead)
+
+    insert(:email_preset,
+      job_type: lead.type,
+      job_state: :booking_proposal,
+      subject_template: "here is what I propose",
+      body_template: "let us party."
+    )
+
     [lead: lead]
   end
 
@@ -55,6 +66,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> visit("/leads/#{lead.id}")
       |> click(checkbox("Questionnaire included", selected: true))
       |> click(button("Finish booking proposal"))
+      |> assert_has(@send_email_button)
+      |> refute_has(select("Select email preset"))
+      |> assert_value(text_field("Subject line"), "here is what I propose")
+      |> assert_has(css("#editor", text: "let us party."))
       |> click(@send_email_button)
       |> click(button("Close"))
 
@@ -63,13 +78,16 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       test_pid = self()
 
-      Mox.stub(Picsello.MockPayments, :checkout_link, fn _, products, opts ->
+      Mox.stub(Picsello.MockPayments, :checkout_link, fn params, opts ->
         send(
           test_pid,
-          {:checkout_linked, opts |> Enum.into(%{products: products})}
+          {:checkout_linked, opts |> Enum.into(params)}
         )
 
-        {:ok, "https://example.com/stripe-checkout"}
+        {:ok,
+         PicselloWeb.Endpoint.struct_url()
+         |> Map.put(:fragment, "stripe-checkout")
+         |> URI.to_string()}
       end)
 
       proposal = BookingProposal.last_for_job(lead.id)
@@ -158,11 +176,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
       |> assert_has(button("Completed Read and agree to your contract"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Pay your invoice"))
       |> assert_text("20% discount applied")
       |> assert_has(definition("Total", text: "$0.80"))
-      |> assert_has(definition("50% retainer today", text: "$0.40"))
-      |> assert_has(definition("Remainder Due on Sep 29, 2029", text: "$0.40"))
+      |> assert_has(definition("50% retainer due today", text: "$0.40"))
+      |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -186,7 +204,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                       %{
                         success_url: stripe_success_url,
                         metadata: %{"paying_for" => ^deposit_payment_id},
-                        products: [
+                        line_items: [
                           %{
                             price_data: %{
                               product_data: %{name: "John Newborn 50% retainer"},
@@ -204,14 +222,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("h1", text: "Your session is now booked."))
       |> click(button("Got it"))
       |> assert_text("Let’s get your shoot booked")
-      |> click(button("To-Do Pay your remainder"))
+      |> click(button("To-Do Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
-      |> assert_has(definition("Remainder Due on Sep 29, 2029", text: "$0.40"))
+      |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -229,7 +247,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                       %{
                         success_url: stripe_success_url,
                         metadata: %{"paying_for" => ^remainder_payment_id},
-                        products: [
+                        line_items: [
                           %{
                             price_data: %{
                               product_data: %{name: "John Newborn 50% remainder"},
@@ -247,12 +265,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Completed Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("Retainer Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
       |> assert_has(
-        definition("Remainder Paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("50% remainder paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$0.40"
         )
       )
@@ -289,7 +307,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Pay your invoice"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -314,6 +332,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
+    |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
@@ -360,6 +379,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(button("Finish booking proposal"))
+    |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}

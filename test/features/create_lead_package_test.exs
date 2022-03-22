@@ -7,11 +7,6 @@ defmodule Picsello.CreateLeadPackageTest do
 
   @add_package_button testid("add-package-from-shoot")
 
-  defp scroll_page(session, testid) do
-    session
-    |> execute_script("document.querySelector('[id=\"#{testid}\"]').scrollIntoView()")
-  end
-
   def fill_in_package_form(session) do
     session
     |> assert_text("Add a Package: Provide Details")
@@ -24,7 +19,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_text("Add a Package: Set Pricing")
     |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(text_field("Base Price"), with: "$100")
-    |> scroll_page("package_pricing_is_enabled")
+    |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),
@@ -271,7 +266,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_disabled_submit(text: "Save")
     |> fill_in(text_field("Base Price"), with: " ")
-    |> scroll_page("package_pricing_is_enabled")
+    |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),

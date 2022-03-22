@@ -12,6 +12,7 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Galleries.PhotoProcessing.Waiter
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
@@ -50,11 +51,19 @@ defmodule PicselloWeb.GalleryLive.Show do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    url = Routes.gallery_client_show_path(socket, :show, hash)
+
     socket
     |> assign(
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
+      url: url,
       page: 0,
       page_title: page_title(socket.assigns.live_action),
       products: Galleries.products(gallery),
@@ -96,26 +105,6 @@ defmodule PicselloWeb.GalleryLive.Show do
     send(self(), :open_modal)
 
     socket
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "preview_gallery",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
     |> noreply()
   end
 
@@ -296,22 +285,31 @@ defmodule PicselloWeb.GalleryLive.Show do
         {:message_composed, message_changeset},
         %{
           assigns: %{
-            job: job
+            job: job,
+            gallery: gallery
           }
         } = socket
       ) do
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
-      socket
-      |> close_modal()
-      |> noreply()
-    else
-      _error ->
-        socket
-        |> put_flash(:error, "Something went wrong")
-        |> close_modal()
-        |> noreply()
-    end
+    serialized_message =
+      message_changeset
+      |> :erlang.term_to_binary()
+      |> Base.encode64()
+
+    %{id: oban_job_id} =
+      %{message: serialized_message, email: job.client.email, job_id: job.id}
+      |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
+      |> Oban.insert!()
+
+    Waiter.postpone(gallery.id, fn ->
+      Oban.cancel_job(oban_job_id)
+
+      {:ok, message} = Messages.add_message_to_job(message_changeset, job)
+      ClientNotifier.deliver_email(message, job.client.email)
+    end)
+
+    socket
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true

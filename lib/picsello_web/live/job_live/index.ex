@@ -34,6 +34,13 @@ defmodule PicselloWeb.JobLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("import-job", %{}, socket),
+    do:
+      socket
+      |> open_modal(PicselloWeb.JobLive.ImportWizard, Map.take(socket.assigns, [:current_user]))
+      |> noreply()
+
+  @impl true
   def handle_event("page", %{"cursor" => cursor, "direction" => direction}, socket) do
     update_fn =
       case direction do

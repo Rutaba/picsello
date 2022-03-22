@@ -13,8 +13,9 @@ defmodule PicselloWeb.LiveAuth do
     socket
     |> allow_sandbox()
     |> authenticate_gallery(params)
+    |> authenticate_gallery_expiry()
     |> authenticate_gallery_client(session)
-    |> authenticate_gallery_for_photographer(params, session)
+    |> authenticate_gallery_for_photographer(session)
     |> maybe_redirect_to_client_login(params)
   end
 
@@ -52,6 +53,28 @@ defmodule PicselloWeb.LiveAuth do
     socket |> assign_new(:gallery, fn -> Galleries.get_gallery_by_hash!(hash) end)
   end
 
+  defp authenticate_gallery_expiry(%{assigns: %{gallery: %{expired_at: nil}}} = socket),
+    do: socket
+
+  defp authenticate_gallery_expiry(%{assigns: %{gallery: gallery}} = socket) do
+    case expired?(gallery.expired_at) do
+      true ->
+        socket
+        |> push_redirect(
+          to:
+            Routes.gallery_client_show_gallery_expire_path(
+              socket,
+              :show,
+              gallery.client_link_hash
+            )
+        )
+        |> halt()
+
+      _ ->
+        socket
+    end
+  end
+
   defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do
     socket
     |> assign(
@@ -63,6 +86,8 @@ defmodule PicselloWeb.LiveAuth do
     )
   end
 
+  defp authenticate_gallery_client(socket, _), do: socket
+
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),
          true <- connected?(socket),
@@ -73,14 +98,19 @@ defmodule PicselloWeb.LiveAuth do
     socket
   end
 
-  defp maybe_redirect_to_client_login(%{assigns: %{authenticated: true}} = socket, _) do
-    socket |> cont()
-  end
-
   defp maybe_redirect_to_client_login(socket, %{"hash" => hash}) do
-    socket
-    |> push_redirect(to: Routes.gallery_client_show_login_path(socket, :login, hash))
-    |> halt()
+    with %{assigns: %{authenticated: authenticated}} <- socket,
+         false <- authenticated do
+      socket
+      |> push_redirect(to: Routes.gallery_client_show_login_path(socket, :login, hash))
+      |> halt()
+    else
+      true ->
+        socket |> cont()
+
+      _ ->
+        socket
+    end
   end
 
   defp maybe_redirect_to_onboarding(
@@ -103,11 +133,7 @@ defmodule PicselloWeb.LiveAuth do
     end
   end
 
-  defp authenticate_gallery_for_photographer(
-         %{assigns: %{gallery: gallery}} = socket,
-         %{},
-         session
-       ) do
+  defp authenticate_gallery_for_photographer(%{assigns: %{gallery: gallery}} = socket, session) do
     gallery_user = gallery |> Galleries.populate_organization_user()
 
     socket
@@ -121,6 +147,8 @@ defmodule PicselloWeb.LiveAuth do
     end)
   end
 
+  defp authenticate_gallery_for_photographer(socket, _), do: socket
+
   defp validate_photographer(%{id: current_user}, %{
          job: %{client: %{organization: %{user: %{id: photographer}}}}
        }) do
@@ -131,4 +159,8 @@ defmodule PicselloWeb.LiveAuth do
 
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}
+
+  defp expired?(expires_at) do
+    DateTime.compare(DateTime.utc_now(), expires_at) in [:eq, :gt]
+  end
 end

@@ -3,16 +3,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.Cart
-  alias Picsello.WHCC
-  alias Picsello.WHCC.Shipping
-  alias Picsello.Galleries
-  alias Picsello.GalleryProducts
+  alias Picsello.{Cart, Payments, WHCC, Galleries, GalleryProducts}
+  alias Cart.CartProduct
+  alias WHCC.Shipping
   alias PicselloWeb.GalleryLive.ClientMenuComponent
+  import Cart, only: [preview_url: 1]
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
-    case Cart.get_unconfirmed_order(gallery.id) do
+    case Cart.get_unconfirmed_order(gallery.id, :preload_products) do
       {:ok, order} ->
         gallery = Galleries.populate_organization_user(gallery)
 
@@ -56,10 +55,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  @impl true
   def handle_event(
-        "delete_product",
-        %{"editor-id" => editor_id},
+        "delete",
+        params,
         %{
           assigns: %{
             step: :product_list,
@@ -70,7 +68,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           }
         } = socket
       ) do
-    case Cart.delete_product(order, editor_id) do
+    item =
+      case params do
+        %{"editor-id" => editor_id} -> [editor_id: editor_id]
+        %{"digital-id" => digital_id} -> [digital_id: digital_id]
+      end
+
+    case Cart.delete_product(order, item) do
       {:deleted, _} ->
         socket
         |> push_redirect(
@@ -87,7 +91,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end
   end
 
-  @impl true
   def handle_event(
         "continue",
         _,
@@ -108,7 +111,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  @impl true
   def handle_event(
         "validate_delivery_info",
         %{"delivery_info" => params},
@@ -119,7 +121,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  @impl true
   def handle_event(
         "checkout",
         _,
@@ -132,7 +133,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         } = socket
       ) do
     {:ok, %{link: checkout_link}} =
-      payments().checkout_link(order,
+      Payments.checkout_link(order,
         success_url:
           Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.number),
         cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
@@ -258,6 +259,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     )
   end
 
+  defp summary(assigns) do
+    ~H"""
+    <div class="p-5 border darkerBorder flex flex-col">
+      <div class="text-xl">
+        <%= unless Enum.empty?(@order.products) do %> Subtotal: <% else %> Total: <% end %>
+
+        <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
+      </div>
+
+      <button type="button" class="btn-primary text-lg mt-5" phx-click="continue">Continue</button>
+    </div>
+    """
+  end
+
   defp display_shipping_opts(assigns) do
     ~H"""
     <form>
@@ -335,5 +350,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     }
   end
 
-  defp payments, do: Application.get_env(:picsello, :payments)
+  defp item_image(assigns) do
+    assigns = Map.put_new(assigns, :class, "")
+
+    ~H"""
+    <div class={"#{@class} flex items-center justify-center max-w-[160px] md:max-w-[250px] w-full overflow-hidden mr-4"}>
+      <img class="h-32 w-auto md:h-48" src={preview_url(@item)}/>
+    </div>
+    """
+  end
+
+  defp product_id(%CartProduct{editor_details: %{editor_id: id}}), do: id
+
+  defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
+    do: Map.get(selections, "quantity", 1)
+
+  defdelegate product_name(product), to: Cart
 end

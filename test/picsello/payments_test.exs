@@ -1,28 +1,11 @@
-defmodule Picsello.StripePaymentsTest do
+defmodule Picsello.PaymentsTest do
   use Picsello.DataCase, async: true
-
-  defmodule StripeStub do
-    defmodule Account do
-      def create(%{type: "standard"}) do
-        {:ok, %{id: "new-account-id"}}
-      end
-    end
-
-    defmodule AccountLink do
-      def create(%{account: account, type: "account_onboarding"}) do
-        {:ok, %{url: "https://example.com/#{account}"}}
-      end
-    end
-  end
-
-  def link(user_or_organization, opts) do
-    Picsello.StripePayments.link(user_or_organization, opts, StripeStub)
-  end
+  alias Picsello.Payments
 
   describe "status" do
     test ":no_account when organization has no stripe account" do
       organization = insert(:organization)
-      assert :no_account == Picsello.StripePayments.status(organization)
+      assert :no_account == Payments.status(organization)
     end
 
     test ":missing_information when there is a disabled reason other than 'pending verification'" do
@@ -33,7 +16,7 @@ defmodule Picsello.StripePaymentsTest do
         }
       }
 
-      assert :missing_information == Picsello.StripePayments.account_status(account)
+      assert :missing_information == Payments.account_status(account)
     end
 
     test ":pending_verification when the disabled reason is 'pending verification'" do
@@ -44,7 +27,7 @@ defmodule Picsello.StripePaymentsTest do
         }
       }
 
-      assert :pending_verification == Picsello.StripePayments.account_status(account)
+      assert :pending_verification == Payments.account_status(account)
     end
 
     test ":charges_enabled when charges are enabled (and disabled reason is nil)" do
@@ -52,14 +35,18 @@ defmodule Picsello.StripePaymentsTest do
         charges_enabled: true
       }
 
-      assert :charges_enabled == Picsello.StripePayments.account_status(account)
+      assert :charges_enabled == Payments.account_status(account)
     end
   end
 
   describe "link" do
     test "returns a link when called with a user with no account" do
+      Mox.stub(Picsello.MockPayments, :create_account_link, fn _, _ ->
+        {:ok, %{id: "new-account-id", url: "https://example.com/new-account-id"}}
+      end)
+
       user = insert(:user)
-      assert {:ok, url} = link(user, [])
+      assert {:ok, url} = Payments.link(user, [])
 
       assert "/new-account-id" = url |> URI.parse() |> Map.get(:path)
 
@@ -73,7 +60,15 @@ defmodule Picsello.StripePaymentsTest do
           organization: insert(:organization, stripe_account_id: "already-saved-stub-account-id")
         )
 
-      assert {:ok, url} = link(user, [])
+      Mox.stub(Picsello.MockPayments, :create_account_link, fn %{
+                                                                 account:
+                                                                   "already-saved-stub-account-id"
+                                                               },
+                                                               _ ->
+        {:ok, %{url: "https://example.com/already-saved-stub-account-id"}}
+      end)
+
+      assert {:ok, url} = Payments.link(user, [])
 
       assert "/already-saved-stub-account-id" = url |> URI.parse() |> Map.get(:path)
     end
@@ -86,11 +81,23 @@ defmodule Picsello.StripePaymentsTest do
 
       cart_product = build(:ordered_cart_product, %{product_id: whcc_product.whcc_id})
 
-      %{products: products, shipping_cost: shipping_cost, subtotal_cost: subtotal_cost} =
+      %{products: [product], shipping_cost: shipping_cost, subtotal_cost: subtotal_cost} =
         Picsello.Cart.place_product(cart_product, gallery.id)
 
       checkout_params =
-        Picsello.StripePayments.cart_checkout_params(products, shipping_cost,
+        Payments.cart_checkout_params(
+          [
+            %{
+              product
+              | whcc_product:
+                  insert(:product,
+                    attribute_categories: [
+                      %{"_id" => "size", "attributes" => [%{"id" => "20x30", "name" => "20x30"}]}
+                    ]
+                  )
+            }
+          ],
+          shipping_cost,
           success_url: "https://example.com/success",
           cancel_url: "https://example.com/error"
         )

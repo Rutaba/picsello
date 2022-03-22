@@ -70,7 +70,7 @@ defmodule Picsello.ViewJobTest do
   feature "user views invoice", %{session: session} do
     session
     |> click(css("a[title='Invoice']"))
-    |> assert_has(css(".modal", text: "Paid on"))
+    |> assert_has(css(".modal", text: "paid on"))
     |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 

@@ -97,7 +97,7 @@ config :picsello, :whcc,
 
 config :picsello, Oban,
   repo: Picsello.Repo,
-  queues: [default: 10, storage: 10, campaigns: 10],
+  queues: [default: 10, storage: 10, campaigns: 10, user_initiated: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60},
     {Oban.Plugins.Cron,
@@ -122,6 +122,8 @@ config :picsello, :email_presets,
   sheet_id: System.get_env("EMAIL_PRESET_SHEET_ID"),
   type_ranges: System.get_env("EMAIL_PRESET_TYPE_RANGES"),
   column_map: System.get_env("EMAIL_PRESET_COLUMN_MAP")
+
+config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorage.Impl
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

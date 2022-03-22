@@ -19,23 +19,27 @@ defmodule Picsello.PaymentSchedules do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     [
-      %{price: price, job_id: job.id, due_at: now, inserted_at: now, updated_at: now},
+      %{
+        price: price,
+        job_id: job.id,
+        due_at: now,
+        inserted_at: now,
+        updated_at: now,
+        description: "50% retainer"
+      },
       %{
         price: price,
         job_id: job.id,
         due_at: next_shoot_date,
         inserted_at: now,
-        updated_at: now
+        updated_at: now,
+        description: "50% remainder"
       }
     ]
   end
 
-  def deposit_price(%Job{} = job) do
-    job |> deposit_payment() |> Map.get(:price)
-  end
-
-  def remainder_price(%Job{} = job) do
-    job |> remainder_payment() |> Map.get(:price)
+  def has_payments?(%Job{} = job) do
+    job |> payment_schedules() |> Enum.any?()
   end
 
   def all_paid?(%Job{} = job) do
@@ -62,37 +66,34 @@ defmodule Picsello.PaymentSchedules do
     |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
   end
 
-  def deposit_paid?(%Job{} = job) do
-    job |> deposit_payment() |> PaymentSchedule.paid?()
-  end
-
-  def remainder_paid?(%Job{} = job) do
-    job |> remainder_payment() |> PaymentSchedule.paid?()
-  end
-
   def remainder_due_on(%Job{} = job) do
     job |> remainder_payment() |> Map.get(:due_at)
-  end
-
-  def deposit_paid_at(%Job{} = job) do
-    job |> deposit_payment() |> Map.get(:paid_at)
   end
 
   def remainder_paid_at(%Job{} = job) do
     job |> remainder_payment() |> Map.get(:paid_at)
   end
 
-  def deposit_payment(job) do
-    job |> payment_schedules() |> Enum.at(0) || %PaymentSchedule{}
+  def unpaid_payment(job) do
+    job |> payment_schedules() |> Enum.find(&(!paid?(&1)))
   end
 
-  def remainder_payment(job) do
-    job |> payment_schedules() |> Enum.at(-1) || %PaymentSchedule{}
+  def past_due?(%PaymentSchedule{due_at: due_at}) do
+    :lt == DateTime.compare(due_at, DateTime.utc_now())
   end
 
   def payment_schedules(job) do
     Repo.preload(job, [:payment_schedules])
     |> Map.get(:payment_schedules)
-    |> Enum.sort_by(& &1.due_at)
   end
+
+  def remainder_price(job) do
+    remainder_payment(job).price
+  end
+
+  defp remainder_payment(job) do
+    job |> payment_schedules() |> Enum.at(-1) || %PaymentSchedule{}
+  end
+
+  defdelegate paid?(payment_schedule), to: PaymentSchedule
 end

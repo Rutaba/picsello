@@ -131,7 +131,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   def handle_event(
         "product_preview_photo_click",
-        %{"photo_id" => photo_id, "template_id" => template_id},
+        %{"photo-id" => photo_id, "template-id" => template_id},
         socket
       ) do
     photo = Galleries.get_photo(photo_id)
@@ -159,6 +159,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         %{"preview_photo_id" => photo_id},
         %{
           assigns: %{
+            order: order,
             gallery: gallery,
             favorites_filter: favorites_filter
           }
@@ -167,15 +168,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     photo_ids =
       Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
 
+    photo_id = to_integer(photo_id)
+
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.ChooseProduct,
       %{
         gallery: gallery,
         photo_id: photo_id,
+        digital_in_cart: Cart.contains_digital?(order, photo_id),
         photo_ids:
-          CLL.init(photo_ids)
-          |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
+          photo_ids
+          |> CLL.init()
+          |> CLL.next(Enum.find_index(photo_ids, &(&1 == photo_id)) || 0)
       }
     )
     |> noreply
@@ -264,6 +269,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       |> Galleries.populate_organization_user()
     )
     |> noreply()
+  end
+
+  def handle_info(
+        {:add_digital_to_cart, digital},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    order = Cart.place_product(digital, gallery.id)
+
+    socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
   end
 
   defp place_product_in_cart(

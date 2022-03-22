@@ -16,6 +16,7 @@ defmodule Picsello.Cart.CartProduct do
     field :whcc_confirmation, :string
     field :whcc_processing, :map
     field :whcc_tracking, :map
+    field :whcc_product, :map, virtual: true
     field :created_at, :integer
   end
 

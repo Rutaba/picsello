@@ -1,6 +1,7 @@
 defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
+  import Money.Sigils
 
   setup do
     Picsello.Test.WHCCCatalog.sync_catalog()
@@ -8,10 +9,14 @@ defmodule Picsello.ClientOrdersTest do
 
   setup do
     photographer = insert(:user)
-    gallery = insert(:gallery, job: insert(:lead, user: photographer))
+
+    gallery =
+      insert(:gallery,
+        job: insert(:lead, package: %{download_each_price: ~M[2500]USD}, user: photographer)
+      )
 
     for category <- Picsello.Repo.all(Picsello.Category) do
-      preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
+      preview_photo = insert(:photo, gallery: gallery, preview_url: "/fake.jpg")
 
       insert(:gallery_product,
         category: category,
@@ -20,8 +25,13 @@ defmodule Picsello.ClientOrdersTest do
       )
     end
 
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+
     [gallery: gallery]
   end
+
+  def click_first_photo(session),
+    do: force_simulate_click(session, css("#muuri-grid > div:first-child img"))
 
   setup :authenticated_gallery_client
 
@@ -70,7 +80,7 @@ defmodule Picsello.ClientOrdersTest do
     session
     |> assert_text(gallery.name)
     |> click(link("View Gallery"))
-    |> force_simulate_click(css("#muuri-grid > div:first-child img"))
+    |> click_first_photo()
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
@@ -80,7 +90,8 @@ defmodule Picsello.ClientOrdersTest do
                {"Ornaments", "$40.00"},
                {"Loose Prints", "$25.00"},
                {"Press Printed Cards", "$0.00"},
-               {"Display Products", "$80.00"}
+               {"Display Products", "$80.00"},
+               {"Digital Download", "$25.00"}
              ] =
                options
                |> Enum.map(fn option ->
@@ -90,11 +101,11 @@ defmodule Picsello.ClientOrdersTest do
                  |> List.to_tuple()
                end)
     end)
-    |> click(css("button[phx-value-template_id='#{gallery_product_id}']"))
+    |> click(css("button[phx-value-template-id='#{gallery_product_id}']"))
     |> click(button("Customize & buy"))
     |> assert_url_contains("cart")
-    |> assert_text("Your shopping cart")
-    |> click(button("Continue", count: 2, at: 1))
+    |> assert_text("Cart Review")
+    |> click(button("Continue"))
     |> fill_in(text_field("Email address"), with: "client@example.com")
     |> fill_in(text_field("Name"), with: "brian")
     |> fill_in(text_field("Shipping address"), with: "123 w main st")
@@ -103,8 +114,34 @@ defmodule Picsello.ClientOrdersTest do
     |> fill_in(text_field("delivery_info_address_zip"), with: "74104")
     |> wait_for_enabled_submit_button()
     |> click(button("Continue"))
-    |> take_screenshot()
     |> assert_has(button("Check out with Stripe"))
+  end
+
+  describe "digital downloads" do
+    feature "add to cart", %{session: session, gallery: gallery} do
+      gallery_path = current_path(session)
+
+      session
+      |> assert_text(gallery.name)
+      |> click(link("View Gallery"))
+      |> click_first_photo()
+      |> assert_text("Select an option")
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "1"))
+      |> click_first_photo()
+      |> assert_has(testid("product_option_digital_download", text: "In cart"))
+      |> click(link("close"))
+      |> click(link("cart"))
+      |> find(css("*[data-testid^='digital-']"), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_has(css("img[src='/fake.jpg']"))
+        |> assert_text("$25.00")
+        |> click(button("Delete"))
+      end)
+      |> assert_path(gallery_path)
+      |> refute_has(link("cart"))
+    end
   end
 
   @tag :skip

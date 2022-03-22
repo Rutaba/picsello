@@ -11,7 +11,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Packages.PackagePricing
   }
 
-  import PicselloWeb.PackageLive.Shared, only: [package_card: 1, quill_input: 1]
+  import PicselloWeb.PackageLive.Shared,
+    only: [
+      package_card: 1,
+      quill_input: 1,
+      package_basic_fields: 1,
+      digital_download_fields: 1,
+      current: 1
+    ]
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
@@ -193,22 +201,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :details} = assigns) do
     ~H"""
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-7">
-        <%= labeled_input @f, :name, label: "Title", placeholder: "Wedding Deluxe, or 1 Hour Portrait Session", phx_debounce: "500", wrapper_class: "mt-4" %>
-        <div class="grid gap-2 grid-cols-2 sm:contents">
-          <%= labeled_select @f, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", class: "py-3", phx_update: "ignore" %>
-
-          <div class="mt-4 flex flex-col">
-            <%= label_for @f, :turnaround_weeks, label: "Image Turnaround Time" %>
-
-            <div>
-              <%= input @f, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
-
-              <%= ngettext("week", "weeks", Ecto.Changeset.get_field(@changeset, :turnaround_weeks)) %>
-            </div>
-          </div>
-        </div>
-      </div>
+      <.package_basic_fields form={@f} />
 
       <div class="flex flex-col mt-4">
 
@@ -276,95 +269,31 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <hr class="block w-full mt-6 sm:hidden"/>
 
-        <% d = form_for(@download, "#") %>
-
-        <div class="mt-6 sm:mt-9"  {testid("download")}>
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Downloads</h2>
-          <%= if d |> current() |> Map.get(:is_enabled) do %>
-            Digital downloads are valued at <b><%= download_price(@f) %></b> / ea
-          <% end %>
-        </div>
-
-        <div class="flex flex-col w-full mt-3">
-          <label class="flex items-center">
-            <%= radio_button(d, :is_enabled, true, class: "w-5 h-5 mr-2 radio") %>
-
-            Charge for downloads
-          </label>
-
-          <%= if d |> current() |> Map.get(:is_enabled) do %>
-            <div class="flex flex-col ml-7">
-              <label class="flex items-center mt-3">
-                <%= checkbox(d, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
-
-                Set my own download price
-              </label>
-
-              <%= if d |> current() |> Map.get(:is_custom_price) do %>
-                <%= input(d, :each_price, class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-              <% end %>
-
-              <div class="flex flex-col justify-between mt-3 sm:flex-row ">
-                <div class="w-full sm:w-auto">
-                  <label class="flex items-center">
-                    <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
-
-                    Include download credits
-                  </label>
-
-                  <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
-                </div>
-              </div>
-
-          <% p = form_for(@package_pricing, "#") %>
-
-              <label class="flex items-center mt-3">
-                <%= checkbox(p, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
-
-                Set a "buy them all" price
-              </label>
-
-              <%= if p |> current() |> Map.get(:is_buy_all) do %>
-                <%= input(@f, :buy_all, placeholder: "$0.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-              <% end %>
-            </div>
-          <% end %>
-
-          <label class="flex items-center mt-3">
-            <%= radio_button(d, :is_enabled, false, class: "w-5 h-5 mr-2 radio") %>
-
-            Do not charge for downloads
-          </label>
+        <.digital_download_fields package_form={@f} download={@download} package_pricing={@package_pricing} />
 
         <div class="mt-6 sm:mt-9">
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Print Credits</h2>
         </div>
 
-      <div class="flex flex-col justify-between mt-6 sm:flex-row ">
+        <div class="flex flex-col justify-between mt-6 sm:flex-row ">
+          <% p = form_for(@package_pricing, "#") %>
 
-      <% p = form_for(@package_pricing, "#") %>
+          <div class="flex flex-row space-x-8">
+            <label class="flex items-center">
+              <%= checkbox(p, :is_enabled, class: "w-5 h-5 mr-2.5 checkbox") %>
 
-        <div class="flex flex-row space-x-8">
-          <label class="flex items-center">
-            <%= checkbox(p, :is_enabled, class: "w-5 h-5 mr-2.5 checkbox") %>
+              Add
+            </label>
 
-            Add
-          </label>
+            <%= if p |> current() |> Map.get(:is_enabled) do %>
+              <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
 
-          <%= if p |> current() |> Map.get(:is_enabled) do %>
-            <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-
-            <div class="flex items-center">Gallery store credit</div>
-          <% end %>
+              <div class="flex items-center">Gallery store credit</div>
+            <% end %>
+          </div>
         </div>
-        <%= if p |> current() |> Map.get(:is_enabled) do %>
-          <div class="flex items-center justify-end sm:mt-0">+<%= credit(@f) %></div>
-        <% end %>
       </div>
-    </div>
-
-        <hr class="w-full mt-8"/>
-      </div>
+      <hr class="w-full mt-8"/>
       <dl class="flex justify-between mt-4">
         <dt class="font-bold">Total Price</dt>
         <dd class="text-xl font-bold"><%= total_price(@f) %></dd>
@@ -573,9 +502,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     )
   end
 
-  defp current(%{source: changeset}), do: current(changeset)
-  defp current(changeset), do: Ecto.Changeset.apply_changes(changeset)
-
   defp base_adjustment(package_form) do
     adjustment = package_form |> current() |> Package.base_adjustment()
 
@@ -584,14 +510,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Enum.join([sign, Money.abs(adjustment)])
   end
 
-  defp credit(form), do: form |> current() |> Package.print_credits()
-
   defp total_price(form), do: form |> current() |> Package.price()
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
-
-  defp download_price(form),
-    do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
 
   defp package_pricing_params(package) do
     print_credits =

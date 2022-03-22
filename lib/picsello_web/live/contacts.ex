@@ -22,8 +22,9 @@ defmodule PicselloWeb.Live.Contacts do
           </p>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-          <button type="button" phx-click="add-contact" class="w-full px-8 text-center btn-primary">Add contact </button>
+        <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto" {intro_hints_only("intro_hints_only")}>
+          <button type="button" class="w-full px-8 text-center btn-secondary mr-4 whitespace-nowrap relative z-20" {help_scout_output(@current_user, :help_scout_id)} data-article="620013032130e516946846d9" data-subject="Need help with bulk uploading contacts" data-text="Hello! I need help uploading all of my contacts to Picsello. I have attached a spreadsheet per this article: https://support.picsello.com/article/79-uploading-contacts">Bulk upload <.intro_hint content="For now you'll have to send us a help request to bulk upload contacts. You'll need a CSV or Excel file. Click this button to get more info and submit a ticket." class="ml-1" /></button>
+          <button type="button" phx-click="add-contact" class="w-full px-8 text-center btn-primary whitespace-nowrap">Add contact</button>
         </div>
       </div>
 

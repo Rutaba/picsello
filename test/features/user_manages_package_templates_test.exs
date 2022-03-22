@@ -41,7 +41,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> click(css("div.ql-editor"))
     |> send_keys(["My greatest wedding package"])
-    |> scroll_into_view("modal-buttons")
+    |> scroll_into_view(testid("modal-buttons"))
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -52,7 +52,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
-    |> scroll_into_view("download")
+    |> scroll_into_view(testid("download"))
     |> click(checkbox("Set my own download price"))
     |> find(
       text_field("download_each_price"),
@@ -100,7 +100,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> wait_for_enabled_submit_button()
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
-        |> scroll_into_view("download")
+        |> scroll_into_view(testid("download"))
         |> assert_has(radio_button("Do not charge for downloads", checked: true))
         |> click(radio_button("Charge for downloads", checked: false))
         |> assert_text("downloads are valued at #{Download.default_each_price()}")

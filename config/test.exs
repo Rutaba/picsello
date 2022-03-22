@@ -26,7 +26,16 @@ config :picsello, PicselloWeb.Endpoint,
 config :logger, level: :warn
 
 config :wallaby,
-  chromedriver: [headless: System.get_env("HEADLESS", "true") == "true"],
+  chromedriver:
+    [
+      headless: System.get_env("HEADLESS", "true") == "true"
+    ]
+    |> then(
+      &case System.get_env("CHROME_BINARY") do
+        "" <> path -> Keyword.put(&1, :binary, path)
+        _ -> &1
+      end
+    ),
   driver: Wallaby.Chrome,
   otp_app: :picsello,
   screenshot_on_failure: true

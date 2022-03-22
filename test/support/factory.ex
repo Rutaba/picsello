@@ -257,6 +257,7 @@ defmodule Picsello.Factory do
     %PaymentSchedule{
       due_at: DateTime.utc_now(),
       price: Money.new(500),
+      description: "invoice",
       job: fn -> build(:lead, %{user: insert(:user)}) end
     }
     |> merge_attributes(attrs)
@@ -549,6 +550,11 @@ defmodule Picsello.Factory do
       whcc_tracking: nil
     }
   end
+
+  def order_factory,
+    do:
+      %Picsello.Cart.Order{subtotal_cost: Money.new(500), gallery: fn -> build(:gallery) end}
+      |> evaluate_lazy_attributes()
 
   def confirmed_order_factory(attrs) do
     %Picsello.Cart.Order{
