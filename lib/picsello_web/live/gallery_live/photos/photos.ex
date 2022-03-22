@@ -406,6 +406,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
 
     socket
+    |> push_event("select_mode", %{"mode" => "selected_all"})
     |> assign(:selected_photos, photo_ids)
     |> assign(:select_mode, "selected_all")
     |> noreply
@@ -428,6 +429,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
       socket ->
         socket
     end)
+    |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
     |> assign(:selected_photos, [])
     |> noreply
@@ -450,6 +452,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:update_mode, "replace")
     |> assign(:favorites_filter, true)
     |> assign(:selected_photos, photo_ids)
+    |> push_event("select_mode", %{"mode" => "selected_favorite"})
+    |> assign(:select_mode, "selected_favorite")
     |> assign_photos()
     |> noreply
   end
@@ -674,7 +678,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
-    send_update(PhotoComponent, id: String.to_integer(id), is_removed: true)
+    # send_update(PhotoComponent, id: String.to_integer(id), is_removed: true)
 
     socket
     |> assign(:gallery, gallery)

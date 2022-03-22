@@ -61,19 +61,19 @@
                     </div>
                 <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button id="all" class="flex items-center w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_all">All</button>
+                      <button id="all" class="album-select" phx-click="selected_all">All</button>
                       <%= if @select_mode == "selected_all" do %>
                       <.icon name="tick" class="w-6 h-5 mr-3" />
                       <% end %>
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button id="favorite" class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_favorite">Favorite</button>
+                      <button id="favorite" class="album-select" phx-click="selected_favorite">Favorite</button>
                       <%= if @select_mode == "selected_favorite" do %>
                       <.icon id="select_favorite" name="tick" class="w-6 h-5 mr-3" />
                       <% end %>
                     </li>
                     <li class="flex items-center hover:bg-blue-planning-100">
-                      <button id="none" class="flex items-center w-32 h-6 py-4 pl-4 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap" phx-click="selected_none">None</button>
+                      <button id="none" class="album-select" phx-click="selected_none">None</button>
                       <%= if @select_mode == "selected_none" do %>
                       <.icon id="selected_none" name="tick" class="w-6 h-5 mr-3" />
                       <% end %>
@@ -93,11 +93,11 @@
                     <ul class="absolute z-30 hidden w-64 mt-2 bg-white rounded-md toggle-content">
                         <%= for album <- @gallery.albums do%>
                         <li class="relative">
-                          <button class="flex items-center w-64 h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
+                          <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
                         </li>
                         <%end%>
                         <li class="relative">
-                          <button class="flex items-center w-64 h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Download photos</button>
+                          <button class="album-actions">Download photos</button>
                         </li>
                         <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
                           <button phx-click="delete_selected_photos_popup" class="flex items-center w-64 h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">

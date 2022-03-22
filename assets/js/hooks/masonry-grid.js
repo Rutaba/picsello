@@ -164,9 +164,10 @@ export default {
     return this.el.dataset.hasMorePhotos === 'true';
   },
 
-  init_remove_listener() {
+  init_listeners() {
     this.handleEvent('remove_item', ({ id: id }) => this.remove_item(id));
     this.handleEvent('remove_items', ({ ids: ids }) => this.remove_items(ids));
+    this.handleEvent('select_mode', ({ mode: mode }) => this.select_mode(mode));
   },
 
   remove_item(id) {
@@ -184,6 +185,22 @@ export default {
       const item = grid.getItem(itemElement);
       grid.remove([item], { removeElements: true });
     });
+  },
+
+  select_mode(mode) {
+    const items = document.querySelectorAll('.galleryItem > .toggle-it');
+    switch(mode){
+      case 'selected_none':
+        items.forEach(item => {
+          item.classList.remove('photo-border');      
+        });
+        break;
+      default:
+        items.forEach(item => {
+          item.classList.add('photo-border');
+        });
+        break;  
+      }
   },
 
   /**
@@ -213,7 +230,7 @@ export default {
     });
 
     this.init_masonry();
-    this.init_remove_listener();
+    this.init_listeners();
   },
 
   /**
