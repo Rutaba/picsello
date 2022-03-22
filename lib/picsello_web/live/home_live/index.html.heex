@@ -80,7 +80,7 @@
 
       <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
         <p class="my-2">
-          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own!
+          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= link("calculate your pricing", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300") %>.
         </p>
       </.card>
     </ul>

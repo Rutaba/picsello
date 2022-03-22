@@ -112,6 +112,7 @@ defmodule PicselloWeb.Router do
       live "/package_templates", Live.PackageTemplates, :index
       live "/pricing/categories/:category_id", Live.Pricing.Category, :show
       live "/pricing", Live.Pricing, :index
+      live "/pricing/calculator", Live.Pricing.Calculator.Index, :index, as: :calculator
       live "/profile/settings", Live.Profile.Settings, :index, as: :profile_settings
       live "/profile/settings/edit", Live.Profile, :edit, as: :profile_settings
       live "/calendar", Live.Calendar, :index
