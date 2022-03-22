@@ -13,6 +13,19 @@ defmodule Picsello.GalleryProducts do
   end
 
   @doc """
+  Get all the gallery product categories
+  """
+  def get_gallery_product_categories(gallery_id) do
+    from(gp in GalleryProduct,
+      inner_join: category in assoc(gp, :category),
+      where: gp.gallery_id == ^gallery_id and not category.hidden and is_nil(category.deleted_at),
+      preload: [:category],
+      order_by: category.position
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Get all the gallery products that are ready for review
   """
   def get_gallery_products(gallery_id, opts \\ :with_previews) do

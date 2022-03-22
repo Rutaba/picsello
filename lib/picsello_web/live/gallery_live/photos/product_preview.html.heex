@@ -1,0 +1,32 @@
+<div class="flex flex-col bg-white p-10">
+    <div class="flex items-start justify-between flex-shrink-0">
+        <h1 class="text-3xl font-bold">
+          Set as preview for which products?
+        </h1>
+        <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+          <.icon name="close-x" class="w-2 h-2 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
+        </button>
+    </div>
+    <div class="font-sans flex bg-white py-10 relative">
+        <div class="grid grid-cols-4 gap-4 items-center">
+            <%= for product_category <- @product_categories do %>
+            <div class="items-center">
+            <div class="font-sans flex h-52 w-52 p-6 bg-gray-100 text-black">
+               <img src={"/images/#{product_category.category.icon}.png"} class="mx-auto items-center cursor-pointer"/>
+            </div>
+            <div class="font-sans fomt-bold pt-4 flex items-center">
+               <%= product_category.category.name %>
+            </div>
+            </div>
+            <% end %>
+        </div>
+    </div>
+    <div class="flex font-sans flex-row items-center justify-end w-full lg:items-start">
+        <button phx-click="cancel" aria-label="cancel" class="mr-3 py-2 px-6 float-right rounded-lg border bg-white border-black">
+             Cancel
+        </button>
+        <button phx-click="next" aria-label="next" class="py-2 px-6 float-right rounded-lg bg-black text-white">
+          Save changes
+        </button>
+    </div>
+</div>

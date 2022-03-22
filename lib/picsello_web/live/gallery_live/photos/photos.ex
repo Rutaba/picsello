@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   alias PicselloWeb.GalleryLive.Photos.PhotoComponent
   alias PicselloWeb.GalleryLive.Photos.ProductPreview
 
-  @per_page 24
+  @per_page 12
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1500,
@@ -167,6 +167,27 @@ defmodule PicselloWeb.GalleryLive.Photos do
         photo_ids:
           CLL.init(photo_ids)
           |> CLL.next(Enum.find_index(photo_ids, &(&1 == to_integer(photo_id))) || 0)
+      }
+    )
+    |> noreply
+  end
+
+  @impl true
+  def handle_event(
+        "set_product_preview",
+        %{"preview_photo_id" => photo_id},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(
+      ProductPreview,
+      %{
+        gallery: gallery,
+        photo_id: photo_id
       }
     )
     |> noreply
@@ -403,7 +424,11 @@ defmodule PicselloWeb.GalleryLive.Photos do
         } = socket
       ) do
     photo_ids =
-      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
+      Galleries.get_photo_ids(
+        gallery_id: gallery.id,
+        exclude_album: true,
+        favorites_filter: favorites_filter
+      )
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_all"})
@@ -445,7 +470,8 @@ defmodule PicselloWeb.GalleryLive.Photos do
           }
         } = socket
       ) do
-    photo_ids = Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: true)
+    photo_ids =
+      Galleries.get_photo_ids(gallery_id: gallery.id, exclude_album: true, favorites_filter: true)
 
     socket
     |> assign(:page, 0)

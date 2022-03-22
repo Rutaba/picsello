@@ -729,18 +729,28 @@ defmodule Picsello.Galleries do
   @doc """
   Get list of photo ids from gallery.
   """
-  def get_photo_ids([gallery_id: _gallery_id, favorites_filter: favorites_filter] = opts) do
-    opts = Keyword.delete(opts, :favorites_filter)
+  def get_photo_ids(opts) do
+    favorites_filter = Keyword.get(opts, :favorites_filter, false)
+    exclude_album = Keyword.get(opts, :exclude_album, false)
 
-    opts =
+    conditions = dynamic([p], p.gallery_id == ^opts[:gallery_id])
+
+    conditions =
       if favorites_filter do
-        Keyword.put(opts, :client_liked, true)
+        dynamic([p], p.client_liked == true and ^conditions)
       else
-        opts
+        conditions
+      end
+
+    conditions =
+      if exclude_album do
+        dynamic([p], is_nil(p.album_id) and ^conditions)
+      else
+        conditions
       end
 
     Photo
-    |> where(^opts)
+    |> where(^conditions)
     |> order_by(asc: :position)
     |> select([photo], photo.id)
     |> Repo.all()
