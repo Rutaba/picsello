@@ -109,7 +109,6 @@ defmodule PicselloWeb.GalleryLive.Album do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
-    IO.inspect(socket.assigns.uploads)
     #  socket =
     #    Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
     #      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
@@ -176,12 +175,12 @@ defmodule PicselloWeb.GalleryLive.Album do
             gallery: gallery,
             uploaded_files: uploaded_files,
             progress: progress,
-            album_id: album_id
+            album: album
           }
         } = socket
       ) do
     if entry.done? do
-      {:ok, photo} = create_photo_with_album(gallery, entry, album_id)
+      {:ok, photo} = create_photo_with_album(gallery, entry, album.id)
       IO.inspect("reached 3")
 
       start_photo_processing(photo, gallery.watermark)
@@ -862,6 +861,7 @@ defmodule PicselloWeb.GalleryLive.Album do
     # IO.inspect(gallery)
     socket
     #    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
+    |> assign_photos()
     |> noreply()
   end
 

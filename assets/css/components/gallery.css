@@ -176,6 +176,7 @@
 
 /* border-2 border-dashed rounded-lg */
 .albumBlockButton {
+  min-height: 200px;
   @apply  w-full border-2 border-dashed rounded-lg bg-base-100 mt-14 pb-9 text-base-350 border-blue-planning-300;
 }
 
