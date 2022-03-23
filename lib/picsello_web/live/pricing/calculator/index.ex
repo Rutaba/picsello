@@ -1,6 +1,9 @@
 defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   use PicselloWeb, live_view: [layout: "calculator"]
 
+  alias Picsello.PricingCalculators
+  alias Picsello.{Repo, JobType, Onboardings}
+
   @impl true
   def mount(_params, _session, socket) do
     socket |> ok()
@@ -14,10 +17,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       socket
       |> assign_step(6)
       |> assign_cost_category(%{"title" => "hey"})
+      |> assign_changeset()
       |> noreply()
     else
       socket
       |> assign_step(step)
+      |> assign_changeset()
       |> noreply()
     end
   end
@@ -26,6 +31,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def handle_event("next", _, %{assigns: %{step: step}} = socket) do
     socket
     |> assign_step(step + 1)
+    |> assign_changeset()
     |> push_patch(to: Routes.calculator_path(socket, :index, %{step: step + 1}))
     |> noreply()
   end
@@ -34,6 +40,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def handle_event("previous", _, %{assigns: %{step: step}} = socket) do
     socket
     |> assign_step(step - 1)
+    |> assign_changeset()
     |> push_patch(to: Routes.calculator_path(socket, :index, %{step: step - 1}))
     |> noreply()
   end
@@ -50,6 +57,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     socket
     |> assign_step(6)
     |> assign_cost_category(params)
+    |> assign_changeset()
     |> push_patch(to: Routes.calculator_path(socket, :index, %{step: 6}))
     |> noreply()
   end
@@ -65,7 +73,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.step {assigns} />
+    <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"calculator-step-#{@step}"}>
+      <.step {assigns} f={f} />
+    </.form>
     """
   end
 
@@ -73,28 +83,60 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">We need to know a little about what you do currently in order to build accurate results.</h4>
-        <form>
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">What types of photography do you shoot? (Select one or more)</p>
-            input placeholder
-          </label>
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
-            input placeholder
-          </label>
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
-            input placeholder
-          </label>
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">What is your zipcode?</p>
-            input placeholder
-          </label>
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">What is your state?</p>
-            input placeholder
-          </label>
-        </form>
+
+        <%= for o <- inputs_for(@f, :organization) do %>
+          <%= hidden_inputs_for o %>
+
+          <%= for p <- inputs_for(o, :profile) do %>
+            <% input_name = input_name(p, :job_types) <> "[]" %>
+            <div class="flex flex-col pb-1">
+              <p class="py-2 font-extrabold">
+                What’s your speciality?
+                <i class="italic font-light">(Select one or more)</i>
+              </p>
+
+              <div class="mt-2 grid grid-cols-3 gap-3 sm:gap-5">
+                <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(p, :job_types) || [], job_type)]) do %>
+                  <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
+        <%= for onboarding <- inputs_for(@f, :onboarding) do %>
+          <div class="grid grid-cols-2 gap-3 sm:gap-5">
+            <label class="flex flex-col mt-4">
+              <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
+
+              <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+            </label>
+
+            <label class="flex flex-col mt-4">
+              <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
+
+              <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
+              <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 sm:gap-5">
+            <label class="flex flex-col mt-4">
+              <p class="py-2 font-extrabold">What's your zipcode?</p>
+
+              <%= input onboarding, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
+              <%= error_tag onboarding, :zipcode, class: "text-red-sales-300 text-sm" %>
+            </label>
+
+            <label class="flex flex-col mt-4">
+              <p class="py-2 font-extrabold">Where’s your business based?</p>
+
+              <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
+              <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
+            </label>
+          </div>
+        <% end %>
+
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-primary" phx-click="next">Next</button>
         </div>
@@ -260,6 +302,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       step_title: "Information about your business",
       page_title: "Pricing Calculator step 1"
     )
+    |> assign_new(:states, &states/0)
   end
 
   defp assign_step(socket, 3) do
@@ -307,6 +350,17 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     )
   end
 
+  defp build_changeset(%{assigns: %{current_user: user, step: step}}, params, action \\ nil) do
+    user
+    |> PricingCalculators.changeset(params, step: step)
+    |> Map.put(:action, action)
+  end
+
+  defp assign_changeset(socket, params \\ %{}) do
+    socket
+    |> assign(changeset: build_changeset(socket, params, :validate))
+  end
+
   defp assign_cost_category(socket, %{"title" => title} = params) do
     socket
     |> assign(
@@ -336,7 +390,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <div class="w-3/4 flex flex-col">
           <div class="max-w-5xl w-full mx-auto mt-40">
-            <h1 class="text-4xl font-bold mb-12 flex items-center"><%= if @step == 6 do %><button type="button" phx-click="edit-cost-back" class="bg-blue-planning-300 text-white w-14 h-14 inline-block flex items-center justify-center mr-2 rounded-full leading-none">back</button><% else %><span class="bg-blue-planning-300 text-white w-14 h-14 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><%= @step - 1 %></span><% end %><%= @step_title %></h1>
+            <h1 class="text-4xl font-bold mb-12 flex items-center -ml-14"><%= if @step == 6 do %><button type="button" phx-click="edit-cost-back" class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none">back</button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><%= @step - 1 %></span><% end %><%= @step_title %></h1>
           </div>
           <div class="max-w-5xl w-full mx-auto px-6 pt-8 pb-6 bg-white rounded-lg sm:p-14">
             <%= render_block(@inner_block) %>
@@ -345,4 +399,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       </div>
     """
   end
+
+  defdelegate job_types(), to: JobType, as: :all
+  defdelegate states(), to: PricingCalculators, as: :state_options
 end

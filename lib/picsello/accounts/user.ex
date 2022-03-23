@@ -4,6 +4,7 @@ defmodule Picsello.Accounts.User do
   import Ecto.Changeset
   import TzExtra.Changeset
   alias Picsello.Onboardings.Onboarding
+  alias Picsello.PricingCalculators.PricingCalculator
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
@@ -17,6 +18,7 @@ defmodule Picsello.Accounts.User do
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     embeds_one(:onboarding, Onboarding, on_replace: :update)
+    embeds_many(:pricing_calculator, PricingCalculator)
 
     belongs_to(:organization, Picsello.Organization)
 
