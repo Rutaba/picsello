@@ -62,31 +62,27 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    order_id = order_number |> OrderNumber.from_number()
-    %Order{} = order = Cart.get_placed_gallery_order(order_id, gallery.id)
-
-    gallery = Galleries.populate_organization_user(gallery)
+    order = Cart.get_placed_gallery_order!(gallery, order_number)
 
     socket
-    |> assign(:gallery, gallery)
-    |> assign(:from_checkout, false)
-    |> assign_details(gallery, order)
-    |> assign_cart_count(gallery)
+    |> assign_details(order)
     |> noreply()
   end
 
-  defp assign_details(conn, gallery, order) do
+  defp assign_details(%{assigns: %{gallery: gallery}} = socket, order) do
     gallery =
       gallery
-      |> Galleries.populate_organization()
+      |> Galleries.populate_organization_user()
 
-    org_name = gallery.job.client.organization.name
-
-    conn
-    |> assign(:order, order)
-    |> assign(:organization_name, org_name)
-    |> assign(:shipping_name, order.delivery_info.name)
-    |> assign(:shipping_address, order.delivery_info.address)
+    socket
+    |> assign(
+      gallery: gallery,
+      order: order,
+      organization_name: gallery.job.client.organization.name,
+      shipping_address: order.delivery_info.address,
+      shipping_name: order.delivery_info.name
+    )
+    |> assign_cart_count(gallery)
   end
 
   defp product_description(%{id: id}) do

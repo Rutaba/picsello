@@ -4,7 +4,18 @@ defmodule Picsello.Cart do
   """
 
   import Ecto.Query
-  alias Picsello.{Repo, WHCC, Cart.CartProduct, Cart.Order, Cart.DeliveryInfo, Cart.Order.Digital}
+
+  alias Picsello.{
+    Repo,
+    WHCC,
+    Cart.CartProduct,
+    Cart.DeliveryInfo,
+    Cart.Order,
+    Cart.Order.Digital,
+    Cart.OrderNumber,
+    Galleries,
+    Galleries.Gallery
+  }
 
   def new_product(editor_id, account_id) do
     details = WHCC.editor_details(account_id, editor_id)
@@ -151,11 +162,14 @@ defmodule Picsello.Cart do
     end
   end
 
-  def get_placed_gallery_order(order_id, gallery_id) do
+  def get_placed_gallery_order!(%{id: gallery_id}, order_number) do
+    order_id = order_number |> OrderNumber.from_number()
+
     from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == true and order.id == ^order_id
+      where:
+        order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and order.id == ^order_id
     )
-    |> Repo.one()
+    |> Repo.one!()
   end
 
   def get_orders(gallery_id) do
