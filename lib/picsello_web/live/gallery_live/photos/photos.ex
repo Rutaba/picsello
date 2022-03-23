@@ -751,28 +751,12 @@ defmodule PicselloWeb.GalleryLive.Photos do
         } = socket
       ) do
     Galleries.update_gallery_photo_count(gallery.id)
-
     Galleries.normalize_gallery_photo_positions(gallery.id)
-    #    gallery = Galleries.get_gallery!(gallery.id)
-    # IO.inspect(gallery)
+
     socket
-    #    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
+    |> assign_photos()
     |> noreply()
   end
-
-  # def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
-  #   if entry.done? do
-  #     CoverPhoto.original_path(gallery.id, entry.uuid)
-  #     |> ProcessingManager.process_cover_photo()
-
-  #     socket
-  #     |> assign(:cover_photo_processing, true)
-  #     |> noreply()
-  #   else
-  #     socket
-  #     |> noreply
-  #   end
-  # end
 
   def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = CoverPhoto.original_path(gallery.id, entry.uuid)

@@ -170,8 +170,7 @@ export default {
       grid.add(items);
       grid.refreshItems();
     }
-  },
-
+  },  
   /**
    * Returns true if there are more photos to load.
    * @returns {boolean}
@@ -261,11 +260,10 @@ export default {
    */
   updated() {
     this.pending = this.page();
-    console.log(this.pending)
     if (this.pending === '0') {
       this.reload_masonry();
     } else {
-      this.inject_new_items();
+      this.inject_new_items(); 
     }
   },
 };

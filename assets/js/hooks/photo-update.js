@@ -12,6 +12,7 @@ export default {
    */
   updatePhotoImage(id, url) {
     const imgWrapper = document.querySelector(`#photo-${id}`);
+    const parent = document.querySelector(`#photo-item-${id}`);
     const isLoader = imgWrapper?.querySelector('.galleryLoader');
     const img = imgWrapper.querySelector(`img`);
 
@@ -23,5 +24,6 @@ export default {
     if (img && img.src && img.src != url) {
       img.src = url;
     }
+    parent.style.height = "fit-content";
   },
 };
