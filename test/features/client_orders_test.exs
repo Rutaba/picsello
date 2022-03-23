@@ -2,17 +2,24 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
+  alias Picsello.{Repo, Cart.Order}
 
   setup do
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
 
   setup do
-    photographer = insert(:user)
+    organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
+    _photographer = insert(:user, organization: organization)
 
     gallery =
       insert(:gallery,
-        job: insert(:lead, package: %{download_each_price: ~M[2500]USD}, user: photographer)
+        job:
+          insert(:lead,
+            client: insert(:client, organization: organization),
+            package:
+              insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+          )
       )
 
     for category <- Picsello.Repo.all(Picsello.Category) do
@@ -27,7 +34,7 @@ defmodule Picsello.ClientOrdersTest do
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
-    [gallery: gallery]
+    [gallery: gallery, organization: organization]
   end
 
   def click_first_photo(session),
@@ -118,13 +125,33 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   describe "digital downloads" do
-    feature "add to cart", %{session: session, gallery: gallery} do
+    feature "add to cart", %{session: session, gallery: gallery, organization: organization} do
       test_pid = self()
 
-      Mox.stub(Picsello.MockPayments, :checkout_link, fn %{success_url: success_url} = params,
-                                                         opts ->
-        send(test_pid, {:checkout_link, params, opts})
-        {:ok, success_url}
+      %{stripe_account_id: connect_account_id} = organization
+
+      Picsello.MockPayments
+      |> Mox.stub(:checkout_link, fn %{success_url: success_url} = params,
+                                     connect_account: ^connect_account_id ->
+        success_url = URI.parse(success_url)
+        assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
+        send(test_pid, {:checkout_link, params})
+
+        {:ok,
+         success_url
+         |> Map.put(:query, URI.encode_query(%{"session_id" => "stripe-session-id"}))
+         |> URI.to_string()}
+      end)
+      |> Mox.expect(:retrieve_session, fn "stripe-session-id",
+                                          connect_account: ^connect_account_id ->
+        order_number = Order |> Repo.one!() |> Order.number()
+
+        {:ok,
+         %Stripe.Session{
+           id: "stripe-session-id",
+           payment_status: "paid",
+           client_reference_id: "order_number_#{order_number}"
+         }}
       end)
 
       gallery_path = current_path(session)
@@ -158,17 +185,21 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_text("Total: $25.00")
       |> fill_in(text_field("Email"), with: "brian@example.com")
       |> fill_in(text_field("Name"), with: "Brian")
+      |> refute_has(text_field("Shipping address"))
       |> wait_for_enabled_submit_button()
       |> click(button("Continue"))
+
+      order_number = Order |> Repo.one!() |> Order.number() |> to_string()
 
       assert_receive(
         {:checkout_link,
          %{
+           client_reference_id: "order_number_" <> ^order_number,
            customer_email: "brian@example.com",
            line_items: [
              %{price_data: %{product_data: %{images: ["/fake.jpg"]}, unit_amount: 2500}}
            ]
-         }, _}
+         }}
       )
 
       session

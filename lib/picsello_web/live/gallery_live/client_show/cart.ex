@@ -175,10 +175,23 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       |> Cart.checkout_params()
       |> Enum.into(%{
         success_url:
-          Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.number),
+          Enum.join(
+            [
+              Routes.gallery_client_order_url(
+                socket,
+                :paid,
+                gallery.client_link_hash,
+                order.number
+              ),
+              "session_id={CHECKOUT_SESSION_ID}"
+            ],
+            "?"
+          ),
         cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
       })
-      |> Payments.checkout_link()
+      |> Payments.checkout_link(
+        connect_account: gallery.job.client.organization.stripe_account_id
+      )
 
     checkout_link
   end
@@ -371,7 +384,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
     do: Map.get(selections, "quantity", 1)
 
-  defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
+  defp only_digitals?(order),
+    do: match?(%{products: [], digitals: [_ | _]}, order)
+
   defdelegate product_name(product), to: Cart
   defdelegate summary_counts(order), to: Cart
 end
