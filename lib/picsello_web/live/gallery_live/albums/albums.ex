@@ -16,14 +16,16 @@ defmodule PicselloWeb.GalleryLive.Albums do
       |> assign(:gallery_id, gallery_id)
       |> assign(:gallery, gallery)
       |> assign(:upload_toast, "hidden")
+      |> assign(:upload_toast_text, nil)
       |> assign(:selected_item, nil)
     }
   end
 
   @impl true
-  def handle_params(%{"upload_toast" => upload_toast} = _params, _uri, socket) do
+  def handle_params(%{"upload_toast" => upload_toast, "upload_toast_text" => upload_toast_text} = _params, _uri, socket) do
     socket
     |> assign(:upload_toast, upload_toast)
+    |> assign(:upload_toast_text, upload_toast_text)
     |> noreply()
   end
 
@@ -97,13 +99,16 @@ defmodule PicselloWeb.GalleryLive.Albums do
   @impl true
   def handle_event(
         "edit_album_thumbnail_selected",
-        %{},
+        %{"album" => album_id},
         %{
-          assigns: %{}
+          assigns: %{
+            gallery_id: gallery_id
+          }
         } = socket
       ) do
     socket
     |> assign(:selected_item, "edit_album_thumbnail")
+    |> push_redirect(to: Routes.gallery_edit_album_thumbnail_path(socket, :show, gallery_id, album_id))
     |> noreply()
   end
 

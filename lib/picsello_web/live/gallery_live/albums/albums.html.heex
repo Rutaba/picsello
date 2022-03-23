@@ -8,7 +8,7 @@
             <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
               <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
             </div>
-            <div class="flex items-center justify-center flex-grow p-3">Album settings updated successfully</div>
+            <div class="flex items-center justify-center flex-grow p-3"><%= @upload_toast_text %></div>
             <div class="flex items-center justify-center mr-3">
               <.icon name="close-x" class="w-3 h-3 stroke-current" />
             </div>
@@ -36,11 +36,19 @@
               </div>
             <%= for album <- @gallery.albums do %>
             <div class="flex flex-col w-full h-full mb-2 mr-4">
-              <a href="#" class="h-full mt-4 albumBlock" phx-click="open_albums_popup">
-                <div class="flex flex-row items-end justify-start h-full gap-2">
-                  <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
-                </div>
-              </a>
+              <%= if album.thumbnail_url do %>
+                <a class="h-full mt-4 albumBlock" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="open_albums_popup">
+                  <div class="flex flex-row items-end justify-start h-full gap-2">
+                    <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
+                  </div>
+                </a>
+              <% else %>
+                 <a href="#" class="h-full mt-4 albumBlock" phx-click="open_albums_popup" style="background-image: url('/images/alum_placeholder.png')">
+                    <div class="flex flex-row items-end justify-start h-full gap-2">
+                      <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
+                    </div>
+                  </a>
+              <% end %>
               <div class="h-10 font-bold bg-white rounded-md cursor-pointer">
               <div id="actions" class="relative" phx-hook="ToggleAlbumDropdown">
                 <div class="flex flex-row items-center justify-between w-full h-12 -mt-1 border-2 rounded-b-lg bg-base-100">
@@ -69,7 +77,7 @@
                         <.icon name="tick" class="w-6 h-5 mr-3" />
                       <% end %>
                     </li>
-                    <li phx-click="edit_album_thumbnail_selected" class="relative flex items-center justify-between">
+                    <li phx-click="edit_album_thumbnail_selected" phx-value-album={album.id} class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Edit album thumbnail</button>
                       <%= if @selected_item == "edit_album_thumbnail" do %>
                         <.icon name="tick" class="w-6 h-5 mr-3" />

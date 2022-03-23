@@ -161,6 +161,18 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  @spec get_all_album_photos(
+          id :: integer,
+          album_id :: integer
+        ) ::
+          list(Photo)
+  def get_all_album_photos(id, album_id) do
+    Photo
+    |> where([p], p.gallery_id == ^id and p.album_id == ^album_id)
+    |> order_by(asc: :position)
+    |> Repo.all()
+  end
+
   def update_photos_album_id(photo_ids, album_id) do
     Photo
     |> where([p], p.id in ^photo_ids)

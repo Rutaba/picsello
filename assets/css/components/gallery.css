@@ -181,7 +181,6 @@
 }
 
 .albumBlock {
-  background-image: url('/images/alum_placeholder.png');
   background-size: cover;
   min-height: 200px;
   color: #ffffff;

@@ -138,6 +138,43 @@ defmodule PicselloWeb.GalleryLive.Album do
 
   @impl true
   def handle_event(
+        "edit_album_thumbnail_selected",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            album: album
+          }
+        } = socket
+      ) do
+    socket
+    |> assign(:selected_item, "edit_album_thumbnail")
+    |> push_redirect(to: Routes.gallery_edit_album_thumbnail_path(socket, :show, gallery.id, album.id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "go_to_album_settings_selected",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            album: album
+          }
+        } = socket
+      ) do
+    socket
+    |> assign(:selected_item, "go_to_album_settings")
+    |> open_modal(PicselloWeb.GalleryLive.Albums.AlbumSettingsModal, %{
+      gallery_id: gallery.id,
+      album: album
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "cancel-upload",
         %{"ref" => ref},
         %{assigns: %{uploads: %{photo: %{entries: entries}}}} = socket

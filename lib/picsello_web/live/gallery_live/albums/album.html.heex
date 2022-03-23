@@ -29,13 +29,13 @@
               <svg class="inline-block w-4 h-4 mr-1 text-blue-planning-300" style="">
                 <use href="/images/icons.svg#gear"></use>
               </svg>
-              <span class="pl-2" phx-click="open_albums_popup">Album settings</span>
+              <span class="pl-2" phx-click="go_to_album_settings_selected">Album settings</span>
             </button>
           </div>
           <div class="flex flex-col items-center text-lg text-gray-300">
             <button class="mx-2 mt-2 bg-white navBar__btn w-max">
               <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300" />
-              <span class="pl-2" phx-click="open_albums_popup">Edit thumbnail</span>
+              <span class="pl-2" phx-click="edit_album_thumbnail_selected">Edit thumbnail</span>
             </button>
           </div>
           <div class="flex flex-col items-center text-lg text-gray-300">
@@ -203,6 +203,7 @@
           is_viewable: true,
           is_meatball: true,
           is_gallery_category_page: false,
+          photo_selector: "",
           selected_all: @selected_all
           %>
         <%= end %>
@@ -215,5 +216,8 @@
   </div>
 </div>
 </div>
-<%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+  <div class="fixed bottom-0 left-0 right-0 z-50">
+  <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+  </div>
 </div>
+
