@@ -17,12 +17,13 @@ defmodule Picsello.Galleries.Album do
     timestamps(type: :utc_datetime)
   end
 
-  @attrs [:name, :set_password, :gallery_id]
+  @attrs [:name, :set_password, :gallery_id, :password]
+  @required_attrs [:name, :set_password, :gallery_id]
 
   def create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, @attrs)
-    |> validate_required(@attrs)
+    |> validate_required(@required_attrs)
   end
 
   def update_changeset(struct, attrs \\ %{}) do

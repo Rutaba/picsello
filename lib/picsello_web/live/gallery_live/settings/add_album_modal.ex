@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
   alias Picsello.Galleries
   alias Picsello.Galleries.Album
   alias Picsello.Repo
+  alias Picsello.Galleries.Gallery
 
   @impl true
   def update(assigns, socket) do
@@ -19,7 +20,24 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
     socket
     |> assign(:changeset, new)
     |> assign(:gallery_id, assigns[:gallery_id])
+    |> assign(:visibility, false)
+    |> assign(:set_password, false)
+    |> assign(:album_password, nil)
     |> ok()
+  end
+
+  @impl true
+  def handle_event("toggle_visibility", _, %{assigns: %{visibility: visibility}} = socket) do
+    socket
+    |> assign(:visibility, !visibility)
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("regenerate", _params, socket) do
+    socket
+    |> assign(:album_password, Gallery.generate_password())
+    |> noreply
   end
 
   @impl true
@@ -36,6 +54,7 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
   def handle_event("validate", %{"album" => params}, socket) do
     socket
     |> assign(:changeset, Album.create_changeset(params))
+    |> assign(:set_password, params["set_password"] === "true")
     |> noreply()
   end
 
@@ -70,6 +89,39 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
               <span class="mt-2">Off</span>
             </div>
           </label>
+          <%= if @set_password do %>
+            <div class="relative mt-2">
+              <%= if @visibility do %>
+                <%= text_input f, :password, readonly: "readonly", value: @album_password, id: "galleryPasswordInput",
+                class: "gallerySettingsInput" %>
+              <% else %>
+                <%= password_input f, :password, readonly: "readonly", value: @album_password, id: "galleryPasswordInput",
+                class: "gallerySettingsInput" %>
+              <% end %>
+
+              <div class="absolute flex h-full -translate-y-1/2 right-1 top-1/2">
+                <a href="#" phx-click="toggle_visibility" phx-target={@myself} class="mr-4" id="togglePasswordVisibility">
+                  <%= if @visibility do %>
+                    <.icon name="eye" class="w-5 h-full ml-1 text-base-250"/>
+                  <% else %>
+                    <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250"/>
+                  <% end %>
+                </a>
+                <button type="button" id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@album_password}
+                  class="h-12 py-2 mt-1 border rounded-lg bg-base-100 border-blue-planning-300 text-blue-planning-300 w-36">
+                  <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+                      Copied!
+                  </div>
+                    Copy password
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between w-full mt-2 lg:items-start">
+              <button type="button" phx-click="regenerate" phx-target={@myself} class="p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0" id="regeneratePasswordButton">
+                  Re-generate
+              </button>
+            </div>
+          <% end %>
         </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
           <button type="button" phx-click="modal" phx-value-action="close" class={"py-3 mr-2 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36"} id="copy-public-profile-link">
