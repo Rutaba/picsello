@@ -25,8 +25,11 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
     [gallery: gallery]
   end
 
-  describe "POST /gallery/:hash/login" do
-    test "puts session token and redirects to gallery", %{conn: conn, gallery: gallery} do
+  describe "WHCC secondary url handling" do
+    test "creates clone for editor and adds current one to the cart", %{
+      conn: conn,
+      gallery: gallery
+    } do
       gallery_id = gallery.id
       new_editor_url = "http://cloned.url.net"
 
