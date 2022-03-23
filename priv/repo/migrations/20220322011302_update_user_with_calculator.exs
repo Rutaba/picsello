@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.UpdateUserWithCalculator do
 
   def change do
     alter table(:users) do
-      add(:pricing_calculator, :map, null: false, default: fragment("'[]'::jsonb"))
+      add(:pricing_calculator, :map, null: false, default: %{})
     end
   end
 end

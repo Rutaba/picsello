@@ -154,7 +154,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <div>
               <label class="flex flex-col mt-4">
                 <p class="py-2">My average time each week is:</p>
-                input placeholder
+                <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
               </label>
             </div>
             <div>

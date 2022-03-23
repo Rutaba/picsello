@@ -18,7 +18,7 @@ defmodule Picsello.Accounts.User do
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     embeds_one(:onboarding, Onboarding, on_replace: :update)
-    embeds_many(:pricing_calculator, PricingCalculator)
+    embeds_one(:pricing_calculator, PricingCalculator, on_replace: :update)
 
     belongs_to(:organization, Picsello.Organization)
 
