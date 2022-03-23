@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Photos do
   alias PicselloWeb.GalleryLive.Photos.PhotoComponent
   alias PicselloWeb.GalleryLive.Photos.ProductPreview
 
-  @per_page 12
+  @per_page 24
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1500,
@@ -191,27 +191,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
       }
     )
     |> noreply
-  end
-
-  @impl true
-  def handle_event(
-        "set_product_preview",
-        %{"preview_photo_id" => photo_id},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> open_modal(
-      ProductPreview,
-      %{
-        gallery: gallery,
-        photo_id: photo_id
-      }
-    )
-    |> noreply()
   end
 
   @impl true
@@ -857,14 +836,6 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   defp is_plural(count) do
     if count > 1, do: "s"
-  end
-
-  defp selected_all(select_mode) do
-    case select_mode do
-      "selected_all" -> "photo-border"
-      "selected_favorite" -> "photo-border"
-      _ -> ""
-    end
   end
 
   defp page_title(:show), do: "Show Gallery"

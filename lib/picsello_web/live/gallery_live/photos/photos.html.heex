@@ -190,13 +190,13 @@
               is_removed: false,
               is_viewable: true,
               is_meatball: true,
-              is_gallery_category_page: false,
-              selected_all: selected_all(@select_mode)
+              is_gallery_category_page: false
           %>
         <% end %>
         </div>
 
         <div style="display: none">
+          <div id="selected-mode" class={@select_mode}></div>
           <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
         </div>
       </div>

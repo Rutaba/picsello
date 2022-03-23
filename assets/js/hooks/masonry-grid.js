@@ -25,7 +25,6 @@ const isScrolledOver = (percent, screen) => {
  */
 const positionChange = (movedId, order) => {
   const orderLen = order.length;
-
   if (orderLen < 2) {
     return false;
   }
@@ -60,6 +59,20 @@ const positionChange = (movedId, order) => {
   }
 
   return false;
+};
+
+/**
+ * Injects bydefault selected photos if selected all enabled
+ */
+ const maybeSelectedOnScroll = (items) => {
+  const element = document.querySelector('#selected-mode');
+  if (!element.classList.contains('selected_none')) {
+    items.forEach(item => {
+      const e = item.querySelector('.toggle-it');
+      e.classList.add('photo-border');
+    });
+  }
+  return items
 };
 
 export default {
@@ -152,8 +165,11 @@ export default {
     const itemsToInject = Array.from(allItems).filter(
       (x) => !addedItemsIds.includes(x.id)
     );
-    grid.add(itemsToInject);
-    grid.refreshItems();
+    if(itemsToInject.length > 0) {
+      const items = maybeSelectedOnScroll(itemsToInject)
+      grid.add(items);
+      grid.refreshItems();
+    }
   },
 
   /**
@@ -245,6 +261,7 @@ export default {
    */
   updated() {
     this.pending = this.page();
+    console.log(this.pending)
     if (this.pending === '0') {
       this.reload_masonry();
     } else {
