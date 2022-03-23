@@ -2,13 +2,13 @@
   <div class="flex flex-row bg-base-200 ">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: 0, arrow_show: "overview" %>
 
-    <div class="w-full h-full bg-gray-100">
+    <div class="w-full h-full bg-gray-100 pl-96">
     <div class="pt-20 pb-10 pl-10 pr-20">
       <div> 
          <div class="flex">
       <span class="text-4xl font-bold" style="font-family: sans-serif">Overview</span>
    </div>
-   <div class="flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
+   <div class="flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6 absolute">
       <%= if @cover_photo_processing do %>
       <div class="flex justify-between w-full h-full mt-4 reuploadingBlock">
          <h3>Cover photo</h3>

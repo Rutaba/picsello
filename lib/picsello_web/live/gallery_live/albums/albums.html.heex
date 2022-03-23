@@ -1,7 +1,7 @@
 <div class="flex flex-col">
   <div class="flex flex-row bg-base-200">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: 0,  arrow_show: "albums"%>
-    <div class="w-full h-full bg-gray-100">
+    <div class="w-full h-full bg-gray-100 pl-96">
     <div>
     <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
           <div class="flex font-bold bg-white rounded-lg shadow-lg cursor-pointer">
@@ -16,7 +16,7 @@
       </div>
       </div>
       <div class="pt-20 pb-10 pl-10 pr-20">
-        <div class="flex flex-col w-full min-h-screen overflow-x-hidden">
+        <div class="flex flex-col w-full min-h-screen overflow-x-hidden relative">
           <div class="flex flex-col">
             <div class="flex flex-row justify-between">
               <span class="text-4xl font-bold " style="font-family: sans-serif">Albums</span>
