@@ -8,7 +8,19 @@
          <div class="flex">
       <span class="text-4xl font-bold" style="font-family: sans-serif">Overview</span>
    </div>
-   <div class="flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6 relative pb-10">
+   <%= if @gallery.expired_at <= @date do %>
+      <div class="flex mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert">
+        <div class="flex justify-center pt-5 pl-6">
+            <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
+        </div>
+        <div class="flex-grow py-4 pl-2 pr-4 font-vietnam">
+          <b>Note: </b>Your gallery has expired. In order to re-enable your gallery, you’ll need to set the expiration date for a date in the future, or set it to “Never expires.”
+          <a href="#expiration_component" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</a>
+          to update the expiration date.
+        </div>
+      </div>
+   <% end %>
+   <div class="flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
       <%= if @cover_photo_processing do %>
       <div class="flex justify-between w-full h-full mt-4 reuploadingBlock">
          <h3>Cover photo</h3>
@@ -58,7 +70,7 @@
       <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
          <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
       </div>
-      <div class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">
+      <div id="expiration_component" class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">
          <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
             id: "expiration-date-#{@gallery.id}",
             gallery: @gallery %>

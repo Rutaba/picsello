@@ -311,6 +311,10 @@ canvas {
   }
 }
 
+.stroke-10 {
+  stroke-width: 10;
+}
+
 .shadow-custom {
   --tw-shadow: inset 0 4px 4px 0 rgba(0, 0, 0, 0.06);
     box-shadow: 0 0 #0000, 0 0 #0000, var(--tw-shadow);

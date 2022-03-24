@@ -125,6 +125,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     |> assign_controls()
     |> assign_valid()
     |> react_form()
+    |> ok()
   end
 
   defp react_form(socket),

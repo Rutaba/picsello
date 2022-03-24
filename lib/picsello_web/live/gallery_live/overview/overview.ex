@@ -21,6 +21,8 @@ defmodule PicselloWeb.GalleryLive.Overview do
 
   @impl true
   def mount(_params, _session, socket) do
+    {:ok, datetime} = DateTime.now("UTC")
+    IO.inspect(datetime)
     {
       :ok,
       socket
@@ -28,6 +30,8 @@ defmodule PicselloWeb.GalleryLive.Overview do
       |> assign(:cover_photo_processing, false)
       |> allow_upload(:cover_photo, @upload_options)
       |> assign(:password_toggle, false)
+      |> assign(:date, datetime)
+      |> assign(:show_expiry, true)
     }
   end
 
