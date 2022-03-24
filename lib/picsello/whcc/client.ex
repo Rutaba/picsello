@@ -77,6 +77,14 @@ defmodule Picsello.WHCC.Client do
     |> WHCC.Editor.Details.new()
   end
 
+  def editor_clone(account_id, editor_id) do
+    {:ok, %{body: %{"_id" => clone_id}}} =
+      new(account_id)
+      |> post("/editors/#{editor_id}/clone", %{})
+
+    clone_id
+  end
+
   def editor_export(account_id, id) when not is_list(id), do: editor_export(account_id, [id])
 
   def editor_export(account_id, ids) do
