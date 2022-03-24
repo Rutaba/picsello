@@ -115,5 +115,7 @@
     </div>
     </div>
   </div>
-   <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent %>
+  <div class="fixed bottom-0 left-0 right-0 z-25">
+  <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent, id: "footer-#{@gallery.id}" %>
+  </div>
 </div>

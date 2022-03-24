@@ -279,7 +279,7 @@
 }
 
 .bottomBar_gallery__btn {
-  @apply flex items-center px-6 py-3 text-lg font-semibold text-center border-solid rounded-lg cursor-pointer text-base-350 bg-base-250 border-base-100;
+  @apply flex items-center px-6 py-3 text-lg font-semibold text-center border-solid rounded-lg cursor-pointer text-base-350 bg-base-100 border-base-100;
 }
 
 .navBar__btn {

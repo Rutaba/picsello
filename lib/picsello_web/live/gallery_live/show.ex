@@ -119,7 +119,7 @@ defmodule PicselloWeb.GalleryLive.Show do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
+    # |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
     |> noreply()
   end
 

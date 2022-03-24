@@ -8,6 +8,8 @@ defmodule PicselloWeb.GalleryLive.Overview do
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.Messages
+  alias Picsello.Notifiers.ClientNotifier
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -22,7 +24,6 @@ defmodule PicselloWeb.GalleryLive.Overview do
   @impl true
   def mount(_params, _session, socket) do
     {:ok, datetime} = DateTime.now("UTC")
-    IO.inspect(datetime)
     {
       :ok,
       socket
@@ -31,7 +32,6 @@ defmodule PicselloWeb.GalleryLive.Overview do
       |> allow_upload(:cover_photo, @upload_options)
       |> assign(:password_toggle, false)
       |> assign(:date, datetime)
-      |> assign(:show_expiry, true)
     }
   end
 
@@ -174,6 +174,81 @@ defmodule PicselloWeb.GalleryLive.Overview do
         one later."
     })
     |> noreply()
+  end
+
+
+  @impl true
+  def handle_event(
+        "client-link",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    gallery = Picsello.Repo.preload(gallery, job: :client)
+
+    link = Routes.gallery_client_show_url(socket, :show, hash)
+    client_name = gallery.job.client.name
+
+    subject = "#{gallery.name} photos"
+
+    html = """
+    <p>Hi #{client_name},</p>
+    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
+    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
+    <p>Happy viewing!</p>
+    """
+
+    text = """
+    Hi #{client_name},
+
+    Your gallery is ready to view! You can view the gallery here: #{link}
+
+    Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
+
+    Happy viewing!
+    """
+
+    socket
+    |> assign(:job, gallery.job)
+    |> assign(:gallery, gallery)
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      body_html: html,
+      body_text: text,
+      subject: subject,
+      modal_title: "Share gallery"
+    })
+    |> noreply()
+  end
+
+  def handle_info(
+        {:message_composed, message_changeset},
+        %{
+          assigns: %{
+            job: job
+          }
+        } = socket
+      ) do
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+      socket
+      |> close_modal()
+      |> noreply()
+    else
+      _error ->
+        socket
+        |> put_flash(:error, "Something went wrong")
+        |> close_modal()
+        |> noreply()
+    end
   end
 
   @impl true
