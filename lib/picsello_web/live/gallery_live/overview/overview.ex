@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.Overview do
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
+  alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -220,7 +221,7 @@ defmodule PicselloWeb.GalleryLive.Overview do
     socket
     |> assign(:job, gallery.job)
     |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(%{
+    |> ClientMessageComponent.open(%{
       body_html: html,
       body_text: text,
       subject: subject,

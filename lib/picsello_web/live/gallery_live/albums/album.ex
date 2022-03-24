@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryLive.Album do
 
   alias Phoenix.PubSub
   alias Picsello.Galleries
-  alias Phoenix.LiveView.JS
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
@@ -24,6 +23,7 @@ defmodule PicselloWeb.GalleryLive.Album do
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
   alias PicselloWeb.GalleryLive.ViewPhoto
   alias Picsello.Repo
+  alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
 
   @per_page 12
   @upload_options [
@@ -735,7 +735,7 @@ defmodule PicselloWeb.GalleryLive.Album do
     socket
     |> assign(:job, gallery.job)
     |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(%{
+    |> ClientMessageComponent.open(%{
       body_html: html,
       body_text: text,
       subject: subject,

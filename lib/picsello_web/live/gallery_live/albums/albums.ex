@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
   alias Picsello.Repo
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
+  alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
 
   @impl true
   def mount(%{"id" => gallery_id}, _session, socket) do
@@ -183,7 +184,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
     socket
     |> assign(:job, gallery.job)
     |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(%{
+    |> ClientMessageComponent.open(%{
       body_html: html,
       body_text: text,
       subject: subject,

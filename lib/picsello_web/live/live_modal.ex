@@ -90,7 +90,31 @@ defmodule PicselloWeb.LiveModal do
       <div class="pt-40"></div>
 
       <div {testid("modal-buttons")} class="sticky px-4 -m-4 bg-white -bottom-6 sm:px-8 sm:-m-8 sm:-bottom-8">
-        <div class="flex flex-col py-6 bg-white gap-2 sm:flex-row-reverse">
+        <div class="flex flex-col gap-2 py-6 bg-white sm:flex-row-reverse">
+          <%= if @inner_block do %>
+            <%= render_block @inner_block %>
+          <% else %>
+            <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Save">
+              Save
+            </button>
+
+            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+              Cancel
+            </button>
+          <% end %>
+        </div>
+      </div>
+    """
+  end
+
+  def custom_footer(assigns) do
+    assigns = Enum.into(assigns, %{disabled: false, inner_block: nil})
+
+    ~H"""
+      <div class="pt-10"></div>
+
+      <div {testid("modal-buttons")} class="sticky px-4 -m-4 bg-white -bottom-6 sm:px-8 sm:-m-8 sm:-bottom-8">
+        <div class="flex flex-col gap-2 py-6 bg-white sm:flex-row-reverse">
           <%= if @inner_block do %>
             <%= render_block @inner_block %>
           <% else %>
