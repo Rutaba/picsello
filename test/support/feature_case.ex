@@ -7,9 +7,15 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
-    def scroll_into_view(session, testid) do
-      session
-      |> execute_script("document.querySelector('[data-testid=\"#{testid}\"]').scrollIntoView()")
+    def scroll_into_view(session, query) do
+      case Wallaby.Query.compile(query) do
+        {:css, css_selector} ->
+          session
+          |> execute_script("document.querySelector(`#{css_selector}`).scrollIntoView()")
+
+        {type, _selector} ->
+          raise "#{type} not supported. Use a css selector"
+      end
     end
 
     def fill_in_date(session, field, opts \\ []) do
@@ -178,13 +184,16 @@ defmodule Picsello.FeatureCase do
     end
 
     def assert_url_contains(session, url_fragment) do
-      retry(fn ->
-        if session |> current_url |> String.contains?(url_fragment),
-          do: {:ok, nil},
-          else: {:error, nil}
-      end)
+      retry(
+        fn ->
+          if session |> current_url |> String.contains?(url_fragment),
+            do: {:ok, nil},
+            else: {:error, nil}
+        end,
+        :erlang.monotonic_time(:milli_seconds) + 500
+      )
 
-      url = session |> current_url()
+      url = current_url(session)
 
       assert String.contains?(url, url_fragment), "expected #{url} to contain #{url_fragment}"
 
@@ -241,6 +250,11 @@ defmodule Picsello.FeatureCase do
     def authenticated_gallery_client(%{session: session}) do
       job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
+    end
+
+    def authenticated_gallery(%{session: session}) do
+      job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
+      [session: session, gallery: insert(:gallery, job: job)]
     end
 
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do

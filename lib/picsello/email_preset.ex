@@ -5,7 +5,7 @@ defmodule Picsello.EmailPreset do
   import Ecto.Query, only: [from: 2]
   import Picsello.Repo.CustomMacros
 
-  @job_states ~w(post_shoot job lead)a
+  @job_states ~w(post_shoot booking_proposal job lead)a
 
   schema "email_presets" do
     field :body_template, :string
@@ -50,6 +50,23 @@ defmodule Picsello.EmailPreset do
     defstruct [:job, :helpers]
 
     def new(job, helpers), do: %__MODULE__{job: job, helpers: helpers}
+
+    def to_map(%__MODULE__{job: job} = resolver) do
+      resolver = %{
+        resolver
+        | job:
+            Picsello.Repo.preload(job, [
+              :booking_proposals,
+              :package,
+              :shoots,
+              client: [organization: :user]
+            ])
+      }
+
+      for {key, func} <- vars(), into: %{} do
+        {key, func.(resolver)}
+      end
+    end
 
     def fetch(%__MODULE__{} = resolver, key) do
       case Map.fetch(vars(), key) do
@@ -113,17 +130,15 @@ defmodule Picsello.EmailPreset do
           ),
         # handled in sendgrid template
         "email_signature" => &noop/1,
-        "invoice_amount" =>
-          &with(%Picsello.Package{} = package <- package(&1), do: Picsello.Package.price(package)),
+        "invoice_amount" => &Picsello.PaymentSchedules.remainder_price(&1.job),
         "invoice_due_date" =>
           &with(
-            %{job: job} <- &1,
-            %DateTime{} = due_on <- Picsello.PaymentSchedules.remainder_due_on(job),
+            %DateTime{} = due_on <- Picsello.PaymentSchedules.remainder_due_on(&1.job),
             do:
               strftime(
                 &1,
                 due_on,
-                "%b %d, %Y"
+                "%b %-d, %Y"
               )
           ),
         "invoice_link" =>
@@ -131,8 +146,12 @@ defmodule Picsello.EmailPreset do
             %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
             do: Picsello.BookingProposal.url(proposal_id)
           ),
-        "mini_session_link" => fn _job -> nil end,
-        "photographer_cell" => &photographer(&1).onboarding.phone,
+        "mini_session_link" => &noop/1,
+        "photographer_cell" =>
+          &case photographer(&1) do
+            %Picsello.Accounts.User{onboarding: %{phone: "" <> phone}} -> phone
+            _ -> nil
+          end,
         "photography_company_s_name" => &organization(&1).name,
         "pricing_guide_link" => fn resolver ->
           helpers(resolver).profile_pricing_job_type_url(
@@ -144,7 +163,7 @@ defmodule Picsello.EmailPreset do
         "session_date" =>
           &with(
             %{starts_at: starts_at} <- next_shoot(&1),
-            do: strftime(&1, starts_at, "%b %d, %Y")
+            do: strftime(&1, starts_at, "%B %-d, %Y")
           ),
         "session_location" =>
           &with(
@@ -160,13 +179,9 @@ defmodule Picsello.EmailPreset do
           &with(
             %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
             do: """
-            <a
-              style="display:inline-block;background:#1F1C1E;color:#ffffff;font-family:Be Vietnam, Arial;font-size:18px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:20px 30px;mso-padding-alt:0px;border-radius:12px;"
-              target="_blank"
-              href="#{Picsello.BookingProposal.url(proposal_id)}"
-            >
-              View Proposal
-            </a>
+            <a style="display:inline-block;background:#1F1C1E;color:#ffffff;font-family:Be Vietnam, Arial;font-size:18px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:20px 30px;mso-padding-alt:0px;border-radius:12px;"
+               target="_blank"
+               href="#{Picsello.BookingProposal.url(proposal_id)}">View Proposal</a>
             """
           ),
         "wardrobe_guide_link" => &noop/1,
@@ -175,12 +190,15 @@ defmodule Picsello.EmailPreset do
   end
 
   def resolve_variables(%__MODULE__{} = preset, job, helpers) do
-    resolver = Resolver.new(job, helpers)
+    data = job |> Resolver.new(helpers) |> Resolver.to_map()
 
     %{
       preset
-      | body_template: Mustache.render(preset.body_template, resolver),
-        subject_template: Mustache.render(preset.subject_template, resolver)
+      | body_template: render(preset.body_template, data),
+        subject_template: render(preset.subject_template, data)
     }
   end
+
+  defp render(template, data),
+    do: :bbmustache.render(template, data, key_type: :binary, value_serializer: &to_string/1)
 end

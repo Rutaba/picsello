@@ -22,9 +22,11 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
 
     job = insert(:lead, user: user) |> promote_to_job() |> Repo.preload(:payment_schedules)
     proposal = insert(:proposal, job: job)
-    [deposit_payment, remainder_payment] = job.payment_schedules |> Enum.sort_by(& &1.due_at)
+    [deposit_payment, remainder_payment] = job.payment_schedules
 
     Repo.update_all(PaymentSchedule, set: [paid_at: nil])
+
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
     [
       proposal: proposal,
@@ -44,8 +46,6 @@ defmodule PicselloWeb.StripeConnectWebhooksControllerTest do
   describe "deposit webhook" do
     setup %{proposal: proposal, deposit_payment: deposit_payment} do
       stub_event(%{proposal_id: proposal.id, paying_for: deposit_payment.id})
-
-      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
       :ok
     end

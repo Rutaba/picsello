@@ -62,12 +62,14 @@ defmodule PicselloWeb.Router do
   # as long as you are also using SSL (which you should anyway).
   import Phoenix.LiveDashboard.Router
 
-  scope "/", PicselloWeb do
+  scope "/admin", PicselloWeb do
     pipe_through :browser
 
     unless Mix.env() in [:dev, :test], do: pipe_through(:admins_only)
     live_dashboard "/dashboard", metrics: Telemetry, ecto_repos: [Repo]
-    live "/admin/categories", Live.Admin.Categories, :index
+    live "/categories", Live.Admin.Categories, :index
+    live "/workers", Live.Admin.Workers, :index
+    live "/", Live.Admin.Index, :index
   end
 
   ## Authentication routes
@@ -147,8 +149,8 @@ defmodule PicselloWeb.Router do
     get "/users/confirm/:token", UserConfirmationController, :confirm
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
-
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+    live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
   scope "/gallery/:hash", PicselloWeb do
@@ -163,6 +165,13 @@ defmodule PicselloWeb.Router do
       post "/downloads", GalleryDownloadsController, :download
       post "/login", GallerySessionController, :put
     end
+  end
+
+  scope "/gallery/:hash", PicselloWeb do
+    pipe_through [:api]
+
+    # WHCC secondary action
+    post "/", GalleryAddAndClone, :post
   end
 
   scope "/gallery", PicselloWeb do

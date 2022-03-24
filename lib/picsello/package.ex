@@ -17,11 +17,13 @@ defmodule Picsello.Package do
     field :name, :string
     field :shoot_count, :integer
     field :print_credits, Money.Ecto.Amount.Type
+    field :collected_price, Money.Ecto.Amount.Type
     field :buy_all, Money.Ecto.Amount.Type
     field :turnaround_weeks, :integer, default: 1
 
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
+    has_many(:jobs, Picsello.Job)
 
     timestamps()
   end
@@ -37,6 +39,23 @@ defmodule Picsello.Package do
 
     Enum.reduce_while(steps, package, fn {step_name, initializer}, changeset ->
       {if(step_name == step, do: :halt, else: :cont), initializer.(changeset, attrs, opts)}
+    end)
+  end
+
+  def import_changeset(package \\ %__MODULE__{}, attrs) do
+    package
+    |> create_details(attrs, skip_description: true)
+    |> update_pricing(attrs)
+    |> cast(attrs, ~w[collected_price]a)
+    |> validate_required(~w[collected_price]a)
+    |> then(fn changeset ->
+      base_price = get_field(changeset, :base_price) || Money.new(0)
+
+      changeset
+      |> validate_money(:collected_price,
+        greater_than_or_equal_to: 0,
+        less_than_or_equal_to: base_price.amount
+      )
     end)
   end
 
@@ -61,9 +80,16 @@ defmodule Picsello.Package do
       attrs,
       ~w[description name organization_id shoot_count print_credits turnaround_weeks]a
     )
-    |> validate_required(~w[description name organization_id shoot_count turnaround_weeks]a)
+    |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
     |> validate_number(:turnaround_weeks, greater_than_or_equal_to: 1)
+    |> then(fn changeset ->
+      if Keyword.get(opts, :skip_description) do
+        changeset
+      else
+        changeset |> validate_required(~w[description]a)
+      end
+    end)
     |> then(fn changeset ->
       if Keyword.get(opts, :is_template) do
         changeset |> cast(attrs, [:job_type]) |> validate_required([:job_type])
@@ -93,7 +119,15 @@ defmodule Picsello.Package do
     |> validate_money(:base_price)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
-    |> validate_money(:print_credits)
+    |> then(fn changeset ->
+      base_price = get_field(changeset, :base_price) || Money.new(0)
+
+      changeset
+      |> validate_money(:print_credits,
+        greater_than_or_equal_to: 0,
+        less_than_or_equal_to: base_price.amount
+      )
+    end)
     |> validate_money(:buy_all)
   end
 

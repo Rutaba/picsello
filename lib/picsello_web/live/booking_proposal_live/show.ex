@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
-  alias Picsello.{Repo, BookingProposal, Job, PaymentSchedules}
+  alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -55,7 +55,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       ) do
     socket =
       with {:ok, session} <-
-             payments().retrieve_session(stripe_session_id,
+             Payments.retrieve_session(stripe_session_id,
                connect_account: organization.stripe_account_id
              ),
            {:ok, _} <- Picsello.Payments.handle_payment(session) do
@@ -69,7 +69,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     socket
     |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
     |> show_confetti_banner()
-    # clear the success param
+    # clear the session_id param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
     |> noreply()
   end
@@ -126,16 +126,11 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots} = job}} = socket) do
     {title, subtitle} =
-      cond do
-        PaymentSchedules.remainder_paid?(job) ->
-          {"Paid in full. Thank you!", "Now it’s time to make some memories."}
-
-        PaymentSchedules.deposit_paid?(job) ->
-          {"Thank you! Your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
-           "We are so excited to be working with you, thank you for your business. See you soon."}
-
-        true ->
-          {"Thank you!", "We are so excited to be working with you, thank you for your business."}
+      if PaymentSchedules.all_paid?(job) do
+        {"Paid in full. Thank you!", "Now it’s time to make some memories."}
+      else
+        {"Thank you! Your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
+         "We are so excited to be working with you, thank you for your business. See you soon."}
       end
 
     socket
@@ -156,7 +151,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
            |> Repo.get!(proposal_id)
            |> Repo.preload([
              :answer,
-             job: [:client, :payment_schedules, :shoots, package: [organization: :user]]
+             job: [
+               :client,
+               :job_status,
+               :payment_schedules,
+               :shoots,
+               package: [organization: :user]
+             ]
            ]) do
       %{
         answer: answer,
@@ -202,8 +203,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp maybe_confetti(socket, %{}), do: socket
 
-  defp invoice_disabled?(%BookingProposal{accepted_at: accepted_at, signed_at: signed_at}) do
-    is_nil(accepted_at) || is_nil(signed_at)
+  defp invoice_disabled?(%BookingProposal{
+         accepted_at: accepted_at,
+         signed_at: signed_at,
+         job: job
+       }) do
+    !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))
   end
 
   defp open_compose(%{assigns: %{organization: %{name: organization_name}, job: job}} = socket),
@@ -218,6 +223,4 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         send_button: "Send"
       })
       |> noreply()
-
-  defp payments(), do: Application.get_env(:picsello, :payments)
 end

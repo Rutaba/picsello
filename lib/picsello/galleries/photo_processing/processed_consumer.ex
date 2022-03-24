@@ -9,6 +9,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
 
   alias Broadway.Message
   alias Picsello.Galleries.PhotoProcessing.Context
+  alias Picsello.Galleries.PhotoProcessing.Waiter
 
   def start_link(opts) do
     producer_module = Keyword.fetch!(opts, :producer_module)
@@ -47,6 +48,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     task
     |> case do
       %{"photoId" => photo_id} ->
+        Waiter.complete_tracking(photo.gallery_id, photo.id)
         "Photo has been processed [#{photo_id}]"
 
       %{"processCoverPhoto" => true, "originalPath" => path} ->

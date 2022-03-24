@@ -1,10 +1,12 @@
 defmodule PicselloWeb.LeadLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
+  require Logger
 
   alias Picsello.{
     Job,
     Repo,
+    Payments,
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire
@@ -60,18 +62,26 @@ defmodule PicselloWeb.LeadLive.Show do
         %{},
         %{assigns: %{job: job}} = socket
       ) do
-    %{client: %{organization: %{name: organization_name}, name: client_name}} =
-      job = Repo.preload(job, client: :organization)
+    %{body_template: body_html, subject_template: subject} =
+      case Repo.get_by(Picsello.EmailPreset, job_type: job.type, job_state: :booking_proposal) do
+        nil ->
+          Logger.warn("No booking proposal email preset for #{job.type}")
+          %{body_template: "", subject_template: ""}
 
-    subject = "Booking proposal from #{organization_name}"
-    body = "Hello #{client_name}.\r\n\r\nYou have a booking proposal from #{organization_name}."
+        preset ->
+          Picsello.EmailPreset.resolve_variables(
+            preset,
+            job,
+            PicselloWeb.ClientMessageComponent.PresetHelper
+          )
+      end
 
     socket
     |> assign(:job, job)
     |> PicselloWeb.ClientMessageComponent.open(%{
       composed_event: :proposal_message_composed,
-      body_html: body,
-      body_text: body,
+      presets: [],
+      body_html: body_html,
       subject: subject
     })
     |> noreply()
@@ -215,8 +225,6 @@ defmodule PicselloWeb.LeadLive.Show do
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: payments().status(current_user))
+    socket |> assign(stripe_status: Payments.status(current_user))
   end
-
-  defp payments, do: Application.get_env(:picsello, :payments)
 end

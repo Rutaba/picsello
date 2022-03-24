@@ -36,7 +36,7 @@ export default {
       theme: 'snow',
     });
 
-    quill.on('text-change', () => {
+    function textChange() {
       htmlInput.value = quill.root.innerHTML;
       const text = quill.getText();
 
@@ -49,10 +49,13 @@ export default {
         textInput.value = text;
         textInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
-    });
+    }
 
-    this.handleEvent('quill:update', ({ text }) => {
-      quill.setText(text);
+    quill.on('text-change', textChange);
+
+    this.handleEvent('quill:update', ({ html }) => {
+      quill.root.innerHTML = html;
+      textChange();
     });
 
     quill.root.innerHTML = htmlInput.value;

@@ -118,7 +118,7 @@ defmodule PicselloWeb.Live.Profile do
     <div class="w-auto mt-6">
       <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
         <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
-        <span {testid("job-type")} class="font-semibold text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
+        <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
       <% end) %>
     </div>
 
@@ -339,12 +339,12 @@ defmodule PicselloWeb.Live.Profile do
   defp package_detail(assigns) do
     ~H"""
     <div {testid("package-detail")}>
-      <div class="flex justify-between font-bold text-xl pt-14">
+      <div class="flex justify-between text-xl pt-14">
         <div><%= @name %></div>
         <div><%= Money.to_string(@price, fractional_unit: false) %></div>
       </div>
 
-      <div class="mt-4 whitespace-pre-line"><%= @description %></div>
+      <div class="mt-4 whitespace-pre-line raw_html"><%=raw @description %></div>
     </div>
     """
   end

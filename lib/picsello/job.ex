@@ -26,7 +26,7 @@ defmodule Picsello.Job do
     belongs_to(:package, Package)
     has_one(:job_status, JobStatus)
     has_one(:gallery, Gallery)
-    has_many(:payment_schedules, PaymentSchedule)
+    has_many(:payment_schedules, PaymentSchedule, preload_order: [asc: :due_at])
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
     has_many(:client_messages, ClientMessage)
@@ -91,6 +91,9 @@ defmodule Picsello.Job do
 
     is_lead
   end
+
+  def imported?(%__MODULE__{job_status: %{current_status: current_status}}),
+    do: current_status == :imported
 
   def leads(query \\ __MODULE__) do
     from(job in query, join: status in assoc(job, :job_status), where: status.is_lead)

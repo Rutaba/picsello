@@ -162,6 +162,7 @@ defmodule Picsello.WHCC do
   defdelegate get_existing_editor(account_id, editor_id), to: Adapter
   defdelegate editor_details(account_id, editor_id), to: Adapter
   defdelegate editor_export(account_id, editor_id), to: Adapter
+  defdelegate editor_clone(account_id, editor_id), to: Adapter
   defdelegate create_order(account_id, editor_id, opts), to: Adapter
   defdelegate confirm_order(account_id, confirmation), to: Adapter
   defdelegate webhook_register(url), to: Adapter

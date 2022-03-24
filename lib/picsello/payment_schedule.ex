@@ -7,6 +7,7 @@ defmodule Picsello.PaymentSchedule do
     field :price, Money.Ecto.Amount.Type
     field :due_at, :utc_datetime
     field :paid_at, :utc_datetime
+    field :description, :string
     belongs_to :job, Picsello.Job
 
     timestamps(type: :utc_datetime)

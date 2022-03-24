@@ -194,7 +194,7 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def crumbs(assigns) do
-    assigns = Enum.into(assigns, %{class: "text-xs text-blue-planning-200"})
+    assigns = Enum.into(assigns, %{class: "text-xs text-base-250"})
 
     ~H"""
     <div class={@class}>
@@ -335,6 +335,16 @@ defmodule PicselloWeb.LiveHelpers do
     socket
     |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
     |> noreply()
+  end
+
+  def help_scout_output(current_user, help_scout_id) do
+    %{
+      phx_hook: "HelpScout",
+      data_id: Application.get_env(:picsello, help_scout_id),
+      id: help_scout_id,
+      data_email: current_user.email,
+      data_name: current_user.name
+    }
   end
 
   def shoot_location(%{address: address, location: location}),

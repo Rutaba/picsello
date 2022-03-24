@@ -9,6 +9,7 @@ defmodule PicselloWeb.LiveAuthTest do
     [user: insert(:user)]
   end
 
+  @expired -7 * 24 * 60 * 60
   @home_path Routes.home_path(PicselloWeb.Endpoint, :index)
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
 
@@ -25,8 +26,6 @@ defmodule PicselloWeb.LiveAuthTest do
       conn: conn,
       user: user
     } do
-      Mox.stub(Picsello.MockPayments, :status, fn _ -> :no_account end)
-
       assert {:ok, _, _} = conn |> log_in_user(user |> onboard!()) |> live(@home_path)
     end
 
@@ -72,6 +71,15 @@ defmodule PicselloWeb.LiveAuthTest do
       assert_raise Ecto.NoResultsError, fn ->
         conn |> live(client_show_path)
       end
+    end
+
+    test "/gallery/:hash authenticate gallery expiry", %{conn: conn} do
+      expired_at = DateTime.utc_now() |> DateTime.add(@expired)
+      gallery = insert(:gallery, expired_at: expired_at)
+      show_path = Routes.gallery_client_show_path(conn, :show, gallery.client_link_hash)
+      to = "/gallery-expired/" <> gallery.client_link_hash
+
+      assert {:error, {:live_redirect, %{flash: %{}, to: ^to}}} = live(conn, show_path)
     end
 
     test "/gallery/:hash not authenticated client or user", %{

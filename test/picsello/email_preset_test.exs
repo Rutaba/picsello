@@ -62,11 +62,17 @@ defmodule Picsello.EmailPresetTest do
         |> Picsello.Repo.reload!()
 
       insert(:shoot, starts_at: shoot_starts_at, job: job, location: :studio)
-      insert(:payment_schedule, due_at: shoot_starts_at, job: job)
+
+      insert(:payment_schedule,
+        due_at: shoot_starts_at |> DateTime.add(-24 * 60 * 60),
+        job: job,
+        price: ~M[1000]USD
+      )
 
       %{id: proposal_id} = insert(:proposal, job: job)
 
-      due_date = "Feb 09, #{next_year}"
+      due_date = "Feb 8, #{next_year}"
+      session_date = "February 9, #{next_year}"
 
       assert %{
                "brand_sentence" => "",
@@ -74,7 +80,7 @@ defmodule Picsello.EmailPresetTest do
                "delivery_expectations_sentence" => "",
                "delivery_time" => "2 weeks",
                "email_signature" => "",
-               "invoice_amount" => "$20.00",
+               "invoice_amount" => "$10.00",
                "invoice_due_date" => ^due_date,
                "invoice_link" => proposal_link,
                "mini_session_link" => "",
@@ -82,7 +88,7 @@ defmodule Picsello.EmailPresetTest do
                "photography_company_s_name" => "Kloster Oberzell",
                "pricing_guide_link" => pricing_guide_link,
                "review_link" => "",
-               "session_date" => ^due_date,
+               "session_date" => ^session_date,
                "session_location" => "In Studio",
                "session_time" => "5:00 pm"
              } =
@@ -121,6 +127,13 @@ defmodule Picsello.EmailPresetTest do
       assert_proposal_link(proposal_link, proposal_id)
     end
 
+    def href(string),
+      do:
+        string
+        |> Floki.parse_fragment!()
+        |> Floki.attribute("href")
+        |> hd
+
     test "resolves html" do
       job = insert(:lead)
       %{id: proposal_id} = insert(:proposal, job: job)
@@ -128,13 +141,33 @@ defmodule Picsello.EmailPresetTest do
       %{body_template: view_proposal_button} =
         resolve_variables("hi", "{{{view_proposal_button}}}", job)
 
-      proposal_link =
-        view_proposal_button
-        |> Floki.parse_fragment!()
-        |> Floki.attribute("href")
-        |> hd
+      view_proposal_button |> href() |> assert_proposal_link(proposal_id)
+    end
 
-      assert_proposal_link(proposal_link, proposal_id)
+    test "does sections" do
+      job = insert(:lead)
+
+      assert %{body_template: "invariant.\n"} =
+               resolve_variables(
+                 "hi",
+                 """
+                 invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
+                 """,
+                 job
+               )
+
+      %{id: proposal_id} = insert(:proposal, job: job)
+
+      %{body_template: proposal_link} =
+        resolve_variables(
+          "hi",
+          """
+          invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
+          """,
+          job
+        )
+
+      proposal_link |> href() |> assert_proposal_link(proposal_id)
     end
   end
 end

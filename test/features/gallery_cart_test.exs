@@ -1,12 +1,18 @@
 defmodule Picsello.GalleryCartTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.Cart
-  alias Picsello.Repo
 
   setup :authenticated_gallery_client
 
   def fill_gallery_cart(gallery) do
-    whcc_product = insert(:product)
+    whcc_product =
+      insert(:product,
+        whcc_name: "poster",
+        attribute_categories: [
+          %{"_id" => "size", "attributes" => [%{"id" => "20x30", "name" => "20 by 30 inches"}]}
+        ]
+      )
+
     cart_product = build(:cart_product, %{product_id: whcc_product.whcc_id})
     Cart.place_product(cart_product, gallery.id)
   end
@@ -21,18 +27,16 @@ defmodule Picsello.GalleryCartTest do
     order = fill_gallery_cart(gallery)
     cart_product = Enum.at(order.products, 0)
 
-    whcc_product = Repo.get_by(Picsello.Product, whcc_id: cart_product.editor_details.product_id)
-
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")
     |> assert_path("/gallery/#{gallery.client_link_hash}/cart")
-    |> assert_text("Your shopping cart")
-    |> assert_text("#{cart_product.editor_details.selections["size"]} #{whcc_product.whcc_name}")
+    |> assert_text("Cart Review")
+    |> assert_text("20 by 30 inches poster")
     |> assert_text(Money.to_string(cart_product.price))
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
     |> assert_text("Subtotal: " <> Money.to_string(order.subtotal_cost))
-    |> assert_has(css(".cartImg", count: 1))
+    |> assert_has(testid("product-#{cart_product.editor_details.editor_id}"))
   end
 
   feature "continue", %{session: session, gallery: gallery} do
@@ -45,7 +49,7 @@ defmodule Picsello.GalleryCartTest do
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> click(link("cart"))
-    |> click(button("Continue", count: 2, at: 1))
+    |> click(button("Continue"))
     |> fill_in(text_field("Email address"), with: "client@example.com")
     |> fill_in(text_field("Name"), with: "brian")
     |> fill_in(text_field("Shipping address"), with: "123 w main st")

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
+  alias Picsello.{Job, Payments, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
   import Ecto.Query
 
   @impl true
@@ -137,7 +137,7 @@ defmodule PicselloWeb.HomeLive.Index do
              button_label: "Resend email",
              button_class: "btn-primary",
              color: "red-sales-300",
-             class: "intro-confirmation"
+             class: "intro-confirmation border-red-sales-300"
            }},
           {leads_empty?,
            %{
@@ -146,8 +146,8 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Leads are the first step to getting started with Picsello.",
              icon: "three-people",
              button_label: "Create your first lead",
-             button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300",
+             button_class: "btn-secondary",
+             color: "",
              class: "intro-first-lead"
            }},
           {stripe_status != :charges_enabled,
@@ -157,7 +157,7 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "We use Stripe to make payment collection as seamless as possible for you.",
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
-             button_class: "btn-secondary bg-blue-planning-100",
+             button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-stripe"
            }},
@@ -168,7 +168,7 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",
              button_label: "See available resources",
-             button_class: "btn-secondary bg-blue-planning-100",
+             button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-resources"
            }}
@@ -253,10 +253,8 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: payments().status(current_user))
+    socket |> assign(stripe_status: Payments.status(current_user))
   end
-
-  defp payments, do: Application.get_env(:picsello, :payments)
 
   defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
     Phoenix.PubSub.subscribe(

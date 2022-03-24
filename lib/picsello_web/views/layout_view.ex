@@ -1,7 +1,9 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
   alias Picsello.Accounts.User
-  import PicselloWeb.LiveHelpers, only: [icon: 1, nav_link: 1, classes: 1, initials_circle: 1]
+
+  import PicselloWeb.LiveHelpers,
+    only: [icon: 1, nav_link: 1, classes: 1, initials_circle: 1, help_scout_output: 2]
 
   use Phoenix.Component
 
@@ -86,16 +88,6 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_scout_output(current_user, help_scout_id, id) do
-    [
-      phx_hook: "HelpScout",
-      data_id: help_scout_id,
-      id: id,
-      data_email: current_user.email,
-      data_name: current_user.name
-    ]
-  end
-
   def help_scout_menu(assigns) do
     ~H"""
     <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
@@ -105,11 +97,11 @@ defmodule PicselloWeb.LayoutView do
       </div>
       <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
         <nav class="flex flex-col w-64 ml-8 mr-16 my-11 overflow-hidden bg-white rounded-lg shadow-md">
-          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, Application.get_env(:picsello, :help_scout_id), "help-scout-1")}>
+          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
             <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
             Help Center
           </a>
-          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, Application.get_env(:picsello, :help_scout_id_business), "help-scout-2")}>
+          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id_business)}>
             <.icon name="camera-laptop" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
             Business Coaching
           </a>
