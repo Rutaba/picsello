@@ -242,7 +242,7 @@ defmodule PicselloWeb.Live.User.Settings do
     assigns = assigns |> Enum.into(%{container_class: "", intro_id: nil})
 
     ~H"""
-    <div class="bg-blue-planning-100"><h1 class="px-6 py-8 text-3xl font-bold center-container">Your Settings</h1></div>
+    <div><h1 class="px-6 py-10 text-4xl font-bold center-container">Your Settings</h1></div>
 
     <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"} {if @intro_id, do: intro(@current_user, @intro_id), else: []}>
       <._settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
