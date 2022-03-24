@@ -125,7 +125,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       Picsello.MockPayments
       |> Mox.expect(:retrieve_payment_intent, fn "order-payment-intent-id",
                                                  connect_account: "connect-account-id" ->
-        {:ok, %Stripe.PaymentIntent{amount_capturable: 0}}
+        {:ok, %Stripe.PaymentIntent{amount_capturable: 0, id: "order-payment-intent-id"}}
       end)
 
       make_request(conn)
@@ -144,7 +144,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         Picsello.MockPayments,
         :retrieve_payment_intent,
         fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-          {:ok, %Stripe.PaymentIntent{amount_capturable: 1000}}
+          {:ok, %Stripe.PaymentIntent{amount_capturable: 1000, id: "order-payment-intent-id"}}
         end
       )
 

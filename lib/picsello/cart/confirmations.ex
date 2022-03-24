@@ -2,130 +2,139 @@ defmodule Picsello.Cart.Confirmations do
   @moduledoc "context module for confirming orders. Should be accessed through Cart."
 
   alias Picsello.{Galleries, Cart.Order, Payments, Cart.CartProduct, Cart.OrderNumber, WHCC, Repo}
-  alias Galleries.Gallery
-  import Ecto.Query, only: [from: 2, preload: 2]
+  import Ecto.Query, only: [from: 2]
 
   @doc """
   Confirms the order.
+
+  1. query for order and connect account
+  1. make sure the order isn't already confirmed
+  1. maybe fetch the session
+  1. verify the captured amount still matches the cart amount
+  1. confirm the whcc orders
+  1. mark the order as confirmed in our database
+  1. capture the stripe funds
   """
   def confirm_order(
-        %Stripe.Session{
-          client_reference_id: "order_number_" <> order_number
-        } = session
+        %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session
       ) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.run(:order, fn repo, _ ->
-      order =
-        order_number
-        |> order_numbered()
-        |> preload(gallery: [job: [client: :organization]])
-        |> repo.one!()
-
-      {:ok, order}
-    end)
-    |> Ecto.Multi.append(ensure_unconfirmed_multi())
-    |> Ecto.Multi.append(stripe_options_multi())
-    |> Ecto.Multi.run(:session, fn _, _ -> {:ok, session} end)
-    |> Ecto.Multi.append(verify_intent_and_confirm_order_multi())
-    |> commit_confirm_order()
+    do_confirm_order(order_number, &Ecto.Multi.put(&1, :session, session))
   end
 
-  def(
-    confirm_order(
-      %Gallery{id: gallery_id},
+  def confirm_order(order_number, stripe_session_id) do
+    do_confirm_order(
       order_number,
-      stripe_session_id
+      &Ecto.Multi.run(&1, :session, __MODULE__, :fetch_session, [stripe_session_id])
     )
-  ) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.run(:order, fn repo, _ ->
-      order =
-        from(order in order_numbered(order_number),
-          join: gallery in assoc(order, :gallery),
-          where: gallery.id == ^gallery_id,
-          preload: [gallery: {gallery, job: [client: :organization]}]
-        )
-        |> repo.one!()
-
-      {:ok, order}
-    end)
-    |> Ecto.Multi.append(ensure_unconfirmed_multi())
-    |> Ecto.Multi.append(stripe_options_multi())
-    |> Ecto.Multi.run(:session, fn _,
-                                   %{
-                                     stripe_options: stripe_options
-                                   } ->
-      case Payments.retrieve_session(stripe_session_id, stripe_options) do
-        {:ok,
-         %{payment_status: "unpaid", client_reference_id: "order_number_" <> ^order_number} =
-             session} ->
-          {:ok, session}
-
-        {:ok, session} ->
-          {:error, "unexpected session #{inspect(session)}"}
-
-        error ->
-          error
-      end
-    end)
-    |> Ecto.Multi.append(verify_intent_and_confirm_order_multi())
-    |> commit_confirm_order()
   end
 
-  defp confirmed?(%Order{placed_at: %DateTime{}}), do: true
-  defp confirmed?(%Order{}), do: false
+  defp do_confirm_order(order_number, session_fn) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.put(:order_number, order_number)
+    |> Ecto.Multi.run(:order, &load_order/2)
+    |> Ecto.Multi.run(:stripe_options, &stripe_options/2)
+    |> Ecto.Multi.run(:confirmed, &check_confirmed/2)
+    |> session_fn.()
+    |> Ecto.Multi.run(:intent, &verify_intent/2)
+    |> Ecto.Multi.update(:confirmed_order, &confirm_order_changeset/1)
+    |> Ecto.Multi.run(:capture, &capture/2)
+    |> Repo.transaction()
+    |> case do
+      {:error, :confirmed, true, %{order: order}} ->
+        {:ok, order}
 
-  defp ensure_unconfirmed_multi,
-    do:
-      Ecto.Multi.new()
-      |> Ecto.Multi.run(:confirmed, fn _, %{order: order} ->
-        if confirmed?(order), do: {:error, true}, else: {:ok, false}
-      end)
+      {:ok, %{confirmed_order: order}} ->
+        {:ok, order}
 
-  defp stripe_options_multi,
-    do:
-      Ecto.Multi.run(Ecto.Multi.new(), :stripe_options, fn _, %{order: order} ->
-        case order do
-          %{gallery: %{job: %{client: %{organization: %{stripe_account_id: stripe_account_id}}}}} ->
-            {:ok, connect_account: stripe_account_id}
+      {:error, _, _, %{intent: %{id: intent_id}, stripe_options: stripe_options}} = error ->
+        Payments.cancel_payment_intent(intent_id, stripe_options)
+        error
 
-          _ ->
-            {:error, "no connect account"}
-        end
-      end)
+      other ->
+        other
+    end
+  end
 
-  defp verify_intent_and_confirm_order_multi,
-    do:
-      Ecto.Multi.new()
-      |> Ecto.Multi.run(:intent, fn _,
-                                    %{
-                                      session: %{payment_intent: intent_id},
-                                      order: order,
-                                      stripe_options: stripe_options
-                                    } ->
-        %{amount: total} = Order.total(order)
+  defp load_order(repo, %{order_number: order_number}) do
+    order_id = OrderNumber.from_number(order_number)
 
-        with {:ok, %{amount_capturable: ^total}} <-
-               Payments.retrieve_payment_intent(intent_id, stripe_options),
-             {:ok, %{status: "succeeded"} = intent} <-
-               Payments.capture_payment_intent(intent_id, stripe_options) do
-          {:ok, intent}
-        else
-          error ->
-            error =
-              ["error:", inspect(error), "order:", inspect(order)]
-              |> Enum.join("\n")
+    order =
+      from(order in Order,
+        where: order.id == ^order_id,
+        preload: [gallery: [job: [client: :organization]]]
+      )
+      |> repo.one!()
 
-            {:error, error}
-        end
-      end)
-      |> Ecto.Multi.update(:confirm, fn %{order: order} ->
-        confirm_order_changeset(order)
-      end)
+    {:ok, order}
+  end
 
-  defp confirm_order_changeset(
-         %Order{products: products, gallery: gallery, placed_at: nil} = order
-       ) do
+  defp stripe_options(_, %{order: order}) do
+    case order do
+      %{gallery: %{job: %{client: %{organization: %{stripe_account_id: stripe_account_id}}}}} ->
+        {:ok, connect_account: stripe_account_id}
+
+      _ ->
+        {:error, "no connect account"}
+    end
+  end
+
+  defp check_confirmed(_, %{order: order}) do
+    case order.placed_at do
+      nil ->
+        {:ok, false}
+
+      %DateTime{} ->
+        {:error, true}
+    end
+  end
+
+  def fetch_session(
+        _repo,
+        %{order_number: order_number, stripe_options: stripe_options},
+        session_id
+      ) do
+    case Payments.retrieve_session(session_id, stripe_options) do
+      {:ok, %{client_reference_id: "order_number_" <> ^order_number} = session} ->
+        {:ok, session}
+
+      {:ok, session} ->
+        {:error, "unexpected session #{inspect(session)}"}
+
+      error ->
+        error
+    end
+  end
+
+  defp verify_intent(_, %{
+         session: %{payment_intent: intent_id},
+         order: order,
+         stripe_options: stripe_options
+       }) do
+    %{amount: total} = Order.total(order)
+
+    case Payments.retrieve_payment_intent(intent_id, stripe_options) do
+      {:ok, %{amount_capturable: ^total} = intent} ->
+        {:ok, intent}
+
+      {:ok, intent} ->
+        {:error,
+         Enum.join(
+           [
+             "cart total does not match payment intent.",
+             inspect(intent),
+             inspect(order)
+           ],
+           "\n"
+         )}
+
+      error ->
+        error
+    end
+  end
+
+  defp confirm_order_changeset(%{
+         order: %Order{products: products, gallery: gallery, placed_at: nil} = order
+       }) do
     confirmed_products =
       products
       |> Task.async_stream(fn %CartProduct{whcc_order: %{confirmation: confirmation}} = product ->
@@ -138,26 +147,16 @@ defmodule Picsello.Cart.Confirmations do
     Order.confirmation_changeset(order, confirmed_products)
   end
 
-  defp commit_confirm_order(%Ecto.Multi{} = multi) do
-    case Repo.transaction(multi) do
-      {:error, :confirmed, true, %{order: order}} ->
-        {:ok, order}
+  defp capture(_repo, %{intent: %{id: intent_id}, stripe_options: stripe_options}) do
+    case Payments.capture_payment_intent(intent_id, stripe_options) do
+      {:ok, %{status: "succeeded"} = intent} ->
+        {:ok, intent}
 
-      {:ok, %{order: order}} ->
-        {:ok, order}
+      {:ok, intent} ->
+        {:error, "unexpected intent status:\n#{inspect(intent)}"}
 
-      {:error, _, _, %{session: %{payment_intent: intent_id}, stripe_options: stripe_options}} =
-          error ->
-        Payments.cancel_payment_intent(intent_id, stripe_options)
+      error ->
         error
-
-      other ->
-        other
     end
-  end
-
-  defp order_numbered(order_number) do
-    order_id = OrderNumber.from_number(order_number)
-    from(order in Order, where: order.id == ^order_id)
   end
 end

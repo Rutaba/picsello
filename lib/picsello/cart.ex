@@ -297,7 +297,7 @@ defmodule Picsello.Cart do
 
   defdelegate confirm_order(session), to: __MODULE__.Confirmations
 
-  defdelegate confirm_order(gallery, order_number, stripe_session_id),
+  defdelegate confirm_order(order_number, stripe_session_id),
     to: __MODULE__.Confirmations
 
   defp seek_and_map(editor_id, fun) do

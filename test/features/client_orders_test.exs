@@ -157,7 +157,7 @@ defmodule Picsello.ClientOrdersTest do
       |> Mox.expect(
         :retrieve_payment_intent,
         fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
-          {:ok, %Stripe.PaymentIntent{amount_capturable: 2500}}
+          {:ok, %Stripe.PaymentIntent{id: "payment-intent-id", amount_capturable: 2500}}
         end
       )
       |> Mox.expect(
