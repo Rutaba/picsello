@@ -28,6 +28,10 @@ defmodule PicselloWeb.GalleryLive.EditAlbumThumbnail do
 
     album = Repo.get!(Picsello.Galleries.Album, album_id) |> Repo.preload(:photo)
 
+    photos = Galleries.get_all_album_photos(id, album_id)
+
+    photo_ids = Enum.map(photos, fn photo -> photo.id end)
+
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
@@ -36,7 +40,8 @@ defmodule PicselloWeb.GalleryLive.EditAlbumThumbnail do
     |> assign(
       gallery: gallery,
       album: album,
-      photos: Galleries.get_all_album_photos(id, album_id),
+      photos: photos,
+      photo_ids: photo_ids,
       thumbnail_url: album.thumbnail_url
     )
     |> noreply()

@@ -50,6 +50,7 @@ import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
 import PageScroll from "./hooks/page-scroll";
+import CustomSelector from './hooks/custom-selector';
 
 const Modal = {
   mounted() {
@@ -155,6 +156,7 @@ const Hooks = {
   ToggleSiblings,
   ResumeUpload,
   GallerySelector,
+  CustomSelector,
 };
 
 let Uploaders = {};

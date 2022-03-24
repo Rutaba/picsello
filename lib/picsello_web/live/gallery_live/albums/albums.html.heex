@@ -4,7 +4,7 @@
     <div class="w-full h-full bg-gray-100 pl-96">
     <div>
     <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
-          <div class="flex font-bold bg-white rounded-lg shadow-lg cursor-pointer">
+          <div class="flex font-sans bg-white rounded-lg shadow-lg cursor-pointer">
             <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
               <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
             </div>
@@ -61,27 +61,15 @@
                 <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md toggle-content">
                     <li phx-click="go_to_album_selected" phx-value-album={album.id} class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Go to album</button>
-                      <%= if @selected_item == "go_to_album" do %>
-                        <.icon name="tick" class="w-6 h-5 mr-3" />
-                      <% end %>
                     </li>
                     <li phx-click="go_to_album_settings_selected" phx-value-album={album.id} class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Go to album settings</button>
-                      <%= if @selected_item == "go_to_album_settings" do %>
-                        <.icon name="tick" class="w-6 h-5 mr-3" />
-                      <% end %>
                     </li>
                     <li phx-click="share_album_selected" class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Share album</button>
-                      <%= if @selected_item == "share_album" do %>
-                        <.icon name="tick" class="w-6 h-5 mr-3" />
-                      <% end %>
                     </li>
                     <li phx-click="edit_album_thumbnail_selected" phx-value-album={album.id} class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Edit album thumbnail</button>
-                      <%= if @selected_item == "edit_album_thumbnail" do %>
-                        <.icon name="tick" class="w-6 h-5 mr-3" />
-                      <% end %>
                     </li>
                     <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">

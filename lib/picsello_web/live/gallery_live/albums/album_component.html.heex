@@ -11,9 +11,9 @@
             id={"photo-#{@id}"}
             class="galleryItem"
             phx-click={toggle_border(@id, @myself)}
-            phx-hook={"GallerySelector" <> @photo_selector}>
+            phx-hook={@photo_selector}>
    
-            <div id={"photo-#{@id}-selected"} photo-id={@id} class={"toggle-it " <> @selected_all}></div>
+            <div id={"photo-#{@id}-selected"} photo-id={@id} class={"toggle-it #{@selected_all}"}></div>
 
             <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                 <img
