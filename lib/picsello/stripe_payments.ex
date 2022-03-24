@@ -18,6 +18,18 @@ defmodule Picsello.StripePayments do
   def create_billing_portal_session(params), do: Stripe.BillingPortal.Session.create(params)
 
   @impl Payments
+  def retrieve_payment_intent(intent_id, opts),
+    do: Stripe.PaymentIntent.retrieve(intent_id, %{}, opts)
+
+  @impl Payments
+  def cancel_payment_intent(intent_id, opts),
+    do: Stripe.PaymentIntent.cancel(intent_id, %{}, opts)
+
+  @impl Payments
+  def capture_payment_intent(intent_id, opts),
+    do: Stripe.PaymentIntent.capture(intent_id, %{}, opts)
+
+  @impl Payments
   defdelegate create_customer(params, opts), to: Stripe.Customer, as: :create
 
   @impl Payments

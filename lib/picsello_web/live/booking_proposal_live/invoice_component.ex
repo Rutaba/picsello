@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, Payments, PaymentSchedules, BookingProposal, Job}
+  alias Picsello.{Repo, PaymentSchedules, BookingProposal, Job}
   import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
@@ -80,7 +80,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       }
     ]
 
-    case Payments.checkout_link(proposal, line_items,
+    case PaymentSchedules.checkout_link(proposal, line_items,
            # manually interpolate here to not encode the brackets
            success_url: "#{BookingProposal.url(proposal.id)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: BookingProposal.url(proposal.id),

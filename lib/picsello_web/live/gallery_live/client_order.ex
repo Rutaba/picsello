@@ -20,15 +20,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         %{assigns: %{gallery: gallery, live_action: :paid}} = socket
       ) do
     case Cart.confirm_order(gallery, order_number, session_id) do
-      {:ok, %{order: order}} ->
-        socket
-        |> assign(order: order)
-
-      {:error, :confirmed, true, %{order: order}} ->
-        socket
-        |> assign(order: order)
+      {:ok, order} -> order
     end
-    |> then(fn %{assigns: %{order: order}} = socket ->
+    |> then(fn order ->
       if connected?(socket) do
         socket
         |> assign(from_checkout: true)
@@ -43,8 +37,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
           replace: true
         )
       else
-        assign_details(socket, order)
+        socket
       end
+      |> assign_details(order)
       |> noreply()
     end)
   end

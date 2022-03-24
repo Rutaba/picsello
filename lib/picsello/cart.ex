@@ -6,15 +6,13 @@ defmodule Picsello.Cart do
   import Ecto.Query
 
   alias Picsello.{
-    Repo,
-    WHCC,
     Cart.CartProduct,
     Cart.DeliveryInfo,
     Cart.Order,
     Cart.Order.Digital,
     Cart.OrderNumber,
-    Galleries,
-    Galleries.Gallery
+    Repo,
+    WHCC
   }
 
   def new_product(editor_id, account_id) do
@@ -170,81 +168,6 @@ defmodule Picsello.Cart do
     |> Repo.all()
   end
 
-  @doc """
-  Confirms the order.
-  """
-  def confirm_order(
-        %Gallery{id: gallery_id} = gallery,
-        order_number,
-        stripe_session_id
-      ) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.run(:order, fn repo, _ ->
-      order_id = OrderNumber.from_number(order_number)
-
-      order =
-        from(order in Order,
-          join: gallery in assoc(order, :gallery),
-          join: job in assoc(gallery, :job),
-          join: client in assoc(job, :client),
-          join: organization in assoc(client, :organization),
-          where: gallery.id == ^gallery_id and order.id == ^order_id,
-          preload: [gallery: {gallery, job: {job, client: {client, organization: organization}}}]
-        )
-        |> repo.one!()
-
-      {:ok, order}
-    end)
-    |> Ecto.Multi.run(:confirmed, fn _, %{order: %{placed_at: placed_at}} ->
-      case placed_at do
-        %DateTime{} -> {:error, true}
-        nil -> {:ok, false}
-      end
-    end)
-    |> Ecto.Multi.run(:stripe, fn _,
-                                  %{
-                                    order: %{
-                                      gallery: %{
-                                        job: %{
-                                          client: %{
-                                            organization: %{stripe_account_id: stripe_account_id}
-                                          }
-                                        }
-                                      }
-                                    }
-                                  } ->
-      case Picsello.Payments.retrieve_session(stripe_session_id,
-             connect_account: stripe_account_id
-           ) do
-        {:ok,
-         %{payment_status: "paid", client_reference_id: "order_number_" <> ^order_number} =
-             session} ->
-          {:ok, session}
-
-        {:ok, session} ->
-          {:error, "unexpected session #{inspect(session)}"}
-
-        error ->
-          error
-      end
-    end)
-    |> Ecto.Multi.run(:confirm, fn repo, %{order: %{products: products} = order} ->
-      confirmed_products =
-        products
-        |> Task.async_stream(fn %CartProduct{whcc_order: %{confirmation: confirmation}} = product ->
-          confirmation = gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation)
-
-          CartProduct.add_confirmation(product, confirmation)
-        end)
-        |> Enum.to_list()
-
-      order
-      |> Order.confirmation_changeset(confirmed_products)
-      |> repo.update()
-    end)
-    |> Repo.transaction()
-  end
-
   def order_with_editor(editor_id) do
     arg = %{id: editor_id}
 
@@ -341,6 +264,7 @@ defmodule Picsello.Cart do
       line_items: product_line_items ++ digital_line_items,
       customer_email: order.delivery_info.email,
       client_reference_id: "order_number_#{Order.number(order)}",
+      payment_intent_data: %{capture_method: :manual},
       shipping_options: [
         %{
           shipping_rate_data: %{
@@ -370,6 +294,11 @@ defmodule Picsello.Cart do
 
   def preview_url(%Digital{preview_url: path}),
     do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
+
+  defdelegate confirm_order(session), to: __MODULE__.Confirmations
+
+  defdelegate confirm_order(gallery, order_number, stripe_session_id),
+    to: __MODULE__.Confirmations
 
   defp seek_and_map(editor_id, fun) do
     with order <- order_with_editor(editor_id),

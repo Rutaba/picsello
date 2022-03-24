@@ -149,10 +149,23 @@ defmodule Picsello.ClientOrdersTest do
         {:ok,
          %Stripe.Session{
            id: "stripe-session-id",
-           payment_status: "paid",
+           payment_status: "unpaid",
+           payment_intent: "payment-intent-id",
            client_reference_id: "order_number_#{order_number}"
          }}
       end)
+      |> Mox.expect(
+        :retrieve_payment_intent,
+        fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
+          {:ok, %Stripe.PaymentIntent{amount_capturable: 2500}}
+        end
+      )
+      |> Mox.expect(
+        :capture_payment_intent,
+        fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
+          {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
+        end
+      )
 
       gallery_path = current_path(session)
 

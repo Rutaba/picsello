@@ -141,6 +141,10 @@ defmodule Picsello.Cart.Order do
     |> refresh_costs()
   end
 
+  def total(%__MODULE__{subtotal_cost: subtotal, shipping_cost: shipping}) do
+    Money.add(subtotal, shipping)
+  end
+
   defp cast_shipping_cost(changeset) do
     products = changeset |> get_field(:products)
 

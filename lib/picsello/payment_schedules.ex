@@ -1,7 +1,16 @@
 defmodule Picsello.PaymentSchedules do
   @moduledoc "context module for payment schedules"
 
-  alias Picsello.{Repo, Job, Package, PaymentSchedule}
+  alias Picsello.{
+    Repo,
+    Job,
+    Package,
+    PaymentSchedule,
+    Payments,
+    Notifiers.UserNotifier,
+    BookingProposal,
+    Client
+  }
 
   def build_payment_schedules_for_lead(%Job{} = job) do
     %{package: package, shoots: shoots} = job |> Repo.preload([:package, :shoots])
@@ -90,6 +99,72 @@ defmodule Picsello.PaymentSchedules do
   def remainder_price(job) do
     remainder_payment(job).price
   end
+
+  def handle_payment(
+        %Stripe.Session{
+          client_reference_id: "proposal_" <> proposal_id,
+          metadata: %{"paying_for" => payment_schedule_id}
+        },
+        helpers
+      ) do
+    with %BookingProposal{} = proposal <-
+           Repo.get(BookingProposal, proposal_id) |> Repo.preload(job: :job_status),
+         %PaymentSchedule{} = payment_schedule <-
+           Repo.get(PaymentSchedule, payment_schedule_id),
+         {:ok, _} = update_result <-
+           payment_schedule
+           |> PaymentSchedule.paid_changeset()
+           |> Repo.update() do
+      if proposal.job.job_status.is_lead do
+        UserNotifier.deliver_lead_converted_to_job(proposal, helpers.jobs_url())
+      end
+
+      update_result
+    else
+      {:error, _} = error -> error
+      error -> {:error, error}
+    end
+  end
+
+  def checkout_link(%BookingProposal{} = proposal, line_items, opts) do
+    cancel_url = opts |> Keyword.get(:cancel_url)
+    success_url = opts |> Keyword.get(:success_url)
+
+    %{job: %{client: %{organization: organization} = client}} =
+      proposal |> Repo.preload(job: [client: :organization])
+
+    customer_id = customer_id(client)
+
+    stripe_params = %{
+      client_reference_id: "proposal_#{proposal.id}",
+      cancel_url: cancel_url,
+      success_url: success_url,
+      customer: customer_id,
+      line_items: line_items,
+      metadata: Keyword.get(opts, :metadata, %{})
+    }
+
+    Payments.checkout_link(stripe_params, connect_account: organization.stripe_account_id)
+  end
+
+  defp customer_id(%Client{stripe_customer_id: nil} = client) do
+    params = %{name: client.name, email: client.email}
+    %{organization: organization} = client |> Repo.preload(:organization)
+
+    with {:ok, %{id: customer_id}} <-
+           Payments.create_customer(params, connect_account: organization.stripe_account_id),
+         {:ok, client} <-
+           client
+           |> Client.assign_stripe_customer_changeset(customer_id)
+           |> Repo.update() do
+      client.stripe_customer_id
+    else
+      {:error, _} = e -> e
+      e -> {:error, e}
+    end
+  end
+
+  defp customer_id(%Client{stripe_customer_id: customer_id}), do: customer_id
 
   defp remainder_payment(job) do
     job |> payment_schedules() |> Enum.at(-1) || %PaymentSchedule{}
