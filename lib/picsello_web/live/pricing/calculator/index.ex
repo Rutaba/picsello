@@ -148,46 +148,58 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
-        <form>
-          <p class="py-2 font-extrabold">What does your average weekly dedication look like for your photography business? (include all marketing, client communications, shoots, editing, travel, weekends, prep, etc)</p>
-          <div>
-            <div>
-              <label class="flex flex-col mt-4">
-                <p class="py-2">My average time each week is:</p>
-                <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
-              </label>
-            </div>
-            <div>
-              <label class="flex flex-col mt-4">
-                <p class="py-2">I frequently work the following days:</p>
-                input placeholder
-              </label>
-            </div>
+        <p class="py-2 font-extrabold">What does your average weekly dedication look like for your photography business? <span class="italic font-normal">(include all marketing, client communications, shoots, editing, travel, weekends, prep, etc)</span></p>
+        <div class="flex w-full mb-8 mt-4">
+          <div class="w-1/3">
+            <label class="flex flex-col border-r-2">
+              <p class="pb-2">My average time each week is:</p>
+              <div class="flex items-center">
+                <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
+                <%= error_tag @f, :average_time_per_week, class: "text-red-sales-300 text-sm" %>
+                <span class="font-bold ml-4">hours</span>
+              </div>
+            </label>
           </div>
-          <div>
-            <p class="py-2 font-extrabold">How much do you want to take home a year after taxes? (including healthcare costs)</p>
-            <label class="flex flex-col mt-4">
-              <p class="font-extrabold py-2">Annual Desired Salary</p>
-                input placeholder
-            </label>
-            <label class="flex flex-col mt-4">
-              <p class="font-extrabold py-2">Approximate Tax Bracket</p>
-                input placeholder
-            </label>
-            <div class="flex flex-col mt-4">
-              <p class="font-extrabold py-2">Approximate After Income Tax</p>
-                number calculation
+          <div class="w-2/3 pl-12">
+            <label class="flex flex-col">
+              <p class="pb-2">I frequently work the following days:</p>
+              <div class="mt-2 flex flex-wrap">
+              <% input_name = input_name(@f, :days) <> "[]" %>
+              <%= for(day <- days(), checked <- [Enum.member?(input_value(@f, :days) || [], day)]) do %>
+                <.day_option type="checkbox" name={input_name} day={day} checked={checked} />
+              <% end %>
             </div>
-            <label class="flex flex-col mt-4">
-              <p class="font-extrabold py-2">Self-employment tax</p>
-                input placeholder
             </label>
-            <div class="flex flex-col mt-4">
-              <p class="font-extrabold py-2">Approximate After Income Tax</p>
-                number calculation
-            </div>
           </div>
-        </form>
+        </div>
+        <p class="py-2 font-extrabold">How much do you want to take home a year after taxes? <span class="italic font-normal">(including healthcare costs)</span></p>
+        <div class="max-w-md">
+          <label class="flex items-center justify-between mt-4">
+            <p class="font-extrabold">Annual Desired Salary</p>
+            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center" %>
+            <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm" %>
+          </label>
+          <hr class="mt-4 mb-4" />
+          <div class="flex items-center justify-between">
+            <p class="font-extrabold">Approximate Tax Bracket <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
+            <p class="w-40 text-center font-bold">22%</p>
+          </div>
+          <hr class="mt-4 mb-4" />
+          <div class="flex items-center justify-between">
+            <p class="font-extrabold py-2">Approximate After Income Tax <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Using the formula found here. We calculated the amount of income you would receive after taxes." class="ml-1" /></span></p>
+            <p class="w-40 text-center font-bold">$53,738</p>
+          </div>
+          <hr class="mt-4 mb-4" />
+          <div class="flex items-center justify-between">
+            <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage this is calculate after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
+            <p class="w-40 text-center font-bold">15.3%</p>
+          </div>
+          <hr class="mt-4 mb-4" />
+          <div class="flex items-center justify-between">
+            <p class="font-extrabold py-2">Approximate After Income Tax</p>
+            <p class="w-40 text-center font-bold">$45,417</p>
+          </div>
+        </div>
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
           <button type="button" class="btn-primary" phx-click="next">Next</button>
@@ -370,9 +382,23 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     |> IO.inspect()
   end
 
+  def day_option(assigns) do
+    assigns = Enum.into(assigns, %{disabled: false, class: ""})
+
+    ~H"""
+      <label class={classes(
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base w-12 flex items-center justify-center mr-4 #{@class}",
+        %{"bg-blue-planning-100 border-blue-planning-300 bg-blue-planning-300" => @checked}
+      )}>
+        <input class="hidden" type={@type} name={@name} value={@day} checked={@checked} disabled={@disabled} />
+        <%= dyn_gettext String.slice(@day, 0,3) %>
+      </label>
+    """
+  end
+
   def container(assigns) do
     ~H"""
-      <div class="flex w-screen min-h-screen bg-gray-100 relative">
+      <div class="flex w-screen min-h-screen bg-gray-100 relative" {intro_hints_only("intro_hints_only")}>
         <div class="bg-white w-1/4 px-12 py-12 min-h-screen flex flex-col">
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 mb-10" />
           <h3 class="text-4xl font-bold mb-4">Pricing Calculator</h3>
@@ -402,4 +428,5 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   defdelegate job_types(), to: JobType, as: :all
   defdelegate states(), to: PricingCalculators, as: :state_options
+  defdelegate days(), to: PricingCalculators, as: :day_options
 end

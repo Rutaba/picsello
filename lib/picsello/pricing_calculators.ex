@@ -24,13 +24,13 @@ defmodule Picsello.PricingCalculators do
         field(:changed_at, :utc_datetime)
         field(:average_time_per_week, :integer)
 
-        # field(:average_days_per_week, {:array, Ecto.Enum}, values: Keyword.keys(@days_of_the_week))
+        field(:average_days_per_week, {:array, Ecto.Enum}, values: Keyword.keys(@days_of_the_week))
 
-        # field(:desired_salary, :integer)
-        # field(:tax_bracket, :integer)
-        # field(:after_income_tax, :integer)
-        # field(:self_employment_tax, :integer)
-        # field(:take_home, :integer)
+        field(:desired_salary, :integer)
+        field(:tax_bracket, :integer)
+        field(:after_income_tax, :integer)
+        field(:self_employment_tax, :integer)
+        field(:take_home, :integer)
       end
     end
 
@@ -71,6 +71,17 @@ defmodule Picsello.PricingCalculators do
     )
   end
 
+  def day_options(),
+    do: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ]
+
   def state_options(),
     do:
       from(adjustment in Picsello.Packages.CostOfLivingAdjustment,
@@ -78,5 +89,6 @@ defmodule Picsello.PricingCalculators do
         order_by: adjustment.state
       )
       |> Repo.all()
+      |> IO.inspect()
       |> Enum.map(&{&1, &1})
 end
