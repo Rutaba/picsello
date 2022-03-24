@@ -173,7 +173,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
         </div>
         <p class="py-2 font-extrabold">How much do you want to take home a year after taxes? <span class="italic font-normal">(including healthcare costs)</span></p>
-        <div class="max-w-md">
+        <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
           <label class="flex items-center justify-between mt-4">
             <p class="font-extrabold">Annual Desired Salary</p>
             <%= input @f, :desired_salary, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center" %>
@@ -398,7 +398,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def container(assigns) do
     ~H"""
-      <div class="flex w-screen min-h-screen bg-gray-100 relative" {intro_hints_only("intro_hints_only")}>
+      <div class="flex w-screen min-h-screen bg-gray-100 relative">
         <div class="bg-white w-1/4 px-12 py-12 min-h-screen flex flex-col">
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 mb-10" />
           <h3 class="text-4xl font-bold mb-4">Pricing Calculator</h3>
