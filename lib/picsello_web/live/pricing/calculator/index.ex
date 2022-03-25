@@ -12,11 +12,11 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def handle_params(params, _session, socket) do
     step = Map.get(params, "step", "1") |> String.to_integer()
+    category_id = Map.get(params, "category_id", "1") |> String.to_integer()
 
     if step == 6 do
       socket
-      |> assign_step(6)
-      |> assign_cost_category(%{"title" => "hey"})
+      |> assign_cost_category_step(category_id)
       |> assign_changeset()
       |> noreply()
     else
@@ -54,11 +54,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   @impl true
   def handle_event("edit-cost", params, socket) do
+    category_id = Map.get(params, "id", "1") |> String.to_integer()
+
     socket
-    |> assign_step(6)
-    |> assign_cost_category(params)
-    |> assign_changeset()
-    |> push_patch(to: Routes.calculator_path(socket, :index, %{step: 6}))
+    |> push_patch(
+      to: Routes.calculator_path(socket, :index, %{step: 6, category_id: category_id})
+    )
     |> noreply()
   end
 
@@ -212,37 +213,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">All businesses have costs. Lorem ipsum dolor sit amet content here.</h4>
-        <p>(We’ll provide you a rough estimate on what these should cost you by what you’ve answered so far. You can go in tweak what you need.)</p>
-        <div>
-          <div>
-            <h5>number</h5>
-            <p>Desired Take Home</p>
-          </div>
-          <p>+</p>
-          <div>
-            <h5>number</h5>
-             <p>Projected Costs</p>
-          </div>
-          <p>=</p>
-          <div>
-            <h5>number</h5>
-            <p>Gross Revenue</p>
-          </div>
-        </div>
-        <form>
-          <ul>
-            <li>
-              <div>
-                <h5>Equipment</h5>
-                <p>Lorem ipsum really short description goes here about the costs  listed here</p>
-              </div>
-              <div>
-                <h6>number</h6>
-                <button type="button" phx-click="edit-cost" phx-value-title="Equipment Costs">Edit costs</button>
-              </div>
-            </li>
-          </ul>
-        </form>
+        <p class="italic">(We’ll provide you a rough estimate on what these should cost you by what you’ve answered so far. You can go in tweak what you need.)</p>
+        <.financial_review />
+        <h4 class="text-2xl font-bold mb-4">Cost categories</h4>
+        <ul>
+          <% input_name = input_name(@f, :cost_categories) <> "[]" %>
+          <%= for(%{title: title} = cost_category <- cost_categories(), checked <- [Enum.member?(input_value(@f, :cost_categories) || [], cost_category)]) do %>
+            <.category_option type="checkbox" name={input_name} checked={checked} cost_category={cost_category} title={title} />
+          <% end %>
+        </ul>
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
           <button type="button" class="btn-primary" phx-click="next">Next</button>
@@ -256,6 +235,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Based on what you told us—we’ve calculated some suggestions on how much to charge and how many shoots you should do.</h4>
         <p>Lorem ipsum talk about how they can contact us for business advice here.</p>
+        <h4 class="text-2xl font-bold mb-4">Financial Summary</h4>
+        <.financial_review />
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
           <button type="button" class="btn-primary">Save Results</button>
@@ -267,7 +248,35 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 6} = assigns) do
     ~H"""
       <.container {assigns}>
-        edit business cost
+        <table class="responsive-table w-full">
+          <thead>
+            <tr>
+              <th class="text-left font-bold border-b-4 border-blue-planning-300 text-lg pb-2 py-4">Item</th>
+              <th class="text-left font-bold border-b-4 border-blue-planning-300 text-lg pb-2 py-4">Your Cost Monthy</th>
+              <th class="text-left font-bold border-b-4 border-blue-planning-300 text-lg pb-2 py-4">Your Cost Yearly</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p-4">Equipment<br/>(repair, replacement, etc)</td>
+              <td class="p-4">$83.33<span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/month</span></td>
+              <td class="p-4">
+                <%= input @f, :category_cost, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$500", class: "p-4 w-40 text-center" %>
+                <%= error_tag @f, :category_cost, class: "text-red-sales-300 text-sm" %>
+                <span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/year</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="p-4">Equipment<br/>(repair, replacement, etc)</td>
+              <td class="p-4">$83.33<span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/month</span></td>
+              <td class="p-4">
+                <%= input @f, :category_cost, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$500", class: "p-4 w-40 text-center" %>
+                <%= error_tag @f, :category_cost, class: "text-red-sales-300 text-sm" %>
+                <span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/year</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="edit-cost-back">Back</button>
         </div>
@@ -373,13 +382,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     |> assign(changeset: build_changeset(socket, params, :validate))
   end
 
-  defp assign_cost_category(socket, %{"title" => title} = params) do
+  defp assign_cost_category_step(socket, category_id) do
     socket
     |> assign(
-      step_title: title,
-      page_title: title
+      step: 6,
+      step_title: category_id |> Integer.to_string(),
+      page_title: category_id |> Integer.to_string()
     )
-    |> IO.inspect()
   end
 
   def day_option(assigns) do
@@ -396,10 +405,53 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     """
   end
 
+  def category_option(assigns) do
+    assigns = Enum.into(assigns, %{disabled: false, class: ""})
+
+    ~H"""
+      <li class="flex justify-between border hover:border-blue-planning-300 rounded-lg p-6 mb-4">
+        <div class="max-w-md">
+          <label class="flex">
+            <input class="checkbox w-7 h-7" type={@type} name={@name} value={@cost_category.id} checked={@checked} disabled={@disabled} />
+            <div class="ml-4">
+              <h5 class="text-xl font-bold leading-4"><%= @cost_category.title %></h5>
+              <p class="mt-2"><%= @cost_category.description %></p>
+            </div>
+          </label>
+        </div>
+        <div class="flex flex-col">
+          <h6 class="text-2xl font-bold text-center mb-auto"><%= @cost_category.base_cost %></h6>
+          <button class="text-center text-blue-planning-300 underline" type="button" phx-click="edit-cost" phx-value-id={@cost_category.id}>Edit costs</button>
+        </div>
+      </li>
+    """
+  end
+
+  def financial_review(assigns) do
+    ~H"""
+      <div class="bg-gray-100 flex justify-between items-center p-8 my-6 rounded-lg" {intro_hints_only("intro_hints_only")}>
+        <div>
+          <h5 class="text-center font-bold text-4xl mb-2">$45,417</h5>
+          <p class="italic text-center">Desired Take Home</p>
+        </div>
+        <p class="text-center font-bold text-5xl mb-8">+</p>
+        <div>
+          <h5 class="text-center font-bold text-4xl mb-2">$25,882</h5>
+          <p class="italic text-center">Projected Costs</p>
+        </div>
+        <p class="text-center font-bold text-5xl mb-8">=</p>
+        <div>
+          <h5 class="text-center font-bold text-4xl mb-2">$70,536</h5>
+          <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
+        </div>
+      </div>
+    """
+  end
+
   def container(assigns) do
     ~H"""
       <div class="flex w-screen min-h-screen bg-gray-100 relative">
-        <div class="bg-white w-1/4 px-12 py-12 min-h-screen flex flex-col">
+        <div class="bg-white w-1/4 px-12 py-12 h-screen flex flex-col fixed">
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 mb-10" />
           <h3 class="text-4xl font-bold mb-4">Pricing Calculator</h3>
           <p class="text-2xl mb-4">You probably aren't charging enough and we'd like to help</p>
@@ -414,12 +466,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </ul>
           </div>
         </div>
-        <div class="w-3/4 flex flex-col">
+        <div class="w-3/4 flex flex-col pb-32 ml-auto">
           <div class="max-w-5xl w-full mx-auto mt-40">
-            <h1 class="text-4xl font-bold mb-12 flex items-center -ml-14"><%= if @step == 6 do %><button type="button" phx-click="edit-cost-back" class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none">back</button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><%= @step - 1 %></span><% end %><%= @step_title %></h1>
+            <h1 class="text-4xl font-bold mb-12 flex items-center -ml-14"><%= if @step == 6 do %><button type="button" phx-click="edit-cost-back" class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><%= @step - 1 %></span><% end %><%= @step_title %></h1>
           </div>
-          <div class="max-w-5xl w-full mx-auto px-6 pt-8 pb-6 bg-white rounded-lg sm:p-14">
-            <%= render_block(@inner_block) %>
+          <div class="max-w-5xl w-full mx-auto bg-blue-planning-300 rounded-lg overflow-hidden">
+            <div class="bg-white ml-3 px-6 pt-8 pb-6 sm:p-14">
+              <%= render_block(@inner_block) %>
+            </div>
           </div>
         </div>
       </div>
@@ -429,4 +483,5 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defdelegate job_types(), to: JobType, as: :all
   defdelegate states(), to: PricingCalculators, as: :state_options
   defdelegate days(), to: PricingCalculators, as: :day_options
+  defdelegate cost_categories(), to: PricingCalculators, as: :cost_categories
 end

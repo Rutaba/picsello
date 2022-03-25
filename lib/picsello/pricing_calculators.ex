@@ -82,6 +82,51 @@ defmodule Picsello.PricingCalculators do
       "Sunday"
     ]
 
+  def cost_categories(),
+    do: [
+      %{
+        title: "Equipment",
+        base_cost: "$7,170",
+        id: 0,
+        description: "Lorem ipsum really short description goes here about the costs listed here"
+      },
+      %{
+        title: "Software",
+        base_cost: "$3,204",
+        id: 1,
+        description:
+          "Lorem ipsum really short description goes here about the costs listed here 2"
+      },
+      %{
+        title: "Office Supplies",
+        base_cost: "$360",
+        id: 2,
+        description:
+          "Lorem ipsum really short description goes here about the costs listed here 2"
+      },
+      %{
+        title: "Marketing",
+        base_cost: "$10,396",
+        id: 3,
+        description:
+          "Lorem ipsum really short description goes here about the costs listed here 2"
+      },
+      %{
+        title: "Operations",
+        base_cost: "$5,112",
+        id: 4,
+        description:
+          "Lorem ipsum really short description goes here about the costs listed here 2"
+      },
+      %{
+        title: "Training",
+        base_cost: "$2,004",
+        id: 5,
+        description:
+          "Lorem ipsum really short description goes here about the costs listed here 2"
+      }
+    ]
+
   def state_options(),
     do:
       from(adjustment in Picsello.Packages.CostOfLivingAdjustment,
