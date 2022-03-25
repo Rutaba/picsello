@@ -20,6 +20,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign_organization_by_slug(slug)
     |> assign_job_type_packages()
     |> maybe_redirect_slug(slug)
+    |> check_active_subscription()
     |> ok()
   end
 
@@ -431,6 +432,14 @@ defmodule PicselloWeb.Live.Profile do
     else
       socket
     end
+  end
+
+  defp check_active_subscription(%{assigns: %{organization: organization}} = socket) do
+    if Picsello.Subscriptions.subscription_expired?(organization.user) do
+      raise Ecto.NoResultsError, queryable: Picsello.Organization
+    end
+
+    socket
   end
 
   defp subscribe_image_process(%{assigns: %{organization: organization}} = socket) do
