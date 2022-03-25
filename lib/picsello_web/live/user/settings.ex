@@ -252,7 +252,6 @@ defmodule PicselloWeb.Live.User.Settings do
         <:link to={{:profile_settings, :index}} >Public Profile</:link>
         <:link to={{:contacts, :index}} >Contacts</:link>
         <:link to={{:brand_settings, :index}} >Brand</:link>
-        <:link to={{:finance_settings, :index}} >Finances</:link>
       </._settings_nav>
       <hr />
 
@@ -268,8 +267,8 @@ defmodule PicselloWeb.Live.User.Settings do
     <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
       <div class="w-4 border-r bg-blue-planning-300" />
 
-      <div class="flex flex-col justify-between w-full p-4">
-        <h1 class="mb-2 text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
+      <div class="flex flex-col w-full p-4">
+        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
 
         <%= render_slot(@inner_block) %>
       </div>
