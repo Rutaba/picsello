@@ -131,8 +131,8 @@ defmodule Picsello.ClientOrdersTest do
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
-      |> Mox.stub(:checkout_link, fn %{success_url: success_url} = params,
-                                     connect_account: ^connect_account_id ->
+      |> Mox.stub(:create_session, fn %{success_url: success_url} = params,
+                                      connect_account: ^connect_account_id ->
         success_url = URI.parse(success_url)
         assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
         send(test_pid, {:checkout_link, params})

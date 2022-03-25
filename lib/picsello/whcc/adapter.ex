@@ -10,7 +10,7 @@ defmodule Picsello.WHCC.Adapter do
   @callback editor_details(String.t(), String.t()) :: Picsello.WHCC.Editor.Details.t()
   @callback editor_export(String.t(), String.t()) :: Picsello.WHCC.Editor.Export.t()
   @callback create_order(String.t(), String.t(), Keyword.t()) :: Picsello.WHCC.Order.Created.t()
-  @callback confirm_order(String.t(), String.t()) :: atom() | {:error, any()}
+  @callback confirm_order(String.t(), String.t()) :: {:ok, atom()} | {:error, any()}
   @callback webhook_register(String.t()) :: any()
   @callback webhook_verify(String.t()) :: any()
   @callback webhook_validate(any(), String.t()) :: any()

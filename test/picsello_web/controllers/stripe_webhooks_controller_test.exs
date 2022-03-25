@@ -2,6 +2,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
   use PicselloWeb.ConnCase, async: true
   alias Picsello.{Repo, PaymentSchedule, Cart.Order}
   import Money.Sigils
+  import ExUnit.CaptureLog
 
   def stub_event(opts) do
     Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
@@ -95,7 +96,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
     end
   end
 
-  describe "order webhook" do
+  describe "orders" do
     setup do
       organization = insert(:organization, stripe_account_id: "connect-account-id")
 
@@ -110,23 +111,44 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         payment_intent: "order-payment-intent-id"
       )
 
-      Mox.expect(
-        Picsello.MockPayments,
-        :capture_payment_intent,
-        fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-          {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
-        end
-      )
-
       [order: order, gallery: gallery]
     end
 
+    def expect_capture,
+      do:
+        Mox.expect(
+          Picsello.MockPayments,
+          :capture_payment_intent,
+          fn "order-payment-intent-id", connect_account: "connect-account-id" ->
+            {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
+          end
+        )
+
+    def expect_retrieve(%{amount: amount}),
+      do:
+        Mox.expect(
+          Picsello.MockPayments,
+          :retrieve_payment_intent,
+          fn "order-payment-intent-id", connect_account: "connect-account-id" ->
+            {:ok, %Stripe.PaymentIntent{amount_capturable: amount, id: "order-payment-intent-id"}}
+          end
+        )
+
+    def add_cart_product(order, price),
+      do:
+        order
+        |> Order.update_changeset(
+          build(:cart_product,
+            price: price,
+            whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id")
+          )
+        )
+        |> Repo.update!()
+
     test "marks order as paid", %{conn: conn, order: order} do
-      Picsello.MockPayments
-      |> Mox.expect(:retrieve_payment_intent, fn "order-payment-intent-id",
-                                                 connect_account: "connect-account-id" ->
-        {:ok, %Stripe.PaymentIntent{amount_capturable: 0, id: "order-payment-intent-id"}}
-      end)
+      expect_retrieve(~M[0]USD)
+
+      expect_capture()
 
       make_request(conn)
 
@@ -134,21 +156,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
     end
 
     test "tells WHCC", %{conn: conn, order: order, gallery: gallery} do
-      cart_product =
-        build(:cart_product,
-          price: ~M[1000]USD,
-          whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id")
-        )
-
-      Mox.expect(
-        Picsello.MockPayments,
-        :retrieve_payment_intent,
-        fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-          {:ok, %Stripe.PaymentIntent{amount_capturable: 1000, id: "order-payment-intent-id"}}
-        end
-      )
-
-      order = order |> Order.update_changeset(cart_product) |> Repo.update!()
+      order = add_cart_product(order, ~M[1000]USD)
 
       "" <> account_id = Picsello.Galleries.account_id(gallery)
 
@@ -156,13 +164,32 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         Picsello.MockWHCCClient,
         :confirm_order,
         fn ^account_id, "whcc-order-created-id" ->
-          "whcc-order-confirmed-id"
+          {:ok, "whcc-order-confirmed-id"}
         end
       )
+
+      expect_retrieve(~M[1000]USD)
+      expect_capture()
 
       make_request(conn)
 
       assert %{products: [%{whcc_confirmation: "whcc-order-confirmed-id"}]} = Repo.reload!(order)
+    end
+
+    test "fails if WHCC breaks", %{conn: conn, order: order} do
+      add_cart_product(order, ~M[1000]USD)
+
+      Mox.expect(Picsello.MockWHCCClient, :confirm_order, fn _, _ -> {:error, "oops"} end)
+
+      expect_retrieve(~M[1000]USD)
+
+      Process.flag(:trap_exit, true)
+
+      assert_raise(FunctionClauseError, fn ->
+        capture_log(fn ->
+          make_request(conn)
+        end)
+      end)
     end
   end
 end

@@ -46,7 +46,8 @@ defmodule Picsello.Cart.Confirmations do
       {:ok, %{confirmed_order: order}} ->
         {:ok, order}
 
-      {:error, _, _, %{intent: %{id: intent_id}, stripe_options: stripe_options}} = error ->
+      {:error, _, _, %{session: %{payment_intent: intent_id}, stripe_options: stripe_options}} =
+          error ->
         Payments.cancel_payment_intent(intent_id, stripe_options)
         error
 
@@ -98,7 +99,7 @@ defmodule Picsello.Cart.Confirmations do
         {:ok, session}
 
       {:ok, session} ->
-        {:error, "unexpected session #{inspect(session)}"}
+        {:error, "unexpected session:\n#{inspect(session)}"}
 
       error ->
         error
@@ -117,15 +118,7 @@ defmodule Picsello.Cart.Confirmations do
         {:ok, intent}
 
       {:ok, intent} ->
-        {:error,
-         Enum.join(
-           [
-             "cart total does not match payment intent.",
-             inspect(intent),
-             inspect(order)
-           ],
-           "\n"
-         )}
+        {:error, "cart total does not match payment intent:\n#{inspect(intent)}"}
 
       error ->
         error
@@ -138,7 +131,8 @@ defmodule Picsello.Cart.Confirmations do
     confirmed_products =
       products
       |> Task.async_stream(fn %CartProduct{whcc_order: %{confirmation: confirmation}} = product ->
-        confirmation = gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation)
+        {:ok, confirmation} =
+          gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation)
 
         CartProduct.add_confirmation(product, confirmation)
       end)
