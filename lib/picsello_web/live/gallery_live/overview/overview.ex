@@ -302,4 +302,9 @@ defmodule PicselloWeb.GalleryLive.Overview do
     socket
     |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
   end
+
+  defp never_date() do
+    {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
+    date
+  end
 end

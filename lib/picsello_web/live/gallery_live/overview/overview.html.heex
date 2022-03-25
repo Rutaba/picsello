@@ -8,7 +8,7 @@
          <div class="flex">
       <span class="text-4xl font-bold" style="font-family: sans-serif">Overview</span>
    </div>
-   <%= if @gallery.expired_at <= @date do %>
+   <%= if @gallery.expired_at <= @date && @gallery.expired_at != never_date() do %>
       <div class="flex mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert">
         <div class="flex justify-center pt-5 pl-6">
             <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
