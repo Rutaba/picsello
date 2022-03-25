@@ -36,7 +36,7 @@ defmodule Picsello.GalleryExpirationReminder do
     copy = """
     Hello <%= client_name %>,
 
-    Your gallery is is about to expire! Please log into your gallery and make your selections before the gallery expires on <%= expired_at %>
+    Your gallery is about to expire! Please log into your gallery and make your selections before the gallery expires on <%= expired_at %>
 
     A reminder your photos are password-protected, so you will need to use this password to view: <%= password %>
 
