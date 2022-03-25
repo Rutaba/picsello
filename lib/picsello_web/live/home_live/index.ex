@@ -73,11 +73,10 @@ defmodule PicselloWeb.HomeLive.Index do
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
-  def handle_event("subscription-checkout", %{"id" => subscription_plan_id}, socket) do
-    case Payments.checkout_link(
+  def handle_event("subscription-checkout", %{"interval" => interval}, socket) do
+    case Subscriptions.checkout_link(
            socket.assigns.current_user,
-           Subscriptions.subscription_plan_by_id(subscription_plan_id),
-           # manually interpolate here to not encode the brackets
+           interval,
            success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: Routes.home_url(socket, :index)
          ) do
@@ -265,7 +264,7 @@ defmodule PicselloWeb.HomeLive.Index do
           <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
             <div class="border rounded-lg p-4 flex items-center justify-between">
               <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
-              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-id={subscription_plan.id}>
+              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
                 Select this plan
               </button>
             </div>
@@ -325,27 +324,22 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   def handle_info({:stripe_session_id, stripe_session_id}, socket) do
-    with {:ok, session} <-
-           Payments.retrieve_session(stripe_session_id, []),
-         {:ok, subscription} <-
-           Payments.retrieve_subscription(session.subscription, []),
-         {:ok, _} <- Payments.handle_subscription(subscription) do
-      socket
-      |> assign(:stripe_subscription_status, :success)
-      |> PicselloWeb.ConfirmationComponent.open(%{
-        title: "You have subscribed to Picsello",
-        subtitle:
-          "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
-        close_label: "Close",
-        close_class: "btn-primary"
-      })
-      # clear the session_id param
-      |> push_patch(to: Routes.home_path(socket, :index), replace: true)
-      |> noreply()
-    else
-      e ->
-        Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
+    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
+      :ok ->
+        socket
+        |> assign(:stripe_subscription_status, :success)
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "You have subscribed to Picsello",
+          subtitle:
+            "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
+          close_label: "Close",
+          close_class: "btn-primary"
+        })
+        # clear the session_id param
+        |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+        |> noreply()
 
+      _ ->
         socket
         |> put_flash(:error, "Couldn't fetch your Stripe sessoin. Please try again")
         |> noreply()

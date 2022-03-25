@@ -27,11 +27,9 @@ defmodule PicselloWeb.StripeWebhooksController do
              "customer.subscription.updated",
              "customer.subscription.deleted"
            ] do
-    {:ok, _} = Payments.handle_subscription(subscription)
+    {:ok, _} = Picsello.Subscriptions.handle_stripe_subscription(subscription)
     :ok
   end
-
-  def handle_webhook(_, _), do: :ok
 
   defp success_response(conn) do
     conn

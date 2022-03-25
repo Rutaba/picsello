@@ -7,8 +7,6 @@ defmodule Picsello.Payments do
     Organization,
     PaymentSchedule,
     Cart.Order,
-    SubscriptionPlan,
-    SubscriptionEvent,
     Repo
   }
 
@@ -116,32 +114,6 @@ defmodule Picsello.Payments do
     }
 
     checkout_link(stripe_params, connect_account: organization.stripe_account_id)
-  end
-
-  def checkout_link(%User{} = user, %SubscriptionPlan{} = subscription_plan, opts) do
-    cancel_url = opts |> Keyword.get(:cancel_url)
-    success_url = opts |> Keyword.get(:success_url)
-    trial_days = opts |> Keyword.get(:trial_days)
-
-    subscription_data =
-      if trial_days, do: %{subscription_data: %{trial_period_days: trial_days}}, else: %{}
-
-    stripe_params =
-      %{
-        cancel_url: cancel_url,
-        success_url: success_url,
-        customer: user_customer_id(user),
-        mode: "subscription",
-        line_items: [
-          %{
-            quantity: 1,
-            price: subscription_plan.stripe_price_id
-          }
-        ]
-      }
-      |> Map.merge(subscription_data)
-
-    checkout_link(stripe_params, opts)
   end
 
   def checkout_link(%Order{products: products, shipping_cost: shipping_cost}, opts) do
@@ -288,35 +260,6 @@ defmodule Picsello.Payments do
     end
   end
 
-  def billing_portal_link(%User{stripe_customer_id: customer_id}) do
-    case create_billing_portal_session(%{customer: customer_id}) do
-      {:ok, session} -> {:ok, session.url}
-      error -> error
-    end
-  end
-
-  def handle_subscription(%Stripe.Subscription{} = subscription) do
-    with %SubscriptionPlan{id: subscription_plan_id} <-
-           Repo.get_by(SubscriptionPlan, stripe_price_id: subscription.plan.id),
-         %User{id: user_id} <-
-           Repo.get_by(User, stripe_customer_id: subscription.customer) do
-      %{
-        user_id: user_id,
-        subscription_plan_id: subscription_plan_id,
-        status: subscription.status,
-        stripe_subscription_id: subscription.id,
-        cancel_at: subscription.cancel_at |> to_datetime,
-        current_period_start: subscription.current_period_start |> to_datetime,
-        current_period_end: subscription.current_period_end |> to_datetime
-      }
-      |> SubscriptionEvent.create_changeset()
-      |> Repo.insert()
-    else
-      {:error, _} = error -> error
-      error -> {:error, error}
-    end
-  end
-
   defp form_order_line_items(products) do
     Enum.map(products, fn %{
                             price: price,
@@ -360,25 +303,5 @@ defmodule Picsello.Payments do
 
   defp customer_id(%Client{stripe_customer_id: customer_id}), do: customer_id
 
-  defp user_customer_id(%User{stripe_customer_id: nil} = user) do
-    params = %{name: user.name, email: user.email}
-
-    with {:ok, %{id: customer_id}} <- create_customer(params, []),
-         {:ok, user} <-
-           user
-           |> User.assign_stripe_customer_changeset(customer_id)
-           |> Repo.update() do
-      user.stripe_customer_id
-    else
-      {:error, _} = e -> e
-      e -> {:error, e}
-    end
-  end
-
-  defp user_customer_id(%User{stripe_customer_id: customer_id}), do: customer_id
-
   defp impl, do: Application.get_env(:picsello, :payments)
-
-  defp to_datetime(nil), do: nil
-  defp to_datetime(unix_date), do: DateTime.from_unix!(unix_date)
 end

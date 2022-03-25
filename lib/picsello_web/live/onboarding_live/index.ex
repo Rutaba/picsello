@@ -2,7 +2,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
-  alias Picsello.{Repo, JobType, Onboardings, Subscriptions, Accounts.User, Payments}
+  alias Picsello.{Repo, JobType, Onboardings, Subscriptions, Accounts.User}
 
   @impl true
   def mount(params, _session, socket) do
@@ -35,10 +35,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_event("save", %{}, %{assigns: %{step: 6}} = socket) do
-    case Payments.checkout_link(
+    case Subscriptions.checkout_link(
            socket.assigns.current_user,
-           Subscriptions.monthly_subscription_plan(),
-           # manually interpolate here to not encode the brackets
+           "month",
            success_url:
              "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
@@ -360,18 +359,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_info({:stripe_session_id, stripe_session_id}, socket) do
-    with {:ok, session} <-
-           Payments.retrieve_session(stripe_session_id, []),
-         {:ok, subscription} <-
-           Payments.retrieve_subscription(session.subscription, []),
-         {:ok, _} <- Payments.handle_subscription(subscription) do
-      socket
-      |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
-      |> noreply()
-    else
-      e ->
-        Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
+    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
+      :ok ->
+        socket
+        |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
+        |> noreply()
 
+      _ ->
         socket
         |> put_flash(:error, "Couldn't fetch your Stripe sessoin. Please try again")
         |> noreply()
