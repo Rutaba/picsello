@@ -12,19 +12,31 @@ const Preview = {
                 this.frame_name = frame_name
                 this.preview_name = preview_name
                 this.coords = corners0
-                this.target = canvasId
+                this.target = 'canvas'.concat('-', canvasId)
                 this.ratio = ratio
 
                 this.draw(frame_name, preview_name, corners0, canvasId, ratio);
+                this.show_content(canvasId)
             })
+    },
+
+    show_content(canvasId) {
+        const img = document.getElementById('img'.concat('-', canvasId));
+        const product = document.getElementById('product'.concat('-', canvasId));
+        if (img.classList.contains('hidden')) {
+            product.classList.remove('preview_border')
+            img.classList.remove('hidden')
+        }else{
+            product.classList.add('preview_border')
+            img.classList.add('hidden')
+        }
     },
 
     draw(frame_name, preview_name, coord, canvasId, ratio) {
         if (typeof (coord) == 'string') {
             coord = JSON.parse(coord)
         }
-
-        const canvas = document.getElementById(canvasId);
+        const canvas = document.getElementById('canvas'.concat('-', canvasId));
 
         if (canvas.getContext) {
             const ctx = canvas.getContext("2d");

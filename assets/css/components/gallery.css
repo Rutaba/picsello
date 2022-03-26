@@ -7,6 +7,10 @@
   @apply before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10;
 }
 
+.preview_border {
+  @apply border-8 border-blue-planning-300;
+}
+
 .album-select {
   @apply items-center flex w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md whitespace-nowrap;
 }
