@@ -3,7 +3,7 @@
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos" %>
 
     <div class="w-full h-full bg-gray-100 pl-96 pt-20">
-        <div class="relative pl-10 items-center justify-between md:flex-row">
+        <div class="relative pl-10 pb-10 items-center justify-between md:flex-row">
         <div class="flex items-center font-black text-3xl font-bold lg:justify-start">
           <p>Product Previews</p>
           <span class="inline-block relative pl-3" data-hint="Showcase products your client will love." data-hint-position="middle-middle">
@@ -11,6 +11,7 @@
             </.icon>
           </span>
         </div>
+        <div class="grid-cols-2 grid">
         <%= for product <- @products do %>
             <.live_component
               category={product.category}
@@ -19,6 +20,7 @@
               module={PicselloWeb.GalleryLive.Photos.PreviewComponent}
               photo={product.preview_photo} />
           <% end %>
+        </div>
         </div>
     </div>
   </div>

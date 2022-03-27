@@ -50,6 +50,10 @@
   @apply flex w-auto max-w-full;
 }
 
+.product-rect {
+  @apply flex;
+}
+
 .frame {
   width: 219px;
   height: 178px;
@@ -76,11 +80,7 @@
 
 .productPreview__client > li > .productPreview_photo::before {
   content: '';
-  background: linear-gradient(
-    0deg,
-    rgba(31, 28, 30, 0.65) 0%,
-    rgba(31, 28, 30, 0.065) 100%
-  );
+
   @apply absolute top-0 z-10 block w-full h-full transition-all duration-300 rounded-lg opacity-0;
 }
 
