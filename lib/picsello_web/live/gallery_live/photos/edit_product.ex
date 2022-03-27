@@ -17,10 +17,10 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
         %{gallery_id: gallery_id, gallery_product_id: gallery_product_id},
         socket
       ) do
-        gallery=Galleries.get_gallery!(gallery_id)
-        gallery_product=  GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
-#    IO.puts("\n\n########## DEBUG ##########\n s #{inspect(socket, pretty: true)} \n########## DEBUG ##########\n\n")
-      preview = check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id})
+        gallery = Galleries.get_gallery!(gallery_id)
+        gallery_product = GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
+
+        preview = check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id})
 
 
         {:ok,
@@ -37,7 +37,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
               ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
               frame: frame,
               coords: coords,
-              target: "canvas"
+              target: preview.category.id
             })
           end)
           |> assign(:title, gallery_product.category.name)
@@ -47,6 +47,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
           |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
           |> assign(:changeset, changeset(%{}, []))
           |> assign(:gallery, gallery)
+          |> assign(:category_id, preview.category.id)
           |> assign_photos()
           |> assign(:preview_photo_id, nil)}
 
@@ -88,7 +89,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
       preview: path(preview),
       frame: frame,
       coords: coords,
-      target: "canvas"
+      target: preview.category.id
     })
     |> noreply
   end

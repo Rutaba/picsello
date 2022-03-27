@@ -14,9 +14,8 @@ const Preview = {
                 this.coords = corners0
                 this.target = 'canvas'.concat('-', canvasId)
                 this.ratio = ratio
-
+                console.log(canvasId)
                 this.draw(frame_name, preview_name, corners0, canvasId, ratio);
-                this.show_content(canvasId)
             })
     },
 
@@ -104,6 +103,7 @@ const Preview = {
     },
     updated() {
         this.handleEvent("set_preview", ({preview: preview_name, frame: frame_name, coords: corners0, target: canvasId}) => {
+            console.log(canvasId)
             this.draw(frame_name, preview_name, corners0, canvasId)
         })
         this.handleEvent("update_print_type", () => {

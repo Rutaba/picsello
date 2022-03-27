@@ -4,12 +4,21 @@
 
     <div class="w-full h-full bg-gray-100 pl-96 pt-20">
         <div class="relative pl-10 items-center justify-between md:flex-row">
+        <div class="flex items-center font-black text-3xl font-bold lg:justify-start">
+          <p>Product Previews</p>
+          <span class="inline-block relative pl-3" data-hint="Showcase products your client will love." data-hint-position="middle-middle">
+          <.icon name="tooltip" class="inline-block mr-6 rounded-sm fill-current text-blue-planning-300 w-4 h-4" style="">
+            </.icon>
+          </span>
+        </div>
+        <%= for product <- @products do %>
             <.live_component
-              id="abc"
-              gallery_id={@gallery_id}
-              products={@products}
+              category={product.category}
+              id={product.id}
+              product_id={product.id}
               module={PicselloWeb.GalleryLive.Photos.PreviewComponent}
-             />
+              photo={product.preview_photo} />
+          <% end %>
         </div>
     </div>
   </div>

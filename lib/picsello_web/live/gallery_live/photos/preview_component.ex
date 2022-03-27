@@ -1,19 +1,55 @@
 defmodule PicselloWeb.GalleryLive.Photos.PreviewComponent do
   @moduledoc "no doc"
+
   use PicselloWeb, :live_component
 
-  import PicselloWeb.LiveHelpers
+  @default_assigns %{
+    edit_product_link: nil,
+    click_params: nil,
+    has_product_info: true
+  }
 
-  alias Phoenix.PubSub
-  alias Picsello.Repo
-  alias Picsello.{Galleries, GalleryProducts}
-
-  @impl true
-  def update(assigns,socket) do
-
+  def update(assigns, socket) do
     socket
+    |> assign(@default_assigns)
     |> assign(assigns)
-    |> ok()
+    |> set_preview()
+    |> ok
   end
 
+  defp set_preview(%{assigns: %{category: category, photo: nil}} = socket) do
+    socket
+    |> push_event(
+      "set_preview",
+      category
+      |> to_event_args()
+      |> Map.merge(%{
+        preview: path(nil),
+        width: nil,
+        height: nil
+      })
+    )
+  end
+
+  defp set_preview(%{assigns: %{category: category, photo: photo}} = socket) do
+    socket
+    |> push_event(
+      "set_preview",
+      category
+      |> to_event_args()
+      |> Map.merge(%{
+        preview: path(photo.preview_url),
+        ratio: photo.aspect_ratio
+      })
+    )
+  end
+
+  defdelegate min_price(category), to: Picsello.WHCC
+
+  defp to_event_args(category),
+    do: %{
+      frame: Picsello.Category.frame_image(category),
+      coords: Picsello.Category.coords(category),
+      target: category.id
+    }
 end

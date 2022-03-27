@@ -18,7 +18,7 @@
     <div class="py-10 px-6 mobileGalleryButtons hidden galleryShowMobile">
         <p>Mobile view is not supported for Gallery, but you can still manage settings.</p>
         <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
-        <%= live_redirect "Manage settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %>
+        <%# <%= live_redirect "Manage settings", to: Routes.gallery_settings_path(@socket, :settings, @gallery) %> %>
         </button>
         <button class="btn-secondary py-3.5 w-full max-w-screen-md mt-4">
         <%= live_redirect "Back to job", to: Routes.job_path(@socket, :jobs, @gallery.job_id) %>
