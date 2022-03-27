@@ -37,7 +37,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
               ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
               frame: frame,
               coords: coords,
-              target: preview.category.id
+              target: "#{preview.category.id}-edit"
             })
           end)
           |> assign(:title, gallery_product.category.name)
@@ -54,10 +54,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
   end
 
   def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
-
-
     preview = GalleryProducts.get(%{id: gallery_product_id, gallery_id: gallery_id})
-
   end
 
   def changeset(data, prop) do
@@ -76,7 +73,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
   def handle_event(
         "click",
         %{"preview" => preview, "preview_photo_id" => preview_photo_id},
-        socket
+        %{assigns: %{category_id: category_id}} = socket
       ) do
     frame = Map.get(socket.assigns, :frame)
     coords = Map.get(socket.assigns, :coords)
@@ -89,7 +86,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
       preview: path(preview),
       frame: frame,
       coords: coords,
-      target: preview.category.id
+      target: "#{category_id}-edit"
     })
     |> noreply
   end
@@ -124,34 +121,13 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
         :category_id
       ])
       |> Repo.insert_or_update()
-
-      {:noreply, socket |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery_id))}
+      {:noreply, socket}
+      # {:noreply, socket |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery_id))}
     else
       {:noreply, socket}
     end
   end
 
-  @impl true
-  def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
-    gallery = Galleries.get_gallery!(id)
-
-    GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
-    |> case do
-         nil ->
-           {:noreply, redirect(socket, to: "/")}
-
-         gallery_product ->
-           socket
-           |> assign(:title, gallery_product.category.name)
-           |> assign(:gallery, gallery)
-           |> assign(:gallery_product_id, gallery_product.id)
-           |> assign(:page, 0)
-           |> assign(:favorites_filter, false)
-           |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-           |> assign_photos()
-           |> noreply()
-       end
-  end
 
   defp assign_photos(
          %{

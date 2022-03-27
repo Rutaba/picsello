@@ -17,13 +17,13 @@
                </h1>
 
             <div class="mx-24 pt-6 pb-6 grid grid-cols-3 grid-rows-preview flex">
-                <div id="preview" class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
-                    <canvas id={"canvas-#{@category_id}"} width="300" height="255" class="edit"></canvas>
+                <div id={"preview-#{@category_id}"} class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
+                    <canvas id={"canvas-#{@category_id}-edit"} width="300" height="255" class="edit"></canvas>
                 </div>
                 
                        <div class="description ml-11 row-span-2 col-span-2">
                     <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
-                    <.form let={f} for={@changeset} action="#" phx-submit="save">
+                    <.form let={f} for={@changeset} action="#" phx-target={@myself} phx-submit="save">
                         <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
                         <%= submit "Save", title: "Save", class: "save-button w-full btn-primary btn-gallery",
                             disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
@@ -33,7 +33,7 @@
         </div>
 
         <div>
-        <div id="gallery_product_form" class="p-11 pt-80 preview__shadow">
+        <div id="gallery_product_form" class="p-11 pt-80">
             <div
                 phx-hook="MasonryGrid"
                 phx-update="append"
@@ -55,7 +55,8 @@
                     is_removable: false,
                     is_removed: false,
                     is_gallery_category_page: true,
-                    preview_photo_id: @preview_photo_id
+                    preview_photo_id: @preview_photo_id,
+                    component: @myself
                 %>
             <% end %>
             </div>
