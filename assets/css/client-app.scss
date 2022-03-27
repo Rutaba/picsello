@@ -26,13 +26,13 @@
   @apply before:content-[""] before:fixed before:left-96 before:top-0 before:right-0 before:bottom-0 before:bg-gray-100;
 
   @apply font-client;
-  
+
   .text-input,
   .select,
   .checkbox {
     @apply rounded-none focus:border-black focus:ring-black;
   }
-  
+
   .checkbox,
   .radio {
     @apply text-base-300;
@@ -68,6 +68,10 @@
       @apply ml-2 pt-0.5;
       content: url('data:image/svg+xml; utf8, <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5L5.5 6L1.5 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>');
     }
+  }
+
+  .btn-gallery {
+    @apply rounded-lg;
   }
 
   .btn-secondary {

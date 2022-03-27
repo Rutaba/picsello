@@ -1,0 +1,74 @@
+<div>
+<div phx-hook="GalleryMobile" id="gallery_mobile">
+    <div class="bg-white h-screen w-screen overflow-auto">
+
+        <div class="fixed z-30 bg-white scroll-shadow">
+                <div class="absolute top-4 right-4">
+                <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+                <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
+                </button>
+                </div>
+                <div class="flex items-center text-base-300 mx-24 mt-5 text-2xl font-bold lg:justify-start">
+                  <p>Product Preview</p>
+                </div>
+                <h1 class={classes("text-md mt-4 mx-24", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
+                "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}>
+                    <%= if @title === "Framed Prints" do %>
+                        Wall Art
+                    <% else %>
+                        <%= "#{@title} preview" %>
+                    <% end %>
+                </h1>
+
+            <div class="mx-24 pt-6 pb-6 grid grid-cols-3 grid-rows-preview flex">
+                <div id="preview" class="flex items-start row-span-2 previewImg" phx-hook="Preview">
+                    <img id={"img-#{@frame_id}"} src={"/images/#{@frame}"} class="w-48 h-48 items-center"/>
+
+                </div>
+                <div class="description ml-11 row-span-2 col-span-2">
+                    <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
+                    <.form let={f} for={@changeset} action="#" phx-submit="save">
+                        <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
+                        <%= submit "Save", title: "Save", class: "save-button w-full btn-primary btn-gallery",
+                            disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
+                    </.form>
+                </div>
+            </div>
+        </div>
+
+        <div>
+        <div id="gallery_product_form" class="p-11 pt-80 preview__shadow">
+            <div
+                phx-hook="MasonryGrid"
+                phx-update="append"
+                id="muuri-grid"
+                class={"muuri grid"}
+                data-page={ @page }
+                data-total={ @gallery.total_count }
+                data-favorites-count={ @favorites_count }
+                data-is-sortable="false"
+                data-has-more-photos={ "#{@has_more_photos}" }
+                data-photo-width="200"
+            >
+            <%= for photo <- @photos do %>
+                <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
+                    id: photo.id,
+                    photo: photo,
+                    photo_width: 200,
+                    is_likable: false,
+                    is_removable: false,
+                    is_removed: false,
+                    is_gallery_category_page: true,
+                    preview_photo_id: @preview_photo_id
+                %>
+            <% end %>
+            </div>
+        </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+</div>

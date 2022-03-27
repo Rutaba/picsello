@@ -1,12 +1,15 @@
 <div
-    class={!@is_removed && "item" || "hidden"}
+    class={!@is_removed && "item flex" || "hidden"}
     id={"photo-item-#{@photo.id}"}
     style={"
         width: #{if @photo_width, do: @photo_width, else: "#{300}px"};
         height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{@photo_width / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "450px"};
-    "}
+        display: flex;
+        align-items: center;
+        background-color: rgba(229, 231, 235, var(--tw-bg-opacity));
+        "}
 >
-    <div id={"item-#{@id}"} class="toggle-item item-content preview relative cursor-pointer">
+    <div id={"item-#{@id}"} class="toggle-item preview relative cursor-pointer">
         <div
             id={"photo-#{@id}"}
             class="galleryItem">

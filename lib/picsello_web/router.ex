@@ -149,6 +149,8 @@ defmodule PicselloWeb.Router do
         as: :preview
 
       live "/galleries/:id/photos", GalleryLive.Photos, :show
+      live "/galleries/:id/preview", GalleryLive.Photos.Main, :show
+
       #live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload

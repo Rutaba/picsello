@@ -159,7 +159,7 @@ canvas {
   box-sizing: border-box;
 
   .item {
-    display: block;
+    display: flex;
     position: absolute;
     z-index: 1;
   }
