@@ -31,7 +31,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     if is_gallery_category_page do
       js
       |> JS.dispatch("click", to: "#photo-#{id} > img")
-      |> JS.show(to: "#photo-#{id} > .checker")
       |> JS.add_class(
         "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
         to: "#item-#{id}"

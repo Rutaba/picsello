@@ -5,7 +5,7 @@ defmodule Picsello.Category do
   import Ecto.Changeset
 
   @preview_templates %{
-    "card_envelope_transparency.png" => [220, 163, 1675, 153, 1680, 2165, 232, 2160],
+    "card_envelope_transparency.png" => [240, 163, 1695, 163, 1700, 2175, 252, 2170],
     "album_transparency.png" => [800, 715, 1720, 715, 800, 1620, 1720, 1620],
     "frame_transparency.png" => [550, 550, 2110, 550, 550, 1600, 2110, 1600],
     "card_blank.png" => [0, 0, 1120, 0, 0, 1100, 1120, 1100]

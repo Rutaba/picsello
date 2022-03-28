@@ -84,6 +84,21 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   @impl true
   def handle_event(
+        "select_preview",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.gallery_photos_main_path(socket, :show, gallery))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "go_to_album_selected",
         %{"album" => album_id},
         %{
