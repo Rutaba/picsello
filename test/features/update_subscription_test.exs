@@ -64,7 +64,7 @@ defmodule Picsello.SubscriptionChangesTest do
     test_pid = self()
 
     Picsello.MockPayments
-    |> Mox.stub(:checkout_link, fn params, opts ->
+    |> Mox.stub(:create_session, fn params, opts ->
       send(
         test_pid,
         {:checkout_linked, opts |> Enum.into(params)}
@@ -102,5 +102,35 @@ defmodule Picsello.SubscriptionChangesTest do
     |> click(link("Settings"))
     |> assert_text("Current Plan")
     |> assert_text("$500/year")
+  end
+
+  feature "user goes to billing portal", %{session: session, user: user, plan: plan} do
+    insert(:subscription_event, user: user, subscription_plan: plan, status: "active")
+
+    test_pid = self()
+
+    Mox.stub(Picsello.MockPayments, :create_billing_portal_session, fn params ->
+      send(
+        test_pid,
+        {:portal_session_created, params}
+      )
+
+      {:ok,
+       %{
+         url:
+           PicselloWeb.Endpoint.struct_url()
+           |> Map.put(:fragment, "stripe-billing-portal")
+           |> URI.to_string()
+       }}
+    end)
+
+    session
+    |> click(link("Settings"))
+    |> click(button("Open Billing Portal"))
+    |> assert_url_contains("stripe-billing-portal")
+
+    return_url = Routes.user_settings_url(PicselloWeb.Endpoint, :edit)
+
+    assert_receive {:portal_session_created, %{customer: "cus_123", return_url: ^return_url}}
   end
 end

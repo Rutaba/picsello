@@ -35,7 +35,7 @@ defmodule Picsello.UserOnboardsTest do
     test_pid = self()
 
     Picsello.MockPayments
-    |> Mox.stub(:checkout_link, fn params, opts ->
+    |> Mox.stub(:create_session, fn params, opts ->
       send(
         test_pid,
         {:checkout_linked, opts |> Enum.into(params)}

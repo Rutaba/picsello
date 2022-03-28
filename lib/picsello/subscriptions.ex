@@ -108,8 +108,8 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def billing_portal_link(%User{stripe_customer_id: customer_id}) do
-    case Payments.create_billing_portal_session(%{customer: customer_id}) do
+  def billing_portal_link(%User{stripe_customer_id: customer_id}, return_url) do
+    case Payments.create_billing_portal_session(%{customer: customer_id, return_url: return_url}) do
       {:ok, session} -> {:ok, session.url}
       error -> error
     end

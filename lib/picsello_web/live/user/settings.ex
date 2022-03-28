@@ -220,7 +220,12 @@ defmodule PicselloWeb.Live.User.Settings do
 
   @impl true
   def handle_event("open-billing", _params, socket) do
-    {:ok, url} = Subscriptions.billing_portal_link(socket.assigns.current_user)
+    {:ok, url} =
+      Subscriptions.billing_portal_link(
+        socket.assigns.current_user,
+        Routes.user_settings_url(socket, :edit)
+      )
+
     socket |> redirect(external: url) |> noreply()
   end
 
