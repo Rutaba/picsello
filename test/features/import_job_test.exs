@@ -296,7 +296,7 @@ defmodule Picsello.ImportJobTest do
     |> Mox.stub(:create_customer, fn %{email: @client_email, name: @client_name}, _ ->
       {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
     end)
-    |> Mox.stub(:checkout_link, fn params, opts ->
+    |> Mox.stub(:create_session, fn params, opts ->
       send(
         test_pid,
         {:checkout_linked, opts |> Enum.into(params)}

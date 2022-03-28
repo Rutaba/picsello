@@ -18,7 +18,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   end
 
   setup %{user: user} do
-    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _ ->
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
       {:ok, %Stripe.Account{charges_enabled: true}}
     end)
 
@@ -78,7 +78,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       test_pid = self()
 
-      Mox.stub(Picsello.MockPayments, :checkout_link, fn params, opts ->
+      Mox.stub(Picsello.MockPayments, :create_session, fn params, opts ->
         send(
           test_pid,
           {:checkout_linked, opts |> Enum.into(params)}

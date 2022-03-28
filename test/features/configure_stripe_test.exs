@@ -13,10 +13,16 @@ defmodule Picsello.ConfigureStripeTest do
       |> URI.to_string()
 
     Picsello.MockPayments
-    |> Mox.stub(:create_account_link, fn _, _ ->
-      {:ok, %{url: fake_stripe_config_url, id: "account-id"}}
+    |> Mox.stub(:create_account, fn %{type: "standard"}, _ ->
+      {:ok, %Stripe.Account{id: "new-stripe-account-id"}}
     end)
-    |> Mox.stub(:retrieve_account, fn _ -> {:ok, %Stripe.Account{}} end)
+    |> Mox.stub(
+      :create_account_link,
+      fn %{type: "account_onboarding", account: "new-stripe-account-id"}, _ ->
+        {:ok, %Stripe.AccountLink{url: fake_stripe_config_url}}
+      end
+    )
+    |> Mox.stub(:retrieve_account, fn "new-stripe-account-id", _ -> {:ok, %Stripe.Account{}} end)
 
     :ok
   end

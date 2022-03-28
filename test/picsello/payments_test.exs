@@ -41,9 +41,16 @@ defmodule Picsello.PaymentsTest do
 
   describe "link" do
     test "returns a link when called with a user with no account" do
-      Mox.stub(Picsello.MockPayments, :create_account_link, fn _, _ ->
-        {:ok, %{id: "new-account-id", url: "https://example.com/new-account-id"}}
+      Picsello.MockPayments
+      |> Mox.stub(:create_account, fn %{type: "standard"}, _ ->
+        {:ok, %Stripe.Account{id: "new-account-id"}}
       end)
+      |> Mox.stub(
+        :create_account_link,
+        fn %{type: "account_onboarding", account: "new-account-id"}, _ ->
+          {:ok, %Stripe.AccountLink{url: "https://example.com/new-account-id"}}
+        end
+      )
 
       user = insert(:user)
       assert {:ok, url} = Payments.link(user, [])
@@ -62,7 +69,8 @@ defmodule Picsello.PaymentsTest do
 
       Mox.stub(Picsello.MockPayments, :create_account_link, fn %{
                                                                  account:
-                                                                   "already-saved-stub-account-id"
+                                                                   "already-saved-stub-account-id",
+                                                                 type: "account_onboarding"
                                                                },
                                                                _ ->
         {:ok, %{url: "https://example.com/already-saved-stub-account-id"}}

@@ -6,21 +6,13 @@ defmodule Picsello.StripePayments do
   @behaviour Payments
 
   @impl Payments
-  def checkout_link(params, opts) do
-    stripe_params =
-      Enum.into(params, %{
-        payment_method_types: ["card"],
-        mode: "payment"
-      })
-
-    case Stripe.Session.create(stripe_params, opts) do
-      {:ok, %{url: url}} -> {:ok, url}
-      error -> error
-    end
-  end
+  defdelegate create_session(params, opts), to: Stripe.Session, as: :create
 
   @impl Payments
-  def retrieve_account(account_id), do: Stripe.Account.retrieve(account_id, [])
+  defdelegate retrieve_account(account_id, opts), to: Stripe.Account, as: :retrieve
+
+  @impl Payments
+  defdelegate create_account(params, opts), to: Stripe.Account, as: :create
 
   @impl Payments
   defdelegate create_customer(params, opts), to: Stripe.Customer, as: :create
