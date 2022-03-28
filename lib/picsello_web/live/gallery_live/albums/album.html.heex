@@ -1,7 +1,7 @@
 <div class="flex flex-col">
   <div class="flex root">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "albums" %>
-    <div class="w-full bg-gray-100">
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "albums", album_dropdown_show: true %>
+    <div class="w-full h-full pt-20 bg-gray-100 pl-96">
       <div>
         <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
         <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
@@ -17,9 +17,16 @@
     </div>
     <div class= "pt-20 pb-10 pl-10 pr-20">
       <div class="flex flex-col items-center justify-between md:flex-row">
-        <h1 class="flex items-center text-4xl font-bold lg:justify-start">
-          <%= @album.name %>
-        </h1>
+        <div class="flex flex-col justify-start">
+          <h1 class="flex items-center text-4xl font-bold lg:justify-start">
+            <%= @album.name %>
+          </h1>
+          <div class="flex mt-2">
+            <h1 class="flex justify-start font-sans cursor-pointer text-blue-planning-300" phx-click="select_photos">Photos</h1>
+          <h1 class="flex justify-start ml-2 mr-2 font-sans cursor-pointer text-blue-planning-300">></h1>
+          <h1 class="flex justify-start font-bold text-blue-planning-300"> <%= @album.name %></h1>
+          </div>
+        </div>
         <div class="flex flex-row items-center justify-end">
           <%= if total(@selected_photos) > 0 do %>
           <div class="flex flex-col items-center ml-8 text-lg text-gray-300 w-80 lg:justify-start"><%= total(@selected_photos) %> photos selected</div>
@@ -143,7 +150,7 @@
           </label>
         </div>
       </div>
-      <%= if @gallery.total_count <= 0 do %>
+      <%= if length(@photos) <= 0 do %>
       <div class="justify-between text-2xl font-bold text-center text-blue-planning-300 mt-14 mb-14">
         Oops, there's nothing here - upload photos now to get started!
       </div>

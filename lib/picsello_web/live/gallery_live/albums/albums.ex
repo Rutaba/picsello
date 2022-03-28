@@ -24,6 +24,8 @@ defmodule PicselloWeb.GalleryLive.Albums do
     }
   end
 
+
+
   @impl true
   def handle_params(
         %{"upload_toast" => upload_toast, "upload_toast_text" => upload_toast_text} = _params,
@@ -40,6 +42,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
   def handle_params(_params, _uri, socket) do
     noreply(socket)
   end
+
 
   @impl true
   def handle_event("upload_toast", _, socket) do
@@ -62,6 +65,22 @@ defmodule PicselloWeb.GalleryLive.Albums do
     |> open_modal(PicselloWeb.GalleryLive.Settings.AddAlbumModal, %{gallery_id: gallery_id})
     |> noreply()
   end
+
+  @impl true
+  def handle_event(
+        "open_unsorted_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
+    |> noreply()
+  end
+
 
   @impl true
   def handle_event(

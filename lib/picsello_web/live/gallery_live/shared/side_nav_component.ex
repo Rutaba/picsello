@@ -6,17 +6,18 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   @impl true
   def update(
-        %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show},
+        %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show, album_dropdown_show: album_dropdown_show},
         socket
       ) do
     gallery = Repo.preload(gallery, :albums)
+
     {:ok,
      socket
      |> assign(:id, id)
      |> assign(:total_progress, total_progress || 0)
      |> assign(:gallery, gallery)
      |> assign(:arrow_show, arrow_show)
-     |> assign(:album_dropdown_show, false)
+     |> assign(:album_dropdown_show, album_dropdown_show)
      |> assign_gallery_changeset()}
   end
 
@@ -54,7 +55,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   @impl true
   def handle_event(
-        "select_photos",
+        "go_to_unsorted_photos",
         _,
         %{
           assigns: %{
@@ -65,6 +66,27 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     socket
     |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "select_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    if length(gallery.albums) > 0 do
+      socket
+      |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+      |> noreply()
+    else
+      socket
+      |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
+      |> noreply()
+    end
   end
 
   @impl true
@@ -112,7 +134,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album_id))
     |> noreply()
   end
-
 
   @impl true
   def handle_event(

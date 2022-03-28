@@ -83,7 +83,7 @@
                                  <button href="#!" class="flex items-center px-2 py-2 overflow-hidden text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-38 text-ellipsis whitespace-nowrap">Set as product preview</button>
                                </li>
                                <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <button phx-click="open_set_thumbnail_popup" href="#!" class="flex items-center px-2 py-2 overflow-hidden text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-38 text-ellipsis whitespace-nowrap">Set as album thumbnail</button>
+                                 <button phx-click="open_set_thumbnail_popup" phx-value-id={@id} href="#!" class="flex items-center px-2 py-2 overflow-hidden text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-38 text-ellipsis whitespace-nowrap">Set as album thumbnail</button>
                                </li>
                                <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
                                  <button phx-click="open_album_remove_photo_popup" phx-value-photo={@photo.id} href="#!" class="flex items-center px-2 py-2 overflow-hidden text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-38 text-ellipsis whitespace-nowrap">Remove from album</button>

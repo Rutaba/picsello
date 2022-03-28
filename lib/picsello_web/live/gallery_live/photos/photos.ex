@@ -113,6 +113,42 @@ defmodule PicselloWeb.GalleryLive.Photos do
 
   @impl true
   def handle_event(
+        "open_albums_popup",
+        %{},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(PicselloWeb.GalleryLive.Settings.AddAlbumModal, %{gallery_id: gallery.id})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "go_to_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    if length(gallery.albums) > 0 do
+      socket
+      |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+      |> noreply()
+    else
+      socket
+      |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
+      |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
         "cancel-upload",
         %{"ref" => ref},
         %{assigns: %{uploads: %{photo: %{entries: entries}}}} = socket
@@ -461,6 +497,21 @@ defmodule PicselloWeb.GalleryLive.Photos do
     |> assign(:select_mode, "selected_favorite")
     |> assign_photos()
     |> noreply
+  end
+
+  @impl true
+  def handle_event(
+        "select_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+    |> noreply()
   end
 
   @impl true

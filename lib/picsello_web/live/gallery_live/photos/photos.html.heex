@@ -1,12 +1,12 @@
 <div class="flex h-screen flex-col">
   <div class="flex root">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos" %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos", album_dropdown_show: true %>
 
-    <div class="w-full h-full bg-gray-100 pl-96 pt-44">
+    <div class="w-full h-full bg-gray-100 pl-96 ">
 
-    <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-14 pl-10 pr-10 bg-gray-100 left-96">
+    <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-20 pl-10 pr-10 bg-gray-100 left-96">
             <div class="flex flex-col md:flex-row">
-              <div class="flex items-end text-4xl font-bold lg:justify-start">
+               <div class="flex items-end text-4xl font-bold lg:justify-start">
                   <span>Photos</span>
               </div>
               <div class="flex items-end ml-8 font-sans text-lg text-base-250 w-80 lg:justify-start">
@@ -25,7 +25,7 @@
                         <div class="max-w-xs mx-auto">
                             <div class="dragDrop__content">
                                 <p class="text-center">
-                                   <div class="flex items-center lg:justify-end bg-white mr-4 uploadBtn">
+                                   <div class="flex items-center mr-4 bg-white lg:justify-end uploadBtn">
                                     <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
                                     Add photos
                                     </div>
@@ -36,12 +36,21 @@
                     </label>
                     </div>
                 </form>
-                <button class="flex items-center bg-white lg:justify-end uploadBtn cursor-pointer">
+                <%= if length(@gallery.albums) == 0 do %> 
+                <button class="flex items-center bg-white cursor-pointer lg:justify-end uploadBtn">
                      <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
                      <span phx-click="open_albums_popup">Add Album</span>
                 </button>
+                <% end %>
               </div>
             </div>
+            <%= if length(@gallery.albums) > 0 do %> 
+              <div class="flex mt-2">
+                <h1 class="flex justify-start font-sans cursor-pointer text-blue-planning-300" phx-click="select_photos">Photos</h1>
+                <h1 class="flex justify-start ml-2 mr-2 font-sans cursor-pointer text-blue-planning-300">></h1>
+                <h1 class="flex justify-start font-bold text-blue-planning-300"> Unsorted photos</h1>
+              </div>
+            <% end %>
 
           <div class="flex hidden items-center mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
             <div class="flex justify-center pb-1 pl-5">
@@ -56,6 +65,7 @@
             </div>
           </div>
 
+        <%= if length(@photos) > 0 do %>
         <div class="grid pt-8 lg:grid-cols-2">
             <div class="flex flex-col justify-start md:flex-row gap-x-5">
                 <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
@@ -135,14 +145,15 @@
                   </label>
               </div>
         </div>
+        <% end %>
     </div>
 
-    <div class= "pb-10 pl-8 pr-8">
-      <%= if @gallery.total_count <= 0 do %>
-      <div class="justify-between text-2xl font-bold text-center text-blue-planning-300 mt-14 mb-14">
+    <div class= "pt-24 pb-10 pl-8 pr-8">
+      <%= if length(@photos) == 0 do %>
+      <div class="relative justify-between mt-20 mb-12 text-2xl font-bold text-center text-blue-planning-300">
           Oops, there's nothing here - upload photos now to get started!
       </div>
-      <div class="overflow-hidden dragDrop__wrapper h-96">
+      <div class="relative overflow-hidden dragDrop__wrapper h-96">
           <form id="dragDrop-form-1" phx-submit="save" phx-change="start">
               <div class="dragDrop"
                   id="dropzone-1"
@@ -152,13 +163,15 @@
               <label class="flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer">
                   <div class="max-w-xs mx-auto">
                       <img src="/images/drag-drop-img.png" width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
-                      <div class="dragDrop__content">
+                      <div class="flex flex-col items-center justify-center dragDrop__content">
                           <p class="text-center">
-                              <span class="font-bold">Drop images or </span>
-                              <span class="font-bold cursor-pointer primary">Browse</span>
+                              <span class="font-bold">Drag your images or </span>
+                              <span class="font-bold cursor-pointer primary">browse</span>
                               <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                           </p>
                           <p class="text-center gray">Supports JPEG or PNG</p>
+                          <p class="py-2 font-bold"> or </p>
+                          <p class="font-bold cursor-pointer primary">Upload folders</p>
                       </div>
                   </div>
               </label>
@@ -166,7 +179,7 @@
           </form>
       </div>
       <% else %>
-      <div class="px-0 pb-32 mx-0 gallery__container" id="gallery">
+      <div class="px-0 pt-40 pb-32 mx-0 gallery__container" id="gallery">
         <%= if @live_action in [:edit] do %>
           <%= live_modal @socket, PicselloWeb.GalleryLive.FormComponent,
             id: @gallery.id,
@@ -214,5 +227,7 @@
 
       </div>
     </div>
- <%= # live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+  <div class="fixed bottom-0 left-0 right-0 z-30">
+  <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+  </div>
 </div>

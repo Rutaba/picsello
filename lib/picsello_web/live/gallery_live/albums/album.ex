@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.Album do
   alias Phoenix.PubSub
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
+  alias Picsello.Galleries.Album
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
@@ -128,6 +129,24 @@ defmodule PicselloWeb.GalleryLive.Album do
     |> assign(:gallery, gallery)
     |> noreply()
   end
+
+  @impl true
+  def handle_event(
+        "select_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+      socket
+      |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+      |> noreply()
+  end
+
+
+
 
   @impl true
   def handle_event("close", _, socket) do
@@ -437,7 +456,7 @@ defmodule PicselloWeb.GalleryLive.Album do
   @impl true
   def handle_event(
         "open_set_thumbnail_popup",
-        _,
+        %{"id" => photo_id} = _params,
         %{
           assigns: %{
             album: album,
@@ -449,13 +468,16 @@ defmodule PicselloWeb.GalleryLive.Album do
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
       close_class: "delete_btn",
-      confirm_event: "delete_gallery",
+      confirm_event: "set_album_thumbnail",
       confirm_label: "Yes, set as thumbnail",
       icon: "warning-orange",
       title: "Set as thumbnail?",
       subtitle: "Are you sure you wish to set this photo as a thumbnail for #{album.name} ?",
       album_name: album.name,
-      gallery_count: gallery.total_count
+      gallery_count: gallery.total_count,
+      payload: %{
+        photo_id: photo_id
+      }
     })
     |> noreply()
   end
@@ -782,6 +804,31 @@ defmodule PicselloWeb.GalleryLive.Album do
     |> close_modal()
     |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery.id, album.id))
     |> put_flash(:success, "Photo removed successfully")
+    |> noreply()
+  end
+
+  def handle_info(
+    {:confirm_event, "set_album_thumbnail", %{photo_id: photo_id}},
+        %{
+          assigns: %{
+            album: album
+          }
+        } = socket
+      ) do
+
+    photo = Galleries.get_photo(photo_id)
+    album
+    |> Album.update_changeset(%{thumbnail_url:  photo.preview_url})
+    |> Repo.update()
+
+    socket
+    |> push_redirect(
+      to:
+        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery.id,
+          upload_toast: nil,
+          upload_toast_text: "Album thumbnail successfully updated"
+        )
+    )
     |> noreply()
   end
 

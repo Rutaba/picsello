@@ -46,8 +46,7 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
     |> Repo.insert!()
 
     socket
-    |> put_flash(:success, "New Album Added")
-    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id))
+    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id, upload_toast: false, upload_toast_text: "New Album Added"))
     |> noreply()
   end
 

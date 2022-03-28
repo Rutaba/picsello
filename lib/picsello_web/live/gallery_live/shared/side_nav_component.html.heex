@@ -77,36 +77,29 @@
                 </div>
                 <% end %>
             </div>
+            <%= if length(@gallery.albums) >= 1 do %>
+                <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300">
+                  <%= if @album_dropdown_show do %>
+                    <.icon name="up" class="w-4 h-4 mr-2 stroke-current stroke-2 close-icon" />
+                  <%= else %>
+                    <.icon name="down" class="w-4 h-4 mr-2 stroke-current stroke-2 open-icon" />
+                  <%= end %>
+                </div>
+            <% end %>
             </div>
             <%= if @arrow_show == "photos" do %>
               <span class="arrow show">
                 <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
-            <%= end %>
-        </div>
-        <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
-            <div id="albums" phx-hook="ToggleAlbumDropdown">
-              <div phx-click="select_albums" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded cursor-pointer text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
-                  <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                    <.icon name="albums" class="w-4 h-4" />
-                  </div>
-                  <div class="ml-3">
-                    <%= if @arrow_show == "albums" do %>
-                      <span class= "text-blue-planning-300">Albums</span>
-                    <% else %>
-                      <span>Albums</span>
-                    <% end %>
-                  </div>
-                  <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
-                  <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
-              </div>
-
-              <%= if @arrow_show == "albums" do %>
-                <span class="arrow show">
-                  <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
-                </span>
-              <%= end %>
-              <%= if @album_dropdown_show do %>
+            <% end %>
+            <%= if @album_dropdown_show do %>
+                    <%= if length(@gallery.albums) > 0 do %> 
+                      <ul class="bg-gray-100 border-2 border-gray-200 rounded-b-lg">
+                        <li phx-click="go_to_unsorted_photos" phx-target={@myself} class="relative">
+                            <button href="#!" class="flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs text-gray-700 transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">Unsorted photos</button>
+                        </li>
+                      </ul>
+                    <%= end %>
                 <%= for album <- @gallery.albums do %>
                   <ul class="bg-gray-100 border-2 border-gray-200 rounded-b-lg">
                         <li phx-click="go_to_album_selected" phx-target={@myself} phx-value-album={album.id} class="relative">
@@ -115,7 +108,6 @@
                   </ul>
                 <%= end %>
               <%= end %>
-          </div>
         </div>
         <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
               <div phx-click="select_preview" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
