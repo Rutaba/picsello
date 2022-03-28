@@ -121,11 +121,9 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
         :category_id
       ])
       |> Repo.insert_or_update()
-      {:noreply, socket}
-      # {:noreply, socket |> push_redirect(to: Routes.gallery_show_path(socket, :show, gallery_id))}
-    else
-      {:noreply, socket}
+      send(self(), {:save, %{preview_photo_id: preview_photo_id, frame_id: frame_id}})
     end
+    {:noreply, socket}
   end
 
 

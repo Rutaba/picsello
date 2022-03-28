@@ -1,6 +1,6 @@
 <div class="flex flex-col h-screen">
   <div class="flex root">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos" %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: 0, arrow_show: "photos" %>
 
     <div class="w-full h-full bg-gray-100 pl-96 pt-20">
         <div class="relative pl-10 pb-10 items-center justify-between md:flex-row">

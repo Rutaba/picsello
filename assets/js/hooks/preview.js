@@ -14,18 +14,18 @@ const Preview = {
                 this.coords = corners0
                 this.target = 'canvas'.concat('-', canvasId)
                 this.ratio = ratio
-                this.show_content(canvasId)
+                const img = document.getElementById('img'.concat('-', canvasId));
+                !img || this.show_content(img, canvasId)
                 this.draw(frame_name, preview_name, corners0, canvasId, ratio);
             })
     },
 
-    show_content(canvasId) {
-        const img = document.getElementById('img'.concat('-', canvasId));
+    show_content(img, canvasId) {
         const product = document.getElementById('product'.concat('-', canvasId));
         if (img.classList.contains('hidden')) {
             product.classList.remove('preview_border')
             img.classList.remove('hidden')
-        }else{
+        }else {
             product.classList.add('preview_border')
             img.classList.add('hidden')
         }
