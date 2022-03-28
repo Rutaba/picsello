@@ -15,7 +15,7 @@ defmodule Picsello.Subscriptions do
   def sync_subscription_plans() do
     {:ok, %{data: prices}} = Payments.list_prices(%{active: true})
 
-    for price <- prices do
+    for price <- Enum.filter(prices, &(&1.type == "recurring")) do
       %{
         stripe_price_id: price.id,
         price: price.unit_amount,
