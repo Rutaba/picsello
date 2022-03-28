@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Profile do
   @moduledoc "photographers public profile"
   use PicselloWeb, live_view: [layout: "profile"]
-  alias Picsello.{Profiles, Packages}
+  alias Picsello.{Profiles, Packages, Subscriptions}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -435,9 +435,7 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   defp check_active_subscription(%{assigns: %{organization: organization}} = socket) do
-    if Picsello.Subscriptions.subscription_expired?(organization.user) do
-      raise Ecto.NoResultsError, queryable: Picsello.Organization
-    end
+    Subscriptions.ensure_active_subscription!(organization.user)
 
     socket
   end

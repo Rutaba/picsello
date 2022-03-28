@@ -250,7 +250,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <h1 class="text-3xl font-semibold">Your 3-month free trial has started!</h1>
           <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
 
-          <button class={"w-full mt-6 btn-primary"} type="button" phx-click="go-dashboard">
+          <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
             Go to my dashboard
           </button>
         </div>
@@ -367,7 +367,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
       _ ->
         socket
-        |> put_flash(:error, "Couldn't fetch your Stripe sessoin. Please try again")
+        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
         |> noreply()
     end
   end

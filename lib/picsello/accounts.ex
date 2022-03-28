@@ -231,7 +231,7 @@ defmodule Picsello.Accounts do
       where: user.id in subquery(query),
       join: org in assoc(user, :organization),
       left_join: subscription in assoc(user, :subscription),
-      select: %{user | organization: org, subscription: subscription}
+      preload: [organization: org, subscription: subscription]
     )
     |> Repo.one()
   end

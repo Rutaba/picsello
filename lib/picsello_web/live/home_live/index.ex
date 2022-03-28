@@ -21,6 +21,7 @@ defmodule PicselloWeb.HomeLive.Index do
     socket
     |> assign_stripe_status()
     |> assign(:page_title, "Work Hub")
+    |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
     |> assign_attention_items()
     |> subscribe_inbound_messages()
@@ -341,7 +342,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
       _ ->
         socket
-        |> put_flash(:error, "Couldn't fetch your Stripe sessoin. Please try again")
+        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
         |> noreply()
     end
   end

@@ -115,6 +115,12 @@ defmodule Picsello.Subscriptions do
     end
   end
 
+  def ensure_active_subscription!(%User{} = user) do
+    if Picsello.Subscriptions.subscription_expired?(user) do
+      raise Ecto.NoResultsError, queryable: Picsello.Organization
+    end
+  end
+
   defp user_customer_id(%User{stripe_customer_id: nil} = user) do
     params = %{name: user.name, email: user.email}
 

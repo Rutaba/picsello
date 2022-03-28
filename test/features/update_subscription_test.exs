@@ -63,7 +63,8 @@ defmodule Picsello.SubscriptionChangesTest do
 
     test_pid = self()
 
-    Mox.stub(Picsello.MockPayments, :checkout_link, fn params, opts ->
+    Picsello.MockPayments
+    |> Mox.stub(:checkout_link, fn params, opts ->
       send(
         test_pid,
         {:checkout_linked, opts |> Enum.into(params)}
@@ -71,12 +72,10 @@ defmodule Picsello.SubscriptionChangesTest do
 
       {:ok, "https://example.com/stripe-checkout"}
     end)
-
-    Mox.stub(Picsello.MockPayments, :retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+    |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
       {:ok, %Stripe.Session{subscription: "sub_123"}}
     end)
-
-    Mox.stub(Picsello.MockPayments, :retrieve_subscription, fn "sub_123", _opts ->
+    |> Mox.stub(:retrieve_subscription, fn "sub_123", _opts ->
       {:ok,
        %Stripe.Subscription{
          id: "s1",
