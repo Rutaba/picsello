@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.Photos.PreviewComponent do
   use PicselloWeb, :live_component
 
   @default_assigns %{
-    edit_product_link: nil,
     click_params: nil,
     has_product_info: true
   }
