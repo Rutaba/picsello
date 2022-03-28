@@ -20,7 +20,7 @@
                 <div id={"preview-#{@category_id}"} class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
                     <canvas id={"canvas-#{@category_id}-edit"} width="300" height="255" class="edit"></canvas>
                 </div>
-                
+
                        <div class="description ml-11 row-span-2 col-span-2">
                     <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
                     <.form let={f} for={@changeset} action="#" phx-target={@myself} phx-submit="save">
@@ -33,7 +33,7 @@
         </div>
 
         <div>
-        <div id="gallery_product_form" class="p-11 pt-80">
+        <div id="gallery_product_form" class="pb-11 px-11 pt-56 mt-52">
             <div
                 phx-hook="MasonryGrid"
                 phx-update="append"
@@ -44,8 +44,7 @@
                 data-favorites-count={ @favorites_count }
                 data-is-sortable="false"
                 data-has-more-photos={ "#{@has_more_photos}" }
-                data-photo-width="200"
-            >
+                data-photo-width="200">
             <%= for photo <- @photos do %>
                 <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
                     id: photo.id,
@@ -62,9 +61,6 @@
             </div>
         </div>
         </div>
-
-
-
     </div>
 </div>
 

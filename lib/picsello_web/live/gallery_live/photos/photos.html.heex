@@ -2,45 +2,52 @@
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos" %>
 
-    <div class="w-full h-full bg-gray-100 pl-96 pt-36">
-    <div id="page-scroll" phx-hook="PageScroll" class= "fixed right-0 left-96 bg-gray-100 top-0 z-30 pt-6 pl-10 pr-10">
-        <div class="flex flex-col items-center justify-between md:flex-row">
-          <div class="flex items-center text-4xl font-bold lg:justify-start">
-              Photos
-          </div>
-          <div class="flex flex-col items-center font-sans ml-8 text-lg text-base-250 w-80 lg:justify-start">
-          <%= if total(@selected_photos) > 0 do %>
-          <%= total(@selected_photos) %> photo<%= if total(@selected_photos) > 1 do %>s<% end %> selected
-          <%= end %>
-          </div>
-            <form id="dragDrop-form" phx-submit="save" phx-change="start">
-                <div class="dragDrop"
-                    id="dropzone"
-                    phx-hook="DragDrop"
-                    phx-drop-target={@uploads.photo.ref}
-                >
-                <label class="flex flex-col items-center justify-center float-right cursor-pointer">
-                    <div class="max-w-xs mx-auto">
-                        <div class="dragDrop__content">
-                            <p class="text-center">
-                            <div class="flex items-center uploadBtn bg-white">
-                            <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
-                            Add photos
+    <div class="w-full h-full bg-gray-100 pl-96 pt-44">
+
+    <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-14 pl-10 pr-10 bg-gray-100 left-96">
+            <div class="flex flex-col md:flex-row">
+              <div class="flex items-end text-4xl font-bold lg:justify-start">
+                  <span>Photos</span>
+              </div>
+              <div class="flex items-end ml-8 font-sans text-lg text-base-250 w-80 lg:justify-start">
+              <%= if total(@selected_photos) > 0 do %>
+              <%= total(@selected_photos) %> photo<%= if total(@selected_photos) > 1 do %>s<% end %> selected
+              <% end %>
+              </div>
+              <div class="flex ml-auto">
+                <form id="dragDrop-form" phx-submit="save" phx-change="start">
+                    <div class="dragDrop"
+                        id="dropzone"
+                        phx-hook="DragDrop"
+                        phx-drop-target={@uploads.photo.ref}
+                    >
+                    <label class="flex flex-col items-center justify-center float-right cursor-pointer">
+                        <div class="max-w-xs mx-auto">
+                            <div class="dragDrop__content">
+                                <p class="text-center">
+                                   <div class="flex items-center lg:justify-end bg-white mr-4 uploadBtn">
+                                    <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+                                    Add photos
+                                    </div>
+                                  <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                                </p>
                             </div>
-                              <%= live_file_input @uploads.photo, class: "dragDropInput" %>
-                            </p>
                         </div>
+                    </label>
                     </div>
-                </label>
-                </div>
-            </form>
-          </div>
+                </form>
+                <button class="flex items-center bg-white lg:justify-end uploadBtn cursor-pointer">
+                     <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+                     <span phx-click="open_albums_popup">Add Album</span>
+                </button>
+              </div>
+            </div>
 
           <div class="flex hidden items-center mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
             <div class="flex justify-center pb-1 pl-5">
               <svg class="w-4 h-4 stroke-2" style="">
               <use href="/images/icons.svg#warning-orange"></use>
-            </svg>
+              </svg>
             </div>
             <div class="flex-grow font-sans p-4">
               2 photos failed to upload.
@@ -48,6 +55,7 @@
               to resolve errors.
             </div>
           </div>
+
         <div class="grid pt-8 lg:grid-cols-2">
             <div class="flex flex-col justify-start md:flex-row gap-x-5">
                 <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
@@ -59,7 +67,7 @@
                         <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
                         <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
                     </div>
-                <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
+                    <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
                     <li class="flex items-center hover:bg-blue-planning-100">
                       <button id="all" class="album-select" phx-click="selected_all">All</button>
                       <%= if @select_mode == "selected_all" do %>
@@ -78,9 +86,9 @@
                       <.icon id="selected_none" name="tick" class="w-6 h-5 mr-3" />
                       <% end %>
                     </li>
-                </ul>
-              </div>
-            </div>
+                    </ul>
+                  </div>
+                </div>
                 <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
                   <div id="actions" class="relative" phx-hook="ToggleContent">
                     <div class="flex items-center w-64 dropdown text-ellipsis">
@@ -202,6 +210,8 @@
       </div>
       <% end %>
     </div>
+
+
       </div>
     </div>
  <%= # live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>

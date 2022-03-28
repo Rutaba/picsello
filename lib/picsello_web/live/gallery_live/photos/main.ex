@@ -48,6 +48,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Main do
 
   @impl true
   def handle_event("edit_product", %{"category_id" => gallery_product_id}, %{assigns: %{gallery_id: gallery_id}} = socket) do
+
     socket
     |> open_modal(
           PicselloWeb.GalleryLive.Photos.EditProduct,

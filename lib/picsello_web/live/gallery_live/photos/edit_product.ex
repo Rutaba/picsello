@@ -77,7 +77,6 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
       ) do
     frame = Map.get(socket.assigns, :frame)
     coords = Map.get(socket.assigns, :coords)
-
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
