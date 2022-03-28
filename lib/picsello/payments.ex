@@ -84,9 +84,6 @@ defmodule Picsello.Payments do
   @callback create_account_link(create_account_link(), Stripe.options()) ::
               {:ok, Stripe.AccountLink.t()} | {:error, Stripe.Error.t()}
 
-  @callback login_link(%User{}, keyword(binary())) :: {:ok, binary()}
-  @callback login_link(%Organization{}, keyword(binary())) :: {:ok, binary()}
-
   def checkout_link(%BookingProposal{} = proposal, line_items, opts) do
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)

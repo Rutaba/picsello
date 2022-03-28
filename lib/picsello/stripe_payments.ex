@@ -1,27 +1,9 @@
 defmodule Picsello.StripePayments do
   @moduledoc false
 
-  alias Picsello.{Repo, Payments, Organization, Accounts.User}
+  alias Picsello.Payments
 
   @behaviour Payments
-
-  @impl Payments
-  def login_link(%User{} = user, opts) do
-    %{organization: organization} = user |> Repo.preload(:organization)
-    login_link(organization, opts)
-  end
-
-  def login_link(%Organization{stripe_account_id: account_id}, opts) do
-    redirect_url = opts |> Keyword.get(:redirect_url)
-
-    case Stripe.LoginLink.create(
-           account_id,
-           %{redirect_url: redirect_url}
-         ) do
-      {:ok, %{url: url}} -> {:ok, url}
-      error -> error
-    end
-  end
 
   @impl Payments
   def checkout_link(params, opts) do
