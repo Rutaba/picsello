@@ -5,11 +5,12 @@
         width: #{if @photo_width, do: @photo_width, else: "#{300}px"};
         height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{200 / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "450px"};
         display: flex;
+        margin: 5px;
         align-items: center;
         background-color: rgba(229, 231, 235, var(--tw-bg-opacity));
         "}
 >
-    <div id={"item-#{@id}"} class="toggle-item item-content preview relative cursor-pointer">
+    <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
         <div
             id={"photo-#{@id}"}
             class="galleryItem">
@@ -43,52 +44,52 @@
                         phx-click={js_like_click(@id, @myself)}
                     >
                         <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
-                            <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
+                            <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
                         </div>
 
                         <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
-                            <.icon  name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
+                            <.icon  name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40" />
                         </div>
                     </button>
                 <% else %>
                     <button class="likeBtn">
-                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="w-7 h-7 text-gray-200"/>
+                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
                     </button>
                 <% end %>
 
                 <%= if @is_removable do %>
                     <button
-                        class="removeBtn absolute"
+                        class="absolute removeBtn"
                         phx-click="delete_photo_popup"
                         phx-value-id={@id}
                     >
-                        <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
+                        <.icon name="remove-icon" class="h-6 text-gray-200 w-7" />
                     </button>
                 <% end %>
                 <%= if @is_viewable do %>
                     <button
-                        class="viewBtn absolute"
+                        class="absolute viewBtn"
                         phx-click="view"
                         phx-value-preview_photo_id={@photo.id}
                         phx-value-id={@id}
                     >
-                    <.icon name="eye" class="w-7 h-6 text-gray-200" />
+                    <.icon name="eye" class="h-6 text-gray-200 w-7" />
                    </button>
                    <% end %>
                    <%= if @is_meatball do %>
                       <div id={"meatball-photo-#{@id}"} phx-hook="ToggleContent">
-                          <button class="meatballs absolute">
-                          <.icon name="meatballs" class="w-7 h-7 text-gray-200" />
+                          <button class="absolute meatballs">
+                          <.icon name="meatballs" class="text-gray-200 w-7 h-7" />
                           </button>
-                           <ul class="toggle-content meatballsdropdown font-sans absolute rounded-md w-36 hidden bg-white">
+                           <ul class="absolute hidden font-sans bg-white rounded-md toggle-content meatballsdropdown w-36">
                                <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <button class="flex items-center font-extrabold w-36 px-2 py-2 overflow-hidden text-xs text-gray-700 text-ellipsis whitespace-nowrap rounded-md transition duration-300 ease-in-out" phx-click="set_product_preview" phx-value-preview_photo_id={@id}>Set as product preview</button>
+                                 <button class="flex items-center px-2 py-2 overflow-hidden text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-36 text-ellipsis whitespace-nowrap" phx-click="set_product_preview" phx-value-preview_photo_id={@id}>Set as product preview</button>
                                </li>
                            </ul>
                       </div>
                     <% end %>
             <% end %>
-            <div class="bg-blue-planning-300 flex justify-center items-center stroke-1 w-5 h-5 rounded absolute right-4 top-4 z-10 hidden checker">
+            <div class="absolute z-10 flex items-center justify-center hidden w-5 h-5 rounded stroke-1 bg-blue-planning-300 right-4 top-4 checker">
                 <.icon name="checkmark" class="w-4 h-3 m-auto absolute left-0.5 bottom-1" />
             </div>
         </div>

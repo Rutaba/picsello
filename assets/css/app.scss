@@ -294,7 +294,16 @@ canvas {
   height: 1.5rem;
   width: 1.5rem;
 }
-
+.albumHeight
+{
+  width: 404px;
+  height: 278px;
+}
+.actionHeight
+{
+  width: 404px;
+  height: 38px;
+}
 .select_exp {
   @apply border-blue-planning-300 font-sans font-medium text-base-300;
   border-radius: 0.5rem !important;

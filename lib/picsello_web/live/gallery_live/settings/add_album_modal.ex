@@ -62,13 +62,13 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
     ~H"""
     <div class="flex flex-col modal">
       <div class="flex items-start justify-between flex-shrink-0">
-        <h1 class="mb-4 text-3xl font-bold" style="font-family: sans-serif">Add Album</h1>
+        <h1 class="mb-4 text-3xl font-bold">Add Album</h1>
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
         <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
       <.form for={@changeset} let={f} phx-submit="add-album-save" phx-change="validate" phx-target={@myself}>
-        <%= labeled_input f, :name, label: "Album Name", placeholder: "Enter album name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", label_class: "font-bold"%>
+        <%= labeled_input f, :name, label: "Album Name" , placeholder: "Enter album name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", class: "font-sans" , label_class: "font-bold", style: "border-radius: 0.5rem" %>
         <%= hidden_input f, :gallery_id %>
 
         <div class="flex flex-col mt-4 font-bold">
