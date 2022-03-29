@@ -5,7 +5,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Cart, GalleryProducts, Galleries}
-  alias Cart.OrderNumber
   import Cart, only: [preview_url: 1]
 
   def mount(_, _, socket) do

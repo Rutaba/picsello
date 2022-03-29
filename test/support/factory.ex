@@ -393,6 +393,7 @@ defmodule Picsello.Factory do
       gallery: fn -> build(:gallery) end,
       name: "name.jpg",
       position: 1.0,
+      aspect_ratio: 1.0,
       original_url: Photo.original_path("name", 333, "4444")
     }
     |> merge_attributes(attrs)

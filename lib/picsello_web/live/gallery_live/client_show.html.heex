@@ -83,17 +83,10 @@
             data-photo-width="300"
             >
             <%= for photo <- @photos do %>
-            <%= live_component PicselloWeb.GalleryLive.PhotoComponent,
-                id: photo.id,
-                photo: photo,
-                photo_width: 300,
-                is_likable: true,
-                is_removable: false,
-                is_removed: false,
-                is_gallery_category_page: false %>
+              <%= live_component PicselloWeb.GalleryLive.ClientShow.PhotoComponent, id: photo.id, photo: photo, photo_width: 300 %>
             <% end %>
         </div>
-        <div style="display: none">
+        <div class="hidden">
           <div
             id="photo-update-listener"
             phx-hook="PhotoUpdate"

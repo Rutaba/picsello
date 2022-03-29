@@ -332,7 +332,7 @@ defmodule Picsello.CartTest do
 
       Picsello.MockPayments
       |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
-        {:ok, %{amount_capturable: Order.total(order).amount + 1}}
+        {:ok, %{amount_capturable: Order.total_cost(order).amount + 1}}
       end)
       |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
 

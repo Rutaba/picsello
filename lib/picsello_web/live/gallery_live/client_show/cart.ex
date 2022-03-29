@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   alias WHCC.Shipping
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   import PicselloWeb.GalleryLive.Shared
-  import Cart, only: [preview_url: 1]
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -384,11 +383,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
     do: Map.get(selections, "quantity", 1)
 
-  defp only_digitals?(order),
-    do: match?(%{products: [], digitals: [_ | _]}, order)
-
+  defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
+  defp preview_url(item), do: Cart.preview_url(item, :watermarked)
 
   defdelegate cart_count(order), to: Cart, as: :item_count
   defdelegate product_name(product), to: Cart

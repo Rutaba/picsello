@@ -1,6 +1,5 @@
 defmodule PicselloWeb.GalleryDownloadsControllerTest do
   use PicselloWeb.ConnCase, async: true
-  alias Picsello.Cart
 
   describe "Get /galleries/:gallery_id/order/:order_id/zip" do
     def get_zip(conn, gallery, order) do

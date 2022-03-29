@@ -156,7 +156,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   @impl true
   def handle_event(
         "click",
-        %{"preview_photo_id" => photo_id},
+        %{"photo_id" => photo_id},
         %{
           assigns: %{
             gallery: gallery,

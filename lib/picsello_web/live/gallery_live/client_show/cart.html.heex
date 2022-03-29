@@ -86,13 +86,6 @@
 
                   <%= text_input f, :name, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                 </div>
-
-
-                <%= if Enum.any?(@order.digitals) do %>
-                  <div class="col-span-1 md:col-span-2 font-medium">
-                    We’ll email you a link for your digital products! This link will never expire.
-                  </div>
-                <% end %>
               </div>
 
               <%= unless only_digitals?(@order) do %>

@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.PhotoComponent do
+defmodule PicselloWeb.GalleryLive.ClientShow.PhotoComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
@@ -34,17 +34,10 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     |> JS.toggle(to: "#photo-#{id}-to-like")
   end
 
-  defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
-    if is_gallery_category_page do
-      js
-      |> JS.dispatch("click", to: "#photo-#{id} > img")
-      |> JS.show(to: "#photo-#{id} > .checker")
-      |> JS.add_class(
-        "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
-        to: "#item-#{id}"
-      )
-    else
-      js |> JS.dispatch("click", to: "#photo-#{id} > img")
-    end
+  defp wrapper_style(width, photo) do
+    """
+    width: #{width}px;
+    height: #{width / photo.aspect_ratio}px;
+    """
   end
 end
