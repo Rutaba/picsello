@@ -42,17 +42,6 @@ defmodule Picsello.Payments do
           optional(:tax_rates) => [String.t()]
         }
 
-  #  https://hexdocs.pm/stripity_stripe/Stripe.Session.html#t:create_params/0
-  @type create_session() :: %{
-          :cancel_url => String.t(),
-          :line_items => [line_item()],
-          :success_url => String.t(),
-          optional(:client_reference_id) => String.t(),
-          optional(:customer) => String.t(),
-          optional(:customer_email) => String.t(),
-          optional(:metadata) => Stripe.Types.metadata()
-        }
-
   @type create_customer() :: %{
           optional(:email) => String.t(),
           optional(:name) => String.t()
@@ -66,11 +55,21 @@ defmodule Picsello.Payments do
           optional(:collect) => String.t()
         }
 
+  @type create_account() :: %{
+          :type => String.t(),
+          optional(:country) => String.t(),
+          optional(:account_token) => String.t(),
+          optional(:business_type) => String.t(),
+          optional(:email) => String.t(),
+          optional(:external_account) => String.t(),
+          optional(:metadata) => Stripe.Types.metadata()
+        }
+
   @callback create_customer(create_customer(), Stripe.options()) ::
               {:ok, Stripe.Customer.t()} | {:error, Stripe.Error.t()}
 
-  @callback checkout_link(create_session(), Stripe.options()) ::
-              {:ok, String.t()}
+  @callback create_session(Stripe.Session.create_params(), Stripe.options()) ::
+              {:ok, Stripe.Session.t()} | {:error, any}
 
   @callback construct_event(String.t(), String.t(), String.t()) ::
               {:ok, Stripe.Event.t()} | {:error, any}
@@ -78,14 +77,14 @@ defmodule Picsello.Payments do
   @callback retrieve_session(String.t(), keyword(binary())) ::
               {:ok, Stripe.Session.t()} | {:error, Stripe.Error.t()}
 
-  @callback retrieve_account(binary()) ::
+  @callback retrieve_account(binary(), Stripe.options()) ::
+              {:ok, Stripe.Account.t()} | {:error, Stripe.Error.t()}
+
+  @callback create_account(create_account(), Stripe.options()) ::
               {:ok, Stripe.Account.t()} | {:error, Stripe.Error.t()}
 
   @callback create_account_link(create_account_link(), Stripe.options()) ::
               {:ok, Stripe.AccountLink.t()} | {:error, Stripe.Error.t()}
-
-  @callback login_link(%User{}, keyword(binary())) :: {:ok, binary()}
-  @callback login_link(%Organization{}, keyword(binary())) :: {:ok, binary()}
 
   def checkout_link(%BookingProposal{} = proposal, line_items, opts) do
     cancel_url = opts |> Keyword.get(:cancel_url)
@@ -117,11 +116,24 @@ defmodule Picsello.Payments do
     end
   end
 
-  def checkout_link(params, opts), do: impl().checkout_link(params, opts)
+  def checkout_link(params, opts) do
+    params =
+      Enum.into(params, %{
+        payment_method_types: ["card"],
+        mode: "payment"
+      })
+
+    case impl().create_session(params, opts) do
+      {:ok, %{url: url}} -> {:ok, url}
+      error -> error
+    end
+  end
+
   def create_customer(params, opts), do: impl().create_customer(params, opts)
   def retrieve_session(id, opts), do: impl().retrieve_session(id, opts)
-  def retrieve_account(id), do: impl().retrieve_account(id)
+  def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
   def create_account_link(params), do: impl().create_account_link(params, [])
+  def create_account(params, opts \\ []), do: impl().create_account(params, opts)
 
   def construct_event(body, signature, secret),
     do: impl().construct_event(body, signature, secret)
@@ -209,8 +221,7 @@ defmodule Picsello.Payments do
   end
 
   def link(%Organization{stripe_account_id: nil} = organization, opts) do
-    with {:ok, %{id: account_id}} <-
-           create_account_link(%{type: "standard"}),
+    with {:ok, %{id: account_id}} <- create_account(%{type: "standard"}),
          {:ok, organization} <-
            organization
            |> Organization.assign_stripe_account_changeset(account_id)

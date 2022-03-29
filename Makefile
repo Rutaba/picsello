@@ -24,11 +24,13 @@ console: ## Opens the App console.
 outdated: ## Shows outdated packages.
 	mix hex.outdated
 
-assets/node_modules: assets/package-lock.json
+assets/node_modules: assets/package.json assets/package-lock.json
 	npm install --prefix=assets
+	touch $@
 
-deps: mix.lock
+deps: mix.exs mix.lock
 	mix deps.get
+	touch $@
 
 setup: assets/node_modules
 setup: deps
