@@ -1,12 +1,6 @@
 <div>
   <div class="gallery__container">
-    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent,
-      id: @client_menu_id,
-      live_action: @live_action,
-      organization: @gallery.job.client.organization,
-      cart_count: @cart_count,
-      gallery: @gallery,
-      cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
+    <%= live_component ClientMenuComponent, id: @client_menu_id, live_action: @live_action, gallery: @gallery, cart_count: @cart_count, cart: show_cart?(@step) %>
   </div>
 
   <hr>

@@ -501,13 +501,6 @@
     @apply text-base-250
 }
 
-.cartItemsAmount {
-    font-size: 10px;
-    line-height: 15px;
-    width: 16px;
-    height: 16px;
-}
-
 .deliveryOptions__wrapper input[name="ship_option"] {
     margin-top: 4px;
 }

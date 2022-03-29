@@ -387,6 +387,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp only_digitals?(order),
     do: match?(%{products: [], digitals: [_ | _]}, order)
 
+  defp show_cart?(:product_list), do: true
+  defp show_cart?(_), do: false
+
   defdelegate product_name(product), to: Cart
   defdelegate summary_counts(order), to: Cart
 end

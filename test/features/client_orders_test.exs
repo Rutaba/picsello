@@ -188,7 +188,7 @@ defmodule Picsello.ClientOrdersTest do
         |> click(button("Delete"))
       end)
       |> assert_path(gallery_path)
-      |> refute_has(link("cart"))
+      |> assert_has(css("*[title='cart']", text: "0"))
       |> click_first_photo()
       |> click(button("Add to cart"))
       |> click(link("cart"))
