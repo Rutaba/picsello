@@ -6,7 +6,7 @@
 
     <p class="text-2xl text-base-300 font-bold px-5 pt-10 pb-5 lg:hidden">Select an option below</p>
 
-    <div class="choose-product lg:h-full lg:overflow-y-scroll w-full flex flex-col lg:flex-row lg:justify-between px-5 lg:px-0 lg:pl-16 xl:pl-20">
+    <div class="select-none grid lg:flex lg:h-full lg:overflow-y-scroll w-full flex-row lg:justify-between px-5 lg:px-0 lg:pl-16 xl:pl-20">
       <div class="choose-product-item w-full h-96 lg:h-full lg:w-7/12 mb-5 lg:mb-0 relative">
         <div id="wrapper" class="wrapper h-full flex-row justify-center flex">
           <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="choose-product__btn left-0 top-1/2 transform -translate-y-1/2  transform -translate-x-1/4 swiper-button-prev">
@@ -41,16 +41,21 @@
             </.option>
           <% end %>
 
-          <%= if @digital_in_cart do %>
-            <.option testid={"digital_download"} title="Digital Download">
-              <:button disabled>In cart</:button>
-            </.option>
-          <% else %>
-            <.option testid={"digital_download"} title="Digital Download" min_price={@download_each_price}>
-              <:button phx-target={@myself} phx-click="digital_add_to_cart">
-                Add to cart
-              </:button>
-            </.option>
+          <%= case @digital_status do %>
+            <% :in_cart -> %>
+              <.option testid={"digital_download"} title="Digital Download">
+                <:button disabled>In cart</:button>
+              </.option>
+            <% :purchased -> %>
+              <.option testid={"digital_download"} title="Digital Download">
+                <:button disabled>Purchased</:button>
+              </.option>
+            <% _ -> %>
+              <.option testid={"digital_download"} title="Digital Download" min_price={@download_each_price}>
+                <:button phx-target={@myself} phx-click="digital_add_to_cart">
+                  Add to cart
+                </:button>
+              </.option>
           <% end %>
         </div>
       </div>

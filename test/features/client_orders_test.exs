@@ -219,7 +219,11 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(css("h3", text: "Thank you for your order!"))
       |> assert_has(css("img[src='/fake.jpg']"))
       |> assert_text("Digital download")
-      |> refute_has(link("cart"))
+      |> assert_has(css("*[title='cart']", text: "0"))
+      |> click(link("Home"))
+      |> click(link("View Gallery"))
+      |> click_first_photo()
+      |> assert_has(testid("product_option_digital_download", text: "Purchased"))
     end
   end
 

@@ -629,20 +629,12 @@
 }
 
 @media screen and (max-width: 1024px) {
-    .choose-product {
-        @apply grid
-    }
-
     .choose-product-item {
         @apply w-full
     }
 }
 
 @media screen and (min-width: 1024px) {
-    .choose-product {
-        @apply flex
-    }
-
     .customWatermarkPopup {
         max-height: 950px;
     }

@@ -2,19 +2,19 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared, only: [button: 1]
-  alias Picsello.{Galleries, GalleryProducts}
+  alias Picsello.{Cart, Galleries, GalleryProducts}
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
     photo = Galleries.get_photo(photo_id)
 
     socket
-    |> assign(Map.drop(assigns, [:gallery, :photo_id]))
+    |> assign(assigns)
     |> assign(
       download_each_price: Galleries.download_each_price(gallery),
-      gallery_id: gallery.id,
       photo: photo,
-      products: GalleryProducts.get_gallery_products(gallery.id)
+      products: GalleryProducts.get_gallery_products(gallery.id),
+      digital_status: Cart.digital_status(gallery, photo)
     )
     |> ok()
   end
@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     send(
       socket.root_pid,
       {:add_digital_to_cart,
-       %Picsello.Cart.Order.Digital{
+       %Cart.Order.Digital{
          photo_id: photo.id,
          preview_url: photo.preview_url,
          price: price
@@ -89,14 +89,14 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     """
   end
 
-  defp move_carousel(%{assigns: %{gallery_id: gallery_id, photo_ids: photo_ids}} = socket, fun) do
+  defp move_carousel(%{assigns: %{gallery: gallery, photo_ids: photo_ids}} = socket, fun) do
     photo_ids = fun.(photo_ids)
-    photo_id = CLL.value(photo_ids)
+    photo = photo_ids |> CLL.value() |> Galleries.get_photo()
 
     assign(socket,
-      photo: Galleries.get_photo(photo_id),
+      photo: photo,
       photo_ids: photo_ids,
-      digital_in_cart: Picsello.Cart.contains_digital?(gallery_id, photo_id)
+      digital_status: Cart.digital_status(gallery, photo)
     )
   end
 

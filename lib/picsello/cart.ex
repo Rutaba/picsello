@@ -75,20 +75,43 @@ defmodule Picsello.Cart do
     end
   end
 
-  def contains_digital?(%Order{digitals: digitals}, photo_id) when is_integer(photo_id),
+  def digital_status(gallery, photo) do
+    cond do
+      digital_purchased?(gallery, photo) -> :purchased
+      contains_digital?(gallery, photo) -> :in_cart
+      true -> :available
+    end
+  end
+
+  defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}) when is_integer(photo_id),
     do:
       Enum.any?(
         digitals,
         &(Map.get(&1, :photo_id) == photo_id)
       )
 
-  def contains_digital?(nil, _), do: false
-
-  def contains_digital?(gallery_id, photo_id) do
+  defp contains_digital?(%{id: gallery_id}, photo) do
     case(get_unconfirmed_order(gallery_id)) do
-      {:ok, order} -> contains_digital?(order, photo_id)
+      {:ok, order} -> contains_digital?(order, photo)
       _ -> false
     end
+  end
+
+  defp contains_digital?(_, _), do: false
+
+  defp digital_purchased?(%{id: gallery_id}, photo) do
+    arg = Map.take(photo, [:id])
+
+    from(order in Order,
+      where:
+        order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and
+          fragment(
+            ~s|jsonb_path_exists(?, '$[*] \\? (@.photo_id == $id)', ?)|,
+            order.digitals,
+            ^arg
+          )
+    )
+    |> Repo.exists?()
   end
 
   @doc """
