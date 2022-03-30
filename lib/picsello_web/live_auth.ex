@@ -2,7 +2,7 @@ defmodule PicselloWeb.LiveAuth do
   @moduledoc false
   import Phoenix.LiveView
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.{Accounts, Accounts.User}
+  alias Picsello.{Accounts, Accounts.User, Subscriptions}
   alias Picsello.Galleries
 
   def on_mount(:default, _params, session, socket) do
@@ -50,28 +50,29 @@ defmodule PicselloWeb.LiveAuth do
   defp assign_current_user(socket, _session), do: socket
 
   defp authenticate_gallery(socket, %{"hash" => hash}) do
-    socket |> assign_new(:gallery, fn -> Galleries.get_gallery_by_hash!(hash) end)
+    socket
+    |> assign_new(:gallery, fn ->
+      Galleries.get_gallery_by_hash!(hash) |> Galleries.populate_organization_user()
+    end)
   end
 
-  defp authenticate_gallery_expiry(%{assigns: %{gallery: %{expired_at: nil}}} = socket),
-    do: socket
-
   defp authenticate_gallery_expiry(%{assigns: %{gallery: gallery}} = socket) do
-    case expired?(gallery.expired_at) do
-      true ->
-        socket
-        |> push_redirect(
-          to:
-            Routes.gallery_client_show_gallery_expire_path(
-              socket,
-              :show,
-              gallery.client_link_hash
-            )
-        )
-        |> halt()
+    subscription_expired =
+      gallery |> Galleries.gallery_photographer() |> Subscriptions.subscription_expired?()
 
-      _ ->
-        socket
+    if Galleries.expired?(gallery) || subscription_expired do
+      socket
+      |> push_redirect(
+        to:
+          Routes.gallery_client_show_gallery_expire_path(
+            socket,
+            :show,
+            gallery.client_link_hash
+          )
+      )
+      |> halt()
+    else
+      socket
     end
   end
 
@@ -123,7 +124,7 @@ defmodule PicselloWeb.LiveAuth do
         socket |> push_redirect(to: Routes.home_path(socket, :index)) |> halt()
 
       {_, true} ->
-        socket |> cont()
+        socket |> maybe_redirect_to_home()
 
       {^onboarding_view, false} ->
         socket |> cont()
@@ -133,14 +134,23 @@ defmodule PicselloWeb.LiveAuth do
     end
   end
 
-  defp authenticate_gallery_for_photographer(%{assigns: %{gallery: gallery}} = socket, session) do
-    gallery_user = gallery |> Galleries.populate_organization_user()
+  defp maybe_redirect_to_home(%{view: view, assigns: %{current_user: current_user}} = socket) do
+    views = [PicselloWeb.LiveModal, PicselloWeb.HomeLive.Index]
 
+    if !Enum.member?(views, view) && Subscriptions.subscription_expired?(current_user) do
+      socket |> push_redirect(to: Routes.home_path(socket, :index)) |> halt()
+    else
+      socket |> cont()
+    end
+  end
+
+  defp authenticate_gallery_for_photographer(%{assigns: %{gallery: gallery}} = socket, session) do
     socket
     |> assign_current_user(session)
     |> then(fn
       %{assigns: %{current_user: current_user}} = socket ->
-        socket |> assign(authenticated: validate_photographer(current_user, gallery_user))
+        socket
+        |> assign(authenticated: current_user.id == Galleries.gallery_photographer(gallery).id)
 
       socket ->
         socket
@@ -149,18 +159,6 @@ defmodule PicselloWeb.LiveAuth do
 
   defp authenticate_gallery_for_photographer(socket, _), do: socket
 
-  defp validate_photographer(%{id: current_user}, %{
-         job: %{client: %{organization: %{user: %{id: photographer}}}}
-       }) do
-    current_user == photographer
-  end
-
-  defp validate_photographer(_, _), do: false
-
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}
-
-  defp expired?(expires_at) do
-    DateTime.compare(DateTime.utc_now(), expires_at) in [:eq, :gt]
-  end
 end

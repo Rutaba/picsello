@@ -15,10 +15,19 @@ defmodule Picsello.StripePayments do
   defdelegate create_account(params, opts), to: Stripe.Account, as: :create
 
   @impl Payments
+  def create_billing_portal_session(params), do: Stripe.BillingPortal.Session.create(params)
+
+  @impl Payments
   defdelegate create_customer(params, opts), to: Stripe.Customer, as: :create
 
   @impl Payments
   defdelegate retrieve_session(id, opts), to: Stripe.Session, as: :retrieve
+
+  @impl Payments
+  defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
+
+  @impl Payments
+  defdelegate list_prices(params), to: Stripe.Price, as: :list
 
   @impl Payments
   defdelegate construct_event(body, stripe_signature, signing_secret), to: Stripe.Webhook

@@ -657,4 +657,14 @@ defmodule Picsello.Galleries do
 
   def products(%{id: gallery_id}),
     do: Picsello.GalleryProducts.get_gallery_products(gallery_id, :with_or_without_previews)
+
+  def expired?(%Gallery{expired_at: nil}), do: false
+
+  def expired?(%Gallery{expired_at: expired_at}),
+    do: DateTime.compare(DateTime.utc_now(), expired_at) in [:eq, :gt]
+
+  def gallery_photographer(%Gallery{} = gallery) do
+    %{job: %{client: %{organization: %{user: user}}}} = gallery |> populate_organization_user()
+    user
+  end
 end

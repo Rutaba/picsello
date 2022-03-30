@@ -1,7 +1,17 @@
 defmodule PicselloWeb.Live.User.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Accounts, Accounts.User, Organization, Repo}
+
+  alias Picsello.{
+    Accounts,
+    Accounts.User,
+    Organization,
+    Repo,
+    Subscription,
+    Subscriptions
+  }
+
+  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   require Logger
 
@@ -209,6 +219,17 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
+  def handle_event("open-billing", _params, socket) do
+    {:ok, url} =
+      Subscriptions.billing_portal_link(
+        socket.assigns.current_user,
+        Routes.user_settings_url(socket, :edit)
+      )
+
+    socket |> redirect(external: url) |> noreply()
+  end
+
+  @impl true
   def handle_event("sign_out", _params, socket) do
     socket
     |> assign(sign_out: true)
@@ -261,14 +282,19 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   def card(assigns) do
-    assigns = Enum.into(assigns, %{class: ""})
+    assigns = Enum.into(assigns, %{class: "", title_badge: nil})
 
     ~H"""
     <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
       <div class="w-4 border-r bg-blue-planning-300" />
 
-      <div class="flex flex-col w-full p-4">
-        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
+      <div class="flex flex-col justify-between w-full p-4">
+        <div class="flex items-start sm:items-center flex-col sm:flex-row">
+          <h1 class="mb-2 text-xl font-bold sm:text-2xl text-blue-planning-300 mr-4"><%= @title %></h1>
+          <%= if @title_badge do %>
+            <.badge color={:gray}><%= @title_badge %></.badge>
+          <% end %>
+        </div>
 
         <%= render_slot(@inner_block) %>
       </div>
@@ -308,5 +334,25 @@ defmodule PicselloWeb.Live.User.Settings do
     |> Enum.sort_by(&{&1.utc_offset, &1.time_zone})
     |> Enum.map(&{"(GMT#{&1.pretty_utc_offset}) #{&1.time_zone}", &1.time_zone})
     |> Enum.uniq()
+  end
+
+  def subscription_badge(%Subscription{} = subscription) do
+    cond do
+      subscription.cancel_at != nil ->
+        "#{ngettext("1 day", "%{count} days", days_distance(subscription.cancel_at))} left until your subscription ends"
+
+      subscription.status == "trialing" ->
+        "#{ngettext("1 day", "%{count} days", days_distance(subscription.current_period_end))} left in your trial"
+
+      true ->
+        nil
+    end
+  end
+
+  def days_distance(date) do
+    date
+    |> DateTime.diff(DateTime.utc_now(), :millisecond)
+    |> Kernel./(1000 * 60 * 60 * 24)
+    |> trunc()
   end
 end

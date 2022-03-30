@@ -83,8 +83,17 @@ defmodule Picsello.Payments do
   @callback create_account(create_account(), Stripe.options()) ::
               {:ok, Stripe.Account.t()} | {:error, Stripe.Error.t()}
 
+  @callback retrieve_subscription(String.t(), keyword(binary())) ::
+              {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
+
+  @callback list_prices(%{optional(:active) => boolean()}) ::
+              {:ok, Stripe.List.t(Stripe.Price.t())} | {:error, Stripe.Error.t()}
+
   @callback create_account_link(create_account_link(), Stripe.options()) ::
               {:ok, Stripe.AccountLink.t()} | {:error, Stripe.Error.t()}
+
+  @callback create_billing_portal_session(%{customer: String.t()}) ::
+              {:ok, Stripe.BillingPortal.Session.t()} | {:error, Stripe.Error.t()}
 
   def checkout_link(%BookingProposal{} = proposal, line_items, opts) do
     cancel_url = opts |> Keyword.get(:cancel_url)
@@ -132,8 +141,11 @@ defmodule Picsello.Payments do
   def create_customer(params, opts), do: impl().create_customer(params, opts)
   def retrieve_session(id, opts), do: impl().retrieve_session(id, opts)
   def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
+  def retrieve_subscription(id, opts), do: impl().retrieve_subscription(id, opts)
+  def list_prices(params), do: impl().list_prices(params)
   def create_account_link(params), do: impl().create_account_link(params, [])
   def create_account(params, opts \\ []), do: impl().create_account(params, opts)
+  def create_billing_portal_session(params), do: impl().create_billing_portal_session(params)
 
   def construct_event(body, signature, secret),
     do: impl().construct_event(body, signature, secret)

@@ -9,7 +9,8 @@ defmodule Picsello.UserOnboardsTest do
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
     insert(:package_base_price, base_price: 300)
-    [session: visit(session, "/")]
+    subscription_plan = insert(:subscription_plan)
+    [session: visit(session, "/"), subscription_plan: subscription_plan]
   end
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
@@ -25,10 +26,40 @@ defmodule Picsello.UserOnboardsTest do
     |> click(option("OK"))
   end
 
-  feature "user onboards", %{session: session, user: user} do
+  feature "user onboards", %{session: session, user: user, subscription_plan: subscription_plan} do
     user = Repo.preload(user, :organization)
+
     org_name_field = text_field("onboarding-step-2_organization_name")
     home_path = Routes.home_path(PicselloWeb.Endpoint, :index)
+
+    test_pid = self()
+
+    Picsello.MockPayments
+    |> Mox.stub(:create_session, fn params, opts ->
+      send(
+        test_pid,
+        {:checkout_linked, opts |> Enum.into(params)}
+      )
+
+      {:ok, "https://example.com/stripe-checkout"}
+    end)
+    |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+      {:ok, %Stripe.Session{subscription: "sub_123"}}
+    end)
+    |> Mox.stub(:create_customer, fn %{}, _opts ->
+      {:ok, %Stripe.Customer{id: "cus_123"}}
+    end)
+    |> Mox.stub(:retrieve_subscription, fn "sub_123", _opts ->
+      {:ok,
+       %Stripe.Subscription{
+         id: "s1",
+         status: "active",
+         current_period_start: DateTime.utc_now() |> DateTime.to_unix(),
+         current_period_end: DateTime.utc_now() |> DateTime.add(100) |> DateTime.to_unix(),
+         plan: %{id: subscription_plan.stripe_price_id},
+         customer: "cus_123"
+       }}
+    end)
 
     session
     |> assert_path(@onboarding_path)
@@ -70,7 +101,17 @@ defmodule Picsello.UserOnboardsTest do
     |> find(css("input:checked", count: 2, visible: false), fn inputs ->
       assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
     end)
-    |> click(css("button[type='submit']", text: "Finish"))
+    |> click(css("button[type='submit']", text: "Next"))
+    |> assert_text("Start your 3-month free trial")
+    |> click(button("Start Trial"))
+    |> assert_url_contains("stripe-checkout")
+
+    assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
+
+    session
+    |> visit(stripe_success_url)
+    |> assert_text("Your 3-month free trial has started!")
+    |> click(button("Go to my dashboard"))
     |> assert_path(home_path)
 
     user =

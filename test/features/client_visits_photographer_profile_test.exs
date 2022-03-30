@@ -79,6 +79,19 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_text("Not Found")
   end
 
+  feature "404 when subscription is expired", %{
+    session: session,
+    photographer: user,
+    profile_url: profile_url
+  } do
+    plan = insert(:subscription_plan)
+    insert(:subscription_event, user: user, subscription_plan: plan, status: "canceled")
+
+    session
+    |> visit(profile_url)
+    |> assert_text("Not Found")
+  end
+
   feature "selects job type if there is only one", %{
     photographer: photographer,
     session: session,

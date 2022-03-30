@@ -41,7 +41,8 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/stripe" do
-    post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
+    post "/connect-webhooks", PicselloWeb.StripeWebhooksController, :connect_webhooks
+    post "/app-webhooks", PicselloWeb.StripeWebhooksController, :app_webhooks
   end
 
   scope "/whcc" do
