@@ -27,7 +27,7 @@
             </div>
             <p class="mt-4 font-sans"><%= length(@gallery.albums) %> albums</p>
           </div>
-          <div class="grid grid-cols-2 sm:gap-6 md:gap-8 lg:gap-12 xl:gap-16">
+          <div class="grid grid-cols-2 sm:gap-2 md:gap-2">
              <div class="flex flex-col mb-2 mr-4">
                 <a class="mt-4 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/alum_placeholder.png')" phx-click="open_unsorted_photos">
                   <div class="flex flex-row items-end justify-start h-full">
@@ -35,7 +35,7 @@
                   </div>
                 </a>
 
-              <div class="font-bold cursor-pointer">
+              <div class="font-bold cursor-pointer actionBlock">
               <div id="actions" class="relative" phx-hook="ToggleAlbumDropdown">
                 <div class="flex flex-row items-center justify-between -mt-1 border-2 rounded-b-lg md:w-full actionHeight bg-base-100">
                     <div class="mx-3 font-sans font-normal">
@@ -48,7 +48,7 @@
                        <use href="/images/icons.svg#up"></use>
                       </svg>
                 </div>
-                <ul class="absolute z-30 hidden mt-2 bg-white rounded-md toggle-content">
+                <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md toggle-content">
                     <li phx-click="open_unsorted_photos" phx-value-album="22" class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Go to unsorted photos</button>
                     </li>
@@ -78,7 +78,7 @@
             <%= for album <- @gallery.albums do %>
             <div class="flex flex-col mb-2 mr-4">
               <%= if album.thumbnail_url do %>
-                <a class="mt-4 albumBlock" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="open_albums_popup">
+                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="open_albums_popup">
                   <div class="flex flex-row items-end justify-start h-full gap-2">
                     <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                   </div>
@@ -90,7 +90,7 @@
                     </div>
                   </a>
               <% end %>
-              <div class="h-10 font-bold cursor-pointer actionBlock">
+              <div class="font-bold cursor-pointer actionBlock">
               <div id="actions" class="relative" phx-hook="ToggleAlbumDropdown">
                 <div class="flex flex-row items-center justify-between -mt-1 border-2 rounded-b-lg md:w-full actionHeight bg-base-100">
                     <div class="mx-3 font-sans font-normal">
@@ -113,7 +113,7 @@
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Edit album thumbnail</button>
                     </li>
                     <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
-                      <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">
+                      <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis" phx-click="delete_album_popup" phx-value-id={album.id}>
                       Delete Album
                       </button>
                       <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />

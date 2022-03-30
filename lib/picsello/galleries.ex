@@ -191,6 +191,17 @@ defmodule Picsello.Galleries do
     |> Repo.delete_all()
   end
 
+  def delete_album(album) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photo))
+    |> Ecto.Multi.delete(:album, album)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{album: album}} -> {:ok, album}
+      {:error, reason} -> reason
+    end)
+  end
+
   @doc """
   Creates a gallery.
 

@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
   alias Picsello.Repo
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
+  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
 
   @impl true
@@ -64,6 +65,58 @@ defmodule PicselloWeb.GalleryLive.Albums do
     socket
     |> open_modal(PicselloWeb.GalleryLive.Settings.AddAlbumModal, %{gallery_id: gallery_id})
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "delete_album_popup",
+        %{"id" => id},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete_album",
+      classes: "dialog-photographer",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this album?",
+      subtitle: "Are you sure you wish to permanently delete this album from #{gallery.name} ?",
+      payload: %{
+      album_id: id
+      }
+    })
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "delete_album", %{album_id: id}},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+
+    album = Repo.get!(Picsello.Galleries.Album, id) |> Repo.preload(:photo)
+
+    case Galleries.delete_album(album) do
+      {:ok, _album} ->
+        socket
+        |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+        |> put_flash(:success, "The album has been deleted.")
+        |> noreply()
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not delete album.")
+        |> close_modal()
+        |> noreply()
+    end
   end
 
   @impl true
