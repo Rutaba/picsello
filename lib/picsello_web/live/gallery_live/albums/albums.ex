@@ -25,8 +25,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
     }
   end
 
-
-
   @impl true
   def handle_params(
         %{"upload_toast" => upload_toast, "upload_toast_text" => upload_toast_text} = _params,
@@ -43,7 +41,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
   def handle_params(_params, _uri, socket) do
     noreply(socket)
   end
-
 
   @impl true
   def handle_event("upload_toast", _, socket) do
@@ -87,7 +84,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
       title: "Delete this album?",
       subtitle: "Are you sure you wish to permanently delete this album from #{gallery.name} ?",
       payload: %{
-      album_id: id
+        album_id: id
       }
     })
     |> noreply()
@@ -101,7 +98,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
           }
         } = socket
       ) do
-
     album = Repo.get!(Picsello.Galleries.Album, id) |> Repo.preload(:photo)
 
     case Galleries.delete_album(album) do
@@ -121,6 +117,46 @@ defmodule PicselloWeb.GalleryLive.Albums do
 
   @impl true
   def handle_event(
+        "delete_all_unsorted_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete_unsorted_photos",
+      classes: "dialog-photographer",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete this album?",
+      subtitle: "Are you sure you wish to permanently delete this album from #{gallery.name} ?",
+      payload: %{}
+    })
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "delete_unsorted_photos", %{}},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    Galleries.delete_unsorted_photos(gallery.id)
+
+    socket
+    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+    |> put_flash(:success, "The album has been deleted.")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "open_unsorted_photos",
         _,
         %{
@@ -133,7 +169,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
     |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
     |> noreply()
   end
-
 
   @impl true
   def handle_event(

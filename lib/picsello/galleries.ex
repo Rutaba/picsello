@@ -202,6 +202,21 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  def get_all_unsorted_photos_ids(gallery_id) do
+    Repo.all(from p in Photo, where: is_nil(p.album_id) and p.gallery_id == ^gallery_id , select: p.id)
+  end
+
+  def delete_unsorted_photos(gallery_id) do
+    from(p in Picsello.Galleries.GalleryProduct,
+      where: p.preview_photo_id in ^get_all_unsorted_photos_ids(gallery_id)
+    )
+    |> Repo.update_all(set: [preview_photo_id: nil])
+
+    Photo
+    |> where([p], p.id in ^get_all_unsorted_photos_ids(gallery_id))
+    |> Repo.delete_all()
+  end
+
   @doc """
   Creates a gallery.
 
