@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.Overview do
   @impl true
   def mount(_params, _session, socket) do
     {:ok, datetime} = DateTime.now("UTC")
+
     {
       :ok,
       socket
@@ -177,7 +178,6 @@ defmodule PicselloWeb.GalleryLive.Overview do
     |> noreply()
   end
 
-
   @impl true
   def handle_event(
         "client-link",
@@ -188,7 +188,6 @@ defmodule PicselloWeb.GalleryLive.Overview do
           }
         } = socket
       ) do
-
     hash =
       gallery
       |> Galleries.set_gallery_hash()

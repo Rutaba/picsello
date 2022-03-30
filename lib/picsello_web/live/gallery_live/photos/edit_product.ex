@@ -17,40 +17,38 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
         %{gallery_id: gallery_id, gallery_product_id: gallery_product_id},
         socket
       ) do
-        gallery = Galleries.get_gallery!(gallery_id)
-        gallery_product = GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
+    gallery = Galleries.get_gallery!(gallery_id)
+    gallery_product = GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
 
-        preview = check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id})
+    preview = check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id})
 
-
-        {:ok,
-          socket
-          |> assign(
-               frame_id: preview.category.id,
-               frame: Picsello.Category.frame_image(preview.category),
-               coords: Picsello.Category.coords(preview.category),
-               preview: preview
-             )
-          |> then(fn %{assigns: %{coords: coords, frame: frame}} = socket ->
-            push_event(socket, "set_preview", %{
-              preview: get_preview(preview),
-              ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
-              frame: frame,
-              coords: coords,
-              target: "#{preview.category.id}-edit"
-            })
-          end)
-          |> assign(:title, gallery_product.category.name)
-          |> assign(:gallery_product_id, gallery_product.id)
-          |> assign(:page, 0)
-          |> assign(:favorites_filter, false)
-          |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-          |> assign(:changeset, changeset(%{}, []))
-          |> assign(:gallery, gallery)
-          |> assign(:category_id, preview.category.id)
-          |> assign_photos()
-          |> assign(:preview_photo_id, nil)}
-
+    {:ok,
+     socket
+     |> assign(
+       frame_id: preview.category.id,
+       frame: Picsello.Category.frame_image(preview.category),
+       coords: Picsello.Category.coords(preview.category),
+       preview: preview
+     )
+     |> then(fn %{assigns: %{coords: coords, frame: frame}} = socket ->
+       push_event(socket, "set_preview", %{
+         preview: get_preview(preview),
+         ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
+         frame: frame,
+         coords: coords,
+         target: "#{preview.category.id}-edit"
+       })
+     end)
+     |> assign(:title, gallery_product.category.name)
+     |> assign(:gallery_product_id, gallery_product.id)
+     |> assign(:page, 0)
+     |> assign(:favorites_filter, false)
+     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
+     |> assign(:changeset, changeset(%{}, []))
+     |> assign(:gallery, gallery)
+     |> assign(:category_id, preview.category.id)
+     |> assign_photos()
+     |> assign(:preview_photo_id, nil)}
   end
 
   def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
@@ -77,6 +75,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
       ) do
     frame = Map.get(socket.assigns, :frame)
     coords = Map.get(socket.assigns, :coords)
+
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, path(preview))
@@ -97,7 +96,8 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
           assigns: %{
             frame_id: frame_id,
             gallery_product_id: product_id,
-            gallery: %{id: gallery_id}
+            gallery: %{id: gallery_id},
+            title: title
           }
         } = socket
       ) do
@@ -120,11 +120,15 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
         :category_id
       ])
       |> Repo.insert_or_update()
-      send(self(), {:save, %{preview_photo_id: preview_photo_id, frame_id: frame_id}})
+
+      send(
+        self(),
+        {:save, %{preview_photo_id: preview_photo_id, frame_id: frame_id, title: title}}
+      )
     end
+
     {:noreply, socket}
   end
-
 
   defp assign_photos(
          %{

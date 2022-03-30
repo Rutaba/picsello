@@ -151,7 +151,7 @@ defmodule PicselloWeb.Router do
       live "/galleries/:id/photos", GalleryLive.Photos, :show
       live "/galleries/:id/preview", GalleryLive.Photos.Main, :show
 
-      #live "/galleries/:id", GalleryLive.Show, :show
+      # live "/galleries/:id", GalleryLive.Show, :show
       live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
       live "/galleries/:id/upload", GalleryLive.Show, :upload
       live "/galleries/:id", GalleryLive.Overview, :overview

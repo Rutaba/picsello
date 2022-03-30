@@ -399,3 +399,9 @@ canvas {
     @apply border-b-2 border-white sm:border-none;
   }
 }
+
+.product-container {
+  @apply bg-gray-200;
+  width: 400px;
+  height: 400px;
+}

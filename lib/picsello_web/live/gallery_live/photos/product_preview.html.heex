@@ -8,11 +8,11 @@
         </button>
     </div>
     <div class="font-sans flex bg-white py-10 relative">
-        <div id="product-preview" class="grid grid-cols-4 gap-4 items-center" phx-hook="Preview">
+        <div id="product-preview" class="grid grid-cols-3 gap-4 items-center" phx-hook="Preview">
             <%= for product_category <- @product_categories do %>
             <div class="items-center">
               <div id={"product-#{product_category.id}"} class="font-sans flex h-52 w-52 p-6 bg-gray-100 text-black" phx-click="click" phx-target={@myself} phx-value-category={product_category.id}>
-                <img id={"img-#{product_category.id}"} src={"/images/#{product_category.category.frame_image}"} class="mx-auto items-center cursor-pointer"/>
+                <img id={"img-#{product_category.id}"} src={"/images/#{product_category.category.frame_image}"} class="mx-auto bg-gray-300 items-center cursor-pointer"/>
                 <div id={"preview-#{product_category.id}"} class="flex justify-center row-span-2 previewImg">
                     <canvas id={"canvas-#{product_category.id}"} width="300" height="255" class="edit"></canvas>
                 </div>

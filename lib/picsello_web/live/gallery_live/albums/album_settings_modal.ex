@@ -38,7 +38,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettingsModal do
     socket
     |> push_redirect(
       to:
-        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id, upload_toast: nil, upload_toast_text: "Album settings successfully updated")
+        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id,
+          upload_toast: nil,
+          upload_toast_text: "Album settings successfully updated"
+        )
     )
     |> noreply()
   end
@@ -52,7 +55,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettingsModal do
           }
         } = socket
       ) do
-
     socket
     |> assign(:changeset, Album.update_changeset(album, %{set_password: params["set_password"]}))
     |> assign(:set_password, params["set_password"] === "true")
