@@ -29,6 +29,23 @@ defmodule Picsello.Subscriptions do
     end
   end
 
+  def sync_trialing_subscriptions() do
+    {:ok, %{data: subscriptions}} = Stripe.Subscription.list(%{status: "trialing"})
+
+    for subscription <- subscriptions do
+      {:ok, customer} = Stripe.Customer.retrieve(subscription |> Map.get(:customer))
+      user = Repo.get_by(User, email: customer.email)
+
+      if user && User.onboarded?(user) && !user.stripe_customer_id do
+        user
+        |> User.assign_stripe_customer_changeset(customer.id)
+        |> Repo.update!()
+
+        {:ok, _} = handle_stripe_subscription(subscription)
+      end
+    end
+  end
+
   def next_payment?(%Subscription{} = subscription),
     do: subscription.active && !subscription.cancel_at
 
