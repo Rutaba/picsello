@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   use PicselloWeb, live_view: [layout: "calculator"]
 
-  alias Picsello.PricingCalculators
+  alias Picsello.PricingCalculations
   alias Picsello.{Repo, JobType, Onboardings}
 
   @impl true
@@ -72,6 +72,11 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
+  def handle_event("validate", _, socket) do
+    socket |> assign_changeset() |> noreply()
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"calculator-step-#{@step}"}>
@@ -81,6 +86,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 2} = assigns) do
+    IO.inspect(assigns.f.data)
+
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">We need to know a little about what you do currently in order to build accurate results.</h4>
@@ -105,19 +112,18 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <% end %>
         <% end %>
 
-        <%= for onboarding <- inputs_for(@f, :onboarding) do %>
-          <div class="grid grid-cols-2 gap-3 sm:gap-5">
+        <div class="grid grid-cols-2 gap-3 sm:gap-5">
             <label class="flex flex-col mt-4">
               <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
 
-              <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+              <%= select @f, :full_time, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
             </label>
 
             <label class="flex flex-col mt-4">
               <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
 
-              <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
-              <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
+              <%= input @f, :min_years_experience, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
+              <%= error_tag @f, :min_years_experience, class: "text-red-sales-300 text-sm" %>
             </label>
           </div>
 
@@ -125,18 +131,17 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <label class="flex flex-col mt-4">
               <p class="py-2 font-extrabold">What's your zipcode?</p>
 
-              <%= input onboarding, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
-              <%= error_tag onboarding, :zipcode, class: "text-red-sales-300 text-sm" %>
+              <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
+              <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
             </label>
 
             <label class="flex flex-col mt-4">
               <p class="py-2 font-extrabold">Where’s your business based?</p>
 
-              <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
-              <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
+              <%= select @f, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
+              <%= error_tag @f, :state, class: "text-red-sales-300 text-sm" %>
             </label>
           </div>
-        <% end %>
 
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-primary" phx-click="next">Next</button>
@@ -371,10 +376,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     )
   end
 
-  defp build_changeset(%{assigns: %{current_user: user, step: step}}, params, action \\ nil) do
-    user
-    |> PricingCalculators.changeset(params, step: step)
-    |> Map.put(:action, action)
+  defp build_changeset(%{assigns: %{step: step, current_user: user}}, params, action \\ nil) do
+    PricingCalculations.changeset(
+      %PricingCalculations{organization_id: user.organization_id},
+      params,
+      step: step
+    )
   end
 
   defp assign_changeset(socket, params \\ %{}) do
@@ -448,6 +455,21 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     """
   end
 
+  def sidebar_nav(assigns) do
+    IO.inspect(assigns)
+
+    ~H"""
+    <nav class="bg-gray-100 p-4">
+      <ul>
+        <li class=""><span>1</span>Information about your business</li>
+        <li class=""><span>2</span>Information about your business</li>
+        <li class=""><span>3</span>Information about your business</li>
+        <li class=""><span>4</span>Information about your business</li>
+      </ul>
+    </nav>
+    """
+  end
+
   def container(assigns) do
     ~H"""
       <div class="flex w-screen min-h-screen bg-gray-100 relative">
@@ -455,6 +477,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 mb-10" />
           <h3 class="text-4xl font-bold mb-4">Pricing Calculator</h3>
           <p class="text-2xl mb-4">You probably aren't charging enough and we'd like to help</p>
+          <.sidebar_nav step={@step} />
           <div class="circleBtn mt-auto static">
             <ul>
               <li>
@@ -481,7 +504,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defdelegate job_types(), to: JobType, as: :all
-  defdelegate states(), to: PricingCalculators, as: :state_options
-  defdelegate days(), to: PricingCalculators, as: :day_options
-  defdelegate cost_categories(), to: PricingCalculators, as: :cost_categories
+  defdelegate states(), to: PricingCalculations, as: :state_options
+  defdelegate days(), to: PricingCalculations, as: :day_options
+  defdelegate cost_categories(), to: PricingCalculations, as: :cost_categories
 end
