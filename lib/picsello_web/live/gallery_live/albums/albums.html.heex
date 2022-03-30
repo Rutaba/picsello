@@ -20,7 +20,7 @@
           <div class="flex flex-col">
             <div class="flex flex-row justify-between">
               <span class="text-4xl font-bold " style="font-family: sans-serif">Photos</span>
-              <button class="mx-2 mt-2 navBar__btn w-max">
+              <button class="mx-2 bg-white navBar__btn w-max">
                  <.icon name="plus" class="w-4 h-4 text-blue-planning-300" />
                  <span class="pl-2" phx-click="open_albums_popup">Add Album</span>
               </button>
@@ -78,13 +78,13 @@
             <%= for album <- @gallery.albums do %>
             <div class="flex flex-col mb-2 mr-4">
               <%= if album.thumbnail_url do %>
-                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="open_albums_popup">
+                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="go_to_album_selected" phx-value-album={album.id}>
                   <div class="flex flex-row items-end justify-start h-full gap-2">
                     <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                   </div>
                 </a>
               <% else %>
-                 <a href="#" class="mt-4 albumBlock md:w-full albumHeight" phx-click="open_albums_popup" style="background-image: url('/images/alum_placeholder.png')">
+                 <a href="#" class="mt-4 albumBlock md:w-full albumHeight" phx-click="go_to_album_selected" style="background-image: url('/images/alum_placeholder.png')" phx-value-album={album.id}>
                     <div class="flex flex-row items-end justify-start h-full gap-2">
                       <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                     </div>
