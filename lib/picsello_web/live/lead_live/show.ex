@@ -9,7 +9,8 @@ defmodule PicselloWeb.LeadLive.Show do
     Payments,
     BookingProposal,
     Notifiers.ClientNotifier,
-    Questionnaire
+    Questionnaire,
+    PaymentSchedules
   }
 
   import PicselloWeb.JobLive.Shared,
@@ -166,7 +167,7 @@ defmodule PicselloWeb.LeadLive.Show do
         BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
       )
       |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
-        Picsello.PaymentSchedules.build_payment_schedules_for_lead(job)
+        PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
       end)
       |> Ecto.Multi.insert(
         :message,

@@ -105,7 +105,10 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         } = job
     } =
       proposal
-      |> Repo.preload(job: [:client, :shoots, :payment_schedules, package: [organization: :user]])
+      |> Repo.preload(
+        [job: [:client, :shoots, :payment_schedules, package: [organization: :user]]],
+        force: true
+      )
 
     socket
     |> open_modal(__MODULE__, %{

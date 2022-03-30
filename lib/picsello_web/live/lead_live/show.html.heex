@@ -109,13 +109,17 @@
         <label class="flex mt-4">
           <input type="checkbox" class="w-6 h-6 mt-1 checkbox" checked disabled />
           <div class="pl-3 text-xs">
-            <h3 class="input-label">Standard Payment</h3>
-            <%= case @stripe_status do %>
-              <% :charges_enabled -> %>
-                50% retainer and 50% on day of shoot.
-              <% :loading -> %>
-              <% _ -> %>
-                You must create a Stripe account to send proposals and receive payments. After your Stripe account has been created you will return to this page.
+            <%= case PaymentSchedules.build_payment_schedules_for_lead(@job) do %>
+              <% %{label: label, details: details} -> %>
+                <h3 class="input-label"><%= label %></h3>
+                <%= case @stripe_status do %>
+                  <% :charges_enabled -> %>
+                    <%= details %>
+
+                  <% :loading -> %>
+                  <% _ -> %>
+                    You must create a Stripe account to send proposals and receive payments. After your Stripe account has been created you will return to this page.
+                <% end %>
             <% end %>
             <div class="max-w-max">
               <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
