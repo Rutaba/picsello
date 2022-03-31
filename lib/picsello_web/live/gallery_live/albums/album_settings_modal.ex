@@ -58,6 +58,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettingsModal do
     socket
     |> assign(:changeset, Album.update_changeset(album, %{set_password: params["set_password"]}))
     |> assign(:set_password, params["set_password"] === "true")
+    |> assign(:album_password, Gallery.generate_password())
     |> noreply
   end
 

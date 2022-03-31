@@ -54,6 +54,7 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
     socket
     |> assign(:changeset, Album.create_changeset(params))
     |> assign(:set_password, params["set_password"] === "true")
+    |> assign(:album_password, Gallery.generate_password())
     |> noreply()
   end
 
@@ -75,7 +76,7 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
           <h3 class="font-bold input-label" style="font-family: sans-serif">Password protection</h3>
           <label class="flex text-1xl">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
-            <div class="hidden peer-checked:flex" >
+            <div class="hidden peer-checked:flex">
               <div class="flex justify-end w-12 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
                   <div class="w-6 h-6 rounded-full bg-base-100"></div>
               </div>
