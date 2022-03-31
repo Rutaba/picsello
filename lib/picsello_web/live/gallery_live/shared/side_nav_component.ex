@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   @impl true
   def update(
-        %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show, album_dropdown_show: album_dropdown_show},
+        %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show, album_dropdown_show: album_dropdown_show} = params,
         socket
       ) do
     gallery = Repo.preload(gallery, :albums)
@@ -18,6 +18,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
      |> assign(:gallery, gallery)
      |> assign(:arrow_show, arrow_show)
      |> assign(:album_dropdown_show, album_dropdown_show)
+     |> assign(:selected_album, Map.get(params, :selected_album, nil))
      |> assign_gallery_changeset()}
   end
 
@@ -161,4 +162,8 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
     do: socket |> assign(:changeset, Galleries.change_gallery(gallery, attrs))
+
+  defp is_selected_album(album, selected_album),
+    do: selected_album && album.id == selected_album.id
+
 end
