@@ -103,9 +103,14 @@ defmodule PicselloWeb.GalleryLive.Albums do
     case Galleries.delete_album(album) do
       {:ok, _album} ->
         socket
-        |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
-        |> put_flash(:success, "The album has been deleted.")
-        |> noreply()
+        |> push_redirect(
+      to:
+        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id,
+          upload_toast: false,
+          upload_toast_text: "Album deleted successfully"
+        )
+    )
+    |> noreply()
 
       _any ->
         socket

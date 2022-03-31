@@ -55,10 +55,18 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettingsModal do
           }
         } = socket
       ) do
+    password =
+      if socket.assigns.album.set_password !=
+           String.to_existing_atom(params["set_password"]) and params["set_password"] == "true" do
+        Gallery.generate_password()
+      else
+        socket.assigns.album_password
+      end
+
     socket
     |> assign(:changeset, Album.update_changeset(album, %{set_password: params["set_password"]}))
     |> assign(:set_password, params["set_password"] === "true")
-    |> assign(:album_password, Gallery.generate_password())
+    |> assign(:album_password, password)
     |> noreply
   end
 
@@ -94,7 +102,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettingsModal do
           <h3 class="font-bold input-label" style="font-family: sans-serif">Password protection</h3>
           <label class="flex text-1xl">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
-            <div class="hidden peer-checked:flex" >
+            <div class="hidden peer-checked:flex">
               <div class="flex justify-end w-12 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
                   <div class="w-6 h-6 rounded-full bg-base-100"></div>
               </div>

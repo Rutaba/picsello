@@ -46,15 +46,29 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
     |> Repo.insert!()
 
     socket
-    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id, upload_toast: false, upload_toast_text: "New Album Added"))
+    |> push_redirect(
+      to:
+        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id,
+          upload_toast: false,
+          upload_toast_text: "New Album Added"
+        )
+    )
     |> noreply()
   end
 
   def handle_event("validate", %{"album" => params}, socket) do
+    password =
+      if socket.assigns.changeset.changes.set_password !=
+           String.to_existing_atom(params["set_password"]) and params["set_password"] == "true" do
+        Gallery.generate_password()
+      else
+        socket.assigns.album_password
+      end
+
     socket
     |> assign(:changeset, Album.create_changeset(params))
-    |> assign(:set_password, params["set_password"] === "true")
-    |> assign(:album_password, Gallery.generate_password())
+    |> assign(:set_password, params["set_password"] == "true")
+    |> assign(:album_password, password)
     |> noreply()
   end
 
