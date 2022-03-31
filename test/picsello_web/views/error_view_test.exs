@@ -5,10 +5,12 @@ defmodule PicselloWeb.ErrorViewTest do
   import Phoenix.View
 
   test "renders 404.html" do
-    assert render_to_string(PicselloWeb.ErrorView, "404.html", []) == "Not Found"
+    page = render_to_string(PicselloWeb.ErrorView, "404_page.html", [])
+    assert String.contains?(page, "Whoops! We lost that page in our camera bag.")
   end
 
   test "renders 500.html" do
-    assert render_to_string(PicselloWeb.ErrorView, "500.html", []) == "Internal Server Error"
+    page = render_to_string(PicselloWeb.ErrorView, "500_page.html", [])
+    assert String.contains?(page, "Something went wrong…")
   end
 end

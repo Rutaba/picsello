@@ -17,7 +17,7 @@ config :picsello, Picsello.Repo,
 # with webpack to recompile .js and .css sources.
 config :picsello, PicselloWeb.Endpoint,
   http: [port: System.get_env("PORT") || 4000],
-  debug_errors: true,
+  debug_errors: System.get_env("DEBUG_ERRORS", "true") == "true",
   code_reloader: true,
   check_origin: false,
   watchers: [
