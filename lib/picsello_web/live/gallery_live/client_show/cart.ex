@@ -109,7 +109,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     item =
       case params do
         %{"editor-id" => editor_id} -> [editor_id: editor_id]
-        %{"digital-id" => digital_id} -> [digital_id: digital_id]
+        %{"digital-id" => digital_id} -> [digital_id: String.to_integer(digital_id)]
       end
 
     case Cart.delete_product(order, item) do

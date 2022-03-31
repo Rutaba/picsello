@@ -4,8 +4,6 @@ defmodule Picsello.ClientOrdersTest do
   import Money.Sigils
   alias Picsello.{Repo, Cart.Order}
 
-  @first_grid_photo css("#muuri-grid .muuri-item-shown:first-child *[id^='photo']")
-
   setup do
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
@@ -46,8 +44,8 @@ defmodule Picsello.ClientOrdersTest do
     [gallery: gallery, organization: organization]
   end
 
-  def click_first_photo(session) do
-    session |> click(@first_grid_photo)
+  def click_photo(session, position) do
+    session |> click(css("#muuri-grid .muuri-item-shown:nth-child(#{position}) *[id^='photo']"))
   end
 
   setup :authenticated_gallery_client
@@ -97,7 +95,7 @@ defmodule Picsello.ClientOrdersTest do
     session
     |> assert_text(gallery.name)
     |> click(link("View Gallery"))
-    |> click_first_photo()
+    |> click_photo(1)
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
@@ -181,15 +179,28 @@ defmodule Picsello.ClientOrdersTest do
 
       session
       |> click(link("View Gallery"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "1"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
       |> click(link("close"))
+      |> click_photo(2)
+      |> assert_text("Select an option")
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "2"))
       |> click(link("cart"))
-      |> find(css("*[data-testid^='digital-']"), fn cart_item ->
+      |> assert_text("Total: $50.00")
+      |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
+        |> assert_text("$25.00")
+        |> click(button("Delete"))
+      end)
+      |> assert_text("Total: $25.00")
+      |> find(css("*[data-testid^='digital-']", count: 1, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
         |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
@@ -199,7 +210,7 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_path(gallery_path)
       |> assert_has(css("*[title='cart']", text: "0"))
       |> click(link("View Gallery"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> within_modal(&click(&1, button("Add to cart")))
       |> click(link("cart"))
       |> click(button("Continue"))
@@ -238,7 +249,7 @@ defmodule Picsello.ClientOrdersTest do
       )
       |> click(link("Home"))
       |> click(link("View Gallery"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "Purchased"))
     end
   end
