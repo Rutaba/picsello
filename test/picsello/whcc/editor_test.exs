@@ -32,13 +32,15 @@ defmodule Picsello.WHCC.EditorTest do
         Picsello.WHCC.Editor.Params.build(product, photo,
           size: @some_size,
           cancel_url: @some_url,
-          complete_url: @some_url
+          complete_url: @some_url,
+          secondary_url: @some_url
         )
 
       assert struct |> get_in(~w(productId)) == product.whcc_id
       assert struct |> get_in(~w(selections size)) == @some_size
       assert struct |> get_in(~w(redirects cancel url)) == @some_url
       assert struct |> get_in(~w(redirects complete url)) == @some_url
+      assert struct |> get_in(~w(redirects secondary url)) == @some_url
       assert struct |> get_in(~w(photos)) |> Enum.count() > 0
 
       photo =

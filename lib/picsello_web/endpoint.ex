@@ -29,8 +29,8 @@ defmodule PicselloWeb.Endpoint do
     at: "/",
     from: :picsello,
     gzip: false,
-    only: ~w(css fonts images js robots.txt),
-    only_matching: ~w(favicon)
+    only: ~w(css fonts images js robots.txt manifest.json),
+    only_matching: ~w(favicon apple-touch-icon mstile)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -40,6 +40,8 @@ defmodule PicselloWeb.Endpoint do
     plug Phoenix.CodeReloader
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :picsello
   end
+
+  plug CORSPlug, origin: [~r/.*/]
 
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
@@ -59,6 +61,7 @@ defmodule PicselloWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+
   plug Plug.Session, @session_options
   plug PicselloWeb.Router
 end

@@ -6,9 +6,7 @@ defmodule Picsello.Cart do
   import Ecto.Query
   alias Picsello.Repo
   alias Picsello.WHCC
-  alias Picsello.Cart.CartProduct
-  alias Picsello.Cart.Order
-  alias Picsello.Cart.DeliveryInfo
+  alias Picsello.Cart.{CartProduct, Order, Order.Digital, DeliveryInfo}
 
   def new_product(editor_id, account_id) do
     details = WHCC.editor_details(account_id, editor_id)
@@ -215,6 +213,79 @@ defmodule Picsello.Cart do
     |> Order.store_delivery_info(delivery_info_change)
     |> Repo.update!()
   end
+
+  def checkout_params(
+        %Order{products: products, digitals: digitals, shipping_cost: shipping_cost} = order
+      ) do
+    product_line_items =
+      Enum.map(products, fn %{
+                              price: price,
+                              editor_details: %{
+                                selections: %{"quantity" => quantity}
+                              }
+                            } = product ->
+        unit_amount = price |> Money.divide(quantity) |> hd |> Map.get(:amount)
+
+        %{
+          price_data: %{
+            currency: price.currency,
+            unit_amount: unit_amount,
+            product_data: %{
+              name: product_name(product),
+              images: [preview_url(product)]
+            }
+          },
+          quantity: quantity
+        }
+      end)
+
+    digital_line_items =
+      Enum.map(digitals, fn %{price: price} = digital ->
+        %{
+          price_data: %{
+            currency: price.currency,
+            unit_amount: price.amount,
+            product_data: %{
+              name: "Digital image",
+              images: [preview_url(digital)]
+            }
+          },
+          quantity: 1
+        }
+      end)
+
+    %{
+      line_items: product_line_items ++ digital_line_items,
+      customer_email: order.delivery_info.email,
+      shipping_options: [
+        %{
+          shipping_rate_data: %{
+            type: "fixed_amount",
+            display_name: "Shipping",
+            fixed_amount: %{
+              amount: shipping_cost.amount,
+              currency: shipping_cost.currency
+            }
+          }
+        }
+      ]
+    }
+  end
+
+  def product_name(%CartProduct{
+        editor_details: %{selections: selections},
+        whcc_product: %{whcc_name: name} = product
+      }) do
+    size =
+      product |> Picsello.WHCC.Product.selection_details(selections) |> get_in(["size", "name"])
+
+    Enum.join([size, name], " ")
+  end
+
+  def preview_url(%CartProduct{editor_details: %{preview_url: url}}), do: url
+
+  def preview_url(%Digital{preview_url: path}),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
 
   defp seek_and_map(editor_id, fun) do
     with order <- order_with_editor(editor_id),

@@ -87,6 +87,10 @@ defmodule Picsello.PaymentSchedules do
     |> Map.get(:payment_schedules)
   end
 
+  def remainder_price(job) do
+    remainder_payment(job).price
+  end
+
   defp remainder_payment(job) do
     job |> payment_schedules() |> Enum.at(-1) || %PaymentSchedule{}
   end

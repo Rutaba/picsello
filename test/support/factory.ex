@@ -588,4 +588,20 @@ defmodule Picsello.Factory do
     }
 
   def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
+
+  def subscription_plan_factory,
+    do: %Picsello.SubscriptionPlan{
+      stripe_price_id: "price_123",
+      recurring_interval: "month",
+      price: 5000
+    }
+
+  def subscription_event_factory(attrs),
+    do:
+      %Picsello.SubscriptionEvent{
+        stripe_subscription_id: "sub_123",
+        current_period_start: DateTime.utc_now(),
+        current_period_end: DateTime.utc_now() |> DateTime.add(60 * 60 * 24)
+      }
+      |> merge_attributes(attrs)
 end

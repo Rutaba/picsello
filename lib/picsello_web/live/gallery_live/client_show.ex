@@ -230,6 +230,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         complete_url:
           Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
             "?editorId=%EDITOR_ID%",
+        secondary_url:
+          Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
+            "?editorId=%EDITOR_ID%&clone=true",
         cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
         size: size,
         favorites_only: favorites

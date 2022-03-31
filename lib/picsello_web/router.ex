@@ -41,7 +41,8 @@ defmodule PicselloWeb.Router do
   end
 
   scope "/stripe" do
-    post "/connect-webhooks", PicselloWeb.StripeConnectWebhooksController, :webhooks
+    post "/connect-webhooks", PicselloWeb.StripeWebhooksController, :connect_webhooks
+    post "/app-webhooks", PicselloWeb.StripeWebhooksController, :app_webhooks
   end
 
   scope "/whcc" do
@@ -62,12 +63,14 @@ defmodule PicselloWeb.Router do
   # as long as you are also using SSL (which you should anyway).
   import Phoenix.LiveDashboard.Router
 
-  scope "/", PicselloWeb do
+  scope "/admin", PicselloWeb do
     pipe_through :browser
 
     unless Mix.env() in [:dev, :test], do: pipe_through(:admins_only)
     live_dashboard "/dashboard", metrics: Telemetry, ecto_repos: [Repo]
-    live "/admin/categories", Live.Admin.Categories, :index
+    live "/categories", Live.Admin.Categories, :index
+    live "/workers", Live.Admin.Workers, :index
+    live "/", Live.Admin.Index, :index
   end
 
   ## Authentication routes
@@ -102,7 +105,6 @@ defmodule PicselloWeb.Router do
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
       live "/contacts", Live.Contacts, :index, as: :contacts
       live "/brand", Live.BrandSettings, :index, as: :brand_settings
-      live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
@@ -163,6 +165,13 @@ defmodule PicselloWeb.Router do
       post "/downloads", GalleryDownloadsController, :download
       post "/login", GallerySessionController, :put
     end
+  end
+
+  scope "/gallery/:hash", PicselloWeb do
+    pipe_through [:api]
+
+    # WHCC secondary action
+    post "/", GalleryAddAndClone, :post
   end
 
   scope "/gallery", PicselloWeb do

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Profile do
   @moduledoc "photographers public profile"
   use PicselloWeb, live_view: [layout: "profile"]
-  alias Picsello.{Profiles, Packages}
+  alias Picsello.{Profiles, Packages, Subscriptions}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -20,6 +20,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign_organization_by_slug(slug)
     |> assign_job_type_packages()
     |> maybe_redirect_slug(slug)
+    |> check_active_subscription()
     |> ok()
   end
 
@@ -344,7 +345,7 @@ defmodule PicselloWeb.Live.Profile do
         <div><%= Money.to_string(@price, fractional_unit: false) %></div>
       </div>
 
-      <div class="mt-4 whitespace-pre-line"><%= @description %></div>
+      <div class="mt-4 whitespace-pre-line raw_html"><%=raw @description %></div>
     </div>
     """
   end
@@ -431,6 +432,12 @@ defmodule PicselloWeb.Live.Profile do
     else
       socket
     end
+  end
+
+  defp check_active_subscription(%{assigns: %{organization: organization}} = socket) do
+    Subscriptions.ensure_active_subscription!(organization.user)
+
+    socket
   end
 
   defp subscribe_image_process(%{assigns: %{organization: organization}} = socket) do

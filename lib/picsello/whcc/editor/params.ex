@@ -79,6 +79,10 @@ defmodule Picsello.WHCC.Editor.Params do
       "cancel" => %{
         "url" => Keyword.get(opts, :cancel_url, ""),
         "text" => Keyword.get(opts, :cancel_text, "Cancel")
+      },
+      "secondary" => %{
+        "url" => Keyword.get(opts, :secondary_url, ""),
+        "text" => Keyword.get(opts, :secondary_text, "Add and continue shopping")
       }
     }
   end

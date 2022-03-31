@@ -1,17 +1,17 @@
 <div {intro(@current_user, "intro_dashboard")}>
-  <header class="bg-blue-planning-100">
-    <div class="pt-6 pb-12 center-container">
-      <h1 class="px-6 text-3xl font-bold">
+  <header class="bg-gray-100">
+    <div class="pt-10 pb-8 center-container">
+      <h1 class="px-6 text-4xl font-bold">
         <%= time_of_day_greeting @current_user %>
       </h1>
 
       <%= case @attention_items do %>
         <% [] -> %>
         <% items -> %>
-          <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-blue-planning-200">Next Up</h2>
+          <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest uppercase text-gray-400">Next Up</h2>
           <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-next-up">
             <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class} <- items do %>
-            <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg border-#{color} #{class}"}>
+            <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
               <div>
                 <h1 class="text-lg font-bold">
                   <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
@@ -127,3 +127,7 @@
     </div>
   </div>
 </div>
+
+<%= if Subscriptions.subscription_expired?(@current_user) && !@stripe_subscription_status do %>
+  <.subscription_modal socket={@socket} />
+<% end %>

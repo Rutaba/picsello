@@ -5,10 +5,13 @@ defmodule Picsello.ImportJobTest do
   setup :onboarded
   setup :authenticated
 
+  @client_name "Elizabeth Taylor"
+  @client_email "taylor@example.com"
+
   def fill_in_client_form(session) do
     session
-    |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
-    |> fill_in(text_field("Client Email"), with: "taylor@example.com")
+    |> fill_in(text_field("Client Name"), with: @client_name)
+    |> fill_in(text_field("Client Email"), with: @client_email)
     |> fill_in(text_field("Client Phone"), with: "(210) 111-1234")
     |> find(select("Type of Photography"), &click(&1, option("Wedding")))
     |> fill_in(text_field("Private Notes"), with: "things to know about")
@@ -289,16 +292,18 @@ defmodule Picsello.ImportJobTest do
 
     test_pid = self()
 
-    Mox.stub(Picsello.MockPayments, :checkout_link, fn _, products, opts ->
+    Picsello.MockPayments
+    |> Mox.stub(:create_customer, fn %{email: @client_email, name: @client_name}, _ ->
+      {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
+    end)
+    |> Mox.stub(:create_session, fn params, opts ->
       send(
         test_pid,
-        {:checkout_linked, opts |> Enum.into(%{products: products})}
+        {:checkout_linked, opts |> Enum.into(params)}
       )
 
       {:ok, "https://example.com/stripe-checkout"}
     end)
-
-    Picsello.MockPayments
     |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
       {:ok,
        %Stripe.Session{
@@ -324,7 +329,7 @@ defmodule Picsello.ImportJobTest do
                     %{
                       success_url: stripe_success_url,
                       metadata: %{"paying_for" => ^payment_id},
-                      products: [
+                      line_items: [
                         %{
                           price_data: %{
                             product_data: %{name: "Elizabeth Taylor Wedding Payment 1"},

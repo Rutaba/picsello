@@ -25,6 +25,34 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Returns the list of expired galleries.
+
+  ## Examples
+
+      iex> list_expired_galleries()
+      [%Gallery{}, ...]
+
+  """
+  def list_expired_galleries do
+    Gallery |> where(status: "expired") |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of soon to be expired galleries.
+
+  ## Examples
+
+      iex> list_soon_to_be_expired_galleries()
+      [%Gallery{}, ...]
+
+  """
+  def list_soon_to_be_expired_galleries(date) do
+    Gallery
+    |> where([g], g.expired_at <= ^date)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single gallery.
 
   Raises `Ecto.NoResultsError` if the Gallery does not exist.
@@ -657,4 +685,14 @@ defmodule Picsello.Galleries do
 
   def products(%{id: gallery_id}),
     do: Picsello.GalleryProducts.get_gallery_products(gallery_id, :with_or_without_previews)
+
+  def expired?(%Gallery{expired_at: nil}), do: false
+
+  def expired?(%Gallery{expired_at: expired_at}),
+    do: DateTime.compare(DateTime.utc_now(), expired_at) in [:eq, :gt]
+
+  def gallery_photographer(%Gallery{} = gallery) do
+    %{job: %{client: %{organization: %{user: user}}}} = gallery |> populate_organization_user()
+    user
+  end
 end

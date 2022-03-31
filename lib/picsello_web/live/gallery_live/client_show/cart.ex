@@ -3,10 +3,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Cart, WHCC, Galleries, GalleryProducts}
-  alias Cart.{CartProduct, Order.Digital}
+  alias Picsello.{Cart, Payments, WHCC, Galleries, GalleryProducts}
+  alias Cart.CartProduct
   alias WHCC.Shipping
   alias PicselloWeb.GalleryLive.ClientMenuComponent
+  import Cart, only: [preview_url: 1]
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -132,7 +133,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         } = socket
       ) do
     {:ok, %{link: checkout_link}} =
-      payments().checkout_link(order,
+      Payments.checkout_link(order,
         success_url:
           Routes.gallery_client_order_url(socket, :paid, gallery.client_link_hash, order.number),
         cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
@@ -349,15 +350,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     }
   end
 
-  defp payments, do: Application.get_env(:picsello, :payments)
-
-  defp preview_url(%CartProduct{editor_details: %{preview_url: url}}), do: url
-
-  defp preview_url(%Digital{preview_url: path}),
-    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
-
-  defp product_name(%CartProduct{whcc_product: %{whcc_name: name}}), do: name
-
   defp item_image(assigns) do
     assigns = Map.put_new(assigns, :class, "")
 
@@ -370,13 +362,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp product_id(%CartProduct{editor_details: %{editor_id: id}}), do: id
 
-  defp product_size(%CartProduct{
-         editor_details: %{selections: selections},
-         whcc_product: product
-       }) do
-    product |> Picsello.WHCC.Product.selection_details(selections) |> get_in(["size", "name"])
-  end
-
   defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
     do: Map.get(selections, "quantity", 1)
+
+  defdelegate product_name(product), to: Cart
 end

@@ -1,19 +1,36 @@
 defmodule PicselloWeb.HomeLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, Accounts, Shoot, Accounts.User, ClientMessage}
+  require Logger
+
+  alias Picsello.{
+    Job,
+    Payments,
+    Repo,
+    Accounts,
+    Shoot,
+    Accounts.User,
+    ClientMessage,
+    Subscriptions
+  }
+
   import Ecto.Query
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket
     |> assign_stripe_status()
     |> assign(:page_title, "Work Hub")
+    |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
     |> assign_attention_items()
     |> subscribe_inbound_messages()
+    |> maybe_show_success_subscription(params)
     |> ok()
   end
+
+  @impl true
+  def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("create-lead", %{}, socket),
@@ -55,6 +72,35 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  @impl true
+  def handle_event("subscription-checkout", %{"interval" => interval}, socket) do
+    case Subscriptions.checkout_link(
+           socket.assigns.current_user,
+           interval,
+           success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+           cancel_url: Routes.home_url(socket, :index)
+         ) do
+      {:ok, url} ->
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  defp maybe_show_success_subscription(socket, %{
+         "session_id" => "" <> session_id
+       }) do
+    if connected?(socket),
+      do: send(self(), {:stripe_session_id, session_id})
+
+    socket
+    |> assign(:stripe_subscription_status, :loading)
+  end
+
+  defp maybe_show_success_subscription(socket, %{}), do: socket
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
@@ -137,7 +183,7 @@ defmodule PicselloWeb.HomeLive.Index do
              button_label: "Resend email",
              button_class: "btn-primary",
              color: "red-sales-300",
-             class: "intro-confirmation"
+             class: "intro-confirmation border-red-sales-300"
            }},
           {leads_empty?,
            %{
@@ -146,8 +192,8 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Leads are the first step to getting started with Picsello.",
              icon: "three-people",
              button_label: "Create your first lead",
-             button_class: "btn-secondary bg-blue-planning-100",
-             color: "blue-planning-300",
+             button_class: "btn-secondary",
+             color: "",
              class: "intro-first-lead"
            }},
           {stripe_status != :charges_enabled,
@@ -157,7 +203,7 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "We use Stripe to make payment collection as seamless as possible for you.",
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
-             button_class: "btn-secondary bg-blue-planning-100",
+             button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-stripe"
            }},
@@ -168,7 +214,7 @@ defmodule PicselloWeb.HomeLive.Index do
              body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",
              button_label: "See available resources",
-             button_class: "btn-secondary bg-blue-planning-100",
+             button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-resources"
            }}
@@ -205,6 +251,32 @@ defmodule PicselloWeb.HomeLive.Index do
         </div>
       </div>
     </li>
+    """
+  end
+
+  def subscription_modal(assigns) do
+    ~H"""
+    <div class="fixed inset-0 z-20 bg-black bg-opacity-60 flex items-center justify-center">
+      <div class="modal rounded-lg sm:max-w-4xl">
+        <h1 class="text-3xl font-semibold">Your plan has expired</h1>
+        <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+          <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
+            <div class="border rounded-lg p-4 flex items-center justify-between">
+              <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
+              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
+                Select this plan
+              </button>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex mt-6">
+          <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
+        </div>
+      </div>
+    </div>
     """
   end
 
@@ -252,11 +324,32 @@ defmodule PicselloWeb.HomeLive.Index do
     |> noreply()
   end
 
-  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: payments().status(current_user))
+  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
+    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
+      :ok ->
+        socket
+        |> assign(:stripe_subscription_status, :success)
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "You have subscribed to Picsello",
+          subtitle:
+            "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
+          close_label: "Close",
+          close_class: "btn-primary"
+        })
+        # clear the session_id param
+        |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
+        |> noreply()
+    end
   end
 
-  defp payments, do: Application.get_env(:picsello, :payments)
+  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+    socket |> assign(stripe_status: Payments.status(current_user))
+  end
 
   defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
     Phoenix.PubSub.subscribe(
