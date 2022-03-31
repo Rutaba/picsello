@@ -58,7 +58,11 @@ defmodule PicselloWeb.BookingProposalLive.Show do
              Payments.retrieve_session(stripe_session_id,
                connect_account: organization.stripe_account_id
              ),
-           {:ok, _} <- Picsello.Payments.handle_payment(session) do
+           {:ok, _} <-
+             PaymentSchedules.handle_payment(
+               session,
+               PicselloWeb.StripeWebhooksController.Helpers
+             ) do
         socket
       else
         e ->

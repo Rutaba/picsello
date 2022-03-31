@@ -106,6 +106,8 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:delivery_info, delivery_info_changeset)
   end
 
+  def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
+
   defp replace_products(changeset, new_products) do
     new_product_ids = Enum.map(new_products, fn product -> product.editor_details.editor_id end)
 
@@ -137,6 +139,10 @@ defmodule Picsello.Cart.Order do
     |> change()
     |> put_embed(embed, values)
     |> refresh_costs()
+  end
+
+  def total(%__MODULE__{subtotal_cost: subtotal, shipping_cost: shipping}) do
+    Money.add(subtotal, shipping)
   end
 
   defp cast_shipping_cost(changeset) do

@@ -1,12 +1,6 @@
 <div>
   <div class="gallery__container">
-    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent,
-      id: @client_menu_id,
-      live_action: @live_action,
-      organization: @gallery.job.client.organization,
-      cart_count: @cart_count,
-      gallery: @gallery,
-      cart_route: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash) %>
+    <%= live_component ClientMenuComponent, id: @client_menu_id, live_action: @live_action, gallery: @gallery, cart_count: @cart_count, cart: show_cart?(@step) %>
   </div>
 
   <hr>
@@ -21,11 +15,11 @@
 
           <div class="col-span-1 lg:col-span-2">
             <%= for product <- @order.products do %>
-              <div {testid("product-#{product_id(product)}")} class="border darkerBorder mb-5">
+              <div {testid("product-#{product_id(product)}")} class="border border-base-225 mb-5">
                 <div class="mx-8 py-8">
-                  <.item_image item={product} class="float-left" />
+                  <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={preview_url(product)}/>
 
-                  <div class="py-4 md:py-8">
+                  <div class="py-4 md:py-6">
                     <div class="text-lg">
                       <%= product_name(product) %>
                     </div>
@@ -33,14 +27,16 @@
                     <div class="text-2xl font-extrabold mt-2.5"><%= product.price %></div>
                   </div>
 
-                  <div class="clear-left md:clear-none pt-4 md:pt-0">
-                    <label>Quantity:</label>
+                  <div class="flex items-center flex-wrap pt-4 md:clear-none clear-left">
+                    <div class="whitespace-nowrap mb-0 md:mb-2 mr-7">
+                      <label>Quantity:</label>
 
-                    <select class="select text-base font-bold ml-2 w-20">
-                      <option value="1"><%= product_quantity(product) %></option>
-                    </select>
+                      <select class="select text-base font-bold ml-2 w-24">
+                        <option value="1"><%= product_quantity(product) %></option>
+                      </select>
+                    </div>
 
-                    <button type="button" class="font-semibold text-lg text-blue-planning-300 mx-7" phx-click="edit_product" phx-value-editor-id={product_id(product)}>Edit</button>
+                    <button type="button" class="font-semibold text-lg text-blue-planning-300 mr-7" phx-click="edit_product" phx-value-editor-id={product_id(product)}>Edit</button>
 
                     <button type="button" class="font-semibold text-lg text-blue-planning-300" phx-click="delete" phx-value-editor-id={product_id(product)}>Delete</button>
                   </div>
@@ -49,88 +45,99 @@
               </div>
             <% end %>
 
-            <div class="border darkerBorder">
-              <%= for digital <- @order.digitals do %>
-                <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
-                  <.item_image item={digital} />
+      <div class={classes("border-base-225", border: Enum.any?(@order.digitals))}>
+              <div class="divide-y divide-base-200">
+                <%= for digital <- @order.digitals do %>
+                  <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
+                    <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={preview_url(digital)}/>
 
-                  <div class="py-0 md:py-7">
-                    <div class="text-lg">Digital download</div>
+                    <div class="py-0 md:py-7">
+                      <div class="text-lg">Digital download</div>
 
-                    <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9"><%= digital.price %></div>
+                      <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9"><%= digital.price %></div>
 
-                    <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
-                      Delete
-                    </button>
+                      <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
+                        Delete
+                      </button>
+                    </div>
                   </div>
-
-                </div>
-              <% end %>
+                <% end %>
+              </div>
             </div>
           </div>
 
           <div class="col-span-1"><.summary order={@order} /></div>
         </div>
-
       <% :delivery_info -> %>
         <div class="max-w-screen-xl w-full m-auto">
-          <h2 class="text-xl lg:text-3xl font-bold py-5 lg:pt-14 lg:pb-10">Enter your shipping information</h2>
+          <h2 class="text-xl lg:text-3xl font-extrabold py-5 lg:pt-14 lg:pb-10">Enter <%= if only_digitals?(@order), do: "digital delivery", else: "your shipping" %> information</h2>
 
           <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="continue" class="flex flex-col xl:flex-row">
-            <div class="border darkerBorder rounded-lg w-full xl:w-2/3 px-6 py-8 xl:mr-6">
-              <div class="flex flex-col md:flex-row">
+            <div class="border border-base-225 w-full xl:w-2/3 px-6 py-8 xl:mr-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="flex flex-col flex-1 md:mr-4">
-                  <label for="email" class="text-base md:text-sm font-bold pb-2 leading-8">Email address</label>
+                  <label for={input_id(f, :email)} class="text-base md:text-sm font-extrabold pb-2 leading-8">Email address</label>
 
-                  <%= text_input f, :email, id: "email", class: "border border-gray-100 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                  <%= email_input f, :email, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                 </div>
 
                 <div class="flex flex-col flex-1">
-                  <label for="name" class="text-base md:text-sm font-bold pb-2 leading-8">Name</label>
+                  <label for={input_id(f, :name)} class="text-base md:text-sm font-bold pb-2 leading-8">Name</label>
 
-                  <%= text_input f, :name, id: "name", class: "border border-gray-100 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                  <%= text_input f, :name, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                 </div>
-              </div>
 
-              <div class="mt-6">
-                <!-- this block should be hidden in case non physical products-->
 
-                <%= for fp <- inputs_for(f, :address) do %>
-                  <%= label_for fp, :addr1, label: "Shipping address", class: "text-base md:text-sm font-bold" %>
-
-                  <div class="pt-4">
-                    <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-
-                  <div class="pt-4">
-                    <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                  </div>
-
-                  <div class="flex pt-4">
-                    <div class="mr-4 w-1/2">
-                      <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                    </div>
-
-                    <div class="w-1/2">
-                      <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                    </div>
-                  </div>
-
-                  <div class="customSelect mt-4 cursor-pointer">
-                    <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 rounded focus:outline-none h-12 px-3"  %>
+                <%= if Enum.any?(@order.digitals) do %>
+                  <div class="col-span-1 md:col-span-2 font-medium">
+                    We’ll email you a link for your digital products! This link will never expire.
                   </div>
                 <% end %>
               </div>
+
+              <%= unless only_digitals?(@order) do %>
+                <div class="mt-6">
+                  <%= for fp <- inputs_for(f, :address) do %>
+                    <%= label_for fp, :addr1, label: "Shipping address", class: "text-base md:text-sm font-bold" %>
+
+                    <div class="pt-4">
+                      <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+
+                    <div class="pt-4">
+                      <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    </div>
+
+                    <div class="flex pt-4">
+                      <div class="mr-4 w-1/2">
+                        <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                      </div>
+
+                      <div class="w-1/2">
+                        <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                      </div>
+                    </div>
+
+                    <div class="customSelect mt-4 cursor-pointer">
+                      <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 focus:outline-none h-12 px-3"  %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
 
-            <div class="border darkerBorder rounded-lg w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
-              <p class="text-black text-opacity-80 text-lg">Products (<span>3</span>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+            <div class="border border-base-225 w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
+              <%= for {label, count, subtotal} <- summary_counts(@order), count > 0 do %>
+                <p class="capitalize text-xl">
+                  <%= label %> (<span><%= count %></span>): <span class="font-medium text-base-300"><%= subtotal %></span>
+                </p>
+              <% end %>
 
               <hr class="my-4 border-base-200">
 
-              <p class="text-xl">Total: <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+              <p class="text-2xl font-medium mb-5">Total: <span class="font-extrabold"><%= @order.subtotal_cost %></span></p>
 
-              <button type="submit" class="btn-primary w-full text-lg mt-5" disabled={!@delivery_info_changeset.valid?}>Continue</button>
+              <.button type="submit" class="w-full" disabled={!@delivery_info_changeset.valid?}>Continue</.button>
             </div>
           </.form>
         </div>
@@ -140,9 +147,9 @@
         <div class="flex flex-col-reverse xl:flex-row xl:justify-between w-full">
           <button type="submit" class="lg:hidden btn-primary mt-5 w-full text-lg" phx-click="checkout">Check out with Stripe</button>
 
-          <div class="xl:border rounded-lg darkerBorder xl:divide-y xl:divide-base-200 w-full xl:w-2/3 xl:mr-6 xl:px-6 shippingOptions__infoBlock">
+          <div class="xl:border rounded-lg border-base-225 xl:divide-y xl:divide-base-200 w-full xl:w-2/3 xl:mr-6 xl:px-6 shippingOptions__infoBlock">
             <%= for product <- @order.products do %>
-              <div class="flex flex-col lg:flex-row py-4 rounded-lg border darkerBorder xl:border-0 mb-5 xl:mb-0">
+              <div class="flex flex-col lg:flex-row py-4 rounded-lg border border-base-225 xl:border-0 mb-5 xl:mb-0">
                 <div class="lg:w-3/5">
                   <.live_component
                     module={PicselloWeb.GalleryLive.ClientShow.Cart.Product}
@@ -187,7 +194,7 @@
             <% end %>
           </div>
 
-          <div class="rounded-lg border darkerBorder w-full xl:max-w-md xl:w-1/3 px-4 py-6 mb-9 xl:mt-0 self-start">
+          <div class="rounded-lg border border-base-225 w-full xl:max-w-md xl:w-1/3 px-4 py-6 mb-9 xl:mt-0 self-start">
             <p class="text-black text-opacity-80 text-lg pb-2">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
 
             <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= @order.shipping_cost %></span></p>

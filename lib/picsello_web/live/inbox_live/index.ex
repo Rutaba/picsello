@@ -81,7 +81,7 @@ defmodule PicselloWeb.InboxLive.Index do
       </div>
       <div class="relative flex flex-shrink-0">
         <%= @date %>
-        <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300" />
+        <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300 stroke-2" />
       </div>
     </div>
     """

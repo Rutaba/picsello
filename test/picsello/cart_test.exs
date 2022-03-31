@@ -14,6 +14,10 @@ defmodule Picsello.CartTest do
     }
   end
 
+  setup do
+    Mox.verify_on_exit!()
+  end
+
   describe "place_product" do
     setup do
       photo = insert(:photo)
@@ -306,6 +310,40 @@ defmodule Picsello.CartTest do
     end
   end
 
+  describe "confirm_order" do
+    test "raises if order does not exist" do
+      assert_raise(Ecto.NoResultsError, fn ->
+        Cart.confirm_order(%Stripe.Session{
+          client_reference_id: "order_number_404"
+        })
+      end)
+    end
+
+    test "is successful when order is already confirmed" do
+      order = insert(:order, placed_at: DateTime.utc_now())
+
+      assert {:ok, _} =
+               Cart.confirm_order(%Stripe.Session{
+                 client_reference_id: "order_number_#{Order.number(order)}"
+               })
+    end
+
+    test "cancels payment intent on failure" do
+      order = insert(:order)
+
+      Picsello.MockPayments
+      |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
+        {:ok, %{amount_capturable: Order.total(order).amount + 1}}
+      end)
+      |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
+
+      Cart.confirm_order(%Stripe.Session{
+        client_reference_id: "order_number_#{Order.number(order)}",
+        payment_intent: "intent-id"
+      })
+    end
+  end
+
   defp confirmed_product(editor_id \\ "hkazbRKGjcoWwnEq3"),
     do: %Picsello.Cart.CartProduct{
       base_price: %Money{amount: 17_600, currency: :USD},
@@ -321,7 +359,6 @@ defmodule Picsello.CartTest do
           "surface" => "1_4in_acrylic_with_styrene_backing"
         }
       },
-      # id: nil,
       price: %Money{amount: 35_200, currency: :USD},
       whcc_confirmation: :confirmed,
       whcc_order: %Picsello.WHCC.Order.Created{

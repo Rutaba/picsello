@@ -159,7 +159,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         %{"preview_photo_id" => photo_id},
         %{
           assigns: %{
-            order: order,
             gallery: gallery,
             favorites_filter: favorites_filter
           }
@@ -176,7 +175,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       %{
         gallery: gallery,
         photo_id: photo_id,
-        digital_in_cart: Cart.contains_digital?(order, photo_id),
         photo_ids:
           photo_ids
           |> CLL.init()

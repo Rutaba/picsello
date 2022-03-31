@@ -14,7 +14,7 @@ defmodule PicselloWeb.Live.Pricing.Category do
       <div class="px-6 py-8 center-container">
         <div class="flex items-center">
           <.live_link to={Routes.pricing_path(@socket, :index)} class="flex items-center justify-center mr-4 rounded-full w-9 h-9 bg-blue-planning-300">
-            <.icon name="back" class="w-2 h-4 stroke-current text-base-100" />
+            <.icon name="back" class="w-2 h-4 stroke-current stroke-2 text-base-100" />
           </.live_link>
 
           <.crumbs class="text-blue-planning-200">
