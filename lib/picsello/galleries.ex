@@ -192,7 +192,16 @@ defmodule Picsello.Galleries do
   end
 
   def delete_album(album) do
+    photo_ids = get_all_album_photos_ids(album.id)
+
     Ecto.Multi.new()
+    # |> Ecto.Multi.run(:preview_update, &delete_album_photo_references/2)
+    |> Ecto.Multi.update_all(:preview, fn _ ->
+      from(p in Picsello.Galleries.GalleryProduct,
+        where: p.preview_photo_id in ^photo_ids,
+        update: [set: [preview_photo_id: nil]]
+      )
+    end, [] )
     |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photo))
     |> Ecto.Multi.delete(:album, album)
     |> Repo.transaction()
@@ -202,8 +211,14 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  def get_all_album_photos_ids(album_id) do
+    Repo.all(from p in Photo, where: p.album_id == ^album_id, select: p.id)
+  end
+
   def get_all_unsorted_photos_ids(gallery_id) do
-    Repo.all(from p in Photo, where: is_nil(p.album_id) and p.gallery_id == ^gallery_id , select: p.id)
+    Repo.all(
+      from p in Photo, where: is_nil(p.album_id) and p.gallery_id == ^gallery_id, select: p.id
+    )
   end
 
   def delete_unsorted_photos(gallery_id) do
