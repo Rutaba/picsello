@@ -25,6 +25,34 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Returns the list of expired galleries.
+
+  ## Examples
+
+      iex> list_expired_galleries()
+      [%Gallery{}, ...]
+
+  """
+  def list_expired_galleries do
+    Gallery |> where(status: "expired") |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of soon to be expired galleries.
+
+  ## Examples
+
+      iex> list_soon_to_be_expired_galleries()
+      [%Gallery{}, ...]
+
+  """
+  def list_soon_to_be_expired_galleries(date) do
+    Gallery
+    |> where([g], g.expired_at <= ^date)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single gallery.
 
   Raises `Ecto.NoResultsError` if the Gallery does not exist.
