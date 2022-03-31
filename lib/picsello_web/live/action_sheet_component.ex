@@ -16,7 +16,7 @@ defmodule PicselloWeb.ActionSheetComponent do
           phx-target={@myself}
         >
           <%= title %>
-          <.icon name="forth" class="w-4 h-4 stroke-current" />
+          <.icon name="forth" class="w-4 h-4 stroke-current stroke-2" />
         </button>
       <% end %>
 

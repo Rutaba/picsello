@@ -4,9 +4,16 @@ defmodule Picsello.Cart do
   """
 
   import Ecto.Query
-  alias Picsello.Repo
-  alias Picsello.WHCC
-  alias Picsello.Cart.{CartProduct, Order, Order.Digital, DeliveryInfo}
+
+  alias Picsello.{
+    Cart.CartProduct,
+    Cart.DeliveryInfo,
+    Cart.Order,
+    Cart.Order.Digital,
+    Cart.OrderNumber,
+    Repo,
+    WHCC
+  }
 
   def new_product(editor_id, account_id) do
     details = WHCC.editor_details(account_id, editor_id)
@@ -32,16 +39,6 @@ defmodule Picsello.Cart do
 
     product
     |> CartProduct.add_order(created_order)
-  end
-
-  def confirm_product(
-        %CartProduct{whcc_order: %{confirmation: confirmation}} = product,
-        account_id
-      ) do
-    confirmation = WHCC.confirm_order(account_id, confirmation)
-
-    product
-    |> CartProduct.add_confirmation(confirmation)
   end
 
   @doc "stores processing info in product it finds"
@@ -78,20 +75,43 @@ defmodule Picsello.Cart do
     end
   end
 
-  def contains_digital?(%Order{digitals: digitals}, photo_id) when is_integer(photo_id),
+  def digital_status(gallery, photo) do
+    cond do
+      digital_purchased?(gallery, photo) -> :purchased
+      contains_digital?(gallery, photo) -> :in_cart
+      true -> :available
+    end
+  end
+
+  defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}) when is_integer(photo_id),
     do:
       Enum.any?(
         digitals,
         &(Map.get(&1, :photo_id) == photo_id)
       )
 
-  def contains_digital?(nil, _), do: false
-
-  def contains_digital?(gallery_id, photo_id) do
+  defp contains_digital?(%{id: gallery_id}, photo) do
     case(get_unconfirmed_order(gallery_id)) do
-      {:ok, order} -> contains_digital?(order, photo_id)
+      {:ok, order} -> contains_digital?(order, photo)
       _ -> false
     end
+  end
+
+  defp contains_digital?(_, _), do: false
+
+  defp digital_purchased?(%{id: gallery_id}, photo) do
+    arg = Map.take(photo, [:id])
+
+    from(order in Order,
+      where:
+        order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and
+          fragment(
+            ~s|jsonb_path_exists(?, '$[*] \\? (@.photo_id == $id)', ?)|,
+            order.digitals,
+            ^arg
+          )
+    )
+    |> Repo.exists?()
   end
 
   @doc """
@@ -153,11 +173,14 @@ defmodule Picsello.Cart do
     end
   end
 
-  def get_placed_gallery_order(order_id, gallery_id) do
+  def get_placed_gallery_order!(%{id: gallery_id}, order_number) do
+    order_id = order_number |> OrderNumber.from_number()
+
     from(order in Order,
-      where: order.gallery_id == ^gallery_id and order.placed == true and order.id == ^order_id
+      where:
+        order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and order.id == ^order_id
     )
-    |> Repo.one()
+    |> Repo.one!()
   end
 
   def get_orders(gallery_id) do
@@ -166,18 +189,6 @@ defmodule Picsello.Cart do
       order_by: [desc: order.id]
     )
     |> Repo.all()
-  end
-
-  @doc """
-  Confirms the order.
-  """
-  def confirm_order(%Order{products: products} = order, account_id) do
-    confirmed_products =
-      Enum.map(products, fn product -> confirm_product(product, account_id) end)
-
-    order
-    |> Order.confirmation_changeset(confirmed_products)
-    |> Repo.update!()
   end
 
   def order_with_editor(editor_id) do
@@ -212,6 +223,24 @@ defmodule Picsello.Cart do
     order
     |> Order.store_delivery_info(delivery_info_change)
     |> Repo.update!()
+  end
+
+  def set_order_number(order) do
+    order
+    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
+    |> Repo.update!()
+  end
+
+  def item_count(%{products: products, digitals: digitals}),
+    do: Enum.count(products) + Enum.count(digitals)
+
+  def summary_counts(order) do
+    for(key <- [:products, :digitals]) do
+      collection = Map.get(order, key)
+
+      {key, Enum.count(collection),
+       Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))}
+    end
   end
 
   def checkout_params(
@@ -257,6 +286,8 @@ defmodule Picsello.Cart do
     %{
       line_items: product_line_items ++ digital_line_items,
       customer_email: order.delivery_info.email,
+      client_reference_id: "order_number_#{Order.number(order)}",
+      payment_intent_data: %{capture_method: :manual},
       shipping_options: [
         %{
           shipping_rate_data: %{
@@ -287,6 +318,11 @@ defmodule Picsello.Cart do
   def preview_url(%Digital{preview_url: path}),
     do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
 
+  defdelegate confirm_order(session), to: __MODULE__.Confirmations
+
+  defdelegate confirm_order(order_number, stripe_session_id),
+    to: __MODULE__.Confirmations
+
   defp seek_and_map(editor_id, fun) do
     with order <- order_with_editor(editor_id),
          true <- order != nil and is_list(order.products),
@@ -313,13 +349,4 @@ defmodule Picsello.Cart do
     |> Order.update_changeset(product, attrs)
     |> Repo.update!()
   end
-
-  def set_order_number(order) do
-    order
-    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
-    |> Repo.update!()
-  end
-
-  def item_count(%{products: products, digitals: digitals}),
-    do: Enum.count(products) + Enum.count(digitals)
 end

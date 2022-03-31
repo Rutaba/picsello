@@ -1,45 +1,47 @@
-<div class={classes("flex w-full items-center py-2", %{"justify-between" => @cart_count > 0, "justify-start" => @cart_count == 0})}>
-    <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
-        <div class="fixed left-0 top-0 w-3/4 bottom-0 z-10 flex flex-col items-start hidden cursor-default
-            toggle-content bg-white py-6 px-10">
-            <div class="cursor-pointer text-base-300">
-                <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
-            </div>
-            <nav class="flex flex-col pt-1">
-                <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
-                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center
-                    text-lg pt-6 font-medium" active_class="bg-blue-planning-100 font-bold">
-                <%= title %>
-                </.nav_link>
-                <% end %>
-            </nav>
-        </div>
-        <.icon name="hamburger" class="h-4 text-base-300 w-6" />
-    </div>
-    <div class="px-6 sm:pl-0 sm:pr-9 py-2">
-        <.initials_circle style={"background-color: #{@organization.profile.color}"} class="pb-1 text-2xl font-bold w-14 h-14 text-base-100" user={@organization.user} />
-    </div>
-    <ul class="sm:flex items-center py-4 hidden">
-        <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
-        <li>
-            <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center
-                text-lg mr-6 text-base" active_class="bg-blue-planning-100 font-bold">
-            <%= title %>
-            </.nav_link>
-        </li>
-        <% end %>
-    </ul>
+<div class={classes("flex w-full items-center py-2", %{"justify-between" => @cart, "justify-start" => !@cart})}>
+  <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
+    <div class="fixed left-0 top-0 w-3/4 bottom-0 z-10 flex flex-col items-start hidden cursor-default toggle-content bg-white py-6 px-10">
+      <div class="cursor-pointer text-base-300">
+        <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+      </div>
 
-    <%= if @cart_count > 0 do %>
-    <div class="relative sm:ml-auto cursor-pointer">
-        <%= live_redirect to: @cart_route, title: "cart" do %>
-            <.icon name="shopping-cart" class="h-6 w-6 text-base-300" />
-            <span class="absolute -top-1 -left-2 bg-blue-planning-300 text-base-100 font-bold rounded-full flex items-center justify-center cartItemsAmount">
-                <%= @cart_count %>
-            </span>
+      <nav class="flex flex-col pt-1">
+        <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
+          <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center text-lg pt-6 font-medium" active_class="bg-blue-planning-100 font-bold">
+            <%= title %>
+          </.nav_link>
         <% end %>
+      </nav>
     </div>
-    <% else %>
-    <span></span>
+
+    <.icon name="hamburger" class="h-4 text-base-300 w-6" />
+  </div>
+
+  <div class="px-6 sm:pl-0 sm:pr-9 py-2">
+    <.initials_circle style={"background-color: #{@organization.profile.color}"} class="pt-0.5 text-2xl font-bold w-14 h-14 text-base-100" user={@organization.user} />
+  </div>
+
+  <ul class="sm:flex items-center py-4 hidden">
+    <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
+      <li>
+        <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center text-lg mr-6 text-base" active_class="bg-blue-planning-100 font-bold">
+          <%= title %>
+        </.nav_link>
+      </li>
     <% end %>
+  </ul>
+
+  <%= if @cart do %>
+    <div class="relative sm:ml-auto">
+      <.cart_wrapper route={@cart_route} count={@cart_count} >
+        <.icon name="shopping-cart" class="h-8 w-8 text-base-300" />
+
+        <span class="absolute -top-1 -left-1.5 border-base-300 border-2 bg-base-100 text-base-300 font-bold rounded-full flex items-center justify-center w-5 h-5 pt-0.5 text-[12px]">
+          <%= @cart_count %>
+        </span>
+      </.cart_wrapper>
+    </div>
+  <% else %>
+    <span></span>
+  <% end %>
 </div>

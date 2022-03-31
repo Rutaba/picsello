@@ -4,13 +4,20 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
 
   @defaults %{
     cart_count: 0,
-    cart_route: nil
+    cart_route: nil,
+    cart: true
   }
 
   def update(assigns, socket) do
     socket
     |> assign(Map.merge(@defaults, assigns))
-    |> then(&{:ok, &1})
+    |> then(fn %{assigns: %{gallery: gallery}} = socket ->
+      assign(socket,
+        organization: gallery.job.client.organization,
+        cart_route: Routes.gallery_client_show_cart_path(socket, :cart, gallery.client_link_hash)
+      )
+    end)
+    |> ok()
   end
 
   def get_menu_items(socket, gallery) do
@@ -24,5 +31,15 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
         path: Routes.gallery_client_orders_path(socket, :show, gallery.client_link_hash)
       }
     ]
+  end
+
+  def cart_wrapper(assigns) do
+    ~H"""
+    <%= if @count > 0 do %>
+      <%= live_redirect to: @route, title: "cart", class: "block" do %><%= render_slot @inner_block %><% end %>
+    <% else %>
+      <div title="cart" ><%= render_slot @inner_block %></div>
+    <% end %>
+    """
   end
 end

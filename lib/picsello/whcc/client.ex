@@ -31,16 +31,19 @@ defmodule Picsello.WHCC.Client do
     end)
   end
 
+  @impl WHCC.Adapter
   def designs do
     {:ok, %{body: body}} = new() |> get("/designs")
     body |> Enum.map(&WHCC.Design.from_map/1)
   end
 
+  @impl WHCC.Adapter
   def products do
     {:ok, %{body: body}} = new() |> get("/products")
     body |> Enum.map(&WHCC.Product.from_map/1)
   end
 
+  @impl WHCC.Adapter
   def design_details(%WHCC.Design{id: id} = design) do
     if designs_enabled?() do
       {:ok,
@@ -54,6 +57,7 @@ defmodule Picsello.WHCC.Client do
     end
   end
 
+  @impl WHCC.Adapter
   def editor(%{"userId" => account_id} = params) do
     {:ok, %{body: body}} =
       new(account_id)
@@ -62,6 +66,7 @@ defmodule Picsello.WHCC.Client do
     body |> WHCC.CreatedEditor.from_map()
   end
 
+  @impl WHCC.Adapter
   def get_existing_editor(account_id, editor_id) do
     {:ok, %{body: %{"url" => url}}} =
       new(account_id)
@@ -70,6 +75,7 @@ defmodule Picsello.WHCC.Client do
     WHCC.CreatedEditor.build(editor_id, url)
   end
 
+  @impl WHCC.Adapter
   def editor_details(account_id, id) do
     {:ok, %{body: body}} = new(account_id) |> get("/editors/#{id}")
 
@@ -77,6 +83,7 @@ defmodule Picsello.WHCC.Client do
     |> WHCC.Editor.Details.new()
   end
 
+  @impl WHCC.Adapter
   def editor_clone(account_id, editor_id) do
     {:ok, %{body: %{"_id" => clone_id}}} =
       new(account_id)
@@ -85,8 +92,10 @@ defmodule Picsello.WHCC.Client do
     clone_id
   end
 
+  @impl WHCC.Adapter
   def editor_export(account_id, id) when not is_list(id), do: editor_export(account_id, [id])
 
+  @impl WHCC.Adapter
   def editor_export(account_id, ids) do
     params =
       ids
@@ -101,6 +110,7 @@ defmodule Picsello.WHCC.Client do
     body |> WHCC.Editor.Export.new()
   end
 
+  @impl WHCC.Adapter
   def create_order(account_id, editor_id, opts) do
     params =
       account_id
@@ -115,6 +125,7 @@ defmodule Picsello.WHCC.Client do
     body |> WHCC.Order.Created.new()
   end
 
+  @impl WHCC.Adapter
   def confirm_order(account_id, confirmation) do
     {:ok, %{body: body}} =
       account_id
@@ -123,18 +134,20 @@ defmodule Picsello.WHCC.Client do
 
     body
     |> then(fn
-      %{"ConfirmationID" => ^confirmation} -> :confirmed
-      %{"ErrorNumber" => "412.04"} -> :already_confirmed
+      %{"ConfirmationID" => ^confirmation} -> {:ok, :confirmed}
+      %{"ErrorNumber" => "412.04"} -> {:ok, :already_confirmed}
       x -> {:error, x}
     end)
   end
 
+  @impl WHCC.Adapter
   def product_details(%WHCC.Product{id: id} = product) do
     {:ok, %{body: api}} = new() |> get("/products/#{id}")
 
     WHCC.Product.add_details(product, api)
   end
 
+  @impl WHCC.Adapter
   def webhook_register(url) do
     {:ok, %{body: body}} =
       new()
@@ -154,6 +167,7 @@ defmodule Picsello.WHCC.Client do
     end
   end
 
+  @impl WHCC.Adapter
   def webhook_verify(hash) do
     {:ok, %{body: body}} =
       new()
@@ -162,6 +176,7 @@ defmodule Picsello.WHCC.Client do
     body
   end
 
+  @impl WHCC.Adapter
   def webhook_validate(playload, signature) do
     {:ok, %{body: body}} =
       new()

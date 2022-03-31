@@ -47,7 +47,7 @@ server: ## Start the App server.
 test: ## Run the test suite.
 test: setup check test-clear
 	rm -f screenshots/*.png
-	mix test
+	mix test $(MIX_TEXT_ARGS)
 
 test-clear:
 	ps ax | grep '[Cc]hrome.*--headless' | cut -f1 -d ' ' | xargs kill -9 | true
