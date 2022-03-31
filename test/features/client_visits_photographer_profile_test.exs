@@ -89,7 +89,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
 
     session
     |> visit(profile_url)
-    |> assert_text("Not Found")
+    |> assert_text("Whoops! We lost that page in our camera bag")
   end
 
   feature "selects job type if there is only one", %{
