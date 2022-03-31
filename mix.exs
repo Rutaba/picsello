@@ -80,6 +80,7 @@ defmodule Picsello.MixProject do
         {:cll, "~> 0.1.0"},
         {:ex_zipcodes, "~> 0.1.1"},
         {:ecto_commons, "~> 0.3.3"},
+        {:cors_plug, "~> 2.0"},
         {:floki, "~> 0.32"}
       ],
       [

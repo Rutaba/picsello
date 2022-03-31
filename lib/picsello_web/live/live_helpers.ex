@@ -194,13 +194,13 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def crumbs(assigns) do
-    assigns = Enum.into(assigns, %{class: "text-xs text-blue-planning-200"})
+    assigns = Enum.into(assigns, %{class: "text-xs text-base-250"})
 
     ~H"""
     <div class={@class}>
       <%= for crumb <- Enum.slice(@crumb, 0..-2) do %>
         <.live_link {crumb}><%= render_slot(crumb) %></.live_link>
-        <.icon name="forth" class="inline-block w-2 h-2 stroke-current" />
+        <.icon name="forth" class="inline-block w-2 h-2 stroke-current stroke-2" />
       <% end %>
       <span class="font-semibold"><%= render_slot(List.last(@crumb)) %></span>
     </div>

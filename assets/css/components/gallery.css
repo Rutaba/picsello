@@ -399,10 +399,6 @@
     @apply opacity-100;
 }
 
-.darkerBorder{
-    border-color: #C9C9C9;
-}
-
 .removeBtn {
     @apply opacity-0
     left-4
@@ -503,13 +499,6 @@
 .customInvalidOption:invalid,
 .customInvalidOption option[value=""] {
     @apply text-base-250
-}
-
-.cartItemsAmount {
-    font-size: 10px;
-    line-height: 15px;
-    width: 16px;
-    height: 16px;
 }
 
 .deliveryOptions__wrapper input[name="ship_option"] {
@@ -640,20 +629,12 @@
 }
 
 @media screen and (max-width: 1024px) {
-    .choose-product {
-        @apply grid
-    }
-
     .choose-product-item {
         @apply w-full
     }
 }
 
 @media screen and (min-width: 1024px) {
-    .choose-product {
-        @apply flex
-    }
-
     .customWatermarkPopup {
         max-height: 950px;
     }

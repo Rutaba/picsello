@@ -459,27 +459,33 @@ defmodule Picsello.Factory do
       download_count: 10
     }
 
-  def cart_product_factory(%{product_id: product_id}) do
+  def whcc_editor_details_factory do
+    %Picsello.WHCC.Editor.Details{
+      editor_id: sequence("hkazbRKGjcoWwnEq3"),
+      preview_url:
+        "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+      product_id: fn -> insert(:product).whcc_id end,
+      selections: %{
+        "display_options" => "no",
+        "quantity" => 1,
+        "size" => "20x30",
+        "surface" => "1_4in_acrylic_with_styrene_backing"
+      }
+    }
+    |> evaluate_lazy_attributes()
+  end
+
+  def cart_product_factory(attrs \\ %{}) do
     %Picsello.Cart.CartProduct{
       base_price: %Money{amount: 17_600, currency: :USD},
-      editor_details: %Picsello.WHCC.Editor.Details{
-        editor_id: sequence("hkazbRKGjcoWwnEq3"),
-        preview_url:
-          "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
-        product_id: product_id,
-        selections: %{
-          "display_options" => "no",
-          "quantity" => 1,
-          "size" => "20x30",
-          "surface" => "1_4in_acrylic_with_styrene_backing"
-        }
-      },
+      editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id])),
       price: %Money{amount: 35_200, currency: :USD},
       whcc_confirmation: nil,
       whcc_order: nil,
       whcc_processing: nil,
       whcc_tracking: nil
     }
+    |> merge_attributes(Map.drop(attrs, [:product_id]))
   end
 
   def whcc_order_created_factory do
@@ -588,4 +594,20 @@ defmodule Picsello.Factory do
     }
 
   def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
+
+  def subscription_plan_factory,
+    do: %Picsello.SubscriptionPlan{
+      stripe_price_id: "price_123",
+      recurring_interval: "month",
+      price: 5000
+    }
+
+  def subscription_event_factory(attrs),
+    do:
+      %Picsello.SubscriptionEvent{
+        stripe_subscription_id: "sub_123",
+        current_period_start: DateTime.utc_now(),
+        current_period_end: DateTime.utc_now() |> DateTime.add(60 * 60 * 24)
+      }
+      |> merge_attributes(attrs)
 end

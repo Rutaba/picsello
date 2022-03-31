@@ -29,7 +29,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={classes("bg-blue-planning-100", %{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-8 text-3xl font-bold center-container">Inbox</h1></div>
+    <div class={classes(%{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container">Inbox</h1></div>
     <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
@@ -81,7 +81,7 @@ defmodule PicselloWeb.InboxLive.Index do
       </div>
       <div class="relative flex flex-shrink-0">
         <%= @date %>
-        <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300" />
+        <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300 stroke-2" />
       </div>
     </div>
     """

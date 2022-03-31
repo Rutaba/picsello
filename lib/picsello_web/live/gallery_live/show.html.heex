@@ -6,7 +6,7 @@
           <ul>
             <li>
               <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
-                <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
+                <.icon name="back" class="stroke-2 w-14 h-14 stroke-current text-blue-planning-300" />
 
                 <span>Gallery</span>
               <% end %>
@@ -39,7 +39,7 @@
             <ul>
               <li>
                 <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
-                  <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300" />
+                  <.icon name="back" class="w-14 h-14 stroke-2 stroke-current text-blue-planning-300" />
 
                   <span>Back to job</span>
                 <% end %>

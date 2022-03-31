@@ -14,6 +14,10 @@ defmodule Picsello.CartTest do
     }
   end
 
+  setup do
+    Mox.verify_on_exit!()
+  end
+
   describe "place_product" do
     setup do
       photo = insert(:photo)
@@ -239,6 +243,107 @@ defmodule Picsello.CartTest do
     end
   end
 
+  describe "checkout_params" do
+    test "returns correct line items" do
+      Mox.stub(Picsello.PhotoStorageMock, :path_to_url, fn "digital.jpg" ->
+        "https://example.com/digital.jpg"
+      end)
+
+      gallery = insert(:gallery)
+      whcc_product = insert(:product)
+
+      cart_product = build(:ordered_cart_product, %{product_id: whcc_product.whcc_id})
+
+      order =
+        for product <- [cart_product, %Digital{preview_url: "digital.jpg", price: ~M[500]USD}],
+            reduce: nil do
+          _ ->
+            Picsello.Cart.place_product(product, gallery.id)
+        end
+
+      checkout_params =
+        Cart.checkout_params(%{
+          order
+          | delivery_info: %{email: "customer@example.com"},
+            products:
+              Enum.map(
+                order.products,
+                &%{
+                  &1
+                  | whcc_product:
+                      insert(:product,
+                        attribute_categories: [
+                          %{
+                            "_id" => "size",
+                            "attributes" => [%{"id" => "20x30", "name" => "20 by 30"}]
+                          }
+                        ]
+                      )
+                }
+              )
+        })
+
+      assert [
+               %{
+                 price_data: %{
+                   currency: :USD,
+                   product_data: %{
+                     images: [cart_product.editor_details.preview_url],
+                     name: "20 by 30 #{whcc_product.whcc_name}"
+                   },
+                   unit_amount: 35_200
+                 },
+                 quantity: cart_product.editor_details.selections["quantity"]
+               },
+               %{
+                 price_data: %{
+                   currency: :USD,
+                   product_data: %{
+                     images: ["https://example.com/digital.jpg"],
+                     name: "Digital image"
+                   },
+                   unit_amount: 500
+                 },
+                 quantity: 1
+               }
+             ] == checkout_params.line_items
+    end
+  end
+
+  describe "confirm_order" do
+    test "raises if order does not exist" do
+      assert_raise(Ecto.NoResultsError, fn ->
+        Cart.confirm_order(%Stripe.Session{
+          client_reference_id: "order_number_404"
+        })
+      end)
+    end
+
+    test "is successful when order is already confirmed" do
+      order = insert(:order, placed_at: DateTime.utc_now())
+
+      assert {:ok, _} =
+               Cart.confirm_order(%Stripe.Session{
+                 client_reference_id: "order_number_#{Order.number(order)}"
+               })
+    end
+
+    test "cancels payment intent on failure" do
+      order = insert(:order)
+
+      Picsello.MockPayments
+      |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
+        {:ok, %{amount_capturable: Order.total(order).amount + 1}}
+      end)
+      |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
+
+      Cart.confirm_order(%Stripe.Session{
+        client_reference_id: "order_number_#{Order.number(order)}",
+        payment_intent: "intent-id"
+      })
+    end
+  end
+
   defp confirmed_product(editor_id \\ "hkazbRKGjcoWwnEq3"),
     do: %Picsello.Cart.CartProduct{
       base_price: %Money{amount: 17_600, currency: :USD},
@@ -254,7 +359,6 @@ defmodule Picsello.CartTest do
           "surface" => "1_4in_acrylic_with_styrene_backing"
         }
       },
-      # id: nil,
       price: %Money{amount: 35_200, currency: :USD},
       whcc_confirmation: :confirmed,
       whcc_order: %Picsello.WHCC.Order.Created{

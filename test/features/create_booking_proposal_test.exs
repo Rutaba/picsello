@@ -16,7 +16,9 @@ defmodule Picsello.CreateBookingProposalTest do
   setup :authenticated
 
   setup %{user: user} do
-    Mox.stub(Picsello.MockPayments, :status, fn _ -> :charges_enabled end)
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
 
     user.organization
     |> Organization.assign_stripe_account_changeset("stripe_id")

@@ -6,6 +6,7 @@ defmodule PicselloWeb.LeadLive.Show do
   alias Picsello.{
     Job,
     Repo,
+    Payments,
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire
@@ -224,8 +225,6 @@ defmodule PicselloWeb.LeadLive.Show do
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: payments().status(current_user))
+    socket |> assign(stripe_status: Payments.status(current_user))
   end
-
-  defp payments, do: Application.get_env(:picsello, :payments)
 end

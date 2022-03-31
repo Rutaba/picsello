@@ -24,11 +24,13 @@ console: ## Opens the App console.
 outdated: ## Shows outdated packages.
 	mix hex.outdated
 
-assets/node_modules: assets/package-lock.json
+assets/node_modules: assets/package.json assets/package-lock.json
 	npm install --prefix=assets
+	touch $@
 
-deps: mix.lock
+deps: mix.exs mix.lock
 	mix deps.get
+	touch $@
 
 setup: assets/node_modules
 setup: deps
@@ -45,7 +47,7 @@ server: ## Start the App server.
 test: ## Run the test suite.
 test: setup check test-clear
 	rm -f screenshots/*.png
-	mix test
+	mix test $(MIX_TEXT_ARGS)
 
 test-clear:
 	ps ax | grep '[Cc]hrome.*--headless' | cut -f1 -d ' ' | xargs kill -9 | true

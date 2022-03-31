@@ -14,7 +14,7 @@ defmodule PicselloWeb.JobLive.Shoot do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="bg-blue-planning-100">
+    <header class="pt-10 pb-8">
       <div class="px-6 py-2 lg:pb-6 center-container">
         <.crumbs>
           <:crumb to={Routes.job_path(@socket, @live_action)}><%= action_name(@live_action, :plural) %></:crumb>

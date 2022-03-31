@@ -52,7 +52,8 @@ config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINES
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
-  connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET")
+  connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET"),
+  app_signing_secret: System.get_env("STRIPE_APP_SIGNING_SECRET")
 
 config :ueberauth, Ueberauth,
   providers: [
@@ -103,6 +104,7 @@ config :picsello, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
+       {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},
        {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
      ]}
   ]

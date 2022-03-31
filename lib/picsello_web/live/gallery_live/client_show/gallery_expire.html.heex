@@ -6,6 +6,8 @@
             This gallery has expired.
         </h1>
         <p class="py-3 text-lg font-bold">If you still need access to this gallery, contact <br> your photographer.</p>
-        <a class="underline text-1xl text-blue-planning-300" href={@profile_url}>Contact <%= @gallery_user.name %></a>
+        <%= unless Picsello.Subscriptions.subscription_expired?(@gallery_user) do %>
+            <a class="underline text-1xl text-blue-planning-300" href={@profile_url}>Contact <%= @gallery_user.name %></a>
+        <% end %>
     </div>
 </main>

@@ -1,5 +1,5 @@
 <div {intro(@current_user, "intro_leads_new")}>
-<header class="bg-blue-planning-100">
+<header>
   <div class="p-6 pb-2 lg:pb-6 center-container">
     <.crumbs>
       <:crumb to={Routes.job_path(@socket, @live_action)}>
@@ -9,33 +9,27 @@
       <:crumb><%= Job.name @job %></:crumb>
     </.crumbs>
 
-    <hr class="mt-2 mb-6 border-white" />
-
     <%= case next_reminder_on(@proposal) do %>
       <% nil -> %>
       <% date -> %>
-        <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-white text-blue-planning-300">
+        <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300 mt-8">
           Email scheduled for <%= strftime(@current_user.time_zone, date, "%B %d, %Y") %>
         </span>
     <% end %>
 
     <div class="flex flex-col justify-between md:flex-row">
-      <h1 class="flex items-center justify-between mt-2 text-3xl font-bold lg:justify-start">
+      <h1 class="flex items-center justify-between mt-2 text-4xl font-bold lg:justify-start">
         <%= Job.name @job %>
 
         <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-planning-300 text-blue-planning-300">
           <div class="absolute -top-1.5 left-1.5">&hellip;</div>
         </button>
       </h1>
-      <%= cond do %>
-        <% is_nil(@package) -> %>
-          <button type="button" class="w-full mt-6 md:w-auto btn-primary" phx-click="add-package" >Add a package</button>
-        <% is_nil(@proposal) -> %>
-          <div class="flex flex-col justify-center">
-            You haven’t sent a proposal yet.
-            <a href="#finish-proposal" class="link">Finish booking details</a>
-          </div>
-        <% true -> %>
+      <%= if @package && @proposal == nil do %>
+        <div class="flex flex-col justify-center">
+          You haven’t sent a proposal yet.
+          <a href="#finish-proposal" class="link">Finish booking details</a>
+        </div>
       <% end %>
     </div>
   </div>
@@ -107,7 +101,7 @@
             <h3 class="input-label">Questionnaire included</h3>
             <button phx-click="open-questionnaire" class="mt-2 btn-primary py-1 px-3 flex items-center text-xs">
               View questionnaire
-              <.icon name="forth" class="w-3 h-3 ml-2 stroke-current" />
+              <.icon name="forth" class="w-3 h-3 ml-2 stroke-current stroke-2" />
             </button>
           </div>
         </label>

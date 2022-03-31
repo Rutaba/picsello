@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.BrandSettings do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import PicselloWeb.Live.Brand.Shared, only: [email_signature_preview: 1]
 
   @impl true
@@ -13,7 +13,7 @@ defmodule PicselloWeb.Live.BrandSettings do
   def render(assigns) do
     ~H"""
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
-      <div class="flex flex-col justify-between flex-1 flex-grow-0 mt-5 sm:flex-row">
+      <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
         <div>
           <h1 class="text-2xl font-bold">Brand</h1>
 
@@ -31,15 +31,31 @@ defmodule PicselloWeb.Live.BrandSettings do
             <div>
               Here’s the email signature that we’ve generated for you that will be included on all <.live_link class="link" to={Routes.inbox_path(@socket, :index)}>Inbox</.live_link> emails. To change your info, you’ll have to upload a logo <.live_link class="link" to={Routes.profile_settings_path(@socket, :edit)}>here</.live_link>, update your <.live_link class="link" to={Routes.user_settings_path(@socket, :edit)}>business name</.live_link> and modify your phone number.
             </div>
-            <button phx-click="edit-signature" class="hidden mt-6 sm:block btn-primary">Change signature</button>
+            <button phx-click="edit-signature" class="hidden sm:block btn-primary mt-6">Change signature</button>
           </div>
           <div {testid("signature-preview")} class="flex flex-col">
             <.email_signature_preview organization={@organization} user={@current_user} />
-            <button phx-click="edit-signature" class="self-end block mt-12 sm:hidden btn-primary">Change signature</button>
+            <button phx-click="edit-signature" class="block sm:hidden btn-primary mt-12 self-end">Change signature</button>
           </div>
         </div>
       </.card>
     </.settings_nav>
+    """
+  end
+
+  def card(assigns) do
+    assigns = Enum.into(assigns, %{class: ""})
+
+    ~H"""
+    <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
+      <div class="w-4 border-r bg-blue-planning-300" />
+
+      <div class="flex flex-col w-full p-4">
+        <h1 class="text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
+
+        <%= render_slot(@inner_block) %>
+      </div>
+    </div>
     """
   end
 
