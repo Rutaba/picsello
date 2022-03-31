@@ -2,8 +2,8 @@
   <div class="flex flex-row bg-base-200">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: 0,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 bg-gray-100 pl-96">
-    <div>
-    <div phx-click="upload_toast" class={"fixed right-20 top-4 z-20 #{@upload_toast}"}>
+      <div class="sticky top-0 z-30 pt-20 pb-5 pl-10 pr-20 bg-gray-100 shadow-lg">
+        <div phx-click="upload_toast" class={"fixed right-20 top-4 z-30 #{@upload_toast}"}>
           <div class="flex font-sans bg-white rounded-lg shadow-lg cursor-pointer">
             <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
               <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
@@ -13,11 +13,8 @@
               <.icon name="close-x" class="w-3 h-3 stroke-current" />
             </div>
           </div>
-      </div>
-      </div>
-      <div class="pt-20 pb-10 pl-10 pr-20">
-        <div class="relative flex flex-col w-full min-h-screen pb-16 overflow-x-hidden">
-          <div class="flex flex-col">
+        </div>
+        <div class="flex flex-col">
             <div class="flex flex-row justify-between">
               <span class="text-4xl font-bold " style="font-family: sans-serif">Photos</span>
               <button class="mx-2 bg-white navBar__btn w-max">
@@ -25,9 +22,12 @@
                  <span class="pl-2" phx-click="open_albums_popup">Add Album</span>
               </button>
             </div>
-            <p class="mt-4 font-sans"><%= length(@gallery.albums) %> albums</p>
-          </div>
-          <div class="grid grid-cols-2 sm:gap-2 md:gap-2">
+            <p class="mt-4 font-sans text-gray-400"><%= length(@gallery.albums) %> albums</p>
+        </div>
+      </div>
+      <div class="">    
+        <div class="relative flex flex-col w-full min-h-screen pb-16 overflow-x-hidden">
+          <div class="grid grid-cols-2 pl-10 pr-20 pb-36 sm:gap-2 md:gap-2">
              <div class="flex flex-col mb-2 mr-4">
                 <a class="mt-4 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/alum_placeholder.png')" phx-click="open_unsorted_photos">
                   <div class="flex flex-row items-end justify-start h-full">
@@ -36,8 +36,8 @@
                 </a>
 
               <div class="font-bold cursor-pointer actionBlock">
-              <div id="actions" class="relative" phx-hook="ToggleAlbumDropdown">
-                <div class="flex flex-row items-center justify-between -mt-1 border-2 rounded-b-lg md:w-full actionHeight bg-base-100">
+                <div id="unsorted_actions" class="relative" phx-hook="ToggleAlbumDropdown">
+                <div class="flex items-center justify-between -mt-1 border-2 rounded-b-lg dropdown md:w-full actionHeight bg-base-100">
                     <div class="mx-3 font-sans font-normal">
                       <span>Actions</span>
                     </div>
@@ -64,17 +64,6 @@
               </div>
             </div>
             </div>
-
-
-
-
-
-
-
-
-
-
-
             <%= for album <- @gallery.albums do %>
             <div class="flex flex-col mb-2 mr-4">
               <%= if album.thumbnail_url do %>
@@ -91,15 +80,15 @@
                   </a>
               <% end %>
               <div class="font-bold cursor-pointer actionBlock">
-              <div id="actions" class="relative" phx-hook="ToggleAlbumDropdown">
-                <div class="flex flex-row items-center justify-between -mt-1 border-2 rounded-b-lg md:w-full actionHeight bg-base-100">
+              <div id={"actions#{album.id}"} class="relative" phx-hook="ToggleAlbumDropdown">
+                <div class="flex flex-row items-center justify-between -mt-1 border-2 rounded-b-lg dropdown md:w-full bg-base-100">
                     <div class="mx-3 font-sans font-normal">
                       <span>Actions</span>
                     </div>
                       <.icon name="down" class="w-3 h-3 mr-2 stroke-current stroke-2 open-icon" />
                       <.icon name="up" class="hidden w-3 h-3 mr-2 stroke-current stroke-2 close-icon" />
                 </div>
-                <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md toggle-content">
+                <ul class="absolute hidden w-full mt-2 bg-white rounded-md toggle-content">
                     <li phx-click="go_to_album_selected" phx-value-album={album.id} class="relative flex items-center justify-between">
                       <button href="#!" class="flex items-center w-full h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md text-ellipsis whitespace-nowrap hover:bg-blue-planning-100">Go to album</button>
                     </li>
@@ -128,7 +117,7 @@
       </div>
     </div>
   </div>
-  <div class="fixed bottom-0 left-0 right-0 z-30">
+  <div class="fixed bottom-0 left-0 right-0 z-10">
   <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
   </div>
 </div>
