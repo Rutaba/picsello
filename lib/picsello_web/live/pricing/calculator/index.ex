@@ -2,11 +2,25 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   use PicselloWeb, live_view: [layout: "calculator"]
 
   alias Picsello.PricingCalculations
-  alias Picsello.{Repo, JobType, Onboardings}
+  alias Picsello.{Repo, JobType}
 
   @impl true
   def mount(_params, _session, socket) do
-    socket |> ok()
+    socket
+    |> assign_step(1)
+    |> then(fn %{assigns: %{current_user: user}} = socket ->
+      assign(socket,
+        pricing_calculations: %PricingCalculations{
+          organization_id: user.organization_id,
+          job_types: user.organization.profile.job_types,
+          state: user.onboarding.state,
+          min_years_experience: user.onboarding.photographer_years,
+          schedule: user.onboarding.schedule
+        }
+      )
+    end)
+    |> assign_changeset()
+    |> ok()
   end
 
   @impl true
@@ -72,8 +86,32 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
-  def handle_event("validate", _, socket) do
+  def handle_event("validate", %{"pricing_calculations" => params}, socket) do
+    socket |> assign_changeset(params) |> noreply()
+  end
+
+  @impl true
+  def handle_event("validate", _params, socket) do
     socket |> assign_changeset() |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{"pricing_calculations" => params},
+        %{assigns: %{step: step}} = socket
+      ) do
+    case socket |> build_changeset(params) |> Repo.insert_or_update() do
+      {:ok, pricing_calculations} ->
+        socket
+        |> assign(pricing_calculations: pricing_calculations)
+        |> assign_step(step + 1)
+        |> assign_changeset()
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset) |> noreply()
+    end
   end
 
   @impl true
@@ -86,37 +124,29 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 2} = assigns) do
-    IO.inspect(assigns.f.data)
-
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">We need to know a little about what you do currently in order to build accurate results.</h4>
 
-        <%= for o <- inputs_for(@f, :organization) do %>
-          <%= hidden_inputs_for o %>
+        <% input_name = input_name(@f, :job_types) <> "[]" %>
+        <div class="flex flex-col pb-1">
+          <p class="py-2 font-extrabold">
+            What’s your speciality?
+            <i class="italic font-light">(Select one or more)</i>
+          </p>
 
-          <%= for p <- inputs_for(o, :profile) do %>
-            <% input_name = input_name(p, :job_types) <> "[]" %>
-            <div class="flex flex-col pb-1">
-              <p class="py-2 font-extrabold">
-                What’s your speciality?
-                <i class="italic font-light">(Select one or more)</i>
-              </p>
-
-              <div class="mt-2 grid grid-cols-3 gap-3 sm:gap-5">
-                <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(p, :job_types) || [], job_type)]) do %>
-                  <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
+          <div class="mt-2 grid grid-cols-3 gap-3 sm:gap-5">
+            <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
+              <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
+            <% end %>
+          </div>
+        </div>
 
         <div class="grid grid-cols-2 gap-3 sm:gap-5">
             <label class="flex flex-col mt-4">
               <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
 
-              <%= select @f, :full_time, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+              <%= select @f, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
             </label>
 
             <label class="flex flex-col mt-4">
@@ -144,7 +174,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
 
         <div class="flex justify-end mt-8">
-          <button type="button" class="btn-primary" phx-click="next">Next</button>
+          <button type="submit" class="btn-primary">Next</button>
         </div>
       </.container>
     """
@@ -170,8 +200,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <label class="flex flex-col">
               <p class="pb-2">I frequently work the following days:</p>
               <div class="mt-2 flex flex-wrap">
-              <% input_name = input_name(@f, :days) <> "[]" %>
-              <%= for(day <- days(), checked <- [Enum.member?(input_value(@f, :days) || [], day)]) do %>
+              <% input_name = input_name(@f, :average_days_per_week) <> "[]" %>
+              <%= for(day <- days(), checked <- [Enum.member?(input_value(@f, :average_days_per_week) || [], day)]) do %>
                 <.day_option type="checkbox" name={input_name} day={day} checked={checked} />
               <% end %>
             </div>
@@ -208,7 +238,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
-          <button type="button" class="btn-primary" phx-click="next">Next</button>
+          <button type="submit" class="btn-primary">Next</button>
         </div>
       </.container>
     """
@@ -376,12 +406,16 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     )
   end
 
-  defp build_changeset(%{assigns: %{step: step, current_user: user}}, params, action \\ nil) do
+  defp build_changeset(
+         %{assigns: %{pricing_calculations: pricing_calculations}},
+         params,
+         action \\ nil
+       ) do
     PricingCalculations.changeset(
-      %PricingCalculations{organization_id: user.organization_id},
-      params,
-      step: step
+      pricing_calculations,
+      params
     )
+    |> Map.put(:action, action)
   end
 
   defp assign_changeset(socket, params \\ %{}) do
@@ -456,15 +490,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   def sidebar_nav(assigns) do
-    IO.inspect(assigns)
-
     ~H"""
-    <nav class="bg-gray-100 p-4">
+    <nav class="bg-gray-100 p-4 mt-8 rounded-lg">
       <ul>
-        <li class=""><span>1</span>Information about your business</li>
-        <li class=""><span>2</span>Information about your business</li>
-        <li class=""><span>3</span>Information about your business</li>
-        <li class=""><span>4</span>Information about your business</li>
+        <li class="flex items-center mb-4 p-3 bg-gray-200 bold rounded-lg font-bold"><span class="bg-blue-planning-300 text-white w-6 h-6 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-sm font-bold">1</span>Information about your business</li>
+        <li class="flex items-center mb-4 p-3 bg-gray-200 bold rounded-lg font-bold"><span class="bg-blue-planning-300 text-white w-6 h-6 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-sm font-bold">2</span>Financial & time goals</li>
+        <li class="flex items-center mb-4 p-3 bg-gray-200 bold rounded-lg font-bold"><span class="bg-blue-planning-300 text-white w-6 h-6 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-sm font-bold">3</span>Business costs</li>
+        <li class="flex items-center p-3 bg-gray-200 bold rounded-lg font-bold"><span class="bg-blue-planning-300 text-white w-6 h-6 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-sm font-bold">4</span>Results</li>
       </ul>
     </nav>
     """

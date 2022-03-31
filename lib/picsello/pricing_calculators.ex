@@ -26,52 +26,62 @@ defmodule Picsello.PricingCalculations do
   end
 
   @days_of_the_week [
-    monday: "Monday",
-    tuesday: "Tuesday",
-    wednesday: "Wednesday",
-    thursday: "Thursday",
-    friday: "Friday",
-    saturday: "Saturday",
-    sunday: "Sunday"
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday"
   ]
 
   schema "pricing_calculations" do
     belongs_to(:organization, Organization)
     field(:average_time_per_week, :integer)
-    field(:average_days_per_week, {:array, Ecto.Enum}, values: Keyword.keys(@days_of_the_week))
+
+    field(:average_days_per_week, {:array, :string}, values: @days_of_the_week)
+
     field(:desired_salary, :integer)
     field(:tax_bracket, :integer)
     field(:after_income_tax, :integer)
     field(:self_employment_tax, :integer)
     field(:take_home, :integer)
     field(:job_types, {:array, :string})
-    field(:full_time, :boolean)
+    field(:schedule, :string)
     field(:min_years_experience, :integer)
     field(:state, :string)
+    field(:zipcode, :string)
     embeds_many(:business_costs, BusinessCost)
     embeds_many(:pricing_suggestions, PricingSuggestions)
 
     timestamps(type: :utc_datetime)
   end
 
-  def changeset(pricing_calculation, attrs, opts \\ []) do
-    step = Keyword.get(opts, :step, 5)
-
-    pricing_calculation
-    |> Repo.preload(:organization)
-    |> cast(attrs, [])
+  def changeset(%Picsello.PricingCalculations{} = pricing_calculations, attrs) do
+    pricing_calculations
+    |> cast(attrs, [
+      :organization_id,
+      :job_types,
+      :state,
+      :min_years_experience,
+      :schedule,
+      :zipcode,
+      :average_days_per_week,
+      :average_time_per_week,
+      :desired_salary
+    ])
     |> IO.inspect()
   end
 
   def day_options(),
     do: [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
     ]
 
   def cost_categories(),
