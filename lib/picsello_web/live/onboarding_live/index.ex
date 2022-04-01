@@ -363,6 +363,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       :ok ->
         socket
         |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
+        |> update_user_contact_trial(socket.assigns.current_user)
         |> noreply()
 
       _ ->
@@ -393,6 +394,25 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp maybe_show_trial(socket, %{}), do: socket
+
+  defp update_user_contact_trial(socket, current_user) do
+    %{
+      list_ids: SendgridClient.get_all_contact_list_env(),
+      contacts: [
+        %{
+          email: current_user.email,
+          state_province_region: current_user.onboarding.state,
+          custom_fields: %{
+            w3_T: current_user.organization.name,
+            w1_T: "trial"
+          }
+        }
+      ]
+    }
+    |> SendgridClient.add_contacts()
+
+    socket
+  end
 
   defdelegate job_types(), to: JobType, as: :all
   defdelegate colors(), to: Picsello.Profiles

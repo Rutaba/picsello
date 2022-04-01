@@ -44,9 +44,11 @@ config :bamboo, :refute_timeout, 10
 
 config :picsello, Picsello.Mailer,
   adapter: Picsello.MockBambooAdapter,
-  reply_to_domain: "test-inbox.picsello.com",
+  contact_list_transactional: "contact-list-transactional-id",
+  contact_list_trial_welcome: "contact-list-trial-welcome-id",
   marketing_template: "marketing-xyz",
-  marketing_unsubscribe_id: "123"
+  marketing_unsubscribe_id: "123" |> Integer.parse(),
+  reply_to_domain: "test-inbox.picsello.com"
 
 config :picsello, sandbox: Picsello.Sandbox
 config :picsello, :modal_transition_ms, 0

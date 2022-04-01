@@ -79,8 +79,6 @@ config :phoenix, :plug_init_mode, :runtime
 config :picsello, Picsello.Mailer,
   adapter: Bamboo.SendgridLocalAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
-  marketing_template: System.get_env("SENDGRID_MARKETING_TEMPLATE"),
-  marketing_unsubscribe_id: System.get_env("SENDGRID_MARKETING_UNSUBSCRIBE_ID"),
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN", "dev-inbox.picsello.com")
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")

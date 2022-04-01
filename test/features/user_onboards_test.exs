@@ -1,11 +1,22 @@
 defmodule Picsello.UserOnboardsTest do
-  use Picsello.FeatureCase, async: true
+  use Picsello.FeatureCase, async: false
 
   alias Picsello.{Accounts.User, Repo}
 
   setup :authenticated
 
   setup %{session: session} do
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn %{method: :put} = request ->
+      send(test_pid, {:sendgrid_request, request})
+
+      %Tesla.Env{
+        status: 202,
+        body: %{"job_id" => "1234"}
+      }
+    end)
+
     insert(:cost_of_living_adjustment)
     insert(:package_tier)
     insert(:package_base_price, base_price: 300)
@@ -142,6 +153,24 @@ defmodule Picsello.UserOnboardsTest do
                }
              }
            } = user
+
+    assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert %{
+             "list_ids" => [
+               "contact-list-transactional-id",
+               "contact-list-trial-welcome-id"
+             ],
+             "contacts" => [
+               %{
+                 "state_province_region" => "OK",
+                 "custom_fields" => %{
+                   "w3_T" => "Photogenious",
+                   "w1_T" => "trial"
+                 }
+               }
+             ]
+           } = Jason.decode!(sendgrid_request_body)
   end
 
   feature "user logs out during onboarding", %{session: session} do

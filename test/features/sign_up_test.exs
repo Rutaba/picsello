@@ -1,9 +1,20 @@
 defmodule Picsello.SignUpTest do
-  use Picsello.FeatureCase, async: true
+  use Picsello.FeatureCase, async: false
 
   alias Picsello.{Repo, Accounts.User}
 
   setup do
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn %{method: :put} = request ->
+      send(test_pid, {:sendgrid_request, request})
+
+      %Tesla.Env{
+        status: 202,
+        body: %{"job_id" => "1234"}
+      }
+    end)
+
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     :ok
   end
@@ -34,6 +45,26 @@ defmodule Picsello.SignUpTest do
              time_zone: "FakeTimeZone",
              organization: %{name: "Mary Jane Photography", slug: "mary-jane-photography"}
            } = user
+
+    assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert %{
+             "list_ids" => [
+               "contact-list-transactional-id",
+               "contact-list-trial-welcome-id"
+             ],
+             "contacts" => [
+               %{
+                 "custom_fields" => %{
+                   "w3_T" => "Mary Jane Photography",
+                   "w1_T" => "pre_trial"
+                 },
+                 "email" => "user@example.com",
+                 "first_name" => "Mary",
+                 "last_name" => "Jane"
+               }
+             ]
+           } = Jason.decode!(sendgrid_request_body)
   end
 
   feature "user sees validation error when signing up", %{session: session} do
@@ -81,5 +112,24 @@ defmodule Picsello.SignUpTest do
     |> click(link("Sign Up"))
     |> click(link("Continue with Google"))
     |> assert_path("/onboarding")
+
+    assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert %{
+             "list_ids" => [
+               "contact-list-transactional-id",
+               "contact-list-trial-welcome-id"
+             ],
+             "contacts" => [
+               %{
+                 "custom_fields" => %{
+                   "w1_T" => "pre_trial"
+                 },
+                 "email" => "brian@example.com",
+                 "first_name" => "brian",
+                 "last_name" => nil
+               }
+             ]
+           } = Jason.decode!(sendgrid_request_body)
   end
 end
