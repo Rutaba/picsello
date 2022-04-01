@@ -53,34 +53,34 @@ defmodule PicselloWeb.Live.Profile do
   def render(assigns) do
     ~H"""
     <div class="flex-grow md:mx-32 client-app">
-      <div class="flex py-2 md:py-4 px-6 md:px-12 flex-wrap justify-between items-center">
+      <div class="flex flex-wrap items-center justify-between px-6 py-2 md:py-4 md:px-12">
         <.logo_image uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
       </div>
 
       <hr class="border-base-300">
 
-      <div class="flex flex-col justify-center px-6 mt-10 md:px-16 mx-auto max-w-screen-lg">
+      <div class="flex flex-col justify-center max-w-screen-lg px-6 mx-auto mt-10 md:px-16">
         <.main_image edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
-        <h1 class="text-2xl text-center lg:text-3xl md:text-left mt-12">About <%= @organization.name %>.</h1>
+        <h1 class="mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
         <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
 
 
-        <h1 class="uppercase mt-20">PRICING & SERVICES:</h1>
+        <h1 class="mt-20 uppercase">PRICING & SERVICES:</h1>
         <%= for {job_type, packages} <- @job_type_packages do %>
           <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
           <%= for package <- packages do %>
             <.package_detail name={package.name} price={Packages.price(package)} description={package.description} download_count={package.download_count} />
           <% end %>
-          <div class="my-4 flex justify-center">
+          <div class="flex justify-center my-4">
             <.book_now_button job_type={job_type} />
           </div>
         <% end %>
 
         <%= if @website || @edit do %>
-          <div class="flex items-center justify-center mt-auto py-6">
+          <div class="flex items-center justify-center py-6 mt-auto">
             <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
             <%= if @edit do %>
               <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
@@ -141,7 +141,7 @@ defmodule PicselloWeb.Live.Profile do
     assigns = assigns |> Enum.into(%{job_type: nil})
 
     ~H"""
-    <a href="#contact-form" class="btn-primary flex items-center justify-center" phx-click="select-job-type" phx-value-job-type={@job_type}>
+    <a href="#contact-form" class="flex items-center justify-center btn-primary" phx-click="select-job-type" phx-value-job-type={@job_type}>
       Book Now
     </a>
     """
@@ -262,14 +262,14 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
-        <label class="p-3 inline-block cursor-pointer">
-          <span class="text-blue-planning-300 font-semibold font-sans hover:opacity-75">
+        <label class="inline-block p-3 cursor-pointer">
+          <span class="font-sans font-semibold text-blue-planning-300 hover:opacity-75">
             Choose a new photo
           </span>
           <%= live_file_input @image, class: "hidden" %>
         </label>
         <span phx-click="confirm-delete-image" phx-value-image-field={@image_field} class="cursor-pointer">
-          <.icon name="trash" class="relative bottom-1 w-5 h-5 mr-4 inline-block text-base-250 hover:opacity-75" />
+          <.icon name="trash" class="relative inline-block w-5 h-5 mr-4 bottom-1 text-base-250 hover:opacity-75" />
         </span>
       </div>
     </form>
@@ -301,13 +301,13 @@ defmodule PicselloWeb.Live.Profile do
 
   defp logo_image(assigns) do
     ~H"""
-    <div class="flex justify-left items-center relative flex-wrap">
+    <div class="relative flex flex-wrap items-center justify-left">
       <.photographer_logo organization={@organization} />
       <%= if @edit do %>
         <%= if @organization.profile.logo && @organization.profile.logo.url do %>
           <div class="my-8 sm:my-0 sm:ml-8"><.edit_image_button image={@uploads.logo} image_field={"logo"}/></div>
         <% else %>
-          <p class="mx-5 text-2xl font-bold font-sans">or</p>
+          <p class="mx-5 font-sans text-2xl font-bold">or</p>
           <.drag_image_upload image={@organization.profile.logo} image_upload={@uploads.logo} supports="PNG or SVG" image_title="logo" />
         <% end %>
       <% end %>
@@ -328,7 +328,7 @@ defmodule PicselloWeb.Live.Profile do
         <% else %>
           <div class="bg-[#F6F6F6] w-full aspect-h-1 aspect-w-2" >
 
-            <.drag_image_upload image={@image} image_upload={@uploads.main_image} supports="JPG or PNG" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
+            <.drag_image_upload image={@image} image_upload={@uploads.main_image} supports="JPG or PNG" image_title="main image" label_class="justify-center flex-col" class="flex w-11/12 m-auto h-5/6" />
           </div>
         <% end %>
 
@@ -357,7 +357,7 @@ defmodule PicselloWeb.Live.Profile do
     <%= for %{progress: progress} <- @image.entries do %>
       <div class={@class}>
         <div class={"w-52 h-2 rounded-lg bg-base-200"}>
-          <div class="h-full bg-green-finances-300 rounded-lg" style={"width: #{progress / 2}%"}></div>
+          <div class="h-full rounded-lg bg-green-finances-300" style={"width: #{progress / 2}%"}></div>
         </div>
       </div>
     <% end %>
@@ -393,13 +393,13 @@ defmodule PicselloWeb.Live.Profile do
   defp edit_footer(assigns) do
     ~H"""
     <div class="mt-32"></div>
-    <div class="fixed bottom-0 left-0 right-0 bg-base-300 z-20">
-      <div class="center-container px-6 md:px-16 py-2 sm:py-4 flex flex-col-reverse sm:flex-row justify-between">
-        <button class="btn-primary my-2 border-white w-full sm:w-auto" title="close" type="button" phx-click="close">
+    <div class="fixed bottom-0 left-0 right-0 z-20 bg-base-300">
+      <div class="flex flex-col-reverse justify-between px-6 py-2 center-container md:px-16 sm:py-4 sm:flex-row">
+        <button class="w-full my-2 border-white btn-primary sm:w-auto" title="close" type="button" phx-click="close">
           Close
         </button>
-        <div class="flex flex-row-reverse gap-4 sm:flex-row justify-between">
-          <a href={@url} class="btn-secondary my-2 w-full sm:w-auto hover:bg-base-200 text-center" target="_blank" rel="noopener noreferrer">
+        <div class="flex flex-row-reverse justify-between gap-4 sm:flex-row">
+          <a href={@url} class="w-full my-2 text-center btn-secondary sm:w-auto hover:bg-base-200" target="_blank" rel="noopener noreferrer">
             View
           </a>
         </div>
