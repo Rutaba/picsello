@@ -9,7 +9,7 @@ defmodule Picsello.Repo.Migrations.AddPricing do
       add(:desired_salary, :integer)
       add(:tax_bracket, :decimal)
       add(:after_income_tax, :integer)
-      add(:self_employment_tax, :decimal)
+      add(:self_employment_tax_percentage, :decimal)
       add(:take_home, :integer)
       add(:job_types, {:array, :string})
       add(:schedule, :string)

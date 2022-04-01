@@ -15,7 +15,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           job_types: user.organization.profile.job_types,
           state: user.onboarding.state,
           min_years_experience: user.onboarding.photographer_years,
-          schedule: user.onboarding.schedule
+          schedule: user.onboarding.schedule,
+          self_employment_tax_percentage: tax_schedule().self_employment_percentage,
+          desired_salary: Money.new(0)
         }
       )
     end)
@@ -87,7 +89,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   @impl true
   def handle_event("validate", %{"pricing_calculations" => params}, socket) do
-    socket |> assign_changeset(params) |> noreply()
+    socket
+    |> assign_changeset(params)
+    |> noreply()
   end
 
   @impl true
@@ -181,6 +185,16 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 3} = assigns) do
+    desired_salary = input_value(assigns.f, :desired_salary)
+    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
+    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
+
+    take_home =
+      PricingCalculations.calculate_take_home_income(
+        assigns.pricing_calculations.self_employment_tax_percentage,
+        after_tax_income
+      )
+
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
@@ -212,28 +226,31 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
           <label class="flex items-center justify-between mt-4">
             <p class="font-extrabold">Annual Desired Salary</p>
-            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center" %>
+            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center" %>
             <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm" %>
           </label>
           <hr class="mt-4 mb-4" />
           <div class="flex items-center justify-between">
             <p class="font-extrabold">Approximate Tax Bracket <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
-            <p class="w-40 text-center font-bold">22%</p>
+            <%= hidden_input(@f, :tax_bracket, value: tax_bracket.percentage ) %>
+            <p class="w-40 text-center font-bold"><%= tax_bracket.percentage %>%</p>
           </div>
           <hr class="mt-4 mb-4" />
           <div class="flex items-center justify-between">
             <p class="font-extrabold py-2">Approximate After Income Tax <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Using the formula found here. We calculated the amount of income you would receive after taxes." class="ml-1" /></span></p>
-            <p class="w-40 text-center font-bold">$53,738</p>
+            <%= hidden_input(@f, :after_income_tax, value: after_tax_income ) %>
+            <p class="w-40 text-center font-bold"><%= after_tax_income %></p>
           </div>
           <hr class="mt-4 mb-4" />
           <div class="flex items-center justify-between">
             <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage this is calculate after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
-            <p class="w-40 text-center font-bold">15.3%</p>
+            <p class="w-40 text-center font-bold"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
           </div>
           <hr class="mt-4 mb-4" />
           <div class="flex items-center justify-between">
             <p class="font-extrabold py-2">Approximate After Income Tax</p>
-            <p class="w-40 text-center font-bold">$45,417</p>
+            <%= hidden_input(@f, :take_home, value: take_home ) %>
+            <p class="w-40 text-center font-bold"><%= take_home %></p>
           </div>
         </div>
         <div class="flex justify-end mt-8">
@@ -539,4 +556,5 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defdelegate states(), to: PricingCalculations, as: :state_options
   defdelegate days(), to: PricingCalculations, as: :day_options
   defdelegate cost_categories(), to: PricingCalculations, as: :cost_categories
+  defdelegate tax_schedule(), to: PricingCalculations, as: :tax_schedule
 end
