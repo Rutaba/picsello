@@ -25,27 +25,31 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         <button class="mb-4 btn-secondary" phx-click="add-schedule">Add tax schedule</button>
       </div>
       <%= for(%{tax_schedule: %{id: id}, changeset: changeset} <- @tax_schedules) do %>
-        <div class="mb-8 border p-6 rounded-lg">
+        <div class="mb-8 border rounded-lg">
           <.form let={f} for={changeset} class="contents" phx-change="save-taxes" id={"form-#{id}"}>
-            <div class="flex items-center justify-between mb-8">
-              <div class="grid grid-cols-2 gap-2 items-center w-3/4">
+            <div class="flex items-center justify-between mb-8 bg-gray-100  p-6 ">
+              <div class="grid grid-cols-3 gap-2 items-center w-3/4">
                 <div class="col-start-1 font-bold">Tax Schedule Year</div>
                 <div class="col-start-2 font-bold">Tax Schedule Active</div>
+                <div class="col-start-3 font-bold">Tax Schedule Fixed Self Employment Tax</div>
                 <%= hidden_input f, :id %>
                 <%= select f, :year, [2022,2023,2024], class: "select py-3", phx_debounce: 200 %>
                 <%= select f, :active, [true, false], class: "select py-3", phx_debounce: 200 %>
+                <%= input f, :self_employment_percentage, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
               </div>
               <button class="btn-primary" type="button" phx-click="add-income-bracket" phx-value-id={id}>Add income bracket</button>
             </div>
-            <div class="grid grid-cols-4 gap-2 items-center">
+            <div class="grid grid-cols-5 gap-2 items-center px-6 pb-6">
               <div class="col-start-1 font-bold">Bracket Min</div>
               <div class="col-start-2 font-bold">Bracket Max</div>
-              <div class="col-start-3 font-bold">Bracket Percentage</div>
-              <div class="col-start-4 font-bold">Bracket Fixed Cost</div>
+              <div class="col-start-3 font-bold">Bracket % Over Fixed Cost Start</div>
+              <div class="col-start-4 font-bold">Bracket Fixed Cost Start</div>
+              <div class="col-start-5 font-bold">Bracket Fixed Cost</div>
               <%= inputs_for f, :income_brackets, [], fn fp -> %>
                 <%= input fp, :income_min, phx_debounce: 200 %>
                 <%= input fp, :income_max, phx_debounce: 200 %>
                 <%= input fp, :percentage, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
+                <%= input fp, :fixed_cost_start, phx_debounce: 200 %>
                 <%= input fp, :fixed_cost, phx_debounce: 200 %>
               <% end %>
             </div>

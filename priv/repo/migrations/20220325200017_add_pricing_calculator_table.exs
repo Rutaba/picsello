@@ -7,9 +7,9 @@ defmodule Picsello.Repo.Migrations.AddPricing do
       add(:average_time_per_week, :integer)
       add(:average_days_per_week, {:array, :string})
       add(:desired_salary, :integer)
-      add(:tax_bracket, :integer)
+      add(:tax_bracket, :decimal)
       add(:after_income_tax, :integer)
-      add(:self_employment_tax, :integer)
+      add(:self_employment_tax, :decimal)
       add(:take_home, :integer)
       add(:job_types, {:array, :string})
       add(:schedule, :string)
@@ -28,6 +28,7 @@ defmodule Picsello.Repo.Migrations.AddPricing do
 
     create table(:pricing_calculator_tax_schedules) do
       add(:year, :integer)
+      add(:self_employment_percentage, :decimal)
       add(:active, :boolean)
       add(:income_brackets, :map, default: fragment("'[]'::jsonb"))
     end
