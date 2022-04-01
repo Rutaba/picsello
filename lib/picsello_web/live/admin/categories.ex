@@ -15,8 +15,10 @@ defmodule PicselloWeb.Live.Admin.Categories do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="p-4">
-      <h1 class="text-xl">Manage Categories</h1>
+    <header class="p-8 bg-gray-100">
+      <h1 class="text-4xl font-bold">Manage Categories</h1>
+    </header>
+    <div class="p-8">
       <div class="mt-4 grid gap-2 items-center">
         <div class="col-start-1 font-bold">WHCC Name</div>
         <div class="col-start-2 font-bold">WHCC ID</div>

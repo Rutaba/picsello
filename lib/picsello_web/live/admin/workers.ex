@@ -24,11 +24,13 @@ defmodule PicselloWeb.Live.Admin.Workers do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="p-4">
-      <h1 class="text-xl">Execute Workers</h1>
-      <ul class="my-4">
+    <header class="p-8 bg-gray-100">
+      <h1 class="text-4xl font-bold">Execute Workers</h1>
+    </header>
+    <div class="p-8">
+      <ul class="my-4 flex grid gap-10 grid-cols-1 sm:grid-cols-4">
         <%= for {name, _} <- @workers do %>
-          <li><button phx-click="start" phx-value-name={name} ><%= name %></button></li>
+          <li><button phx-click="start" phx-value-name={name} class="border flex items-center justify-center rounded-lg p-8 font-bold text-blue-planning-300 w-full"><%= name %></button></li>
         <% end %>
       </ul>
 

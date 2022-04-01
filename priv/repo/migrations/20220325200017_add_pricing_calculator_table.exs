@@ -25,5 +25,11 @@ defmodule Picsello.Repo.Migrations.AddPricing do
 
       timestamps()
     end
+
+    create table(:pricing_calculator_tax_schedules) do
+      add(:year, :integer)
+      add(:active, :boolean)
+      add(:income_brackets, :map, default: fragment("'[]'::jsonb"))
+    end
   end
 end
