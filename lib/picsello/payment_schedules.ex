@@ -9,42 +9,113 @@ defmodule Picsello.PaymentSchedules do
     Payments,
     Notifiers.UserNotifier,
     BookingProposal,
-    Client
+    Client,
+    Shoot
   }
 
   def build_payment_schedules_for_lead(%Job{} = job) do
     %{package: package, shoots: shoots} = job |> Repo.preload([:package, :shoots])
 
-    price = package |> Package.price() |> Money.multiply(0.5)
-
-    next_shoot_date =
-      shoots
-      |> Enum.sort_by(& &1.starts_at, DateTime)
-      |> Enum.at(0)
-      |> Map.get(:starts_at)
-      |> DateTime.add(-1 * :timer.hours(24), :millisecond)
-      |> DateTime.truncate(:second)
-
+    shoots = shoots |> Enum.sort_by(& &1.starts_at, DateTime)
+    next_shoot = shoots |> Enum.at(0, %Shoot{}) |> Map.get(:starts_at)
+    last_shoot = shoots |> Enum.at(-1, %Shoot{}) |> Map.get(:starts_at)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+    price = if package, do: Package.price(package), else: Money.new(0)
 
-    [
-      %{
+    info =
+      payment_schedules_info(%{
+        type: job.type,
         price: price,
-        job_id: job.id,
-        due_at: now,
-        inserted_at: now,
-        updated_at: now,
-        description: "50% retainer"
-      },
+        next_shoot: next_shoot || now,
+        last_shoot: last_shoot || now,
+        now: now
+      })
+
+    info
+    |> Map.put(
+      :payments,
+      for attributes <- info.payments do
+        attributes
+        |> Map.merge(%{
+          job_id: job.id,
+          inserted_at: now,
+          updated_at: now
+        })
+      end
+    )
+  end
+
+  defp payment_schedules_info(%{type: type, price: price, now: now})
+       when type in ~w[headshot  mini] do
+    %{
+      label: "Payment Due in Full",
+      details: "100% retainer",
+      payments: [%{description: "100% retainer", due_at: now, price: price}]
+    }
+  end
+
+  defp payment_schedules_info(%{
+         type: "wedding",
+         price: price,
+         now: now,
+         last_shoot: wedding_date
+       }) do
+    seven_months_from_wedding = days_before(wedding_date, 30 * 7)
+    one_month_from_wedding = days_before(wedding_date, 30)
+
+    if :lt == DateTime.compare(seven_months_from_wedding, now) do
       %{
-        price: price,
-        job_id: job.id,
-        due_at: next_shoot_date,
-        inserted_at: now,
-        updated_at: now,
-        description: "50% remainder"
+        label: "Advance Wedding Payment",
+        details: "70% retainer and 30% one month before shoot",
+        payments: [
+          %{description: "70% retainer", due_at: now, price: Money.multiply(price, 0.7)},
+          %{
+            description: "30% remainder",
+            due_at: one_month_from_wedding,
+            price: Money.multiply(price, 0.3)
+          }
+        ]
       }
-    ]
+    else
+      %{
+        label: "Standard Wedding Payment",
+        details: "35% retainer, 35% six months to the wedding, 30% one month before the wedding",
+        payments: [
+          %{description: "35% retainer", due_at: now, price: Money.multiply(price, 0.35)},
+          %{
+            description: "35% second payment",
+            due_at: seven_months_from_wedding,
+            price: Money.multiply(price, 0.35)
+          },
+          %{
+            description: "30% remainder",
+            due_at: one_month_from_wedding,
+            price: Money.multiply(price, 0.30)
+          }
+        ]
+      }
+    end
+  end
+
+  defp payment_schedules_info(%{price: price, now: now, next_shoot: next_shoot}) do
+    %{
+      label: "Standard Payment",
+      details: "50% retainer and 50% on day of shoot",
+      payments: [
+        %{description: "50% retainer", due_at: now, price: Money.multiply(price, 0.5)},
+        %{
+          description: "50% remainder",
+          due_at: days_before(next_shoot, 1),
+          price: Money.multiply(price, 0.5)
+        }
+      ]
+    }
+  end
+
+  defp days_before(%DateTime{} = date, days) do
+    date
+    |> DateTime.add(-1 * days * :timer.hours(24), :millisecond)
+    |> DateTime.truncate(:second)
   end
 
   def has_payments?(%Job{} = job) do

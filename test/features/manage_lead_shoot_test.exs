@@ -20,6 +20,8 @@ defmodule Picsello.ManageLeadShootTest do
   feature "user adds shoot details and updates it", %{session: session, lead: lead} do
     session
     |> visit("/leads/#{lead.id}")
+    |> scroll_into_view(testid("booking-summary"))
+    |> assert_text("Advance Wedding Payment")
     |> click(button("Add shoot details", count: 2, at: 1))
     |> fill_in(text_field("Shoot Title"), with: " ")
     |> assert_has(css("label", text: "Shoot Title can't be blank"))
@@ -30,6 +32,7 @@ defmodule Picsello.ManageLeadShootTest do
     |> fill_in(text_field("Shoot Notes"), with: "my notes")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
+    |> assert_text("Standard Wedding Payment")
     |> click(link("chute"))
     |> click(button("Edit"))
     |> assert_value(text_field("Shoot Title"), "chute")

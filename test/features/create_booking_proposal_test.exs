@@ -47,6 +47,7 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> visit("/leads/#{lead.id}")
     |> assert_has(css("button:disabled", text: "Finish booking proposal"))
+    |> assert_text("50% retainer and 50% on day of shoot")
     |> assert_text("You haven’t sent a proposal yet.")
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot Title"), with: "chute")

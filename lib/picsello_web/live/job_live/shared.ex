@@ -106,17 +106,22 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
-        %{assigns: %{shoots: shoots}} = socket
+        %{assigns: %{shoots: shoots, job: job}} = socket
       ) do
     socket
     |> assign(
-      shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list()
+      shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list(),
+      job: job |> Repo.preload(:shoots, force: true)
     )
     |> noreply()
   end
 
-  def handle_info({:update, %{package: _package} = assigns}, socket),
-    do: socket |> assign(assigns) |> assign_shoots() |> noreply()
+  def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> assign(package: package, job: %{job | package: package})
+      |> assign_shoots()
+      |> noreply()
 
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
