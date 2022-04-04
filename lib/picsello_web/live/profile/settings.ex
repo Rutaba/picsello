@@ -8,7 +8,8 @@ defmodule PicselloWeb.Live.Profile.Settings do
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     %{organization: organization} = Repo.preload(user, :organization)
     url = Profiles.public_url(organization)
-    socket |> assign(profile_url: url, organization: organization) |> ok()
+    embed_code = Profiles.embed_code(organization)
+    socket |> assign(profile_url: url, organization: organization, embed_code: embed_code) |> ok()
   end
 
   @impl true
@@ -46,6 +47,13 @@ defmodule PicselloWeb.Live.Profile.Settings do
           </fieldset>
         </.card>
 
+        <.card title="Embed your lead form">
+          <p class="mt-4">Have your own website? No worries, we have a form for you to embed on your site. </p>
+            <button button type="button" class="self-auto w-auto py-3 mt-4 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36" phx-click="open-embed">
+              Preview form
+            </button>
+        </.card>
+
         <.card title="Enable/disable your public profile">
           <p class="mt-4">Hide your public profile or make it visible.</p>
 
@@ -72,6 +80,21 @@ defmodule PicselloWeb.Live.Profile.Settings do
       </div>
     </.settings_nav>
     """
+  end
+
+  @impl true
+  def handle_event(
+        "open-embed",
+        _,
+        socket
+      ) do
+    assigns = %{
+      embed_code: socket.assigns.embed_code
+    }
+
+    socket
+    |> open_modal(PicselloWeb.Live.Profile.CopyContactFormComponent, assigns)
+    |> noreply()
   end
 
   @impl true

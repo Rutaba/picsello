@@ -228,6 +228,14 @@ defmodule Picsello.Profiles do
     PicselloWeb.Router.Helpers.profile_url(PicselloWeb.Endpoint, :index, slug)
   end
 
+  def embed_url(%Organization{slug: slug}) do
+    PicselloWeb.Router.Helpers.profile_embed_url(PicselloWeb.Endpoint, :index, slug)
+  end
+
+  def embed_code(%Organization{} = organization) do
+    ~s(<div><iframe src="#{embed_url(organization)}" width="100%" height="600px" frameborder="none"></iframe></div>)
+  end
+
   def subscribe_to_photo_processed(%{slug: slug}) do
     topic = "profile_photo_ready:#{slug}"
 

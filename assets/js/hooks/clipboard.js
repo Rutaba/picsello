@@ -8,10 +8,18 @@ export default {
       const tooltip = this.el.querySelector('[role="tooltip"]');
       this.popper = createPopper(this.el, tooltip);
       tooltip.classList.remove('hidden');
-      this.el.classList.add('bg-green-finances-100');
+      this.el.classList.add(
+        this?.el?.dataset?.clipboardBg
+          ? this.el.dataset.clipboardBg
+          : 'bg-green-finances-100'
+      );
 
       setTimeout(() => {
-        this.el.classList.remove('bg-green-finances-100');
+        this.el.classList.remove(
+          this?.el?.dataset?.clipboardBg
+            ? this.el.dataset.clipboardBg
+            : 'bg-green-finances-100'
+        );
       }, 300);
 
       setTimeout(() => {
