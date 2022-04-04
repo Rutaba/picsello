@@ -22,6 +22,8 @@ defmodule Picsello.PricingCalculatorTaxSchedules do
     field(:self_employment_percentage, :decimal)
     field(:active, :boolean)
     embeds_many(:income_brackets, IncomeBracket)
+
+    timestamps(type: :utc_datetime)
   end
 
   def changeset(

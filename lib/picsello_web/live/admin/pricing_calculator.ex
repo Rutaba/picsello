@@ -1,12 +1,15 @@
 defmodule PicselloWeb.Live.Admin.PricingCalculator do
   @moduledoc "update tax, business costs and cost categories"
   use PicselloWeb, live_view: [layout: false]
-  alias Picsello.{Repo, PricingCalculatorTaxSchedules}
+  alias Picsello.{Repo, PricingCalculatorTaxSchedules, PricingCalculatorBusinessCosts}
+
+  import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign_tax_schedules()
+    |> assign_business_costs()
     |> ok()
   end
 
@@ -26,7 +29,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
       </div>
       <%= for(%{tax_schedule: %{id: id}, changeset: changeset} <- @tax_schedules) do %>
         <div class="mb-8 border rounded-lg">
-          <.form let={f} for={changeset} class="contents" phx-change="save-taxes" id={"form-#{id}"}>
+          <.form let={f} for={changeset} class="contents" phx-change="save-taxes" id={"form-taxes-#{id}"}>
             <div class="flex items-center justify-between mb-8 bg-gray-100  p-6 ">
               <div class="grid grid-cols-3 gap-2 items-center w-3/4">
                 <div class="col-start-1 font-bold">Tax Schedule Year</div>
@@ -57,8 +60,37 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         </div>
       <% end %>
       <div class="mt-4">
-        <h3 class="text-2xl font-bold">Business Cost Categories & Line Items</h3>
-        <p class="text-md">Add or modify the cost categories and the subsequent line items</p>
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h3 class="text-2xl font-bold">Business Cost Categories & Line Items</h3>
+            <p class="text-md">Add or modify the cost categories and the subsequent line items</p>
+          </div>
+          <button class="mb-4 btn-secondary" phx-click="add-business-cost-category">Add cost category</button>
+        </div>
+        <%= for(%{business_cost: %{id: id}, changeset: changeset} <- @business_costs) do %>
+        <div class="mb-8 border rounded-lg">
+          <.form let={fcosts} for={changeset} class="contents" phx-change="save-line-items" id={"form-line-items-#{id}"}>
+            <div class="flex items-center justify-between mb-8 bg-gray-100  p-6 ">
+              <div class="grid grid-cols-1 gap-2 items-center w-3/4">
+                <div class="col-start-1 font-bold">Category Title</div>
+                <%= hidden_input fcosts, :id %>
+                <%= input fcosts, :category, phx_debounce: 200 %>
+              </div>
+              <button class="btn-primary" type="button" phx-click="add-line-item" phx-value-id={id}>Add line item</button>
+            </div>
+            <div class="grid grid-cols-3 gap-2 items-center px-6 pb-6">
+              <div class="col-start-1 font-bold">Title</div>
+              <div class="col-start-2 font-bold">Description</div>
+              <div class="col-start-3 font-bold">Yearly cost</div>
+              <%= inputs_for fcosts, :line_items, [], fn fl -> %>
+                <%= input fl, :title, phx_debounce: 200 %>
+                <%= input fl, :description, phx_debounce: 200 %>
+                <%= input fl, :yearly_cost, phx_debounce: 200 %>
+              <% end %>
+            </div>
+          </.form>
+        </div>
+      <% end %>
       </div>
     </div>
     """
@@ -75,12 +107,32 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
 
   @impl true
   def handle_event(
+        "add-business-cost-category",
+        _,
+        socket
+      ) do
+    socket |> add_business_cost_category() |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "add-income-bracket",
         params,
         socket
       ) do
     socket
     |> add_income_bracket(params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "add-line-item",
+        params,
+        socket
+      ) do
+    socket
+    |> add_line_item(params)
     |> noreply()
   end
 
@@ -100,6 +152,25 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
       end
     end)
     |> assign_tax_schedules()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("save-line-items", params, socket) do
+    socket
+    |> update_business_costs(params, fn business_cost, params ->
+      case business_cost |> PricingCalculatorBusinessCosts.changeset(params) |> Repo.update() do
+        {:ok, business_cost} ->
+          %{
+            business_cost: business_cost,
+            changeset: PricingCalculatorBusinessCosts.changeset(business_cost)
+          }
+
+        {:error, changeset} ->
+          %{business_cost: business_cost, changeset: changeset}
+      end
+    end)
+    |> assign_business_costs()
     |> noreply()
   end
 
@@ -130,6 +201,28 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     |> assign_tax_schedules()
   end
 
+  defp add_line_item(
+         %{assigns: %{business_costs: business_costs}} = socket,
+         %{"id" => id}
+       ) do
+    id = String.to_integer(id)
+
+    Enum.map(business_costs, fn
+      %{business_cost: %{id: ^id} = business_cost} ->
+        PricingCalculatorBusinessCosts.add_business_cost_changeset(
+          business_cost,
+          %Picsello.PricingCalculatorBusinessCosts.BusinessCost{}
+        )
+        |> Repo.update()
+
+      business_cost ->
+        business_cost
+    end)
+
+    socket
+    |> assign_business_costs()
+  end
+
   defp add_tax_schedule(socket) do
     PricingCalculatorTaxSchedules.changeset(%PricingCalculatorTaxSchedules{}, %{
       year: DateTime.utc_now() |> Map.fetch!(:year),
@@ -149,6 +242,24 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     |> assign_tax_schedules()
   end
 
+  defp add_business_cost_category(socket) do
+    PricingCalculatorBusinessCosts.changeset(%PricingCalculatorBusinessCosts{}, %{
+      category: "",
+      inserted_at: DateTime.utc_now(),
+      line_items: [
+        %{
+          title: "",
+          description: "",
+          fixed_cost: 0
+        }
+      ]
+    })
+    |> Repo.insert()
+
+    socket
+    |> assign_business_costs()
+  end
+
   defp update_tax_schedules(
          %{assigns: %{tax_schedules: tax_schedules}} = socket,
          %{"pricing_calculator_tax_schedules" => %{"id" => id} = params},
@@ -166,6 +277,26 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     )
   end
 
+  defp update_business_costs(
+         %{assigns: %{business_costs: business_costs}} = socket,
+         %{"pricing_calculator_business_costs" => %{"id" => id} = params},
+         fcosts
+       ) do
+    id = String.to_integer(id)
+
+    socket
+    |> assign(
+      business_costs:
+        Enum.map(business_costs, fn
+          %{business_cost: %{id: ^id} = business_cost} ->
+            fcosts.(business_cost, Map.drop(params, ["id"]))
+
+          business_cost ->
+            business_cost
+        end)
+    )
+  end
+
   defp assign_tax_schedules(socket) do
     socket
     |> assign(
@@ -173,6 +304,19 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         PricingCalculatorTaxSchedules
         |> Repo.all()
         |> Enum.map(&%{tax_schedule: &1, changeset: PricingCalculatorTaxSchedules.changeset(&1)})
+    )
+  end
+
+  defp assign_business_costs(socket) do
+    socket
+    |> assign(
+      business_costs:
+        PricingCalculatorBusinessCosts
+        |> order_by(asc: :inserted_at)
+        |> Repo.all()
+        |> Enum.map(
+          &%{business_cost: &1, changeset: PricingCalculatorBusinessCosts.changeset(&1)}
+        )
     )
   end
 end

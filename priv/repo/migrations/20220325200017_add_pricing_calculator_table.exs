@@ -31,6 +31,15 @@ defmodule Picsello.Repo.Migrations.AddPricing do
       add(:self_employment_percentage, :decimal)
       add(:active, :boolean)
       add(:income_brackets, :map, default: fragment("'[]'::jsonb"))
+
+      timestamps()
+    end
+
+    create table(:pricing_calculator_business_costs) do
+      add(:category, :string)
+      add(:line_items, :map, default: fragment("'[]'::jsonb"))
+
+      timestamps()
     end
   end
 end

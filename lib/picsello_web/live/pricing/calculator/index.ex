@@ -1,8 +1,7 @@
 defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   use PicselloWeb, live_view: [layout: "calculator"]
 
-  alias Picsello.PricingCalculations
-  alias Picsello.{Repo, JobType}
+  alias Picsello.{Repo, JobType, PricingCalculations}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -262,6 +261,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 4} = assigns) do
+    IO.inspect(cost_categories())
+
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">All businesses have costs. Lorem ipsum dolor sit amet content here.</h4>
@@ -270,8 +271,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <h4 class="text-2xl font-bold mb-4">Cost categories</h4>
         <ul>
           <% input_name = input_name(@f, :cost_categories) <> "[]" %>
-          <%= for(%{title: title} = cost_category <- cost_categories(), checked <- [Enum.member?(input_value(@f, :cost_categories) || [], cost_category)]) do %>
-            <.category_option type="checkbox" name={input_name} checked={checked} cost_category={cost_category} title={title} />
+          <%= for(%Picsello.PricingCalculatorBusinessCosts{} = cost_category <- cost_categories(), checked <- [Enum.member?(input_value(@f, :cost_categories) || [], cost_category)]) do %>
+            <.category_option type="checkbox" name={input_name} checked={checked} cost_category={cost_category} />
           <% end %>
         </ul>
         <div class="flex justify-end mt-8">
@@ -472,8 +473,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <label class="flex">
             <input class="checkbox w-7 h-7" type={@type} name={@name} value={@cost_category.id} checked={@checked} disabled={@disabled} />
             <div class="ml-4">
-              <h5 class="text-xl font-bold leading-4"><%= @cost_category.title %></h5>
-              <p class="mt-2"><%= @cost_category.description %></p>
+              <h5 class="text-xl font-bold leading-4"><%= @cost_category.category %></h5>
             </div>
           </label>
         </div>
