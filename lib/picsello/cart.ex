@@ -158,7 +158,8 @@ defmodule Picsello.Cart do
     end
   end
 
-  def preload_products(%{products: [_ | _] = products} = order) do
+  def preload_products([_ | _] = orders) do
+    products = Enum.flat_map(orders, &Map.get(&1, :products, []))
     ids = for(%{editor_details: %{product_id: id}} <- products, do: id)
 
     products_by_whcc_id =
@@ -167,14 +168,20 @@ defmodule Picsello.Cart do
       |> Enum.map(&{&1.whcc_id, &1})
       |> Map.new()
 
-    %{
-      order
-      | products:
-          for(
-            %{editor_details: %{product_id: id}} = product <- products,
-            do: %{product | whcc_product: Map.get(products_by_whcc_id, id)}
-          )
-    }
+    for(order <- orders) do
+      %{
+        order
+        | products:
+            for(
+              %{editor_details: %{product_id: id}} = product <- products,
+              do: %{product | whcc_product: Map.get(products_by_whcc_id, id)}
+            )
+      }
+    end
+  end
+
+  def preload_products(%{products: [_ | _]} = order) do
+    [order] |> preload_products |> hd
   end
 
   def preload_products(order), do: order
@@ -238,9 +245,11 @@ defmodule Picsello.Cart do
   def get_orders(gallery_id) do
     from(order in Order,
       where: order.gallery_id == ^gallery_id and not is_nil(order.placed_at),
-      order_by: [desc: order.placed_at]
+      order_by: [desc: order.placed_at],
+      preload: [digitals: :photo]
     )
     |> Repo.all()
+    |> preload_products()
   end
 
   def order_with_editor(editor_id) do

@@ -5,79 +5,69 @@
 
   <hr>
 
-  <div class="pt-5 lg:pt-9 px-6 lg:px-14 max-w-screen-xl mx-auto">
+  <div class="pt-5 lg:pt-9 px-6 pb-10 lg:px-14 max-w-screen-xl mx-auto">
     <h3 class="font-bold text-lg md:text-3xl">My orders</h3>
 
     <%= for order <- @orders do %>
       <div class="mt-6 orderEntity lg:mt-8">
-        <div class="lg:flex items-center justify-between p-5 md:p-8 bg-base-200 border rounded-t-lg border-base-250 relative">
-          <div class="lg:flex items-center justify-between">
-            <p class="lg:mr-8">
-              <span class="font-semibold">Order placed: </span>
+        <div class="flex justify-between p-5 md:p-8 bg-base-200 border border-base-250 relative text-lg">
+          <div>
+            <div class="lg:flex items-center justify-between">
+              <dl class="lg:mr-8 flex">
+                <dt class="font-extrabold mr-2">Order placed:</dt>
 
-              <%= Calendar.strftime(order.placed_at, "%B %d, %Y") %>
-            </p>
+                <dd><%= @gallery |> time_zone() |> strftime(order.placed_at, "%-m/%-d/%-y") %></dd>
+              </dl>
 
-            <p>
-              <span class="font-semibold">Order total: </span>
+              <dl class="flex mt-3">
+                <dt class="font-extrabold mr-2">Order total:</dt>
 
-              <%= total_cost(order) %>
-            </p>
+                <dd><%= total_cost(order) %></dd>
+              </dl>
+            </div>
+
+            <div class="lg:flex items-center justify-between mt-3">
+              <dl class="flex lg:mr-8">
+                <dt class="lg:font-semibold mr-2">Order number:</dt>
+
+                <dd class="font-semibold lg:font-normal"><%= order.number %></dd>
+              </dl>
+            </div>
           </div>
 
-          <div class="lg:flex items-center justify-between">
-            <p class="lg:mr-8">
-              <span class="lg:font-semibold">Order number:</span>
-
-              <span class="font-semibold lg:font-normal"><%= order.number %></span>
-            </p>
-
-            <p class="absolute top-5 right-5 lg:static">
-              <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.number) do %>
-                <p class="text-blue-planning-300">View details</p>
-              <% end %>
-            </p>
-          </div>
+          <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.number), class: "text-xl text-base-250 font-extrabold" do %>
+            View details
+          <% end %>
         </div>
 
-        <div class="border-t-0 rounded-b-lg border-base-250 px-5 lg:px-20 border pb-5">
+        <div class="border-t-0 border-base-225 py-4 px-6 lg:px-20 border">
           <%= for item <- order.products do %>
-            <%= unless Map.has_key?(item, :type) do %>
-              <div class="py-5 lg:py-8 border-t lg:border-t-0 border-base-200 first:border-0 md:first:border-t relative lg:flex justify-between">
-                <div class="grid grid-rows-1 gridTemplateOrder lg:grid-rows-3 lg:grid-flow-col">
-                  <img src={"#{item.editor_details.preview_url}"} class="mx-auto h-24 lg:h-28 lg:row-span-4"/>
+            <div class="py-6 lg:py-8 border-t lg:border-t-0 border-base-200 first:border-0 md:first:border-t relative lg:flex justify-between">
+              <div class="grid grid-rows-1 grid-cols-[110px,minmax(80px,1fr),auto] lg:grid-rows-3 lg:grid-flow-col">
+                <img src={preview_url(item)} class="object-contain h-24 lg:h-28 lg:row-span-4 place-self-center"/>
 
-                  <div class="flex flex-col px-4 md:px-8 pt-2 lg:pt-0 lg:col-span-2 lg:row-span-2">
-                    <span class="text-sm md:text-base md:font-medium lg:h-2/4 lg:flex lg:items-center"><%= item.editor_details.selections["size"] %> <%= item.editor_details.selections["size"] %></span>
+                <div class="flex flex-col px-4 md:px-8 pt-4 lg:pt-0 lg:col-span-2 lg:row-span-2">
+                  <span class="text-lg md:text-base md:font-medium lg:h-2/4 lg:flex lg:items-center"><%= product_name(item) %></span>
 
-                    <span class="text-xs md:text-sm pt-2 lg:pt-0 lg:h-2/4 lg:flex lg:items-center">Quantity: <%= item.editor_details.selections["quantity"] %></span>
-                  </div>
-
-                  <span class="text-base pt-4 font-bold lg:col-span-2 lg:row-span-1 lg:px-8 lg:pt-0 lg:self-center"> <%= item.price %></span>
+                  <span class="md:text-sm pt-2 lg:pt-0 lg:h-2/4 lg:flex lg:items-center">Quantity: <%= quantity(item) %></span>
                 </div>
+
+                <span class="text-lg pt-4 font-extrabold lg:col-span-2 lg:row-span-1 lg:px-8 lg:pt-0 lg:self-center"> <%= item.price %></span>
               </div>
-            <% end %>
+            </div>
           <% end %>
 
-          <div class="digitalItems__wrapper relative">
+          <div class="relative">
             <%= for item <- order.digitals do %>
               <div class="py-5 lg:py-8 border-t lg:border-t-0 border-base-200">
-                <div class="grid grid-rows-1 gridTemplateOrder lg:grid-rows-2 lg:grid-flow-col">
-                  <img src={item.editor_details.preview_url} class="mx-auto h-24 md:h-28 lg:row-span-2"/>
+                <div class="grid grid-rows-1 grid-cols-[110px,minmax(80px,1fr),auto] lg:grid-rows-3 items-center lg:grid-flow-col">
+                  <img src={preview_url(item)} class="object-contain h-24 md:h-28 lg:row-span-2 justify-self-center"/>
 
                   <div class="flex flex-col justify-end px-4 md:px-8 lg:col-span-2 lg:row-span-1 lg:pb-1 ">
                     <span class="text-sm md:text-base md:font-medium lg:h-2/4 lg:flex lg:items-center">Digital download</span>
                   </div>
 
-                  <%= if item.credits_used_amount > 0 do %>
-                    <span class="text-base font-bold self-start flex flex-wrap justify-end lg:justify-start lg:px-8 lg:pt-1 ">
-                      <span class="whitespace-nowrap"><%= item.credits_used_amount %> credit - </span>
-
-                      <span class="whitespace-nowrap"> <%= item.priceAfterApplyingCredits %></span>
-                    </span>
-                  <% else %>
-                    <span class="text-base font-bold lg:self-start lg:pt-1 lg:px-8 "> <%= item.price %></span>
-                  <% end %>
+                  <span class="text-lg font-extrabold lg:col-span-2 lg:row-span-1 lg:px-8 lg:pt-0"> <%= item.price %></span>
                 </div>
               </div>
             <% end %>
