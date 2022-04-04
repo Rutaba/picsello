@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
+defmodule PicselloWeb.GalleryLive.Photos.Photo do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
@@ -13,16 +13,9 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
-    {:ok, photo} =
+    {:ok, _} =
       Galleries.get_photo(id)
       |> Galleries.mark_photo_as_liked()
-
-    favorites_update =
-      if photo.client_liked,
-        do: :increase_favorites_count,
-        else: :reduce_favorites_count
-
-    #    send(self(), favorites_update)
 
     socket |> noreply()
   end
@@ -35,22 +28,10 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoComponent do
     |> noreply()
   end
 
-  def handle_event("select", %{"id" => id}, socket) do
-    send(self(), {:selected_photos, id})
-
-    socket
-    |> noreply()
-  end
-
   defp js_like_click(js \\ %JS{}, id, target) do
     js
     |> JS.push("like", target: target, value: %{id: id})
     |> JS.toggle(to: "#photo-#{id}-liked")
     |> JS.toggle(to: "#photo-#{id}-to-like")
-  end
-
-  defp toggle_border(js \\ %JS{}, id, target) do
-    js
-    |> JS.push("select", target: target, value: %{id: id})
   end
 end

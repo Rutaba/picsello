@@ -127,7 +127,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     |> react_form()
 
     socket
-    |> push_redirect(to: Routes.gallery_overview_path(socket, :overview, gallery))
+    |> push_redirect(to: Routes.gallery_index_path(socket, :index, gallery))
     |> noreply()
   end
 

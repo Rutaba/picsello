@@ -170,7 +170,8 @@ export default {
       grid.add(items);
       grid.refreshItems();
     }
-  },  
+  },
+
   /**
    * Returns true if there are more photos to load.
    * @returns {boolean}
@@ -195,11 +196,12 @@ export default {
 
   remove_items(ids) {
     const grid = this.get_grid();
+    let items = [];
     ids.forEach(id => {
       const itemElement = document.getElementById(`photo-item-${id}`);
-      const item = grid.getItem(itemElement);
-      grid.remove([item], { removeElements: true });
+      items.push(grid.getItem(itemElement))
     });
+    grid.remove(items, { removeElements: true });
   },
 
   select_mode(mode) {
@@ -207,14 +209,14 @@ export default {
     switch(mode){
       case 'selected_none':
         items.forEach(item => {
-          item.classList.remove('photo-border');      
+          item.classList.remove('photo-border');
         });
         break;
       default:
         items.forEach(item => {
           item.classList.add('photo-border');
         });
-        break;  
+        break;
       }
   },
 
@@ -232,6 +234,7 @@ export default {
    * Mount callback
    */
   mounted() {
+    console.log("mounted")
     this.pending = this.page();
     window.addEventListener('scroll', (e) => {
       if (
@@ -259,11 +262,12 @@ export default {
    * Updated callback
    */
   updated() {
+    console.log("updated")
     this.pending = this.page();
     if (this.pending === '0') {
       this.reload_masonry();
     } else {
-      this.inject_new_items(); 
+      this.inject_new_items();
     }
   },
 };

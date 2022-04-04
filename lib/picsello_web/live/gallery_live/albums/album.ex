@@ -140,13 +140,10 @@ defmodule PicselloWeb.GalleryLive.Album do
           }
         } = socket
       ) do
-      socket
-      |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
-      |> noreply()
+    socket
+    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+    |> noreply()
   end
-
-
-
 
   @impl true
   def handle_event("close", _, socket) do
@@ -810,17 +807,17 @@ defmodule PicselloWeb.GalleryLive.Album do
   end
 
   def handle_info(
-    {:confirm_event, "set_album_thumbnail", %{photo_id: photo_id}},
+        {:confirm_event, "set_album_thumbnail", %{photo_id: photo_id}},
         %{
           assigns: %{
             album: album
           }
         } = socket
       ) do
-
     photo = Galleries.get_photo(photo_id)
+
     album
-    |> Album.update_changeset(%{thumbnail_url:  photo.preview_url})
+    |> Album.update_changeset(%{thumbnail_url: photo.preview_url})
     |> Repo.update()
 
     socket
@@ -946,7 +943,7 @@ defmodule PicselloWeb.GalleryLive.Album do
     #    gallery = Galleries.get_gallery!(gallery.id)
     # IO.inspect(gallery)
     socket
-    #    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery.id))
+    #    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :show, gallery.id))
     |> assign_photos()
     |> noreply()
   end

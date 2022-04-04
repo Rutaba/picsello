@@ -1,7 +1,7 @@
 export default {
   mounted() {
     const { el } = this
-  
+
     this.el.addEventListener('click', () => {
       const elements = getElements(el)
       elements.forEach((e, i) => {
@@ -10,16 +10,15 @@ export default {
         }else{
           e.classList.add('hidden')
         }
-      })  
+      })
     })
   }
 }
 
 function getElements(e) {
   const parent = '.' + e.getAttribute('parent-class')
-  console.log(parent)
-  console.log(e.closest(parent))
+  const parent_element = document.querySelector(parent);
   const target_class = '.' + e.getAttribute('target-class')
-  return e.closest(parent).querySelectorAll(target_class)
+  return parent_element.querySelectorAll(target_class)
 }
 

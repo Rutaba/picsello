@@ -27,6 +27,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Main do
       gallery_id: id,
       favorites_filter: false,
       gallery: gallery,
+      total_progress: 0,
       page: 0,
       page_title: page_title(socket.assigns.live_action),
       products: Galleries.products(gallery)
@@ -37,7 +38,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Main do
 
   @impl true
   def handle_info(
-        {:save, %{preview_photo_id: preview_photo_id, frame_id: frame_id, title: title}},
+        {:save, %{title: title}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
@@ -60,6 +61,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Main do
     )
     |> noreply
   end
+
+  def handle_info({:total_progress, total_progress}, socket) do
+    socket |> assign(:total_progress, total_progress) |> noreply()
+  end
+
+  def handle_info({:upload_success_message, success_message}, socket) do
+    socket |> put_flash(:photo_success, success_message) |> noreply()
+  end
+
+  def handle_info({:photo_processed, _, _photo}, socket), do: socket |> noreply()
 
   defp assign_photos(
          %{

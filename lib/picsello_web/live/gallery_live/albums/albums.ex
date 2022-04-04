@@ -104,13 +104,13 @@ defmodule PicselloWeb.GalleryLive.Albums do
       {:ok, _album} ->
         socket
         |> push_redirect(
-      to:
-        Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id,
-          upload_toast: false,
-          upload_toast_text: "Album deleted successfully"
+          to:
+            Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id,
+              upload_toast: false,
+              upload_toast_text: "Album deleted successfully"
+            )
         )
-    )
-    |> noreply()
+        |> noreply()
 
       _any ->
         socket
@@ -171,7 +171,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
+    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :show, gallery))
     |> noreply()
   end
 

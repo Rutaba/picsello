@@ -196,12 +196,16 @@ defmodule Picsello.Galleries do
 
     Ecto.Multi.new()
     # |> Ecto.Multi.run(:preview_update, &delete_album_photo_references/2)
-    |> Ecto.Multi.update_all(:preview, fn _ ->
-      from(p in Picsello.Galleries.GalleryProduct,
-        where: p.preview_photo_id in ^photo_ids,
-        update: [set: [preview_photo_id: nil]]
-      )
-    end, [] )
+    |> Ecto.Multi.update_all(
+      :preview,
+      fn _ ->
+        from(p in Picsello.Galleries.GalleryProduct,
+          where: p.preview_photo_id in ^photo_ids,
+          update: [set: [preview_photo_id: nil]]
+        )
+      end,
+      []
+    )
     |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photo))
     |> Ecto.Multi.delete(:album, album)
     |> Repo.transaction()

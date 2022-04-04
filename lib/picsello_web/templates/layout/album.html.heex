@@ -2,16 +2,15 @@
 <main class="bg-gray-100">
    <%= flash(@flash) %>
    <section class="flex">
+   <div class="flex flex-col h-screen">
+  <div class="flex root">
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: "side-nave", arrow_show: "photos", album_dropdown_show: true %>
+
      <%= @inner_content %>
+     </div>
+     </div>
    </section>
    <footer>
-      <div class="bottomBar h-20">
-         <div class="gallery__container flex justify-between items-center float-right">
-            <div class="flex">
-               <button class="text-white mr-3"><span class="pl-3">Preview gallery</span></button>
-               <button class="py-2 px-3 rounded bg-white" phx-click="client-link">Share gallery</button>
-            </div>
-         </div>
-      </div>
+      
    </footer>
 </main>

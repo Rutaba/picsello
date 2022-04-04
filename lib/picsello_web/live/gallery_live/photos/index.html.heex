@@ -1,46 +1,30 @@
-<div class="flex h-screen flex-col">
+<div class="flex flex-col h-screen">
   <div class="flex root">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: GalleryUploadProgress.total_progress(@progress), arrow_show: "photos", album_dropdown_show: true %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "photos", album_dropdown_show: true %>
 
     <div class="w-full h-full bg-gray-100 pl-96 ">
 
     <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-20 pl-10 pr-10 bg-gray-100 left-96">
-            <div class="flex flex-col justify-between  md:flex-row">
+            <div class="flex flex-col md:flex-row">
                <div class="flex items-end text-4xl font-bold lg:justify-start">
-                  <%= if length(@gallery.albums) > 0 do %>
-                    <span>Unsorted photos</span>
-                  <% else %>
-                    <span>Photos</span>
-                  <% end %>
+                  <span>Photos</span>
               </div>
               <div class="flex items-end ml-8 font-sans text-lg text-base-250 w-80 lg:justify-start">
               <%= if total(@selected_photos) > 0 do %>
               <%= total(@selected_photos) %> photo<%= if total(@selected_photos) > 1 do %>s<% end %> selected
               <% end %>
               </div>
-                <form id="dragDrop-form" phx-submit="save" phx-change="start">
-                    <div class="dragDrop"
-                        id="dropzone"
-                        phx-hook="DragDrop"
-                        phx-drop-target={@uploads.photo.ref}
-                    >
-                    <label class="flex flex-col items-center justify-center float-right cursor-pointer">
-                        <div class="max-w-xs mx-auto">
-                            <div class="dragDrop__content">
-                            <p class="text-center">
-                            <div class="flex items-center bg-white uploadBtn">
-                            <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
-                            Add photos
-                            </div>
-                              <%= live_file_input @uploads.photo, class: "dragDropInput" %>
-                            </p>
-                            </div>
-                        </div>
-                    </label>
-                    </div>
-                </form>
+              <div class="flex ml-auto">
+              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload", session: %{"gallery" => @gallery, "view" => "add_button"}, sticky: true) %>
+                <%= if length(@gallery.albums) == 0 do %> 
+                <button class="flex items-center bg-white cursor-pointer lg:justify-end uploadBtn">
+                     <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+                     <span phx-click="open_albums_popup">Add Album</span>
+                </button>
+                <% end %>
+              </div>
             </div>
-            <%= if length(@gallery.albums) > 0 do %>
+            <%= if length(@gallery.albums) > 0 do %> 
               <div class="flex mt-2">
                 <h1 class="flex justify-start font-sans cursor-pointer text-blue-planning-300" phx-click="select_photos">Photos</h1>
                 <h1 class="flex justify-start ml-2 mr-2 font-sans cursor-pointer text-blue-planning-300">></h1>
@@ -48,24 +32,24 @@
               </div>
             <% end %>
 
-          <div class="flex hidden items-center mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
+          <div class="flex items-center hidden mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
             <div class="flex justify-center pb-1 pl-5">
               <svg class="w-4 h-4 stroke-2" style="">
               <use href="/images/icons.svg#warning-orange"></use>
               </svg>
             </div>
-            <div class="flex-grow font-sans p-4">
+            <div class="flex-grow p-4 font-sans">
               2 photos failed to upload.
               <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
               to resolve errors.
             </div>
           </div>
 
-        <%= if length(@photos) > 0 do %>
+        <%= if length(@photos) > 0 || @favorites_filter do %>
         <div class="grid pt-8 lg:grid-cols-2">
             <div class="flex flex-col justify-start md:flex-row gap-x-5">
                 <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
-                  <div id="select" class="relative" phx-hook="ToggleAlbumDropdown">
+                  <div id="select" class="relative" phx-update="ignore" phx-hook="ToggleAlbumDropdown">
                     <div class="flex items-center w-32 dropdown text-ellipsis">
                         <div class="mx-3">
                           <span>Select</span>
@@ -96,7 +80,7 @@
                   </div>
                 </div>
                 <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
-                  <div id="actions" class="relative" phx-hook="ToggleContent">
+                  <div id="actions" class="relative" phx-update="ignore" phx-hook="ToggleAlbumDropdown">
                     <div class="flex items-center w-64 dropdown text-ellipsis">
                         <div class="mx-3">
                           <span>Actions</span>
@@ -126,7 +110,7 @@
 
               <div class="flex flex-col items-start min-w-0 lg:flex-row lg:justify-end">
                   <label class="flex items-center float-right cursor-pointer">
-                      <div class="text-sm lg:text-lg font-sans">Show favorites only
+                      <div class="font-sans text-sm lg:text-lg">Show favorites only
                       </div>
                       <div class="relative ml-3">
                           <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
@@ -144,35 +128,13 @@
         <% end %>
     </div>
 
-    <div class= "pt-24 pb-10 pl-16 pr-8">
-      <%= if length(@photos) == 0 do %>
+    <div class= "pt-24 pb-10 pl-8 pr-8">
+      <%= if length(@photos) == 0 && !@favorites_filter do %>
       <div class="relative justify-between mt-20 mb-12 text-2xl font-bold text-center text-blue-planning-300">
           Oops, there's nothing here - upload photos now to get started!
       </div>
       <div class="relative overflow-hidden dragDrop__wrapper h-96">
-          <form id="dragDrop-form-1" phx-submit="save" phx-change="start">
-              <div class="dragDrop"
-                  id="dropzone-1"
-                  phx-hook="DragDrop"
-                  phx-drop-target={@uploads.photo.ref}
-              >
-              <label class="flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer">
-                  <div class="max-w-xs mx-auto">
-                      <img src="/images/drag-drop-img.png" width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
-                      <div class="flex flex-col items-center justify-center dragDrop__content">
-                          <p class="text-center">
-                              <span class="font-bold">Drag your images or </span>
-                              <span class="font-bold cursor-pointer primary">browse</span>
-                              <%= live_file_input @uploads.photo, class: "dragDropInput" %>
-                          </p>
-                          <p class="text-center gray">Supports JPEG or PNG</p>
-                          <p class="py-2 font-bold"> or </p>
-                          <p class="font-bold cursor-pointer primary">Upload folders</p>
-                      </div>
-                  </div>
-              </label>
-              </div>
-          </form>
+      <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload1", session: %{"gallery" => @gallery, "view" => "drag_drop"}, sticky: true) %>
       </div>
       <% else %>
       <div class="px-0 pt-40 pb-32 mx-0 gallery__container" id="gallery">
@@ -198,13 +160,12 @@
           data-has-more-photos={ "#{@has_more_photos}" }
           data-photo-width="300">
           <%= for photo <- @photos do%>
-          <%= live_component PicselloWeb.GalleryLive.Photos.PhotoComponent,
+          <%= live_component PicselloWeb.GalleryLive.Photos.Photo,
               id: photo.id,
               photo: photo,
               photo_width: 300,
               is_likable: true,
               is_removable: true,
-              is_removed: false,
               is_viewable: true,
               is_meatball: true,
               is_gallery_category_page: false
@@ -212,8 +173,10 @@
         <% end %>
         </div>
 
+
         <div style="display: none">
           <div id="selected-mode" class={@select_mode}></div>
+          <!--<div id="selected-mode" class={"#{@select_mode} #{@upload_status}"}></div>-->
           <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
         </div>
       </div>

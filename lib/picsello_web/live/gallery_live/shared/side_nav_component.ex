@@ -3,13 +3,24 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
   alias Picsello.Repo
+  alias Phoenix.PubSub
 
   @impl true
   def update(
-        %{id: id, gallery: gallery, total_progress: total_progress, arrow_show: arrow_show, album_dropdown_show: album_dropdown_show} = params,
+        %{
+          id: id,
+          total_progress: total_progress,
+          gallery: gallery,
+          arrow_show: arrow_show,
+          album_dropdown_show: album_dropdown_show
+        } = params,
         socket
       ) do
     gallery = Repo.preload(gallery, :albums)
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+    end
 
     {:ok,
      socket
@@ -50,7 +61,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_overview_path(socket, :overview, gallery))
+    |> push_redirect(to: Routes.gallery_index_path(socket, :index, gallery))
     |> noreply()
   end
 
@@ -65,7 +76,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
+    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :show, gallery))
     |> noreply()
   end
 
@@ -85,7 +96,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       |> noreply()
     else
       socket
-      |> push_redirect(to: Routes.gallery_photos_path(socket, :show, gallery))
+      |> push_redirect(to: Routes.gallery_photos_index_path(socket, :show, gallery))
       |> noreply()
     end
   end
@@ -165,5 +176,4 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   defp is_selected_album(album, selected_album),
     do: selected_album && album.id == selected_album.id
-
 end

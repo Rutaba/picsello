@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.Overview do
+defmodule PicselloWeb.GalleryLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Show, only: [presign_cover_entry: 2, handle_cover_progress: 3]

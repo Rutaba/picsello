@@ -23,10 +23,10 @@ const Preview = {
     show_content(img, canvasId) {
         const product = document.getElementById('product'.concat('-', canvasId));
         if (img.classList.contains('hidden')) {
-            product.classList.remove('preview_border')
+            product.classList.remove('preview-border')
             img.classList.remove('hidden')
         }else {
-            product.classList.add('preview_border')
+            product.classList.add('preview-border')
             img.classList.add('hidden')
         }
     },
