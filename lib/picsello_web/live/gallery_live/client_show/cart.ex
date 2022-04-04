@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   alias WHCC.Shipping
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   import PicselloWeb.GalleryLive.Shared
-  import Cart, only: [preview_url: 1]
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -110,7 +109,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     item =
       case params do
         %{"editor-id" => editor_id} -> [editor_id: editor_id]
-        %{"digital-id" => digital_id} -> [digital_id: digital_id]
+        %{"digital-id" => digital_id} -> [digital_id: String.to_integer(digital_id)]
       end
 
     case Cart.delete_product(order, item) do
@@ -294,7 +293,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       <div class="text-xl">
         <%= unless Enum.empty?(@order.products) do %> Subtotal: <% else %> Total: <% end %>
 
-        <span class="font-bold ml-2"><%= @order.subtotal_cost %></span>
+        <span class="font-bold ml-2"><%= subtotal_cost(@order) %></span>
       </div>
 
       <button type="button" class="btn-primary text-lg mt-5" phx-click="continue">Continue</button>
@@ -384,12 +383,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
     do: Map.get(selections, "quantity", 1)
 
-  defp only_digitals?(order),
-    do: match?(%{products: [], digitals: [_ | _]}, order)
-
+  defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
+  defp preview_url(item), do: Cart.preview_url(item, :watermarked)
 
+  defdelegate cart_count(order), to: Cart, as: :item_count
   defdelegate product_name(product), to: Cart
+  defdelegate shipping_cost(order), to: Cart
+  defdelegate subtotal_cost(order), to: Cart
   defdelegate summary_counts(order), to: Cart
+  defdelegate total_cost(order), to: Cart
 end

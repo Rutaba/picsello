@@ -86,13 +86,6 @@
 
                   <%= text_input f, :name, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
                 </div>
-
-
-                <%= if Enum.any?(@order.digitals) do %>
-                  <div class="col-span-1 md:col-span-2 font-medium">
-                    We’ll email you a link for your digital products! This link will never expire.
-                  </div>
-                <% end %>
               </div>
 
               <%= unless only_digitals?(@order) do %>
@@ -135,7 +128,7 @@
 
               <hr class="my-4 border-base-200">
 
-              <p class="text-2xl font-medium mb-5">Total: <span class="font-extrabold"><%= @order.subtotal_cost %></span></p>
+              <p class="text-2xl font-medium mb-5">Total: <span class="font-extrabold"><%= subtotal_cost(@order) %></span></p>
 
               <.button type="submit" class="w-full" disabled={!@delivery_info_changeset.valid?}>Continue</.button>
             </div>
@@ -195,13 +188,13 @@
           </div>
 
           <div class="rounded-lg border border-base-225 w-full xl:max-w-md xl:w-1/3 px-4 py-6 mb-9 xl:mt-0 self-start">
-            <p class="text-black text-opacity-80 text-lg pb-2">Products (<%= Enum.count(@order.products) + Enum.count(@order.digitals) %>): <span class="font-bold"><%= @order.subtotal_cost %></span></p>
+            <p class="text-black text-opacity-80 text-lg pb-2">Products (<%= cart_count(@order) %>): <span class="font-bold"><%= subtotal_cost(@order) %></span></p>
 
-            <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= @order.shipping_cost %></span></p>
+            <p class="text-black text-opacity-80 text-lg">Shipping: <span class="font-bold"><%= shipping_cost(@order) %></span></p>
 
             <hr class="my-4">
 
-            <div class="text-xl">Total: <span class="font-bold ml-2"><%= Money.add(@order.subtotal_cost, @order.shipping_cost) %></span></div>
+            <div class="text-xl">Total: <span class="font-bold ml-2"><%= total_cost(@order) %></span></div>
 
             <button type="submit" class="btn-primary text-lg mt-5 w-full" disabled={@ordering_tasks != %{}} phx-click="checkout">
               Check out with Stripe

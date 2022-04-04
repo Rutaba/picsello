@@ -1,25 +1,22 @@
 defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
-  import Plug.Conn
-  alias Picsello.Galleries
+  alias Picsello.{Cart, Galleries.Workers.PhotoStorage}
 
-  def download(conn, %{"hash" => hash, "type" => type} = _params) do
-    try do
-      gallery = Galleries.get_gallery_by_hash(hash)
-      photos = Galleries.load_gallery_photos(gallery, type)
+  def download(conn, %{"hash" => hash, "order_number" => order_number} = _params) do
+    %{organization: %{name: org_name}, photos: photos} =
+      Cart.get_purchased_photos!(order_number, %{client_link_hash: hash})
 
-      photos
-      |> group()
-      |> Packmatic.build_stream(on_error: :skip)
-      |> Packmatic.Conn.send_chunked(conn, "#{gallery.name}.zip")
-    rescue
-      e -> conn |> send_resp(500, "#{e}")
-    end
+    photos
+    |> to_entries()
+    |> Packmatic.build_stream()
+    |> Packmatic.Conn.send_chunked(conn, "#{org_name} - #{order_number}.zip")
   end
 
-  def group(entries) do
-    entries
-    |> Enum.map(fn entry -> [source: {:url, entry.original_url}, path: entry.name] end)
+  def to_entries(photos) do
+    photos
+    |> Enum.map(fn entry ->
+      [source: {:url, PhotoStorage.path_to_url(entry.original_url)}, path: entry.name]
+    end)
     |> Enum.group_by(&Keyword.get(&1, :path))
     |> Enum.flat_map(&dublicates(elem(&1, 1)))
   end

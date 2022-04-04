@@ -158,11 +158,18 @@ defmodule PicselloWeb.Router do
       pipe_through [:browser]
 
       live "/", GalleryLive.ClientShow, :show
-      live "/orders", GalleryLive.ClientOrders, :show
-      live "/orders/:order_number", GalleryLive.ClientOrder, :show
-      live "/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
+
+      scope "/orders" do
+        live "/", GalleryLive.ClientOrders, :show
+
+        scope "/:order_number" do
+          live "/", GalleryLive.ClientOrder, :show
+          live "/paid", GalleryLive.ClientOrder, :paid
+          get "/zip", GalleryDownloadsController, :download
+        end
+      end
+
       live "/cart", GalleryLive.ClientShow.Cart, :cart
-      post "/downloads", GalleryDownloadsController, :download
       post "/login", GallerySessionController, :put
     end
   end

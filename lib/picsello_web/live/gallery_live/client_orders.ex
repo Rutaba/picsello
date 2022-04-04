@@ -13,4 +13,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     |> assign(:orders, orders)
     |> noreply
   end
+
+  defdelegate total_cost(order), to: Cart
 end

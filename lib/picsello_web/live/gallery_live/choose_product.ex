@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared, only: [button: 1]
   alias Picsello.{Cart, Galleries, GalleryProducts}
+  alias Cart.Digital
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
@@ -48,12 +49,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       ) do
     send(
       socket.root_pid,
-      {:add_digital_to_cart,
-       %Cart.Order.Digital{
-         photo_id: photo.id,
-         preview_url: photo.preview_url,
-         price: price
-       }}
+      {:add_digital_to_cart, %Digital{photo: photo, price: price}}
     )
 
     socket |> noreply()

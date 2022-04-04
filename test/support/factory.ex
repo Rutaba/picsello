@@ -4,6 +4,7 @@ defmodule Picsello.Factory do
   """
 
   use ExMachina.Ecto, repo: Picsello.Repo
+  import Money.Sigils
 
   alias Picsello.{
     BookingProposal,
@@ -392,6 +393,7 @@ defmodule Picsello.Factory do
       gallery: fn -> build(:gallery) end,
       name: "name.jpg",
       position: 1.0,
+      aspect_ratio: 1.0,
       original_url: Photo.original_path("name", 333, "4444")
     }
     |> merge_attributes(attrs)
@@ -559,7 +561,7 @@ defmodule Picsello.Factory do
 
   def order_factory,
     do:
-      %Picsello.Cart.Order{subtotal_cost: Money.new(500), gallery: fn -> build(:gallery) end}
+      %Picsello.Cart.Order{gallery: fn -> build(:gallery) end}
       |> evaluate_lazy_attributes()
 
   def confirmed_order_factory(attrs) do
@@ -577,10 +579,7 @@ defmodule Picsello.Factory do
         name: "Harry Potter"
       },
       number: 226_160,
-      placed: true,
-      placed_at: ~U[2022-01-17 09:42:05Z],
-      shipping_cost: %Money{amount: 5703, currency: :USD},
-      subtotal_cost: %Money{amount: 380_000, currency: :USD}
+      placed_at: ~U[2022-01-17 09:42:05Z]
     }
     |> merge_attributes(attrs)
   end
@@ -610,4 +609,13 @@ defmodule Picsello.Factory do
         current_period_end: DateTime.utc_now() |> DateTime.add(60 * 60 * 24)
       }
       |> merge_attributes(attrs)
+
+  def digital_factory,
+    do:
+      %Picsello.Cart.Digital{
+        price: ~M[500]USD,
+        photo: fn _ -> build(:photo) end,
+        position: sequence(:position, & &1)
+      }
+      |> evaluate_lazy_attributes()
 end

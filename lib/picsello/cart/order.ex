@@ -2,30 +2,20 @@ defmodule Picsello.Cart.Order do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.Gallery
-  alias Picsello.Cart.{CartProduct, DeliveryInfo}
+  alias Picsello.{Cart.CartProduct, Cart.DeliveryInfo, Cart.Digital, Galleries.Gallery, Repo}
 
   schema "gallery_orders" do
     field :number, :integer, default: Enum.random(100_000..999_999)
     field :total_credits_amount, :integer, default: 0
-    field :subtotal_cost, Money.Ecto.Amount.Type
-    field :shipping_cost, Money.Ecto.Amount.Type, default: Money.new(0)
-    field :placed, :boolean, default: false
     field :placed_at, :utc_datetime
     belongs_to(:gallery, Gallery)
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
 
-    embeds_many :digitals, Digital, on_replace: :delete do
-      field :photo_id, :integer
-      field :preview_url, :string
-      field :price, Money.Ecto.Amount.Type
-    end
+    has_many :digitals, Digital, on_replace: :delete, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end
-
-  alias __MODULE__.Digital
 
   def create_changeset(product, attrs \\ %{})
 
@@ -33,14 +23,12 @@ defmodule Picsello.Cart.Order do
     attrs
     |> do_create_changeset()
     |> put_embed(:products, [product])
-    |> refresh_costs()
   end
 
   def create_changeset(%Digital{} = digital, attrs) do
     attrs
     |> do_create_changeset()
-    |> put_embed(:digitals, [digital])
-    |> refresh_costs()
+    |> put_assoc(:digitals, [%{digital | position: 0}])
   end
 
   defp do_create_changeset(attrs) do
@@ -58,8 +46,9 @@ defmodule Picsello.Cart.Order do
     |> replace_products([product])
   end
 
-  def update_changeset(order, %Digital{} = digital, attrs) do
+  def update_changeset(%__MODULE__{} = order, %Digital{} = digital, attrs) do
     order
+    |> Repo.preload(:digitals)
     |> cast(attrs, [])
     |> then(fn changeset ->
       digitals = get_field(changeset, :digitals, [])
@@ -67,11 +56,19 @@ defmodule Picsello.Cart.Order do
       if Enum.any?(digitals, &(&1.photo_id == digital.photo_id)) do
         changeset
       else
-        put_embed(changeset, :digitals, [digital | digitals])
+        put_assoc(changeset, :digitals, [
+          %{
+            digital
+            | position: (digitals |> Enum.map(& &1.position) |> Enum.max(fn -> -1 end)) + 1
+          }
+          | digitals
+        ])
       end
     end)
-    |> refresh_costs()
   end
+
+  def update_changeset(changeset, %Digital{} = digital, attrs),
+    do: changeset |> apply_changes() |> update_changeset(digital, attrs)
 
   def change_products(
         %__MODULE__{} = order,
@@ -81,23 +78,20 @@ defmodule Picsello.Cart.Order do
     order
     |> cast(attrs, [])
     |> put_embed(:products, products)
-    |> refresh_costs()
   end
 
   def checkout_changeset(%__MODULE__{} = order, products, attrs \\ %{}) do
     order
     |> cast(attrs, [])
     |> replace_products(products)
-    |> cast_shipping_cost()
   end
 
   def confirmation_changeset(%__MODULE__{} = order, confirmed_products) do
-    attrs = %{placed: true, placed_at: DateTime.utc_now()}
+    attrs = %{placed_at: DateTime.utc_now()}
 
     order
-    |> cast(attrs, [:placed, :placed_at])
+    |> cast(attrs, [:placed_at])
     |> put_embed(:products, confirmed_products)
-    |> refresh_costs()
   end
 
   def store_delivery_info(order, delivery_info_changeset) do
@@ -122,67 +116,61 @@ defmodule Picsello.Cart.Order do
 
     changeset
     |> put_embed(:products, products_to_store)
-    |> refresh_costs()
   end
 
-  def delete_product_changeset(%__MODULE__{products: products, digitals: digitals} = order, opts) do
-    {embed, values} =
-      case opts do
-        [editor_id: editor_id] ->
-          {:products, Enum.reject(products, &(&1.editor_details.editor_id == editor_id))}
+  def delete_product_changeset(%__MODULE__{products: products} = order, opts) do
+    case opts do
+      [editor_id: editor_id] ->
+        order
+        |> change()
+        |> put_embed(
+          :products,
+          Enum.reject(products, &(&1.editor_details.editor_id == editor_id))
+        )
 
-        [digital_id: digital_id] ->
-          {:digitals, Enum.reject(digitals, &(&1.id == digital_id))}
-      end
+      [digital_id: digital_id] ->
+        order = Repo.preload(order, :digitals)
 
-    order
-    |> change()
-    |> put_embed(embed, values)
-    |> refresh_costs()
-  end
-
-  def total(%__MODULE__{subtotal_cost: subtotal, shipping_cost: shipping}) do
-    Money.add(subtotal, shipping)
-  end
-
-  defp cast_shipping_cost(changeset) do
-    products = changeset |> get_field(:products)
-
-    changeset
-    |> put_change(
-      :shipping_cost,
-      Enum.reduce(products, Money.new(0), fn product, cost ->
-        if product.whcc_order do
-          product.whcc_order.total
-        else
-          "0"
-        end
-        |> Money.parse!()
-        |> Money.subtract(product.base_price)
-        |> Money.add(cost)
-        |> reset_negative_cost()
-      end)
-    )
-  end
-
-  defp reset_negative_cost(cost) do
-    if Money.negative?(cost) do
-      Money.new(0)
-    else
-      cost
+        order
+        |> change()
+        |> put_assoc(
+          :digitals,
+          Enum.reject(order.digitals, &(&1.id == digital_id))
+        )
     end
   end
 
-  defp refresh_costs(changeset) do
-    costs =
-      for field <- [:products, :digitals], reduce: Money.new(0) do
-        acc ->
-          for(entry <- get_field(changeset, field), reduce: acc) do
-            acc ->
-              Money.add(acc, entry.price)
-          end
-      end
+  def shipping_cost(%__MODULE__{products: products}) do
+    for(
+      %{product: %{base_price: base_price, whcc_order: %{total: total}}} <- products,
+      reduce: Money.new(0)
+    ) do
+      cost ->
+        [Money.new(0), total |> Money.parse!() |> Money.subtract(base_price)]
+        |> Enum.max(Money)
+        |> Money.add(cost)
+    end
+  end
 
-    put_change(changeset, :subtotal_cost, costs)
+  def placed?(%__MODULE__{placed_at: nil}), do: false
+  def placed?(%__MODULE__{}), do: true
+
+  def subtotal_cost(%__MODULE__{} = order) do
+    order = Repo.preload(order, :digitals)
+
+    for field <- [:products, :digitals], reduce: Money.new(0) do
+      acc ->
+        for(entry <- Map.get(order, field), reduce: acc) do
+          acc ->
+            Money.add(acc, entry.price)
+        end
+    end
+  end
+
+  def total_cost(order) do
+    for f <- [&subtotal_cost/1, &shipping_cost/1], reduce: Money.new(0) do
+      acc ->
+        Money.add(acc, f.(order))
+    end
   end
 end
