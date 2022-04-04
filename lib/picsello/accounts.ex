@@ -404,3 +404,4 @@ defmodule Picsello.Accounts do
         {:error, changeset}
     end
 end
+end
