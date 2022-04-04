@@ -403,5 +403,10 @@ defmodule Picsello.Accounts do
       {:error, changeset} ->
         {:error, changeset}
     end
-end
+  end
+
+    def user_stripe_setup_complete?(%User{} = user) do
+    user = Repo.preload(user, :organization)
+    !is_nil(user.organization.stripe_account_id)
+  end
 end
