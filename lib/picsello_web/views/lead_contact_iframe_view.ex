@@ -25,7 +25,7 @@ defmodule PicselloWeb.LeadContactIframeView do
           <div class="flex flex-col flex-1 mt-3">
             <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-bold" %>
 
-            <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", required: true, phx_hook: "Phone" %>
+            <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", required: true, id: "phone" %>
           </div>
         </div>
 
@@ -45,6 +45,7 @@ defmodule PicselloWeb.LeadContactIframeView do
 
         <div class="mt-8 text-right"><button type="submit" class="w-full lg:w-auto btn-primary">Submit</button></div>
       </.form>
+      <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/js/leadForm.js")}></script>
     </.container>
     """
   end
@@ -80,6 +81,7 @@ defmodule PicselloWeb.LeadContactIframeView do
     ~H"""
     <div class="border p-9 border-base-200 client-app">
       <%= render_block(@inner_block) %>
+
     </div>
     """
   end

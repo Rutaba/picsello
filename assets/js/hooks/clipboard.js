@@ -6,19 +6,16 @@ export default {
     this.clipboard = new Clipboard(this.el);
     this.clipboard.on('success', () => {
       const tooltip = this.el.querySelector('[role="tooltip"]');
+      const clipboardBg = this?.el?.dataset?.clipboardBg;
       this.popper = createPopper(this.el, tooltip);
       tooltip.classList.remove('hidden');
       this.el.classList.add(
-        this?.el?.dataset?.clipboardBg
-          ? this.el.dataset.clipboardBg
-          : 'bg-green-finances-100'
+        clipboardBg ? clipboardBg : 'bg-green-finances-100'
       );
 
       setTimeout(() => {
         this.el.classList.remove(
-          this?.el?.dataset?.clipboardBg
-            ? this.el.dataset.clipboardBg
-            : 'bg-green-finances-100'
+          clipboardBg ? clipboardBg : 'bg-green-finances-100'
         );
       }, 300);
 

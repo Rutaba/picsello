@@ -18,6 +18,9 @@ module.exports = (env, options) => {
     },
     entry: {
       app: glob.sync('./vendor/**/*.js').concat(['./js/app.js']),
+      leadForm: glob
+        .sync('./vendor/**/*.js')
+        .concat(['./js/lead-form-iframe.js']),
     },
     output: {
       filename: '[name].js',
