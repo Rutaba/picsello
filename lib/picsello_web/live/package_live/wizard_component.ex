@@ -235,8 +235,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <div class="">
           <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
             <label for={input_id(@f, :base_price)}>
-              <h2 class="mb-1 text-xl font-bold">Base Price</h2>
-              Your cost in labor, travel, etc.
+              <h2 class="mb-1 text-xl font-bold">Creative Session Price</h2>
+              Your cost in labor, travel, etc including download and print credits
             </label>
 
             <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
