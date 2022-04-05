@@ -48,10 +48,10 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   end
 
   defp quantity(%{editor_details: %{selections: %{"quantity" => quantity}}}), do: quantity
-  defp quantity(_), do: 0
 
   defdelegate total_cost(order), to: Cart
   defdelegate preview_url(item), to: Cart
   defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
   defp product_name(item), do: Cart.product_name(item)
+  defp client_email(%{delivery_info: %{email: email}}), do: email
 end

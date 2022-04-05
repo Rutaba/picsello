@@ -251,21 +251,18 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("View Gallery"))
       |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "Purchased"))
+      |> click(link("close"))
+      |> click(link("My orders"))
+      |> find(definition("Order number:"), fn number ->
+        session
+        |> find(
+          link("Download photos"),
+          &assert(
+            Element.attr(&1, "href") ==
+              Path.join([current_url(session), Element.text(number), "zip"])
+          )
+        )
+      end)
     end
-  end
-
-  @tag :skip
-  feature "client reviews the placed order", %{session: session, gallery: gallery, order: order} do
-    session
-    |> visit("/gallery/#{gallery.client_link_hash}/orders/#{order.number}")
-    |> assert_text("My orders")
-    |> assert_text("Order number #{order.number}")
-    |> assert_text("Your order will be sent to:")
-    |> assert_text(order.delivery_info.name)
-    |> assert_text(order.delivery_info.address.addr1)
-    |> assert_text(
-      order.delivery_info.address.city <>
-        ", " <> order.delivery_info.address.state <> " " <> order.delivery_info.address.zip
-    )
   end
 end
