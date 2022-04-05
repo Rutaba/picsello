@@ -229,11 +229,15 @@ defmodule Picsello.Profiles do
   end
 
   def embed_url(%Organization{slug: slug}) do
-    PicselloWeb.Router.Helpers.profile_embed_url(PicselloWeb.Endpoint, :index, slug)
+    PicselloWeb.Router.Helpers.lead_contact_iframe_url(
+      PicselloWeb.Endpoint,
+      :index,
+      slug
+    )
   end
 
   def embed_code(%Organization{} = organization) do
-    ~s(<div><iframe src="#{embed_url(organization)}" width="100%" height="600px" frameborder="none"></iframe></div>)
+    ~s(<div style="padding:127% 0 0 0;position:relative;"><iframe src="#{embed_url(organization)}" frameborder="0" style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe></div>)
   end
 
   def subscribe_to_photo_processed(%{slug: slug}) do

@@ -13,7 +13,7 @@ defmodule PicselloWeb.Live.Profile.CopyContactFormComponent do
         </button>
       </div>
       <div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-7">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-12 flex items-center">
           <div>
             <div class="rounded-lg shadow-xl p-4">
               <%= raw @embed_code %>
