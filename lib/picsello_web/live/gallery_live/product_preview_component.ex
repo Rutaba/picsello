@@ -10,18 +10,19 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
 
   def update(assigns, socket) do
     socket
+    |> assign(:uniq, UUID.uuid4)
     |> assign(@default_assigns)
     |> assign(assigns)
     |> set_preview()
     |> ok
   end
 
-  defp set_preview(%{assigns: %{category: category, photo: nil}} = socket) do
+  defp set_preview(%{assigns: %{category: category, photo: nil, uniq: uniq}} = socket) do
     socket
     |> push_event(
       "set_preview",
       category
-      |> to_event_args()
+      |> to_event_args(uniq)
       |> Map.merge(%{
         preview: path(nil),
         width: nil,
@@ -30,12 +31,12 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     )
   end
 
-  defp set_preview(%{assigns: %{category: category, photo: photo}} = socket) do
+  defp set_preview(%{assigns: %{category: category, photo: photo, uniq: uniq}} = socket) do
     socket
     |> push_event(
       "set_preview",
       category
-      |> to_event_args()
+      |> to_event_args(uniq)
       |> Map.merge(%{
         preview: path(photo.preview_url),
         ratio: photo.aspect_ratio
@@ -45,10 +46,10 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
 
   defdelegate min_price(category), to: Picsello.WHCC
 
-  defp to_event_args(category),
+  defp to_event_args(category, uniq),
     do: %{
       frame: Picsello.Category.frame_image(category),
       coords: Picsello.Category.coords(category),
-      target: "canvas#{category.id}"
+      target: "canvas#{category.id}-#{uniq}"
     }
 end
