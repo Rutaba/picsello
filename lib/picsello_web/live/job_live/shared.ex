@@ -119,7 +119,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket),
     do:
       socket
-      |> assign(package: package, job: %{job | package: package})
+      |> assign(package: package, job: %{job | package: package, package_id: package.id})
       |> assign_shoots()
       |> noreply()
 
