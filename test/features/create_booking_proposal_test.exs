@@ -47,6 +47,7 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> visit("/leads/#{lead.id}")
     |> assert_has(css("button:disabled", text: "Finish booking proposal"))
+    |> assert_enabled(button("Package settings"))
     |> assert_text("50% retainer and 50% on day of shoot")
     |> assert_text("You haven’t sent a proposal yet.")
     |> click(button("Add shoot details"))
@@ -66,6 +67,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(@send_email_button)
     |> assert_has(css("h1", text: "Email sent"))
     |> click(button("Close"))
+    |> assert_disabled(button("Package settings"))
 
     assert_receive {:delivered_email, email}
 
