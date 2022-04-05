@@ -24,9 +24,9 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
       <hr class="my-4 sm:my-10" />
 
-      <div class="flex flex-row justify-between flex-1 flex-grow-0">
+      <div class="flex grid flex-row justify-between flex-1 flex-grow-0 gap-6 sm:grid-cols-2">
 
-        <div class="flex flex-col w-1/2 mr-6">
+        <div class="flex flex-col mr-6">
           <.card title="Sales tax">
             <form id="tax_form">
 
@@ -51,7 +51,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
           </.card>
         </div>
 
-        <div class="flex flex-row w-1/2">
+        <div class="flex flex-row">
           <.card title="Stripe Account">
             <p>Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
             <div class="text-right">
