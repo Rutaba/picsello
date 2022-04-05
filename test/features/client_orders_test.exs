@@ -5,6 +5,7 @@ defmodule Picsello.ClientOrdersTest do
   alias Picsello.{Repo, Cart.Order}
 
   setup do
+    Mox.verify_on_exit!()
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
 
@@ -50,7 +51,70 @@ defmodule Picsello.ClientOrdersTest do
 
   setup :authenticated_gallery_client
 
-  feature "get to editor", %{session: session, gallery: %{id: gallery_id} = gallery} do
+  def stub_create_session(mock, %{connect_account: connect_account_id, session: session_id}) do
+    test_pid = self()
+
+    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params,
+                                       connect_account: ^connect_account_id ->
+      success_url = URI.parse(success_url)
+      assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
+      send(test_pid, {:checkout_link, params})
+
+      {:ok,
+       success_url
+       |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
+       |> URI.to_string()}
+    end)
+  end
+
+  def stub_retrieve_session(mock, %{
+        connect_account: connect_account_id,
+        session: stripe_session_id,
+        payment_intent: payment_intent_id
+      }) do
+    Mox.expect(mock, :retrieve_session, fn ^stripe_session_id,
+                                           connect_account: ^connect_account_id ->
+      order_number = Order |> Repo.one!() |> Order.number()
+
+      {:ok,
+       %Stripe.Session{
+         id: stripe_session_id,
+         payment_status: "unpaid",
+         payment_intent: payment_intent_id,
+         client_reference_id: "order_number_#{order_number}"
+       }}
+    end)
+  end
+
+  def stub_retrieve_payment_intent(mock, %{
+        payment_intent: intent_id,
+        connect_account: account_id,
+        amount: amount
+      }) do
+    Mox.expect(
+      mock,
+      :retrieve_payment_intent,
+      fn ^intent_id, connect_account: ^account_id ->
+        {:ok, %Stripe.PaymentIntent{id: intent_id, amount_capturable: amount}}
+      end
+    )
+  end
+
+  def stub_capture_payment_intent(mock, %{payment_intent: intent_id, connect_account: connect}) do
+    Mox.expect(
+      mock,
+      :capture_payment_intent,
+      fn ^intent_id, connect_account: ^connect ->
+        {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
+      end
+    )
+  end
+
+  feature "order product", %{
+    session: session,
+    gallery: %{id: gallery_id} = gallery,
+    organization: organization
+  } do
     {gallery_product_id, whcc_product_id} =
       from(whcc_product in Picsello.Product,
         join: whcc_category in assoc(whcc_product, :category),
@@ -75,7 +139,7 @@ defmodule Picsello.ClientOrdersTest do
     |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
       %Picsello.WHCC.Editor.Details{
         product_id: whcc_product_id,
-        selections: %{"size" => "6x9"},
+        selections: %{"size" => "6x9", "quantity" => 1},
         editor_id: "editor-id"
       }
     end)
@@ -83,12 +147,34 @@ defmodule Picsello.ClientOrdersTest do
       %Picsello.WHCC.Editor.Export{
         items: [],
         order: %{},
-        pricing: %{"totalOrderBasePrice" => 1.00, "code" => "USD"}
+        pricing: %{"totalOrderBasePrice" => 3.00, "code" => "USD"}
       }
     end)
     |> Mox.stub(:create_order, fn _account_id, _editor_id, _opts ->
       %Picsello.WHCC.Order.Created{total: "69"}
     end)
+    |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
+      {:ok, :confirmed}
+    end)
+
+    %{stripe_account_id: connect_account_id} = organization
+
+    Picsello.MockPayments
+    |> stub_create_session(%{connect_account: connect_account_id, session: "stripe-session"})
+    |> stub_retrieve_session(%{
+      connect_account: connect_account_id,
+      session: "stripe-session",
+      payment_intent: "payment-intent-id"
+    })
+    |> stub_retrieve_payment_intent(%{
+      connect_account: connect_account_id,
+      payment_intent: "payment-intent-id",
+      amount: 500
+    })
+    |> stub_capture_payment_intent(%{
+      payment_intent: "payment-intent-id",
+      connect_account: connect_account_id
+    })
 
     Picsello.PhotoStorageMock |> Mox.stub(:path_to_url, & &1)
 
@@ -129,51 +215,46 @@ defmodule Picsello.ClientOrdersTest do
     |> fill_in(text_field("delivery_info_address_zip"), with: "74104")
     |> wait_for_enabled_submit_button()
     |> click(button("Continue"))
-    |> assert_has(button("Check out with Stripe"))
+    |> click(button("Check out with Stripe"))
+
+    assert_receive(
+      {:checkout_link,
+       %{
+         client_reference_id: "order_number_" <> _order_number,
+         customer_email: "client@example.com",
+         line_items: [
+           %{price_data: %{product_data: %{images: [_product_image]}, unit_amount: 500}}
+         ]
+       }}
+    )
+
+    session
+    |> assert_has(css("h3", text: "Thank you for your order!"))
+    |> click(link("My orders"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$5.00"))
   end
 
   describe "digital downloads" do
     feature "add to cart", %{session: session, organization: organization} do
-      test_pid = self()
-
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
-      |> Mox.stub(:create_session, fn %{success_url: success_url} = params,
-                                      connect_account: ^connect_account_id ->
-        success_url = URI.parse(success_url)
-        assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
-        send(test_pid, {:checkout_link, params})
-
-        {:ok,
-         success_url
-         |> Map.put(:query, URI.encode_query(%{"session_id" => "stripe-session-id"}))
-         |> URI.to_string()}
-      end)
-      |> Mox.expect(:retrieve_session, fn "stripe-session-id",
-                                          connect_account: ^connect_account_id ->
-        order_number = Order |> Repo.one!() |> Order.number()
-
-        {:ok,
-         %Stripe.Session{
-           id: "stripe-session-id",
-           payment_status: "unpaid",
-           payment_intent: "payment-intent-id",
-           client_reference_id: "order_number_#{order_number}"
-         }}
-      end)
-      |> Mox.expect(
-        :retrieve_payment_intent,
-        fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
-          {:ok, %Stripe.PaymentIntent{id: "payment-intent-id", amount_capturable: 2500}}
-        end
-      )
-      |> Mox.expect(
-        :capture_payment_intent,
-        fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
-          {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
-        end
-      )
+      |> stub_create_session(%{connect_account: connect_account_id, session: "session-id"})
+      |> stub_retrieve_session(%{
+        connect_account: connect_account_id,
+        session: "session-id",
+        payment_intent: "payment-intent-id"
+      })
+      |> stub_retrieve_payment_intent(%{
+        connect_account: connect_account_id,
+        payment_intent: "payment-intent-id",
+        session: "session-id",
+        amount: 2500
+      })
+      |> stub_capture_payment_intent(%{
+        payment_intent: "payment-intent-id",
+        connect_account: connect_account_id
+      })
 
       gallery_path = current_path(session)
 

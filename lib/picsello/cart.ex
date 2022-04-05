@@ -261,7 +261,8 @@ defmodule Picsello.Cart do
           ~s|jsonb_path_exists(?, '$[*] \\? (@.editor_details.editor_id == $id)', ?)|,
           order.products,
           ^arg
-        )
+        ),
+      preload: [digitals: :photo]
     )
     |> Repo.one()
   end
