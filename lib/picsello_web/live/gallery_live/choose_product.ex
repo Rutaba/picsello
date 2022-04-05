@@ -15,7 +15,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       download_each_price: Galleries.download_each_price(gallery),
       photo: photo,
       products: GalleryProducts.get_gallery_products(gallery.id),
-      digital_status: Cart.digital_status(gallery, photo)
+      digital_status: Cart.digital_status(gallery, photo),
+      digital_credit: Cart.digital_credit(gallery)
     )
     |> ok()
   end
@@ -45,8 +46,10 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   def handle_event(
         "digital_add_to_cart",
         %{},
-        %{assigns: %{photo: photo, download_each_price: price}} = socket
+        %{assigns: %{photo: photo, download_each_price: price, gallery: gallery}} = socket
       ) do
+    price = if Cart.digital_credit(gallery) > 0, do: 0, else: price
+
     send(
       socket.root_pid,
       {:add_digital_to_cart, %Digital{photo: photo, price: price}}
@@ -92,7 +95,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     assign(socket,
       photo: photo,
       photo_ids: photo_ids,
-      digital_status: Cart.digital_status(gallery, photo)
+      digital_status: Cart.digital_status(gallery, photo),
+      digital_credit: Cart.digital_credit(gallery)
     )
   end
 

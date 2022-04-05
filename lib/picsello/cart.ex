@@ -85,6 +85,26 @@ defmodule Picsello.Cart do
     end
   end
 
+  def digital_credit(%{id: gallery_id}) do
+    download_count =
+      from(gallery in Gallery,
+        join: job in assoc(gallery, :job),
+        join: package in assoc(job, :package),
+        where: gallery.id == ^gallery_id,
+        select: package.download_count
+      )
+      |> Repo.one()
+
+    digital_count =
+      from(order in Order,
+        join: digital in assoc(order, :digitals),
+        where: order.gallery_id == ^gallery_id and digital.price == 0
+      )
+      |> Repo.aggregate(:count)
+
+    download_count - digital_count
+  end
+
   defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}) when is_integer(photo_id),
     do:
       Enum.any?(digitals, fn
