@@ -2,15 +2,15 @@ defmodule PicselloWeb.Live.Profile.CopyContactFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
+  import PicselloWeb.LiveModal, only: [footer: 1, close_x: 1]
+
   @impl true
   def render(assigns) do
     ~H"""
     <div class="modal">
       <div class="flex items-start justify-between flex-shrink-0">
         <h1 class="mb-4 text-3xl font-bold">Preview form embed</h1>
-        <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
-          <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
-        </button>
+        <.close_x />
       </div>
       <div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-12 flex items-center">
@@ -41,7 +41,7 @@ defmodule PicselloWeb.Live.Profile.CopyContactFormComponent do
           </div>
         </div>
       </div>
-      <PicselloWeb.LiveModal.footer>
+      <.footer>
         <button class="btn-primary" type="submit" id="copy-embed-code-footer" phx-hook="Clipboard" data-clipboard-text={@embed_code} data-clipboard-bg="bg-white" title="copy and close" type="button" phx-click="modal" phx-value-action="close">
           Copy & Close
           <div class="hidden p-1 mt-1 text-sm rounded shadow bg-base-100 font-normal text-base-300" role="tooltip">Copied!</div>
@@ -49,7 +49,7 @@ defmodule PicselloWeb.Live.Profile.CopyContactFormComponent do
         <button class="btn-secondary" title="close" type="button" phx-click="modal" phx-value-action="close">
           Close
         </button>
-      </PicselloWeb.LiveModal.footer>
+      </.footer>
     </div>
     """
   end

@@ -64,19 +64,6 @@ defmodule PicselloWeb.LeadContactIframeView do
     """
   end
 
-  def render("error.html", assigns) do
-    ~H"""
-    <.container>
-      <div class="flex items-center mt-14 min-w-max justify-center h-96">
-        <div>
-          <h1 class="text-2xl font-bold">There's been an error.</h1>
-          You photographer may have disabled their form
-        </div>
-      </div>
-    </.container>
-    """
-  end
-
   defp container(assigns) do
     ~H"""
     <div class="p-9 border-base-200 client-app">

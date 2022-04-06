@@ -23,6 +23,7 @@ defmodule PicselloWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, {PicselloWeb.LayoutView, :root}
     plug :put_secure_browser_headers
+    plug PicselloWeb.Plugs.AllowIframe
   end
 
   pipeline :api do
@@ -148,11 +149,11 @@ defmodule PicselloWeb.Router do
     end
   end
 
-  scope "/", PicselloWeb do
+  scope "/photographer/embed", PicselloWeb do
     pipe_through [:browser_iframe]
 
-    get "/photographer/embed/:organization_slug", LeadContactIframeController, :index
-    post "/photographer/embed/:organization_slug", LeadContactIframeController, :create
+    get "/:organization_slug", LeadContactIframeController, :index
+    post "/:organization_slug", LeadContactIframeController, :create
   end
 
   scope "/", PicselloWeb do

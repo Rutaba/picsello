@@ -23,16 +23,16 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
 
   describe("GET /photographer/embed/:organization_slug") do
     test "photographer doesn't exist or is disabled", %{conn: conn} do
-      assert conn
-             |> get(
-               Routes.lead_contact_iframe_path(
-                 conn,
-                 :index,
-                 "mary"
-               )
-             )
-             |> html_response(200)
-             |> String.contains?("There's been an error")
+      assert_error_sent :not_found, fn ->
+        conn
+        |> get(
+          Routes.lead_contact_iframe_path(
+            conn,
+            :index,
+            "mary"
+          )
+        )
+      end
     end
 
     test "photographer form renders", %{conn: conn, user: user} do
@@ -109,25 +109,25 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
     end
 
     test "user submits form without or an incorrect organization_slug", %{conn: conn} do
-      assert conn
-             |> post(
-               Routes.lead_contact_iframe_path(
-                 conn,
-                 :index,
-                 "test"
-               ),
-               %{
-                 "contact" => %{
-                   "email" => "hey@you.com",
-                   "message" => "test",
-                   "name" => "Hey You",
-                   "job_type" => "maternity",
-                   "phone" => "(000) 000-0000"
-                 }
-               }
-             )
-             |> html_response(200)
-             |> String.contains?("There's been an error")
+      assert_error_sent :not_found, fn ->
+        conn
+        |> post(
+          Routes.lead_contact_iframe_path(
+            conn,
+            :index,
+            "test"
+          ),
+          %{
+            "contact" => %{
+              "email" => "hey@you.com",
+              "message" => "test",
+              "name" => "Hey You",
+              "job_type" => "maternity",
+              "phone" => "(000) 000-0000"
+            }
+          }
+        )
+      end
     end
   end
 end
