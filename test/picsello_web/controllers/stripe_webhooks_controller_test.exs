@@ -242,6 +242,8 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       assert ["/", "gallery", ^gallery_hash, "orders", ^order_number] =
                order_url |> URI.parse() |> Map.get(:path) |> Path.split()
+
+      assert Jason.decode!(Jason.encode!(email_variables))
     end
 
     test "fails if WHCC breaks", %{conn: conn, order: order} do
