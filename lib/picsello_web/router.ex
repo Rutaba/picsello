@@ -17,6 +17,15 @@ defmodule PicselloWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :browser_iframe do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, {PicselloWeb.LayoutView, :root}
+    plug :put_secure_browser_headers
+    plug PicselloWeb.Plugs.AllowIframe
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -140,6 +149,13 @@ defmodule PicselloWeb.Router do
     end
   end
 
+  scope "/photographer/embed", PicselloWeb do
+    pipe_through [:browser_iframe]
+
+    get "/:organization_slug", LeadContactIframeController, :index
+    post "/:organization_slug", LeadContactIframeController, :create
+  end
+
   scope "/", PicselloWeb do
     pipe_through [:browser]
 
@@ -150,6 +166,7 @@ defmodule PicselloWeb.Router do
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
