@@ -47,7 +47,7 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event(
         "edit-package",
         %{},
-        %{assigns: assigns} = socket
+        %{assigns: %{proposal: nil} = assigns} = socket
       ),
       do:
         socket
@@ -56,6 +56,9 @@ defmodule PicselloWeb.LeadLive.Show do
           assigns |> Map.take([:current_user, :job, :package])
         )
         |> noreply()
+
+  @impl true
+  def handle_event("edit-package", %{}, socket), do: socket |> noreply()
 
   @impl true
   def handle_event(

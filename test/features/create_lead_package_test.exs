@@ -6,6 +6,7 @@ defmodule Picsello.CreateLeadPackageTest do
   setup :authenticated
 
   @add_package_button testid("add-package-from-shoot")
+  @price_text_field text_field("Creative Session Price")
 
   def fill_in_package_form(session) do
     session
@@ -18,7 +19,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
-    |> fill_in(text_field("Base Price"), with: "$100")
+    |> fill_in(@price_text_field, with: "$100")
     |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("Set my own download price"))
     |> find(
@@ -219,10 +220,10 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
-    |> assert_value(text_field("Base Price"), "$100.00")
+    |> assert_value(@price_text_field, "$100.00")
     |> assert_value(text_field("download_count"), "1")
     |> assert_value(text_field("download_each_price"), "$2.00")
-    |> fill_in(text_field("Base Price"), with: "200")
+    |> fill_in(@price_text_field, with: "200")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
@@ -265,7 +266,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_disabled_submit(text: "Save")
-    |> fill_in(text_field("Base Price"), with: " ")
+    |> fill_in(@price_text_field, with: " ")
     |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("Set my own download price"))
     |> find(
@@ -307,12 +308,12 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_has(testid("step-number", text: "Step 2"))
     |> assert_disabled_submit()
-    |> fill_in(text_field("Base Price"), with: "$100")
+    |> fill_in(@price_text_field, with: "$100")
     |> click(testid("step-number", text: "Step 2"))
     |> assert_has(testid("step-number", text: "Step 1"))
     |> assert_value(text_field("Title"), "Wedding Deluxe")
     |> click(button("Next"))
     |> assert_has(testid("step-number", text: "Step 2"))
-    |> assert_value(text_field("Base Price"), "$100.00")
+    |> assert_value(@price_text_field, "$100.00")
   end
 end

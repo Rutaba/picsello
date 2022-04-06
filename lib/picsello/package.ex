@@ -125,7 +125,8 @@ defmodule Picsello.Package do
       changeset
       |> validate_money(:print_credits,
         greater_than_or_equal_to: 0,
-        less_than_or_equal_to: base_price.amount
+        less_than_or_equal_to: base_price.amount,
+        message: "must be equal to or less than total price"
       )
     end)
     |> validate_money(:buy_all)

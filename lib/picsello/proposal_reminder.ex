@@ -14,10 +14,12 @@ defmodule Picsello.ProposalReminder do
   import Ecto.Query
 
   def deliver_all(now \\ DateTime.utc_now()) do
-    BookingProposal
-    |> next_proposal_info()
-    |> Repo.all()
-    |> Enum.each(&maybe_send_message(now, &1))
+    if automated_emails_enabled?() do
+      BookingProposal
+      |> next_proposal_info()
+      |> Repo.all()
+      |> Enum.each(&maybe_send_message(now, &1))
+    end
   end
 
   def next_reminder_on(%BookingProposal{id: proposal_id, job_id: job_id}) do
@@ -123,4 +125,8 @@ defmodule Picsello.ProposalReminder do
         """
       }
     ]
+
+  defp automated_emails_enabled?,
+    do:
+      Enum.member?(Application.get_env(:picsello, :feature_flags, []), :automated_proposal_emails)
 end

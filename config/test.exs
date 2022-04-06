@@ -66,7 +66,9 @@ config :picsello, :whcc, adapter: Picsello.MockWHCCClient
 
 config :picsello, Oban, queues: false, plugins: false
 
-config :picsello, :feature_flags, ~w[sync_whcc_design_details show_pricing_tab]a
+config :picsello,
+       :feature_flags,
+       ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails]a
 
 config :tesla, adapter: Tesla.Mock
 

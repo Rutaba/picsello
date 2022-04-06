@@ -119,7 +119,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket),
     do:
       socket
-      |> assign(package: package, job: %{job | package: package})
+      |> assign(package: package, job: %{job | package: package, package_id: package.id})
       |> assign_shoots()
       |> noreply()
 
@@ -227,8 +227,11 @@ defmodule PicselloWeb.JobLive.Shared do
           </div>
 
           <%= if Job.lead?(@job) do %>
-            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class="mt-2 lg:mt-0 w-max lg:ml-6">
-              Package settings <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
+            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class={classes("mt-2 lg:mt-0 w-max lg:ml-6", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @proposal != nil})} disabled={@proposal != nil}>
+              Package settings
+              <%= unless @proposal do %>
+                <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
+              <% end %>
             </.icon_button>
           <% end %>
           <% else %>
