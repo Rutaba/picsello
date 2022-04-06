@@ -446,10 +446,6 @@
     h-full;
 }
 
-.gridTemplateOrder {
-    grid-template-columns:110px minmax(80px, 1fr) auto
-}
-
 .productType:first-letter {
     text-transform: uppercase;
 }
