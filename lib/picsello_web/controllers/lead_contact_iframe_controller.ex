@@ -2,7 +2,6 @@ defmodule PicselloWeb.LeadContactIframeController do
   use PicselloWeb, :controller
 
   alias Picsello.{Profiles}
-  alias Plug.Conn
 
   def index(conn, params) do
     conn
@@ -21,7 +20,6 @@ defmodule PicselloWeb.LeadContactIframeController do
 
       {:error, changeset} ->
         conn
-        |> Conn.delete_resp_header("x-frame-options")
         |> assign_organization_by_slug(params)
         |> assign(:changeset, changeset)
         |> put_flash(:error, "Form has errors")
