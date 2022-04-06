@@ -22,7 +22,14 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       PubSub.subscribe(Picsello.PubSub, "gallery_progress:#{gallery.id}")
     end
 
-    # arrow_show = Map.get(params, :album, arrow_show)
+    album = Map.get(params, :selected_album, nil)
+    album_id = if !is_nil(album), do: album.id
+
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "upload_update",
+      {:upload_update, %{album_id: album_id}}
+    )
 
     {:ok,
      socket
@@ -31,7 +38,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
      |> assign(:gallery, gallery)
      |> assign(:arrow_show, arrow_show)
      |> assign(:album_dropdown_show, album_dropdown_show)
-     |> assign(:selected_album, Map.get(params, :selected_album, nil))
+     |> assign(:selected_album, album)
      |> assign_gallery_changeset()}
   end
 

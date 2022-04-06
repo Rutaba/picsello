@@ -115,8 +115,8 @@
             <% end %>
           </div>
         </div>
-        <%= live_render(@socket, Upload, id: "upload", session: %{"gallery" => @gallery, "view" => "none"}, sticky: true) %>
-        <%= live_render(@socket, Upload, id: "upload1", session: %{"gallery" => @gallery, "view" => "none"}, sticky: true) %>
+        <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "view" => "add_button"}, sticky: true) %>
+        <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "view" => "drag_drop"}, sticky: true) %>
       </div>
     </div>
   </div>

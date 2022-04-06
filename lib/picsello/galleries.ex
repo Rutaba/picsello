@@ -108,38 +108,51 @@ defmodule Picsello.Galleries do
   @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
           list(Photo)
   def get_gallery_photos(id, per_page, page, opts \\ []) do
-    only_favorites = Keyword.get(opts, :only_favorites, false)
+    offset = Keyword.get(opts, :offset, per_page * page)
+
+    Photo
+    |> where(^conditions(id, opts))
+    |> order_by(asc: :position)
+    |> offset(^offset)
+    |> limit(^per_page)
+    |> Repo.all()
+  end
+
+  @doc """
+  Get list of photo ids from gallery.
+  """
+  @spec get_gallery_photo_ids(id :: integer, opts :: keyword) :: list(integer)
+  def get_gallery_photo_ids(id, opts) do
+    Photo
+    |> where(^conditions(id, opts))
+    |> order_by(asc: :position)
+    |> select([photo], photo.id)
+    |> Repo.all()
+  end
+
+  defp conditions(id, opts) do
+    favorites_filter = Keyword.get(opts, :favorites_filter, false)
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
 
     conditions = dynamic([p], p.gallery_id == ^id)
 
     conditions =
-      if only_favorites do
+      if favorites_filter do
         dynamic([p], p.client_liked == true and ^conditions)
       else
         conditions
       end
 
-    conditions =
-      if exclude_album do
-        dynamic([p], is_nil(p.album_id) and ^conditions)
+    if exclude_album do
+      dynamic([p], is_nil(p.album_id) and ^conditions)
+    else
+      if album_id do
+        dynamic([p], p.album_id == ^album_id and ^conditions)
       else
-        if album_id do
-          dynamic([p], p.album_id == ^album_id and ^conditions)
-        else
-          conditions
-        end
+        conditions
       end
-
-    offset = Keyword.get(opts, :offset, per_page * page)
-
-    Photo
-    |> where(^conditions)
-    |> order_by(asc: :position)
-    |> offset(^offset)
-    |> limit(^per_page)
-    |> Repo.all()
+    end
   end
 
   # TUDO: remove it
@@ -787,36 +800,6 @@ defmodule Picsello.Galleries do
     gallery
     |> Repo.preload(job: [client: [organization: :user]])
     |> (& &1.job.client.organization.user).()
-  end
-
-  @doc """
-  Get list of photo ids from gallery.
-  """
-  def get_photo_ids(opts) do
-    favorites_filter = Keyword.get(opts, :favorites_filter, false)
-    exclude_album = Keyword.get(opts, :exclude_album, false)
-
-    conditions = dynamic([p], p.gallery_id == ^opts[:gallery_id])
-
-    conditions =
-      if favorites_filter do
-        dynamic([p], p.client_liked == true and ^conditions)
-      else
-        conditions
-      end
-
-    conditions =
-      if exclude_album do
-        dynamic([p], is_nil(p.album_id) and ^conditions)
-      else
-        conditions
-      end
-
-    Photo
-    |> where(^conditions)
-    |> order_by(asc: :position)
-    |> select([photo], photo.id)
-    |> Repo.all()
   end
 
   def account_id(%Gallery{} = gallery), do: account_id(gallery.id)

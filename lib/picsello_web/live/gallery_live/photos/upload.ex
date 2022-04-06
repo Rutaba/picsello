@@ -12,6 +12,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Galleries.Workers.PhotoStorage
+  alias Phoenix.PubSub
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -24,13 +25,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
-  def mount(_params, %{"gallery" => gallery} = session, socket) do
+  def mount(_params, %{"gallery_id" => gallery_id} = session, socket) do
+    gallery =
+      Galleries.get_gallery!(gallery_id)
+      |> Galleries.load_watermark_in_gallery()
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "upload_update")
+    end
+
     {:ok,
      socket
-     |> put_flash(:gallery_success, "upload_success_message")
      |> assign(:upload_bucket, @bucket)
-     |> assign(:view, Map.get(session, "view", false))
-     |> assign(:album_id, Map.get(session, "album_id", nil))
+     |> assign(:view, Map.get(session, "view", "add_button"))
+     |> assign(:album_id, nil)
      |> assign(:gallery, gallery)
      |> assign(:toggle, "show")
      |> assign(:overall_progress, 0)
@@ -42,7 +50,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   @impl true
-  def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_event("start", _params, %{assigns: %{gallery: gallery, album_id: album_id}} = socket) do
     gallery = Galleries.load_watermark_in_gallery(gallery)
     entries = socket.assigns.uploads.photo.entries
 
@@ -61,86 +69,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
         fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
       )
     )
+    |> assign(:persisted_album_id, album_id)
     |> assign(:entries, entries)
     |> assign(:update_mode, "append")
     |> assign(:gallery, gallery)
     |> noreply()
   end
-
-  @impl true
-  def handle_event("resume_upload", %{"ref" => ref}, socket) do
-    upload_config = Map.fetch!(socket.assigns[:uploads] || %{}, :photo)
-    %UploadEntry{} = entry = UploadConfig.get_entry_by_ref(upload_config, ref)
-    entry = %UploadEntry{entry | preflighted?: false}
-
-    photo = %UploadConfig{
-      upload_config
-      | entries: [entry],
-        errors: []
-    }
-
-    photo1 = %UploadConfig{
-      upload_config
-      | entries: [],
-        errors: []
-    }
-
-    uploads = put_in(socket.assigns.uploads, [:photo], photo)
-    uploads1 = put_in(socket.assigns.uploads, [:photo], photo1)
-    socket = assign(socket, :uploads, uploads)
-
-    socket =
-      assign(socket, :progress, %Picsello.Galleries.PhotoProcessing.GalleryUploadProgress{
-        entries: %{},
-        photo_entries: %{},
-        since: nil
-      })
-
-    socket = assign(socket, :__changed__, %{uploads: uploads1})
-
-    IO.puts(
-      "\n\n########## DEBUG ##########\n uploads: #{inspect(uploads, pretty: true)} \n########## DEBUG ##########\n\n"
-    )
-
-    case uploaded_entries(socket, :photo) do
-      {[_ | _] = completed, []} ->
-        # all entries are completed
-        IO.puts(
-          "\n\n########## DEBUG ##########\n completed: #{inspect(completed, pretty: true)} \n########## DEBUG ##########\n\n"
-        )
-
-      {[], [_ | _] = in_progress} ->
-        # all entries are still in progress
-        IO.puts(
-          "\n\n########## DEBUG ##########\n in_progress: #{inspect(in_progress, pretty: true)} \n########## DEBUG ##########\n\n"
-        )
-    end
-
-    # {:ok, socket, entry} = Upload.register_entry_upload(socket, photo, self(), ref)
-    # socket=Upload.unregister_completed_entry_upload(socket, photo, ref)
-    a =
-      socket
-      |> assign(
-        :progress,
-        Enum.reduce(
-          socket.assigns.uploads.photo.entries,
-          socket.assigns.progress,
-          fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
-        )
-      )
-      |> assign(:update_mode, "prepend")
-
-    IO.puts(
-      "\n\n########## DEBUG ##########\n socket: #{inspect(socket, pretty: true)} \n########## DEBUG ##########\n\n"
-    )
-
-    a |> noreply()
-
-    # socket
-    #   |> push_event("resume_upload", %{id: ref})
-    #   |> noreply()
-  end
-
 
   @impl true
   def handle_event("close", _, socket) do
@@ -166,14 +100,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> noreply()
   end
 
+  @impl true
+  def handle_info(
+        {:upload_update, %{album_id: album_id}},
+        socket
+      ) do
+    socket
+    |> assign(:album_id, album_id)
+    |> noreply()
+  end
+
   def handle_progress(
         :photo,
         entry,
-        %{assigns: %{gallery: gallery, album_id: album_id, uploaded_files: uploaded_files, progress: progress}} =
+        %{assigns: %{gallery: gallery, persisted_album_id: persisted_album_id, uploaded_files: uploaded_files, progress: progress}} =
           socket
       ) do
     if entry.done? do
-      {:ok, photo} = create_photo(gallery, entry, album_id)
+      {:ok, photo} = create_photo(gallery, entry, persisted_album_id)
       uploaded_files = uploaded_files + 1
       start_photo_processing(photo, gallery.watermark)
 
@@ -252,7 +196,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp create_photo(gallery, entry, album_id) do
-    IO.puts("\n\n########## DEBUG ##########\n album_id: #{inspect(album_id, pretty: true)} \n########## DEBUG ##########\n\n")
     Galleries.create_photo(%{
       gallery_id: gallery.id,
       album_id: album_id,

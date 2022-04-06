@@ -265,11 +265,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     photo_ids =
-      Galleries.get_photo_ids(
-        gallery_id: gallery.id,
-        exclude_album: true,
-        favorites_filter: favorites_filter
-      )
+      Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_all"})
@@ -312,7 +308,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     photo_ids =
-      Galleries.get_photo_ids(gallery_id: gallery.id, exclude_album: true, favorites_filter: true)
+      Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
 
     socket
     |> assign(:page, 0)
@@ -505,13 +501,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
          per_page \\ @per_page
        ) do
 
-    opts =
-    if album do
-      [album_id: album.id]
-    else
-      [exclude_album: true]
-    end
-    ++ [only_favorites: filter, offset: per_page * page]
+    opts = make_opts(socket, per_page)
 
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
@@ -526,6 +516,23 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       photos
       |> length > per_page
     )
+  end
+
+  defp make_opts(%{
+    assigns: %{
+      album: album,
+      page: page,
+      favorites_filter: filter
+    }
+  }, per_page \\ @per_page) do
+
+    if album do
+      [album_id: album.id]
+    else
+      [exclude_album: true]
+    end
+    ++ [favorites_filter: filter, offset: per_page * page]
+
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -553,6 +560,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp delete_photos(%{assigns: %{gallery: gallery}} = socket, selected_photos) do
+    IO.puts("\n\n########## DEBUG ##########\n selected_photos: #{inspect(selected_photos, pretty: true)} \n########## DEBUG ##########\n\n")
     Enum.each(selected_photos, fn photo_id ->
       Galleries.get_photo(photo_id)
       |> Galleries.delete_photo()

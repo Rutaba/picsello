@@ -26,7 +26,7 @@
             Add Album
           </.icon_button>  
           <% end %>
-          <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload", session: %{"gallery" => @gallery, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
+          <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
           </div>
         </div>
         <%= if length(@gallery.albums) > 0 do %> 
@@ -131,7 +131,7 @@
             Oops, there's nothing here - upload photos now to get started!
         </div>
         <div class="relative overflow-hidden dragDrop__wrapper h-96">
-        <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload1", session: %{"gallery" => @gallery, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
+        <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
         </div>
         <% else %>
         <div class="px-0 pt-40 pb-32 mx-0 gallery__container" id="gallery">
