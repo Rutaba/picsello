@@ -62,7 +62,7 @@ defmodule Picsello.Cart.Confirmations do
     order =
       from(order in Order,
         where: order.id == ^order_id,
-        preload: [gallery: [job: [client: :organization]]]
+        preload: [digitals: :photo, gallery: [job: [client: :organization]]]
       )
       |> repo.one!()
 
@@ -111,7 +111,7 @@ defmodule Picsello.Cart.Confirmations do
          order: order,
          stripe_options: stripe_options
        }) do
-    %{amount: total} = Order.total(order)
+    %{amount: total} = Order.total_cost(order)
 
     case Payments.retrieve_payment_intent(intent_id, stripe_options) do
       {:ok, %{amount_capturable: ^total} = intent} ->

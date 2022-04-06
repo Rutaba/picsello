@@ -12,12 +12,11 @@
 </div>
 
 <div class="gallery__container">
-<nav class="hidden md:block bg-grey-light rounded font-sans w-full pt-11 mx-0 xl:mx-12 text-blue-planning-300">
-  <ol class="list-reset flex text-grey-dark">
-    <li><a href="#">Gallery</a></li>
-    <li><span class="mx-2">></span></li>
-    <li><a href="#" class="font-bold">Gallery settings</a></li>
-  </ol>
+<nav class="hidden md:block bg-grey-light rounded font-sans w-full pt-11 mx-0 xl:mx-12">
+  <.crumbs>
+    <:crumb to={Routes.gallery_show_path(@socket, :show, @gallery.id)}>Gallery</:crumb>
+    <:crumb>Gallery settings</:crumb>
+  </.crumbs>
 </nav>
 <span class="flex xl:hidden btn-secondary justify-center mt-11" phx-click="share_link" id="mobileShareGalleryButton">
   <a href="#">Share Gallery</a>

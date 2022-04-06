@@ -219,19 +219,19 @@ defmodule Picsello.Accounts.User do
   end
 
   def initials(%__MODULE__{name: name}) do
-    case name |> String.split() do
-      [first_name | [_ | _] = rest] ->
-        [first_name, rest |> List.last()]
-        |> Enum.map(&String.first/1)
-        |> Enum.join()
+    case first_and_last_name(name) do
+      {<<first_initial::binary-size(1), _::binary>>, <<last_initial::binary-size(1), _::binary>>} ->
+        Enum.join([first_initial, last_initial])
 
-      [first_name] ->
-        first_name |> String.slice(0..1)
+      {<<first_initial::binary-size(2), _::binary>>, _} ->
+        first_initial
     end
     |> String.upcase()
   end
 
-  def first_name(%__MODULE__{name: name}), do: name |> String.split() |> hd
+  def first_name(%__MODULE__{name: name}), do: first_and_last_name(name) |> elem(0)
+
+  def last_name(%__MODULE__{name: name}), do: first_and_last_name(name) |> elem(1)
 
   @doc """
   true if user has skipped or completed all onboarding steps.
@@ -254,6 +254,16 @@ defmodule Picsello.Accounts.User do
     case Map.keys(map) do
       [first_key | _] when is_atom(first_key) -> & &1
       _ -> &Atom.to_string/1
+    end
+  end
+
+  defp first_and_last_name(name) do
+    case String.split(name, " ", trim: true) do
+      [first_name | [_ | _] = rest] ->
+        {first_name, List.last(rest)}
+
+      [first_name] ->
+        {first_name, nil}
     end
   end
 end

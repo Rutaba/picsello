@@ -5,7 +5,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Cart, GalleryProducts, Galleries}
-
   import Cart, only: [preview_url: 1]
 
   def mount(_, _, socket) do
@@ -95,5 +94,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
+  defdelegate shipping_cost(order), to: Cart
   defdelegate summary_counts(order), to: Cart
+  defdelegate total_cost(order), to: Cart
 end

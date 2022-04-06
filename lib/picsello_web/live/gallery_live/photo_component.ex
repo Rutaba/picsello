@@ -7,7 +7,7 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
   @impl true
   def mount(socket) do
     socket
-    |> assign(:preview_photo_id, nil)
+    |> assign(preview_photo_id: nil, is_removed: false)
     |> ok
   end
 
@@ -27,21 +27,6 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     socket |> noreply()
   end
 
-  @impl true
-  def handle_event("click", _, %{assigns: %{photo: photo}} = socket) do
-    send(self(), {:photo_click, photo})
-
-    socket
-    |> noreply()
-  end
-
-  defp js_like_click(js \\ %JS{}, id, target) do
-    js
-    |> JS.push("like", target: target, value: %{id: id})
-    |> JS.toggle(to: "#photo-#{id}-liked")
-    |> JS.toggle(to: "#photo-#{id}-to-like")
-  end
-
   defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
     if is_gallery_category_page do
       js
@@ -54,5 +39,17 @@ defmodule PicselloWeb.GalleryLive.PhotoComponent do
     else
       js |> JS.dispatch("click", to: "#photo-#{id} > img")
     end
+  end
+
+  defp wrapper_style(width, photo) do
+    height =
+      if (photo.watermarked_preview_url || photo.preview_url) && photo.aspect_ratio,
+        do: width / photo.aspect_ratio,
+        else: 450
+
+    """
+    width: #{width}px;
+    height: #{height}px;
+    """
   end
 end

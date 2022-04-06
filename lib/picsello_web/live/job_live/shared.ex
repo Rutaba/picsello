@@ -106,17 +106,22 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
-        %{assigns: %{shoots: shoots}} = socket
+        %{assigns: %{shoots: shoots, job: job}} = socket
       ) do
     socket
     |> assign(
-      shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list()
+      shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list(),
+      job: job |> Repo.preload(:shoots, force: true)
     )
     |> noreply()
   end
 
-  def handle_info({:update, %{package: _package} = assigns}, socket),
-    do: socket |> assign(assigns) |> assign_shoots() |> noreply()
+  def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> assign(package: package, job: %{job | package: package, package_id: package.id})
+      |> assign_shoots()
+      |> noreply()
 
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
@@ -222,8 +227,11 @@ defmodule PicselloWeb.JobLive.Shared do
           </div>
 
           <%= if Job.lead?(@job) do %>
-            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class="mt-2 lg:mt-0 w-max lg:ml-6">
-              Package settings <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
+            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class={classes("mt-2 lg:mt-0 w-max lg:ml-6", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @proposal != nil})} disabled={@proposal != nil}>
+              Package settings
+              <%= unless @proposal do %>
+                <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
+              <% end %>
             </.icon_button>
           <% end %>
           <% else %>

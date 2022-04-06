@@ -3,6 +3,17 @@ defmodule PicselloWeb.AuthControllerTest do
   alias Picsello.{Repo, Accounts.User}
 
   setup do
+    test_pid = self()
+
+    Tesla.Mock.mock_global(fn %{method: :put} = request ->
+      send(test_pid, {:sendgrid_request, request})
+
+      %Tesla.Env{
+        status: 202,
+        body: %{"job_id" => "1234"}
+      }
+    end)
+
     mock_auth =
       Picsello.MockAuthStrategy
       |> Mox.stub(:default_options, fn -> [ignores_csrf_attack: true] end)
@@ -43,6 +54,25 @@ defmodule PicselloWeb.AuthControllerTest do
 
       assert %{name: "brian", time_zone: "America/Chicago", sign_up_auth_provider: :google} =
                User |> Repo.get_by(email: "brian@example.com")
+
+      assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+      assert %{
+               "list_ids" => [
+                 "contact-list-transactional-id",
+                 "contact-list-trial-welcome-id"
+               ],
+               "contacts" => [
+                 %{
+                   "custom_fields" => %{
+                     "w1_T" => "pre_trial"
+                   },
+                   "email" => "brian@example.com",
+                   "first_name" => "brian",
+                   "last_name" => nil
+                 }
+               ]
+             } = Jason.decode!(sendgrid_request_body)
     end
   end
 end

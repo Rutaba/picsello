@@ -4,8 +4,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [icon: 1]
 
-  def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{placed: true}}} = socket, _),
-    do: assign(socket, cart_count: 0)
+  def assign_cart_count(
+        %{assigns: %{order: %Picsello.Cart.Order{placed_at: %DateTime{}}}} = socket,
+        _
+      ),
+      do: assign(socket, cart_count: 0)
 
   def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{} = order}} = socket, _) do
     socket
@@ -28,8 +31,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     ~H"""
     <button {button_attrs} class={"#{@class}
-        flex flex-row items-center justify-center p-2 font-medium font-client text-base-300 bg-white border border-base-300 min-w-[12rem]
-        hover:border-base-250 hover:text-base-300
+        flex items-center justify-center p-2 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem]
+        hover:text-base-100 hover:bg-base-300
         disabled:border-base-250 disabled:text-base-250 disabled:cursor-not-allowed disabled:opacity-60
     "}>
       <%= render_slot(@inner_block) %>

@@ -17,6 +17,15 @@ defmodule PicselloWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :browser_iframe do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, {PicselloWeb.LayoutView, :root}
+    plug :put_secure_browser_headers
+    plug PicselloWeb.Plugs.AllowIframe
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -142,6 +151,13 @@ defmodule PicselloWeb.Router do
     end
   end
 
+  scope "/photographer/embed", PicselloWeb do
+    pipe_through [:browser_iframe]
+
+    get "/:organization_slug", LeadContactIframeController, :index
+    post "/:organization_slug", LeadContactIframeController, :create
+  end
+
   scope "/", PicselloWeb do
     pipe_through [:browser]
 
@@ -152,6 +168,7 @@ defmodule PicselloWeb.Router do
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
@@ -160,11 +177,18 @@ defmodule PicselloWeb.Router do
       pipe_through [:browser]
 
       live "/", GalleryLive.ClientShow, :show
-      live "/orders", GalleryLive.ClientOrders, :show
-      live "/orders/:order_number", GalleryLive.ClientOrder, :show
-      live "/orders/:order_number/paid", GalleryLive.ClientOrder, :paid
+
+      scope "/orders" do
+        live "/", GalleryLive.ClientOrders, :show
+
+        scope "/:order_number" do
+          live "/", GalleryLive.ClientOrder, :show
+          live "/paid", GalleryLive.ClientOrder, :paid
+          get "/zip", GalleryDownloadsController, :download
+        end
+      end
+
       live "/cart", GalleryLive.ClientShow.Cart, :cart
-      post "/downloads", GalleryDownloadsController, :download
       post "/login", GallerySessionController, :put
     end
   end

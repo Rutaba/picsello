@@ -103,7 +103,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       gallery =
         insert(:gallery, job: insert(:lead, client: insert(:client, organization: organization)))
 
-      order = insert(:order, gallery: gallery, subtotal_cost: ~M[0]USD, shipping_cost: ~M[0]USD)
+      order = insert(:order, gallery: gallery)
 
       stub_event(
         client_reference_id: "order_number_#{Order.number(order)}",

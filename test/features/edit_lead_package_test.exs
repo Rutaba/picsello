@@ -6,6 +6,7 @@ defmodule Picsello.EditLeadPackageTest do
   setup :authenticated
 
   @edit_package_button button("Package settings")
+  @price_text_field text_field("Creative Session Price")
 
   setup %{session: session, user: user} do
     lead =
@@ -40,8 +41,8 @@ defmodule Picsello.EditLeadPackageTest do
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> click(button("Next"))
     |> assert_text("Edit Package: Set Pricing")
-    |> assert_value(text_field("Base Price"), "$1.00")
-    |> fill_in(text_field("Base Price"), with: "2.00")
+    |> assert_value(@price_text_field, "$1.00")
+    |> fill_in(@price_text_field, with: "2.00")
     |> assert_has(radio_button("Do not charge for downloads", checked: true))
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))

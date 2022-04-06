@@ -23,6 +23,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:gallery_products, GalleryProduct)
     has_one(:watermark, Watermark)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
+    has_one(:organization, through: [:job, :client, :organization])
 
     timestamps(type: :utc_datetime)
   end

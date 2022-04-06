@@ -5,6 +5,7 @@ defmodule Picsello.ClientOrdersTest do
   alias Picsello.{Repo, Cart.Order}
 
   setup do
+    Mox.verify_on_exit!()
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
 
@@ -22,8 +23,15 @@ defmodule Picsello.ClientOrdersTest do
           )
       )
 
-    for category <- Picsello.Repo.all(Picsello.Category) do
-      preview_photo = insert(:photo, gallery: gallery, preview_url: "/fake.jpg")
+    for %{id: category_id} = category <- Picsello.Repo.all(Picsello.Category) do
+      preview_photo =
+        insert(:photo,
+          gallery: gallery,
+          preview_url: "/#{category_id}/preview.jpg",
+          original_url: "/#{category_id}/original.jpg",
+          watermarked_preview_url: "/#{category_id}/watermarked_preview.jpg",
+          watermarked_url: "/#{category_id}/watermarked.jpg"
+        )
 
       insert(:gallery_product,
         category: category,
@@ -37,12 +45,76 @@ defmodule Picsello.ClientOrdersTest do
     [gallery: gallery, organization: organization]
   end
 
-  def click_first_photo(session),
-    do: force_simulate_click(session, css("#muuri-grid > div:first-child img"))
+  def click_photo(session, position) do
+    session |> click(css("#muuri-grid .muuri-item-shown:nth-child(#{position}) *[id^='photo']"))
+  end
 
   setup :authenticated_gallery_client
 
-  feature "get to editor", %{session: session, gallery: %{id: gallery_id} = gallery} do
+  def stub_create_session(mock, %{connect_account: connect_account_id, session: session_id}) do
+    test_pid = self()
+
+    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params,
+                                       connect_account: ^connect_account_id ->
+      success_url = URI.parse(success_url)
+      assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
+      send(test_pid, {:checkout_link, params})
+
+      {:ok,
+       success_url
+       |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
+       |> URI.to_string()}
+    end)
+  end
+
+  def stub_retrieve_session(mock, %{
+        connect_account: connect_account_id,
+        session: stripe_session_id,
+        payment_intent: payment_intent_id
+      }) do
+    Mox.expect(mock, :retrieve_session, fn ^stripe_session_id,
+                                           connect_account: ^connect_account_id ->
+      order_number = Order |> Repo.one!() |> Order.number()
+
+      {:ok,
+       %Stripe.Session{
+         id: stripe_session_id,
+         payment_status: "unpaid",
+         payment_intent: payment_intent_id,
+         client_reference_id: "order_number_#{order_number}"
+       }}
+    end)
+  end
+
+  def stub_retrieve_payment_intent(mock, %{
+        payment_intent: intent_id,
+        connect_account: account_id,
+        amount: amount
+      }) do
+    Mox.expect(
+      mock,
+      :retrieve_payment_intent,
+      fn ^intent_id, connect_account: ^account_id ->
+        {:ok, %Stripe.PaymentIntent{id: intent_id, amount_capturable: amount}}
+      end
+    )
+  end
+
+  def stub_capture_payment_intent(mock, %{payment_intent: intent_id, connect_account: connect}) do
+    Mox.expect(
+      mock,
+      :capture_payment_intent,
+      fn ^intent_id, connect_account: ^connect ->
+        {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
+      end
+    )
+  end
+
+  feature "order product", %{
+    session: session,
+    gallery: %{id: gallery_id} = gallery,
+    organization: organization
+  } do
     {gallery_product_id, whcc_product_id} =
       from(whcc_product in Picsello.Product,
         join: whcc_category in assoc(whcc_product, :category),
@@ -67,7 +139,7 @@ defmodule Picsello.ClientOrdersTest do
     |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
       %Picsello.WHCC.Editor.Details{
         product_id: whcc_product_id,
-        selections: %{"size" => "6x9"},
+        selections: %{"size" => "6x9", "quantity" => 1},
         editor_id: "editor-id"
       }
     end)
@@ -75,19 +147,41 @@ defmodule Picsello.ClientOrdersTest do
       %Picsello.WHCC.Editor.Export{
         items: [],
         order: %{},
-        pricing: %{"totalOrderBasePrice" => 1.00, "code" => "USD"}
+        pricing: %{"totalOrderBasePrice" => 3.00, "code" => "USD"}
       }
     end)
     |> Mox.stub(:create_order, fn _account_id, _editor_id, _opts ->
       %Picsello.WHCC.Order.Created{total: "69"}
     end)
+    |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
+      {:ok, :confirmed}
+    end)
+
+    %{stripe_account_id: connect_account_id} = organization
+
+    Picsello.MockPayments
+    |> stub_create_session(%{connect_account: connect_account_id, session: "stripe-session"})
+    |> stub_retrieve_session(%{
+      connect_account: connect_account_id,
+      session: "stripe-session",
+      payment_intent: "payment-intent-id"
+    })
+    |> stub_retrieve_payment_intent(%{
+      connect_account: connect_account_id,
+      payment_intent: "payment-intent-id",
+      amount: 500
+    })
+    |> stub_capture_payment_intent(%{
+      payment_intent: "payment-intent-id",
+      connect_account: connect_account_id
+    })
 
     Picsello.PhotoStorageMock |> Mox.stub(:path_to_url, & &1)
 
     session
     |> assert_text(gallery.name)
     |> click(link("View Gallery"))
-    |> click_first_photo()
+    |> click_photo(1)
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
@@ -121,76 +215,84 @@ defmodule Picsello.ClientOrdersTest do
     |> fill_in(text_field("delivery_info_address_zip"), with: "74104")
     |> wait_for_enabled_submit_button()
     |> click(button("Continue"))
-    |> assert_has(button("Check out with Stripe"))
+    |> click(button("Check out with Stripe"))
+
+    assert_receive(
+      {:checkout_link,
+       %{
+         client_reference_id: "order_number_" <> _order_number,
+         customer_email: "client@example.com",
+         line_items: [
+           %{price_data: %{product_data: %{images: [_product_image]}, unit_amount: 500}}
+         ]
+       }}
+    )
+
+    session
+    |> assert_has(css("h3", text: "Thank you for your order!"))
+    |> click(link("My orders"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$5.00"))
   end
 
   describe "digital downloads" do
-    feature "add to cart", %{session: session, gallery: gallery, organization: organization} do
-      test_pid = self()
-
+    feature "add to cart", %{session: session, organization: organization} do
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
-      |> Mox.stub(:create_session, fn %{success_url: success_url} = params,
-                                      connect_account: ^connect_account_id ->
-        success_url = URI.parse(success_url)
-        assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
-        send(test_pid, {:checkout_link, params})
-
-        {:ok,
-         success_url
-         |> Map.put(:query, URI.encode_query(%{"session_id" => "stripe-session-id"}))
-         |> URI.to_string()}
-      end)
-      |> Mox.expect(:retrieve_session, fn "stripe-session-id",
-                                          connect_account: ^connect_account_id ->
-        order_number = Order |> Repo.one!() |> Order.number()
-
-        {:ok,
-         %Stripe.Session{
-           id: "stripe-session-id",
-           payment_status: "unpaid",
-           payment_intent: "payment-intent-id",
-           client_reference_id: "order_number_#{order_number}"
-         }}
-      end)
-      |> Mox.expect(
-        :retrieve_payment_intent,
-        fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
-          {:ok, %Stripe.PaymentIntent{id: "payment-intent-id", amount_capturable: 2500}}
-        end
-      )
-      |> Mox.expect(
-        :capture_payment_intent,
-        fn "payment-intent-id", connect_account: "photographer-stripe-account-id" ->
-          {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
-        end
-      )
+      |> stub_create_session(%{connect_account: connect_account_id, session: "session-id"})
+      |> stub_retrieve_session(%{
+        connect_account: connect_account_id,
+        session: "session-id",
+        payment_intent: "payment-intent-id"
+      })
+      |> stub_retrieve_payment_intent(%{
+        connect_account: connect_account_id,
+        payment_intent: "payment-intent-id",
+        session: "session-id",
+        amount: 2500
+      })
+      |> stub_capture_payment_intent(%{
+        payment_intent: "payment-intent-id",
+        connect_account: connect_account_id
+      })
 
       gallery_path = current_path(session)
 
       session
-      |> assert_text(gallery.name)
       |> click(link("View Gallery"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "1"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
       |> click(link("close"))
+      |> click_photo(2)
+      |> assert_text("Select an option")
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "2"))
       |> click(link("cart"))
-      |> find(css("*[data-testid^='digital-']"), fn cart_item ->
+      |> assert_text("Total: $50.00")
+      |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
-        |> assert_has(css("img[src='/fake.jpg']"))
+        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
+        |> assert_text("$25.00")
+        |> click(button("Delete"))
+      end)
+      |> assert_text("Total: $25.00")
+      |> find(css("*[data-testid^='digital-']", count: 1, at: 0), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
       |> assert_path(gallery_path)
       |> assert_has(css("*[title='cart']", text: "0"))
-      |> click_first_photo()
-      |> click(button("Add to cart"))
+      |> click(link("View Gallery"))
+      |> click_photo(1)
+      |> within_modal(&click(&1, button("Add to cart")))
       |> click(link("cart"))
       |> click(button("Continue"))
       |> assert_has(css("h2", text: "Enter digital delivery information"))
@@ -210,35 +312,38 @@ defmodule Picsello.ClientOrdersTest do
            client_reference_id: "order_number_" <> ^order_number,
            customer_email: "brian@example.com",
            line_items: [
-             %{price_data: %{product_data: %{images: ["/fake.jpg"]}, unit_amount: 2500}}
+             %{price_data: %{product_data: %{images: [product_image]}, unit_amount: 2500}}
            ]
          }}
       )
 
+      assert String.ends_with?(product_image, "watermarked_preview.jpg")
+
       session
       |> assert_has(css("h3", text: "Thank you for your order!"))
-      |> assert_has(css("img[src='/fake.jpg']"))
+      |> assert_has(css("img[src$='/preview.jpg']"))
       |> assert_text("Digital download")
       |> assert_has(css("*[title='cart']", text: "0"))
+      |> find(
+        link("Download photos"),
+        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
+      )
       |> click(link("Home"))
       |> click(link("View Gallery"))
-      |> click_first_photo()
+      |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "Purchased"))
+      |> click(link("close"))
+      |> click(link("My orders"))
+      |> find(definition("Order number:"), fn number ->
+        session
+        |> find(
+          link("Download photos"),
+          &assert(
+            Element.attr(&1, "href") ==
+              Path.join([current_url(session), Element.text(number), "zip"])
+          )
+        )
+      end)
     end
-  end
-
-  @tag :skip
-  feature "client reviews the placed order", %{session: session, gallery: gallery, order: order} do
-    session
-    |> visit("/gallery/#{gallery.client_link_hash}/orders/#{order.number}")
-    |> assert_text("My orders")
-    |> assert_text("Order number #{order.number}")
-    |> assert_text("Your order will be sent to:")
-    |> assert_text(order.delivery_info.name)
-    |> assert_text(order.delivery_info.address.addr1)
-    |> assert_text(
-      order.delivery_info.address.city <>
-        ", " <> order.delivery_info.address.state <> " " <> order.delivery_info.address.zip
-    )
   end
 end
