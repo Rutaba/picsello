@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
+defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
 
@@ -14,13 +14,13 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
 
   @impl true
   def update(
-        %{gallery_id: gallery_id, gallery_product_id: gallery_product_id},
+        %{gallery_id: gallery_id, product_id: product_id},
         socket
       ) do
     gallery = Galleries.get_gallery!(gallery_id)
-    gallery_product = GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
-
-    preview = check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id})
+    product = GalleryProducts.get(%{:id => to_integer(product_id)})
+    # TUDO: need to optimize
+    preview = check_preview(%{:gallery_id => gallery_id, :product_id => product_id})
 
     {:ok,
      socket
@@ -39,8 +39,8 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
          target: "#{preview.category.id}-edit"
        })
      end)
-     |> assign(:title, gallery_product.category.name)
-     |> assign(:gallery_product_id, gallery_product.id)
+     |> assign(:title, product.category.name)
+     |> assign(:product_id, product.id)
      |> assign(:page, 0)
      |> assign(:favorites_filter, false)
      |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
@@ -51,8 +51,8 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
      |> assign(:preview_photo_id, nil)}
   end
 
-  def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
-    preview = GalleryProducts.get(%{id: gallery_product_id, gallery_id: gallery_id})
+  def check_preview(%{:gallery_id => gallery_id, :product_id => product_id}) do
+    preview = GalleryProducts.get(%{id: product_id, gallery_id: gallery_id})
   end
 
   def changeset(data, prop) do
@@ -95,7 +95,7 @@ defmodule PicselloWeb.GalleryLive.Photos.EditProduct do
         %{
           assigns: %{
             frame_id: frame_id,
-            gallery_product_id: product_id,
+            product_id: product_id,
             gallery: %{id: gallery_id},
             title: title
           }

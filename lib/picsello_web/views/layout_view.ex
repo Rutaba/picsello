@@ -23,13 +23,15 @@ defmodule PicselloWeb.LayoutView do
     end
   end
 
+  # TUDO: need to optimize
   defp flash_styles,
     do: [
       {:error, "warning-white", "bg-red-sales-100", "bg-red-sales-300", "text-red-sales-300",
        "border-red-sales-300"},
       {:info, "info", "bg-blue-planning-100", "bg-blue-planning-300", "text-blue-planning-300",
        "border-blue-planning-300"},
-      {:photo_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
+      {:gallery_success, "tick", "bg-white", "bg-black", "text-black", "border-black"},
+      {:gallery_error, "warning-white", "bg-white", "bg-black", "text-black", "border-black"},
       {:success, "checkmark", "bg-green-finances-100", "bg-green-finances-300",
        "text-green-finances-300", "border-green-finances-300"}
     ]

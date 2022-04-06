@@ -188,7 +188,7 @@
           title: @page_title,
           action: @live_action,
           gallery: @gallery,
-          return_to: Routes.gallery_photos_index_path(@socket, :show, @gallery) %>
+          return_to: Routes.gallery_photos_index_path(@socket, :index, @gallery) %>
         <% end %>
         <div
         phx-hook="MasonryGrid"

@@ -110,6 +110,7 @@ defmodule Picsello.Galleries do
   def get_gallery_photos(id, per_page, page, opts \\ []) do
     only_favorites = Keyword.get(opts, :only_favorites, false)
     exclude_album = Keyword.get(opts, :exclude_album, false)
+    album_id = Keyword.get(opts, :album_id, false)
 
     conditions = dynamic([p], p.gallery_id == ^id)
 
@@ -124,7 +125,11 @@ defmodule Picsello.Galleries do
       if exclude_album do
         dynamic([p], is_nil(p.album_id) and ^conditions)
       else
-        conditions
+        if album_id do
+          dynamic([p], p.album_id == ^album_id and ^conditions)
+        else
+          conditions
+        end
       end
 
     offset = Keyword.get(opts, :offset, per_page * page)
@@ -137,6 +142,7 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  # TUDO: remove it
   @spec get_album_photos(
           id :: integer,
           album_id :: integer,
@@ -473,7 +479,7 @@ defmodule Picsello.Galleries do
   @doc """
   updates album_id for multiple photos.
   """
-  def update_selected_photos(album_id, selected_photos) do
+  def move_to_album(album_id, selected_photos) do
     from(p in Photo,
       where: p.id in ^selected_photos,
       update: [set: [album_id: ^String.to_integer(album_id)]]

@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   alias Phoenix.PubSub
   alias Picsello.Repo
-  alias Picsello.{Galleries, Messages}
+  alias Picsello.{Galleries, Albums, Messages}
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Notifiers.ClientNotifier
@@ -22,39 +22,34 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign(:total_progress, 0)
-    |> assign(:photo_updates, "false")
-    |> assign(:select_mode, "selected_none")
-    |> assign(:update_mode, "append")
-    |> assign(:selected_photos, [])
+    |> assign(
+      total_progress: 0,
+      favorites_filter: false,
+      page: 0,
+      photo_updates: "false",
+      select_mode: "selected_none",
+      update_mode: "append",
+      selected_photos: []
+    )
     |> ok()
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
-    gallery =
-      Galleries.get_gallery!(id)
-      |> Repo.preload(:albums)
-      |> Galleries.load_watermark_in_gallery()
-
-    if connected?(socket), do: PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-
+  def handle_params(%{"id" => gallery_id, "album_id" => album_id}, _, socket) do
+    album = Albums.get_album!(album_id) |> Repo.preload(:photo)
     socket
-    |> assign(
-      favorites_count: Galleries.gallery_favorites_count(gallery),
-      favorites_filter: false,
-      gallery: gallery,
-      page: 0,
-      page_title: page_title(socket.assigns.live_action),
-      products: Galleries.products(gallery)
-    )
-    |> assign_photos()
-    |> noreply()
+    |> assigns(gallery_id, album)
+  end
+
+  @impl true
+  def handle_params(%{"id" => gallery_id}, _, socket) do
+    socket
+    |> assigns(gallery_id)
   end
 
   @impl true
   def handle_event(
-        "open_albums_popup",
+        "albums_popup",
         %{},
         %{
           assigns: %{
@@ -64,6 +59,43 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       ) do
     socket
     |> open_modal(AddAlbumModal, %{gallery_id: gallery.id})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "album_thumbnail_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            album: album
+          }
+        } = socket
+      ) do
+    socket
+    |> push_redirect(
+      to: Routes.gallery_edit_album_thumbnail_path(socket, :show, gallery.id, album.id)
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "album_settings_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            album: album
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(PicselloWeb.GalleryLive.Albums.AlbumSettingsModal, %{
+      gallery_id: gallery.id,
+      album: album
+    })
     |> noreply()
   end
 
@@ -113,21 +145,38 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    Galleries.update_selected_photos(album_id, selected_photos)
-
-    {:ok, gallery} =
-      Galleries.update_gallery(gallery, %{
-        total_count: gallery.total_count - total(selected_photos)
-      })
+    Galleries.move_to_album(album_id, selected_photos)
 
     socket
-    |> assign(:gallery, gallery)
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
+    |> assign_photos()
     |> put_flash(
       :photo_success,
       move_to_album_success_message(selected_photos, album_id, gallery)
     )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "remove_from_album",
+        _,
+        %{
+          assigns: %{
+            album: album,
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    Galleries.remove_photos_from_album(selected_photos)
+
+    socket
+    |> assign(:selected_photos, [])
+    |> push_event("remove_items", %{"ids" => selected_photos})
+    |> assign_photos()
+    |> put_flash(:photo_success, remove_from_album_success_message(selected_photos, album))
     |> noreply()
   end
 
@@ -298,21 +347,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "select_photos",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
         "client-link",
         _,
         %{
@@ -386,7 +420,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, socket) do
+  def handle_info({:photo_processed, _, photo}, %{assigns: %{gallery: gallery}} = socket) do
     photo_update =
       %{
         id: photo.id,
@@ -399,7 +433,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  def handle_info({:photo_click, _}, socket), do: noreply(socket)
+  # def handle_info({:photo_click, _}, socket), do: noreply(socket)
 
   @impl true
   def handle_info(
@@ -421,13 +455,40 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_info({:total_progress, total_progress}, socket) do
     socket
     |> assign(:total_progress, total_progress)
-    |> photo_upload_completed()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(:photo_upload_completed, socket) do
+    socket
+    |> assign_photos()
     |> noreply()
   end
 
   @impl true
   def handle_info({:upload_success_message, success_message}, socket) do
-    socket |> put_flash(:photo_success, success_message) |> noreply()
+    socket |> put_flash(:gallery_success, success_message) |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:save_album_thumbnail, %{title: title, url: url}},
+        %{assigns: %{album: album}} = socket
+      ) do
+
+    case Albums.update_album(album, %{thumbnail_url: url}) do
+      {:ok, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:gallery_success, "#{title} album thumbnail successfully updated")
+        |> noreply
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:gallery_error, "Failed to update thumbnail. Please try again")
+        |> noreply
+    end
   end
 
   defp assign_photos(
@@ -436,13 +497,22 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
              gallery: %{
                id: id
              },
+             album: album,
              page: page,
              favorites_filter: filter
            }
          } = socket,
          per_page \\ @per_page
        ) do
-    opts = [only_favorites: filter, exclude_album: true, offset: per_page * page]
+
+    opts =
+    if album do
+      [album_id: album.id]
+    else
+      [exclude_album: true]
+    end
+    ++ [only_favorites: filter, offset: per_page * page]
+
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
 
     socket
@@ -456,6 +526,30 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       photos
       |> length > per_page
     )
+  end
+
+  defp assigns(socket, gallery_id, album \\ nil) do
+    gallery =
+      Galleries.get_gallery!(gallery_id)
+      |> Repo.preload(:albums)
+      |> Galleries.load_watermark_in_gallery()
+
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
+    end
+
+    socket
+    |> assign(
+      favorites_count: Galleries.gallery_favorites_count(gallery),
+      gallery: gallery,
+      album: album,
+      page_title: page_title(socket.assigns.live_action),
+      products: Galleries.products(gallery)
+    )
+    |> assign_photos()
+    |> noreply()
   end
 
   defp delete_photos(%{assigns: %{gallery: gallery}} = socket, selected_photos) do
@@ -478,21 +572,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  defp photo_upload_completed(
-         %{assigns: %{gallery: gallery, total_progress: total_progress}} = socket
-       ) do
-    case total_progress do
-      100 ->
-        Galleries.update_gallery_photo_count(gallery.id)
-        Galleries.normalize_gallery_photo_positions(gallery.id)
-        socket |> assign_photos()
-
-      _ ->
-        socket
-    end
-  end
-
   defp make_popup(socket, event, title, payload \\ %{}) do
+    subtitle = case payload do
+      %{photo_id: _} ->
+        "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?"
+      _ ->
+        "Are you sure you wish to permanently delete these photos from #{socket.assigns.gallery.name} ?"
+    end
+
     socket
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
@@ -501,8 +588,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       confirm_label: "Yes, delete",
       icon: "warning-orange",
       title: title,
-      subtitle:
-        "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?",
+      subtitle: subtitle,
       payload: payload
     })
   end
@@ -515,24 +601,30 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     "#{photos_count} photo#{is_plural(photos_count)} successfully moved to #{album.name}"
   end
 
+  defp remove_from_album_success_message(selected_photos, album) do
+    photos_count = total(selected_photos)
+    "#{photos_count} photo#{is_plural(photos_count)} successfully removed from #{album.name}"
+  end
+
+  defp options(:select), do: [
+    %{title: "All", id: "selected_all"},
+    %{title: "Favorite", id: "selected_favorite"},
+    %{title: "None", id: "selected_none"},
+  ]
+
   defp is_plural(count) do
     if count > 1, do: "s"
   end
 
-  defp page_title(:show), do: "Show Gallery"
-  defp page_title(:edit), do: "Edit Gallery"
-  defp page_title(:upload), do: "New Gallery"
+  defp page_title(:index), do: "Photos"
+  defp page_title(:edit), do: "Edit Photos"
+  defp page_title(:upload), do: "New Photos"
 
   # TUDO: move to common file
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  def product_preview_url(%{
-        preview_photo: %{
-          preview_url: url
-        }
-      }),
-      do: url
-
-  def product_preview_url(_), do: nil
+  defp extract_album(album, album_retun, other) do
+    if album, do: Map.get(album, album_retun), else: other
+  end
 end

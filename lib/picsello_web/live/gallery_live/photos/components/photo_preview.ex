@@ -106,7 +106,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
 
     socket
     |> close_modal()
-    |> put_flash(:photo_success, "Photo preview successfully created")
+    |> put_flash(:gallery_success, "Photo preview successfully created")
     |> noreply
   end
 

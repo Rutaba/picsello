@@ -27,16 +27,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   def mount(_params, %{"gallery" => gallery} = session, socket) do
     {:ok,
      socket
-     |> put_flash(:photo_success, "upload_success_message")
+     |> put_flash(:gallery_success, "upload_success_message")
      |> assign(:upload_bucket, @bucket)
      |> assign(:view, Map.get(session, "view", false))
+     |> assign(:album_id, Map.get(session, "album_id", nil))
      |> assign(:gallery, gallery)
      |> assign(:toggle, "show")
      |> assign(:overall_progress, 0)
-     |> assign(:estimate, "n/a")
      |> assign(:uploaded_files, 0)
+     |> assign(:estimate, "n/a")
      |> assign(:progress, %GalleryUploadProgress{})
-     |> assign(:update_mode, "prepend")
+     |> assign(:update_mode, "append")
      |> allow_upload(:photo, @upload_options), layout: false}
   end
 
@@ -61,7 +62,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       )
     )
     |> assign(:entries, entries)
-    |> assign(:update_mode, "prepend")
+    |> assign(:update_mode, "append")
     |> assign(:gallery, gallery)
     |> noreply()
   end
@@ -140,6 +141,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     #   |> noreply()
   end
 
+
   @impl true
   def handle_event("close", _, socket) do
     send(self(), :close_upload_popup)
@@ -167,13 +169,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   def handle_progress(
         :photo,
         entry,
-        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
+        %{assigns: %{gallery: gallery, album_id: album_id, uploaded_files: uploaded_files, progress: progress}} =
           socket
       ) do
-    IO.inspect("reached 3 upload")
-
     if entry.done? do
-      {:ok, photo} = create_photo(gallery, entry)
+      {:ok, photo} = create_photo(gallery, entry, album_id)
       uploaded_files = uploaded_files + 1
       start_photo_processing(photo, gallery.watermark)
 
@@ -232,14 +232,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
-      "gallery:#{gallery.id}",
+      "gallery_progress:#{gallery.id}",
       {:total_progress, total_progress}
     )
 
     estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
 
     if total_progress == 100 do
-      # send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
+      Phoenix.PubSub.broadcast(Picsello.PubSub, "photo_uploaded:#{gallery.id}", :photo_upload_completed)
+      # IO.inspect(parent_pid)
+      Galleries.update_gallery_photo_count(gallery.id)
+      Galleries.normalize_gallery_photo_positions(gallery.id)
+      # send(parent_pid, :photo_upload_completed)
     end
 
     socket
@@ -247,9 +251,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> assign(:estimate, estimate)
   end
 
-  defp create_photo(gallery, entry) do
+  defp create_photo(gallery, entry, album_id) do
+    IO.puts("\n\n########## DEBUG ##########\n album_id: #{inspect(album_id, pretty: true)} \n########## DEBUG ##########\n\n")
     Galleries.create_photo(%{
       gallery_id: gallery.id,
+      album_id: album_id,
       name: entry.client_name,
       original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
       position: (gallery.total_count || 0) + 100

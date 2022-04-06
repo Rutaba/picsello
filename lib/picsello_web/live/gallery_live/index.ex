@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
+  alias PicselloWeb.GalleryLive.Photos.Upload
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -30,6 +31,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       :ok,
       socket
       |> assign(:upload_bucket, @bucket)
+      |> assign(:total_progress, 0)
       |> assign(:cover_photo_processing, false)
       |> allow_upload(:cover_photo, @upload_options)
       |> assign(:password_toggle, false)
@@ -267,6 +269,11 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> close_modal()
     |> preload_watermark()
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:total_progress, total_progress}, socket) do
+    socket |> assign(:total_progress, total_progress) |> noreply()
   end
 
   @impl true

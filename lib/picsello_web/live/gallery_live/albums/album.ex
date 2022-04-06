@@ -164,10 +164,6 @@ defmodule PicselloWeb.GalleryLive.Album do
         } = socket
       ) do
     socket
-    |> assign(:selected_item, "edit_album_thumbnail")
-    |> push_redirect(
-      to: Routes.gallery_edit_album_thumbnail_path(socket, :show, gallery.id, album.id)
-    )
     |> noreply()
   end
 
@@ -943,7 +939,7 @@ defmodule PicselloWeb.GalleryLive.Album do
     #    gallery = Galleries.get_gallery!(gallery.id)
     # IO.inspect(gallery)
     socket
-    #    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :show, gallery.id))
+    #    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery.id))
     |> assign_photos()
     |> noreply()
   end

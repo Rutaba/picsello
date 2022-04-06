@@ -78,26 +78,26 @@
   z-index: 100;
 }
 
-.productPreview__client > li > .productPreview_photo {
+.productPreview__client > li > .productPreview-photo {
   @apply relative cursor-pointer;
 }
 
-.productPreview__client > li > .productPreview_photo::before {
+.productPreview__client > li > .productPreview-photo::before {
   content: '';
 
   @apply absolute top-0 z-10 block w-full h-full transition-all duration-300 rounded-lg opacity-0;
 }
 
-.productPreview__client > li > .productPreview_photo::after {
+.productPreview__client > li > .productPreview-photo::after {
   content: 'View product';
   @apply absolute z-20 flex items-center justify-center w-11/12 h-12 p-4 text-center transition-all duration-300 -translate-x-1/2 border rounded-lg opacity-0 text-base-100 bottom-4 left-1/2 border-base-100;
 }
 
-.productPreview__client > li:hover > .productPreview_photo::before {
+.productPreview__client > li:hover > .productPreview-photo::before {
   @apply opacity-100;
 }
 
-.productPreview__client > li:hover > .productPreview_photo::after {
+.productPreview__client > li:hover > .productPreview-photo::after {
   @apply opacity-40;
 }
 

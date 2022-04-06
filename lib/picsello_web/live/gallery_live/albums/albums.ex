@@ -9,6 +9,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
+  alias PicselloWeb.GalleryLive.Photos.Upload
 
   @impl true
   def mount(%{"id" => gallery_id}, _session, socket) do
@@ -21,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
       |> assign(:gallery, gallery)
       |> assign(:upload_toast, "hidden")
       |> assign(:upload_toast_text, nil)
+      |> assign(:total_progress, 0)
       |> assign(:selected_item, nil)
     }
   end
@@ -171,7 +173,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :show, gallery))
+    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery))
     |> noreply()
   end
 
@@ -303,6 +305,11 @@ defmodule PicselloWeb.GalleryLive.Albums do
       modal_title: "Share gallery"
     })
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:total_progress, total_progress}, socket) do
+    socket |> assign(:total_progress, total_progress) |> noreply()
   end
 
   def handle_info(

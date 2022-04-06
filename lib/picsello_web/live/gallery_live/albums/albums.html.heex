@@ -1,6 +1,6 @@
 <div class="flex flex-col">
   <div class="flex flex-row bg-base-200">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: 0,  arrow_show: "photos", album_dropdown_show: true %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 bg-gray-100 pl-96">
       <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-30 pt-20 pb-5 pl-10 pr-10 bg-gray-100">
         <div phx-click="upload_toast" class={"fixed right-20 top-4 z-30 #{@upload_toast}"}>
@@ -115,6 +115,8 @@
             <% end %>
           </div>
         </div>
+        <%= live_render(@socket, Upload, id: "upload", session: %{"gallery" => @gallery, "view" => "none"}, sticky: true) %>
+        <%= live_render(@socket, Upload, id: "upload1", session: %{"gallery" => @gallery, "view" => "none"}, sticky: true) %>
       </div>
     </div>
   </div>
