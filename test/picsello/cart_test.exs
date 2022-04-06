@@ -333,9 +333,16 @@ defmodule Picsello.CartTest do
   end
 
   describe "confirm_order" do
+    def confirm_order(session) do
+      Cart.confirm_order(
+        session,
+        PicselloWeb.Helpers
+      )
+    end
+
     test "raises if order does not exist" do
       assert_raise(Ecto.NoResultsError, fn ->
-        Cart.confirm_order(%Stripe.Session{
+        confirm_order(%Stripe.Session{
           client_reference_id: "order_number_404"
         })
       end)
@@ -345,7 +352,7 @@ defmodule Picsello.CartTest do
       order = insert(:order, placed_at: DateTime.utc_now())
 
       assert {:ok, _} =
-               Cart.confirm_order(%Stripe.Session{
+               confirm_order(%Stripe.Session{
                  client_reference_id: "order_number_#{Order.number(order)}"
                })
     end
@@ -359,7 +366,7 @@ defmodule Picsello.CartTest do
       end)
       |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
 
-      Cart.confirm_order(%Stripe.Session{
+      confirm_order(%Stripe.Session{
         client_reference_id: "order_number_#{Order.number(order)}",
         payment_intent: "intent-id"
       })

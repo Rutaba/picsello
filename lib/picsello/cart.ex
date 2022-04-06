@@ -327,11 +327,9 @@ defmodule Picsello.Cart do
   def checkout_params(%Order{products: products, digitals: digitals} = order) do
     product_line_items =
       Enum.map(products, fn %{
-                              price: price,
-                              editor_details: %{
-                                selections: %{"quantity" => quantity}
-                              }
+                              price: price
                             } = product ->
+        quantity = product_quantity(product)
         unit_amount = price |> Money.divide(quantity) |> hd |> Map.get(:amount)
 
         %{
@@ -412,9 +410,9 @@ defmodule Picsello.Cart do
   def preview_url(%Digital{photo: %{preview_url: path}}, _mode),
     do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
 
-  defdelegate confirm_order(session), to: __MODULE__.Confirmations
+  defdelegate confirm_order(session, helpers), to: __MODULE__.Confirmations
 
-  defdelegate confirm_order(order_number, stripe_session_id),
+  defdelegate confirm_order(order_number, stripe_session_id, helpers),
     to: __MODULE__.Confirmations
 
   defp seek_and_map(editor_id, fun) do
@@ -443,6 +441,9 @@ defmodule Picsello.Cart do
     |> Order.update_changeset(product, attrs)
     |> Repo.update!()
   end
+
+  def product_quantity(%CartProduct{editor_details: %{selections: selections}}),
+    do: Map.get(selections, "quantity", 1)
 
   defdelegate total_cost(order), to: Order
   defdelegate subtotal_cost(order), to: Order

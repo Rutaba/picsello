@@ -86,6 +86,7 @@ config :picsello, Picsello.Mailer,
   generic_transactional_template: System.get_env("SENDGRID_GENERIC_TRANSACTIONAL_TEMPLATE"),
   email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
+  order_confirmation_template: System.get_env("SENDGRID_ORDER_CONFIMATION_TEMPLATE"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]
