@@ -108,7 +108,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
              |> String.contains?("Message sent")
     end
 
-    test "user submits form without or an incorrect organization_slug", %{conn: conn, user: user} do
+    test "user submits form without or an incorrect organization_slug", %{conn: conn} do
       assert conn
              |> post(
                Routes.lead_contact_iframe_path(
