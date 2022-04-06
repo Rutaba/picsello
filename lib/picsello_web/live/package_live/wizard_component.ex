@@ -77,7 +77,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.step_heading name={@step} is_edit={@package.id} />
 
       <%= unless @is_template do %>
-        <div class="py-4 bg-gray-100 modal-banner mb-4">
+        <div class="py-4 mb-4 bg-gray-100 modal-banner">
           <h2 class="text-2xl font-bold"><%= Packages.job_name @job %></h2>
           <%= unless @package.id do %>
             <.step_subheading name={@step} />
@@ -186,7 +186,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :choose_template} = assigns) do
     ~H"""
     <h1 class="mt-6 text-xl font-bold">Select Package <%= if template_selected?(@f), do: "(1 selected)", else: "" %></h1>
-      <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+      <div class="grid grid-cols-1 my-4 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         <%= for template <- @templates do %>
           <% checked = input_value(@f, :package_template_id) == template.id %>
 
@@ -220,7 +220,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             Type of Photography
           </.input_label>
 
-          <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
+          <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-3 sm:gap-5">
             <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>
@@ -288,7 +288,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <%= if p |> current() |> Map.get(:is_enabled) do %>
               <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
 
-              <div class="flex items-center">Gallery store credit</div>
+              <div class="flex items-center">
+                <%= label_for @f, :print_credits, label: "Gallery store credit", class: "font-normal" %>
+              </div>
             <% end %>
           </div>
         </div>
