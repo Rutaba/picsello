@@ -190,11 +190,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       ])
 
       assert_receive {:delivered_email, email}
-
-      assert %{"url" => email_link, "job" => "John Newborn", "client" => "John"} =
-               email |> email_substitutions()
-
-      assert String.ends_with?(email_link, "/jobs")
+      %{"subject" => subject, "body" => body} = email |> email_substitutions
+      assert "John just completed their booking proposal!" = subject
+      assert body =~ "John completed their proposal."
 
       deposit_payment_id = deposit_payment.id
 

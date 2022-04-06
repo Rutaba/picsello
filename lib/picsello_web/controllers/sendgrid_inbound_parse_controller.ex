@@ -1,6 +1,6 @@
 defmodule PicselloWeb.SendgridInboundParseController do
   use PicselloWeb, :controller
-  alias Picsello.{Repo, Job, ClientMessage}
+  alias Picsello.{Repo, Job, ClientMessage, Notifiers.UserNotifier}
 
   def parse(conn, params) do
     %{"text" => text, "html" => body_html, "envelope" => envelope, "subject" => subject} = params
@@ -14,6 +14,8 @@ defmodule PicselloWeb.SendgridInboundParseController do
       %{body_text: body_text, body_html: body_html, subject: subject, job_id: job.id}
       |> ClientMessage.create_inbound_changeset()
       |> Repo.insert!()
+
+    UserNotifier.deliver_new_inbound_message_email(message)
 
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,

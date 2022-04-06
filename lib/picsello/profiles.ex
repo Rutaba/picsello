@@ -1,7 +1,18 @@
 defmodule Picsello.Profiles do
   @moduledoc "context module for public photographer profile"
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Repo, Organization, Job, JobType, ClientMessage, Client, Accounts.User}
+
+  alias Picsello.{
+    Repo,
+    Organization,
+    Job,
+    JobType,
+    ClientMessage,
+    Client,
+    Accounts.User,
+    Notifiers.UserNotifier
+  }
+
   require Logger
 
   defmodule ProfileImage do
@@ -171,6 +182,13 @@ defmodule Picsello.Profiles do
               subject: "New lead from profile",
               body_text: Contact.to_string(contact)
             })
+          )
+          |> Ecto.Multi.run(
+            :email,
+            fn _, changes ->
+              UserNotifier.deliver_new_lead_email(changes.lead, contact.message)
+              {:ok, :email}
+            end
           )
           |> Repo.transaction()
 

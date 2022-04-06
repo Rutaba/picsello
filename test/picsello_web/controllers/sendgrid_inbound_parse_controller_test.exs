@@ -2,8 +2,14 @@ defmodule PicselloWeb.SendgridInboundParseControllerTest do
   use PicselloWeb.ConnCase, async: true
   alias Picsello.{Repo, ClientMessage, Job}
 
+  setup do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+    :ok
+  end
+
   test "parses the response", %{conn: conn} do
-    job = insert(:lead)
+    user = insert(:user)
+    job = insert(:lead, user: user)
     token = Job.token(job)
 
     params = %{
@@ -86,5 +92,10 @@ defmodule PicselloWeb.SendgridInboundParseControllerTest do
                job_id: ^job_id
              }
            ] = Repo.all(ClientMessage)
+
+    assert_receive {:delivered_email, email}
+    %{"subject" => subject, "body" => body} = email |> email_substitutions
+    assert "You've got mail!" = subject
+    assert body =~ "You have received a reply from Mary Jane!"
   end
 end

@@ -151,6 +151,11 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              ]
            } = photographer |> latest_job()
 
+    assert_receive {:delivered_email, email}
+    %{"subject" => subject, "body" => body} = email |> email_substitutions
+    assert "You have a new lead from Chad Smith" = subject
+    assert body =~ "Email: chad@example.com"
+
     session
     |> visit(profile_url)
     |> fill_in(text_field("Your email"), with: "chad@example.com")
