@@ -53,7 +53,7 @@ defmodule PicselloWeb.LeadContactIframeView do
   def render("thank-you.html", assigns) do
     ~H"""
     <.container>
-      <div class="flex items-center mt-14 min-w-max justify-center">
+      <div class="flex items-center mt-14 min-w-max justify-center h-96">
         <.icon name="confetti" class="w-20 h-20 stroke-current mr-9" />
         <div>
           <h1 class="text-2xl font-bold">Message sent</h1>
@@ -67,7 +67,7 @@ defmodule PicselloWeb.LeadContactIframeView do
   def render("error.html", assigns) do
     ~H"""
     <.container>
-      <div class="flex items-center mt-14 min-w-max justify-center">
+      <div class="flex items-center mt-14 min-w-max justify-center h-96">
         <div>
           <h1 class="text-2xl font-bold">There's been an error.</h1>
           You photographer may have disabled their form
@@ -79,9 +79,8 @@ defmodule PicselloWeb.LeadContactIframeView do
 
   defp container(assigns) do
     ~H"""
-    <div class="border p-9 border-base-200 client-app">
+    <div class="p-9 border-base-200 client-app">
       <%= render_block(@inner_block) %>
-
     </div>
     """
   end

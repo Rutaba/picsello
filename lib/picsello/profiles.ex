@@ -237,7 +237,7 @@ defmodule Picsello.Profiles do
   end
 
   def embed_code(%Organization{} = organization) do
-    ~s(<div style="padding:127% 0 0 0;position:relative;"><iframe src="#{embed_url(organization)}" frameborder="0" style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe></div>)
+    ~s(<iframe src="#{embed_url(organization)}" frameborder="0" style="max-width:100%;width:100%;height:100%;min-height:700px;"></iframe>)
   end
 
   def subscribe_to_photo_processed(%{slug: slug}) do

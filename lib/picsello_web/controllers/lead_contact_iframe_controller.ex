@@ -20,21 +20,28 @@ defmodule PicselloWeb.LeadContactIframeController do
   end
 
   def create(conn, %{"organization_slug" => organization_slug, "contact" => contact} = params) do
-    organization = Profiles.find_organization_by(slug: organization_slug)
+    try do
+      organization = Profiles.find_organization_by(slug: organization_slug)
 
-    case Profiles.handle_contact(organization, contact) do
-      {:ok, _contact} ->
+      case Profiles.handle_contact(organization, contact) do
+        {:ok, _contact} ->
+          conn
+          |> Conn.delete_resp_header("x-frame-options")
+          |> render("thank-you.html")
+
+        {:error, changeset} ->
+          conn
+          |> Conn.delete_resp_header("x-frame-options")
+          |> assign_organization_by_slug(params)
+          |> assign(:changeset, changeset)
+          |> put_flash(:error, "Form has errors")
+          |> render("index.html")
+      end
+    rescue
+      Ecto.NoResultsError ->
         conn
         |> Conn.delete_resp_header("x-frame-options")
-        |> render("thank-you.html")
-
-      {:error, changeset} ->
-        conn
-        |> Conn.delete_resp_header("x-frame-options")
-        |> assign_organization_by_slug(params)
-        |> assign(:changeset, changeset)
-        |> put_flash(:error, "Form has errors")
-        |> render("index.html")
+        |> render("error.html")
     end
   end
 
