@@ -3,7 +3,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
-  alias Picsello.Accounts
   alias Picsello.Payments
 
   @impl true
@@ -45,15 +44,5 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
-  end
-
-  def add_stripe_button_details(%{assigns: %{current_user: user}} = socket) do
-    stripe_button =
-      if Accounts.user_stripe_setup_complete?(user),
-        do: %{text: "Go to Stripe account", url: "https://dashboard.stripe.com/"},
-        else: %{text: "Set up stripe", url: "/users/settings/stripe-refresh"}
-
-    socket
-    |> assign(:stripe_button, stripe_button)
   end
 end
