@@ -4,11 +4,14 @@ defmodule PicselloWeb.Live.FinanceSettings do
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
   alias Picsello.Accounts
+  alias PicselloWeb.StripeOnboardingComponent
+  alias Picsello.Payments
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_user: _user}} = socket) do
+  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     socket
-    |> add_stripe_button_details()
+    |> assign_stripe_status()
+    |> assign(current_user: current_user)
     |> ok()
   end
 
@@ -21,20 +24,15 @@ defmodule PicselloWeb.Live.FinanceSettings do
           <h1 class="text-2xl font-bold">Finances</h1>
         </div>
       </div>
-
       <hr class="my-4 sm:my-10" />
-
       <div class="flex grid flex-row justify-between flex-1 flex-grow-0 gap-6 sm:grid-cols-2">
-
         <div class="flex flex-col mr-6">
           <.card title="Sales tax">
             <form id="tax_form">
-
               <div class="flex flex-col mt-2">
                 <label class="flex items-end justify-between mb-1 text-sm font-semibold" field={:sales_tax_rate}>
                   <span>Sales tax rate</span>
                 </label>
-
                 <input class="w-full h-12 px-3 mt-2 border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300" id="username" type="number" placeholder="0.0%">
                 <div class="flex items-center mt-2">
                 <input type="checkbox" class="w-4 h-4 mr-2"/>
@@ -43,25 +41,32 @@ defmodule PicselloWeb.Live.FinanceSettings do
                 </label>
                 </div>
               </div>
-
               <div class="mt-4 text-right">
                 <%= submit "Change tax options", class: "btn-primary mx-1" %>
               </div>
             </form>
           </.card>
         </div>
-
         <div class="flex flex-row">
           <.card title="Stripe Account">
             <p>Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
             <div class="text-right">
-              <%= button @stripe_button.text, to: @stripe_button.url, method: "get", target: "_blank", class: "px-8 text-center btn-primary" %>
+              <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+              erorr_class: "text-right",
+              class: "px-8 text-center btn-primary",
+              current_user: @current_user,
+              return_url: Routes.home_url(@socket, :index),
+              stripe_status: @stripe_status %>
             </div>
           </.card>
         </div>
       </div>
     </.settings_nav>
     """
+  end
+
+  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+    socket |> assign(stripe_status: Payments.status(current_user))
   end
 
   def add_stripe_button_details(%{assigns: %{current_user: user}} = socket) do
