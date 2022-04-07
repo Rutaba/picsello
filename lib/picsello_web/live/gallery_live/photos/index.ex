@@ -387,12 +387,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       body_html: html,
       body_text: text,
       subject: subject,
-      modal_title: "Share gallery"
+      modal_title: "Share gallery",
+      is_client_gallery: false
     })
     |> noreply()
   end
 
-  # TUDO: Maybe need to remove it
+  # ToDO: Maybe need to remove it
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -466,6 +467,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket |> put_flash(:gallery_success, success_message) |> noreply()
   end
 
+  # ToDO: Maybe need to remove it
   @impl true
   def handle_info(
         {:save_album_thumbnail, %{title: title, url: url}},
@@ -628,7 +630,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp page_title(:edit), do: "Edit Photos"
   defp page_title(:upload), do: "New Photos"
 
-  # TUDO: move to common file
+  # ToDO: move to common file
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 

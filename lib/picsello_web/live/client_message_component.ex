@@ -2,7 +2,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Job}
-  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
+  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1, custom_quill_input: 1]
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -64,10 +64,11 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @impl true
   def render(assigns) do
+    is_client_gallery = Map.get(assigns, :is_client_gallery, true)
     ~H"""
     <div class="modal">
-      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
-
+    <%= if is_client_gallery do %>
+    <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
       <%= if @show_client_email do %>
         <div class="pt-5 input-label">
           Client's email
@@ -76,7 +77,6 @@ defmodule PicselloWeb.ClientMessageComponent do
           <%= client_email @job %>
         </div>
       <% end %>
-
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
@@ -95,6 +95,42 @@ defmodule PicselloWeb.ClientMessageComponent do
           </button>
         </PicselloWeb.LiveModal.footer>
       </.form>
+    <%else%>
+    <div class="flex justify-between">
+        <h1 class="mb-4 text-3xl font-bold"><%= @modal_title %></h1>
+        <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+          <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
+        </button>
+      </div>
+
+      <%= if @show_client_email do %>
+        <div class="pt-5 font-bold input-label">
+          Client's email
+        </div>
+        <div class="relative font-sans text-input text-base-250" style="border-radius: 0.375rem;">
+          <%= client_email @job %>
+        </div>
+      <% end %>
+
+      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+        <div class="grid grid-flow-col gap-4 mt-4 font-bold auto-cols-fr">
+          <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "font-sans h-12", phx_debounce: "500",  style: "border-radius: 0.375rem;" %>
+        </div>
+
+        <label class="block mt-4 font-bold input-label" for="editor">Message</label>
+        <.custom_quill_input f={f} style={"min-height: 4rem; font-family: 'Be Vietnam'; font-style: normal; font-weight: 500; font-size: 15.4282px;
+        line-height: 23px; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;"} html_field={:body_html} text_field={:body_text}/>
+
+     <PicselloWeb.LiveModal.custom_footer>
+          <button class="btn-settings ml-4 w-40 px-11 py-3.5 cursor-pointer" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+            <%= @send_button %>
+          </button>
+          <button class="w-28 btn-settings-secondary" title="close" type="button" phx-click="modal" phx-value-action="close">
+            Close
+          </button>
+        </PicselloWeb.LiveModal.custom_footer>
+      </.form>
+      <%end%>
     </div>
     """
   end

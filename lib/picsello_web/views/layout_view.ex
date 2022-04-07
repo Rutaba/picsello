@@ -23,7 +23,7 @@ defmodule PicselloWeb.LayoutView do
     end
   end
 
-  # TUDO: need to optimize
+  # ToDO: need to optimize
   defp flash_styles,
     do: [
       {:error, "warning-white", "bg-red-sales-100", "bg-red-sales-300", "text-red-sales-300",

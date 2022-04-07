@@ -8,8 +8,8 @@ defmodule PicselloWeb.GalleryLive.Albums do
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
-  alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
   alias PicselloWeb.GalleryLive.Photos.Upload
+  alias PicselloWeb.ClientMessageComponent
 
   @impl true
   def mount(%{"id" => gallery_id}, _session, socket) do
@@ -302,7 +302,8 @@ defmodule PicselloWeb.GalleryLive.Albums do
       body_html: html,
       body_text: text,
       subject: subject,
-      modal_title: "Share gallery"
+      modal_title: "Share gallery",
+      is_client_gallery: false
     })
     |> noreply()
   end

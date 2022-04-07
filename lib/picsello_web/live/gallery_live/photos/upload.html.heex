@@ -21,7 +21,7 @@
     <% "drag_drop" -> %>
     <form id="dragDrop-form" phx-submit="save" phx-change="start">
         <div class="dragDrop" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.photo.ref}>
-        <label class="flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer">
+        <label class="flex flex-col mt-24 items-center justify-center w-full h-full gap-8 cursor-pointer">
             <div class="max-w-xs mx-auto">
                 <img src="/images/drag-drop-img.png" width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
                 <div class="flex flex-col items-center justify-center dragDrop__content">

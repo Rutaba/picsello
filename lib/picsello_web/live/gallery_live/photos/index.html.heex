@@ -2,7 +2,7 @@
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
     <div class="w-full h-full bg-gray-100 pl-96 ">
-      <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-20 pl-10 pr-10 bg-gray-100 left-96">
+      <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-14 pl-10 pr-10 bg-gray-100 left-96">
         <div class="flex flex-col md:flex-row">
             <div class="flex items-end text-4xl font-bold lg:justify-start">
               <span><%= extract_album(@album, :name, "Photos") %></span>
@@ -21,15 +21,15 @@
             Edit thumbnail
           </.icon_button>
           <% end %>
-          <%= if length(@gallery.albums) == 0 do %> 
+          <%= if length(@gallery.albums) == 0 do %>
           <.icon_button {testid("add-album")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
             Add Album
-          </.icon_button>  
+          </.icon_button>
           <% end %>
           <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
           </div>
         </div>
-        <%= if length(@gallery.albums) > 0 do %> 
+        <%= if length(@gallery.albums) > 0 do %>
         <.crumbs class="mt-2 text-blue-planning-300">
           <:crumb to={Routes.gallery_albums_path(@socket, :albums, @gallery)}>Photos</:crumb>
           <:crumb><span class="font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>

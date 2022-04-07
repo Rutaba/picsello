@@ -2,13 +2,13 @@
   <div class="flex flex-row bg-base-200">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 bg-gray-100 pl-96">
-      <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-30 pt-20 pb-5 pl-10 pr-10 bg-gray-100">
-        <div phx-click="upload_toast" class={"fixed right-20 top-4 z-30 #{@upload_toast}"}>
+      <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-30 pt-14 pb-5 pl-10 pr-10 bg-gray-100">
+        <div phx-click="upload_toast" class={"fixed right-10 top-2 z-30 #{@upload_toast}"}>
           <div class="flex font-sans bg-white rounded-lg shadow-lg cursor-pointer">
             <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
               <.icon name="tick" class="w-6 h-6 stroke-current text-green-finances-300" />
             </div>
-            <div class="flex items-center justify-center flex-grow p-3"><%= @upload_toast_text %></div>
+            <div class="flex items-center justify-center flex-grow p-2"><%= @upload_toast_text %></div>
             <div class="flex items-center justify-center mr-3">
               <.icon name="close-x" class="w-3 h-3 stroke-current" />
             </div>
@@ -27,10 +27,10 @@
       </div>
 
       <div class="">
-        <div class="relative flex flex-col w-full min-h-screen pb-16 overflow-x-hidden">
-          <div class="grid grid-cols-2 pl-10 pr-10 pb-36 sm:gap-2 md:gap-2">
-             <div class="flex flex-col mb-2 mr-4">
-                <a class="mt-4 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/alum_placeholder.png')" phx-click="open_unsorted_photos">
+        <div class="relative flex flex-col w-full min-h-screen overflow-x-hidden">
+          <div class="grid grid-cols-2 pl-10 pr-7 sm:gap-2 md:gap-2">
+             <div class="flex flex-col mb-2 mr-2">
+                <a class="mt-1 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/alum_placeholder.png')" phx-click="open_unsorted_photos">
                   <div class="flex flex-row items-end justify-start h-full">
                     <span class="font-sans font-bold text-white text-1xl">Unsorted Photos</span>
                   </div>
@@ -66,9 +66,9 @@
             </div>
             </div>
             <%= for album <- @gallery.albums do %>
-            <div class="flex flex-col mb-2 mr-4">
+            <div class="flex flex-col mb-2 mr-2">
               <%= if album.thumbnail_url do %>
-                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="go_to_album_selected" phx-value-album={album.id}>
+                <a class="mt-1 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="go_to_album_selected" phx-value-album={album.id}>
                   <div class="flex flex-row items-end justify-start h-full gap-2">
                     <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                   </div>

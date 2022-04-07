@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
       ) do
     gallery = Galleries.get_gallery!(gallery_id)
     product = GalleryProducts.get(%{:id => to_integer(product_id)})
-    # TUDO: need to optimize
+    # ToDO: need to optimize
     preview = check_preview(%{:gallery_id => gallery_id, :product_id => product_id})
 
     {:ok,

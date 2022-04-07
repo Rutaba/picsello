@@ -3,8 +3,8 @@
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "overview", album_dropdown_show: false %>
 
     <div class="w-full h-full bg-gray-100 pl-96">
-    <div class="relative pt-20 pb-10 pl-10 pr-20">
-      <div> 
+    <div class="relative pt-14 pb-10 pl-10 pr-20">
+      <div>
          <div class="flex">
       <span class="text-4xl font-bold" style="font-family: sans-serif">Overview</span>
    </div>
@@ -30,7 +30,6 @@
       <%= if @gallery.cover_photo do %>
       <div class="flex flex-col mt-4">
          <h3>Cover photo</h3>
-         <img src={'#{display_cover_photo(@gallery.cover_photo)}'}/>
          <div class="flex justify-between w-full h-full mt-4">
             <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
                <div class="dragDrop__content">
@@ -62,8 +61,8 @@
             </form>
          </div>
       </div>
-      <% end %> 
-      <% end %>     
+      <% end %>
+      <% end %>
       <div class="galleryUpdateName xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-end-2">
          <%= live_component PicselloWeb.GalleryLive.Settings.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
       </div>

@@ -10,8 +10,8 @@ defmodule PicselloWeb.GalleryLive.Index do
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
-  alias PicselloWeb.GalleryLive.Shared.ClientMessageComponent
   alias PicselloWeb.GalleryLive.Photos.Upload
+  alias PicselloWeb.ClientMessageComponent
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -226,7 +226,8 @@ defmodule PicselloWeb.GalleryLive.Index do
       body_html: html,
       body_text: text,
       subject: subject,
-      modal_title: "Share gallery"
+      modal_title: "Share gallery",
+      is_client_gallery: false
     })
     |> noreply()
   end

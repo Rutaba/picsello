@@ -155,7 +155,7 @@ defmodule Picsello.Galleries do
     end
   end
 
-  # TUDO: remove it
+  # ToDO: remove it
   @spec get_album_photos(
           id :: integer,
           album_id :: integer,
