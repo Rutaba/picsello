@@ -8,7 +8,6 @@ defmodule Picsello.Albums do
   alias Picsello.Repo
   alias Picsello.Galleries.Album
 
-
   @doc """
   Returns the list of albums.
 
@@ -41,5 +40,6 @@ defmodule Picsello.Albums do
   @doc """
   Update album
   """
-  def update_album(album, params \\ %{}), do: album |> Album.update_changeset(params) |> Repo.update()
+  def update_album(album, params \\ %{}),
+    do: album |> Album.update_changeset(params) |> Repo.update()
 end

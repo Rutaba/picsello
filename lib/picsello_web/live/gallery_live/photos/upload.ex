@@ -40,7 +40,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      |> assign(:view, Map.get(session, "view", "add_button"))
      |> assign(:album_id, nil)
      |> assign(:gallery, gallery)
-     |> assign(:toggle, "show")
      |> assign(:overall_progress, 0)
      |> assign(:uploaded_files, 0)
      |> assign(:estimate, "n/a")
@@ -113,8 +112,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   def handle_progress(
         :photo,
         entry,
-        %{assigns: %{gallery: gallery, persisted_album_id: persisted_album_id, uploaded_files: uploaded_files, progress: progress}} =
-          socket
+        %{
+          assigns: %{
+            gallery: gallery,
+            persisted_album_id: persisted_album_id,
+            uploaded_files: uploaded_files,
+            progress: progress
+          }
+        } = socket
       ) do
     if entry.done? do
       {:ok, photo} = create_photo(gallery, entry, persisted_album_id)
@@ -183,7 +188,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
 
     if total_progress == 100 do
-      Phoenix.PubSub.broadcast(Picsello.PubSub, "photo_uploaded:#{gallery.id}", :photo_upload_completed)
+      Phoenix.PubSub.broadcast(
+        Picsello.PubSub,
+        "photo_uploaded:#{gallery.id}",
+        :photo_upload_completed
+      )
+
       # IO.inspect(parent_pid)
       Galleries.update_gallery_photo_count(gallery.id)
       Galleries.normalize_gallery_photo_positions(gallery.id)

@@ -203,6 +203,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
         } = socket
       ) do
     socket
+
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.EditAlbumThumbnail,

@@ -20,17 +20,19 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     product = GalleryProducts.get(%{:id => to_integer(product_id)})
     preview = GalleryProducts.get(%{id: product_id, gallery_id: gallery_id})
 
-    [Map.merge(assigns, %{
-      gallery: gallery,
-      product: product,
-      preview: preview,
-      favorites_count: Galleries.gallery_favorites_count(gallery),
-      frame: Picsello.Category.frame_image(preview.category),
-      coords: Picsello.Category.coords(preview.category),
-      frame_id: preview.category.id,
-      category_id: preview.category.id,
-      title: "#{product.category.name} preview"
-    })]
+    [
+      Map.merge(assigns, %{
+        gallery: gallery,
+        product: product,
+        preview: preview,
+        favorites_count: Galleries.gallery_favorites_count(gallery),
+        frame: Picsello.Category.frame_image(preview.category),
+        coords: Picsello.Category.coords(preview.category),
+        frame_id: preview.category.id,
+        category_id: preview.category.id,
+        title: "#{product.category.name} preview"
+      })
+    ]
   end
 
   @impl true
@@ -42,7 +44,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
         } = assigns,
         socket
       ) do
-
     {:ok,
      socket
      |> assign(assigns)
@@ -55,14 +56,16 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
          target: "#{preview.category.id}-edit"
        })
      end)
-     |> assign(:description, "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.")
+     |> assign(
+       :description,
+       "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor."
+     )
      |> assign(:page_title, "Product Preview")
      |> assign(:page, 0)
      |> assign(:favorites_filter, false)
      |> assign(:preview_photo_id, nil)
      |> assign(:selected, false)
-     |> assign_photos()
-    }
+     |> assign_photos()}
   end
 
   @impl true

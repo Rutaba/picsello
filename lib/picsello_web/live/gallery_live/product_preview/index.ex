@@ -11,9 +11,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-      socket
-      |> assign(total_progress: 0)
-      |> ok()
+    socket
+    |> assign(total_progress: 0)
+    |> ok()
   end
 
   @impl true
@@ -101,7 +101,8 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
       body_html: html,
       body_text: text,
       subject: subject,
-      modal_title: "Share gallery"
+      modal_title: "Share gallery",
+      is_client_gallery: false
     })
     |> noreply()
   end

@@ -46,30 +46,30 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
       target: category.id
     }
 
-    def render(assigns) do
-      ~H"""
-      <div class="flex flex-col justify-between" phx-hook="Preview">
-        <div class="items-center mt-8">
-          <div class="font-sans text-lg font-bold pt-4 flex items-center">
-          <%= @category.name %>
+  def render(assigns) do
+    ~H"""
+    <div class="flex flex-col justify-between" phx-hook="Preview">
+      <div class="items-center mt-8">
+        <div class="font-sans text-lg font-bold pt-4 flex items-center">
+        <%= @category.name %>
+        </div>
+        <div class= "product-container mt-4">
+          <div class="flex justify-start pt-4 pl-4">
+                <div
+                class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
+                phx-click="edit"
+                phx-value-product_id={@product_id}
+                >
+                  <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
+                  <span>Edit this</span>
+                </div>
           </div>
-          <div class= "product-container mt-4">
-            <div class="flex justify-start pt-4 pl-4">
-                  <div
-                  class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
-                  phx-click="edit"
-                  phx-value-product_id={@product_id}
-                  >
-                    <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
-                    <span>Edit this</span>
-                  </div>
-            </div>
-            <div class="product-rect p-6 flex justify-center items-center">
-              <canvas id={"canvas-#{@category.id}"} width="300" height="255" class="bg-gray-300"></canvas>
-            </div>
+          <div class="product-rect p-6 flex justify-center items-center">
+            <canvas id={"canvas-#{@category.id}"} width="300" height="255" class="bg-gray-300"></canvas>
           </div>
         </div>
       </div>
-      """
-    end
+    </div>
+    """
+  end
 end

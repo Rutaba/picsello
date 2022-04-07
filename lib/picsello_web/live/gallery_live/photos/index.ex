@@ -37,6 +37,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @impl true
   def handle_params(%{"id" => gallery_id, "album_id" => album_id}, _, socket) do
     album = Albums.get_album!(album_id) |> Repo.preload(:photo)
+
     socket
     |> assigns(gallery_id, album)
   end
@@ -73,7 +74,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.EditAlbumThumbnail,
@@ -266,8 +266,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    photo_ids =
-      Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_all"})
@@ -309,8 +308,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    photo_ids =
-      Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
 
     socket
     |> assign(:page, 0)
@@ -490,7 +488,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
          } = socket,
          per_page \\ @per_page
        ) do
-
     opts = make_opts(socket, per_page)
 
     photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
@@ -508,21 +505,22 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
   end
 
-  defp make_opts(%{
-    assigns: %{
-      album: album,
-      page: page,
-      favorites_filter: filter
-    }
-  }, per_page \\ @per_page) do
-
+  defp make_opts(
+         %{
+           assigns: %{
+             album: album,
+             page: page,
+             favorites_filter: filter
+           }
+         },
+         per_page \\ @per_page
+       ) do
     if album do
       [album_id: album.id]
     else
       [exclude_album: true]
-    end
-    ++ [favorites_filter: filter, offset: per_page * page]
-
+    end ++
+      [favorites_filter: filter, offset: per_page * page]
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -530,7 +528,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       Galleries.get_gallery!(gallery_id)
       |> Repo.preload(:albums)
       |> Galleries.load_watermark_in_gallery()
-
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery_id}")
@@ -570,12 +567,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp make_popup(socket, event, title, payload \\ %{}) do
-    subtitle = case payload do
-      %{photo_id: _} ->
-        "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?"
-      _ ->
-        "Are you sure you wish to permanently delete these photos from #{socket.assigns.gallery.name} ?"
-    end
+    subtitle =
+      case payload do
+        %{photo_id: _} ->
+          "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?"
+
+        _ ->
+          "Are you sure you wish to permanently delete these photos from #{socket.assigns.gallery.name} ?"
+      end
 
     socket
     |> ConfirmationComponent.open(%{
@@ -603,11 +602,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     "#{photos_count} photo#{is_plural(photos_count)} successfully removed from #{album.name}"
   end
 
-  defp options(:select), do: [
-    %{title: "All", id: "selected_all"},
-    %{title: "Favorite", id: "selected_favorite"},
-    %{title: "None", id: "selected_none"},
-  ]
+  defp options(:select),
+    do: [
+      %{title: "All", id: "selected_all"},
+      %{title: "Favorite", id: "selected_favorite"},
+      %{title: "None", id: "selected_none"}
+    ]
 
   defp is_plural(count) do
     if count > 1, do: "s"

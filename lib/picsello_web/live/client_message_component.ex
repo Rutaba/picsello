@@ -65,6 +65,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def render(assigns) do
     is_client_gallery = Map.get(assigns, :is_client_gallery, true)
+
     ~H"""
     <div class="modal">
     <%= if is_client_gallery do %>
