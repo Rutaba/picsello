@@ -15,10 +15,10 @@
         </div>
       </div>
       <div>
-        <div class="relative flex flex-col w-full min-h-screen overflow-x-hidden">
+        <div class="relative flex flex-col w-full min-h-screen">
           <div class="grid grid-cols-2 pl-10 pr-7 sm:gap-2 md:gap-2">
              <div class="flex flex-col mb-2 mr-2">
-                <a class="mt-1 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/alum_placeholder.png')" phx-click="open_unsorted_photos">
+                <a class="mt-4 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/alum_placeholder.png')" phx-click="open_unsorted_photos">
                   <div class="flex flex-row items-end justify-start h-full">
                     <span class="font-sans font-bold text-white text-1xl">Unsorted Photos</span>
                   </div>
@@ -56,7 +56,7 @@
             <%= for album <- @gallery.albums do %>
             <div class="flex flex-col mb-2 mr-2">
               <%= if album.thumbnail_url do %>
-                <a class="mt-1 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="go_to_album_selected" phx-value-album={album.id}>
+                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="go_to_album_selected" phx-value-album={album.id}>
                   <div class="flex flex-row items-end justify-start h-full gap-2">
                     <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                   </div>
