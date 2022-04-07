@@ -4,7 +4,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
   alias Picsello.Accounts
-  alias PicselloWeb.StripeOnboardingComponent
   alias Picsello.Payments
 
   @impl true
@@ -26,31 +25,10 @@ defmodule PicselloWeb.Live.FinanceSettings do
       </div>
       <hr class="my-4 sm:my-10" />
       <div class="flex grid flex-row justify-between flex-1 flex-grow-0 gap-6 sm:grid-cols-2">
-        <div class="flex flex-col mr-6">
-          <.card title="Sales tax">
-            <form id="tax_form">
-              <div class="flex flex-col mt-2">
-                <label class="flex items-end justify-between mb-1 text-sm font-semibold" field={:sales_tax_rate}>
-                  <span>Sales tax rate</span>
-                </label>
-                <input class="w-full h-12 px-3 mt-2 border border-gray-200 rounded focus:outline-none focus:border-blue-planning-300" id="username" type="number" placeholder="0.0%">
-                <div class="flex items-center mt-2">
-                <input type="checkbox" class="w-4 h-4 mr-2"/>
-                <label class="text-gray-500">
-                    Collect digital product tax
-                </label>
-                </div>
-              </div>
-              <div class="mt-4 text-right">
-                <%= submit "Change tax options", class: "btn-primary mx-1" %>
-              </div>
-            </form>
-          </.card>
-        </div>
         <div class="flex flex-row">
           <.card title="Stripe Account">
-            <p>Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
-            <div class="text-right">
+            <p class="mt-10">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
+            <div class="mt-10 text-right">
               <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
               erorr_class: "text-right",
               class: "px-8 text-center btn-primary",
