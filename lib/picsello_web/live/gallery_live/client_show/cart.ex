@@ -400,6 +400,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate product_name(product), to: Cart
   defdelegate shipping_cost(order), to: Cart
   defdelegate subtotal_cost(order), to: Cart
-  defdelegate summary_counts(order), to: Cart
   defdelegate total_cost(order), to: Cart
 end

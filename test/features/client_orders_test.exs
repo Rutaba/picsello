@@ -361,6 +361,8 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(link("cart", text: "2"))
       |> click(link("cart"))
       |> assert_text("Total: $0.00")
+      |> assert_text("Minimum amount is $1")
+      |> assert_disabled(button("Continue"))
       |> click(link("Home"))
       |> click_photo(3)
       |> refute_has(testid("download-credit"))
@@ -374,20 +376,20 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("Digital download")
         |> assert_text("1 credit - $0.00")
       end)
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 1), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("1 credit - $0.00")
+      end)
       |> find(css("*[data-testid^='digital-']", count: 3, at: 2), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
         |> assert_text("$25.00")
       end)
-      |> find(css("*[data-testid^='digital-']", count: 3, at: 1), fn cart_item ->
-        cart_item
-        |> assert_text("Digital download")
-        |> assert_text("1 credit - $0.00")
-        |> click(button("Delete"))
-      end)
-      |> assert_text("Total: $0.00")
-      |> assert_disabled(button("Continue"))
-      |> assert_text("Minimum amount is $1")
+      |> assert_text("Total: $25.00")
+      |> click(button("Continue"))
+      |> assert_text("Digitals (1): $25.00")
+      |> assert_text("Digital Credits Used (2): 2 Credits - $0.00")
     end
   end
 end
