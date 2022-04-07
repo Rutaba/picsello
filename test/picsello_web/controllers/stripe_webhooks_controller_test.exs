@@ -215,7 +215,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
                "gallery_url" => gallery_url,
                "logo_url" => nil,
                "order_address" => nil,
-               "order_date" => "6/6/22",
+               "order_date" => date,
                "order_items" => [
                  %{
                    item_is_digital: false,
@@ -231,6 +231,8 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
                "order_url" => order_url,
                "subject" => subject
              } = email_variables
+
+      assert Regex.match?(~r|\d\d?/\d\d?/\d\d?|, date)
 
       assert String.starts_with?(subject, organization_name)
       assert String.ends_with?(subject, to_string(order_number))
