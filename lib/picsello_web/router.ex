@@ -34,6 +34,10 @@ defmodule PicselloWeb.Router do
     plug :admin_basic_auth
   end
 
+  pipeline :param_auth do
+    plug PicselloWeb.Plugs.GalleryParamAuth
+  end
+
   defp admin_basic_auth(conn, _opts),
     do:
       Plug.BasicAuth.basic_auth(conn,
@@ -173,7 +177,7 @@ defmodule PicselloWeb.Router do
 
   scope "/gallery/:hash", PicselloWeb do
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
-      pipe_through [:browser]
+      pipe_through [:browser, :param_auth]
 
       live "/", GalleryLive.ClientShow, :show
 

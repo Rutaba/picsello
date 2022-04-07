@@ -141,11 +141,11 @@ defmodule PicselloWeb.LiveAuthTest do
       gallery: gallery,
       show_path: show_path
     } do
-      {:ok, gallery_session} = Galleries.build_gallery_session_token(gallery)
+      {:ok, token} = Galleries.build_gallery_session_token(gallery, gallery.password)
 
       assert {:ok, _view, _html} =
                conn
-               |> Plug.Conn.put_session("gallery_session_token", gallery_session.token)
+               |> Plug.Conn.put_session("gallery_session_token", token)
                |> live(show_path)
     end
 
@@ -158,6 +158,43 @@ defmodule PicselloWeb.LiveAuthTest do
                conn
                |> log_in_user(onboard!(user))
                |> live(show_path)
+    end
+
+    test "/gallery/:hash?pw=123 already authenticated drops param", %{
+      gallery: gallery,
+      conn: conn,
+      show_path: show_path
+    } do
+      {:ok, token} = Galleries.build_gallery_session_token(gallery, gallery.password)
+      conn = put_session(conn, "gallery_session_token", token)
+
+      assert {:error, {:redirect, %{to: ^show_path}}} = live(conn, show_path <> "?pw=123")
+    end
+
+    test "/gallery/:hash?pw=123 correct password stores token in session", %{
+      conn: conn,
+      gallery: gallery,
+      show_path: show_path
+    } do
+      conn = get(conn, show_path <> "?pw=#{gallery.password}")
+
+      assert Galleries.session_exists_with_token?(
+               gallery.id,
+               get_session(conn, "gallery_session_token")
+             )
+    end
+
+    test "/gallery/:hash?pw=123 incorrect password not authenticated", %{
+      conn: conn,
+      gallery: gallery,
+      show_path: show_path
+    } do
+      conn = get(conn, show_path <> "?pw=#{gallery.password}123")
+
+      refute Galleries.session_exists_with_token?(
+               gallery.id,
+               get_session(conn, "gallery_session_token")
+             )
     end
   end
 end
