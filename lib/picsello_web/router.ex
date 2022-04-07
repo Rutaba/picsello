@@ -177,15 +177,22 @@ defmodule PicselloWeb.Router do
 
   scope "/gallery/:hash", PicselloWeb do
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
-      pipe_through [:browser, :param_auth]
+      pipe_through :browser
 
-      live "/", GalleryLive.ClientShow, :show
+      scope "/" do
+        pipe_through :param_auth
+        live "/", GalleryLive.ClientShow, :show
+      end
 
       scope "/orders" do
         live "/", GalleryLive.ClientOrders, :show
 
         scope "/:order_number" do
-          live "/", GalleryLive.ClientOrder, :show
+          scope "/" do
+            pipe_through :param_auth
+            live "/", GalleryLive.ClientOrder, :show
+          end
+
           live "/paid", GalleryLive.ClientOrder, :paid
           get "/zip", GalleryDownloadsController, :download
         end
