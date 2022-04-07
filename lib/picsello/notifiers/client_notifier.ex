@@ -50,18 +50,20 @@ defmodule Picsello.Notifiers.ClientNotifier do
       end
 
     opts = [
-      subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}",
-      logo_url: Picsello.Profiles.logo_url(organization),
       client_name: client_name,
+      contains_digital: digitals != [],
+      contains_physical: products != [],
       gallery_url: helpers.gallery_url(gallery),
-      order_url: helpers.order_url(gallery, order),
-      order_number: Picsello.Cart.Order.number(order),
+      logo_url: Picsello.Profiles.logo_url(organization),
+      order_address: products != [] && order_address(client_name, address),
       order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
-      order_subtotal: Order.subtotal_cost(order),
+      order_items: products ++ digitals,
+      order_number: Picsello.Cart.Order.number(order),
       order_shipping: Order.shipping_cost(order),
+      order_subtotal: Order.subtotal_cost(order),
       order_total: Order.total_cost(order),
-      order_address: order_address(client_name, address),
-      order_items: products ++ digitals
+      order_url: helpers.order_url(gallery, order),
+      subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"
     ]
 
     sendgrid_template(:order_confirmation_template, opts)
