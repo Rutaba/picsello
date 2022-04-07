@@ -187,7 +187,7 @@ defmodule Picsello.PaymentSchedules do
            |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
       if proposal.job.job_status.is_lead do
-        UserNotifier.deliver_lead_converted_to_job(proposal, helpers.jobs_url())
+        UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
 
       update_result

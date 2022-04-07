@@ -95,7 +95,7 @@ defmodule PicselloWeb.SendgridInboundParseControllerTest do
 
     assert_receive {:delivered_email, email}
     %{"subject" => subject, "body" => body} = email |> email_substitutions
-    assert "You've got mail!" = subject
+    assert "You’ve got mail!" = subject
     assert body =~ "You have received a reply from Mary Jane!"
   end
 end

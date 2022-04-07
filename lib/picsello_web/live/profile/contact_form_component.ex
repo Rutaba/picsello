@@ -97,7 +97,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
         %{"contact" => params},
         %{assigns: %{organization: organization}} = socket
       ) do
-    case Profiles.handle_contact(organization, params) do
+    case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
       {:ok, _contact} ->
         socket
         |> assign(changeset: nil)

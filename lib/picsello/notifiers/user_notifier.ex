@@ -1,8 +1,6 @@
 defmodule Picsello.Notifiers.UserNotifier do
   @moduledoc false
   alias Picsello.{Repo, Accounts.User}
-  alias PicselloWeb.Router.Helpers, as: Routes
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   use Picsello.Notifiers
 
   @doc """
@@ -38,8 +36,8 @@ defmodule Picsello.Notifiers.UserNotifier do
   @doc """
   Deliver lead converted to job email.
   """
-  def deliver_lead_converted_to_job(proposal, url) do
-    %{job: %{client: %{organization: %{user: user}} = client}} =
+  def deliver_lead_converted_to_job(proposal, helpers) do
+    %{job: %{client: %{organization: %{user: user}} = client} = job} =
       proposal |> Repo.preload(job: [client: [organization: :user]])
 
     %{
@@ -48,7 +46,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       <p>Hello #{User.first_name(user)},</p>
       <p>Yey! You have a new job!</p>
       <p>#{client.name} completed their proposal. We have moved them from a lead to a job. Congratulations!</p>
-      <p>Click <a href="#{url}">here</a> to view and access your job on Picsello.</p>
+      <p>Click <a href="#{helpers.job_url(job.id)}">here</a> to view and access your job on Picsello.</p>
       <p>Cheers!</p>
       """
     }
@@ -58,7 +56,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   @doc """
   Deliver new lead email.
   """
-  def deliver_new_lead_email(job, message) do
+  def deliver_new_lead_email(job, message, helpers) do
     %{client: %{organization: %{user: user}} = client} =
       job |> Repo.preload(client: [organization: [:user]])
 
@@ -70,9 +68,9 @@ defmodule Picsello.Notifiers.UserNotifier do
       <p>#{client.name} just submitted a contact form with the following information:</p>
       <p>Email: #{client.email}</p>
       <p>Phone: #{client.phone}</p>
-      <p>Job Type: #{dyn_gettext(job.type)}</p>
+      <p>Job Type: #{helpers.dyn_gettext(job.type)}</p>
       <p>Notes: #{message}</p>
-      <p>Click <a href="#{Routes.job_url(PicselloWeb.Endpoint, :leads, job.id)}">here</a> to view and access your lead on Picsello.</p>
+      <p>Click <a href="#{helpers.lead_url(job.id)}">here</a> to view and access your lead on Picsello.</p>
       <p>Cheers!</p>
       """
     }
@@ -82,16 +80,16 @@ defmodule Picsello.Notifiers.UserNotifier do
   @doc """
   Deliver new inbound message email.
   """
-  def deliver_new_inbound_message_email(client_message) do
+  def deliver_new_inbound_message_email(client_message, helpers) do
     %{job: %{client: %{organization: %{user: user}} = client} = job} =
       client_message |> Repo.preload(job: [client: [organization: :user]])
 
     %{
-      subject: "You've got mail!",
+      subject: "You’ve got mail!",
       body: """
       <p>Hello #{User.first_name(user)},</p>
       <p>You have received a reply from #{client.name}!</p>
-      <p>Click <a href="#{Routes.inbox_url(PicselloWeb.Endpoint, :show, job.id)}">here</a> to view and access your emails on Picsello.</p>
+      <p>Click <a href="#{helpers.inbox_thread_url(job.id)}">here</a> to view and access your emails on Picsello.</p>
       <p>Cheers!</p>
       """
     }

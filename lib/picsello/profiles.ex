@@ -152,7 +152,7 @@ defmodule Picsello.Profiles do
     organization |> edit_organization_profile_changeset(attrs) |> Repo.update()
   end
 
-  def handle_contact(%{id: organization_id} = _organization, params) do
+  def handle_contact(%{id: organization_id} = _organization, params, helpers) do
     changeset = contact_changeset(params)
 
     case changeset do
@@ -186,7 +186,8 @@ defmodule Picsello.Profiles do
           |> Ecto.Multi.run(
             :email,
             fn _, changes ->
-              UserNotifier.deliver_new_lead_email(changes.lead, contact.message)
+              UserNotifier.deliver_new_lead_email(changes.lead, contact.message, helpers)
+
               {:ok, :email}
             end
           )

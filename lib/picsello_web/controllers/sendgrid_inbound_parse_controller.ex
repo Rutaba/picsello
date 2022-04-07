@@ -15,7 +15,7 @@ defmodule PicselloWeb.SendgridInboundParseController do
       |> ClientMessage.create_inbound_changeset()
       |> Repo.insert!()
 
-    UserNotifier.deliver_new_inbound_message_email(message)
+    UserNotifier.deliver_new_inbound_message_email(message, PicselloWeb.Helpers)
 
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,

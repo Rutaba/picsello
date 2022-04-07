@@ -61,7 +61,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
            {:ok, _} <-
              PaymentSchedules.handle_payment(
                session,
-               PicselloWeb.StripeWebhooksController.Helpers
+               PicselloWeb.Helpers
              ) do
         socket
       else
