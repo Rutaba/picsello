@@ -649,4 +649,35 @@ defmodule Picsello.Galleries do
     %{job: %{client: %{organization: %{user: user}}}} = gallery |> populate_organization_user()
     user
   end
+
+  def get_package(%{job_id: job_id}) do
+    from(package in Picsello.Package,
+      join: jobs in assoc(package, :jobs),
+      where: jobs.id == ^job_id
+    )
+    |> Repo.one!()
+  end
+
+  def preload_cover_photo(%{cover_photo: nil, id: gallery_id} = gallery) do
+    from(photo in Galleries.Photo,
+      where: photo.gallery_id == ^gallery_id,
+      order_by: photo.position,
+      limit: 1
+    )
+    |> Repo.one()
+    |> case do
+      nil ->
+        gallery
+
+      %{original_url: id} = photo ->
+        %{
+          gallery
+          | cover_photo:
+              %Galleries.CoverPhoto{id: id}
+              |> Map.merge(Map.take(photo, [:width, :height, :aspect_ratio]))
+        }
+    end
+  end
+
+  def preload_cover_photo(gallery), do: gallery
 end

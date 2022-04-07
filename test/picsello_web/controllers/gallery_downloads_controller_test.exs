@@ -1,5 +1,6 @@
 defmodule PicselloWeb.GalleryDownloadsControllerTest do
   use PicselloWeb.ConnCase, async: true
+  import Money.Sigils
 
   describe "Get /galleries/:gallery_id/order/:order_id/zip" do
     def get_zip(conn, gallery, order) do
@@ -111,6 +112,39 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
                URI.decode(download_filename)
 
       assert ["original name (1).jpg", "original name (2).jpg"] =
+               conn.resp_body |> get_zip_files() |> Enum.sort()
+    end
+
+    test "sends a zip of all photos when bundle is purchased", %{
+      conn: conn,
+      original_url: original_url
+    } do
+      gallery =
+        insert(:gallery,
+          job:
+            insert(:lead,
+              client: insert(:client, organization: insert(:organization, name: "org name"))
+            )
+        )
+
+      order =
+        insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+
+      insert_list(3, :photo,
+        gallery: gallery,
+        original_url: original_url,
+        name: "original name.jpg"
+      )
+
+      conn = get_zip(conn, gallery, order)
+
+      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
+               Enum.into(conn.resp_headers, %{})
+
+      assert "org name - #{Picsello.Cart.OrderNumber.to_number(order.id)}.zip" ==
+               URI.decode(download_filename)
+
+      assert ["original name (1).jpg", "original name (2).jpg", "original name (3).jpg"] =
                conn.resp_body |> get_zip_files() |> Enum.sort()
     end
   end

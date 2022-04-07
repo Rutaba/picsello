@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   @moduledoc "Shared function among gallery liveViews"
 
   use Phoenix.Component
-  import PicselloWeb.LiveHelpers, only: [icon: 1]
+  import PicselloWeb.LiveHelpers, only: [icon: 1, testid: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   def assign_cart_count(
@@ -44,23 +44,69 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def summary_counts(order) do
-    for {label, collection, format_fn} <- [
-          {"Products", order.products, &sum_prices/1},
-          {"Digitals", Enum.filter(order.digitals, &Money.positive?(&1.price)), &sum_prices/1},
-          {"Digital credits used", Enum.filter(order.digitals, &Money.zero?(&1.price)),
-           &credits_display/1}
-        ] do
-      {label, Enum.count(collection), format_fn.(collection)}
-    end
+    [
+      products_summary(order.products),
+      digitals_summary(Enum.filter(order.digitals, &Money.positive?(&1.price))),
+      digital_credits_summary(Enum.filter(order.digitals, &Money.zero?(&1.price))),
+      bundle_summary(order.bundle_price)
+    ]
   end
 
-  defp credits_display(collection) do
-    "#{ngettext("%{count} credit", "%{count} credits", Enum.count(collection))} - #{sum_prices(collection)}"
-  end
+  defp products_summary([] = _products), do: nil
+
+  defp products_summary(products),
+    do: {"Products (#{Enum.count(products)})", sum_prices(products)}
+
+  defp digitals_summary([] = _digitals), do: nil
+
+  defp digitals_summary(digitals),
+    do: {"Digitals (#{Enum.count(digitals)})", sum_prices(digitals)}
+
+  defp digital_credits_summary([] = _credits), do: nil
+
+  defp digital_credits_summary(credits),
+    do:
+      {"Digital credits used (#{Enum.count(credits)})",
+       "#{ngettext("%{count} credit", "%{count} credits", Enum.count(credits))} - #{sum_prices(credits)}"}
+
+  defp bundle_summary(nil = _bundle_price), do: nil
+  defp bundle_summary(bundle_price), do: {"Bundle - all digital downloads", bundle_price}
 
   defp sum_prices(collection) do
     Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))
   end
 
   defdelegate price_display(product), to: Picsello.Cart
+
+  def product_option(assigns) do
+    assigns = Enum.into(assigns, %{min_price: nil})
+
+    ~H"""
+    <div {testid("product_option_#{@testid}")} class="p-5 mb-4 border rounded xl:p-7 border-base-225 lg:mb-7">
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col mr-2">
+          <p class="text-lg font-semibold text-base-300"><%= @title %></p>
+
+          <%= if @min_price do %>
+            <p class="font-semibold text-base text-base-300 pt-1.5 text-opacity-60"> <%= @min_price %></p>
+          <% end %>
+        </div>
+
+        <%= for button <- @button do %>
+          <.button {button}><%= render_slot(button) %></.button>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  def bundle_image(assigns) do
+    ~H"""
+    <div class="relative flex flex-row justify-center bg-base-200">
+      <%= for c <- ~w[-rotate-3 rotate-2 rotate-0] do %>
+        <img src={@url} class={"absolute top-0 left-0 object-contain shadow #{c}"}>
+      <% end %>
+    </div>
+    """
+  end
 end
