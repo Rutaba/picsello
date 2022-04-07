@@ -12,9 +12,6 @@ defmodule PicselloWeb.Helpers do
   def gallery_url(%{client_link_hash: hash, password: password}),
     do: Routes.gallery_client_show_url(Endpoint, :show, hash, pw: password)
 
-  def download_url(%{client_link_hash: hash}, order),
-    do: Routes.gallery_downloads_url(Endpoint, :download, hash, Order.number(order))
-
   def order_url(%{client_link_hash: hash, password: password}, order),
     do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password)
 

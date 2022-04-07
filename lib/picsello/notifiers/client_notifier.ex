@@ -55,7 +55,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
       client_name: client_name,
       gallery_url: helpers.gallery_url(gallery),
       order_url: helpers.order_url(gallery, order),
-      download_url: if(digitals == [], do: nil, else: helpers.download_url(gallery, order)),
       order_number: Picsello.Cart.Order.number(order),
       order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
       order_subtotal: Order.subtotal_cost(order),
