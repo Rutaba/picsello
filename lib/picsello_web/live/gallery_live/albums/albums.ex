@@ -72,31 +72,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
     |> noreply()
   end
 
-  def handle_info(
-        {:confirm_event, "delete_album", %{album_id: id}},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    album = Repo.get!(Picsello.Galleries.Album, id) |> Repo.preload(:photo)
-
-    case Galleries.delete_album(album) do
-      {:ok, _album} ->
-        socket
-        |> put_flash(:gallery_success, "Album deleted successfully")
-        |> close_modal()
-        |> noreply()
-
-      _any ->
-        socket
-        |> put_flash(:error, "Could not delete album.")
-        |> close_modal()
-        |> noreply()
-    end
-  end
-
   @impl true
   def handle_event(
         "delete_all_unsorted_photos",
@@ -118,22 +93,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
       subtitle: "Are you sure you wish to permanently delete this album from #{gallery.name} ?",
       payload: %{}
     })
-    |> noreply()
-  end
-
-  def handle_info(
-        {:confirm_event, "delete_unsorted_photos", %{}},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    Galleries.delete_unsorted_photos(gallery.id)
-
-    socket
-    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
-    |> put_flash(:success, "The album has been deleted.")
     |> noreply()
   end
 
@@ -202,8 +161,6 @@ defmodule PicselloWeb.GalleryLive.Albums do
           }
         } = socket
       ) do
-    socket
-
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.EditAlbumThumbnail,
@@ -282,6 +239,43 @@ defmodule PicselloWeb.GalleryLive.Albums do
       modal_title: "Share gallery",
       is_client_gallery: false
     })
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "delete_album", %{album_id: id}},
+        socket
+      ) do
+    album = Repo.get!(Picsello.Galleries.Album, id) |> Repo.preload(:photo)
+
+    case Galleries.delete_album(album) do
+      {:ok, _album} ->
+        socket
+        |> put_flash(:gallery_success, "Album deleted successfully")
+        |> close_modal()
+        |> noreply()
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not delete album.")
+        |> close_modal()
+        |> noreply()
+    end
+  end
+
+  def handle_info(
+        {:confirm_event, "delete_unsorted_photos", %{}},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    Galleries.delete_unsorted_photos(gallery.id)
+
+    socket
+    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+    |> put_flash(:success, "The album has been deleted.")
     |> noreply()
   end
 

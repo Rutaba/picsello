@@ -1,7 +1,11 @@
 <div
     class={!@is_removed && "item" || "hidden"}
     id={"photo-item-#{@photo.id}"}
-    style={wrapper_style(@photo_width, @photo)} >
+    style={"
+        width: #{if @photo_width, do: @photo_width, else: "#{300}px"};
+        height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{@photo_width / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "450px"};
+    "}
+>
     <div id={"item-#{@id}"} class="item-content preview relative cursor-pointer">
         <div
             id={"photo-#{@id}"}
@@ -29,14 +33,35 @@
                     />
                 </div>
             <% end %>
-            <%= unless @is_gallery_category_page do %>
-                <button class="likeBtn">
-                    <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="w-7 h-7 text-gray-200"/>
-                </button>
+            <%= if !@is_gallery_category_page do %>
+                <%= if @is_likable do %>
+                    <button
+                        class="likeBtn"
+                        phx-click={js_like_click(@id, @myself)}
+                    >
+                        <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
+                            <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
+                        </div>
 
-                <button class="removeBtn absolute" phx-click="delete_photo_popup" phx-value-id={@id} >
-                    <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
-                </button>
+                        <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
+                            <.icon  name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
+                        </div>
+                    </button>
+                <% else %>
+                    <button class="likeBtn">
+                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="w-7 h-7 text-gray-200"/>
+                    </button>
+                <% end %>
+
+                <%= if @is_removable do %>
+                    <button
+                        class="removeBtn absolute"
+                        phx-click="delete_photo_popup"
+                        phx-value-id={@id}
+                    >
+                        <.icon name="remove-icon" class="w-7 h-6 text-gray-200" />
+                    </button>
+                <% end %>
             <% end %>
             <div class="bg-blue-planning-300 flex justify-center items-center stroke-1 w-5 h-5 rounded absolute right-4 top-4 z-10 hidden checker">
                 <.icon name="checkmark" class="w-4 h-3 m-auto absolute left-0.5 bottom-1" />

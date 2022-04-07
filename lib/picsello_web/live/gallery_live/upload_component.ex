@@ -4,8 +4,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
 
   import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
 
-  alias Phoenix.LiveView.{Upload, UploadConfig, UploadEntry}
-
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
@@ -45,6 +43,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
         _, socket -> socket
       end)
+
     socket
     |> assign(
       :progress,
@@ -89,7 +88,6 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
           socket
       ) do
-    IO.inspect("reached 3 upload")
     if entry.done? do
       {:ok, photo} = create_photo(gallery, entry)
 

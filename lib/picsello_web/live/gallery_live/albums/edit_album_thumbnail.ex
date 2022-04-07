@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.EditAlbumThumbnail do
 
   require Logger
   import PicselloWeb.LiveHelpers
-  import Ecto.Changeset
 
   alias Picsello.{Repo, Galleries, Albums}
 
@@ -52,7 +51,7 @@ defmodule PicselloWeb.GalleryLive.EditAlbumThumbnail do
   def handle_event(
         "click",
         %{"preview" => preview},
-        %{assigns: assigns} = socket
+        socket
       ) do
     socket
     |> assign(:selected, true)

@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias Phoenix.PubSub
   alias Picsello.Repo
   alias Picsello.{Galleries, Albums, Messages}
-  alias Picsello.Galleries.Photo
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.ConfirmationComponent
@@ -167,7 +166,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{
           assigns: %{
             album: album,
-            gallery: gallery,
             selected_photos: selected_photos
           }
         } = socket
@@ -261,8 +259,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         _,
         %{
           assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites_filter
+            gallery: gallery
           }
         } = socket
       ) do
@@ -417,7 +414,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{
         id: photo.id,
@@ -481,9 +478,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
              gallery: %{
                id: id
              },
-             album: album,
-             page: page,
-             favorites_filter: filter
+             page: page
            }
          } = socket,
          per_page \\ @per_page

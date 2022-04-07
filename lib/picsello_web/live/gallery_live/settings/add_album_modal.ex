@@ -2,7 +2,6 @@ defmodule PicselloWeb.GalleryLive.Settings.AddAlbumModal do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.Galleries
   alias Picsello.Galleries.Album
   alias Picsello.Repo
   alias Picsello.Galleries.Gallery

@@ -40,6 +40,15 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
+  def handle_params(%{"id" => id}, _, socket) do
+    gallery = Galleries.get_gallery!(id)
+
+    socket
+    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("start", _params, socket) do
     socket.assigns.uploads.cover_photo
     |> case do
@@ -92,72 +101,6 @@ defmodule PicselloWeb.GalleryLive.Index do
       gallery_count: gallery.total_count
     })
     |> noreply()
-  end
-
-  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
-    socket
-    |> assign(:gallery, Galleries.get_gallery!(gallery.id))
-    |> assign(:cover_photo_processing, false)
-    |> noreply()
-  end
-
-  def handle_info(
-        {:confirm_event, "delete_gallery"},
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    case Galleries.delete_gallery(gallery) do
-      {:ok, _gallery} ->
-        socket
-        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
-        |> put_flash(:success, "The gallery has been deleted.")
-        |> noreply()
-
-      _any ->
-        socket
-        |> put_flash(:error, "Could not delete gallery.")
-        |> close_modal()
-        |> noreply()
-    end
-  end
-
-  @impl true
-  def handle_info(
-        {:confirm_event, "delete_cover_photo"},
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    socket
-    |> assign(:gallery, Galleries.delete_gallery_cover_photo(gallery))
-    |> close_modal()
-    |> noreply()
-  end
-
-  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
-    if entry.done? do
-      CoverPhoto.original_path(gallery.id, entry.uuid)
-      |> ProcessingManager.process_cover_photo()
-
-      socket
-      |> assign(:cover_photo_processing, true)
-      |> noreply()
-    else
-      socket
-      |> noreply
-    end
-  end
-
-  @impl true
-  def handle_params(%{"id" => id}, _, socket) do
-    gallery = Galleries.get_gallery!(id)
-
-    socket
-    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("open_watermark_popup", _, socket) do
-    send(self(), :open_modal)
-    socket |> noreply()
   end
 
   def handle_event("share_link", params, socket) do
@@ -232,6 +175,26 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> noreply()
   end
 
+  @impl true
+  def handle_event("open_watermark_popup", _, socket) do
+    send(self(), :open_modal)
+    socket |> noreply()
+  end
+
+  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
+    if entry.done? do
+      CoverPhoto.original_path(gallery.id, entry.uuid)
+      |> ProcessingManager.process_cover_photo()
+
+      socket
+      |> assign(:cover_photo_processing, true)
+      |> noreply()
+    else
+      socket
+      |> noreply
+    end
+  end
+
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -302,6 +265,43 @@ defmodule PicselloWeb.GalleryLive.Index do
   def handle_info(:expiration_saved, socket) do
     socket
     |> put_flash(:success, "The expiration date has been saved.")
+    |> noreply()
+  end
+
+  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:gallery, Galleries.get_gallery!(gallery.id))
+    |> assign(:cover_photo_processing, false)
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "delete_gallery"},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    case Galleries.delete_gallery(gallery) do
+      {:ok, _gallery} ->
+        socket
+        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
+        |> put_flash(:success, "The gallery has been deleted.")
+        |> noreply()
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not delete gallery.")
+        |> close_modal()
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "delete_cover_photo"},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> assign(:gallery, Galleries.delete_gallery_cover_photo(gallery))
+    |> close_modal()
     |> noreply()
   end
 
