@@ -24,4 +24,7 @@
       <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "view" => "drag_drop"}, sticky: true) %>
     </div>
   </div>
+  <div class="fixed bottom-0 left-0 right-0 z-10">
+  <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+  </div>
 </div>

@@ -158,7 +158,7 @@ defmodule PicselloWeb.Router do
       live "/galleries/:id/albums", GalleryLive.Albums, :albums
       live "/galleries/:id/albums/:album_id", GalleryLive.Photos.Index, :index
       # live "/galleries/:id/albums/:album_id", GalleryLive.Album, :show
-      live "/galleries/:id/albums/:album_id/edit", GalleryLive.EditAlbumThumbnail, :show
+      # live "/galleries/:id/albums/:album_id/edit", GalleryLive.EditAlbumThumbnail, :show
     end
   end
 

@@ -73,9 +73,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
+
     socket
-    |> push_redirect(
-      to: Routes.gallery_edit_album_thumbnail_path(socket, :show, gallery.id, album.id)
+    |> open_modal(
+      PicselloWeb.GalleryLive.EditAlbumThumbnail,
+      %{album_id: album.id, gallery_id: gallery.id}
     )
     |> noreply()
   end
@@ -152,7 +154,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos()
     |> put_flash(
-      :photo_success,
+      :gallery_success,
       move_to_album_success_message(selected_photos, album_id, gallery)
     )
     |> noreply()
@@ -176,7 +178,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos()
-    |> put_flash(:photo_success, remove_from_album_success_message(selected_photos, album))
+    |> put_flash(:gallery_success, remove_from_album_success_message(selected_photos, album))
     |> noreply()
   end
 
@@ -393,7 +395,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  # ToDO: Maybe need to remove it
+  # TODO: Maybe need to remove it
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -467,26 +469,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket |> put_flash(:gallery_success, success_message) |> noreply()
   end
 
-  # ToDO: Maybe need to remove it
   @impl true
-  def handle_info(
-        {:save_album_thumbnail, %{title: title, url: url}},
-        %{assigns: %{album: album}} = socket
-      ) do
-
-    case Albums.update_album(album, %{thumbnail_url: url}) do
-      {:ok, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:gallery_success, "#{title} album thumbnail successfully updated")
-        |> noreply
-
-      {:error, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:gallery_error, "Failed to update thumbnail. Please try again")
-        |> noreply
-    end
+  def handle_info({:save, %{title: title}}, socket) do
+    socket
+    |> close_modal()
+    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> noreply
   end
 
   defp assign_photos(
@@ -562,7 +550,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp delete_photos(%{assigns: %{gallery: gallery}} = socket, selected_photos) do
-    IO.puts("\n\n########## DEBUG ##########\n selected_photos: #{inspect(selected_photos, pretty: true)} \n########## DEBUG ##########\n\n")
     Enum.each(selected_photos, fn photo_id ->
       Galleries.get_photo(photo_id)
       |> Galleries.delete_photo()

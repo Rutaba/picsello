@@ -1,64 +1,60 @@
-<div class="flex flex-col">
-<div class="sticky top-0 z-50 flex flex-col bg-base-100 h-1/2">
-    <div class="flex justify-end">
-      <button phx-click="close_thumbnail" type="button" class="p-2">
-        <.icon name="close-x" class="w-4 h-4 mt-4 mr-4 stroke-current stroke-2 sm:stroke-1"/>
-      </button>
-    </div>
-  <div class="flex justify-center w-full">
-    <div class="flex flex-col w-2/3 mt-2 mb-4">
-      <h1 class="text-3xl font-bold">Album thumbnail</h1>
-      <p class="mt-4 font-sans text-base-250"><%= @album.name %></p>
-      <div class="flex mt-4 h-72">
-        <%= if @thumbnail_url || @album.thumbnail_url do %>
-          <div class="w-2/3 mt-0 rounded-none albumBlock" style={"background-image: url(" <> display_photo(@thumbnail_url) <> ")"}>
-            <div class="flex flex-row items-end justify-start h-full gap-2">
-              <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
-            </div>
-          </div>
-        <% else %>
-          <div class="w-2/3 mt-0 rounded-none albumBlock" style="background-image: url('/images/alum_placeholder.png')">
-            <div class="flex flex-row items-end justify-start h-full gap-2">
-              <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
-            </div>
-          </div>
-        <% end %>
-        <div class="flex flex-col ml-12">
-          <p class="font-sans">Select one of the photos in your album to use as your album thumbnail. Your client will see this on their main gallery page.</p>
-          <button phx-click="save_thumbnail" disabled={!@thumbnail_url} class="mt-12 btn-settings">Save</button>
+<div class="bg-white h-screen w-screen overflow-auto">
+    <div class="fixed z-30 bg-white scroll-shadow">
+        <div class="absolute top-4 right-4">
+            <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+            <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
+            </button>
         </div>
-      </div>
+        <div class="flex items-center text-base-300 mx-24 mt-5 text-2xl font-bold lg:justify-start">
+            <p><%= @page_title %></p>
+        </div>
+        <h1 class={classes("text-md mt-4 mx-24", %{ "text-base-300" => !@selected, "text-orange-inbox-300" => @selected})}>
+            <%= @title %>
+        </h1>
+
+        <div class="mx-24 pt-6 pb-6 grid grid-cols-3 grid-rows-preview flex">
+            <div id={"preview-#{@album_id}"} class="flex justify-center items-start row-span-2 previewImg">
+                <%= if @preview_url do %>
+                  <img src={@preview_url} class="edit h-64 w-80 bg-gray-300">
+                <% else %>
+                <img src="/images/alum_placeholder.png" class="edit bg-gray-300">
+                <% end %>
+            </div>    
+            <div class="description ml-11 row-span-2 col-span-2">
+                <p class="pt-3 pb-11 text-base"><%= @description %></p>
+                <button phx-click="save" phx-target={@myself} disabled={!@selected} class="save-button w-full btn-settings btn-gallery">Save</button>
+            </div>
+        </div>
     </div>
-  </div>
-  </div>
-  <div class="flex root">
-    <div class="w-full bg-gray-100 shadow-custom">
-      <div class= "pt-20 pb-10 pl-10 pr-20">
-        <div data-ids={inspect @photo_ids} phx-hook="CustomSelector" data-selected={@selected_photos} class="px-0 pb-32 mx-0 gallery__container" id="gallery">
-          <div
-          phx-hook="MasonryGrid"
-          id="muuri-grid"
-          class="grid muuri"
-          data-is-sortable="true"
-          data-photo-width="300">
-            <%= for photo <- @photos do%>
-              <%= live_component PicselloWeb.GalleryLive.Photos.AlbumComponent,
-                id: photo.id,
-                photo: photo,
-                photo_width: 300,
-                is_likable: false,
-                is_removable: false,
-                is_removed: false,
-                is_viewable: false,
-                is_meatball: false,
-                is_gallery_category_page: true,
-                photo_selector: false,
-                selected_all: @selected_all
+    <div>
+        <div id="gallery_product_form" class="pb-11 px-11 pt-56 mt-52">
+            <div
+                phx-hook="MasonryGrid"
+                phx-update="append"
+                id="muuri-grid"
+                class="grid muuri"
+                data-page={@page}
+                data-total={@gallery.total_count}
+                data-favorites-count={@favorites_count}
+                data-is-favorites-shown={"#{@favorites_filter}"}
+                data-is-sortable="false"
+                data-has-more-photos={"#{@has_more_photos}"}
+                data-photo-width="300">
+                <%= for photo <- @photos do%>
+                <%= live_component PicselloWeb.GalleryLive.Photos.Photo,
+                    id: photo.id,
+                    photo: photo,
+                    photo_width: 300,
+                    is_likable: false,
+                    is_removable: false,
+                    is_viewable: false,
+                    is_meatball: false,
+                    is_gallery_category_page: true,
+                    component: @myself
                 %>
-            <%= end %>
-          </div>
+                <% end %>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
+

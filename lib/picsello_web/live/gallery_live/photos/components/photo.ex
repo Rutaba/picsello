@@ -28,6 +28,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     |> noreply()
   end
 
+  defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
+    if is_gallery_category_page do
+      js
+      |> JS.dispatch("click", to: "#photo-#{id} > img")
+      |> JS.add_class(
+        "before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+        to: "#item-#{id}"
+      )
+    else
+      js |> JS.dispatch("click", to: "#photo-#{id} > img")
+    end
+  end
+
   defp js_like_click(js \\ %JS{}, id, target) do
     js
     |> JS.push("like", target: target, value: %{id: id})

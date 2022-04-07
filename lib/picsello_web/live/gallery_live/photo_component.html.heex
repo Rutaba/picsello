@@ -13,7 +13,6 @@
             <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                 <img
                     phx-click="click"
-                    phx-target={@component}
                     phx-value-preview={@photo.preview_url}
                     phx-value-preview_photo_id={@photo.id}
                     src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}

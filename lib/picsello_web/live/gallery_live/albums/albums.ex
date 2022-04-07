@@ -12,42 +12,22 @@ defmodule PicselloWeb.GalleryLive.Albums do
   alias PicselloWeb.ClientMessageComponent
 
   @impl true
-  def mount(%{"id" => gallery_id}, _session, socket) do
-    gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:albums)
-
+  def mount(_params, _session, socket) do
     {
       :ok,
       socket
-      |> assign(:gallery_id, gallery_id)
-      |> assign(:gallery, gallery)
-      |> assign(:upload_toast, "hidden")
-      |> assign(:upload_toast_text, nil)
       |> assign(:total_progress, 0)
       |> assign(:selected_item, nil)
     }
   end
 
   @impl true
-  def handle_params(
-        %{"upload_toast" => upload_toast, "upload_toast_text" => upload_toast_text} = _params,
-        _uri,
-        socket
-      ) do
-    socket
-    |> assign(:upload_toast, upload_toast)
-    |> assign(:upload_toast_text, upload_toast_text)
-    |> noreply()
-  end
+  def handle_params(%{"id" => gallery_id}, _uri, socket) do
+    gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:albums)
 
-  @impl true
-  def handle_params(_params, _uri, socket) do
-    noreply(socket)
-  end
-
-  @impl true
-  def handle_event("upload_toast", _, socket) do
     socket
-    |> assign(:upload_toast, "hidden")
+    |> assign(:gallery_id, gallery_id)
+    |> assign(:gallery, gallery)
     |> noreply()
   end
 
@@ -105,13 +85,8 @@ defmodule PicselloWeb.GalleryLive.Albums do
     case Galleries.delete_album(album) do
       {:ok, _album} ->
         socket
-        |> push_redirect(
-          to:
-            Routes.gallery_albums_path(socket, :albums, socket.assigns.gallery_id,
-              upload_toast: false,
-              upload_toast_text: "Album deleted successfully"
-            )
-        )
+        |> put_flash(:gallery_success, "Album deleted successfully")
+        |> close_modal()
         |> noreply()
 
       _any ->
@@ -200,7 +175,7 @@ defmodule PicselloWeb.GalleryLive.Albums do
       ) do
     socket
     |> assign(:selected_item, "go_to_album")
-    |> push_redirect(to: Routes.gallery_album_path(socket, :show, gallery_id, album_id))
+    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery_id, album_id))
     |> noreply()
   end
 
@@ -228,9 +203,10 @@ defmodule PicselloWeb.GalleryLive.Albums do
         } = socket
       ) do
     socket
-    |> assign(:selected_item, "edit_album_thumbnail")
-    |> push_redirect(
-      to: Routes.gallery_edit_album_thumbnail_path(socket, :show, gallery_id, album_id)
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.EditAlbumThumbnail,
+      %{album_id: album_id, gallery_id: gallery_id}
     )
     |> noreply()
   end
@@ -306,6 +282,15 @@ defmodule PicselloWeb.GalleryLive.Albums do
       is_client_gallery: false
     })
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:save, %{title: title}}, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> close_modal()
+    |> push_redirect(to: Routes.gallery_albums_path(socket, :albums, gallery))
+    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> noreply
   end
 
   @impl true

@@ -14,6 +14,24 @@
         <div
             id={"photo-#{@id}"}
             class="galleryItem">
+            <%= if @component do %>
+            <div
+            id={"photo-#{@id}"}
+            class="galleryItem"
+            phx-click={toggle_border(@id, @is_gallery_category_page)}
+            phx-click-away={JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+                to: "#item-#{@id}")}
+            >
+                <img
+                    phx-click="click"
+                    phx-target={@component}
+                    phx-value-preview={@photo.preview_url}
+                    phx-value-preview_photo_id={@photo.id}
+                    src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
+                    class="relative"
+                />
+            </div>    
+            <% else %>
             <div id={"img-#{@id}"} class="galleryItem" phx-click="selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
                 <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
 
@@ -37,6 +55,7 @@
                     </div>
                 <% end %>
             </div>
+            <% end %>
             <%= if !@is_gallery_category_page do %>
                 <%= if @is_likable do %>
                     <button

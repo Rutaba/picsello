@@ -4,33 +4,49 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
   require Logger
   import PicselloWeb.LiveHelpers
+
   import Ecto.Changeset
-  import PicselloWeb.LiveHelpers
   alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
 
-  @per_page 12
+  @per_page 24
+
+  @impl true
+  def preload([assigns | _]) do
+    %{gallery_id: gallery_id, product_id: product_id} = assigns
+
+    gallery = Galleries.get_gallery!(gallery_id)
+    product = GalleryProducts.get(%{:id => to_integer(product_id)})
+    preview = GalleryProducts.get(%{id: product_id, gallery_id: gallery_id})
+
+    [Map.merge(assigns, %{
+      gallery: gallery,
+      product: product,
+      preview: preview,
+      favorites_count: Galleries.gallery_favorites_count(gallery),
+      frame: Picsello.Category.frame_image(preview.category),
+      coords: Picsello.Category.coords(preview.category),
+      frame_id: preview.category.id,
+      category_id: preview.category.id,
+      title: "#{product.category.name} preview"
+    })]
+  end
 
   @impl true
   def update(
-        %{gallery_id: gallery_id, product_id: product_id},
+        %{
+          preview: preview,
+          frame: frame,
+          coords: coords
+        } = assigns,
         socket
       ) do
-    gallery = Galleries.get_gallery!(gallery_id)
-    product = GalleryProducts.get(%{:id => to_integer(product_id)})
-    # ToDO: need to optimize
-    preview = check_preview(%{:gallery_id => gallery_id, :product_id => product_id})
 
     {:ok,
      socket
-     |> assign(
-       frame_id: preview.category.id,
-       frame: Picsello.Category.frame_image(preview.category),
-       coords: Picsello.Category.coords(preview.category),
-       preview: preview
-     )
-     |> then(fn %{assigns: %{coords: coords, frame: frame}} = socket ->
+     |> assign(assigns)
+     |> then(fn socket ->
        push_event(socket, "set_preview", %{
          preview: get_preview(preview),
          ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
@@ -39,25 +55,14 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
          target: "#{preview.category.id}-edit"
        })
      end)
-     |> assign(:title, product.category.name)
-     |> assign(:product_id, product.id)
+     |> assign(:description, "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.")
+     |> assign(:page_title, "Product Preview")
      |> assign(:page, 0)
      |> assign(:favorites_filter, false)
-     |> assign(:favorites_count, Galleries.gallery_favorites_count(gallery))
-     |> assign(:changeset, changeset(%{}, []))
-     |> assign(:gallery, gallery)
-     |> assign(:category_id, preview.category.id)
+     |> assign(:preview_photo_id, nil)
+     |> assign(:selected, false)
      |> assign_photos()
-     |> assign(:preview_photo_id, nil)}
-  end
-
-  def check_preview(%{:gallery_id => gallery_id, :product_id => product_id}) do
-    preview = GalleryProducts.get(%{id: product_id, gallery_id: gallery_id})
-  end
-
-  def changeset(data, prop) do
-    cast(%Picsello.Galleries.GalleryProduct{}, data, prop)
-    |> validate_required([])
+    }
   end
 
   @impl true
@@ -78,8 +83,8 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
+    |> assign(:selected, true)
     |> assign(:preview, path(preview))
-    |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
     |> push_event("set_preview", %{
       preview: path(preview),
       frame: frame,
@@ -91,9 +96,10 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
   def handle_event(
         "save",
-        %{"gallery_product" => %{"preview_photo_id" => preview_photo_id}},
+        _,
         %{
           assigns: %{
+            preview_photo_id: preview_photo_id,
             frame_id: frame_id,
             product_id: product_id,
             gallery: %{id: gallery_id},
