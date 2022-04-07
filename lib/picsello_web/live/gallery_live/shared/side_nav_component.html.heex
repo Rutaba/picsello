@@ -31,16 +31,16 @@
               <div class="ml-3">
                  <%= if @arrow_show == "overview" do %>
                   <span class= "text-blue-planning-300">Overview</span>
-                <%= else %>
+                <% else %>
                   <span>Overview</span>
-                <%= end %>
+                <% end %>
               </div>
             </div>
             <%= if @arrow_show == "overview" do %>
               <span class="arrow show">
                 <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
-            <%= end %>
+            <% end %>
         </div>
         <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
         <div phx-click="select_photos" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis hover:text-blue-planning-300">
@@ -51,9 +51,9 @@
                   <div class="justify-start ml-3">
                      <%= if @arrow_show == "photos" do %>
                       <span class= "text-blue-planning-300">Photos</span>
-                    <%= else %>
+                    <% else %>
                       <span>Photos</span>
-                    <%= end %>
+                    <% end %>
                    </div>
              </div>
             <div class="flex items-center ml-auto">
@@ -119,16 +119,16 @@
                   <div class="ml-3">
                     <%= if @arrow_show == "product_previews" do %>
                       <span class= "text-blue-planning-300">Product previews</span>
-                    <%= else %>
+                    <% else %>
                       <span>Product previews</span>
-                    <%= end %>
+                    <% end %>
                   </div>
               </div>
               <%= if @arrow_show == "product_previews" do %>
               <span class="arrow show">
                 <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
-            <%= end %>
+            <% end %>
             </div>
       </div>
      </div>

@@ -5,9 +5,9 @@ defmodule Picsello.Galleries do
 
   import Ecto.Query, warn: false
 
-  alias Picsello.Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+
+  alias Picsello.{Repo, GalleryProducts, Category, Galleries}
   alias Picsello.GalleryProducts
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
@@ -255,17 +255,13 @@ defmodule Picsello.Galleries do
     |> Repo.delete_all()
   end
 
-  @doc """
+@doc """
   Creates a gallery.
-
   ## Examples
-
       iex> create_gallery(%{field: value})
       {:ok, %Gallery{}}
-
       iex> create_gallery(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
-
   """
   def create_gallery(attrs \\ %{}) do
     Ecto.Multi.new()

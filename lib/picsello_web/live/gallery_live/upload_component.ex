@@ -89,7 +89,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
         %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
           socket
       ) do
-    IO.inspect("reached 3 upload")
+
     if entry.done? do
       {:ok, photo} = create_photo(gallery, entry)
 
