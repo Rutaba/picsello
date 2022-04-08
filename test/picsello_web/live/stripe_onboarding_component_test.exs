@@ -4,6 +4,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
 
   def initial_render(status) do
     render_component(PicselloWeb.StripeOnboardingComponent,
+      error_class: "text-center",
       id: :stripe_onboarding,
       current_user: insert(:user),
       stripe_status: status,
@@ -59,8 +60,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:charges_enabled)
       button = html |> Floki.find("button")
 
-      assert html |> Floki.text() =~ ""
-      assert [] = button
+      assert button |> Floki.text() =~ "Go to Stripe Account"
     end
   end
 end
