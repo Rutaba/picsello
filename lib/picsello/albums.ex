@@ -42,4 +42,11 @@ defmodule Picsello.Albums do
   """
   def update_album(album, params \\ %{}),
     do: album |> Album.update_changeset(params) |> Repo.update()
+
+  def check_is_photo_selected_as_thumbnail(url) do
+    from(a in Album,
+      where: a.thumbnail_url == ^url
+    )
+    |> Repo.update_all(set: [thumbnail_url: nil])
+  end
 end

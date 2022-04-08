@@ -5,8 +5,7 @@ defmodule Picsello.Galleries do
 
   import Ecto.Query, warn: false
 
-
-  alias Picsello.{Repo, GalleryProducts, Category, Galleries}
+  alias Picsello.{Repo, GalleryProducts, Category, Galleries, Albums}
   alias Picsello.GalleryProducts
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
@@ -155,31 +154,6 @@ defmodule Picsello.Galleries do
     end
   end
 
-  # ToDO: remove it
-  @spec get_album_photos(
-          id :: integer,
-          album_id :: integer,
-          per_page :: integer,
-          page :: integer,
-          opts :: keyword
-        ) ::
-          list(Photo)
-  def get_album_photos(id, per_page, page, album_id, opts \\ []) do
-    only_favorites = Keyword.get(opts, :only_favorites, false)
-    offset = Keyword.get(opts, :offset, per_page * page)
-
-    select_opts =
-      if(only_favorites, do: [client_liked: true], else: [])
-      |> Keyword.merge(gallery_id: id, album_id: album_id)
-
-    Photo
-    |> where(^select_opts)
-    |> order_by(asc: :position)
-    |> offset(^offset)
-    |> limit(^per_page)
-    |> Repo.all()
-  end
-
   @spec get_all_album_photos(
           id :: integer,
           album_id :: integer
@@ -202,12 +176,6 @@ defmodule Picsello.Galleries do
     Photo
     |> where([p], p.id in ^photo_ids)
     |> Repo.update_all(set: [album_id: nil])
-  end
-
-  def delete_photos(photo_ids) do
-    Photo
-    |> where([p], p.id in ^photo_ids)
-    |> Repo.delete_all()
   end
 
   def delete_album(album) do
@@ -255,7 +223,7 @@ defmodule Picsello.Galleries do
     |> Repo.delete_all()
   end
 
-@doc """
+  @doc """
   Creates a gallery.
   ## Examples
       iex> create_gallery(%{field: value})
@@ -373,10 +341,6 @@ defmodule Picsello.Galleries do
 
     # Repo.delete(gallery.photos)
     # Repo.delete(gallery)
-  end
-
-  defp gallery_products_query(gallery) do
-    from(gp in GalleryProduct, where: gp.gallery_id == ^gallery.id)
   end
 
   defp gallery_products_query(gallery) do
@@ -535,6 +499,7 @@ defmodule Picsello.Galleries do
   """
   def delete_photo(%Photo{} = photo) do
     GalleryProducts.check_is_photo_selected_as_preview(photo.id)
+    Albums.check_is_photo_selected_as_thumbnail(photo.preview_url)
 
     Repo.delete(photo)
 

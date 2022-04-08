@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   alias Picsello.{Galleries, Repo}
   alias PicselloWeb.GalleryLive.ProductPreview.Preview
   alias PicselloWeb.GalleryLive.Photos.Upload
+  alias PicselloWeb.GalleryLive.Shared.GalleryMessageComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -27,18 +28,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
       products: Galleries.products(gallery)
     )
     |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:save, %{title: title}},
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    socket
-    |> close_modal()
-    |> assign(products: Galleries.products(gallery))
-    |> put_flash(:gallery_success, "#{title} successfully updated")
-    |> noreply
   end
 
   @impl true
@@ -97,14 +86,25 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket
     |> assign(:job, gallery.job)
     |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(%{
+    |> GalleryMessageComponent.open(%{
       body_html: html,
       body_text: text,
       subject: subject,
-      modal_title: "Share gallery",
-      is_client_gallery: false
+      modal_title: "Share gallery"
     })
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:save, %{title: title}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> close_modal()
+    |> assign(products: Galleries.products(gallery))
+    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> noreply
   end
 
   @impl true

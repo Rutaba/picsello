@@ -24,8 +24,9 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
 
   @impl true
   def render(assigns) do
+    class = Map.get(assigns, :class, "dialog")
     ~H"""
-    <div class="dialog">
+    <div class={"" <> class}>
       <%= if @icon do %>
         <.icon name={@icon} class="mb-2 w-11 h-11" />
       <% end %>
@@ -76,10 +77,12 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
   @spec open(%Phoenix.LiveView.Socket{}, %{
           optional(:close_label) => binary,
           optional(:close_class) => binary,
+          optional(:class) => binary,
           optional(:confirm_event) => any,
           optional(:confirm_label) => binary,
           optional(:confirm_class) => binary,
           optional(:icon) => binary | nil,
+          optional(:title) => binary,
           optional(:subtitle) => binary,
           optional(:gallery_name) => binary,
           optional(:gallery_count) => binary,

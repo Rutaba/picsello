@@ -4,6 +4,51 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [icon: 1]
 
+  alias Picsello.Galleries
+
+  def make_opts(
+        %{
+          assigns:
+            %{
+              page: page,
+              favorites_filter: filter
+            } = assigns
+        },
+        per_page,
+        exlclue_all \\ nil
+      ) do
+    if exlclue_all do
+      []
+    else
+      album = Map.get(assigns, :album, nil)
+
+      if album do
+        [album_id: album.id]
+      else
+        [exclude_album: true]
+      end ++
+        [favorites_filter: filter, offset: per_page * page]
+    end
+  end
+
+  def assign_photos(
+        %{
+          assigns: %{
+            gallery: %{id: id},
+            page: page
+          }
+        } = socket,
+        per_page,
+        exclude_all \\ nil
+      ) do
+    opts = make_opts(socket, per_page, exclude_all)
+    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+
+    socket
+    |> assign(:photos, photos |> Enum.take(per_page))
+    |> assign(:has_more_photos, photos |> length > per_page)
+  end
+
   def assign_cart_count(
         %{assigns: %{order: %Picsello.Cart.Order{placed_at: %DateTime{}}}} = socket,
         _

@@ -10,7 +10,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
 
   def update(assigns, socket) do
     socket
-    |> assign(:uniq, UUID.uuid4)
+    |> assign(:uniq, UUID.uuid4())
     |> assign(@default_assigns)
     |> assign(assigns)
     |> set_preview()

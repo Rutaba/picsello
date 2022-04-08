@@ -164,8 +164,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
           }
         } = socket
       ) do
-    photo_ids =
-      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
 
     photo_id = to_integer(photo_id)
 

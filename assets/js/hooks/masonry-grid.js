@@ -89,7 +89,8 @@ export default {
    * @returns {boolean|*}
    */
   init_masonry() {
-    const gridElement = document.querySelector('#muuri-grid');
+    const grid_id = '#' + this.el.dataset.id;
+    const gridElement = document.querySelector(grid_id);
     if (gridElement) {
       const opts = {
         layout: {
@@ -150,8 +151,9 @@ export default {
    */
   reload_masonry() {
     const grid = this.get_grid();
+    const grid_id = '#' + this.el.dataset.id + " .item";
     grid.remove(grid.getItems());
-    grid.add(document.querySelectorAll('#muuri-grid .item'));
+    grid.add(document.querySelectorAll(grid_id));
     grid.refreshItems();
   },
 
@@ -160,8 +162,9 @@ export default {
    */
   inject_new_items() {
     const grid = this.grid;
+    const grid_id = '#' + this.el.dataset.id + " .item";
     const addedItemsIds = grid.getItems().map((x) => x.getElement().id);
-    const allItems = document.querySelectorAll('#muuri-grid .item');
+    const allItems = document.querySelectorAll(grid_id);
     const itemsToInject = Array.from(allItems).filter(
       (x) => !addedItemsIds.includes(x.id)
     );
@@ -234,7 +237,6 @@ export default {
    * Mount callback
    */
   mounted() {
-    console.log("mounted")
     this.pending = this.page();
     window.addEventListener('scroll', (e) => {
       if (
@@ -262,7 +264,6 @@ export default {
    * Updated callback
    */
   updated() {
-    console.log("updated")
     this.pending = this.page();
     if (this.pending === '0') {
       this.reload_masonry();

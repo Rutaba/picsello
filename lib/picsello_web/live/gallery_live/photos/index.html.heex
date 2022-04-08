@@ -17,9 +17,11 @@
           <.icon_button {testid("edit-album-settings")} class="bg-white ml-5 shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
             Album settings
           </.icon_button>
+          <%= if total(@photos) > 0 do %>
           <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="album_thumbnail_popup" color="blue-planning-300" icon="pencil">
             Edit thumbnail
           </.icon_button>
+          <% end %>
           <% end %>
           <%= if length(@gallery.albums) == 0 do %>
           <.icon_button {testid("add-album")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
@@ -46,7 +48,7 @@
           </div>
         </div>
 
-        <%= if length(@photos) > 0 || @favorites_filter do %>
+        <%= if total(@photos) > 0 || @favorites_filter do %>
         <div class="grid pt-8 lg:grid-cols-2">
           <div class="flex flex-col justify-start md:flex-row gap-x-5">
             <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
@@ -126,7 +128,7 @@
       </div>
 
       <div class= "pt-16 pb-10 pl-16 pr-8">
-        <%= if length(@photos) == 0 && !@favorites_filter do %>
+        <%= if total(@photos) == 0 && !@favorites_filter do %>
         <div class="relative justify-between mt-20 mb-12 text-2xl font-bold text-center text-blue-planning-300">
             Oops, there's nothing here - upload photos now to get started!
         </div>
@@ -138,9 +140,10 @@
           <div
             phx-hook="MasonryGrid"
             phx-update={@update_mode}
-            id="muuri-grid"
+            id="photos"
             class="grid muuri"
             data-page={@page}
+            data-id="photos"
             data-total={@gallery.total_count}
             data-favorites-count={@favorites_count}
             data-is-favorites-shown={ "#{@favorites_filter}" }

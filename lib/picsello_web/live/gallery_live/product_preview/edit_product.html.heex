@@ -19,7 +19,7 @@
 
             <div class="description ml-11 row-span-2 col-span-2">
                 <p class="pt-3 pb-11 text-base"><%= @description %></p>
-                <button phx-click="save" phx-target={@myself} disabled={!@selected} class="save-button w-full btn-settings btn-gallery">Save</button>
+                <button phx-click="save" phx-target={@myself} disabled={!@selected} class="save-button w-full btn-settings rounded-lg">Save</button>
             </div>
         </div>
     </div>
@@ -31,6 +31,7 @@
                 id="muuri-grid"
                 class="grid muuri"
                 data-page={@page}
+                data-id="muuri-grid"
                 data-total={@gallery.total_count}
                 data-favorites-count={@favorites_count}
                 data-is-favorites-shown={"#{@favorites_filter}"}
