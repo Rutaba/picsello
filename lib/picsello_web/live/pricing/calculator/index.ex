@@ -15,6 +15,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           state: user.onboarding.state,
           min_years_experience: user.onboarding.photographer_years,
           schedule: user.onboarding.schedule,
+          take_home: Money.new(0),
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,
           desired_salary: Money.new(150_0000),
           business_costs: cost_categories()
@@ -26,33 +27,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
-  def handle_params(params, _session, socket) do
-    step = Map.get(params, "step", "1") |> String.to_integer()
-    category_id = Map.get(params, "category_id", "1")
-
-    if step == 6 do
-      %{category: category} =
-        socket.assigns.pricing_calculations.business_costs
-        |> Enum.find(fn %{id: id} = _business_cost -> id == category_id end)
-
-      socket
-      |> assign_cost_category_step(category_id, category)
-      |> assign_changeset()
-      |> noreply()
-    else
-      socket
-      |> assign_step(step)
-      |> assign_changeset()
-      |> noreply()
-    end
-  end
-
-  @impl true
   def handle_event("next", _, %{assigns: %{step: step}} = socket) do
     socket
     |> assign_step(step + 1)
     |> assign_changeset()
-    |> push_patch(to: Routes.calculator_path(socket, :index, %{step: step + 1}))
     |> noreply()
   end
 
@@ -61,7 +39,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     socket
     |> assign_step(step - 1)
     |> assign_changeset()
-    |> push_patch(to: Routes.calculator_path(socket, :index, %{step: step - 1}))
     |> noreply()
   end
 
@@ -75,12 +52,11 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def handle_event("edit-cost", params, socket) do
     category_id = Map.get(params, "id", "1")
+    category = Map.get(params, "category", "1")
 
     socket
     |> assign_step(6)
-    |> push_patch(
-      to: Routes.calculator_path(socket, :index, %{step: 6, category_id: category_id})
-    )
+    |> assign_cost_category_step(category_id, category)
     |> noreply()
   end
 
@@ -114,7 +90,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         socket
         |> assign(pricing_calculations: pricing_calculations)
         |> assign_step(finalStep)
-        |> push_patch(to: Routes.calculator_path(socket, :index, %{step: finalStep}))
         |> assign_changeset()
         |> noreply()
 
@@ -271,7 +246,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.container {assigns}>
         <h4 class="text-2xl font-bold">All businesses have costs. Lorem ipsum dolor sit amet content here.</h4>
         <p class="italic">(We’ll provide you a rough estimate on what these should cost you by what you’ve answered so far. You can go in tweak what you need.)</p>
-        <.financial_review />
+        <.financial_review take_home={@pricing_calculations.take_home} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
         <h4 class="text-2xl font-bold mb-4">Cost categories</h4>
         <ul>
           <%= inputs_for @f, :business_costs, fn fp -> %>
@@ -292,7 +267,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <h4 class="text-2xl font-bold">Based on what you told us—we’ve calculated some suggestions on how much to charge and how many shoots you should do.</h4>
         <p>Lorem ipsum talk about how they can contact us for business advice here.</p>
         <h4 class="text-2xl font-bold mb-4">Financial Summary</h4>
-        <.financial_review />
+        <.financial_review take_home={@pricing_calculations.take_home} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
           <button type="button" class="btn-primary">Save Results</button>
@@ -310,10 +285,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <div class="col-start-3 font-bold pb-4">Your Cost Yearly</div>
         </div>
         <%= inputs_for @f, :business_costs, fn fp -> %>
-          <.cost_item form={fp} category_id={@category_id} />
+          <.cost_item form={fp} category_id={@category_id} changeset={@changeset} />
         <% end %>
         <div class="flex justify-end mt-8">
-          <button type="submit" class="btn-secondary mr-4">Back</button>
+          <button type="submit" class="btn-primary mr-4">Save & Go Back</button>
         </div>
       </.container>
     """
@@ -428,8 +403,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     |> assign(
       step: 6,
       category_id: category_id,
-      step_title: category,
-      page_title: category
+      step_title: "Edit #{category} costs",
+      page_title: "Edit #{category} costs"
     )
   end
 
@@ -465,18 +440,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </label>
         </div>
         <div class="flex flex-col">
-          <h6 class="text-2xl font-bold text-center mb-auto">cost</h6>
-          <button class="text-center text-blue-planning-300 underline" type="button" phx-click="edit-cost" phx-value-id={input_value(@form, :id)}>Edit costs</button>
+          <h6 class="text-2xl font-bold text-center mb-auto"><%= PricingCalculations.calculate_costs_by_category(assigns.form.data.line_items) %></h6>
+          <button class="text-center text-blue-planning-300 underline" type="button" phx-click="edit-cost" phx-value-id={input_value(@form, :id)} phx-value-category={input_value(@form, :category)}>Edit costs</button>
         </div>
       </li>
     """
   end
 
   def cost_item(assigns) do
-    # IO.inspect(assigns.form)
-
     ~H"""
-
       <%= inputs_for @form, :line_items, fn li -> %>
         <%= hidden_input @form, :category %>
         <%= hidden_input @form, :description %>
@@ -484,14 +456,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <%= if input_value(@form, :id) == @category_id do %>
           <div class="grid grid-cols-3 gap-2 items-center w-full even:bg-gray-100">
             <div class="col-start-1 p-4">
-              <%= input_value(li, :title) %> <br />
+              <strong><%= input_value(li, :title) %></strong> <br />
               <%= input_value(li, :description) %>
             </div>
             <div class="col-start-2 p-4">
-              <%= input_value(li, :yearly_cost) |> PricingCalculations.calculate_monthly() %>
+              <%= input_value(li, :yearly_cost) |> PricingCalculations.calculate_monthly() %><span>/month</span>
             </div>
-            <div class="col-start-3 p-4">
-              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 w-40 text-center", phx_hook: "PriceMask" %>
+            <div class="col-start-3 p-4 flex items-center">
+              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 w-40 text-center", phx_hook: "PriceMask" %><span>/year</span>
             </div>
           </div>
         <% else %>
@@ -500,6 +472,19 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <%= hidden_input li, :yearly_cost %>
       <% end %>
     <% end %>
+    <%= if input_value(@form, :id) == @category_id do %>
+    <div class="grid grid-cols-3 gap-2 items-center w-full">
+      <div class="col-start-1 p-4">
+        <%= input_value(@form, :category) %> Totals
+      </div>
+      <div class="col-start-2 p-4">
+      <p class="strong"><%= PricingCalculations.calculate_costs_by_category(assigns.form.data.line_items, assigns.form.params) |> PricingCalculations.calculate_monthly() %>/month</p>
+      </div>
+      <div class="col-start-3 p-4">
+        <p class="strong"><%= PricingCalculations.calculate_costs_by_category(assigns.form.data.line_items, assigns.form.params) %>/year</p>
+      </div>
+    </div>
+    <% end %>
     """
   end
 
@@ -507,17 +492,17 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <div class="bg-gray-100 flex justify-between items-center p-8 my-6 rounded-lg" {intro_hints_only("intro_hints_only")}>
         <div>
-          <h5 class="text-center font-bold text-4xl mb-2">$45,417</h5>
+          <h5 class="text-center font-bold text-4xl mb-2"><%= @take_home %></h5>
           <p class="italic text-center">Desired Take Home</p>
         </div>
         <p class="text-center font-bold text-5xl mb-8">+</p>
         <div>
-          <h5 class="text-center font-bold text-4xl mb-2">$25,882</h5>
+          <h5 class="text-center font-bold text-4xl mb-2"><%= @costs %></h5>
           <p class="italic text-center">Projected Costs</p>
         </div>
         <p class="text-center font-bold text-5xl mb-8">=</p>
         <div>
-          <h5 class="text-center font-bold text-4xl mb-2">$70,536</h5>
+          <h5 class="text-center font-bold text-4xl mb-2"><%= PricingCalculations.calculate_revenue(@take_home, @costs) %></h5>
           <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
         </div>
       </div>

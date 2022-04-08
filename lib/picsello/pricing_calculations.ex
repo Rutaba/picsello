@@ -255,6 +255,45 @@ defmodule Picsello.PricingCalculations do
     }
   end
 
+  def calculate_revenue(
+        take_home,
+        costs
+      ) do
+    Money.add(take_home, costs)
+  end
+
+  def calculate_all_costs(business_costs) do
+    business_costs
+    |> Enum.map(fn %{line_items: line_items} ->
+      line_items |> calculate_costs_by_category() |> Map.get(:amount)
+    end)
+    |> total_business_cost()
+    |> Money.new()
+  end
+
+  def calculate_costs_by_category(line_items) do
+    line_items
+    |> Enum.map(fn %{yearly_cost: %Money{amount: amount}} -> amount end)
+    |> total_business_cost()
+    |> Money.new()
+  end
+
+  def calculate_costs_by_category(_line_items, %{"line_items" => line_items} = _params) do
+    line_items
+    |> Enum.map(fn {_k, %{"yearly_cost" => yearly_cost}} ->
+      Money.parse(yearly_cost, :USD) |> elem(1) |> Map.get(:amount)
+    end)
+    |> total_business_cost()
+    |> Money.new()
+  end
+
+  def calculate_costs_by_category(line_items, %{} = _params) do
+    line_items
+    |> Enum.map(fn %{yearly_cost: %Money{amount: amount}} -> amount end)
+    |> total_business_cost()
+    |> Money.new()
+  end
+
   def total_business_cost(list), do: recursively_add_business_cost(list, 0)
 
   defp recursively_add_business_cost([], acc), do: acc
