@@ -55,9 +55,15 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             <em class="block pt-1 text-xs text-center">Your account has been created. Please wait for Stripe to verify your information.</em>
 
           <% :charges_enabled -> %>
-            <%= button "Go to Stripe Account", to: "https://dashboard.stripe.com/", method: "get", target: "_blank", class: @class %>
+            <%= link to: URI.parse("https://dashboard.stripe.com/"), target: "_blank" do %>
+              <button class={@class}>
+                Go to Stripe Account
+              </button>
+            <% end %>
+
         <% end %>
       </.form>
+
     </div>
     """
   end

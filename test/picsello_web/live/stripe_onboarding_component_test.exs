@@ -60,8 +60,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:charges_enabled)
       button = html |> Floki.find("button")
 
-      assert html |> Floki.text() =~ ""
-      assert [] = button
+      assert button |> Floki.text() =~ "Go to Stripe Account"
     end
   end
 end
