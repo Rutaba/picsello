@@ -17,6 +17,8 @@ defmodule Picsello.PricingCalculatorBusinessCosts do
 
   schema "pricing_calculator_business_costs" do
     field(:category, :string)
+    field(:active, :boolean)
+    field(:description, :string)
     embeds_many(:line_items, BusinessCost)
 
     timestamps(type: :utc_datetime)
@@ -27,7 +29,7 @@ defmodule Picsello.PricingCalculatorBusinessCosts do
         attrs \\ %{}
       ) do
     pricing_calculator_business_costs
-    |> cast(attrs, [:category])
+    |> cast(attrs, [:category, :active, :description])
     |> cast_embed(:line_items, with: &business_cost_changeset(&1, &2))
   end
 

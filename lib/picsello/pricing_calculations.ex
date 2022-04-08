@@ -11,12 +11,24 @@ defmodule Picsello.PricingCalculations do
 
   use Ecto.Schema
 
+  defmodule LineItem do
+    use Ecto.Schema
+
+    embedded_schema do
+      field(:yearly_cost, Money.Ecto.Amount.Type)
+      field(:title, :string)
+      field(:description, :string)
+    end
+  end
+
   defmodule BusinessCost do
     use Ecto.Schema
 
     embedded_schema do
-      field(:title, :string)
-      field(:yearly_cost, :integer)
+      field(:category, :string)
+      field(:active, :boolean)
+      field(:description, :string)
+      embeds_many(:line_items, LineItem)
     end
   end
 
@@ -26,7 +38,7 @@ defmodule Picsello.PricingCalculations do
     embedded_schema do
       field(:job_type, :string)
       field(:description, :string)
-      field(:yearly_cost, :integer)
+      field(:yearly_cost, Money.Ecto.Amount.Type)
     end
   end
 
@@ -78,6 +90,18 @@ defmodule Picsello.PricingCalculations do
       :tax_bracket,
       :take_home
     ])
+    |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
+  end
+
+  defp business_cost_changeset(business_cost, attrs) do
+    business_cost
+    |> cast(attrs, [:category, :active, :description])
+    |> cast_embed(:line_items, with: &line_items_changeset(&1, &2))
+  end
+
+  defp line_items_changeset(line_item, attrs) do
+    line_item
+    |> cast(attrs, [:yearly_cost, :title, :description])
   end
 
   def compare_income_bracket(
@@ -87,6 +111,28 @@ defmodule Picsello.PricingCalculations do
         },
         %Money{amount: desired_salary}
       ) do
+    cond do
+      income_max == 0 ->
+        income_min <= desired_salary
+
+      income_min == 0 ->
+        desired_salary < income_max
+
+      true ->
+        income_min <= desired_salary and desired_salary < income_max
+    end
+  end
+
+  def compare_income_bracket(
+        %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
+          income_max: %Money{amount: income_max},
+          income_min: %Money{amount: income_min}
+        },
+        desired_salary_text
+      ) do
+    {:ok, value} = Money.parse(desired_salary_text)
+    %Money{amount: desired_salary} = value
+
     cond do
       income_max == 0 ->
         income_min <= desired_salary
@@ -113,8 +159,27 @@ defmodule Picsello.PricingCalculations do
           fixed_cost: fixed_cost,
           percentage: percentage
         },
-        desired_salary
+        %Money{} = desired_salary
       ) do
+    taxes_owed =
+      desired_salary
+      |> Money.subtract(fixed_cost_start)
+      |> Money.multiply(Decimal.div(percentage, 100))
+      |> Money.add(fixed_cost)
+
+    desired_salary |> Money.subtract(taxes_owed)
+  end
+
+  def calculate_after_tax_income(
+        %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
+          fixed_cost_start: fixed_cost_start,
+          fixed_cost: fixed_cost,
+          percentage: percentage
+        },
+        desired_salary_text
+      ) do
+    {:ok, desired_salary} = Money.parse(desired_salary_text)
+
     taxes_owed =
       desired_salary
       |> Money.subtract(fixed_cost_start)
@@ -132,6 +197,17 @@ defmodule Picsello.PricingCalculations do
     after_tax_income |> Money.subtract(taxes_owed)
   end
 
+  def calculate_monthly(%Money{amount: amount}) do
+    Money.new(div(amount, 12))
+  end
+
+  def calculate_monthly(amount) do
+    {:ok, money} = Money.parse(amount, :USD)
+    %Money{amount: finalAmount} = money
+
+    Money.new(div(finalAmount, 12))
+  end
+
   def day_options(),
     do: [
       "monday",
@@ -144,7 +220,10 @@ defmodule Picsello.PricingCalculations do
     ]
 
   def cost_categories(),
-    do: PricingCalculatorBusinessCosts |> Repo.all()
+    do:
+      PricingCalculatorBusinessCosts
+      |> Repo.all()
+      |> Enum.map(&new_map(&1))
 
   def tax_schedule(),
     do: Repo.get_by(PricingCalculatorTaxSchedules, active: true)
@@ -157,4 +236,27 @@ defmodule Picsello.PricingCalculations do
       )
       |> Repo.all()
       |> Enum.map(&{&1, &1})
+
+  defp new_map(
+         %{
+           line_items: line_items,
+           category: category,
+           active: active,
+           description: description
+         } = _business_cost
+       ) do
+    %Picsello.PricingCalculations.BusinessCost{
+      category: category,
+      line_items:
+        line_items
+        |> Enum.map(&struct(LineItem, Map.from_struct(&1))),
+      active: active,
+      description: description
+    }
+  end
+
+  def total_business_cost(list), do: recursively_add_business_cost(list, 0)
+
+  defp recursively_add_business_cost([], acc), do: acc
+  defp recursively_add_business_cost([h | t], acc), do: recursively_add_business_cost(t, acc + h)
 end

@@ -37,6 +37,8 @@ defmodule Picsello.Repo.Migrations.AddPricing do
 
     create table(:pricing_calculator_business_costs) do
       add(:category, :string)
+      add(:description, :string)
+      add(:active, :boolean)
       add(:line_items, :map, default: fragment("'[]'::jsonb"))
 
       timestamps()

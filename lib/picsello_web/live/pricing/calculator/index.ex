@@ -16,7 +16,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           min_years_experience: user.onboarding.photographer_years,
           schedule: user.onboarding.schedule,
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,
-          desired_salary: Money.new(0)
+          desired_salary: Money.new(150_0000),
+          business_costs: cost_categories()
         }
       )
     end)
@@ -27,11 +28,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def handle_params(params, _session, socket) do
     step = Map.get(params, "step", "1") |> String.to_integer()
-    category_id = Map.get(params, "category_id", "1") |> String.to_integer()
+    category_id = Map.get(params, "category_id", "1")
 
     if step == 6 do
+      %{category: category} =
+        socket.assigns.pricing_calculations.business_costs
+        |> Enum.find(fn %{id: id} = _business_cost -> id == category_id end)
+
       socket
-      |> assign_cost_category_step(category_id)
+      |> assign_cost_category_step(category_id, category)
       |> assign_changeset()
       |> noreply()
     else
@@ -69,20 +74,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   @impl true
   def handle_event("edit-cost", params, socket) do
-    category_id = Map.get(params, "id", "1") |> String.to_integer()
+    category_id = Map.get(params, "id", "1")
 
     socket
+    |> assign_step(6)
     |> push_patch(
       to: Routes.calculator_path(socket, :index, %{step: 6, category_id: category_id})
     )
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("edit-cost-back", _, socket) do
-    socket
-    |> assign_step(4)
-    |> push_patch(to: Routes.calculator_path(socket, :index, %{step: 4}))
     |> noreply()
   end
 
@@ -104,11 +102,19 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         %{"pricing_calculations" => params},
         %{assigns: %{step: step}} = socket
       ) do
+    finalStep =
+      if step == 6 do
+        4
+      else
+        step + 1
+      end
+
     case socket |> build_changeset(params) |> Repo.insert_or_update() do
       {:ok, pricing_calculations} ->
         socket
         |> assign(pricing_calculations: pricing_calculations)
-        |> assign_step(step + 1)
+        |> assign_step(finalStep)
+        |> push_patch(to: Routes.calculator_path(socket, :index, %{step: finalStep}))
         |> assign_changeset()
         |> noreply()
 
@@ -225,7 +231,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
           <label class="flex items-center justify-between mt-4">
             <p class="font-extrabold">Annual Desired Salary</p>
-            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center" %>
+            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center", phx_hook: "PriceMask" %>
             <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm" %>
           </label>
           <hr class="mt-4 mb-4" />
@@ -261,8 +267,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 4} = assigns) do
-    IO.inspect(cost_categories())
-
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">All businesses have costs. Lorem ipsum dolor sit amet content here.</h4>
@@ -270,14 +274,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <.financial_review />
         <h4 class="text-2xl font-bold mb-4">Cost categories</h4>
         <ul>
-          <% input_name = input_name(@f, :cost_categories) <> "[]" %>
-          <%= for(%Picsello.PricingCalculatorBusinessCosts{} = cost_category <- cost_categories(), checked <- [Enum.member?(input_value(@f, :cost_categories) || [], cost_category)]) do %>
-            <.category_option type="checkbox" name={input_name} checked={checked} cost_category={cost_category} />
+          <%= inputs_for @f, :business_costs, fn fp -> %>
+            <.category_option type="checkbox" form={fp} />
           <% end %>
         </ul>
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
-          <button type="button" class="btn-primary" phx-click="next">Next</button>
+          <button type="submit" class="btn-primary">Next</button>
         </div>
       </.container>
     """
@@ -301,37 +304,16 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 6} = assigns) do
     ~H"""
       <.container {assigns}>
-        <table class="responsive-table w-full">
-          <thead>
-            <tr>
-              <th class="text-left font-bold border-b-4 border-blue-planning-300 text-lg pb-2 py-4">Item</th>
-              <th class="text-left font-bold border-b-4 border-blue-planning-300 text-lg pb-2 py-4">Your Cost Monthy</th>
-              <th class="text-left font-bold border-b-4 border-blue-planning-300 text-lg pb-2 py-4">Your Cost Yearly</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="p-4">Equipment<br/>(repair, replacement, etc)</td>
-              <td class="p-4">$83.33<span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/month</span></td>
-              <td class="p-4">
-                <%= input @f, :category_cost, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$500", class: "p-4 w-40 text-center" %>
-                <%= error_tag @f, :category_cost, class: "text-red-sales-300 text-sm" %>
-                <span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/year</span>
-              </td>
-            </tr>
-            <tr>
-              <td class="p-4">Equipment<br/>(repair, replacement, etc)</td>
-              <td class="p-4">$83.33<span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/month</span></td>
-              <td class="p-4">
-                <%= input @f, :category_cost, type: :text_input, phx_debounce: 500, min: 0, placeholder: "$500", class: "p-4 w-40 text-center" %>
-                <%= error_tag @f, :category_cost, class: "text-red-sales-300 text-sm" %>
-                <span class="text-blue-planning-300 border-b-1 border-blue-planning-300 border-dotted">/year</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="grid grid-cols-3 gap-2 items-center w-full border-blue-planning-300 border-b-8">
+          <div class="col-start-1 font-bold pb-4">Item</div>
+          <div class="col-start-2 font-bold pb-4">Your Cost Monthy</div>
+          <div class="col-start-3 font-bold pb-4">Your Cost Yearly</div>
+        </div>
+        <%= inputs_for @f, :business_costs, fn fp -> %>
+          <.cost_item form={fp} category_id={@category_id} />
+        <% end %>
         <div class="flex justify-end mt-8">
-          <button type="button" class="btn-secondary mr-4" phx-click="edit-cost-back">Back</button>
+          <button type="submit" class="btn-secondary mr-4">Back</button>
         </div>
       </.container>
     """
@@ -441,12 +423,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     |> assign(changeset: build_changeset(socket, params, :validate))
   end
 
-  defp assign_cost_category_step(socket, category_id) do
+  defp assign_cost_category_step(socket, category_id, category) do
     socket
     |> assign(
       step: 6,
-      step_title: category_id |> Integer.to_string(),
-      page_title: category_id |> Integer.to_string()
+      category_id: category_id,
+      step_title: category,
+      page_title: category
     )
   end
 
@@ -455,7 +438,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base w-12 flex items-center justify-center mr-4 #{@class}",
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base w-12 flex items-center justify-center mr-4 capitalize #{@class}",
         %{"bg-blue-planning-100 border-blue-planning-300 bg-blue-planning-300" => @checked}
       )}>
         <input class="hidden" type={@type} name={@name} value={@day} checked={@checked} disabled={@disabled} />
@@ -471,17 +454,52 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <li class="flex justify-between border hover:border-blue-planning-300 rounded-lg p-6 mb-4">
         <div class="max-w-md">
           <label class="flex">
-            <input class="checkbox w-7 h-7" type={@type} name={@name} value={@cost_category.id} checked={@checked} disabled={@disabled} />
+            <%= hidden_input @form, :id %>
+            <%= hidden_input @form, :category %>
+            <%= hidden_input @form, :description %>
+            <%= input @form, :active, type: :checkbox, class: "checkbox w-7 h-7" %>
             <div class="ml-4">
-              <h5 class="text-xl font-bold leading-4"><%= @cost_category.category %></h5>
+              <h5 class="text-xl font-bold leading-4"><%= input_value(@form, :category) %></h5>
+              <p class="mt-1"><%= input_value(@form, :description) %></p>
             </div>
           </label>
         </div>
         <div class="flex flex-col">
-          <h6 class="text-2xl font-bold text-center mb-auto"><%= @cost_category.base_cost %></h6>
-          <button class="text-center text-blue-planning-300 underline" type="button" phx-click="edit-cost" phx-value-id={@cost_category.id}>Edit costs</button>
+          <h6 class="text-2xl font-bold text-center mb-auto">cost</h6>
+          <button class="text-center text-blue-planning-300 underline" type="button" phx-click="edit-cost" phx-value-id={input_value(@form, :id)}>Edit costs</button>
         </div>
       </li>
+    """
+  end
+
+  def cost_item(assigns) do
+    # IO.inspect(assigns.form)
+
+    ~H"""
+
+      <%= inputs_for @form, :line_items, fn li -> %>
+        <%= hidden_input @form, :category %>
+        <%= hidden_input @form, :description %>
+        <%= hidden_input @form, :active %>
+        <%= if input_value(@form, :id) == @category_id do %>
+          <div class="grid grid-cols-3 gap-2 items-center w-full even:bg-gray-100">
+            <div class="col-start-1 p-4">
+              <%= input_value(li, :title) %> <br />
+              <%= input_value(li, :description) %>
+            </div>
+            <div class="col-start-2 p-4">
+              <%= input_value(li, :yearly_cost) |> PricingCalculations.calculate_monthly() %>
+            </div>
+            <div class="col-start-3 p-4">
+              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 w-40 text-center", phx_hook: "PriceMask" %>
+            </div>
+          </div>
+        <% else %>
+          <%= hidden_input(li, :title) %>
+          <%= hidden_input(li, :description) %>
+          <%= hidden_input li, :yearly_cost %>
+      <% end %>
+    <% end %>
     """
   end
 
@@ -540,7 +558,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <div class="w-3/4 flex flex-col pb-32 ml-auto">
           <div class="max-w-5xl w-full mx-auto mt-40">
-            <h1 class="text-4xl font-bold mb-12 flex items-center -ml-14"><%= if @step == 6 do %><button type="button" phx-click="edit-cost-back" class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><%= @step - 1 %></span><% end %><%= @step_title %></h1>
+            <h1 class="text-4xl font-bold mb-12 flex items-center -ml-14"><%= if @step == 6 do %><button type="submit" class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><%= @step - 1 %></span><% end %><%= @step_title %></h1>
           </div>
           <div class="max-w-5xl w-full mx-auto bg-blue-planning-300 rounded-lg overflow-hidden">
             <div class="bg-white ml-3 px-6 pt-8 pb-6 sm:p-14">

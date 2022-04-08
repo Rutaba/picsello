@@ -49,11 +49,11 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
               <div class="col-start-4 font-bold">Bracket Fixed Cost Start</div>
               <div class="col-start-5 font-bold">Bracket Fixed Cost</div>
               <%= inputs_for f, :income_brackets, [], fn fp -> %>
-                <%= input fp, :income_min, phx_debounce: 200 %>
-                <%= input fp, :income_max, phx_debounce: 200 %>
+                <%= input fp, :income_min, phx_debounce: 200, phx_hook: "PriceMask" %>
+                <%= input fp, :income_max, phx_debounce: 200, phx_hook: "PriceMask" %>
                 <%= input fp, :percentage, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
-                <%= input fp, :fixed_cost_start, phx_debounce: 200 %>
-                <%= input fp, :fixed_cost, phx_debounce: 200 %>
+                <%= input fp, :fixed_cost_start, phx_debounce: 200, phx_hook: "PriceMask" %>
+                <%= input fp, :fixed_cost, phx_debounce: 200, phx_hook: "PriceMask" %>
               <% end %>
             </div>
           </.form>
@@ -71,10 +71,14 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         <div class="mb-8 border rounded-lg">
           <.form let={fcosts} for={changeset} class="contents" phx-change="save-line-items" id={"form-line-items-#{id}"}>
             <div class="flex items-center justify-between mb-8 bg-gray-100  p-6 ">
-              <div class="grid grid-cols-1 gap-2 items-center w-3/4">
+              <div class="grid grid-cols-3 gap-2 items-center w-3/4">
                 <div class="col-start-1 font-bold">Category Title</div>
+                <div class="col-start-2 font-bold">Category Description</div>
+                <div class="col-start-3 font-bold">Should this cost category by a default?</div>
                 <%= hidden_input fcosts, :id %>
                 <%= input fcosts, :category, phx_debounce: 200 %>
+                <%= input fcosts, :description, phx_debounce: 200 %>
+                <%= select fcosts, :active, [true, false], class: "select py-3", phx_debounce: 200 %>
               </div>
               <button class="btn-primary" type="button" phx-click="add-line-item" phx-value-id={id}>Add line item</button>
             </div>
@@ -85,7 +89,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
               <%= inputs_for fcosts, :line_items, [], fn fl -> %>
                 <%= input fl, :title, phx_debounce: 200 %>
                 <%= input fl, :description, phx_debounce: 200 %>
-                <%= input fl, :yearly_cost, phx_debounce: 200 %>
+                <%= input fl, :yearly_cost, phx_debounce: 200, phx_hook: "PriceMask" %>
               <% end %>
             </div>
           </.form>
@@ -246,6 +250,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     PricingCalculatorBusinessCosts.changeset(%PricingCalculatorBusinessCosts{}, %{
       category: "",
       inserted_at: DateTime.utc_now(),
+      active: true,
       line_items: [
         %{
           title: "",
