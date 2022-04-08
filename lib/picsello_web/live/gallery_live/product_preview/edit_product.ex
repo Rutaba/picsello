@@ -4,13 +4,14 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
   require Logger
   import PicselloWeb.LiveHelpers
-
+  import PicselloWeb.GalleryLive.Shared, only: [assign_photos: 3]
   import Ecto.Changeset
+
   alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
 
-  @per_page 24
+  @per_page 999_999
 
   @impl true
   def preload([assigns | _]) do
@@ -65,17 +66,10 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
      |> assign(:favorites_filter, false)
      |> assign(:preview_photo_id, nil)
      |> assign(:selected, false)
-     |> assign_photos()}
+     |> assign_photos(@per_page, "all_photos")}
   end
 
   @impl true
-  def handle_event("load-more", _, %{assigns: %{page: page}} = socket) do
-    socket
-    |> assign(page: page + 1)
-    |> assign_photos()
-    |> noreply()
-  end
-
   def handle_event(
         "click",
         %{"preview" => preview, "preview_photo_id" => preview_photo_id},
@@ -137,24 +131,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     end
 
     {:noreply, socket}
-  end
-
-  defp assign_photos(
-         %{
-           assigns: %{
-             gallery: %{id: id},
-             page: page,
-             favorites_filter: filter
-           }
-         } = socket,
-         per_page \\ @per_page
-       ) do
-    opts = [only_favorites: filter, offset: per_page * page]
-    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
-
-    socket
-    |> assign(:photos, photos |> Enum.take(per_page))
-    |> assign(:has_more_photos, photos |> length > per_page)
   end
 
   def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)

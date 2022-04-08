@@ -76,10 +76,12 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
   @spec open(%Phoenix.LiveView.Socket{}, %{
           optional(:close_label) => binary,
           optional(:close_class) => binary,
+          optional(:classes) => binary,
           optional(:confirm_event) => any,
           optional(:confirm_label) => binary,
           optional(:confirm_class) => binary,
           optional(:icon) => binary | nil,
+          optional(:title) => binary,
           optional(:subtitle) => binary,
           optional(:gallery_name) => binary,
           optional(:gallery_count) => binary,

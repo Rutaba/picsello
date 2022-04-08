@@ -2,11 +2,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
-  alias Phoenix.LiveView.{Upload, UploadConfig, UploadEntry}
-
-  alias Phoenix.LiveView.{Upload, UploadConfig, UploadEntry}
-
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress

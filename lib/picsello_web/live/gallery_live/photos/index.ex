@@ -6,11 +6,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     ]
 
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.GalleryLive.Shared
 
   alias Phoenix.PubSub
   alias Picsello.Repo
   alias Picsello.{Galleries, Albums, Messages}
-  alias Picsello.Galleries.Photo
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.ConfirmationComponent
@@ -152,7 +152,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> put_flash(
       :gallery_success,
       move_to_album_success_message(selected_photos, album_id, gallery)
@@ -167,7 +167,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{
           assigns: %{
             album: album,
-            gallery: gallery,
             selected_photos: selected_photos
           }
         } = socket
@@ -177,7 +176,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> put_flash(:gallery_success, remove_from_album_success_message(selected_photos, album))
     |> noreply()
   end
@@ -194,7 +193,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       ) do
     socket
     |> assign(page: page + 1)
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -212,7 +211,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
     |> assign(:favorites_filter, !toggle_state)
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -261,12 +260,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         _,
         %{
           assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites_filter
+            gallery: gallery
           }
         } = socket
       ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_all"})
@@ -287,7 +285,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         socket
         |> assign(:page, 0)
         |> assign(:favorites_filter, false)
-        |> assign_photos()
+        |> assign_photos(@per_page)
 
       socket ->
         socket
@@ -308,7 +306,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket))
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
 
     socket
     |> assign(:page, 0)
@@ -317,7 +315,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, photo_ids)
     |> push_event("select_mode", %{"mode" => "selected_favorite"})
     |> assign(:select_mode, "selected_favorite")
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply
   end
 
@@ -393,7 +391,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  # TODO: Maybe need to remove it
   def handle_info(
         {:message_composed, message_changeset},
         %{
@@ -417,7 +414,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{
         id: photo.id,
@@ -458,7 +455,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @impl true
   def handle_info(:photo_upload_completed, socket) do
     socket
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -472,55 +469,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> close_modal()
     |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> assign_photos(@per_page)
     |> noreply
-  end
-
-  defp assign_photos(
-         %{
-           assigns: %{
-             gallery: %{
-               id: id
-             },
-             album: album,
-             page: page,
-             favorites_filter: filter
-           }
-         } = socket,
-         per_page \\ @per_page
-       ) do
-    opts = make_opts(socket, per_page)
-
-    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
-
-    socket
-    |> assign(
-      :photos,
-      photos
-      |> Enum.take(per_page)
-    )
-    |> assign(
-      :has_more_photos,
-      photos
-      |> length > per_page
-    )
-  end
-
-  defp make_opts(
-         %{
-           assigns: %{
-             album: album,
-             page: page,
-             favorites_filter: filter
-           }
-         },
-         per_page \\ @per_page
-       ) do
-    if album do
-      [album_id: album.id]
-    else
-      [exclude_album: true]
-    end ++
-      [favorites_filter: filter, offset: per_page * page]
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -542,7 +492,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       page_title: page_title(socket.assigns.live_action),
       products: Galleries.products(gallery)
     )
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -562,7 +512,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> close_modal()
     |> push_event("remove_items", %{"ids" => selected_photos})
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -617,7 +567,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp page_title(:edit), do: "Edit Photos"
   defp page_title(:upload), do: "New Photos"
 
-  # ToDO: move to common file
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 

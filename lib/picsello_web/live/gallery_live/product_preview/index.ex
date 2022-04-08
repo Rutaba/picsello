@@ -30,18 +30,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
-  def handle_info(
-        {:save, %{title: title}},
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    socket
-    |> close_modal()
-    |> assign(products: Galleries.products(gallery))
-    |> put_flash(:gallery_success, "#{title} successfully updated")
-    |> noreply
-  end
-
-  @impl true
   def handle_event(
         "edit",
         %{"product_id" => product_id},
@@ -105,6 +93,18 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
       is_client_gallery: false
     })
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:save, %{title: title}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> close_modal()
+    |> assign(products: Galleries.products(gallery))
+    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> noreply
   end
 
   @impl true

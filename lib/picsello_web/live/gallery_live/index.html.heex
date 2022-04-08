@@ -30,6 +30,7 @@
       <%= if @gallery.cover_photo do %>
       <div class="flex flex-col mt-4">
          <h3>Cover photo</h3>
+         <div {display_cover_photo(@gallery)} class="gallery__coverImg active"></div>
          <div class="flex justify-between w-full h-full mt-4">
             <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
                <div class="dragDrop__content">
@@ -49,7 +50,7 @@
          <div class="dragDrop__wrapper">
             <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
                <label>
-                  <div class="flex flex-col items-center justify-center h-full gap-4 dragDrop" id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
+                  <div class="flex flex-col items-center justify-center h-full gap-4 dragDrop" id="dropzone-cover" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
                      <.icon name="add-photos" class="w-20 h-20 cursor-pointer text-blue-planning-300" />
                      <div class="dragDrop__content">
                         <p class="font-bold"><span>Drop images or </span><span class="cursor-pointer primary">Browse</span></p>

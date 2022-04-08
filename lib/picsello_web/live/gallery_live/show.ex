@@ -123,14 +123,10 @@ defmodule PicselloWeb.GalleryLive.Show do
   def handle_event(
         "gallery_settings",
         _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
+        socket
       ) do
     socket
-    # |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
+    #     |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
     |> noreply()
   end
 
