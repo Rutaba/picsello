@@ -123,13 +123,15 @@
                 <% end %>
             <% end %>
             <div class="max-w-max">
-              <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-                  erorr_class: "text-center",
-                  current_user: @current_user,
-                  class: "w-full mt-2 btn-primary py-1 px-3 text-xs intro-stripe",
-                  return_url: Routes.job_url(@socket, @live_action, @job.id),
-                  stripe_status: @stripe_status %>
-              </div>
+              <%= unless @stripe_status == :charges_enabled do %>
+                <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+                    erorr_class: "text-center",
+                    current_user: @current_user,
+                    class: "w-full mt-2 btn-primary py-1 px-3 text-xs intro-stripe",
+                    return_url: Routes.job_url(@socket, @live_action, @job.id),
+                    stripe_status: @stripe_status %>
+              <% end %>
+            </div>
           </div>
         </label>
 
