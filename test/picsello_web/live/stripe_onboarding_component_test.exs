@@ -4,7 +4,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
 
   def initial_render(status) do
     render_component(PicselloWeb.StripeOnboardingComponent,
-      erorr_class: "text-center",
+      error_class: "text-center",
       id: :stripe_onboarding,
       current_user: insert(:user),
       stripe_status: status,

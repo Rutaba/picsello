@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
             <p class="mt-10">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
             <div class="mt-10 text-right">
               <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-              erorr_class: "text-right",
+              error_class: "text-right",
               class: "px-8 text-center btn-primary",
               current_user: @current_user,
               return_url: Routes.home_url(@socket, :index),

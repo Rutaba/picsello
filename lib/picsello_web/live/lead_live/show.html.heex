@@ -61,7 +61,7 @@
       <.overview_card title="Finances" icon="money-bags-outline">
         Connect or set up Stripe.
         <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_overview,
-            erorr_class: "text-center",
+            error_class: "text-center",
             current_user: @current_user,
             class: "mt-4 w-full p-2 text-sm text-center border rounded-lg border-base-300",
             return_url: Routes.job_url(@socket, @live_action, @job.id),
@@ -125,7 +125,7 @@
             <div class="max-w-max">
               <%= unless @stripe_status == :charges_enabled do %>
                 <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-                    erorr_class: "text-center",
+                    error_class: "text-center",
                     current_user: @current_user,
                     class: "w-full mt-2 btn-primary py-1 px-3 text-xs intro-stripe",
                     return_url: Routes.job_url(@socket, @live_action, @job.id),

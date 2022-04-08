@@ -35,7 +35,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             <button type="submit" phx-disable-with="Retry Stripe Account" class={@class}>
               Retry Stripe Account
             </button>
-            <em class={"block pt-1 text-xs text-red-sales-300 " <> @erorr_class}>Error accessing your Stripe information.</em>
+            <em class={"block pt-1 text-xs text-red-sales-300 " <> @error_class}>Error accessing your Stripe information.</em>
 
           <% :no_account -> %>
             <button type="submit" phx-disable-with="Set up Stripe" class={@class}>

@@ -24,7 +24,7 @@
               <%= case action do %>
                 <% "set-up-stripe" -> %>
                   <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-                    erorr_class: "text-center",
+                    error_class: "text-center",
                     class: "#{button_class} text-sm w-full py-2 mt-2",
                     current_user: @current_user,
                     return_url: Routes.home_url(@socket, :index),
