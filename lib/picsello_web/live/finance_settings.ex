@@ -25,7 +25,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       <hr class="my-4 sm:my-10" />
       <div class="flex grid flex-row justify-between flex-1 flex-grow-0 gap-6 sm:grid-cols-2">
         <div class="flex flex-row">
-          <.card title="Stripe Account">
+          <.card title="Stripe account">
             <p class="mt-10">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
             <div class="mt-10 text-right">
               <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
