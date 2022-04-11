@@ -363,6 +363,13 @@ defmodule Picsello.Profiles do
     {:ok, meta, organization}
   end
 
+  def logo_url(organization) do
+    case organization do
+      %{profile: %{logo: %{url: "" <> url}}} -> url
+      _ -> nil
+    end
+  end
+
   defp to_filename(organization, %{client_type: content_type} = image, name),
     do:
       to_filename(

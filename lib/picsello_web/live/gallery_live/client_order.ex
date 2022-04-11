@@ -18,7 +18,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery, live_action: :paid}} = socket
       ) do
-    case Cart.confirm_order(order_number, session_id) do
+    case Cart.confirm_order(
+           order_number,
+           session_id,
+           PicselloWeb.Helpers
+         ) do
       {:ok, order} -> order
     end
     |> then(fn order ->
@@ -95,6 +99,5 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   defdelegate shipping_cost(order), to: Cart
-  defdelegate summary_counts(order), to: Cart
   defdelegate total_cost(order), to: Cart
 end

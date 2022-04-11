@@ -1,4 +1,4 @@
-<div>
+<div class="relative pb-10">
   <div class="choose-product__modal">
     <a href="#" phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
       <.icon name="close-x" class="w-4 h-4 lg:w-5 lg:h-5 stroke-current stroke-2" />
@@ -51,7 +51,7 @@
                 <:button disabled>Purchased</:button>
               </.option>
             <% _ -> %>
-              <.option testid={"digital_download"} title="Digital Download" min_price={@download_each_price}>
+              <.option testid={"digital_download"} title="Digital Download" min_price={if @digital_credit <= 0, do: @download_each_price}>
                 <:button phx-target={@myself} phx-click="digital_add_to_cart">
                   Add to cart
                 </:button>
@@ -61,4 +61,9 @@
       </div>
     </div>
   </div>
+  <%= if @digital_credit > 0 do %>
+    <div {testid("download-credit")} class="bg-white pl-16 absolute bottom-0 left-0 right-0 shadow-top h-20 flex items-center">
+      <p><span class="font-bold">Download Credits available: </span><%= @digital_credit %></p>
+    </div>
+  <% end %>
 </div>
