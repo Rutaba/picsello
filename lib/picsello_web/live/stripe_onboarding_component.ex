@@ -56,7 +56,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
 
           <% :charges_enabled -> %>
             <%= link to: URI.parse("https://dashboard.stripe.com/"), target: "_blank" do %>
-              <button class={@class}>
+              <button type="button" class={@class}>
                 Go to Stripe Account
               </button>
             <% end %>
