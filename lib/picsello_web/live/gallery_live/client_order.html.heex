@@ -127,7 +127,7 @@
               <span>Digital download</span>
             </div>
 
-            <div class="font-bold"><%= digital.price %></div>
+            <div class="font-bold"><%= price_display(digital) %></div>
           </div>
         <% end %>
       </div>
@@ -135,8 +135,8 @@
 
     <div class="p-5 my-5 border border-base-225">
       <%= for {label, count, subtotal} <- summary_counts(@order), count > 0 do %>
-        <p class="text-xl capitalize">
-          <%= label %> (<span><%= count %></span>): <span class="font-medium text-base-300"><%= subtotal %></span>
+        <p class="flex justify-between text-lg">
+          <span><%= label %> (<%= count %>):</span><span class="font-semibold text-base-300 md:pr-8"><%= subtotal %></span>
         </p>
       <% end %>
 

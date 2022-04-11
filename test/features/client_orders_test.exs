@@ -2,7 +2,7 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
-  alias Picsello.{Repo, Cart.Order}
+  alias Picsello.{Repo, Cart.Order, Package}
 
   setup do
     Mox.verify_on_exit!()
@@ -344,6 +344,52 @@ defmodule Picsello.ClientOrdersTest do
           )
         )
       end)
+    end
+
+    feature "with download credit", %{session: session} do
+      Repo.update_all(Package, set: [download_count: 2])
+
+      session
+      |> click(link("View Gallery"))
+      |> click_photo(1)
+      |> assert_has(testid("download-credit", text: "Download Credits available: 2"))
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "1"))
+      |> click_photo(2)
+      |> assert_has(testid("download-credit", text: "Download Credits available: 1"))
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "2"))
+      |> click(link("cart"))
+      |> assert_text("Total: $0.00")
+      |> assert_text("Minimum amount is $1")
+      |> assert_disabled(button("Continue"))
+      |> click(link("Home"))
+      |> click_photo(3)
+      |> refute_has(testid("download-credit"))
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "3"))
+      |> click(link("cart"))
+      |> assert_text("Total: $25.00")
+      |> assert_enabled(button("Continue"))
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 0), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("1 credit - $0.00")
+      end)
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 1), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("1 credit - $0.00")
+      end)
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 2), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("$25.00")
+      end)
+      |> assert_text("Total: $25.00")
+      |> click(button("Continue"))
+      |> assert_text("Digitals (1): $25.00")
+      |> assert_text("Digital Credits Used (2): 2 Credits - $0.00")
     end
   end
 end

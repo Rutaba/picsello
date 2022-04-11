@@ -296,7 +296,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         <span class="ml-2 font-bold"><%= subtotal_cost(@order) %></span>
       </div>
 
-      <button type="button" class="mt-5 text-lg btn-primary" phx-click="continue">Continue</button>
+      <button type="button" class="mt-5 text-lg btn-primary" phx-click="continue" disabled={zero_subtotal?(@order)}>Continue</button>
+
+      <%= if zero_subtotal?(@order) do %>
+        <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
+      <% end %>
     </div>
     """
   end
@@ -386,12 +390,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
+
+  defp zero_subtotal?(order),
+    do: only_digitals?(order) && order |> subtotal_cost() |> Money.zero?()
+
   defp preview_url(item), do: Cart.preview_url(item, :watermarked)
 
   defdelegate cart_count(order), to: Cart, as: :item_count
   defdelegate product_name(product), to: Cart
   defdelegate shipping_cost(order), to: Cart
   defdelegate subtotal_cost(order), to: Cart
-  defdelegate summary_counts(order), to: Cart
   defdelegate total_cost(order), to: Cart
 end
