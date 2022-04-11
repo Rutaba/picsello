@@ -1,13 +1,16 @@
 defmodule PicselloWeb.GalleryLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  import PicselloWeb.GalleryLive.Show, only: [presign_cover_entry: 2, handle_cover_progress: 3]
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.GalleryLive.Shared
 
+  alias Phoenix.PubSub
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias Picsello.Galleries.CoverPhoto
+  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
@@ -19,8 +22,8 @@ defmodule PicselloWeb.GalleryLive.Index do
     max_entries: 1,
     max_file_size: 104_857_600,
     auto_upload: true,
-    external: &presign_cover_entry/2,
-    progress: &handle_cover_progress/3
+    external: &__MODULE__.presign_cover_entry/2,
+    progress: &__MODULE__.handle_cover_progress/3
   ]
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
@@ -28,16 +31,13 @@ defmodule PicselloWeb.GalleryLive.Index do
   def mount(_params, _session, socket) do
     {:ok, datetime} = DateTime.now("UTC")
 
-    {
-      :ok,
-      socket
-      |> assign(:upload_bucket, @bucket)
-      |> assign(:total_progress, 0)
-      |> assign(:cover_photo_processing, false)
-      |> allow_upload(:cover_photo, @upload_options)
-      |> assign(:password_toggle, false)
-      |> assign(:date, datetime)
-    }
+    socket
+    |> assign(:upload_bucket, @bucket)
+    |> assign(:total_progress, 0)
+    |> assign(:cover_photo_processing, false)
+    |> allow_upload(:cover_photo, @upload_options)
+    |> assign(:password_toggle, false)
+    |> ok()
   end
 
   @impl true
@@ -45,6 +45,10 @@ defmodule PicselloWeb.GalleryLive.Index do
     gallery =
       Galleries.get_gallery!(id)
       |> Galleries.load_watermark_in_gallery()
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+    end
 
     socket
     |> assign(:gallery, gallery)
@@ -59,9 +63,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         {:noreply, cancel_upload(socket, :cover_photo, ref)}
 
       _ ->
-        socket
-        |> assign(:cover_photo_processing, true)
-        |> noreply()
+        socket |> noreply()
     end
   end
 
@@ -81,6 +83,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       confirm_event: "delete_cover_photo",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
+      class: "dialog-photographer",
       title: "Delete this photo?",
       subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
     })
@@ -89,7 +92,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   @impl true
   def handle_event(
-        "open_gallery_deletion_popup",
+        "delete_gallery_popup",
         _,
         %{
           assigns: %{
@@ -103,6 +106,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       close_class: "delete_btn",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
+      class: "dialog-photographer",
       icon: "warning-orange",
       title: "Delete Gallery?",
       gallery_name: gallery.name,
@@ -116,75 +120,25 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_event("open_watermark_deletion_popup", _, socket) do
-    socket
-    |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
-      confirm_event: "delete_watermark",
-      confirm_label: "Yes, delete",
-      icon: "warning-orange",
+  def handle_event("delete_watermark_popup", _, socket) do
+    opts = [
+      event: "delete_watermark",
       title: "Delete watermark?",
       subtitle: "Are you sure you wish to permanently delete your
-        custom watermark? You can always add another
-        one later."
-    })
-    |> noreply()
+      custom watermark? You can always add another
+      one later."
+    ]
+
+    make_delete_popup(socket, opts)
   end
 
   @impl true
-  def handle_event(
-        "client-link",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    gallery = Picsello.Repo.preload(gallery, job: :client)
-
-    link = Routes.gallery_client_show_url(socket, :show, hash)
-    client_name = gallery.job.client.name
-
-    subject = "#{gallery.name} photos"
-
-    html = """
-    <p>Hi #{client_name},</p>
-    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
-    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
-    <p>Happy viewing!</p>
-    """
-
-    text = """
-    Hi #{client_name},
-
-    Your gallery is ready to view! You can view the gallery here: #{link}
-
-    Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
-
-    Happy viewing!
-    """
-
-    socket
-    |> assign(:job, gallery.job)
-    |> assign(:gallery, gallery)
-    |> ClientMessageComponent.open(%{
-      body_html: html,
-      body_text: text,
-      subject: subject,
-      modal_title: "Share gallery",
-      is_client_gallery: false
-    })
-    |> noreply()
+  def handle_event("client-link", _, socket) do
+    share_gallery(socket)
   end
 
   @impl true
-  def handle_event("open_watermark_popup", _, socket) do
+  def handle_event("watermark_popup", _, socket) do
     send(self(), :open_modal)
     socket |> noreply()
   end
@@ -193,15 +147,11 @@ defmodule PicselloWeb.GalleryLive.Index do
     if entry.done? do
       CoverPhoto.original_path(gallery.id, entry.uuid)
       |> ProcessingManager.process_cover_photo()
-
-      socket
-      |> assign(:gallery, Galleries.get_gallery!(gallery.id))
-      |> assign(:cover_photo_processing, false)
-      |> noreply()
-    else
-      socket
-      |> noreply
     end
+
+    socket
+    |> assign(:cover_photo_processing, true)
+    |> noreply
   end
 
   def handle_info(
@@ -234,13 +184,30 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_info({:confirm_event, "delete_watermark"}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        {:confirm_event, "delete_watermark", _},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     Galleries.delete_gallery_watermark(gallery.watermark)
     send(self(), :clear_watermarks)
 
     socket
     |> close_modal()
     |> preload_watermark()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:photo_processed, _, photo}, socket) do
+    photo_update =
+      %{
+        id: photo.id,
+        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
+      }
+      |> Jason.encode!()
+
+    socket
+    |> assign(:photo_updates, photo_update)
     |> noreply()
   end
 
@@ -270,13 +237,15 @@ defmodule PicselloWeb.GalleryLive.Index do
   @impl true
   def handle_info(:expiration_saved, socket) do
     socket
-    |> put_flash(:success, "The expiration date has been saved.")
+    |> put_flash(:gallery_success, "The expiration successfully updated")
     |> noreply()
   end
 
   def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
+    gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery()
+
     socket
-    |> assign(:gallery, Galleries.get_gallery!(gallery.id))
+    |> assign(:gallery, gallery)
     |> assign(:cover_photo_processing, false)
     |> noreply()
   end
@@ -289,12 +258,12 @@ defmodule PicselloWeb.GalleryLive.Index do
       {:ok, _gallery} ->
         socket
         |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
-        |> put_flash(:success, "The gallery has been deleted.")
+        |> put_flash(:gallery_success, "The gallery has been deleted")
         |> noreply()
 
       _any ->
         socket
-        |> put_flash(:error, "Could not delete gallery.")
+        |> put_flash(:error, "Could not delete gallery")
         |> close_modal()
         |> noreply()
     end
@@ -311,13 +280,51 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> noreply()
   end
 
+  @impl true
+  def handle_info({:update_name, %{gallery: gallery}}, socket) do
+    gallery = gallery |> Galleries.load_watermark_in_gallery()
+
+    socket
+    |> assign(:gallery, gallery)
+    |> close_modal()
+    |> noreply()
+  end
+
+  def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
+    key = CoverPhoto.original_path(gallery.id, entry.uuid)
+
+    sign_opts = [
+      expires_in: 600,
+      bucket: socket.assigns.upload_bucket,
+      key: key,
+      fields: %{
+        "content-type" => entry.client_type,
+        "cache-control" => "public, max-age=@upload_options"
+      },
+      conditions: [["content-length-range", 0, 104_857_600]]
+    ]
+
+    params = PhotoStorage.params_for_upload(sign_opts)
+    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+
+    {:ok, meta, socket}
+  end
+
   defp preload_watermark(%{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
   end
 
-  defp never_date() do
+  defp expire_soon(expired_at) do
+    case DateTime.compare(DateTime.utc_now() |> DateTime.truncate(:second), expired_at) do
+      :lt -> false
+      :gt -> true
+    end
+    |> never_expire(expired_at)
+  end
+
+  defp never_expire(result, expired_at) do
     {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
-    date
+    result && DateTime.compare(date, expired_at) != :eq
   end
 end

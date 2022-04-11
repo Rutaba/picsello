@@ -353,8 +353,7 @@ defmodule PicselloWeb.GalleryLive.Show do
           }
         } = socket
       ) do
-    Galleries.get_photo(id)
-    |> Galleries.delete_photo()
+    Galleries.delete_photos([id])
 
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 

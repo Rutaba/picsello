@@ -166,12 +166,15 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  def update_photos_album_id(photo_ids, album_id) do
+  @spec get_all_unsorted_photos(id :: integer) :: list(Photo)
+  def get_all_unsorted_photos(id) do
     Photo
-    |> where([p], p.id in ^photo_ids)
-    |> Repo.update_all(set: [album_id: album_id])
+    |> where([p], p.gallery_id == ^id and is_nil(p.album_id))
+    |> order_by(asc: :position)
+    |> Repo.all()
   end
 
+  @spec remove_photos_from_album(list(photo_ids :: integer)) :: {integer, nil}
   def remove_photos_from_album(photo_ids) do
     Photo
     |> where([p], p.id in ^photo_ids)
@@ -179,48 +182,68 @@ defmodule Picsello.Galleries do
   end
 
   def delete_album(album) do
-    photo_ids = get_all_album_photos_ids(album.id)
+    album = album |> Repo.preload(:photos)
 
     Ecto.Multi.new()
-    # |> Ecto.Multi.run(:preview_update, &delete_album_photo_references/2)
     |> Ecto.Multi.update_all(
       :preview,
       fn _ ->
-        from(p in Picsello.Galleries.GalleryProduct,
-          where: p.preview_photo_id in ^photo_ids,
-          update: [set: [preview_photo_id: nil]]
-        )
+        photo_ids = Enum.map(album.photos, & &1.id)
+        GalleryProducts.remove_photo_preview(photo_ids)
       end,
       []
     )
-    |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photo))
+    |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photos))
     |> Ecto.Multi.delete(:album, album)
     |> Repo.transaction()
     |> then(fn
-      {:ok, %{album: album}} -> {:ok, album}
-      {:error, reason} -> reason
+      {:ok, %{album: album}} ->
+        clean_store(album.photos)
+        {:ok, album}
+
+      {:error, reason} ->
+        reason
     end)
   end
 
-  def get_all_album_photos_ids(album_id) do
-    Repo.all(from p in Photo, where: p.album_id == ^album_id, select: p.id)
+  @doc """
+  Deletes photos by photo_ids.
+
+  ## Examples
+
+      iex> delete_photos(photo_ids)
+      {:ok, [%photo{}]}
+  """
+  def delete_photos(photo_ids) do
+    photos = get_photos_by_ids(photo_ids)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update_all(
+      :preview,
+      fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.update_all(
+      :thumbnail,
+      fn _ -> Albums.remove_album_thumbnail(photos) end,
+      []
+    )
+    |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        clean_store(photos)
+        {:ok, photos}
+
+      {:error, reason} ->
+        reason
+    end)
   end
 
-  def get_all_unsorted_photos_ids(gallery_id) do
-    Repo.all(
-      from p in Photo, where: is_nil(p.album_id) and p.gallery_id == ^gallery_id, select: p.id
-    )
-  end
-
-  def delete_unsorted_photos(gallery_id) do
-    from(p in Picsello.Galleries.GalleryProduct,
-      where: p.preview_photo_id in ^get_all_unsorted_photos_ids(gallery_id)
-    )
-    |> Repo.update_all(set: [preview_photo_id: nil])
-
-    Photo
-    |> where([p], p.id in ^get_all_unsorted_photos_ids(gallery_id))
-    |> Repo.delete_all()
+  @spec get_photos_by_ids(photo_ids :: integer) :: list(Photo)
+  def get_photos_by_ids(photo_ids) do
+    from(p in Photo, where: p.id in ^photo_ids)
+    |> Repo.all()
   end
 
   @doc """
@@ -327,20 +350,24 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
+    gallery = gallery |> Repo.preload(:photos)
+
     Ecto.Multi.new()
     |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
     |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
-    |> Ecto.Multi.delete_all(:photos, Ecto.assoc(gallery, :photos))
+    |> Ecto.Multi.delete_all(:delete_photos, Ecto.assoc(gallery, :photos))
+    |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
     |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
     |> Ecto.Multi.delete(:gallery, gallery)
     |> Repo.transaction()
     |> then(fn
-      {:ok, %{gallery: gallery}} -> {:ok, gallery}
-      {:error, reason} -> reason
-    end)
+      {:ok, %{gallery: gallery}} ->
+        clean_store(gallery.photos)
+        {:ok, gallery}
 
-    # Repo.delete(gallery.photos)
-    # Repo.delete(gallery)
+      {:error, reason} ->
+        reason
+    end)
   end
 
   defp gallery_products_query(gallery) do
@@ -454,10 +481,9 @@ defmodule Picsello.Galleries do
   """
   def move_to_album(album_id, selected_photos) do
     from(p in Photo,
-      where: p.id in ^selected_photos,
-      update: [set: [album_id: ^String.to_integer(album_id)]]
+      where: p.id in ^selected_photos
     )
-    |> Repo.update_all([])
+    |> Repo.update_all(set: [album_id: String.to_integer(album_id)])
   end
 
   @doc """
@@ -492,28 +518,6 @@ defmodule Picsello.Galleries do
     photo
     |> Photo.update_changeset(%{client_liked: !client_liked})
     |> Repo.update()
-  end
-
-  @doc """
-  Removes the photo from DB and all its versions from cloud bucket.
-  """
-  def delete_photo(%Photo{} = photo) do
-    GalleryProducts.check_is_photo_selected_as_preview(photo.id)
-    Albums.check_is_photo_selected_as_thumbnail(photo.preview_url)
-
-    Repo.delete(photo)
-
-    [
-      photo.original_url,
-      photo.preview_url,
-      photo.watermarked_url,
-      photo.watermarked_preview_url
-    ]
-    |> Enum.each(fn path ->
-      %{path: path}
-      |> CleanStore.new()
-      |> Oban.insert()
-    end)
   end
 
   @doc """
@@ -802,5 +806,24 @@ defmodule Picsello.Galleries do
   def gallery_photographer(%Gallery{} = gallery) do
     %{job: %{client: %{organization: %{user: user}}}} = gallery |> populate_organization_user()
     user
+  end
+
+  defp clean_store([]), do: nil
+
+  defp clean_store(photos) when is_list(photos),
+    do: Enum.each(photos, fn photo -> clean_store(photo) end)
+
+  defp clean_store(photo) do
+    [
+      photo.original_url,
+      photo.preview_url,
+      photo.watermarked_url,
+      photo.watermarked_preview_url
+    ]
+    |> Enum.each(fn path ->
+      %{path: path}
+      |> CleanStore.new()
+      |> Oban.insert()
+    end)
   end
 end

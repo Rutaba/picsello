@@ -9,13 +9,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.GalleryLive.Shared
 
   alias Phoenix.PubSub
-  alias Picsello.Repo
-  alias Picsello.{Galleries, Albums, Messages}
+  alias Picsello.{Repo, Galleries, Albums}
   alias Picsello.Galleries.Workers.PositionNormalizer
-  alias Picsello.Notifiers.ClientNotifier
-  alias PicselloWeb.ConfirmationComponent
   alias PicselloWeb.GalleryLive.Photos.{PhotoPreview, PhotoView}
   alias PicselloWeb.GalleryLive.Settings.AddAlbumModal
+  alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
   @per_page 24
 
@@ -36,7 +34,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_params(%{"id" => gallery_id, "album_id" => album_id}, _, socket) do
-    album = Albums.get_album!(album_id) |> Repo.preload(:photo)
+    album = Albums.get_album!(album_id) |> Repo.preload(:photos)
 
     socket
     |> assigns(gallery_id, album)
@@ -59,7 +57,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
-    |> open_modal(AddAlbumModal, %{gallery_id: gallery.id})
+    |> open_modal(AlbumSettings, %{gallery_id: gallery.id})
     |> noreply()
   end
 
@@ -75,10 +73,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
-    |> open_modal(
-      PicselloWeb.GalleryLive.EditAlbumThumbnail,
-      %{album_id: album.id, gallery_id: gallery.id}
-    )
+    |> open_modal(AlbumThumbnail, %{album_id: album.id, gallery_id: gallery.id})
     |> noreply()
   end
 
@@ -94,10 +89,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
-    |> open_modal(PicselloWeb.GalleryLive.Albums.AlbumSettingsModal, %{
-      gallery_id: gallery.id,
-      album: album
-    })
+    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, album: album})
     |> noreply()
   end
 
@@ -242,16 +234,29 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event("delete_photo_popup", %{"id" => id}, socket) do
+    opts = [
+      event: "delete_photo",
+      title: "Delete this photo?",
+      subtitle:
+        "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?",
+      payload: %{photo_id: id}
+    ]
+
     socket
-    |> make_popup("delete_photo", "Delete this photo?", %{photo_id: id})
-    |> noreply()
+    |> make_delete_popup(opts)
   end
 
   @impl true
   def handle_event("delete_selected_photos_popup", _, socket) do
+    opts = [
+      event: "delete_selected_photos",
+      title: "Delete selected photos?",
+      subtitle:
+        "Are you sure you wish to permanently delete seleted photos from #{socket.assigns.gallery.name} ?"
+    ]
+
     socket
-    |> make_popup("delete_selected_photos", "Delete these photos?")
-    |> noreply()
+    |> make_delete_popup(opts)
   end
 
   @impl true
@@ -321,7 +326,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "selected_photos",
+        "toggle_selected_photos",
         %{"photo_id" => photo_id},
         %{assigns: %{selected_photos: selected_photos}} = socket
       ) do
@@ -340,77 +345,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event(
-        "client-link",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    gallery = Picsello.Repo.preload(gallery, job: :client)
-
-    link = Routes.gallery_client_show_url(socket, :show, hash)
-    client_name = gallery.job.client.name
-
-    subject = "#{gallery.name} photos"
-
-    html = """
-    <p>Hi #{client_name},</p>
-    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
-    <p>Your photos are password-protected, so you'll also need to use this password to get in: <b>#{gallery.password}</b></p>
-    <p>Happy viewing!</p>
-    """
-
-    text = """
-    Hi #{client_name},
-
-    Your gallery is ready to view! You can view the gallery here: #{link}
-
-    Your photos are password-protected, so you'll also need to use this password to get in: #{gallery.password}
-
-    Happy viewing!
-    """
-
-    socket
-    |> assign(:job, gallery.job)
-    |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(%{
-      body_html: html,
-      body_text: text,
-      subject: subject,
-      modal_title: "Share gallery",
-      is_client_gallery: false
-    })
-    |> noreply()
-  end
-
-  def handle_info(
-        {:message_composed, message_changeset},
-        %{
-          assigns: %{
-            job: job
-          }
-        } = socket
-      ) do
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
-      socket
-      |> close_modal()
-      |> noreply()
-    else
-      _error ->
-        socket
-        |> put_flash(:error, "Something went wrong")
-        |> close_modal()
-        |> noreply()
-    end
+  def handle_event("client-link", _, socket) do
+    share_gallery(socket)
   end
 
   @impl true
@@ -473,6 +409,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply
   end
 
+  @impl true
+  def handle_info({:message_composed, message_changeset}, socket) do
+    add_message_and_notify(socket, message_changeset)
+  end
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery =
       Galleries.get_gallery!(gallery_id)
@@ -497,46 +438,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp delete_photos(%{assigns: %{gallery: gallery}} = socket, selected_photos) do
-    Enum.each(selected_photos, fn photo_id ->
-      Galleries.get_photo(photo_id)
-      |> Galleries.delete_photo()
-    end)
-
-    {:ok, gallery} =
-      Galleries.update_gallery(gallery, %{
-        total_count: gallery.total_count - total(selected_photos)
-      })
-
-    socket
-    |> assign(:gallery, gallery)
-    |> assign(:selected_photos, [])
-    |> close_modal()
-    |> push_event("remove_items", %{"ids" => selected_photos})
-    |> assign_photos(@per_page)
-    |> noreply()
-  end
-
-  defp make_popup(socket, event, title, payload \\ %{}) do
-    subtitle =
-      case payload do
-        %{photo_id: _} ->
-          "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?"
-
-        _ ->
-          "Are you sure you wish to permanently delete these photos from #{socket.assigns.gallery.name} ?"
-      end
-
-    socket
-    |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
-      confirm_event: event,
-      classes: "dialog-photographer",
-      confirm_label: "Yes, delete",
-      icon: "warning-orange",
-      title: title,
-      subtitle: subtitle,
-      payload: payload
-    })
+    with {:ok, _} <- Galleries.delete_photos(selected_photos),
+         {:ok, gallery} <-
+           Galleries.update_gallery(gallery, %{
+             total_count: gallery.total_count - total(selected_photos)
+           }) do
+      socket
+      |> assign(:gallery, gallery)
+      |> assign(:selected_photos, [])
+      |> close_modal()
+      |> push_event("remove_items", %{"ids" => selected_photos})
+      |> put_flash(:gallery_success, "photos deleted successfully")
+      |> assign_photos(@per_page)
+      |> noreply()
+    else
+      _ ->
+        socket
+        |> put_flash(:gallery_success, "Could not delete photos")
+        |> close_modal()
+        |> noreply()
+    end
   end
 
   defp move_to_album_success_message(selected_photos, album_id, gallery) do

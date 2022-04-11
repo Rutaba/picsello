@@ -31,8 +31,10 @@ defmodule PicselloWeb.LayoutView do
        "border-blue-planning-300"},
       {:success, "checkmark", "bg-green-finances-100", "bg-green-finances-300",
        "text-green-finances-300", "border-green-finances-300"},
-      {:gallery_success, "tick"},
-      {:gallery_error, "warning-white"}
+      {:gallery_success, "tick", "bg-green-finances-100", "bg-green-finances-300",
+       "text-green-finances-300", "border-green-finances-300"},
+      {:gallery_error, "warning-white", "bg-red-sales-100", "bg-red-sales-300",
+       "text-red-sales-300", "border-red-sales-300"}
     ]
 
   def flash(flash) do
