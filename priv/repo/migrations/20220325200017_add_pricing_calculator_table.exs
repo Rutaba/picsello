@@ -43,5 +43,9 @@ defmodule Picsello.Repo.Migrations.AddPricing do
 
       timestamps()
     end
+
+    alter table("package_base_prices") do
+      add(:max_session_per_year, :integer)
+    end
   end
 end

@@ -3,7 +3,9 @@ defmodule Picsello.PricingCalculations do
     Repo,
     Organization,
     PricingCalculatorTaxSchedules,
-    PricingCalculatorBusinessCosts
+    PricingCalculatorBusinessCosts,
+    Packages.BasePrice,
+    Packages.CostOfLivingAdjustment
   }
 
   import Ecto.Changeset
@@ -11,11 +13,14 @@ defmodule Picsello.PricingCalculations do
 
   use Ecto.Schema
 
+  import Picsello.Repo.CustomMacros
+
   defmodule LineItem do
     use Ecto.Schema
 
     embedded_schema do
       field(:yearly_cost, Money.Ecto.Amount.Type)
+      field(:yearly_cost_base, Money.Ecto.Amount.Type)
       field(:title, :string)
       field(:description, :string)
     end
@@ -83,6 +88,7 @@ defmodule Picsello.PricingCalculations do
       :min_years_experience,
       :schedule,
       :zipcode,
+      :after_income_tax,
       :average_days_per_week,
       :average_time_per_week,
       :desired_salary,
@@ -90,6 +96,7 @@ defmodule Picsello.PricingCalculations do
       :tax_bracket,
       :take_home
     ])
+    |> validate_required([:zipcode, :job_types, :state])
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
   end
 
@@ -189,24 +196,15 @@ defmodule Picsello.PricingCalculations do
     desired_salary |> Money.subtract(taxes_owed)
   end
 
-  def calculate_take_home_income(percentage, after_tax_income) do
-    taxes_owed =
+  def calculate_take_home_income(percentage, after_tax_income),
+    do:
       after_tax_income
-      |> Money.multiply(Decimal.div(percentage, 100))
+      |> Money.subtract(Money.multiply(after_tax_income, Decimal.div(percentage, 100)))
 
-    after_tax_income |> Money.subtract(taxes_owed)
-  end
+  def calculate_monthly(%Money{amount: amount}), do: Money.new(div(amount, 12))
 
-  def calculate_monthly(%Money{amount: amount}) do
-    Money.new(div(amount, 12))
-  end
-
-  def calculate_monthly(amount) do
-    {:ok, money} = Money.parse(amount, :USD)
-    %Money{amount: finalAmount} = money
-
-    Money.new(div(finalAmount, 12))
-  end
+  def calculate_monthly(amount),
+    do: Money.new(div(Money.parse(amount, :USD) |> elem(1) |> Map.get(:amount), 12))
 
   def day_options(),
     do: [
@@ -223,7 +221,7 @@ defmodule Picsello.PricingCalculations do
     do:
       PricingCalculatorBusinessCosts
       |> Repo.all()
-      |> Enum.map(&new_map(&1))
+      |> Enum.map(&busines_cost_map(&1))
 
   def tax_schedule(),
     do: Repo.get_by(PricingCalculatorTaxSchedules, active: true)
@@ -237,7 +235,7 @@ defmodule Picsello.PricingCalculations do
       |> Repo.all()
       |> Enum.map(&{&1, &1})
 
-  defp new_map(
+  defp busines_cost_map(
          %{
            line_items: line_items,
            category: category,
@@ -249,21 +247,28 @@ defmodule Picsello.PricingCalculations do
       category: category,
       line_items:
         line_items
-        |> Enum.map(&struct(LineItem, Map.from_struct(&1))),
+        |> Enum.map(&line_items_map(&1)),
       active: active,
       description: description
     }
   end
 
+  defp line_items_map(line_item) do
+    item = struct(LineItem, Map.from_struct(line_item))
+    {:ok, value} = item |> Map.fetch(:yearly_cost)
+
+    item |> Map.put(:yearly_cost_base, value)
+  end
+
   def calculate_revenue(
         take_home,
         costs
-      ) do
-    Money.add(take_home, costs)
-  end
+      ),
+      do: Money.add(take_home, costs)
 
   def calculate_all_costs(business_costs) do
     business_costs
+    |> Enum.filter(fn %{active: active} -> active == true end)
     |> Enum.map(fn %{line_items: line_items} ->
       line_items |> calculate_costs_by_category() |> Map.get(:amount)
     end)
@@ -294,7 +299,52 @@ defmodule Picsello.PricingCalculations do
     |> Money.new()
   end
 
-  def total_business_cost(list), do: recursively_add_business_cost(list, 0)
+  def calculate_pricing_by_job_types(%{
+        min_years_experience: min_years_experience,
+        state: state,
+        schedule: schedule,
+        job_types: job_types
+      }) do
+    full_time = schedule == :full_time
+    nearest = 500
+
+    min_years_query =
+      from(base in BasePrice,
+        select: max(base.min_years_experience),
+        where: base.min_years_experience <= ^min_years_experience
+      )
+
+    from(base in BasePrice,
+      where:
+        base.full_time == ^full_time and base.job_type in ^job_types and
+          base.min_years_experience in subquery(min_years_query),
+      join: adjustment in CostOfLivingAdjustment,
+      on: adjustment.state == ^state,
+      group_by: base.job_type,
+      select: %{
+        record_count: count(base.job_type),
+        job_type: base.job_type,
+        base_price:
+          cast_money(
+            avg(
+              type(
+                nearest(adjustment.multiplier * base.base_price, ^nearest),
+                base.base_price
+              )
+            )
+          ),
+        shoot_count: type(avg(base.shoot_count), :integer),
+        max_session_per_year: type(avg(base.max_session_per_year), :integer),
+        max_session_per_month: type(avg(base.max_session_per_year / 12), :integer)
+      }
+    )
+    |> Repo.all()
+  end
+
+  def calculate_min_sessions_a_year(%Money{amount: gross_revenue}, %Money{amount: base_price}),
+    do: div(gross_revenue, base_price)
+
+  defp total_business_cost(list), do: recursively_add_business_cost(list, 0)
 
   defp recursively_add_business_cost([], acc), do: acc
   defp recursively_add_business_cost([h | t], acc), do: recursively_add_business_cost(t, acc + h)
