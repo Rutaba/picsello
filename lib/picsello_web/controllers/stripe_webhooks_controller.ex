@@ -18,7 +18,7 @@ defmodule PicselloWeb.StripeWebhooksController do
 
     {:ok, _} =
       case session.client_reference_id do
-        "order_number_" <> _ -> Cart.confirm_order(session)
+        "order_number_" <> _ -> Cart.confirm_order(session, PicselloWeb.Helpers)
         "proposal_" <> _ -> PaymentSchedules.handle_payment(session, PicselloWeb.Helpers)
       end
 

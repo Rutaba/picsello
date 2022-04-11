@@ -16,19 +16,21 @@ defmodule Picsello.Cart.Confirmations do
   1. capture the stripe funds
   """
   def confirm_order(
-        %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session
+        %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session,
+        helpers
       ) do
-    do_confirm_order(order_number, &Ecto.Multi.put(&1, :session, session))
+    do_confirm_order(order_number, &Ecto.Multi.put(&1, :session, session), helpers)
   end
 
-  def confirm_order(order_number, stripe_session_id) do
+  def confirm_order(order_number, stripe_session_id, helpers) do
     do_confirm_order(
       order_number,
-      &Ecto.Multi.run(&1, :session, __MODULE__, :fetch_session, [stripe_session_id])
+      &Ecto.Multi.run(&1, :session, __MODULE__, :fetch_session, [stripe_session_id]),
+      helpers
     )
   end
 
-  defp do_confirm_order(order_number, session_fn) do
+  defp do_confirm_order(order_number, session_fn, helpers) do
     Ecto.Multi.new()
     |> Ecto.Multi.put(:order_number, order_number)
     |> Ecto.Multi.run(:order, &load_order/2)
@@ -44,6 +46,7 @@ defmodule Picsello.Cart.Confirmations do
         {:ok, order}
 
       {:ok, %{confirmed_order: order}} ->
+        send_confirmation_email(order, helpers)
         {:ok, order}
 
       {:error, _, _, %{session: %{payment_intent: intent_id}, stripe_options: stripe_options}} =
@@ -152,5 +155,9 @@ defmodule Picsello.Cart.Confirmations do
       error ->
         error
     end
+  end
+
+  defp send_confirmation_email(order, helpers) do
+    Picsello.Notifiers.ClientNotifier.deliver_order_confirmation(order, helpers)
   end
 end

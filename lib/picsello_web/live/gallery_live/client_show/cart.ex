@@ -384,9 +384,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp product_id(%CartProduct{editor_details: %{editor_id: id}}), do: id
 
-  defp product_quantity(%CartProduct{editor_details: %{selections: selections}}),
-    do: Map.get(selections, "quantity", 1)
-
   defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
@@ -396,6 +393,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp preview_url(item), do: Cart.preview_url(item, :watermarked)
 
+  defdelegate product_quantity(product), to: Cart
   defdelegate cart_count(order), to: Cart, as: :item_count
   defdelegate product_name(product), to: Cart
   defdelegate shipping_cost(order), to: Cart

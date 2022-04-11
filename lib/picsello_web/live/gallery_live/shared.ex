@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [icon: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
-  alias Picsello.{Cart.Digital}
 
   def assign_cart_count(
         %{assigns: %{order: %Picsello.Cart.Order{placed_at: %DateTime{}}}} = socket,
@@ -63,9 +62,5 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))
   end
 
-  def price_display(%Digital{} = digital) do
-    "#{if Money.zero?(digital.price), do: "1 credit - "}#{digital.price}"
-  end
-
-  def price_display(product), do: product.price
+  defdelegate price_display(product), to: Picsello.Cart
 end

@@ -7,3 +7,7 @@ defmodule Picsello do
   if it comes from the database, an external API or others.
   """
 end
+
+defimpl Jason.Encoder, for: Money do
+  def encode(value, opts), do: value |> to_string() |> Jason.Encode.string(opts)
+end
