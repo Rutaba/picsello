@@ -33,7 +33,7 @@
         </div>
         <%= if length(@gallery.albums) > 0 do %>
         <.crumbs class="mt-2 text-blue-planning-300">
-          <:crumb to={Routes.gallery_albums_path(@socket, :albums, @gallery)}>Photos</:crumb>
+          <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
           <:crumb><span class="font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
         </.crumbs>
         <% end %>
@@ -73,37 +73,22 @@
               </div>
             </div>
             <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
-              <div id="actions" class="relative" phx-update="ignore" phx-hook="ToggleAlbumDropdown">
-                <div class="flex items-center w-64 dropdown text-ellipsis">
-                    <div class="mx-3">
-                      <span>Actions</span>
-                    </div>
-                    <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
-                    <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
-                </div>
-                <ul class="absolute z-30 hidden w-64 mt-2 bg-white rounded-md toggle-content">
-                  <%= if(is_nil(@album)) do %>
-                    <%= for album <- @gallery.albums do %>
-                    <li class="relative">
-                      <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
-                    </li>
-                    <% end %>
-                  <% else %>
-                    <li class="relative">
-                        <button class="album-actions" phx-click="remove_from_album">Remove from album</button>
-                    </li>
+              <.actions id="actions" class="w-64 text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
+                <%= if(is_nil(@album)) do %>
+                  <%= for album <- @gallery.albums do %>
+                  <li class="relative">
+                    <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
+                  </li>
                   <% end %>
-                    <li class="relative">
-                      <button class="album-actions">Download photos</button>
-                    </li>
-                    <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
-                      <button phx-click="delete_selected_photos_popup" class="flex items-center w-64 h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">
-                      Delete
-                      </button>
-                      <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
-                    </li>
-                </ul>
-              </div>
+                <% else %>
+                  <li class="relative">
+                      <button class="album-actions" phx-click="remove_from_album">Remove from album</button>
+                  </li>
+                <% end %>
+                  <li class="relative">
+                    <button class="album-actions">Download photos</button>
+                  </li>
+              </.actions>
             </div>
           </div>
 
@@ -144,6 +129,7 @@
             class="grid muuri"
             data-page={@page}
             data-id="photos"
+            data-uploading={@total_progress}
             data-total={@gallery.total_count}
             data-favorites-count={@favorites_count}
             data-is-favorites-shown={ "#{@favorites_filter}" }
@@ -168,7 +154,6 @@
 
           <div style="display: none">
             <div id="selected-mode" class={@select_mode}></div>
-            <!--<div id="selected-mode" class={"#{@select_mode} #{@upload_status}"}></div>-->
             <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
           </div>
         </div>

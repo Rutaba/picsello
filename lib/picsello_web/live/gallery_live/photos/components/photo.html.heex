@@ -32,7 +32,7 @@
                 />
             </div>    
             <% else %>
-            <div id={"img-#{@id}"} class="galleryItem" phx-click="selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+            <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
                 <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
 
                 <%= if @photo.watermarked_preview_url || @photo.preview_url do %>

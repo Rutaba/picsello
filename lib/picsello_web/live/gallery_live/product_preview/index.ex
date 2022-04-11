@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   alias Picsello.{Galleries, Repo}
   alias PicselloWeb.GalleryLive.ProductPreview.Preview
   alias PicselloWeb.GalleryLive.Photos.Upload
+  alias PicselloWeb.GalleryLive.Shared.GalleryMessageComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -85,12 +86,11 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket
     |> assign(:job, gallery.job)
     |> assign(:gallery, gallery)
-    |> PicselloWeb.ClientMessageComponent.open(%{
+    |> GalleryMessageComponent.open(%{
       body_html: html,
       body_text: text,
       subject: subject,
-      modal_title: "Share gallery",
-      is_client_gallery: false
+      modal_title: "Share gallery"
     })
     |> noreply()
   end

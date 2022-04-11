@@ -139,8 +139,9 @@ html {
 .dialog {
   @apply max-w-md bare-modal;
 }
+
 .dialog-photographer {
-  @apply max-w-md bare-modal;
+  @apply max-w-md bare-modal rounded-lg;
 }
 
 .badge {
@@ -322,15 +323,6 @@ canvas {
       }
     }
   }
-}
-
-.stroke-10 {
-  stroke-width: 10;
-}
-
-.shadow-custom {
-  --tw-shadow: inset 0 4px 4px 0 rgba(0, 0, 0, 0.06);
-    box-shadow: 0 0 #0000, 0 0 #0000, var(--tw-shadow);
 }
 /**
  * only used on photographer settings / gallery pricing

@@ -77,7 +77,7 @@
                 </div>
                 <% end %>
             </div>
-            <%= if length(@gallery.albums) >= 1 do %>
+            <%= if length(@albums) >= 1 do %>
                 <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300">
                   <%= if @album_dropdown_show do %>
                     <.icon name="up" class="w-4 h-4 mr-2 stroke-current stroke-2 close-icon" />
@@ -94,14 +94,14 @@
             <% end %>
             <div class="bg-gray-100 border-2 border-gray-200 rounded-b-lg">
               <%= if @album_dropdown_show do %>
-                <%= if length(@gallery.albums) > 0 do %>
+                <%= if length(@albums) > 0 do %>
                         <ul>
                           <li phx-click="go_to_unsorted_photos" phx-target={@myself} class="relative">
                             <button href="#!" class={"#{if @selected_album == nil, do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}>Unsorted photos</button>
                           </li>
                         </ul>
                       <% end %>
-                  <%= for album <- @gallery.albums do %>
+                  <%= for album <- @albums do %>
                         <ul>
                           <li phx-click="go_to_album_selected" phx-target={@myself} phx-value-album={album.id} class="relative">
                             <button href="#!" class={"#{if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}><%= album.name %></button>

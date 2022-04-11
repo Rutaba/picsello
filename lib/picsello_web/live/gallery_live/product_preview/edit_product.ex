@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
   require Logger
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.GalleryLive.Shared, only: [assign_photos: 3]
+  import PicselloWeb.GalleryLive.Shared
   import Ecto.Changeset
 
   alias Picsello.Repo
@@ -45,39 +45,36 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
         } = assigns,
         socket
       ) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> then(fn socket ->
-       push_event(socket, "set_preview", %{
-         preview: get_preview(preview),
-         ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
-         frame: frame,
-         coords: coords,
-         target: "#{preview.category.id}-edit"
-       })
-     end)
-     |> assign(
-       :description,
-       "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor."
-     )
-     |> assign(:page_title, "Product Preview")
-     |> assign(:page, 0)
-     |> assign(:favorites_filter, false)
-     |> assign(:preview_photo_id, nil)
-     |> assign(:selected, false)
-     |> assign_photos(@per_page, "all_photos")}
+    socket
+    |> assign(assigns)
+    |> then(fn socket ->
+      push_event(socket, "set_preview", %{
+        preview: get_preview(preview),
+        ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
+        frame: frame,
+        coords: coords,
+        target: "#{preview.category.id}-edit"
+      })
+    end)
+    |> assign(
+      :description,
+      "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor."
+    )
+    |> assign(:page_title, "Product Preview")
+    |> assign(:page, 0)
+    |> assign(:favorites_filter, false)
+    |> assign(:preview_photo_id, nil)
+    |> assign(:selected, false)
+    |> assign_photos(@per_page, "all_photos")
+    |> ok()
   end
 
   @impl true
   def handle_event(
         "click",
         %{"preview" => preview, "preview_photo_id" => preview_photo_id},
-        %{assigns: %{category_id: category_id}} = socket
+        %{assigns: %{category_id: category_id, frame: frame, coords: coords}} = socket
       ) do
-    frame = Map.get(socket.assigns, :frame)
-    coords = Map.get(socket.assigns, :coords)
-
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:selected, true)
@@ -135,4 +132,16 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
   def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
   def get_preview(_), do: path(nil)
+
+  def render(assigns) do
+    ~H"""
+    <div class="bg-white h-screen w-screen overflow-auto">
+      <.preview assigns={assigns}>
+        <div id={"preview-#{@category_id}"} class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
+          <canvas id={"canvas-#{@category_id}-edit"} width="300" height="255" class="edit bg-gray-300"></canvas>
+        </div>
+      </.preview>
+    </div>
+    """
+  end
 end

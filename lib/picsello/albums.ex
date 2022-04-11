@@ -38,15 +38,41 @@ defmodule Picsello.Albums do
   def get_album!(id), do: Repo.get!(Album, id)
 
   @doc """
+  Gets alubms by gallery id.
+
+  Return [] if the albums does not exist.
+
+  ## Examples
+
+      iex> get_albums_by_gallery_id(gallery_id)
+      [%Album{}]
+  """
+  def get_albums_by_gallery_id(gallery_id) do
+    from(a in Album,
+      where: a.gallery_id == ^gallery_id,
+      order_by: a.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Insert album
+  """
+  def insert_album(params),
+    do: Album.create_changeset(params) |> Repo.insert()
+
+  @doc """
   Update album
   """
   def update_album(album, params \\ %{}),
     do: album |> Album.update_changeset(params) |> Repo.update()
 
-  def check_is_photo_selected_as_thumbnail(url) do
-    from(a in Album,
-      where: a.thumbnail_url == ^url
+  def remove_album_thumbnail(photos) do
+    urls = Enum.map(photos, & &1.preview_url)
+
+    from(gp in Album,
+      where: gp.thumbnail_url in ^urls,
+      update: [set: [thumbnail_url: nil]]
     )
-    |> Repo.update_all(set: [thumbnail_url: nil])
   end
 end

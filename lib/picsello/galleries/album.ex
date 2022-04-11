@@ -13,7 +13,7 @@ defmodule Picsello.Galleries.Album do
     field :thumbnail_url, :string
 
     belongs_to(:gallery, Gallery)
-    has_many(:photo, Photo)
+    has_many(:photos, Photo)
 
     timestamps(type: :utc_datetime)
   end

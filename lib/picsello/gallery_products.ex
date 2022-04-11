@@ -49,11 +49,11 @@ defmodule Picsello.GalleryProducts do
     )
   end
 
-  def check_is_photo_selected_as_preview(photo_id) do
-    from(p in Picsello.Galleries.GalleryProduct,
-      where: p.preview_photo_id == ^photo_id
+  def remove_photo_preview(photo_ids) do
+    from(p in GalleryProduct,
+      where: p.preview_photo_id in ^photo_ids,
+      update: [set: [preview_photo_id: nil]]
     )
-    |> Repo.update_all(set: [preview_photo_id: nil])
   end
 
   @doc """

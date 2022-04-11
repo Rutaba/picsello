@@ -20,13 +20,14 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
   end
 
   @impl true
-  def handle_event("save", %{"gallery" => %{"name" => name}}, socket) do
-    %{assigns: %{gallery: gallery}} = socket
+  def handle_event(
+        "save",
+        %{"gallery" => %{"name" => name}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     {:ok, gallery} = Galleries.update_gallery(gallery, %{name: name})
-
-    socket
-    |> assign(:gallery, gallery)
-    |> noreply
+    send(self(), {:update_name, %{gallery: gallery}})
+    socket |> noreply
   end
 
   @impl true
@@ -44,4 +45,20 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
     do: socket |> assign(:changeset, Galleries.change_gallery(gallery, attrs))
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <div>
+      <h3 class="font-sans">Gallery name</h3>
+      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
+        <%= text_input f, :name, class: "gallerySettingsInput" %>
+        <div class="flex items-center justify-between w-full mt-5 lg:items-start">
+          <button type="button" phx-click="reset" phx-target={@myself} class="p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0">Reset</button>
+          <%= submit "Save", class: "btn-settings w-32 px-11 py-3.5 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+          </div>
+      </.form>
+    </div>
+    """
+  end
 end
