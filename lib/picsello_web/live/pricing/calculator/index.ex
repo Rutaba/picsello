@@ -118,13 +118,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
-  def handle_event("go-dashboard", %{}, socket) do
-    socket
-    |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
-    |> noreply()
-  end
-
-  @impl true
   def render(assigns) do
     ~H"""
       <.form let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"}>
@@ -317,7 +310,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <h1 class="text-3xl font-semibold">Your results have been saved and emailed to you!</h1>
           <p class="pt-4">Thanks! You can come back to this calculator at any time and modify your results.</p>
 
-          <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
+          <button class="w-full mt-6 btn-primary" type="button" phx-click="exit">
             Go to my dashboard
           </button>
         </div>
