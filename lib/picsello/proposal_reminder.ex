@@ -19,6 +19,8 @@ defmodule Picsello.ProposalReminder do
       |> next_proposal_info()
       |> Repo.all()
       |> Enum.each(&maybe_send_message(now, &1))
+    else
+      :ok
     end
   end
 
