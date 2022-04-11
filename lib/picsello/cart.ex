@@ -448,4 +448,10 @@ defmodule Picsello.Cart do
   defdelegate total_cost(order), to: Order
   defdelegate subtotal_cost(order), to: Order
   defdelegate shipping_cost(order), to: Order
+
+  def price_display(%Digital{} = digital) do
+    "#{if Money.zero?(digital.price), do: "1 credit - "}#{digital.price}"
+  end
+
+  def price_display(product), do: product.price
 end

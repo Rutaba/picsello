@@ -34,7 +34,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
         %{
           item_name: Cart.product_name(product),
           item_quantity: Cart.product_quantity(product),
-          item_price: product.price,
+          item_price: Cart.price_display(product),
           item_is_digital: false
         }
       end
@@ -44,7 +44,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
         %{
           item_name: "Digital Download",
           item_quantity: 1,
-          item_price: digital.price,
+          item_price: Cart.price_display(digital),
           item_is_digital: true
         }
       end
