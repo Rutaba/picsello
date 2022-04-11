@@ -37,13 +37,13 @@ defmodule Picsello.PricingCalculations do
     end
   end
 
-  defmodule PricingSuggestions do
+  defmodule PricingSuggestion do
     use Ecto.Schema
 
     embedded_schema do
       field(:job_type, :string)
-      field(:description, :string)
-      field(:yearly_cost, Money.Ecto.Amount.Type)
+      field(:max_session_per_year, :integer)
+      field(:base_price, Money.Ecto.Amount.Type)
     end
   end
 
@@ -74,7 +74,7 @@ defmodule Picsello.PricingCalculations do
     field(:state, :string)
     field(:zipcode, :string)
     embeds_many(:business_costs, BusinessCost)
-    embeds_many(:pricing_suggestions, PricingSuggestions)
+    embeds_many(:pricing_suggestions, PricingSuggestion)
 
     timestamps(type: :utc_datetime)
   end
@@ -98,6 +98,7 @@ defmodule Picsello.PricingCalculations do
     ])
     |> validate_required([:zipcode, :job_types, :state])
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
+    |> cast_embed(:pricing_suggestions, with: &pricing_suggestions_changeset(&1, &2))
   end
 
   defp business_cost_changeset(business_cost, attrs) do
@@ -109,6 +110,11 @@ defmodule Picsello.PricingCalculations do
   defp line_items_changeset(line_item, attrs) do
     line_item
     |> cast(attrs, [:yearly_cost, :title, :description])
+  end
+
+  defp pricing_suggestions_changeset(pricing_suggestion, attrs) do
+    pricing_suggestion
+    |> cast(attrs, [:max_session_per_year, :job_type, :base_price])
   end
 
   def compare_income_bracket(

@@ -1,5 +1,6 @@
 defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   use PicselloWeb, live_view: [layout: "calculator"]
+  use Picsello.Notifiers
 
   alias Picsello.{Repo, JobType, PricingCalculations}
 
@@ -27,9 +28,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
-  def handle_event("step", params, socket) do
+  def handle_event("start", _params, socket) do
     socket
-    |> assign_step(Map.get(params, "id", "2") |> String.to_integer())
+    |> assign_step(2)
     |> assign_changeset()
     |> noreply()
   end
@@ -50,7 +51,11 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
-  def handle_event("edit-cost", params, socket) do
+  def handle_event(
+        "edit-cost",
+        params,
+        socket
+      ) do
     category_id = Map.get(params, "id", "1")
     category = Map.get(params, "category", "1")
 
@@ -96,6 +101,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     finalStep =
       case step do
         6 -> 4
+        5 -> 5
         _ -> step + 1
       end
 
@@ -104,12 +110,18 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         socket
         |> assign(pricing_calculations: pricing_calculations)
         |> assign_step(finalStep)
-        |> assign_changeset()
-        |> noreply()
+        |> handle_step(step)
 
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event("go-dashboard", %{}, socket) do
+    socket
+    |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+    |> noreply()
   end
 
   @impl true
@@ -285,20 +297,32 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <h4 class="text-2xl font-bold">Based on what you told us—we’ve calculated some suggestions on how much to charge and how many shoots you should do.</h4>
         <p class="text-xl">The suggested pricing and shoot counts are calculated for the entire year if you focused on one.</p>
         <div class="my-6">
-          <%= for(%{job_type: job_type, max_session_per_year: max_session_per_year, base_price: base_price} <- PricingCalculations.calculate_pricing_by_job_types(@pricing_calculations)) do %>
-            <.pricing_suggestion job_type={job_type} gross_revenue={gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={max_session_per_year} base_price={base_price} />
-            <%= inputs_for @f, :pricing_suggestions, fn fp -> %>
-
-            <% end %>
+          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(@pricing_calculations)) do %>
+            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
           <% end %>
         </div>
         <h4 class="text-2xl font-bold mb-4">Financial Summary</h4>
         <.financial_review take_home={@pricing_calculations.take_home} costs={costs} />
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
-          <button type="button" class="btn-primary">Email Results</button>
+          <button type="submit" class="btn-primary">Email Results</button>
         </div>
       </.container>
+
+      <%= if @show_modal do %>
+      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+        <div class="dialog rounded-lg">
+          <.icon name="confetti" class="w-11 h-11" />
+
+          <h1 class="text-3xl font-semibold">Your results have been saved and emailed to you!</h1>
+          <p class="pt-4">Thanks! You can come back to this calculator at any time and modify your results.</p>
+
+          <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
+            Go to my dashboard
+          </button>
+        </div>
+      </div>
+    <% end %>
     """
   end
 
@@ -345,7 +369,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </ul>
         <div class="flex justify-end mt-8">
           <a href="javascript:void(0); history.back()" class="btn-secondary inline-block mr-4">Go Back</a>
-          <button type="button" class="btn-primary" phx-click="step" phx-value-id="2"> Get started</button>
+          <button type="button" class="btn-primary" phx-click="start">Get started</button>
         </div>
       </div>
     </div>
@@ -389,7 +413,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       step: 5,
       step_title: "Results",
       page_title: "Pricing Calculator step 4",
-      change: "validate"
+      change: "validate",
+      show_modal: false
     )
   end
 
@@ -499,8 +524,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </div>
           </div>
         <% else %>
-          <%= hidden_input(li, :title) %>
-          <%= hidden_input(li, :description) %>
+          <%= hidden_input li, :title %>
+          <%= hidden_input li, :description %>
           <%= hidden_input li, :yearly_cost %>
           <%= hidden_input li, :yearly_cost_base %>
       <% end %>
@@ -556,6 +581,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <div>
               <h3 class="font-bold text-lg"><%= dyn_gettext @job_type %></h3>
               <p class="text-sm">These numbers reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year.</p>
+              <input id={"calculator-step-5_pricing_suggestions_#{@index}_job_type"} name={"pricing_calculations[pricing_suggestions][#{@index}][job_type]"} type="hidden" value={@job_type}>
+              <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][max_session_per_year]"} type="hidden" value={@max_session_per_year}>
+              <input id={"calculator-step-5_pricing_suggestions_#{@index}_base_price"} name={"pricing_calculations[pricing_suggestions][#{@index}][base_price]"} type="hidden" value={@base_price}>
             </div>
           </div>
           <div class="bg-gray-100 rounded-lg flex flex-col flex-wrap items-center justify-center p-4">
@@ -651,6 +679,68 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
       </div>
     """
+  end
+
+  defp handle_step(
+         %{
+           assigns:
+             %{
+               current_user: %{email: email, name: name}
+             } = assigns
+         } = socket,
+         step
+       ) do
+    case step do
+      5 ->
+        %{
+          business_costs: business_costs,
+          take_home: take_home,
+          pricing_suggestions: pricing_suggestions
+        } = assigns.pricing_calculations
+
+        opts = [
+          take_home: take_home |> Money.to_string(),
+          projected_costs:
+            PricingCalculations.calculate_all_costs(business_costs)
+            |> Money.to_string(),
+          gross_revenue:
+            PricingCalculations.calculate_revenue(
+              take_home,
+              PricingCalculations.calculate_all_costs(business_costs)
+            )
+            |> Money.to_string(),
+          pricing_suggestions:
+            pricing_suggestions
+            |> Enum.map(&pricing_suggestions_for_email(&1))
+        ]
+
+        sendgrid_template(:calculator_template, opts)
+        |> to({name, email})
+        |> from({"Picsello", "noreply@picsello.com"})
+        |> deliver_later()
+
+        socket
+        |> assign(show_modal: true)
+        |> assign_changeset()
+        |> noreply()
+
+      _ ->
+        socket
+        |> assign_changeset()
+        |> noreply()
+    end
+  end
+
+  defp pricing_suggestions_for_email(%{
+         base_price: base_price,
+         job_type: job_type,
+         max_session_per_year: max_session_per_year
+       }) do
+    %{
+      base_price: base_price |> Money.to_string(),
+      job_type: dyn_gettext(job_type),
+      max_session_per_year: max_session_per_year
+    }
   end
 
   defp output_step_nav(done, step) do
