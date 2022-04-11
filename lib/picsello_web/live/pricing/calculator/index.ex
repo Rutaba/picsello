@@ -124,7 +124,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 2} = assigns) do
     ~H"""
       <.container {assigns}>
-        <h4 class="text-2xl font-bold">We need to know a little about what you do currently in order to build accurate results.</h4>
+        <h4 class="sm:text-2xl text-xl font-bold">We need to know a little about what you do currently in order to build accurate results.</h4>
 
         <% input_name = input_name(@f, :job_types) <> "[]" %>
         <div class="flex flex-col pb-1">
@@ -133,39 +133,39 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <i class="italic font-light">(Select one or more)</i>
           </p>
 
-          <div class="mt-2 grid grid-cols-3 gap-3 sm:gap-5">
+          <div class="mt-2 grid sm:grid-cols-3 grid-cols-2 gap-3 sm:gap-5">
             <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
               <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
             <% end %>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 sm:gap-5">
-            <label class="flex flex-col mt-4">
-              <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
-              <%= select @f, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
-            </label>
+        <div class="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
+            <%= select @f, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+          </label>
 
-            <label class="flex flex-col mt-4">
-              <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
-              <%= input @f, :min_years_experience, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
-              <%= error_tag @f, :min_years_experience, class: "text-red-sales-300 text-sm" %>
-            </label>
-          </div>
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
+            <%= input @f, :min_years_experience, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
+            <%= error_tag @f, :min_years_experience, class: "text-red-sales-300 text-sm" %>
+          </label>
+        </div>
 
-          <div class="grid grid-cols-2 gap-3 sm:gap-5">
-            <label class="flex flex-col mt-4">
-              <p class="py-2 font-extrabold">What's your zipcode?</p>
-              <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
-              <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
-            </label>
+        <div class="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">What's your zipcode?</p>
+            <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
+            <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
+          </label>
 
-            <label class="flex flex-col mt-4">
-              <p class="py-2 font-extrabold">Where’s your business based?</p>
-              <%= select @f, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
-              <%= error_tag @f, :state, class: "text-red-sales-300 text-sm" %>
-            </label>
-          </div>
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">Where’s your business based?</p>
+            <%= select @f, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
+            <%= error_tag @f, :state, class: "text-red-sales-300 text-sm" %>
+          </label>
+        </div>
 
         <div class="flex justify-end mt-8">
           <button type="submit" class="btn-primary" disabled={!@changeset.valid?}>Next</button>
@@ -189,9 +189,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
         <p class="py-2 font-extrabold">What does your average weekly dedication look like for your photography business? <span class="italic font-normal">(include all marketing, client communications, shoots, editing, travel, weekends, prep, etc)</span></p>
-        <div class="flex w-full mb-8 mt-4">
-          <div class="w-1/3">
-            <label class="flex flex-col border-r-2">
+        <div class="flex flex-wrap w-full sm:mb-8 mt-4">
+          <div class="sm:w-1/3 w-full">
+            <label class="flex flex-col sm:border-r-2">
               <p class="pb-2">My average time each week is:</p>
               <div class="flex items-center">
                 <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
@@ -200,7 +200,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
               </div>
             </label>
           </div>
-          <div class="w-2/3 pl-12">
+          <div class="sm:w-2/3 w-full sm:pl-12 mt-4 sm:mt-0">
             <label class="flex flex-col">
               <p class="pb-2">I frequently work the following days:</p>
               <div class="mt-2 flex flex-wrap">
@@ -214,33 +214,33 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <p class="py-2 font-extrabold">How much do you want to take home a year after taxes? <span class="italic font-normal">(including healthcare costs)</span></p>
         <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
-          <label class="flex items-center justify-between mt-4">
+          <label class="flex flex-wrap items-center justify-between mt-4">
             <p class="font-extrabold">Annual Desired Salary</p>
-            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 w-40 text-center", phx_hook: "PriceMask" %>
+            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask" %>
             <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm" %>
           </label>
-          <hr class="mt-4 mb-4" />
-          <div class="flex items-center justify-between">
+          <hr class="mt-4 mb-4 sm:block hidden"/>
+          <div class="flex flex-wrap items-center justify-between">
             <p class="font-extrabold">Approximate Tax Bracket <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
             <%= hidden_input(@f, :tax_bracket, value: tax_bracket.percentage ) %>
-            <p class="w-40 text-center font-bold"><%= tax_bracket.percentage %>%</p>
+            <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= tax_bracket.percentage %>%</p>
           </div>
-          <hr class="mt-4 mb-4" />
-          <div class="flex items-center justify-between">
+          <hr class="mt-4 mb-4 sm:block hidden" />
+          <div class="flex flex-wrap items-center justify-between">
             <p class="font-extrabold py-2">Approximate After Income Tax <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Using the formula found here. We calculated the amount of income you would receive after taxes." class="ml-1" /></span></p>
             <%= hidden_input(@f, :after_income_tax, value: after_tax_income ) %>
-            <p class="w-40 text-center font-bold"><%= after_tax_income %></p>
+            <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= after_tax_income %></p>
           </div>
-          <hr class="mt-4 mb-4" />
-          <div class="flex items-center justify-between">
+          <hr class="mt-4 mb-4 sm:block hidden" />
+          <div class="flex flex-wrap items-center justify-between">
             <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage this is calculate after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
-            <p class="w-40 text-center font-bold"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
+            <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
           </div>
-          <hr class="mt-4 mb-4" />
-          <div class="flex items-center justify-between">
+          <hr class="mt-4 mb-4 sm:block hidden" />
+          <div class="flex flex-wrap items-center justify-between">
             <p class="font-extrabold py-2">Approximate After Income Tax</p>
             <%= hidden_input(@f, :take_home, value: take_home ) %>
-            <p class="w-40 text-center font-bold"><%= take_home %></p>
+            <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= take_home %></p>
           </div>
         </div>
         <div class="flex justify-end mt-8">
@@ -305,7 +305,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 6} = assigns) do
     ~H"""
       <.container {assigns}>
-        <div class="grid grid-cols-3 gap-2 items-center w-full border-blue-planning-300 border-b-8">
+        <div class="sm:grid hidden sm:grid-cols-3 gap-2 items-center w-full border-blue-planning-300 border-b-8 ">
           <div class="col-start-1 font-bold pb-4">Item</div>
           <div class="col-start-2 font-bold pb-4 text-center">Your Cost Monthy</div>
           <div class="col-start-3 font-bold pb-4 text-center">Your Cost Yearly</div>
@@ -322,7 +322,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   defp step(assigns) do
     ~H"""
-    <div class="flex flex-col items-center justify-center w-screen min-h-screen p-5 bg-gray-100 relative">
+    <div class="flex flex-col items-center sm:justify-center w-screen min-h-screen p-5 bg-gray-100 relative">
       <div class="circleBtn absolute bottom-12 left-12">
         <ul>
           <li>
@@ -446,7 +446,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base w-12 flex items-center justify-center mr-4 capitalize #{@class}",
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm leading-tight sm:text-base w-12 flex items-center justify-center mr-4 capitalize mb-4 #{@class}",
         %{"bg-blue-planning-100 border-blue-planning-300 bg-blue-planning-300" => @checked}
       )}>
         <input class="hidden" type={@type} name={@name} value={@day} checked={@checked} disabled={@disabled} />
@@ -485,17 +485,17 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <%= hidden_input @form, :description %>
         <%= hidden_input @form, :active %>
         <%= if input_value(@form, :id) == @category_id do %>
-          <div class="grid grid-cols-3 gap-2 items-center w-full even:bg-gray-100">
-            <div class="col-start-1 p-4">
+          <div class="sm:grid grid-cols-3 gap-2 items-center w-full even:bg-gray-100">
+            <div class="col-start-1 p-4 sm:w-auto w-full sm:text-left text-center">
               <strong><%= input_value(li, :title) %></strong> <br />
               <%= input_value(li, :description) %>
             </div>
-            <div class="col-start-2 p-4 text-center">
+            <div class="col-start-2 p-4 text-center sm:w-auto w-full">
               <%= input_value(li, :yearly_cost) |> PricingCalculations.calculate_monthly() %><span class="cursor-pointer text-blue-planning-300 border-dotted border-b-2 border-blue-planning-300" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-monthly-#{li.id}"} >/month <span class="bg-white hidden p-1 text-sm rounded shadow text-black text-left" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) |> PricingCalculations.calculate_monthly() %> /month</span></span>
             </div>
-            <div class="col-start-3 p-4 flex items-center text-center">
+            <div class="col-start-3 p-4 flex items-center text-center sm:w-auto w-full">
               <%= hidden_input li, :yearly_cost_base %>
-              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 w-40 text-center", phx_hook: "PriceMask" %><span class="cursor-pointer text-blue-planning-300 border-dotted border-b-2 border-blue-planning-300 ml-2" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-yearly-#{li.id}"}>/year <span class="bg-white hidden p-1 text-sm rounded shadow text-black text-left" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) %> /year</span></span>
+              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 sm:w-40 w-full text-center", phx_hook: "PriceMask" %><span class="cursor-pointer text-blue-planning-300 border-dotted border-b-2 border-blue-planning-300 ml-2" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-yearly-#{li.id}"}>/year <span class="bg-white hidden p-1 text-sm rounded shadow text-black text-left" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) %> /year</span></span>
             </div>
           </div>
         <% else %>
@@ -506,8 +506,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <% end %>
     <% end %>
     <%= if input_value(@form, :id) == @category_id do %>
-    <div class="grid grid-cols-3 gap-2 items-center w-full">
-      <div class="col-start-1 p-4">
+    <div class="sm:grid sm:grid-cols-3 gap-2 items-center w-full">
+      <div class="col-start-1 p-4 sm:text-left text-center">
         <p class="font-bold text-lg"><%= input_value(@form, :category) %> Totals</p>
       </div>
       <div class="col-start-2 p-4">
@@ -523,18 +523,18 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def financial_review(assigns) do
     ~H"""
-      <div class="bg-gray-100 flex justify-between items-center p-8 my-6 rounded-lg" {intro_hints_only("intro_hints_only")}>
-        <div>
+      <div class="bg-gray-100 flex flex-wrap justify-between items-center p-8 my-6 rounded-lg" {intro_hints_only("intro_hints_only")}>
+        <div class="sm:w-auto w-full">
           <h5 class="text-center font-bold text-4xl mb-2"><%= @take_home %></h5>
           <p class="italic text-center">Desired Take Home</p>
         </div>
-        <p class="text-center font-bold text-5xl mb-8">+</p>
-        <div>
+        <p class="text-center font-bold text-5xl sm:mb-8 sm:w-auto w-full">+</p>
+        <div class="sm:w-auto w-full">
           <h5 class="text-center font-bold text-4xl mb-2"><%= @costs %></h5>
           <p class="italic text-center">Projected Costs</p>
         </div>
-        <p class="text-center font-bold text-5xl mb-8">=</p>
-        <div>
+        <p class="text-center font-bold text-5xl sm:mb-8 sm:w-auto w-full">=</p>
+        <div class="sm:w-auto w-full">
           <h5 class="text-center font-bold text-4xl mb-2"><%= PricingCalculations.calculate_revenue(@take_home, @costs) %></h5>
           <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
         </div>
@@ -548,7 +548,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
     ~H"""
       <div class="border p-4 rounded-lg mb-4">
-        <div class="grid grid-cols-3 gap-3 sm:gap-5">
+        <div class="grid sm:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
           <div class="flex">
             <div class="flex items-center justify-center w-12 h-12 ml-1 mr-3 rounded-full flex-shrink-0 bg-gray-100">
               <.icon name={@job_type} class="fill-current" width="24" height="24" />
@@ -558,7 +558,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
               <p class="text-sm">These numbers reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year.</p>
             </div>
           </div>
-          <div class="bg-gray-100 rounded-lg flex flex-col flex-wrap items-center justify-center ">
+          <div class="bg-gray-100 rounded-lg flex flex-col flex-wrap items-center justify-center p-4">
             <span class="block w-full text-center text-2xl font-bold">
             <%= min_sessions_per_year %>
             </span>
@@ -566,7 +566,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
               Min. Shoots per year
             </span>
           </div>
-          <div class="bg-black rounded-lg flex flex-col flex-wrap items-center justify-center text-white">
+          <div class="bg-black rounded-lg flex flex-col flex-wrap items-center justify-center text-white p-4">
             <span class="block w-full text-center text-2xl font-bold">
               <%= @base_price %>
             </span>
@@ -586,7 +586,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def sidebar_nav(assigns) do
     ~H"""
-    <nav class="bg-gray-100 p-4 mt-8 rounded-lg">
+    <nav class="bg-gray-100 p-4 mt-8 rounded-lg sm:block hidden">
       <ul>
         <.sidebar_step current_step={@step} step={1} title="Information about your business" />
         <.sidebar_step current_step={@step} step={2} title="Financial & time goals" />
@@ -621,12 +621,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def container(assigns) do
     ~H"""
       <div class="flex w-screen min-h-screen bg-gray-100 relative">
-        <div class="bg-white w-1/4 px-12 py-12 h-screen flex flex-col fixed">
-          <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 mb-10" />
-          <h3 class="text-4xl font-bold mb-4">Pricing Calculator</h3>
-          <p class="text-2xl mb-4">You probably aren't charging enough and we'd like to help</p>
+        <div class="bg-white sm:w-1/4 w-full sm:px-12 sm:py-12 px-8 py-8 sm:h-screen flex flex-col fixed">
+          <div class="flex justify-between sm:block">
+            <.icon name="logo" class="ml-16 sm:ml-0 w-32 h-7 sm:h-11 sm:w-48 sm:mb-10" />
+            <h3 class="sm:text-4xl text-xl font-bold sm:mb-4">Pricing Calculator</h3>
+          </div>
+          <p class="text-2xl mb-4 sm:block hidden">You probably aren't charging enough and we'd like to help</p>
           <.sidebar_nav step={@step} />
-          <div class="circleBtn mt-auto static">
+          <div class="circleBtn sm:mt-auto top-5 left-5 sm:static absolute">
             <ul>
               <li>
                   <a phx-click="exit">
@@ -637,9 +639,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </ul>
           </div>
         </div>
-        <div class="w-3/4 flex flex-col pb-32 ml-auto">
-          <div class="max-w-5xl w-full mx-auto mt-40">
-            <h1 class="text-4xl font-bold mb-12 flex items-center -ml-14"><%= if @step == 6 do %><button type="submit" disabled={!@changeset.valid?} class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><span class="-mt-1"><%= @step - 1 %></span></span><% end %><%= @step_title %></h1>
+        <div class="sm:w-3/4 w-full flex flex-col sm:pb-32 pb-12 ml-auto px-4 sm:px-0">
+          <div class="max-w-5xl w-full mx-auto sm:mt-40 mt-32">
+            <h1 class="sm:text-4xl text-2xl font-bold mb-12 flex items-center sm:-ml-14"><%= if @step == 6 do %><button type="submit" disabled={!@changeset.valid?} class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><span class="-mt-1"><%= @step - 1 %></span></span><% end %><%= @step_title %></h1>
           </div>
           <div class="max-w-5xl w-full mx-auto bg-blue-planning-300 rounded-lg overflow-hidden">
             <div class="bg-white ml-3 px-6 pt-8 pb-6 sm:p-14">
