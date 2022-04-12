@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{Job, Repo, Client}
+  alias Picsello.{Job, Jobs, Repo}
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1]
 
   @impl true
@@ -57,14 +57,8 @@ defmodule PicselloWeb.JobLive.NewComponent do
   def handle_event("save", %{"job" => params}, %{assigns: %{current_user: current_user}} = socket) do
     job = socket |> build_changeset(params) |> Ecto.Changeset.apply_changes()
 
-    old_client =
-      Repo.get_by(Client,
-        email: job.client.email |> String.downcase(),
-        organization_id: current_user.organization_id
-      )
-
     case Ecto.Multi.new()
-         |> maybe_upsert_client(old_client, job.client, current_user.organization_id)
+         |> Jobs.maybe_upsert_client(job, current_user)
          |> Ecto.Multi.insert(
            :lead,
            &Job.create_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
@@ -76,38 +70,6 @@ defmodule PicselloWeb.JobLive.NewComponent do
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
-  end
-
-  defp maybe_upsert_client(
-         multi,
-         %Client{id: id, name: name, phone: phone} = old_client,
-         new_client,
-         _organization_id
-       )
-       when id != nil and (name == nil or phone == nil) do
-    attrs =
-      old_client
-      |> Map.take([:name, :phone])
-      |> Enum.filter(fn {_, v} -> v != nil end)
-      |> Enum.into(%{name: new_client.name, phone: new_client.phone})
-
-    Ecto.Multi.update(multi, :client, Client.edit_contact_changeset(old_client, attrs))
-  end
-
-  defp maybe_upsert_client(multi, %Client{id: id} = old_client, _new_client, _organization_id)
-       when id != nil do
-    Ecto.Multi.put(multi, :client, old_client)
-  end
-
-  defp maybe_upsert_client(multi, nil = _old_client, new_client, organization_id) do
-    Ecto.Multi.insert(
-      multi,
-      :client,
-      new_client
-      |> Map.take([:name, :email, :phone])
-      |> Map.put(:organization_id, organization_id)
-      |> Client.create_changeset()
-    )
   end
 
   defp build_changeset(

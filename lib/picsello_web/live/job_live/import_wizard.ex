@@ -2,7 +2,17 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Job, Package, Packages.Download, Packages.PackagePricing, Repo, BookingProposal}
+
+  alias Picsello.{
+    Job,
+    Jobs,
+    Package,
+    Packages.Download,
+    Packages.PackagePricing,
+    Repo,
+    BookingProposal
+  }
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1]
 
@@ -428,10 +438,18 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     import_job(socket)
   end
 
-  defp import_job(%{assigns: assigns} = socket) do
+  defp import_job(%{assigns: %{current_user: current_user} = assigns} = socket) do
+    job = assigns.job_changeset |> Ecto.Changeset.apply_changes()
+
     result =
       Ecto.Multi.new()
-      |> Ecto.Multi.insert(:job, assigns.job_changeset |> Map.put(:action, nil))
+      |> Jobs.maybe_upsert_client(job, current_user)
+      |> Ecto.Multi.insert(:job, fn changes ->
+        assigns.job_changeset
+        |> Ecto.Changeset.delete_change(:client)
+        |> Ecto.Changeset.put_change(:client_id, changes.client.id)
+        |> Map.put(:action, nil)
+      end)
       |> Ecto.Multi.insert(:package, assigns.package_changeset |> Map.put(:action, nil))
       |> Ecto.Multi.update(:job_update, fn changes ->
         Job.add_package_changeset(changes.job, %{package_id: changes.package.id})
