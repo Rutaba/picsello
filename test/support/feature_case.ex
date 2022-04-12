@@ -266,6 +266,26 @@ defmodule Picsello.FeatureCase do
       |> click(button("Submit"))
       |> then(&wait_for_path_to_change_from(&1, path <> "/login"))
     end
+
+    def tax_schedule(%{session: _session}) do
+      Picsello.PricingCalculatorTaxSchedules.changeset(
+        %Picsello.PricingCalculatorTaxSchedules{},
+        Picsello.Factory.tax_schedule_factory()
+      )
+      |> Picsello.Repo.insert!()
+
+      {:ok, %{}}
+    end
+
+    def business_costs(%{session: _session}) do
+      Picsello.PricingCalculatorBusinessCosts.changeset(
+        %Picsello.PricingCalculatorBusinessCosts{},
+        Picsello.Factory.business_cost_factory()
+      )
+      |> Picsello.Repo.insert!()
+
+      {:ok, %{}}
+    end
   end
 
   use ExUnit.CaseTemplate

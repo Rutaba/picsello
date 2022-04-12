@@ -331,7 +331,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <.cost_item form={fp} category_id={@category_id} changeset={@changeset} />
         <% end %>
         <div class="flex justify-end mt-8">
-          <button type="submit" class="btn-primary mr-4" disabled={!@changeset.valid?}>Save & Go Back</button>
+          <button type="submit" class="btn-primary mr-4" disabled={!@changeset.valid?}>Save & go back</button>
         </div>
       </.container>
     """
@@ -361,7 +361,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <li class="flex items-center mb-2 md:w-1/2 w-full"><span class="bg-blue-planning-300 text-white w-8 h-8 block flex items-center justify-center mr-2 rounded-full font-bold"><span class="-mt-1">4</span></span>Results</li>
         </ul>
         <div class="flex justify-end mt-8">
-          <a href="javascript:void(0); history.back()" class="btn-secondary inline-block mr-4">Go Back</a>
+          <a href="javascript:void(0); history.back()" class="btn-secondary inline-block mr-4">Go back</a>
           <button type="button" class="btn-primary" phx-click="start">Get started</button>
         </div>
       </div>
@@ -649,7 +649,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <p class="text-2xl mb-4 sm:block hidden">You probably aren't charging enough and we'd like to help</p>
           <.sidebar_nav step={@step} />
-          <div class="circleBtn sm:mt-auto top-5 left-5 sm:static absolute">
+          <div class="circleBtn sm:bottom-8 sm:left-8 sm:top-auto bottom-auto top-5 left-5 absolute">
             <ul>
               <li>
                   <a phx-click="exit">

@@ -161,8 +161,15 @@ defmodule Picsello.PricingCalculations do
   def get_income_bracket(value) do
     %{income_brackets: income_brackets} = tax_schedule()
 
+    clean_value =
+      case value do
+        "$" -> Money.new(000)
+        nil -> Money.new(000)
+        _ -> value
+      end
+
     income_brackets
-    |> Enum.filter(fn bracket -> compare_income_bracket(bracket, value) end)
+    |> Enum.filter(fn bracket -> compare_income_bracket(bracket, clean_value) end)
     |> Enum.at(0)
   end
 
@@ -189,9 +196,35 @@ defmodule Picsello.PricingCalculations do
           fixed_cost: fixed_cost,
           percentage: percentage
         },
+        nil
+      ) do
+    desired_salary = Money.new(000)
+
+    taxes_owed =
+      desired_salary
+      |> Money.subtract(fixed_cost_start)
+      |> Money.multiply(Decimal.div(percentage, 100))
+      |> Money.add(fixed_cost)
+
+    desired_salary |> Money.subtract(taxes_owed)
+  end
+
+  def calculate_after_tax_income(
+        %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
+          fixed_cost_start: fixed_cost_start,
+          fixed_cost: fixed_cost,
+          percentage: percentage
+        },
         desired_salary_text
       ) do
-    {:ok, desired_salary} = Money.parse(desired_salary_text)
+    clean_value =
+      case desired_salary_text do
+        "$" -> "$0.00"
+        nil -> "$0.00"
+        _ -> desired_salary_text
+      end
+
+    {:ok, desired_salary} = Money.parse(clean_value)
 
     taxes_owed =
       desired_salary
