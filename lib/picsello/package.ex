@@ -116,7 +116,7 @@ defmodule Picsello.Package do
       ~w[base_price download_count download_each_price base_multiplier print_credits buy_all]a
     )
     |> validate_required(~w[base_price download_count download_each_price]a)
-    |> validate_money(:base_price)
+    |> validate_money(:base_price, greater_than_or_equal_to: 200)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
     |> then(fn changeset ->
