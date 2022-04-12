@@ -41,7 +41,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
            success_url:
              "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
-           trial_days: 180
+           trial_days: 184
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
