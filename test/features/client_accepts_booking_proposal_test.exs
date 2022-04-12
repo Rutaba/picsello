@@ -143,6 +143,13 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Send"))
       |> assert_text("Your message has been sent")
       |> click(button("Close"))
+
+      assert_receive {:delivered_email, email}
+      %{"subject" => subject, "body" => body} = email |> email_substitutions
+      assert "You’ve got mail!" = subject
+      assert body =~ "You have received a reply from John!"
+
+      client_session
       |> click(button("To-Do Review your proposal"))
       |> assert_has(
         definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))

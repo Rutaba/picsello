@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
-  alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules}
+  alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -90,11 +90,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       ) do
     flash =
       changeset
-      |> Ecto.Changeset.change(job_id: job_id, outbound: false)
+      |> Ecto.Changeset.change(job_id: job_id, outbound: false, read_at: nil)
       |> Ecto.Changeset.apply_changes()
       |> Repo.insert()
       |> case do
-        {:ok, _} ->
+        {:ok, message} ->
+          Messages.notify_inbound_message(message, PicselloWeb.Helpers)
+
           &PicselloWeb.ConfirmationComponent.open(&1, %{
             title: "Contact #{organization_name}",
             subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
