@@ -32,8 +32,8 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             </div>
 
           <% :error -> %>
-            <button type="submit" phx-disable-with="Retry Stripe Account" class={@class}>
-              Retry Stripe Account
+            <button type="submit" phx-disable-with="Retry Stripe account" class={@class}>
+              Retry Stripe account
             </button>
             <em class={"block pt-1 text-xs text-red-sales-300 " <> @error_class}>Error accessing your Stripe information.</em>
 
@@ -43,21 +43,21 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             </button>
 
           <% :missing_information -> %>
-            <button type="submit" phx-disable-with="Stripe Account Incomplete" class={@class}>
-              Stripe Account Incomplete
+            <button type="submit" phx-disable-with="Stripe Account incomplete" class={@class}>
+              Stripe Account incomplete
             </button>
             <em class="block pt-1 text-xs text-center text-red-sales-300">Please provide missing information.</em>
 
           <% :pending_verification -> %>
-            <button type="submit" phx-disable-with="Check Stripe Status" class={@class}>
-              Check Stripe Status
+            <button type="submit" phx-disable-with="Check Stripe status" class={@class}>
+              Check Stripe status
             </button>
             <em class="block pt-1 text-xs text-center">Your account has been created. Please wait for Stripe to verify your information.</em>
 
           <% :charges_enabled -> %>
             <%= link to: URI.parse("https://dashboard.stripe.com/"), target: "_blank" do %>
               <button type="button" class={@class}>
-                Go to Stripe Account
+                Go to Stripe account
               </button>
             <% end %>
 
