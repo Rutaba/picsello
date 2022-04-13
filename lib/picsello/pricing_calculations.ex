@@ -161,7 +161,7 @@ defmodule Picsello.PricingCalculations do
   def get_income_bracket(value) do
     %{income_brackets: income_brackets} = tax_schedule()
 
-    clean_value =
+    scrub_input =
       case value do
         "$" -> Money.new(000)
         nil -> Money.new(000)
@@ -169,7 +169,7 @@ defmodule Picsello.PricingCalculations do
       end
 
     income_brackets
-    |> Enum.filter(fn bracket -> compare_income_bracket(bracket, clean_value) end)
+    |> Enum.filter(fn bracket -> compare_income_bracket(bracket, scrub_input) end)
     |> Enum.at(0)
   end
 
@@ -191,22 +191,10 @@ defmodule Picsello.PricingCalculations do
   end
 
   def calculate_after_tax_income(
-        %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
-          fixed_cost_start: fixed_cost_start,
-          fixed_cost: fixed_cost,
-          percentage: percentage
-        },
+        %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{},
         nil
       ) do
-    desired_salary = Money.new(000)
-
-    taxes_owed =
-      desired_salary
-      |> Money.subtract(fixed_cost_start)
-      |> Money.multiply(Decimal.div(percentage, 100))
-      |> Money.add(fixed_cost)
-
-    desired_salary |> Money.subtract(taxes_owed)
+    Money.new(000)
   end
 
   def calculate_after_tax_income(
@@ -217,14 +205,13 @@ defmodule Picsello.PricingCalculations do
         },
         desired_salary_text
       ) do
-    clean_value =
+    scrub_input =
       case desired_salary_text do
         "$" -> "$0.00"
-        nil -> "$0.00"
         _ -> desired_salary_text
       end
 
-    {:ok, desired_salary} = Money.parse(clean_value)
+    {:ok, desired_salary} = Money.parse(scrub_input)
 
     taxes_owed =
       desired_salary
@@ -242,8 +229,16 @@ defmodule Picsello.PricingCalculations do
 
   def calculate_monthly(%Money{amount: amount}), do: Money.new(div(amount, 12))
 
-  def calculate_monthly(amount),
-    do: Money.new(div(Money.parse(amount, :USD) |> elem(1) |> Map.get(:amount), 12))
+  def calculate_monthly(amount) do
+    scrub_input =
+      case amount do
+        "$" -> "$0.00"
+        nil -> "$0.00"
+        _ -> amount
+      end
+
+    Money.new(div(Money.parse(scrub_input, :USD) |> elem(1) |> Map.get(:amount), 12))
+  end
 
   def day_options(),
     do: [
@@ -325,7 +320,14 @@ defmodule Picsello.PricingCalculations do
   def calculate_costs_by_category(_line_items, %{"line_items" => line_items} = _params) do
     line_items
     |> Enum.map(fn {_k, %{"yearly_cost" => yearly_cost}} ->
-      Money.parse(yearly_cost, :USD) |> elem(1) |> Map.get(:amount)
+      scrub_input =
+        case yearly_cost do
+          "$" -> "$0.00"
+          "" -> "$0.00"
+          _ -> yearly_cost
+        end
+
+      Money.parse(scrub_input, :USD) |> elem(1) |> Map.get(:amount)
     end)
     |> total_business_cost()
     |> Money.new()

@@ -5,9 +5,11 @@ defmodule Picsello.CreatePricingCalculationTest do
   setup :business_costs
 
   setup do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
     insert(:cost_of_living_adjustment)
 
-    %{
+    user = %{
       user:
         insert(:user,
           organization: %{
@@ -21,11 +23,16 @@ defmodule Picsello.CreatePricingCalculationTest do
         )
         |> onboard!
     }
+
+    user
   end
 
   setup :authenticated
 
-  feature "user creates pricing calculation", %{session: session} do
+  feature "user creates pricing calculation", %{
+    session: session,
+    user: %{name: user_name, email: user_email}
+  } do
     session
     |> click(link("calculate your pricing"))
     |> click(button("Get started"))
@@ -59,6 +66,35 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> assert_text("$30,858.91")
     |> click(button("Edit costs"))
     |> assert_text("Edit Equipment costs")
+    |> assert_text("Camera")
+    |> fill_in(css("#calculator-step-6_business_costs_0_line_items_0_yearly_cost"),
+      with: "$7000"
+    )
+    |> assert_text("$583.33")
+    |> assert_text("$625.00")
+    |> assert_text("$7,500.00")
+    |> click(button("Save & go back"))
+    |> assert_text("$7,500")
+    |> click(button("Next"))
+    |> assert_text("Results")
+    |> click(button("Email results"))
+    |> assert_text("Your results have been saved")
+    |> click(button("Go to my dashboard"))
+
+    assert_receive {:delivered_email,
+                    %{
+                      to: [{^user_name, ^user_email}],
+                      private: %{
+                        send_grid_template: %{
+                          dynamic_template_data: %{
+                            "gross_revenue" => "$31,858.91",
+                            "pricing_suggestions" => [],
+                            "projected_costs" => "$7,500.00",
+                            "take_home" => "$24,358.91"
+                          }
+                        }
+                      }
+                    }}
   end
 
   feature "user see validation error when calculating price", %{session: session} do
@@ -93,5 +129,13 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> click(css(".circleBtn a"))
     |> assert_path("/home")
+  end
+
+  feature "user visits from packages", %{session: session} do
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> click(link("use here"))
+    |> assert_path("/pricing/calculator")
   end
 end

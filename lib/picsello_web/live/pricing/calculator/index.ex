@@ -117,6 +117,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     end
   end
 
+  def handle_event(
+        "save",
+        _params,
+        %{assigns: %{step: step}} = socket
+      ) do
+    socket
+    |> handle_step(step)
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -138,14 +147,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <i class="italic font-light">(Select one or more)</i>
           </p>
 
-          <div class="mt-2 grid sm:grid-cols-3 grid-cols-2 gap-3 sm:gap-5">
+          <div class="mt-2 grid md:grid-cols-3 grid-cols-2 gap-3 sm:gap-5">
             <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
               <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
             <% end %>
           </div>
         </div>
 
-        <div class="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
+        <div class="grid md:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
           <label class="flex flex-col mt-4">
             <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
             <%= select @f, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
@@ -298,7 +307,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <.financial_review take_home={@pricing_calculations.take_home} costs={costs} />
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
-          <button type="submit" class="btn-primary">Email Results</button>
+          <button type="submit" class="btn-primary">Email results</button>
         </div>
       </.container>
 
@@ -322,7 +331,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 6} = assigns) do
     ~H"""
       <.container {assigns}>
-        <div class="sm:grid hidden sm:grid-cols-3 gap-2 items-center w-full border-blue-planning-300 border-b-8 ">
+        <div class="lg:grid hidden lg:grid-cols-3 gap-2 items-center w-full border-blue-planning-300 border-b-8 ">
           <div class="col-start-1 font-bold pb-4">Item</div>
           <div class="col-start-2 font-bold pb-4 text-center">Your Cost Monthy</div>
           <div class="col-start-3 font-bold pb-4 text-center">Your Cost Yearly</div>
@@ -503,17 +512,17 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <%= hidden_input @form, :description %>
         <%= hidden_input @form, :active %>
         <%= if input_value(@form, :id) == @category_id do %>
-          <div class="sm:grid grid-cols-3 gap-2 items-center w-full even:bg-gray-100">
-            <div class="col-start-1 p-4 sm:w-auto w-full sm:text-left text-center">
+          <div class="lg:grid grid-cols-3 gap-2 items-center w-full even:bg-gray-100">
+            <div class="col-start-1 p-4 lg:w-auto w-full lg:text-left text-center">
               <strong><%= input_value(li, :title) %></strong> <br />
               <%= input_value(li, :description) %>
             </div>
-            <div class="col-start-2 p-4 text-center sm:w-auto w-full">
+            <div class="col-start-2 p-4 text-center lg:w-auto w-full">
               <%= input_value(li, :yearly_cost) |> PricingCalculations.calculate_monthly() %><span class="cursor-pointer text-blue-planning-300 border-dotted border-b-2 border-blue-planning-300" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-monthly-#{li.id}"} >/month <span class="bg-white hidden p-1 text-sm rounded shadow text-black text-left" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) |> PricingCalculations.calculate_monthly() %> /month</span></span>
             </div>
-            <div class="col-start-3 p-4 flex items-center text-center sm:w-auto w-full">
+            <div class="col-start-3 p-4 flex items-center text-center lg:w-auto w-full">
               <%= hidden_input li, :yearly_cost_base %>
-              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 sm:w-40 w-full text-center", phx_hook: "PriceMask" %><span class="cursor-pointer text-blue-planning-300 border-dotted border-b-2 border-blue-planning-300 ml-2" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-yearly-#{li.id}"}>/year <span class="bg-white hidden p-1 text-sm rounded shadow text-black text-left" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) %> /year</span></span>
+              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 lg:w-40 w-full text-center", phx_hook: "PriceMask" %><span class="cursor-pointer text-blue-planning-300 border-dotted border-b-2 border-blue-planning-300 ml-2" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-yearly-#{li.id}"}>/year <span class="bg-white hidden p-1 text-sm rounded shadow text-black text-left" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) %> /year</span></span>
             </div>
           </div>
         <% else %>
@@ -524,8 +533,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <% end %>
     <% end %>
     <%= if input_value(@form, :id) == @category_id do %>
-    <div class="sm:grid sm:grid-cols-3 gap-2 items-center w-full">
-      <div class="col-start-1 p-4 sm:text-left text-center">
+    <div class="lg:grid lg:grid-cols-3 gap-2 items-center w-full">
+      <div class="col-start-1 p-4 lg:text-left text-center">
         <p class="font-bold text-lg"><%= input_value(@form, :category) %> Totals</p>
       </div>
       <div class="col-start-2 p-4">
@@ -566,7 +575,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
     ~H"""
       <div class="border p-4 rounded-lg mb-4">
-        <div class="grid sm:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
+        <div class="grid lg:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
           <div class="flex">
             <div class="flex items-center justify-center w-12 h-12 ml-1 mr-3 rounded-full flex-shrink-0 bg-gray-100">
               <.icon name={@job_type} class="fill-current" width="24" height="24" />
@@ -607,7 +616,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def sidebar_nav(assigns) do
     ~H"""
-    <nav class="bg-gray-100 p-4 mt-8 rounded-lg sm:block hidden">
+    <nav class="bg-gray-100 p-4 mt-8 rounded-lg lg:block hidden">
       <ul>
         <.sidebar_step current_step={@step} step={1} title="Information about your business" />
         <.sidebar_step current_step={@step} step={2} title="Financial & time goals" />
@@ -642,14 +651,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def container(assigns) do
     ~H"""
       <div class="flex w-screen min-h-screen bg-gray-100 relative">
-        <div class="bg-white sm:w-1/4 w-full sm:px-12 sm:py-12 px-8 py-8 sm:h-screen flex flex-col fixed">
-          <div class="flex justify-between sm:block">
-            <.icon name="logo" class="ml-16 sm:ml-0 w-32 h-7 sm:h-11 sm:w-48 sm:mb-10" />
-            <h3 class="sm:text-4xl text-xl font-bold sm:mb-4">Pricing Calculator</h3>
+        <div class="bg-white lg:w-1/4 w-full lg:px-12 lg:py-12 px-8 py-8 lg:h-screen flex flex-col fixed">
+          <div class="flex justify-between lg:block">
+            <.icon name="logo" class="ml-16 lg:ml-0 w-32 h-7 lg:h-11 lg:w-48 lg:mb-10" />
+            <h3 class="lg:text-4xl text-xl font-bold lg:mb-4">Pricing Calculator</h3>
           </div>
-          <p class="text-2xl mb-4 sm:block hidden">You probably aren't charging enough and we'd like to help</p>
+          <p class="text-2xl mb-4 lg:block hidden">You probably aren't charging enough and we'd like to help</p>
           <.sidebar_nav step={@step} />
-          <div class="circleBtn sm:bottom-8 sm:left-8 sm:top-auto bottom-auto top-5 left-5 absolute">
+          <div class="circleBtn lg:bottom-8 lg:left-8 lg:top-auto bottom-auto top-5 left-5 absolute">
             <ul>
               <li>
                   <a phx-click="exit">
@@ -660,9 +669,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </ul>
           </div>
         </div>
-        <div class="sm:w-3/4 w-full flex flex-col sm:pb-32 pb-12 ml-auto px-4 sm:px-0">
+        <div class="lg:w-3/4 w-full flex flex-col sm:pb-32 pb-12 ml-auto px-4 sm:px-16">
           <div class="max-w-5xl w-full mx-auto sm:mt-40 mt-32">
-            <h1 class="sm:text-4xl text-2xl font-bold mb-12 flex items-center sm:-ml-14"><%= if @step == 6 do %><button type="submit" disabled={!@changeset.valid?} class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><span class="-mt-1"><%= @step - 1 %></span></span><% end %><%= @step_title %></h1>
+            <h1 class="sm:text-4xl text-2xl font-bold mb-12 flex items-center lg:-ml-14"><%= if @step == 6 do %><button type="submit" disabled={!@changeset.valid?} class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><span class="-mt-1"><%= @step - 1 %></span></span><% end %><%= @step_title %></h1>
           </div>
           <div class="max-w-5xl w-full mx-auto bg-blue-planning-300 rounded-lg overflow-hidden">
             <div class="bg-white ml-3 px-6 pt-8 pb-6 sm:p-14">
@@ -702,9 +711,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
               PricingCalculations.calculate_all_costs(business_costs)
             )
             |> Money.to_string(),
-          pricing_suggestions:
-            pricing_suggestions
-            |> Enum.map(&pricing_suggestions_for_email(&1))
+          pricing_suggestions: pricing_suggestions |> Enum.map(&pricing_suggestions_for_email(&1))
         ]
 
         sendgrid_template(:calculator_template, opts)
