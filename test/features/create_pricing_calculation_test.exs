@@ -1,4 +1,6 @@
 defmodule Picsello.CreatePricingCalculationTest do
+  @moduledoc false
+
   use Picsello.FeatureCase, async: true
 
   setup :tax_schedule

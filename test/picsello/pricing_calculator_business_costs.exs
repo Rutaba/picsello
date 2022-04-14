@@ -1,4 +1,5 @@
 defmodule Picsello.PricingCalculatorBusinessCostsTest do
+  @moduledoc false
   use Picsello.DataCase, async: true
   import Money.Sigils
 
@@ -42,7 +43,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
                active: false,
                category: "Equipment",
                line_items: [
-                 %{title: "Light", yearly_cost: %Money{amount: 50000, currency: :USD}},
+                 %{title: "Light", yearly_cost: ~M[50000]},
                  %{title: "Camera"}
                ]
              } =
@@ -75,7 +76,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
       assert %{
                active: true,
                line_items: [
-                 %{title: "Light", yearly_cost: %Money{amount: 50000, currency: :USD}},
+                 %{title: "Light", yearly_cost: %Money{amount: ~M[50000], currency: :USD}},
                  %{title: "Camera"}
                ]
              } =

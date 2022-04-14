@@ -1,4 +1,5 @@
 defmodule Picsello.PricingCalculations do
+  @moduledoc false
   alias Picsello.{
     Repo,
     Organization,

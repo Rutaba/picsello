@@ -1,4 +1,5 @@
 defmodule PicselloWeb.Live.Pricing.Calculator.Index do
+  @moduledoc false
   use PicselloWeb, live_view: [layout: "calculator"]
   use Picsello.Notifiers
 
