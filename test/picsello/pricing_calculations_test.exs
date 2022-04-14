@@ -272,7 +272,7 @@ defmodule Picsello.PricingCalculationsTest do
       assert %{
                income_max: ~M[0],
                income_min: ~M[100]
-             } = PricingCalculations.get_income_bracket(50000)
+             } = PricingCalculations.get_income_bracket("50000")
     end
 
     test "calculate_after_tax_income with %Money{}" do

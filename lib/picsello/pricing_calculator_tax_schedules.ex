@@ -6,6 +6,7 @@ defmodule Picsello.PricingCalculatorTaxSchedules do
   use Ecto.Schema
 
   defmodule IncomeBracket do
+    @moduledoc false
     use Ecto.Schema
 
     embedded_schema do

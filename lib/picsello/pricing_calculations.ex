@@ -17,6 +17,7 @@ defmodule Picsello.PricingCalculations do
   import Picsello.Repo.CustomMacros
 
   defmodule LineItem do
+    @moduledoc false
     use Ecto.Schema
 
     embedded_schema do
@@ -28,6 +29,7 @@ defmodule Picsello.PricingCalculations do
   end
 
   defmodule BusinessCost do
+    @moduledoc false
     use Ecto.Schema
 
     embedded_schema do
@@ -39,6 +41,7 @@ defmodule Picsello.PricingCalculations do
   end
 
   defmodule PricingSuggestion do
+    @moduledoc false
     use Ecto.Schema
 
     embedded_schema do

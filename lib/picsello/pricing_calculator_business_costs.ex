@@ -6,6 +6,7 @@ defmodule Picsello.PricingCalculatorBusinessCosts do
   use Ecto.Schema
 
   defmodule BusinessCost do
+    @moduledoc false
     use Ecto.Schema
 
     embedded_schema do
