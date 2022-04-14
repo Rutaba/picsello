@@ -91,12 +91,12 @@ defmodule PicselloWeb.LayoutView do
   def help_scout_menu(assigns) do
     ~H"""
     <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
-    <div id="float-menu-help" class="cursor-pointer hidden md:blockhidden md:block" phx-hook="ToggleContent">
+    <div id="float-menu-help" class="hidden cursor-pointer md:blockhidden md:block" phx-hook="ToggleContent">
       <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
         <.icon name="question-mark-help-scout" class="w-6 h-6" />
       </div>
       <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
-        <nav class="flex flex-col w-64 ml-8 mr-16 my-11 overflow-hidden bg-white rounded-lg shadow-md">
+        <nav class="flex flex-col w-64 ml-8 mr-16 overflow-hidden bg-white rounded-lg shadow-md my-11">
           <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
             <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
             Help Center
@@ -118,7 +118,7 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def side_nav(socket, current_user) do
+  def side_nav(socket, _current_user) do
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
@@ -130,7 +130,7 @@ defmodule PicselloWeb.LayoutView do
       %{
         title: "Finances",
         icon: "money-bags",
-        path: current_user.organization.stripe_account_id && "https://dashboard.stripe.com"
+        path: Routes.finance_settings_path(socket, :index)
       },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
       %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"}

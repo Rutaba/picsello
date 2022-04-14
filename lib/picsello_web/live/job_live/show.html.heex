@@ -24,7 +24,7 @@
 
 <div class="p-6 center-container" {intro_hints_only("intro_hints_only_cards")}>
   <ul class="grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Finances" icon="money-bags-outline" button_text="Send reminder" button_click="open-compose" hint_content="See the status of payment from your client at a glance. If they're past due or you to need to follow up, send them a reminder message.">
+    <.overview_card title="Finances" icon="money-bags-outline" {if PaymentSchedules.all_paid?(@job), do: %{button_text: "Go to Stripe", button_click: "open-stripe"}, else: %{button_text: "Send reminder", button_click: "open-compose"}} hint_content="See the status of payment from your client at a glance. If they're past due or you to need to follow up, send them a reminder message.">
       <dl class="grid grid-cols-2">
         <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
         <%= if PaymentSchedules.all_paid?(@job) do %>

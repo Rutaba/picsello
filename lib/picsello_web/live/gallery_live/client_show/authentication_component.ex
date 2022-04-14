@@ -23,17 +23,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
         %{"login" => %{"password" => password}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    if gallery.password == password do
-      {:ok, token} = Galleries.build_gallery_session_token(gallery)
+    case Galleries.build_gallery_session_token(gallery, password) do
+      {:ok, token} ->
+        socket |> assign(submit: true, session_token: token)
 
-      socket
-      |> assign(:submit, true)
-      |> assign(:session_token, token.token)
-      |> noreply()
-    else
-      socket
-      |> assign(:password_is_correct, false)
-      |> noreply()
+      _ ->
+        socket
+        |> assign(password_is_correct: false)
     end
+    |> noreply()
   end
 end

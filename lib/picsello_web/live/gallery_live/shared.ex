@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [icon: 1]
+  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   def assign_cart_count(
         %{assigns: %{order: %Picsello.Cart.Order{placed_at: %DateTime{}}}} = socket,
@@ -41,4 +42,25 @@ defmodule PicselloWeb.GalleryLive.Shared do
     </button>
     """
   end
+
+  def summary_counts(order) do
+    for {label, collection, format_fn} <- [
+          {"Products", order.products, &sum_prices/1},
+          {"Digitals", Enum.filter(order.digitals, &Money.positive?(&1.price)), &sum_prices/1},
+          {"Digital credits used", Enum.filter(order.digitals, &Money.zero?(&1.price)),
+           &credits_display/1}
+        ] do
+      {label, Enum.count(collection), format_fn.(collection)}
+    end
+  end
+
+  defp credits_display(collection) do
+    "#{ngettext("%{count} credit", "%{count} credits", Enum.count(collection))} - #{sum_prices(collection)}"
+  end
+
+  defp sum_prices(collection) do
+    Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))
+  end
+
+  defdelegate price_display(product), to: Picsello.Cart
 end

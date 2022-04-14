@@ -21,7 +21,7 @@
       <h1 class="flex items-center justify-between mt-2 text-4xl font-bold lg:justify-start">
         <%= Job.name @job %>
 
-        <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-planning-300 text-blue-planning-300">
+        <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold leading-3 border rounded w-9 border-blue-planning-300 text-blue-planning-300">
           <div class="absolute -top-1.5 left-1.5">&hellip;</div>
         </button>
       </h1>
@@ -41,14 +41,14 @@
   <h2 class="mt-2 text-xs font-semibold tracking-widest text-gray-400 uppercase">Status History</h2>
   <%= live_component PicselloWeb.LeadLive.LeadStatusComponent, job: @job, current_user: @current_user %>
 
-  <ul class="mt-6 grid gap-5 grid-cols-2 lg:grid-cols-4">
+  <ul class="grid grid-cols-2 gap-5 mt-6 lg:grid-cols-4">
     <.overview_card title="Inbox" icon="envelope-outline" hint_content="Check in on messages from your client, or send them a message">
       <%= if @inbox_count > 0 do %>
         <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
       <% else %>
         View or send messages.
       <% end %>
-      <div class="mt-4 gap-3 grid grid-cols-2 ">
+      <div class="grid grid-cols-2 gap-3 mt-4 ">
         <button type="button" class="p-2 text-sm text-center border rounded-lg border-base-300" phx-click="open-inbox">
           Go to inbox
         </button>
@@ -61,6 +61,7 @@
       <.overview_card title="Finances" icon="money-bags-outline">
         Connect or set up Stripe.
         <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_overview,
+            error_class: "text-center",
             current_user: @current_user,
             class: "mt-4 w-full p-2 text-sm text-center border rounded-lg border-base-300",
             return_url: Routes.job_url(@socket, @live_action, @job.id),
@@ -99,7 +100,7 @@
           <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
           <div class="pl-3">
             <h3 class="input-label">Questionnaire included</h3>
-            <button phx-click="open-questionnaire" class="mt-2 btn-primary py-1 px-3 flex items-center text-xs">
+            <button phx-click="open-questionnaire" class="flex items-center px-3 py-1 mt-2 text-xs btn-primary">
               View questionnaire
               <.icon name="forth" class="w-3 h-3 ml-2 stroke-current stroke-2" />
             </button>
@@ -122,12 +123,15 @@
                 <% end %>
             <% end %>
             <div class="max-w-max">
-              <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-                  current_user: @current_user,
-                  class: "w-full mt-2 btn-primary py-1 px-3 text-xs intro-stripe",
-                  return_url: Routes.job_url(@socket, @live_action, @job.id),
-                  stripe_status: @stripe_status %>
-              </div>
+              <%= unless @stripe_status == :charges_enabled do %>
+                <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+                    error_class: "text-center",
+                    current_user: @current_user,
+                    class: "w-full mt-2 btn-primary py-1 px-3 text-xs intro-stripe",
+                    return_url: Routes.job_url(@socket, @live_action, @job.id),
+                    stripe_status: @stripe_status %>
+              <% end %>
+            </div>
           </div>
         </label>
 

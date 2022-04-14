@@ -157,6 +157,29 @@ defmodule Picsello.CartTest do
       assert Order.subtotal_cost(order) == ~M[100]USD
     end
 
+    test "with a digital id and free and paid digitals removes the free digital and updates the first paid digital to free",
+         %{order: order} do
+      %{id: delete_free_digital_id} = insert(:digital, order: order, position: 0, price: ~M[0]USD)
+
+      %{id: remaining_digital_id_1} =
+        insert(:digital, order: order, position: 1, price: ~M[100]USD)
+
+      %{id: remaining_digital_id_2} =
+        insert(:digital, order: order, position: 2, price: ~M[100]USD)
+
+      assert {:loaded,
+              %Order{
+                digitals: [
+                  %{id: ^remaining_digital_id_1, price: ~M[0]USD},
+                  %{id: ^remaining_digital_id_2, price: ~M[100]USD}
+                ]
+              } = order} =
+               order
+               |> Cart.delete_product(digital_id: delete_free_digital_id)
+
+      assert Order.subtotal_cost(order) == ~M[100]USD
+    end
+
     test "with a digital id and a product removes the digital", %{order: order} do
       digital = %Digital{
         photo_id: insert(:photo).id,
@@ -310,9 +333,16 @@ defmodule Picsello.CartTest do
   end
 
   describe "confirm_order" do
+    def confirm_order(session) do
+      Cart.confirm_order(
+        session,
+        PicselloWeb.Helpers
+      )
+    end
+
     test "raises if order does not exist" do
       assert_raise(Ecto.NoResultsError, fn ->
-        Cart.confirm_order(%Stripe.Session{
+        confirm_order(%Stripe.Session{
           client_reference_id: "order_number_404"
         })
       end)
@@ -322,7 +352,7 @@ defmodule Picsello.CartTest do
       order = insert(:order, placed_at: DateTime.utc_now())
 
       assert {:ok, _} =
-               Cart.confirm_order(%Stripe.Session{
+               confirm_order(%Stripe.Session{
                  client_reference_id: "order_number_#{Order.number(order)}"
                })
     end
@@ -336,7 +366,7 @@ defmodule Picsello.CartTest do
       end)
       |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
 
-      Cart.confirm_order(%Stripe.Session{
+      confirm_order(%Stripe.Session{
         client_reference_id: "order_number_#{Order.number(order)}",
         payment_intent: "intent-id"
       })

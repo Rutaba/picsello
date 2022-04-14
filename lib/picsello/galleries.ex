@@ -600,10 +600,17 @@ defmodule Picsello.Galleries do
   @doc """
   Creates session token for the gallery client.
   """
-  def build_gallery_session_token(%Gallery{id: id}) do
-    %{gallery_id: id}
-    |> SessionToken.changeset()
-    |> Repo.insert()
+  def build_gallery_session_token(%Gallery{id: id, password: gallery_password}, password) do
+    with true <- gallery_password == password,
+         {:ok, %{token: token}} <- %{gallery_id: id} |> SessionToken.changeset() |> Repo.insert() do
+      {:ok, token}
+    else
+      _ -> {:error, "cannot log in with that password"}
+    end
+  end
+
+  def build_gallery_session_token("" <> hash, password) do
+    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
   end
 
   @doc """
@@ -619,11 +626,7 @@ defmodule Picsello.Galleries do
         token.gallery_id == ^gallery_id and token.token == ^token and
           token.inserted_at > ago(^session_validity_in_days, "day")
     )
-    |> Repo.one()
-    |> then(fn
-      nil -> false
-      _ -> true
-    end)
+    |> Repo.exists?()
   end
 
   @doc """
