@@ -4,6 +4,8 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
   setup do
     color = Picsello.Profiles.Profile.colors() |> hd
 
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
     %{
       user:
         insert(:user,
