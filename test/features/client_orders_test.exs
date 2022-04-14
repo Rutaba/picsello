@@ -23,6 +23,8 @@ defmodule Picsello.ClientOrdersTest do
           )
       )
 
+    insert(:watermark, gallery: gallery)
+
     for %{id: category_id} = category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo =
         insert(:photo,
@@ -127,9 +129,16 @@ defmodule Picsello.ClientOrdersTest do
 
     Picsello.MockWHCCClient
     |> Mox.stub(:editor, fn args ->
+      assert %{
+               "photos" => [%{"url" => preview_url, "printUrl" => print_url}],
+               "redirects" => %{"complete" => %{"url" => complete_url}}
+             } = args
+
+      assert String.ends_with?(preview_url, "watermarked_preview.jpg")
+      assert String.ends_with?(print_url, "original.jpg")
+
       url =
-        args
-        |> get_in(["redirects", "complete", "url"])
+        complete_url
         |> URI.parse()
         |> Map.update!(:query, &String.replace(&1, "%EDITOR_ID%", "editor-id"))
         |> URI.to_string()
@@ -276,7 +285,13 @@ defmodule Picsello.ClientOrdersTest do
       |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
-        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
+        |> find(
+          css("img"),
+          fn img ->
+            src = Element.attr(img, "src")
+            assert String.ends_with?(src, "/watermarked_preview.jpg")
+          end
+        )
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
@@ -336,6 +351,10 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
         session
+        |> find(css("img"), fn img ->
+          src = Element.attr(img, "src")
+          assert String.ends_with?(src, "/preview.jpg")
+        end)
         |> find(
           link("Download photos"),
           &assert(

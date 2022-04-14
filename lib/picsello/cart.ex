@@ -158,9 +158,9 @@ defmodule Picsello.Cart do
   """
   def get_unconfirmed_order(gallery_id) do
     from(order in Order,
-      where: order.gallery_id == ^gallery_id and is_nil(order.placed_at),
-      preload: [digitals: :photo]
+      where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
     )
+    |> preload_digitals()
     |> Repo.one()
     |> case do
       %Order{} = order -> {:ok, order}
@@ -209,8 +209,21 @@ defmodule Picsello.Cart do
 
   def preload_products(order), do: order
 
-  def get_placed_gallery_order!(gallery, order_number),
-    do: gallery |> placed_order_query(order_number) |> preload(digitals: :photo) |> Repo.one!()
+  def get_placed_gallery_order!(gallery, order_number) do
+    gallery
+    |> placed_order_query(order_number)
+    |> preload_digitals()
+    |> Repo.one!()
+  end
+
+  defp preload_digitals(order_query) do
+    photo_query = Picsello.Photos.watermarked_query()
+
+    from(order in order_query,
+      left_join: digital in assoc(order, :digitals),
+      preload: [digitals: {digital, photo: ^photo_query}]
+    )
+  end
 
   @spec get_purchased_photos!(String.t(), %{client_link_hash: String.t()}) ::
           %{organization: %Picsello.Organization{}, photos: [%Photo{}]}
@@ -268,9 +281,9 @@ defmodule Picsello.Cart do
   def get_orders(gallery_id) do
     from(order in Order,
       where: order.gallery_id == ^gallery_id and not is_nil(order.placed_at),
-      order_by: [desc: order.placed_at],
-      preload: [digitals: :photo]
+      order_by: [desc: order.placed_at]
     )
+    |> preload_digitals()
     |> Repo.all()
     |> preload_products()
   end
@@ -341,7 +354,7 @@ defmodule Picsello.Cart do
             unit_amount: unit_amount,
             product_data: %{
               name: product_name(product),
-              images: [preview_url(product, :watermarked)]
+              images: [item_image_url(product)]
             }
           },
           quantity: quantity
@@ -356,7 +369,7 @@ defmodule Picsello.Cart do
             unit_amount: price.amount,
             product_data: %{
               name: "Digital image",
-              images: [preview_url(digital, :watermarked)]
+              images: [item_image_url(digital)]
             }
           },
           quantity: 1
@@ -395,23 +408,9 @@ defmodule Picsello.Cart do
     Enum.join([size, name], " ")
   end
 
-  def preview_url(item, mode \\ nil)
+  def item_image_url(%CartProduct{editor_details: %{preview_url: url}}), do: url
 
-  # we should be passing the watermarked version to whcc so their preview should already be watermarked
-  def preview_url(%CartProduct{editor_details: %{preview_url: url}}, _mode), do: url
-
-  def preview_url(
-        %Digital{photo: %{watermarked_preview_url: watermarked_path}} = photo,
-        :watermarked
-      ) do
-    case watermarked_path do
-      nil -> preview_url(photo, nil)
-      path -> Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
-    end
-  end
-
-  def preview_url(%Digital{photo: %{preview_url: path}}, _mode),
-    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
+  def item_image_url(%Digital{photo: photo}), do: Picsello.Photos.preview_url(photo)
 
   defdelegate confirm_order(session, helpers), to: __MODULE__.Confirmations
 

@@ -236,8 +236,11 @@ defmodule Picsello.CartTest do
   end
 
   describe "get_orders" do
-    def order_with_product(gallery, whcc_id) do
-      insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
+    def order_with_product(gallery, opts) do
+      whcc_id = Keyword.get(opts, :whcc_id)
+      placed_at = Keyword.get(opts, :placed_at, DateTime.utc_now())
+
+      insert(:order, gallery: gallery, placed_at: placed_at)
       |> Order.update_changeset(
         cart_product(product_id: insert(:product, whcc_id: whcc_id).whcc_id)
       )
@@ -246,12 +249,17 @@ defmodule Picsello.CartTest do
 
     test "preloads products" do
       gallery = insert(:gallery)
-      order_with_product(gallery, "abc")
-      order_with_product(gallery, "123")
+
+      order_with_product(gallery, whcc_id: "123")
+
+      order_with_product(gallery,
+        whcc_id: "abc",
+        placed_at: DateTime.utc_now() |> DateTime.add(-100)
+      )
 
       assert [
-               %{products: [%{whcc_product: %{whcc_id: "abc"}}]},
-               %{products: [%{whcc_product: %{whcc_id: "123"}}]}
+               %{products: [%{whcc_product: %{whcc_id: "123"}}]},
+               %{products: [%{whcc_product: %{whcc_id: "abc"}}]}
              ] = Cart.get_orders(gallery.id)
     end
   end
@@ -292,13 +300,16 @@ defmodule Picsello.CartTest do
       cart_product = build(:ordered_cart_product, %{product_id: whcc_product.whcc_id})
 
       order =
-        for product <- [
-              cart_product,
-              build(:digital,
-                price: ~M[500]USD,
-                photo: insert(:photo, gallery: gallery, preview_url: "digital.jpg")
-              )
-            ],
+        for product <-
+              [
+                cart_product,
+                build(:digital,
+                  price: ~M[500]USD,
+                  photo:
+                    insert(:photo, gallery: gallery, preview_url: "digital.jpg")
+                    |> Map.put(:watermarked, false)
+                )
+              ],
             reduce: nil do
           _ ->
             Picsello.Cart.place_product(product, gallery.id)

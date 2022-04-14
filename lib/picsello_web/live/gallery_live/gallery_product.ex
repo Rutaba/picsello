@@ -31,7 +31,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
          )
          |> then(fn %{assigns: %{coords: coords, frame: frame}} = socket ->
            push_event(socket, "set_preview", %{
-             preview: get_preview(preview),
+             preview: preview_url(preview.preview_photo),
              ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
              frame: frame,
              coords: coords,
@@ -86,10 +86,10 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
 
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
-    |> assign(:preview, path(preview))
+    |> assign(:preview, preview_url(preview))
     |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
     |> push_event("set_preview", %{
-      preview: path(preview),
+      preview: preview_url(preview),
       frame: frame,
       coords: coords,
       target: "canvas"
@@ -177,7 +177,4 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
   end
-
-  def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
-  def get_preview(_), do: path(nil)
 end

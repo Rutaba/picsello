@@ -17,7 +17,7 @@
             <%= for product <- @order.products do %>
               <div {testid("product-#{product_id(product)}")} class="border border-base-225 mb-5">
                 <div class="mx-8 py-8">
-                  <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={preview_url(product)}/>
+                  <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={item_image_url(product)}/>
 
                   <div class="py-4 md:py-6">
                     <div class="text-lg">
@@ -49,7 +49,7 @@
               <div class="divide-y divide-base-200">
                 <%= for digital <- @order.digitals do %>
                   <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
-                    <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={preview_url(digital)}/>
+                    <img class="w-48 h-32 md:w-72 md:h-48 object-contain mr-4 md:mr-7 float-left" src={item_image_url(digital)}/>
 
                     <div class="py-0 md:py-7">
                       <div class="text-lg">Digital download</div>

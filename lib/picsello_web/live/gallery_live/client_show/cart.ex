@@ -391,8 +391,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp zero_subtotal?(order),
     do: only_digitals?(order) && order |> subtotal_cost() |> Money.zero?()
 
-  defp preview_url(item), do: Cart.preview_url(item, :watermarked)
-
+  defdelegate item_image_url(item), to: Cart
   defdelegate product_quantity(product), to: Cart
   defdelegate cart_count(order), to: Cart, as: :item_count
   defdelegate product_name(product), to: Cart

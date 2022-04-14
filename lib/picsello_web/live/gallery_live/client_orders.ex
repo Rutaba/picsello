@@ -29,7 +29,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     ~H"""
       <div class="block py-6 lg:justify-between lg:py-8 lg:flex">
         <div class="grid gap-4 grid-cols-[120px,1fr,min-content] lg:grid-cols-[147px,1fr]">
-          <img src={preview_url(@item)} class="object-contain h-32 lg:h-[120px] place-self-center"/>
+          <img src={item_image_url(@item)} class="object-contain h-32 lg:h-[120px] place-self-center"/>
 
           <div class="flex flex-col justify-center py-2 align-self-center">
             <div class="flex items-baseline lg:flex-col">
@@ -50,7 +50,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   defp quantity(%{editor_details: %{selections: %{"quantity" => quantity}}}), do: quantity
 
   defdelegate total_cost(order), to: Cart
-  defdelegate preview_url(item), to: Cart
+  defdelegate item_image_url(item), to: Cart
   defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
   defp product_name(item), do: Cart.product_name(item)
 end

@@ -116,7 +116,7 @@ defmodule Picsello.Galleries do
       end
       |> Keyword.merge(gallery_id: id)
 
-    from(photo in Picsello.Galleries.Photo,
+    from(photo in Picsello.Photos.watermarked_query(),
       where: ^select_opts,
       order_by: [asc: :position]
     )
@@ -316,39 +316,7 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
-  @doc """
-  Gets a single photo by id.
-
-  Returns nil if the Photo does not exist.
-
-  ## Examples
-
-      iex> get_photo(123)
-      %Photo{}
-
-      iex> get_photo(44545)
-      nil
-
-  """
-  def get_photo(id), do: Repo.get(Photo, id)
-
-  @doc """
-  Marks a photo as liked/unliked.
-
-  ## Examples
-
-      iex> mark_photo_as_liked(%Photo{client_liked: false})
-      {:ok, %Photo{client_liked: true}}
-
-      iex> mark_photo_as_liked(%Photo{client_liked: true})
-      {:ok, %Photo{client_liked: false}}
-
-  """
-  def mark_photo_as_liked(%Photo{client_liked: client_liked} = photo) do
-    photo
-    |> Photo.update_changeset(%{client_liked: !client_liked})
-    |> Repo.update()
-  end
+  defdelegate get_photo(id), to: Picsello.Photos, as: :get
 
   @doc """
   Removes the photo from DB and all its versions from cloud bucket.
