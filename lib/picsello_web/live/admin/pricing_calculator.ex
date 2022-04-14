@@ -197,8 +197,8 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         )
         |> Repo.update()
 
-      tax_schedule ->
-        tax_schedule
+      _tax_schedule ->
+        nil
     end)
 
     socket
@@ -219,8 +219,8 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         )
         |> Repo.update()
 
-      business_cost ->
-        business_cost
+      _business_cost ->
+        nil
     end)
 
     socket
