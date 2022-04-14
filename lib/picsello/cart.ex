@@ -179,8 +179,11 @@ defmodule Picsello.Cart do
   end
 
   def preload_products([_ | _] = orders) do
-    products = Enum.flat_map(orders, &Map.get(&1, :products, []))
-    ids = for(%{editor_details: %{product_id: id}} <- products, do: id)
+    ids =
+      for(%{products: [_ | _] = products} <- orders, reduce: []) do
+        acc ->
+          acc ++ for(%{editor_details: %{product_id: id}} <- products, do: id)
+      end
 
     products_by_whcc_id =
       from(product in Picsello.Product, where: product.whcc_id in ^ids)
@@ -188,7 +191,7 @@ defmodule Picsello.Cart do
       |> Enum.map(&{&1.whcc_id, &1})
       |> Map.new()
 
-    for(order <- orders) do
+    for(%{products: products} = order <- orders) do
       %{
         order
         | products:

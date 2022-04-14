@@ -235,6 +235,27 @@ defmodule Picsello.CartTest do
     end
   end
 
+  describe "get_orders" do
+    def order_with_product(gallery, whcc_id) do
+      insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
+      |> Order.update_changeset(
+        cart_product(product_id: insert(:product, whcc_id: whcc_id).whcc_id)
+      )
+      |> Repo.update!()
+    end
+
+    test "preloads products" do
+      gallery = insert(:gallery)
+      order_with_product(gallery, "abc")
+      order_with_product(gallery, "123")
+
+      assert [
+               %{products: [%{whcc_product: %{whcc_id: "abc"}}]},
+               %{products: [%{whcc_product: %{whcc_id: "123"}}]}
+             ] = Cart.get_orders(gallery.id)
+    end
+  end
+
   describe "cart product updates" do
     test "find and save processing status" do
       gallery = insert(:gallery)
