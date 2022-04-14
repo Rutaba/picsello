@@ -18,7 +18,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           schedule: user.onboarding.schedule,
           take_home: Money.new(0),
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,
-          desired_salary: Money.new(150_0000),
+          desired_salary: Money.new(1_500_000),
           business_costs: cost_categories()
         }
       )
@@ -98,7 +98,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         %{"pricing_calculations" => params},
         %{assigns: %{step: step}} = socket
       ) do
-    finalStep =
+    final_step =
       case step do
         6 -> 4
         5 -> 5
@@ -109,7 +109,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       {:ok, pricing_calculations} ->
         socket
         |> assign(pricing_calculations: pricing_calculations)
-        |> assign_step(finalStep)
+        |> assign_step(final_step)
         |> handle_step(step)
 
       {:error, changeset} ->

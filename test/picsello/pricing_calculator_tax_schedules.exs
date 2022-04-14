@@ -26,7 +26,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
       assert %{
                year: 2022,
                active: false,
-               income_brackets: [%{income_min: %Money{amount: 000, currency: :USD}}]
+               income_brackets: [%{income_min: ~M[000]}]
              } =
                PricingCalculatorTaxSchedules.changeset(
                  %PricingCalculatorTaxSchedules{},
@@ -50,10 +50,10 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
           active: true,
           income_brackets: [
             %{
-              fixed_cost: %Money{amount: 30000, currency: :USD},
+              fixed_cost: ~M[30000],
               fixed_cost_start: nil,
-              income_max: %Money{amount: 40000, currency: :USD},
-              income_min: %Money{amount: 0, currency: :USD},
+              income_max: ~M[40000],
+              income_min: ~M[000],
               percentage: 10
             }
             | base_tax_schedule.income_brackets |> Enum.map(&Map.from_struct(&1))
@@ -76,10 +76,10 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
                active: false,
                income_brackets: [
                  %{
-                   income_max: %Money{amount: 600_000, currency: :USD},
-                   fixed_cost: %Money{amount: 50000, currency: :USD}
+                   income_max: ~M[600000],
+                   fixed_cost: ~M[50000]
                  },
-                 %{fixed_cost: %Money{amount: 500, currency: :USD}}
+                 %{fixed_cost: ~M[500]}
                ]
              } =
                PricingCalculatorTaxSchedules.add_income_bracket_changeset(

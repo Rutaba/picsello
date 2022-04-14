@@ -16,11 +16,11 @@ defmodule Picsello.PricingCalculationsTest do
       self_employment_percentage: 15.3,
       income_brackets: [
         %{
-          income_min: ~M[0],
+          income_min: ~M[000],
           income_max: ~M[100],
           fixed_cost_start: ~M[0],
           percentage: 1,
-          fixed_cost: ~M[00]
+          fixed_cost: ~M[000]
         },
         %{
           income_min: ~M[100],
@@ -211,33 +211,27 @@ defmodule Picsello.PricingCalculationsTest do
       assert true ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket(%Money{amount: 5000, currency: :USD})
+               |> PricingCalculations.compare_income_bracket(~M[5000])
 
       assert true ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket(%Money{
-                 amount: 500_000_000,
-                 currency: :USD
-               })
+               |> PricingCalculations.compare_income_bracket(~M[500000000])
 
       assert false ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket(%Money{amount: 000, currency: :USD})
+               |> PricingCalculations.compare_income_bracket(~M[000])
 
       assert true ==
                income_brackets
                |> List.first()
-               |> PricingCalculations.compare_income_bracket(%Money{amount: 000, currency: :USD})
+               |> PricingCalculations.compare_income_bracket(~M[000])
 
       assert false ==
                income_brackets
                |> List.first()
-               |> PricingCalculations.compare_income_bracket(%Money{
-                 amount: 500_000_000,
-                 currency: :USD
-               })
+               |> PricingCalculations.compare_income_bracket(~M[500000000])
     end
 
     test "compare_income_bracket with raw text" do
@@ -270,33 +264,27 @@ defmodule Picsello.PricingCalculationsTest do
     end
 
     test "get_income_bracket with multiple string values from form params" do
-      assert %{income_max: %Money{amount: 100, currency: :USD}} =
-               PricingCalculations.get_income_bracket("$")
+      assert %{income_max: ~M[100]} = PricingCalculations.get_income_bracket("$")
 
-      assert %{income_max: %Money{amount: 100, currency: :USD}} =
-               PricingCalculations.get_income_bracket(nil)
+      assert %{income_max: ~M[100]} = PricingCalculations.get_income_bracket(nil)
 
       assert %{
-               income_max: %Money{amount: 0, currency: :USD},
-               income_min: %Money{amount: 100, currency: :USD}
+               income_max: ~M[0],
+               income_min: ~M[100]
              } = PricingCalculations.get_income_bracket(50000)
     end
 
     test "calculate_after_tax_income with %Money{}" do
       income_bracket = PricingCalculations.tax_schedule().income_brackets |> List.last()
 
-      assert %Money{amount: 494_501, currency: :USD} =
-               PricingCalculations.calculate_after_tax_income(income_bracket, %Money{
-                 amount: 500_000,
-                 currency: :USD
-               })
+      assert ~M[494501] =
+               PricingCalculations.calculate_after_tax_income(income_bracket, ~M[500000])
     end
 
     test "calculate_after_tax_income with nil" do
       income_bracket = PricingCalculations.tax_schedule().income_brackets |> List.last()
 
-      assert %Money{amount: 0, currency: :USD} =
-               PricingCalculations.calculate_after_tax_income(income_bracket, nil)
+      assert ~M[000] = PricingCalculations.calculate_after_tax_income(income_bracket, nil)
     end
 
     test "calculate_after_tax_income with multiple string values from form params" do
@@ -304,30 +292,29 @@ defmodule Picsello.PricingCalculationsTest do
 
       assert %Money{} = PricingCalculations.calculate_after_tax_income(income_bracket, "$")
 
-      assert %Money{amount: 494_501, currency: :USD} =
+      assert ~M[494501] =
                PricingCalculations.calculate_after_tax_income(income_bracket, "$5000.00")
     end
 
     test "calculate_take_home_income" do
-      assert %Money{amount: 418_842, currency: :USD} =
+      assert ~M[418842] =
                PricingCalculations.calculate_take_home_income(
                  PricingCalculations.tax_schedule().self_employment_percentage,
-                 %Money{amount: 494_501, currency: :USD}
+                 ~M[494501]
                )
     end
 
     test "calculate_monthly with %Money{}" do
       assert %Money{amount: 1_000_000, currency: :USD} =
-               PricingCalculations.calculate_monthly(%Money{amount: 12_000_000, currency: :USD})
+               PricingCalculations.calculate_monthly(~M[12000000])
     end
 
     test "calculate_monthly with multiple string values from form params" do
-      assert %Money{amount: 0, currency: :USD} = PricingCalculations.calculate_monthly("$")
+      assert ~M[0] = PricingCalculations.calculate_monthly("$")
 
-      assert %Money{amount: 0, currency: :USD} = PricingCalculations.calculate_monthly(nil)
+      assert ~M[0] = PricingCalculations.calculate_monthly(nil)
 
-      assert %Money{amount: 1_000_000, currency: :USD} =
-               PricingCalculations.calculate_monthly("$12,0000")
+      assert ~M[1000000] = PricingCalculations.calculate_monthly("$12,0000")
     end
 
     test "get cost categories" do
@@ -335,8 +322,8 @@ defmodule Picsello.PricingCalculationsTest do
                category: "Equipment",
                active: true,
                line_items: [
-                 %{title: "Camera", yearly_cost: %Money{amount: 600_000, currency: :USD}},
-                 %{title: "Light", yearly_cost: %Money{amount: 50000, currency: :USD}}
+                 %{title: "Camera", yearly_cost: ~M[600000]},
+                 %{title: "Light", yearly_cost: ~M[50000]}
                ]
              } =
                Picsello.PricingCalculatorBusinessCosts.changeset(
@@ -363,8 +350,8 @@ defmodule Picsello.PricingCalculationsTest do
                self_employment_percentage: %Decimal{},
                active: true,
                income_brackets: [
-                 %{fixed_cost_start: %Money{amount: 0, currency: :USD}},
-                 %{income_min: %Money{amount: 999_500, currency: :USD}, percentage: %Decimal{}}
+                 %{fixed_cost_start: ~M[0]},
+                 %{income_min: ~M[999500], percentage: %Decimal{}}
                ]
              } =
                Picsello.PricingCalculatorTaxSchedules.changeset(
@@ -381,32 +368,32 @@ defmodule Picsello.PricingCalculationsTest do
     test "calculate_all_costs", %{pricing_calculation_changeset: pricing_calculation_changeset} do
       pricing_calculation = pricing_calculation_changeset |> Repo.insert_or_update!()
 
-      assert %Money{amount: 60000, currency: :USD} =
+      assert ~M[60000] =
                PricingCalculations.calculate_all_costs(pricing_calculation.business_costs)
     end
 
     test "calculate_costs_by_category with line_times[%Money{}]" do
-      assert %Money{amount: 60000, currency: :USD} =
+      assert ~M[60000] =
                PricingCalculations.calculate_costs_by_category([
                  %{
                    description: "The item that runs your business",
                    id: "12345",
                    title: "Camera",
-                   yearly_cost: %Money{amount: 10000, currency: :USD},
-                   yearly_cost_base: %Money{amount: 10000, currency: :USD}
+                   yearly_cost: ~M[10000],
+                   yearly_cost_base: ~M[10000]
                  },
                  %{
                    description: "The item that lights your subject",
                    id: "6789",
                    title: "Light",
-                   yearly_cost: %Money{amount: 50000, currency: :USD},
-                   yearly_cost_base: %Money{amount: 50000, currency: :USD}
+                   yearly_cost: ~M[50000],
+                   yearly_cost_base: ~M[50000]
                  }
                ])
     end
 
     test "calculate_costs_by_category with line_times[with multiple string values from form params]" do
-      assert %Money{amount: 100_000, currency: :USD} =
+      assert ~M[100000] =
                PricingCalculations.calculate_costs_by_category(
                  nil,
                  %{
@@ -427,22 +414,22 @@ defmodule Picsello.PricingCalculationsTest do
     end
 
     test "calculate_costs_by_category with line_times[%{}]" do
-      assert %Money{amount: 60000, currency: :USD} =
+      assert ~M[60000] =
                PricingCalculations.calculate_costs_by_category(
                  [
                    %{
                      description: "The item that runs your business",
                      id: "12345",
                      title: "Camera",
-                     yearly_cost: %Money{amount: 10000, currency: :USD},
-                     yearly_cost_base: %Money{amount: 10000, currency: :USD}
+                     yearly_cost: ~M[10000],
+                     yearly_cost_base: ~M[10000]
                    },
                    %{
                      description: "The item that lights your subject",
                      id: "6789",
                      title: "Light",
-                     yearly_cost: %Money{amount: 50000, currency: :USD},
-                     yearly_cost_base: %Money{amount: 50000, currency: :USD}
+                     yearly_cost: ~M[50000],
+                     yearly_cost_base: ~M[50000]
                    }
                  ],
                  %{}
