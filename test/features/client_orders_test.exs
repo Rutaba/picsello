@@ -501,13 +501,15 @@ defmodule Picsello.ClientOrdersTest do
         &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
       )
       |> click(link("Home"))
+      |> find(
+        link("Download all photos"),
+        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
+      )
       |> click(link("View Gallery"))
       |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "Purchased"))
       |> click(link("close"))
-      |> click(button("Buy now"))
-      |> assert_has(testid("product_option_bundle_download", text: "Purchased"))
-      |> click(link("close"))
+      |> refute_has(button("Buy now"))
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
         session

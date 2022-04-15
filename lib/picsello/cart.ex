@@ -11,6 +11,7 @@ defmodule Picsello.Cart do
     Cart.Digital,
     Cart.Order,
     Cart.OrderNumber,
+    Galleries,
     Galleries.Gallery,
     Galleries.Photo,
     Repo,
@@ -257,15 +258,29 @@ defmodule Picsello.Cart do
     order = gallery |> placed_order_query(order_number) |> Repo.one!()
 
     %{
-      organization:
-        from(gallery in Gallery,
-          join: org in assoc(gallery, :organization),
-          where: gallery.client_link_hash == ^gallery_hash,
-          select: org
-        )
-        |> Repo.one!(),
+      organization: get_organization!(gallery_hash),
       photos: get_order_photos!(order)
     }
+  end
+
+  def get_all_photos!(%{client_link_hash: gallery_hash} = gallery) do
+    if can_download_all?(gallery) do
+      %{
+        organization: get_organization!(gallery_hash),
+        photos: from(photo in Photo, where: photo.gallery_id == ^gallery.id) |> some!()
+      }
+    else
+      raise Ecto.NoResultsError, queryable: Gallery
+    end
+  end
+
+  defp get_organization!(gallery_hash) do
+    from(gallery in Gallery,
+      join: org in assoc(gallery, :organization),
+      where: gallery.client_link_hash == ^gallery_hash,
+      select: org
+    )
+    |> Repo.one!()
   end
 
   defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
@@ -522,4 +537,11 @@ defmodule Picsello.Cart do
 
   def has_download?(%Order{bundle_price: bundle_price, digitals: digitals}),
     do: bundle_price != nil || digitals != []
+
+  def can_download_all?(%Gallery{} = gallery) do
+    package = Galleries.get_package(gallery)
+
+    (package && Money.zero?(package.download_each_price)) ||
+      bundle_purchased?(gallery)
+  end
 end

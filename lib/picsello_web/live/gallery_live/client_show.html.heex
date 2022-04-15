@@ -40,7 +40,7 @@
   </div>
 <% end %>
 
-<%= if @package.buy_all do %>
+<%= if @package.buy_all && !@download_all_visible do %>
   <div class="py-8 sm:py-6 bg-blue-planning-100">
     <div class="flex flex-col justify-center px-7 sm:mx-16 sm:flex-row">
       <div class="sm:mr-28">
@@ -61,7 +61,20 @@
       <div>
         <div class="text-lg font-bold lg:text-3xl"> <%= @gallery.name %> Gallery </div>
 
-        <div class="text-sm lg:text-xl text-base-250"> <%= @gallery.total_count %> photos </div>
+        <div class="flex items-center">
+          <%= if @download_all_visible do %>
+            <.button
+              element="a"
+              icon="download"
+              icon_class="h-4 w-4 fill-current"
+              class="my-4 mr-4 py-1.5 px-8"
+              download
+              href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash)}>
+              Download all photos
+            </.button>
+          <% end %>
+          <div class="text-sm lg:text-xl text-base-250"> <%= @gallery.total_count %> photos </div>
+        </div>
       </div>
 
       <div>

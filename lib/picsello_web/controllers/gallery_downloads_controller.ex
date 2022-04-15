@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
-  alias Picsello.{Cart, Galleries.Workers.PhotoStorage}
+  alias Picsello.{Cart, Galleries, Galleries.Workers.PhotoStorage}
 
   def download(conn, %{"hash" => hash, "order_number" => order_number} = _params) do
     %{organization: %{name: org_name}, photos: photos} =
@@ -10,6 +10,17 @@ defmodule PicselloWeb.GalleryDownloadsController do
     |> to_entries()
     |> Packmatic.build_stream()
     |> Packmatic.Conn.send_chunked(conn, "#{org_name} - #{order_number}.zip")
+  end
+
+  def download_all(conn, %{"hash" => hash} = _params) do
+    gallery = Galleries.get_gallery_by_hash!(hash)
+
+    %{organization: %{name: org_name}, photos: photos} = Cart.get_all_photos!(gallery)
+
+    photos
+    |> to_entries()
+    |> Packmatic.build_stream()
+    |> Packmatic.Conn.send_chunked(conn, "#{org_name}.zip")
   end
 
   def to_entries(photos) do

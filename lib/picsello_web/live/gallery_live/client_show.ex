@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign(:photo_updates, "false")
+    |> assign(photo_updates: "false", download_all_visible: false)
     |> ok()
   end
 
@@ -65,6 +65,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       gallery: gallery,
       page: 0,
       page_title: "Show Gallery",
+      download_all_visible: Cart.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id),
       update_mode: "append"
     )

@@ -182,6 +182,7 @@ defmodule PicselloWeb.Router do
       scope "/" do
         pipe_through :param_auth
         live "/", GalleryLive.ClientShow, :show
+        get "/zip", GalleryDownloadsController, :download_all
       end
 
       scope "/orders" do

@@ -28,18 +28,43 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def button(assigns) do
     assigns = Map.put_new(assigns, :class, "")
-    button_attrs = Map.drop(assigns, [:inner_block, :__changed__, :class])
+
+    assigns =
+      Enum.into(assigns, %{
+        element: "button",
+        class: "",
+        icon: "forth",
+        icon_class: "h-3 w-2 stroke-current stroke-[3px]"
+      })
+
+    button_attrs = Map.drop(assigns, [:inner_block, :__changed__, :class, :icon, :icon_class])
 
     ~H"""
-    <button {button_attrs} class={"#{@class}
+    <.button_element {button_attrs} class={"#{@class}
         flex items-center justify-center p-2 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem]
         hover:text-base-100 hover:bg-base-300
         disabled:border-base-250 disabled:text-base-250 disabled:cursor-not-allowed disabled:opacity-60
     "}>
       <%= render_slot(@inner_block) %>
 
-      <.icon name="forth" class="ml-2 h-3 w-2 stroke-current stroke-[3px]" />
-    </button>
+      <.icon name={@icon} class={"#{@icon_class} ml-2"} />
+    </.button_element>
+    """
+  end
+
+  defp button_element(%{element: "a"} = assigns) do
+    attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+
+    ~H"""
+      <a {attrs}><%= render_slot(@inner_block) %></a>
+    """
+  end
+
+  defp button_element(%{element: "button"} = assigns) do
+    attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+
+    ~H"""
+      <button {attrs}><%= render_slot(@inner_block) %></button>
     """
   end
 
