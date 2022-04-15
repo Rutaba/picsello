@@ -406,6 +406,8 @@ defmodule Picsello.Factory do
       whcc_name: "shirts",
       name: "cool shirts",
       position: sequence(:category_position, & &1),
+      shipping_base_charge: ~M[900]USD,
+      shipping_upcharge: Decimal.new("0.09"),
       icon: "book",
       default_markup: 2.0,
       hidden: false
