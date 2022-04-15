@@ -72,7 +72,7 @@ jobs:
       run: mix dialyzer
     - uses: actions/setup-node@v2
       with:
-        node-version: '14.18.1' # WARNING: *must* match ../.node-version
+        node-version: '16.14.2' # WARNING: *must* match ../.node-version
         cache: 'npm'
         cache-dependency-path: assets/package-lock.json
     - name: Build js
