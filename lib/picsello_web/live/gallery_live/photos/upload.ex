@@ -189,10 +189,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
         :photo_upload_completed
       )
 
-      # IO.inspect(parent_pid)
       Galleries.update_gallery_photo_count(gallery.id)
       Galleries.normalize_gallery_photo_positions(gallery.id)
-      # send(parent_pid, :photo_upload_completed)
     end
 
     socket
@@ -212,11 +210,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   defp upload_success_message(%{assigns: %{entries: entries}}, uploaded_files),
     do:
-      "#{uploaded_files}/#{total(entries)} photo#{is_plural(uploaded_files)} uploaded successfully"
+      "#{uploaded_files}/#{total(entries)} #{ngettext("photo", "photos", uploaded_files)} uploaded successfully"
 
-  defp is_plural(count) do
-    if count > 1, do: "s"
-  end
 
   defp start_photo_processing(photo, watermark) do
     ProcessingManager.start(photo, watermark)

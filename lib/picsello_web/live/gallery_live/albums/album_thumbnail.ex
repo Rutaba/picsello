@@ -88,6 +88,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
     |> noreply()
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="bg-white h-screen w-screen overflow-auto">

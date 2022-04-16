@@ -483,7 +483,7 @@ defmodule Picsello.Galleries do
     from(p in Photo,
       where: p.id in ^selected_photos
     )
-    |> Repo.update_all(set: [album_id: String.to_integer(album_id)])
+    |> Repo.update_all(set: [album_id: album_id])
   end
 
   @doc """

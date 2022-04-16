@@ -150,8 +150,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
           optional(:subject) => String.t(),
-          optional(:presets) => [%Picsello.EmailPreset{}],
-          optional(:is_client_gallery) => boolean
+          optional(:presets) => [%Picsello.EmailPreset{}]
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:

@@ -9,19 +9,6 @@ defmodule Picsello.Albums do
   alias Picsello.Galleries.Album
 
   @doc """
-  Returns the list of albums.
-
-  ## Examples
-
-      iex> list_albums()
-      [%Album{}, ...]
-
-  """
-  def list_albums do
-    Repo.all(Album)
-  end
-
-  @doc """
   Gets a single album.
 
   Raises `Ecto.NoResultsError` if the Gallery does not exist.

@@ -1,4 +1,4 @@
-<div class="fixed top-0 bottom-0 left-0 flex flex-col h-screen px-5 pb-6 pt-2 overflow-y-auto bg-white z-1 shrink-0 w-128">
+<div class="fixed top-0 bottom-0 left-0 flex flex-col h-screen px-5 pb-6 pt-2 overflow-y-auto bg-white z-1 shrink-0 w-[384px]">
     <div class="fixed">
       <div class="circleBtn">
         <ul>
@@ -18,7 +18,7 @@
           <.icon name="pencil" class="w-4 h-4 mr-1 fill-current text-blue-planning-300" />
             Edit gallery name
         </button>
-          <%= text_input f, :name, class: "toggle-it w-full text-input hidden" %>
+          <%= text_input f, :name, class: "toggle-it w-full text-input hidden", style: "border-radius: 0.5rem;" %>
             <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </.form>
       </div>

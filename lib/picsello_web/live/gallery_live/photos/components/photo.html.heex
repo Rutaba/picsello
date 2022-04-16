@@ -1,13 +1,10 @@
 <div
-    class="item flex"
+    class="item flex m-1.5"
     id={"photo-item-#{@photo.id}"}
     style={"
         width: @photo_width;
         height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{200 / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "450px"};
-        display: flex;
         margin: 5px;
-        align-items: center;
-        background-color: rgba(229, 231, 235, var(--tw-bg-opacity));
         "}
 >
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
@@ -30,7 +27,7 @@
                     src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
                     class="relative"
                 />
-            </div>    
+            </div>
             <% else %>
             <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
                 <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
@@ -67,9 +64,9 @@
                         </div>
 
                         <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
-                            <.icon  
-                            name="heart-white" 
-                            class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40" 
+                            <.icon
+                            name="heart-white"
+                            class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
                             />
                         </div>
                     </button>
@@ -105,9 +102,9 @@
                           </button>
                            <ul class="absolute hidden font-sans bg-white rounded-md toggle-content meatballsdropdown w-36">
                                <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <button 
-                                 class="hover-drop-down" 
-                                 phx-click="photo_preview" 
+                                 <button
+                                 class="hover-drop-down"
+                                 phx-click="photo_preview"
                                  phx-value-photo_id={@id}
                                  >
                                  Set as product preview

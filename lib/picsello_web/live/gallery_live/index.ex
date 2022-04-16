@@ -10,12 +10,10 @@ defmodule PicselloWeb.GalleryLive.Index do
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
-  alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.GalleryLive.Photos.Upload
-  alias PicselloWeb.ClientMessageComponent
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -29,8 +27,6 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, datetime} = DateTime.now("UTC")
-
     socket
     |> assign(:upload_bucket, @bucket)
     |> assign(:total_progress, 0)
@@ -83,6 +79,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       confirm_event: "delete_cover_photo",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
+      class: "dialog-photographer",
       title: "Delete this photo?",
       subtitle: "Are you sure you wish to permanently delete this photo from #{gallery.name} ?"
     })
@@ -105,6 +102,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       close_class: "delete_btn",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
+      class: "dialog-photographer",
       icon: "warning-orange",
       title: "Delete Gallery?",
       gallery_name: gallery.name,

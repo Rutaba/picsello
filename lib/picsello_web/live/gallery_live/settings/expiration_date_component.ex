@@ -290,7 +290,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
             <%= submit "Save", class: "btn-settings w-32  px-11 py-3.5 cursor-pointer", disabled: !@is_valid, phx_disable_with: "Saving..." %>
             <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself}>
                 <input type="checkbox" class="w-6 h-6 mr-3 checkbox_exp"  checked={@is_never_expires} />
-                <label class="cursor-pointer" style="vertical-align: middle">
+                <label class="cursor-pointer font-sans" style="vertical-align: middle">
                     Never expires
                 </label>
             </div>
