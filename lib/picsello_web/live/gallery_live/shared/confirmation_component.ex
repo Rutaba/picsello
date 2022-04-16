@@ -32,19 +32,19 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
         <.icon name={@icon} class="mb-2 w-11 h-11" />
       <% end %>
 
-      <h1 class="text-3xl font-bold">
+      <h1 class="text-3xl font-bold font-sans">
         <%= @title %>
       </h1>
 
       <%= if @subtitle do %>
-        <p class="pt-4"><%= @subtitle %></p>
+        <p class="pt-4 font-sans"><%= @subtitle %></p>
       <% end %>
 
       <%= if @gallery_name && @gallery_count do %>
         <p class="pt-4 font-sans">Are you sure you wish to permanently delete
-        <span class="font-bold"><%= @gallery_name %></span>
+        <span class="font-bold font-sans"><%= @gallery_name %></span>
         gallery, and the
-        <span class="font-bold"><%= @gallery_count %> photos</span>
+        <span class="font-bold font-sans"><%= @gallery_count %> photos</span>
         it contains?</p>
       <% end %>
 
@@ -54,7 +54,7 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
         </button>
       <% end %>
 
-      <button class={"w-full mt-4 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
+      <button class="w-full mt-4 px-6 py-3 font-medium font-sans text-base-300 bg-white border border-base-300 rounded-lg hover:bg-base-300/10 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75" type="button" phx-click="modal" phx-value-action="close">
         <%= @close_label %>
       </button>
     </div>

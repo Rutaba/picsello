@@ -24,11 +24,6 @@ html {
   left: 0px !important;
 }
 
-.font-bold {
-  font-weight: 700;
-  font-family: 'Be Vietnam';
-}
-
 .delete_btn{
   @apply py-3 font-sans px-6 text-base-300 bg-white border border-base-300 rounded-lg hover:border-base-250 hover:text-base-300 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem];
 }

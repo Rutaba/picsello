@@ -167,7 +167,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md toggle-content">
         <%= render_slot(@inner_block) %>
         <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
-          <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">
+          <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center font-sans w-full h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">
             <%= @delete_title %>
           </button>
           <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />

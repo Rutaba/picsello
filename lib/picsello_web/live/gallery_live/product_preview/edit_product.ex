@@ -88,6 +88,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     |> noreply
   end
 
+  @impl true
   def handle_event(
         "save",
         _,
@@ -133,6 +134,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
   def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
   def get_preview(_), do: path(nil)
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="bg-white h-screen w-screen overflow-auto">

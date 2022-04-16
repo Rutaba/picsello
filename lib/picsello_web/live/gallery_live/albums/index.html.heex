@@ -5,7 +5,7 @@
       <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-30 pt-14 pb-5 pl-10 pr-10 bg-gray-100">
         <div class="flex flex-col">
             <div class="flex flex-row justify-between">
-              <span class="text-4xl font-bold">Photos</span>
+              <span class="text-4xl font-bold font-sans">Photos</span>
               <.icon_button {testid("add-album-popup")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
                 Add Album
               </.icon_button>
@@ -23,14 +23,14 @@
                   </div>
                 </a>
 
-              <div class="font-bold cursor-pointer actionBlock">
-                <.actions 
+              <div class="cursor-pointer actionBlock">
+                <.actions
                 id="unsorted_actions"
-                class="flex-row justify-between -mt-1 border-2 rounded-b-lg md:w-full bg-base-100" 
+                class="flex-row justify-between -mt-1 border-2 font-sans rounded-b-lg md:w-full bg-base-100"
                 delete_event="delete_all_unsorted_photos"
                 delete_title="Delete all unsorted photos"
                 delete_value={@gallery.id}>
-                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center justify-between">
+                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center font-sans justify-between">
                       <button class="album-actions w-full">Go to unsorted photos</button>
                     </li>
                 </.actions>
@@ -51,21 +51,21 @@
                     </div>
                   </a>
               <% end %>
-              <div class="font-bold cursor-pointer actionBlock">
-                <.actions 
+              <div class="cursor-pointer actionBlock">
+                <.actions
                 id="actions"
-                class="flex-row justify-between -mt-1 border-2 rounded-b-lg md:w-full bg-base-100" 
+                class="flex-row font-sans justify-between -mt-1 border-2 rounded-b-lg md:w-full bg-base-100"
                 delete_event="delete_album_popup"
                 delete_title="Delete Album"
                 delete_value={album.id}>
-                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center justify-between">
-                    <button class="album-actions w-full">Go to album</button>
+                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative font-sans flex items-center justify-between">
+                    <button class="album-actions w-full font-sans">Go to album</button>
                   </li>
-                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center justify-between">
-                    <button class="album-actions w-full">Go to album settings</button>
+                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative font-sans flex items-center justify-between">
+                    <button class="album-actions w-full font-sans">Go to album settings</button>
                   </li>
                   <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center justify-between">
-                    <button class="album-actions w-full">Edit album thumbnail</button>
+                    <button class="album-actions w-full font-sans">Edit album thumbnail</button>
                   </li>
                 </.actions>
               </div>

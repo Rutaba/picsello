@@ -3,8 +3,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.Galleries.Album
-  alias Picsello.{Repo, Galleries, Albums}
+  alias Picsello.{Galleries, Albums}
   alias PicselloWeb.GalleryLive.Photos.Upload
   alias PicselloWeb.GalleryLive.Albums.{AlbumSettings, AlbumThumbnail}
 
@@ -163,17 +162,14 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
       {:ok, _album} ->
         albums = Albums.get_albums_by_gallery_id(gallery_id)
 
-        socket
+        if Enum.empty?(albums) do
+          socket
+          |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery_id))
+        else
+          socket
+          |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
+        end
         |> close_modal()
-        |> then(fn socket ->
-          if Enum.empty?(albums) do
-            socket
-            |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery_id))
-          else
-            socket
-            |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
-          end
-        end)
         |> put_flash(:gallery_success, "Album deleted successfully")
         |> noreply()
 

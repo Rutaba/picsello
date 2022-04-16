@@ -4,7 +4,7 @@
     <div class="w-full h-full bg-gray-100 pl-96 ">
       <div id="page-scroll" phx-hook="PageScroll" class= "fixed top-0 right-0 z-20 pt-14 pl-10 pr-10 bg-gray-100 left-96">
         <div class="flex flex-col md:flex-row">
-            <div class="flex items-end text-4xl font-bold lg:justify-start">
+            <div class="flex items-end text-4xl font-bold font-sans lg:justify-start">
               <span><%= extract_album(@album, :name, "Photos") %></span>
           </div>
           <div class="flex items-end ml-8 font-sans text-lg text-base-250 lg:justify-start">
@@ -32,9 +32,9 @@
           </div>
         </div>
         <%= if length(@gallery.albums) > 0 do %>
-        <.crumbs class="mt-2 text-blue-planning-300">
+        <.crumbs class="mt-2 font-sans text-blue-planning-300">
           <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
-          <:crumb><span class="font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
+          <:crumb><span class="font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
         </.crumbs>
         <% end %>
         <div class="flex items-center hidden mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
@@ -114,10 +114,10 @@
 
       <div class= "pt-16 pb-10 pl-16 pr-8">
         <%= if total(@photos) == 0 && !@favorites_filter do %>
-        <div class="relative justify-between mt-20 mb-12 text-2xl font-bold text-center text-blue-planning-300">
+        <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
             Oops, there's nothing here - upload photos now to get started!
         </div>
-        <div class="relative overflow-hidden dragDrop__wrapper h-96">
+        <div class="relative overflow-hidden font-sans dragDrop__wrapper h-96">
         <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
         </div>
         <% else %>

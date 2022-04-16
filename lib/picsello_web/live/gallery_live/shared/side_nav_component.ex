@@ -3,7 +3,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   use PicselloWeb, :live_component
 
   alias Picsello.{Galleries, Albums}
-  alias Picsello.Repo
   alias Phoenix.PubSub
 
   @impl true

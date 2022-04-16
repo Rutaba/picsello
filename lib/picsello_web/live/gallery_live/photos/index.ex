@@ -12,7 +12,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias Picsello.{Repo, Galleries, Albums}
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.Photos.{PhotoPreview, PhotoView}
-  alias PicselloWeb.GalleryLive.Settings.AddAlbumModal
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
   @per_page 24

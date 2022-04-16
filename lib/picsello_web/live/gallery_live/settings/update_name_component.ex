@@ -52,11 +52,11 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
     <div>
       <h3 class="font-sans">Gallery name</h3>
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
-        <%= text_input f, :name, class: "gallerySettingsInput" %>
+        <%= text_input f, :name, class: "gallerySettingsInput font-sans" %>
         <div class="flex items-center justify-between w-full mt-5 lg:items-start">
-          <button type="button" phx-click="reset" phx-target={@myself} class="p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0">Reset</button>
-          <%= submit "Save", class: "btn-settings w-32 px-11 py-3.5 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
-          </div>
+          <button type="button" phx-click="reset" phx-target={@myself} class="p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0">Reset</button>
+          <%= submit "Save", class: "btn-settings font-sans w-32 px-11 py-3.5 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+        </div>
       </.form>
     </div>
     """

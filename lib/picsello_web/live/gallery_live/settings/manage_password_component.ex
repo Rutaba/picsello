@@ -34,13 +34,13 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
       <div class="relative">
         <%= if @visibility do %>
           <%= text_input :gallery, :password, value: @gallery.password, disabled: true, id: "galleryPasswordInput",
-          class: "gallerySettingsInput" %>
+          class: "gallerySettingsInput font-sans" %>
         <% else %>
           <%= password_input :gallery, :password, value: @gallery.password, disabled: true, id: "galleryPasswordInput",
-          class: "gallerySettingsInput" %>
+          class: "gallerySettingsInput font-sans" %>
         <% end %>
 
-        <a href="#" phx-click="toggle_visibility" phx-target={@myself} class="absolute h-full -translate-y-1/2 right-5 top-1/2" id="togglePasswordVisibility">
+        <a phx-click="toggle_visibility" phx-target={@myself} class="absolute h-full -translate-y-1/2 right-5 top-1/2" id="togglePasswordVisibility">
           <%= if @visibility do %>
             <.icon name="eye" class="w-5 h-full ml-1 text-base-250"/>
           <% else %>
@@ -49,12 +49,12 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
         </a>
       </div>
       <div class="flex items-center justify-between w-full mt-5 lg:items-start">
-        <button phx-click="regenerate" phx-target={@myself} class="p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0" id="regeneratePasswordButton">
+        <button phx-click="regenerate" phx-target={@myself} class="p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0" id="regeneratePasswordButton">
             Re-generate
         </button>
         <button id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
-        class="py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36">
-        <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+        class="py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 font-sans">
+        <div class="hidden p-1 text-sm rounded bg-white font-sans shadow" role="tooltip">
             Copied!
         </div>
           Copy password
