@@ -33,7 +33,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      socket
      |> assign(:upload_bucket, @bucket)
      |> assign(:view, Map.get(session, "view", "add_button"))
-     |> assign(:album_id, nil)
+     |> assign(:album_id, Map.get(session, "album_id", nil))
      |> assign(:gallery, gallery)
      |> assign(:overall_progress, 0)
      |> assign(:uploaded_files, 0)
@@ -48,13 +48,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     gallery = Galleries.load_watermark_in_gallery(gallery)
     entries = socket.assigns.uploads.photo.entries
 
-    socket =
-      Enum.reduce(entries, socket, fn
-        %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-        _, socket -> socket
-      end)
-
-    socket
+    Enum.reduce(entries, socket, fn
+      %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
+      _, socket -> socket
+    end)
     |> assign(
       :progress,
       Enum.reduce(
@@ -189,10 +186,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
         :photo_upload_completed
       )
 
-      # IO.inspect(parent_pid)
       Galleries.update_gallery_photo_count(gallery.id)
       Galleries.normalize_gallery_photo_positions(gallery.id)
-      # send(parent_pid, :photo_upload_completed)
     end
 
     socket
@@ -212,11 +207,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   defp upload_success_message(%{assigns: %{entries: entries}}, uploaded_files),
     do:
-      "#{uploaded_files}/#{total(entries)} photo#{is_plural(uploaded_files)} uploaded successfully"
-
-  defp is_plural(count) do
-    if count > 1, do: "s"
-  end
+      "#{uploaded_files}/#{total(entries)} #{ngettext("photo", "photos", uploaded_files)} uploaded successfully"
 
   defp start_photo_processing(photo, watermark) do
     ProcessingManager.start(photo, watermark)

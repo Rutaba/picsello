@@ -23,7 +23,7 @@
         <div class="dragDrop" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@uploads.photo.ref}>
         <label class="flex flex-col mt-24 items-center justify-center w-full h-full gap-8 cursor-pointer">
             <div class="max-w-xs mx-auto">
-                <img src="/images/drag-drop-img.png" width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
+                <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
                 <div class="flex flex-col items-center justify-center dragDrop__content">
                     <p class="text-center">
                         <span class="font-bold">Drag your images or </span>

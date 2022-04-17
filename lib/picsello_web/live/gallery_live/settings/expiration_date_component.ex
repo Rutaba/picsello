@@ -123,7 +123,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     socket
     |> assign(:gallery, gallery)
     |> assign_controls()
-    |> assign_valid()
     |> react_form()
   end
 
@@ -287,7 +286,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
           <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "w-1/3 select_exp", disabled: @is_never_expires %>
         </div>
         <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
-            <%= submit "Save", class: "btn-settings w-32  px-11 py-3.5 cursor-pointer", disabled: !@is_valid, phx_disable_with: "Saving..." %>
+            <%= submit "Save", class: "btn-settings w-32 px-11", disabled: !@is_valid, phx_disable_with: "Saving..." %>
             <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself}>
                 <input type="checkbox" class="w-6 h-6 mr-3 checkbox_exp"  checked={@is_never_expires} />
                 <label class="cursor-pointer font-sans" style="vertical-align: middle">

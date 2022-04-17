@@ -8,26 +8,26 @@
               <span><%= extract_album(@album, :name, "Photos") %></span>
           </div>
           <div class="flex items-end ml-8 font-sans text-lg text-base-250 lg:justify-start">
-          <%= if total(@selected_photos) > 0 do %>
-          <%= total(@selected_photos) %> photo<%= if total(@selected_photos) > 1 do %>s<% end %> selected
-          <% end %>
+              <%= if total(@selected_photos) > 0 do %>
+              <%= total(@selected_photos) %> <%= ngettext("photo", "photos", Enum.count(@selected_photos)) %> selected
+              <% end %>
           </div>
           <div class="flex ml-auto">
-          <%= if @album do %>
-          <.icon_button {testid("edit-album-settings")} class="bg-white ml-5 shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
-            Album settings
-          </.icon_button>
-          <%= if total(@photos) > 0 do %>
-          <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="album_thumbnail_popup" color="blue-planning-300" icon="pencil">
-            Edit thumbnail
-          </.icon_button>
-          <% end %>
-          <% end %>
-          <%= if length(@gallery.albums) == 0 do %>
-          <.icon_button {testid("add-album")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
-            Add Album
-          </.icon_button>
-          <% end %>
+              <%= if @album do %>
+                  <.icon_button {testid("edit-album-settings")} class="bg-white ml-5 shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
+                    Album settings
+                  </.icon_button>
+                  <%= if total(@photos) > 0 do %>
+                  <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                    Edit thumbnail
+                  </.icon_button>
+                  <% end %>
+              <% end %>
+              <%= if length(@gallery.albums) == 0 do %>
+              <.icon_button {testid("add-album")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
+                Add Album
+              </.icon_button>
+              <% end %>
           <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
           </div>
         </div>
@@ -52,7 +52,7 @@
         <div class="grid pt-8 lg:grid-cols-2">
           <div class="flex flex-col justify-start md:flex-row gap-x-5">
             <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
-              <div id="select" class="relative" phx-update="ignore" phx-hook="ToggleAlbumDropdown">
+              <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
                 <div class="flex items-center w-32 dropdown text-ellipsis">
                     <div class="mx-3">
                       <span>Select</span>
@@ -60,13 +60,12 @@
                     <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
                     <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
                 </div>
-                <ul class="absolute z-30 hidden w-32 mt-2 bg-white rounded-md toggle-content">
+                <ul class="absolute z-30 toggle hidden w-32 mt-2 bg-white rounded-md popover-content">
                 <%= for option <- options(:select) do %>
-                <li class="flex items-center hover:bg-blue-planning-100">
+                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings" 
+                class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
                   <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
-                  <%= if @select_mode == option.id do %>
-                  <.icon name="tick" class="w-6 h-5 mr-3" />
-                  <% end %>
+                  <.icon name="tick" class="toggle-it w-6 h-5 mr-3 hidden" />
                 </li>
                 <% end %>
                 </ul>

@@ -3,7 +3,7 @@
   @apply relative bg-center bg-cover bg-base-200;
 }
 
-.photo-border {
+.item-border {
   @apply before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10;
 }
 
@@ -165,7 +165,7 @@
 
 .customWatermarkPopup {
   max-height: 95vh;
-  @apply mx-auto my-0 overflow-y-auto bg-base-100;
+  @apply mx-auto my-0 overflow-y-auto bg-base-100 rounded-lg;
 }
 
 .customWatermarkPopup .uploadingList__wrapper progress {
@@ -599,5 +599,16 @@
     box-shadow: 0px 10px 14px -14px rgba(0, 0, 0, 0.15);
   }
 
+  .btn-settings-secondary {
+    @apply px-6 py-3 font-medium font-sans text-base-300 bg-base-100 border border-base-300 rounded-lg hover:text-blue-planning-300 hover:border-blue-planning-300 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-settings {
+    @apply px-6 py-3 font-medium font-sans text-white bg-base-300 border border-base-300 rounded-lg hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .watermark-btn-settings {
+    @apply px-6 py-3 font-medium font-sans text-white bg-base-250 border border-base-250 rounded-lg hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 }
 

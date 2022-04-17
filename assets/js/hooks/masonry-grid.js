@@ -69,7 +69,7 @@ const positionChange = (movedId, order) => {
   if (!element.classList.contains('selected_none')) {
     items.forEach(item => {
       const e = item.querySelector('.toggle-it');
-      e.classList.add('photo-border');
+      e.classList.add('item-border');
     });
   }
   return items
@@ -156,7 +156,7 @@ export default {
     if(uploading == 100 || uploading == 0) {
       grid.remove(grid.getItems());
       grid.add(document.querySelectorAll(grid_id));
-      grid.refreshItems();        
+      grid.refreshItems();
     }
   },
 
@@ -215,12 +215,12 @@ export default {
     switch(mode){
       case 'selected_none':
         items.forEach(item => {
-          item.classList.remove('photo-border');
+          item.classList.remove('item-border');
         });
         break;
       default:
         items.forEach(item => {
-          item.classList.add('photo-border');
+          item.classList.add('item-border');
         });
         break;
       }

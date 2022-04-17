@@ -1,9 +1,9 @@
 <div class="flex flex-col h-screen">
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "product_previews", album_dropdown_show: false %>
-    <div class="w-full h-full bg-gray-100 pl-96 pt-20">
+    <div class="w-full h-full bg-gray-100 pl-96 pt-14">
         <div class="relative pl-10 pb-10 items-center justify-between md:flex-row">
-        <div class="flex items-center font-black text-3xl font-bold lg:justify-start">
+        <div class="flex items-center font-black text-4xl font-bold font-sans lg:justify-start">
           <p>Product Previews</p>
           <span class="inline-block relative pl-3" data-hint="Showcase products your client will love." data-hint-position="middle-middle">
             <.icon name="tooltip" class="inline-block mr-6 rounded-sm fill-current text-blue-planning-300 w-4 h-4"/>

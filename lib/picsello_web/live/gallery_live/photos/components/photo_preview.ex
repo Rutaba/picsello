@@ -118,9 +118,9 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col bg-white p-10">
+    <div class="flex flex-col bg-white p-10 rounded-lg">
       <div class="flex items-start justify-between flex-shrink-0">
-          <h1 class="text-3xl font-bold">
+          <h1 class="text-3xl font-bold font-sans">
             Set as preview for which products?
           </h1>
           <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
@@ -139,7 +139,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
                 >
                   <img
                   id={"img-#{product.id}"}
-                  src={"/images/#{product.category.frame_image}"}
+                  src={Routes.static_path(PicselloWeb.Endpoint, "/images/#{product.category.frame_image}")}
                   class="mx-auto bg-gray-300 items-center cursor-pointer"/>
                   <div id={"preview-#{product.id}"} class="flex justify-center row-span-2 previewImg">
                       <canvas id={"canvas-#{product.id}"} width="300" height="255" class="edit"></canvas>

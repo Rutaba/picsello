@@ -198,7 +198,10 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
       {:ok, _} ->
         socket
         |> close_modal()
-        |> put_flash(:gallery_success, "The unsorted photos deleted successfully")
+        |> put_flash(
+          :gallery_success,
+          "#{total(photo_ids)} unsorted #{ngettext("photo", "photos", Enum.count(photo_ids))} deleted successfully"
+        )
         |> noreply()
 
       _ ->
