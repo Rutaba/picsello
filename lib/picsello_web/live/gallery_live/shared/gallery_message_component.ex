@@ -92,13 +92,13 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
         line-height: 23px; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;"} html_field={:body_html} text_field={:body_text}/>
 
      <PicselloWeb.LiveModal.custom_footer>
-          <button class="btn-settings ml-4 w-40 px-11 py-3.5 cursor-pointer" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+          <button class="btn-settings ml-4 px-11 py-3.5" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
-          <button class="w-28 btn-settings-secondary" title="close" type="button" phx-click="modal" phx-value-action="close">
+          <button class="btn-settings-secondary" title="close" type="button" phx-click="modal" phx-value-action="close">
             Close
           </button>
-        </PicselloWeb.LiveModal.custom_footer>
+      </PicselloWeb.LiveModal.custom_footer>
       </.form>
     </div>
     """

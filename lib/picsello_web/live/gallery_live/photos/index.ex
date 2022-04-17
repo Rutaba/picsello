@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   alias Phoenix.PubSub
   alias Picsello.{Repo, Galleries, Albums}
@@ -138,7 +139,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    Galleries.move_to_album(album_id, selected_photos)
+    Galleries.move_to_album(String.to_integer(album_id), selected_photos)
 
     socket
     |> assign(:selected_photos, [])
@@ -251,7 +252,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       event: "delete_selected_photos",
       title: "Delete selected photos?",
       subtitle:
-        "Are you sure you wish to permanently delete seleted photos from #{socket.assigns.gallery.name} ?"
+        "Are you sure you wish to permanently delete selected photos from #{socket.assigns.gallery.name} ?"
     ]
 
     socket
@@ -362,8 +363,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  # def handle_info({:photo_click, _}, socket), do: noreply(socket)
-
   @impl true
   def handle_info(
         {:confirm_event, "delete_photo", %{photo_id: id}},
@@ -447,7 +446,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> assign(:selected_photos, [])
       |> close_modal()
       |> push_event("remove_items", %{"ids" => selected_photos})
-      |> put_flash(:gallery_success, "photos deleted successfully")
+      |> put_flash(
+        :gallery_success,
+        "#{total(selected_photos)} #{ngettext("photo", "photos", Enum.count(selected_photos))} deleted successfully"
+      )
       |> assign_photos(@per_page)
       |> noreply()
     else
@@ -464,12 +466,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
 
     photos_count = total(selected_photos)
-    "#{photos_count} photo#{is_plural(photos_count)} successfully moved to #{album.name}"
+
+    "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully moved to #{album.name}"
   end
 
   defp remove_from_album_success_message(selected_photos, album) do
     photos_count = total(selected_photos)
-    "#{photos_count} photo#{is_plural(photos_count)} successfully removed from #{album.name}"
+
+    "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"
   end
 
   defp options(:select),
@@ -479,16 +483,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       %{title: "None", id: "selected_none"}
     ]
 
-  defp is_plural(count) do
-    if count > 1, do: "s"
-  end
-
   defp page_title(:index), do: "Photos"
   defp page_title(:edit), do: "Edit Photos"
   defp page_title(:upload), do: "New Photos"
-
-  defp total(list) when is_list(list), do: list |> length
-  defp total(_), do: nil
 
   defp extract_album(album, album_retun, other) do
     if album, do: Map.get(album, album_retun), else: other

@@ -126,7 +126,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         </button>
       </div>
       <.form for={@changeset} let={f} phx-submit="submit" phx-change="validate" phx-target={@myself} class="font-sans">
-        <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
+        <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", style: "border-radius: 0.5rem;"%>
         <%= hidden_input f, :gallery_id%>
 
         <div class="flex flex-col mt-4 font-bold">
@@ -181,10 +181,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <% end %>
         </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
-          <button type="button" phx-click="modal" phx-value-action="close" class={"py-3 mr-2 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36"} id="close">
+          <button type="button" phx-click="modal" phx-value-action="close" class="btn-settings-secondary " id="close">
           Close
           </button>
-          <%= submit "Save", class: "album-btn-settings px-11 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+          <%= submit "Save", class: "btn-settings ml-4 px-11", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </div>
       </.form>
     </div>

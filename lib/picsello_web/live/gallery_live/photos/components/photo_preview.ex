@@ -118,9 +118,9 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col bg-white p-10">
+    <div class="flex flex-col bg-white p-10 rounded-lg">
       <div class="flex items-start justify-between flex-shrink-0">
-          <h1 class="text-3xl font-bold">
+          <h1 class="text-3xl font-bold font-sans">
             Set as preview for which products?
           </h1>
           <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">

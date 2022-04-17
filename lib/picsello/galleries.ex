@@ -195,10 +195,13 @@ defmodule Picsello.Galleries do
     )
     |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photos))
     |> Ecto.Multi.delete(:album, album)
+    |> Ecto.Multi.run(:clean_store, fn _ ->
+      clean_store(album.photos)
+      {:ok, album.photos}
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{album: album}} ->
-        clean_store(album.photos)
         {:ok, album}
 
       {:error, reason} ->
@@ -229,10 +232,13 @@ defmodule Picsello.Galleries do
       []
     )
     |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
+    |> Ecto.Multi.run(:clean_store, fn _ ->
+      clean_store(photos)
+      {:ok, photos}
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->
-        clean_store(photos)
         {:ok, photos}
 
       {:error, reason} ->
@@ -359,10 +365,13 @@ defmodule Picsello.Galleries do
     |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
     |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
     |> Ecto.Multi.delete(:gallery, gallery)
+    |> Ecto.Multi.run(:clean_store, fn _ ->
+      clean_store(gallery.photos)
+      {:ok, gallery.photos}
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{gallery: gallery}} ->
-        clean_store(gallery.photos)
         {:ok, gallery}
 
       {:error, reason} ->
@@ -483,7 +492,7 @@ defmodule Picsello.Galleries do
     from(p in Photo,
       where: p.id in ^selected_photos
     )
-    |> Repo.update_all(set: [album_id: String.to_integer(album_id)])
+    |> Repo.update_all(set: [album_id: album_id])
   end
 
   @doc """

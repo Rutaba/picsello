@@ -5,10 +5,11 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
       layout: "live_client"
     ]
 
+  import PicselloWeb.GalleryLive.Shared
+
   alias Picsello.{Galleries, Repo}
   alias PicselloWeb.GalleryLive.ProductPreview.Preview
   alias PicselloWeb.GalleryLive.Photos.Upload
-  alias PicselloWeb.GalleryLive.Shared.GalleryMessageComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -45,54 +46,13 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
-  def handle_event(
-        "client-link",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
+  def handle_event("client-link", _, socket) do
+    share_gallery(socket)
+  end
 
-    gallery = Picsello.Repo.preload(gallery, job: :client)
-
-    link = Routes.gallery_client_show_url(socket, :show, hash)
-    client_name = gallery.job.client.name
-
-    subject = "#{gallery.name} photos"
-
-    html = """
-    <p>Hi #{client_name},</p>
-    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
-    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
-    <p>Happy viewing!</p>
-    """
-
-    text = """
-    Hi #{client_name},
-
-    Your gallery is ready to view! You can view the gallery here: #{link}
-
-    Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
-
-    Happy viewing!
-    """
-
-    socket
-    |> assign(:job, gallery.job)
-    |> assign(:gallery, gallery)
-    |> GalleryMessageComponent.open(%{
-      body_html: html,
-      body_text: text,
-      subject: subject,
-      modal_title: "Share gallery"
-    })
-    |> noreply()
+  @impl true
+  def handle_info({:message_composed, message_changeset}, socket) do
+    add_message_and_notify(socket, message_changeset)
   end
 
   @impl true

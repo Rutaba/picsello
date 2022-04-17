@@ -4,11 +4,11 @@
 
     <div class="w-full h-full bg-gray-100 pl-96 font-sans">
     <div class="relative pt-12 pb-10 pl-10 pr-20">
-      <div>
-         <div class="flex">
+    <div>
+    <div class="flex">
       <span class="text-4xl font-bold font-sans">Overview</span>
-   </div>
-   <%= if expire_soon(@gallery.expired_at) do %>
+    </div>
+    <%= if expire_soon(@gallery.expired_at) do %>
       <div class="flex mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert">
         <div class="flex justify-center pt-5 pl-6">
             <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
@@ -19,14 +19,14 @@
           to update the expiration date.
         </div>
       </div>
-   <% end %>
-   <div class="relative flex flex-col pb-10 settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
-      <%= if @cover_photo_processing do %>
+    <% end %>
+    <div class="relative flex flex-col pb-10 settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
+    <%= if @cover_photo_processing do %>
       <div class="flex justify-between w-full h-full mt-6 reuploadingBlock" style="box-shadow:none;">
          <h3>Cover photo</h3>
          <label class="font-bold font-sans text-blue-planning-300">Processing...</label>
       </div>
-      <% else %>
+    <% else %>
       <%= if @gallery.cover_photo do %>
       <div class="flex flex-col mt-6">
          <h3>Cover photo</h3>
@@ -45,25 +45,25 @@
          </div>
       </div>
       <% else %>
-      <div class="w-full h-full mt-6 uploadingBlock" style="box-shadow:none;">
-         <h3>Cover photo</h3>
-         <div class="dragDrop__wrapper">
-            <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-               <label>
-                  <div class="flex flex-col items-center justify-center h-full gap-4 dragDrop" id="dropzone-cover" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
-                     <.icon name="add-photos" class="w-20 h-20 cursor-pointer text-blue-planning-300" />
-                     <div class="dragDrop__content">
-                        <p class="font-bold"><span>Drop images or </span><span class="cursor-pointer primary">Browse</span></p>
-                        <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                        <p class="gray">Supports JPEG or PNG</p>
-                     </div>
-                  </div>
-               </label>
-            </form>
-         </div>
-      </div>
+          <div class="w-full h-full mt-6 uploadingBlock" style="box-shadow:none;">
+             <h3>Cover photo</h3>
+             <div class="dragDrop__wrapper">
+                <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                   <label>
+                      <div class="flex flex-col items-center justify-center h-full gap-4 dragDrop" id="dropzone-cover" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
+                         <.icon name="add-photos" class="w-20 h-20 cursor-pointer text-blue-planning-300" />
+                         <div class="dragDrop__content">
+                            <p class="font-bold"><span>Drop images or </span><span class="cursor-pointer primary">Browse</span></p>
+                            <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                            <p class="gray">Supports JPEG or PNG</p>
+                         </div>
+                      </div>
+                   </label>
+                </form>
+             </div>
+          </div>
       <% end %>
-      <% end %>
+    <% end %>
       <div class="galleryUpdateName xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-end-2">
          <%= live_component PicselloWeb.GalleryLive.Settings.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
       </div>
@@ -71,7 +71,7 @@
          <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
       </div>
       <div id="expiration_component" class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">
-         <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
+            <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
             id: "expiration-date-#{@gallery.id}",
             gallery: @gallery %>
       </div>

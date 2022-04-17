@@ -123,7 +123,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     socket
     |> assign(:gallery, gallery)
     |> assign_controls()
-    |> assign_valid()
     |> react_form()
   end
 

@@ -42,15 +42,12 @@ import Quill, {ClearQuillInput} from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
-import ToggleAlbumDropdown from './hooks/toggle-album-dropdown';
-import ToggleAlbumContent from './hooks/toggle-album-content';
 import ToggleNavArrow from './hooks/toggle-nav-arrow';
 import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
 import PageScroll from "./hooks/page-scroll";
-import CustomSelector from './hooks/custom-selector';
 
 const Modal = {
   mounted() {
@@ -150,13 +147,10 @@ const Hooks = {
   Select,
   TZCookie,
   ToggleContent,
-  ToggleAlbumDropdown,
-  ToggleAlbumContent,
   ToggleNavArrow,
   ToggleSiblings,
   ResumeUpload,
-  GallerySelector,
-  CustomSelector,
+  GallerySelector
 };
 
 let Uploaders = {};
