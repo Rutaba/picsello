@@ -46,7 +46,7 @@
                             phx-click="click"
                             phx-value-preview="/images/gallery-icon.svg"
                             phx-value-preview_photo_id={@photo.id}
-                            src="/images/gallery-icon.svg"
+                            src={Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")}
                             class="relative"
                         />
                     </div>

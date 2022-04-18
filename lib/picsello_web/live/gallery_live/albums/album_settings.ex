@@ -181,8 +181,8 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <% end %>
         </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
-          <button type="button" phx-click="modal" phx-value-action="close" class="btn-settings-secondary " id="close">
-          Close
+          <button type="button" phx-click="modal" phx-value-action="close" class="btn-settings-secondary" id="close">
+            Close
           </button>
           <%= submit "Save", class: "btn-settings ml-4 px-11", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </div>

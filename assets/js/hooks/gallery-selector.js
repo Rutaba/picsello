@@ -5,15 +5,15 @@ export default {
     const { el } = this;
     const e = el.querySelector('.toggle-it')
     function onClose() {
-      if (e.classList.contains('photo-border')) {
-        e.classList.remove('photo-border');
+      if (e.classList.contains('item-border')) {
+        e.classList.remove('item-border');
       } else {
-        e.classList.add('photo-border');
+        e.classList.add('item-border');
       }
     }
 
-    const isClosed = () => {e.classList.contains('photo-border');}
-    function onOpen() {e.classList.contains('photo-border');}
+    const isClosed = () => {e.classList.contains('item-border');}
+    function onOpen() {e.classList.contains('item-border');}
 
     this.modal = Modal({ el, onOpen, onClose, isClosed });
   },

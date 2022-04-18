@@ -47,7 +47,7 @@
           phx-drop-target={@uploads.image.ref}
           class="flex flex-col items-center justify-center gap-8 dragDrop"
           >
-          <img src="/images/drag-drop-img.png" width="76" height="76" class="cursor-pointer"/>
+          <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="cursor-pointer"/>
           <div class="dragDrop__content">
           <p class="font-bold">
             <span class="font-bold text-base-300">Drop images or </span>
@@ -84,11 +84,11 @@
       <span>Cancel</span>
     </button>
     <%= if @ready_to_save do %>
-      <button class="btn-settings w-24 px-11 py-3.5 font-sans" phx-click="save" phx-target={@myself}>
+      <button class="btn-settings font-sans" phx-click="save" phx-target={@myself}>
         Save
       </button>
     <% else %>
-      <button class="watermark-btn-settings w-24 px-11 py-3.5 cursor-not-allowed font-sans">
+      <button class="watermark-btn-settings w-24 py-3.5 cursor-not-allowed font-sans">
         Save
       </button>
     <% end %>

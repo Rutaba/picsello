@@ -139,7 +139,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
                 >
                   <img
                   id={"img-#{product.id}"}
-                  src={"/images/#{product.category.frame_image}"}
+                  src={Routes.static_path(PicselloWeb.Endpoint, "/images/#{product.category.frame_image}")}
                   class="mx-auto bg-gray-300 items-center cursor-pointer"/>
                   <div id={"preview-#{product.id}"} class="flex justify-center row-span-2 previewImg">
                       <canvas id={"canvas-#{product.id}"} width="300" height="255" class="edit"></canvas>

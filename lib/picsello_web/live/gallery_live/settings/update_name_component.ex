@@ -55,7 +55,7 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
         <%= text_input f, :name, class: "gallerySettingsInput font-sans" %>
         <div class="flex items-center justify-between w-full mt-5 lg:items-start">
           <button type="button" phx-click="reset" phx-target={@myself} class="p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0">Reset</button>
-          <%= submit "Save", class: "btn-settings font-sans w-32 px-11 py-3.5 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+          <%= submit "Save", class: "btn-settings font-sans w-32 px-11 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </div>
       </.form>
     </div>

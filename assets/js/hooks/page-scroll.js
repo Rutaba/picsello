@@ -1,18 +1,18 @@
 export default {
   mounted() {
-    let scrollpos = window.scrollY
+    let scrollPos = window.scrollY
     const header = document.querySelector("#page-scroll")
 
-    const add_class_on_scroll = () => header.classList.add("scroll-shadow")
-    const remove_class_on_scroll = () => header.classList.remove("scroll-shadow")
+    const addClassOnScroll = () => header.classList.add("scroll-shadow")
+    const removeClassOnScroll = () => header.classList.remove("scroll-shadow")
 
     window.addEventListener('scroll', function() {
-      scrollpos = window.scrollY;
+      scrollPos = window.scrollY;
 
       if (scrollpos >= 13) {
-        add_class_on_scroll()
+        addClassOnScroll()
       } else {
-        remove_class_on_scroll()
+        removeClassOnScroll()
       }
     })
   },

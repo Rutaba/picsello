@@ -195,7 +195,7 @@ defmodule Picsello.Galleries do
     )
     |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photos))
     |> Ecto.Multi.delete(:album, album)
-    |> Ecto.Multi.run(:clean_store, fn _ ->
+    |> Ecto.Multi.run(:clean_store, fn _, _ ->
       clean_store(album.photos)
       {:ok, album.photos}
     end)
@@ -232,7 +232,7 @@ defmodule Picsello.Galleries do
       []
     )
     |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
-    |> Ecto.Multi.run(:clean_store, fn _ ->
+    |> Ecto.Multi.run(:clean_store, fn _, _ ->
       clean_store(photos)
       {:ok, photos}
     end)
@@ -365,7 +365,7 @@ defmodule Picsello.Galleries do
     |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
     |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
     |> Ecto.Multi.delete(:gallery, gallery)
-    |> Ecto.Multi.run(:clean_store, fn _ ->
+    |> Ecto.Multi.run(:clean_store, fn _, _ ->
       clean_store(gallery.photos)
       {:ok, gallery.photos}
     end)
