@@ -225,4 +225,133 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
                conn.resp_body |> get_zip_files() |> Enum.sort()
     end
   end
+
+  describe "Get /galleries/:gallery_id/photos/:photo_id/download" do
+    def get_photo(conn, gallery, photo_id) do
+      get(
+        conn,
+        Routes.gallery_downloads_path(
+          conn,
+          :download_photo,
+          gallery.client_link_hash,
+          photo_id
+        )
+      )
+    end
+
+    test "sends a file when bundle is purchased", %{
+      conn: conn,
+      original_url: original_url
+    } do
+      gallery =
+        insert(:gallery,
+          job:
+            insert(:lead,
+              client: insert(:client, organization: insert(:organization, name: "org name"))
+            )
+        )
+
+      insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+
+      [first_photo | _] =
+        insert_list(3, :photo,
+          gallery: gallery,
+          original_url: original_url,
+          name: "original name.jpg"
+        )
+
+      conn = get_photo(conn, gallery, first_photo.id)
+
+      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
+               Enum.into(conn.resp_headers, %{})
+
+      assert "original name.jpg" == URI.decode(download_filename)
+    end
+
+    test "sends a file when package does not charge for downloads", %{
+      conn: conn,
+      original_url: original_url
+    } do
+      organization = insert(:organization, name: "org name")
+      package = insert(:package, organization: organization, download_each_price: ~M[0]USD)
+
+      gallery =
+        insert(:gallery,
+          job:
+            insert(:lead,
+              client: insert(:client, organization: organization),
+              package: package
+            )
+        )
+
+      [first_photo | _] =
+        insert_list(3, :photo,
+          gallery: gallery,
+          original_url: original_url,
+          name: "original name.jpg"
+        )
+
+      conn = get_photo(conn, gallery, first_photo.id)
+
+      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
+               Enum.into(conn.resp_headers, %{})
+
+      assert "original name.jpg" == URI.decode(download_filename)
+    end
+
+    test "photo is in gallery's order is placed", %{conn: conn, original_url: original_url} do
+      gallery = insert(:gallery)
+
+      photo =
+        insert(:photo,
+          gallery: gallery,
+          original_url: original_url,
+          name: "original name.jpg"
+        )
+
+      add_photos(insert(:order, gallery: gallery, placed_at: DateTime.utc_now()), [photo])
+
+      conn = get_photo(conn, gallery, photo.id)
+
+      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
+               Enum.into(conn.resp_headers, %{})
+
+      assert "original name.jpg" == URI.decode(download_filename)
+    end
+
+    test "photo is in gallery's order that is not placed", %{
+      conn: conn,
+      original_url: original_url
+    } do
+      gallery = insert(:gallery)
+
+      photo =
+        insert(:photo,
+          gallery: gallery,
+          original_url: original_url
+        )
+
+      add_photos(insert(:order, gallery: gallery), [photo])
+
+      assert_raise(Ecto.NoResultsError, fn ->
+        get_photo(conn, gallery, photo.id)
+      end)
+    end
+
+    test "no such photo in any gallery's order", %{conn: conn, original_url: original_url} do
+      gallery = insert(:gallery)
+
+      [photo1, photo2] =
+        insert_list(2, :photo,
+          gallery: gallery,
+          original_url: original_url
+        )
+
+      add_photos(insert(:order, gallery: gallery, placed_at: DateTime.utc_now()), [photo1])
+
+      assert_raise(Ecto.NoResultsError, fn ->
+        get_photo(conn, gallery, photo2.id)
+      end)
+    end
+  end
 end

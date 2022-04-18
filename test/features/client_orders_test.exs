@@ -2,7 +2,7 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
-  alias Picsello.{Repo, Cart.Order, Package}
+  alias Picsello.{Repo, Cart.Order, Package, Galleries.Photo}
 
   setup do
     Mox.verify_on_exit!()
@@ -347,7 +347,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("Home"))
       |> click(link("View Gallery"))
       |> click_photo(1)
-      |> assert_has(testid("product_option_digital_download", text: "Purchased"))
+      |> assert_has(testid("product_option_digital_download", text: "Download"))
       |> click(link("close"))
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
@@ -434,6 +434,9 @@ defmodule Picsello.ClientOrdersTest do
         connect_account: connect_account_id
       })
 
+      gallery_url = session |> current_url()
+      photo1 = from(photo in Photo, order_by: photo.position, limit: 1) |> Repo.one!()
+
       session
       |> click(link("View Gallery"))
       |> click(button("Buy now"))
@@ -508,9 +511,18 @@ defmodule Picsello.ClientOrdersTest do
       )
       |> click(link("View Gallery"))
       |> click_photo(1)
-      |> within_modal(&assert_has(&1, css("img[src$='/preview.jpg']")))
-      |> assert_has(testid("product_option_digital_download", text: "Purchased"))
-      |> click(link("close"))
+      |> within_modal(fn modal ->
+        modal
+        |> assert_has(css("img[src$='/preview.jpg']"))
+        |> assert_has(testid("product_option_digital_download", text: "Download"))
+        |> find(
+          link("Download"),
+          &assert(
+            Element.attr(&1, "href") == Path.join(gallery_url, "photos/#{photo1.id}/download")
+          )
+        )
+        |> click(link("close"))
+      end)
       |> refute_has(button("Buy now"))
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
