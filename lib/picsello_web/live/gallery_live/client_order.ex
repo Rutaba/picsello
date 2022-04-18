@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Cart, GalleryProducts, Galleries}
-  import Cart, only: [preview_url: 1]
+  import Cart, only: [item_image_url: 1]
 
   def mount(_, _, socket) do
     socket
@@ -94,7 +94,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     }
 
     ~H"""
-      <a href={@url} class="cursor-pointer underline"><%= @text %></a>
+      <a href={@url} class="underline cursor-pointer"><%= @text %></a>
     """
   end
 

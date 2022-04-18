@@ -1,7 +1,6 @@
 defmodule Picsello.WHCC.Editor.PhotoParams do
   @moduledoc "Photo params preparation for WHCC editor cration"
-  alias Picsello.Galleries.Photo
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.{Photos, Galleries.Photo}
 
   def from(%Photo{} = photo, []) do
     [photo |> make_photo()]
@@ -20,8 +19,8 @@ defmodule Picsello.WHCC.Editor.PhotoParams do
     %{
       "id" => "photo-#{photo.id}",
       "name" => photo.name,
-      "url" => photo.preview_url |> storage_service().path_to_url(),
-      "printUrl" => photo.original_url |> storage_service().path_to_url(),
+      "url" => Photos.preview_url(photo),
+      "printUrl" => Photos.original_url(photo),
       "size" => %{
         "original" => %{
           "width" => photo.width,
@@ -29,9 +28,5 @@ defmodule Picsello.WHCC.Editor.PhotoParams do
         }
       }
     }
-  end
-
-  defp storage_service() do
-    Application.get_env(:picsello, :photo_storage_service, PhotoStorage)
   end
 end
