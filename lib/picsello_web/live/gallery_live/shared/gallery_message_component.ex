@@ -91,14 +91,14 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
         <.custom_quill_input f={f} style={"min-height: 4rem; font-family: 'Be Vietnam'; font-style: normal; font-weight: 500; font-size: 15.4282px;
         line-height: 23px; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;"} html_field={:body_html} text_field={:body_text}/>
 
-     <PicselloWeb.LiveModal.custom_footer>
-          <button class="btn-settings ml-4 px-11 py-3.5" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+        <PicselloWeb.LiveModal.footer class="pt-10">
+          <button class="btn-settings ml-4 px-11 py-3.5 cursor-pointer" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
           <button class="btn-settings-secondary" title="close" type="button" phx-click="modal" phx-value-action="close">
             Close
           </button>
-      </PicselloWeb.LiveModal.custom_footer>
+        </PicselloWeb.LiveModal.footer>
       </.form>
     </div>
     """

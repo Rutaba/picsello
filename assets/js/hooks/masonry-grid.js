@@ -69,7 +69,7 @@ const positionChange = (movedId, order) => {
   if (!element.classList.contains('selected_none')) {
     items.forEach(item => {
       const e = item.querySelector('.toggle-it');
-      e.classList.add('item-border');
+      e && e.classList.add('item-border');
     });
   }
   return items
