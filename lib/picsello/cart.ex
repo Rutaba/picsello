@@ -485,7 +485,12 @@ defmodule Picsello.Cart do
     do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
 
   def item_image_url({:bundle, %Gallery{id: id}}) do
-    photo = from(p in Photo, where: p.gallery_id == ^id, order_by: p.id, limit: 1) |> Repo.one()
+    photo_query = Picsello.Photos.watermarked_query()
+
+    photo =
+      from(p in photo_query, where: p.gallery_id == ^id, order_by: p.position, limit: 1)
+      |> Repo.one()
+
     item_image_url(%Digital{photo: photo})
   end
 

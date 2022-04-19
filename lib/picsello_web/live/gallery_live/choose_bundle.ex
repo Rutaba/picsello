@@ -11,7 +11,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
     |> assign(
       bundle_status: Cart.bundle_status(gallery),
       download_all_price: Galleries.get_package(gallery).buy_all,
-      gallery: Galleries.preload_cover_photo(gallery)
+      gallery: gallery
     )
     |> ok()
   end

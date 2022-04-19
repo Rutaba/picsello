@@ -438,6 +438,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("View Gallery"))
       |> click(button("Buy now"))
       |> assert_text("Bundle - all digital downloads")
+      |> within_modal(&assert_has(&1, css("img[src$='/watermarked_preview.jpg']", count: 3)))
       |> find(testid("product_option_bundle_download"), fn option ->
         option
         |> assert_text("All digital downloads")
@@ -489,7 +490,7 @@ defmodule Picsello.ClientOrdersTest do
          }}
       )
 
-      assert String.ends_with?(product_image, "watermarked_preview.jpg")
+      assert String.ends_with?(product_image, "/preview.jpg")
 
       session
       |> assert_has(css("h3", text: "Thank you for your order!"))
@@ -507,6 +508,7 @@ defmodule Picsello.ClientOrdersTest do
       )
       |> click(link("View Gallery"))
       |> click_photo(1)
+      |> within_modal(&assert_has(&1, css("img[src$='/preview.jpg']")))
       |> assert_has(testid("product_option_digital_download", text: "Purchased"))
       |> click(link("close"))
       |> refute_has(button("Buy now"))

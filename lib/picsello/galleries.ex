@@ -647,27 +647,4 @@ defmodule Picsello.Galleries do
   def get_package(%Gallery{} = gallery) do
     gallery |> Repo.preload(:package) |> Map.get(:package)
   end
-
-  def preload_cover_photo(%{cover_photo: nil, id: gallery_id} = gallery) do
-    from(photo in Galleries.Photo,
-      where: photo.gallery_id == ^gallery_id,
-      order_by: photo.position,
-      limit: 1
-    )
-    |> Repo.one()
-    |> case do
-      nil ->
-        gallery
-
-      %{original_url: id} = photo ->
-        %{
-          gallery
-          | cover_photo:
-              %Galleries.CoverPhoto{id: id}
-              |> Map.merge(Map.take(photo, [:width, :height, :aspect_ratio]))
-        }
-    end
-  end
-
-  def preload_cover_photo(gallery), do: gallery
 end
