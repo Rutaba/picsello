@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
       selected: [],
       photo: photo,
       products: products,
-      url: path(photo.watermarked_preview_url || photo.preview_url)
+      url: preview_url(photo, blank: true)
     )
     |> ok()
   end

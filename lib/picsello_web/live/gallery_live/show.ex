@@ -50,11 +50,19 @@ defmodule PicselloWeb.GalleryLive.Show do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
+    url = Routes.gallery_client_show_path(socket, :show, hash)
+
     socket
     |> assign(
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
+      url: url,
       page: 0,
       page_title: page_title(socket.assigns.live_action),
       products: Galleries.products(gallery),
@@ -311,12 +319,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_info({:photo_processed, _, photo}, socket) do
-    photo_update =
-      %{
-        id: photo.id,
-        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
-      }
-      |> Jason.encode!()
+    photo_update = Jason.encode!(%{id: photo.id, url: preview_url(photo)})
 
     socket
     |> assign(:photo_updates, photo_update)
@@ -442,13 +445,17 @@ defmodule PicselloWeb.GalleryLive.Show do
                id: id
              },
              page: page,
-             favorites_filter: filter
+             favorites_filter: favorites_filter
            }
          } = socket,
          per_page \\ @per_page
        ) do
-    opts = [only_favorites: filter, offset: per_page * page]
-    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+    photos =
+      Galleries.get_gallery_photos(id,
+        favorites_filter: favorites_filter,
+        offset: per_page * page,
+        limit: per_page + 1
+      )
 
     socket
     |> assign(

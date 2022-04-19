@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Cart, GalleryProducts, Galleries}
-  import Cart, only: [preview_url: 1]
+  import Cart, only: [item_image_url: 1]
 
   def mount(_, _, socket) do
     socket
@@ -18,7 +18,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery, live_action: :paid}} = socket
       ) do
-    case Cart.confirm_order(order_number, session_id) do
+    case Cart.confirm_order(
+           order_number,
+           session_id,
+           PicselloWeb.Helpers
+         ) do
       {:ok, order} -> order
     end
     |> then(fn order ->
@@ -90,11 +94,10 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     }
 
     ~H"""
-      <a href={@url} class="cursor-pointer underline"><%= @text %></a>
+      <a href={@url} class="underline cursor-pointer"><%= @text %></a>
     """
   end
 
   defdelegate shipping_cost(order), to: Cart
-  defdelegate summary_counts(order), to: Cart
   defdelegate total_cost(order), to: Cart
 end

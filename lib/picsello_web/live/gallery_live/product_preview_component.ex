@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
       category
       |> to_event_args(uniq)
       |> Map.merge(%{
-        preview: path(nil),
+        preview: preview_url(%{}),
         width: nil,
         height: nil
       })
@@ -38,7 +38,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
       category
       |> to_event_args(uniq)
       |> Map.merge(%{
-        preview: path(photo.preview_url),
+        preview: preview_url(photo),
         ratio: photo.aspect_ratio
       })
     )

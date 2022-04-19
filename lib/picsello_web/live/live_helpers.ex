@@ -279,11 +279,8 @@ defmodule PicselloWeb.LiveHelpers do
 
   def display_cover_photo(_), do: %{}
 
-  def display_photo(key) when is_binary(key) do
-    Picsello.Galleries.Workers.PhotoStorage.path_to_url(key)
-  end
-
-  def display_photo(nil), do: "/images/gallery-icon.svg"
+  defdelegate preview_url(photo), to: Picsello.Photos
+  defdelegate preview_url(photo, opts), to: Picsello.Photos
 
   def initials_circle(assigns) do
     assigns =
@@ -294,9 +291,6 @@ defmodule PicselloWeb.LiveHelpers do
       <div style={@style} class={"#{@class} flex flex-col items-center justify-center rounded-full"}><%= Picsello.Accounts.User.initials @user %></div>
     """
   end
-
-  def path(nil), do: "/images/card_blank.png"
-  def path(url), do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(url)
 
   def show_intro?(current_user, intro_id),
     do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
@@ -323,7 +317,7 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: ""})
 
     ~H"""
-    <span class={"inline-block relative #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block mr-2 rounded-sm fill-current text-blue-planning-300 w-4 h-4" /></span>
+    <span class={"inline-block relative #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block w-4 h-4 mr-2 rounded-sm fill-current text-blue-planning-300" /></span>
     """
   end
 

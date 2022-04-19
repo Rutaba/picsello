@@ -3,13 +3,6 @@ defmodule PicselloWeb.StripeWebhooksController do
   require Logger
   alias Picsello.{Cart, PaymentSchedules}
 
-  defmodule Helpers do
-    alias PicselloWeb.Endpoint
-    alias PicselloWeb.Router.Helpers, as: Routes
-
-    def jobs_url(), do: Routes.job_url(Endpoint, :jobs)
-  end
-
   def connect_webhooks(%Plug.Conn{assigns: %{stripe_event: stripe_event}} = conn, _params) do
     :ok = handle_webhook(:connect, stripe_event)
     success_response(conn)
@@ -25,8 +18,8 @@ defmodule PicselloWeb.StripeWebhooksController do
 
     {:ok, _} =
       case session.client_reference_id do
-        "order_number_" <> _ -> Cart.confirm_order(session)
-        "proposal_" <> _ -> PaymentSchedules.handle_payment(session, Helpers)
+        "order_number_" <> _ -> Cart.confirm_order(session, PicselloWeb.Helpers)
+        "proposal_" <> _ -> PaymentSchedules.handle_payment(session, PicselloWeb.Helpers)
       end
 
     Logger.info("handled webhook")

@@ -52,8 +52,10 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   @impl true
   def handle_event("save", %{"gallery" => %{"name" => name}}, socket) do
-    %{assigns: %{gallery: gallery}} = socket
+    %{assigns: %{gallery: gallery, arrow_show: arrow}} = socket
     {:ok, gallery} = Galleries.update_gallery(gallery, %{name: name})
+
+    arrow == "overview" && send(self(), {:update_name, %{gallery: gallery}})
 
     socket
     |> assign(:gallery, gallery)

@@ -142,6 +142,48 @@ defmodule Picsello.ImportJobTest do
     assert [%BookingProposal{}] = job.booking_proposals
   end
 
+  feature "user imports job with existing client", %{session: session, user: user} do
+    insert(:client,
+      user: user,
+      name: nil,
+      phone: nil,
+      email: @client_email
+    )
+
+    session
+    |> click(testid("jobs-card"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> fill_in_client_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in_package_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> fill_in_payments_form()
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> assert_text("Your job was imported on")
+
+    job = Repo.one(Job) |> Repo.preload([:client])
+
+    assert %Job{
+             type: "wedding",
+             notes: "things to know about"
+           } = job
+
+    assert %Client{
+             name: "Elizabeth Taylor",
+             email: "taylor@example.com",
+             phone: "(210) 111-1234"
+           } = job.client
+  end
+
   feature "user imports job with only one payment", %{session: session} do
     session
     |> click(testid("jobs-card"))

@@ -41,7 +41,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
            success_url:
              "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
-           trial_days: 90
+           trial_days: 184
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
@@ -240,14 +240,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
     <hr class="my-4" />
     <p class="font-bold">When will I be charged?</p>
-    <p>After 3-months, your subscription will be $50/month. (You can change to annual if you prefer in account settings.)</p>
+    <p>After 6-months, your subscription will be $50/month. (You can change to annual if you prefer in account settings.)</p>
 
     <%= if User.onboarded?(@current_user) do %>
       <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
         <div class="dialog rounded-lg">
           <.icon name="confetti" class="w-11 h-11" />
 
-          <h1 class="text-3xl font-semibold">Your 3-month free trial has started!</h1>
+          <h1 class="text-3xl font-semibold">Your 6-month free trial has started!</h1>
           <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
 
           <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
@@ -311,7 +311,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 6,
       color_class: "bg-blue-gallery-200",
-      step_title: "Start your 3-month free trial",
+      step_title: "Start your 6-month free trial",
       subtitle:
         "Explore and learn Picsello at your own pace. Pricing simplified. One plan, all features.",
       page_title: "Onboarding Step 6"

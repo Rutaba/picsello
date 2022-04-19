@@ -4,13 +4,15 @@ defmodule Picsello.WHCC.EditorTest do
   import Picsello.Factory
   import Mox
 
+  setup :verify_on_exit!
+
   describe "WHCC editor" do
     @some_size "10x15"
     @some_url "https://some.url.org/"
     @some_pixels 2000
 
     test "correct creation structure building" do
-      product = insert(:product)
+      %{whcc_id: product_whcc_id} = product = insert(:product)
 
       photo =
         insert(:photo,
@@ -23,6 +25,7 @@ defmodule Picsello.WHCC.EditorTest do
           height: @some_pixels,
           width: @some_pixels
         )
+        |> Map.merge(%{watermarked: false, preview_url: "the_preview.jpg"})
 
       expect(Picsello.PhotoStorageMock, :path_to_url, 2, fn _ ->
         "https://some.fake.storage.url/"
@@ -36,26 +39,27 @@ defmodule Picsello.WHCC.EditorTest do
           secondary_url: @some_url
         )
 
-      assert struct |> get_in(~w(productId)) == product.whcc_id
-      assert struct |> get_in(~w(selections size)) == @some_size
-      assert struct |> get_in(~w(redirects cancel url)) == @some_url
-      assert struct |> get_in(~w(redirects complete url)) == @some_url
-      assert struct |> get_in(~w(redirects secondary url)) == @some_url
-      assert struct |> get_in(~w(photos)) |> Enum.count() > 0
+      assert %{
+               "productId" => ^product_whcc_id,
+               "selections" => %{"size" => @some_size},
+               "redirects" => %{
+                 "cancel" => %{"url" => @some_url},
+                 "complete" => %{"url" => @some_url},
+                 "secondary" => %{"url" => @some_url}
+               },
+               "photos" => [photo | _]
+             } = struct
 
-      photo =
-        struct["photos"]
-        |> Enum.at(0)
+      assert %{
+               "url" => url,
+               "printUrl" => print_url,
+               "size" => %{"original" => %{"height" => @some_pixels, "width" => @some_pixels}}
+             } = photo
 
-      assert is_map(photo)
-      assert photo |> get_in(~w(size original height)) == @some_pixels
-      assert photo |> get_in(~w(size original width)) == @some_pixels
-      assert photo |> get_in(~w(url)) |> is_url()
-      assert photo |> get_in(~w(printUrl)) |> is_url()
+      assert is_url(url)
+      assert is_url(print_url)
     end
   end
 
-  defp is_url("http://" <> _), do: true
-  defp is_url("https://" <> _), do: true
-  defp is_url(_), do: false
+  defp is_url(str), do: Enum.member?(~w(http https), str |> URI.parse() |> Map.get(:scheme))
 end

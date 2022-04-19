@@ -195,14 +195,29 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         _,
         %{
           assigns: %{
-            favorites_filter: toggle_state
+            favorites_filter: favorites_filter
           }
         } = socket
       ) do
+    toggle_state = !favorites_filter
+
     socket
     |> assign(:page, 0)
-    |> assign(:update_mode, "replace")
-    |> assign(:favorites_filter, !toggle_state)
+    |> assign(:favorites_filter, toggle_state)
+    |> then(fn socket ->
+      case toggle_state do
+        true ->
+          socket
+          |> assign(:update_mode, "replace")
+
+        _ ->
+          socket
+          |> assign(:update_mode, "append")
+      end
+    end)
+    |> assign(:selected_photos, [])
+    |> push_event("select_mode", %{"mode" => "selected_none"})
+    |> assign(:select_mode, "selected_none")
     |> assign_photos(@per_page)
     |> noreply()
   end
@@ -289,6 +304,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       } = socket ->
         socket
         |> assign(:page, 0)
+        |> assign(:update_mode, "append")
         |> assign(:favorites_filter, false)
         |> assign_photos(@per_page)
 
@@ -311,13 +327,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
-
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
     |> assign(:favorites_filter, true)
-    |> assign(:selected_photos, photo_ids)
+    |> then(fn socket ->
+      photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
+
+      socket
+      |> assign(:selected_photos, photo_ids)
+    end)
     |> push_event("select_mode", %{"mode" => "selected_favorite"})
     |> assign(:select_mode, "selected_favorite")
     |> assign_photos(@per_page)
@@ -354,7 +373,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     photo_update =
       %{
         id: photo.id,
-        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
+        url: preview_url(photo)
       }
       |> Jason.encode!()
 

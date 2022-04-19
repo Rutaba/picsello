@@ -198,7 +198,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     photo_update =
       %{
         id: photo.id,
-        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
+        url: preview_url(photo)
       }
       |> Jason.encode!()
 
@@ -311,7 +311,9 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
   end
 
-  defp expire_soon(expired_at) do
+  defp expire_soon(gallery) do
+    expired_at = get_expiry_date(gallery)
+
     case DateTime.compare(DateTime.utc_now() |> DateTime.truncate(:second), expired_at) do
       :lt -> false
       :gt -> true
@@ -320,7 +322,18 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   defp never_expire(result, expired_at) do
+    result && DateTime.compare(get_expiry_date(), expired_at) != :eq
+  end
+
+  defp get_expiry_date(%{expired_at: expired_at}) do
+    case expired_at do
+      nil -> get_expiry_date()
+      _ -> expired_at
+    end
+  end
+
+  defp get_expiry_date() do
     {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
-    result && DateTime.compare(date, expired_at) != :eq
+    date
   end
 end

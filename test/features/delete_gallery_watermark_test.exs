@@ -6,7 +6,7 @@ defmodule Picsello.DeleteGalleryWatermarkTest do
 
   setup do
     gallery = insert(:gallery, %{name: "Diego Santos Weeding"})
-    watermark = insert(:text_watermark, %{gallery_id: gallery.id})
+    watermark = insert(:watermark, gallery_id: gallery.id, type: "text", text: "007Agency:)")
 
     %{gallery: gallery, watermark: watermark}
   end

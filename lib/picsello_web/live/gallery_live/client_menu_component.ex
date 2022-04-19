@@ -2,6 +2,8 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
+  import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
+
   @defaults %{
     cart_count: 0,
     cart_route: nil,

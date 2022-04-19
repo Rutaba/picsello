@@ -4,6 +4,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
 
   def initial_render(status) do
     render_component(PicselloWeb.StripeOnboardingComponent,
+      error_class: "text-center",
       id: :stripe_onboarding,
       current_user: insert(:user),
       stripe_status: status,
@@ -24,7 +25,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:error)
       button = html |> Floki.find("button")
 
-      assert button |> Floki.text() =~ "Retry Stripe Account"
+      assert button |> Floki.text() =~ "Retry Stripe account"
       assert [] = button |> Floki.attribute("disabled")
       assert html |> Floki.text() =~ "Error accessing your Stripe information"
     end
@@ -41,7 +42,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:missing_information)
       button = html |> Floki.find("button")
 
-      assert button |> Floki.text() =~ "Stripe Account Incomplete"
+      assert button |> Floki.text() =~ "Stripe Account incomplete"
       assert [] = button |> Floki.attribute("disabled")
       assert html |> Floki.text() =~ "Please provide missing information"
     end
@@ -50,7 +51,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:pending_verification)
       button = html |> Floki.find("button")
 
-      assert button |> Floki.text() =~ "Check Stripe Status"
+      assert button |> Floki.text() =~ "Check Stripe status"
       assert [] = button |> Floki.attribute("disabled")
       assert html |> Floki.text() =~ "Please wait for Stripe to verify"
     end
@@ -59,8 +60,7 @@ defmodule PicselloWeb.StripeOnboardingComponentTest do
       html = initial_render(:charges_enabled)
       button = html |> Floki.find("button")
 
-      assert html |> Floki.text() =~ ""
-      assert [] = button
+      assert button |> Floki.text() =~ "Go to Stripe account"
     end
   end
 end
