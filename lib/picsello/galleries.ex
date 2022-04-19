@@ -6,7 +6,6 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
 
   alias Picsello.{Repo, GalleryProducts, Category, Galleries, Albums}
-  alias Picsello.GalleryProducts
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
@@ -96,24 +95,40 @@ defmodule Picsello.Galleries do
     Repo.preload(get_gallery_by_hash(hash), [:cover_photo])
   end
 
+  @type get_gallery_photos_option ::
+          {:offset, number()}
+          | {:limit, number()}
+          | {:album_id, number()}
+          | {:exclude_album, boolean()}
+          | {:favorites_filter, boolean()}
   @doc """
   Gets paginated photos by gallery id
 
-  Optional options:
-    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`;
-    * :offset. Defaults to `per_page * page`.
-
+  Options:
+    * :favorites_filter. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :exclude_album. if set to `true`, then only unsorted photos(photos not associated with any album) will be returned. Defaluts to `false`;
+    * :album_id
+    * :offset
+    * :limit
   """
-  @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
+  @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
-  def get_gallery_photos(id, per_page, page, opts \\ []) do
-    offset = Keyword.get(opts, :offset, per_page * page)
-
-    Photo
+  def get_gallery_photos(id, opts \\ []) do
+    from(photo in Picsello.Photos.watermarked_query())
     |> where(^conditions(id, opts))
     |> order_by(asc: :position)
-    |> offset(^offset)
-    |> limit(^per_page)
+    |> then(
+      &case Keyword.get(opts, :offset) do
+        nil -> &1
+        number -> offset(&1, ^number)
+      end
+    )
+    |> then(
+      &case Keyword.get(opts, :limit) do
+        nil -> &1
+        number -> limit(&1, ^number)
+      end
+    )
     |> Repo.all()
   end
 
@@ -246,7 +261,7 @@ defmodule Picsello.Galleries do
     end)
   end
 
-  @spec get_photos_by_ids(photo_ids :: integer) :: list(Photo)
+  @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)
   def get_photos_by_ids(photo_ids) do
     from(p in Photo, where: p.id in ^photo_ids)
     |> Repo.all()
@@ -409,38 +424,6 @@ defmodule Picsello.Galleries do
   end
 
   def set_gallery_hash(%Gallery{} = gallery), do: gallery
-
-  @doc """
-  Loads the gallery photos.
-
-  ## Examples
-
-      iex> load_gallery_photos(gallery, "all")
-      [
-        %Photo{},
-        %Photo{},
-        %Photo{}
-      ]
-  """
-  def load_gallery_photos(%Gallery{} = gallery, type \\ "all") do
-    load_gallery_photos_by_type(gallery, type)
-  end
-
-  defp load_gallery_photos_by_type(gallery, "all") do
-    Photo
-    |> where(gallery_id: ^gallery.id)
-    |> order_by(asc: :position)
-    |> Repo.all()
-  end
-
-  defp load_gallery_photos_by_type(gallery, "favorites") do
-    Photo
-    |> where(gallery_id: ^gallery.id, client_liked: true)
-    |> order_by(asc: :position)
-    |> Repo.all()
-  end
-
-  defp load_gallery_photos_by_type(_, _), do: []
 
   @doc """
   Loads the number of favorite photos from the gallery
@@ -741,10 +724,17 @@ defmodule Picsello.Galleries do
   @doc """
   Creates session token for the gallery client.
   """
-  def build_gallery_session_token(%Gallery{id: id}) do
-    %{gallery_id: id}
-    |> SessionToken.changeset()
-    |> Repo.insert()
+  def build_gallery_session_token(%Gallery{id: id, password: gallery_password}, password) do
+    with true <- gallery_password == password,
+         {:ok, %{token: token}} <- %{gallery_id: id} |> SessionToken.changeset() |> Repo.insert() do
+      {:ok, token}
+    else
+      _ -> {:error, "cannot log in with that password"}
+    end
+  end
+
+  def build_gallery_session_token("" <> hash, password) do
+    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
   end
 
   @doc """
@@ -760,11 +750,7 @@ defmodule Picsello.Galleries do
         token.gallery_id == ^gallery_id and token.token == ^token and
           token.inserted_at > ago(^session_validity_in_days, "day")
     )
-    |> Repo.one()
-    |> then(fn
-      nil -> false
-      _ -> true
-    end)
+    |> Repo.exists?()
   end
 
   @doc """

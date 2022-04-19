@@ -131,12 +131,26 @@ defmodule Picsello.Cart.Order do
       [digital_id: digital_id] ->
         order = Repo.preload(order, :digitals)
 
+        digital_to_delete = Enum.find(order.digitals, &(&1.id == digital_id))
+        digitals = Enum.reject(order.digitals, &(&1.id == digital_id))
+
+        digitals =
+          if Money.zero?(digital_to_delete.price) do
+            index_non_free = Enum.find_index(digitals, &Money.positive?(&1.price))
+
+            digitals
+            |> Enum.with_index()
+            |> Enum.map(fn
+              {digital, ^index_non_free} -> Map.put(digital, :price, Money.new(0))
+              {digital, _} -> digital
+            end)
+          else
+            digitals
+          end
+
         order
         |> change()
-        |> put_assoc(
-          :digitals,
-          Enum.reject(order.digitals, &(&1.id == digital_id))
-        )
+        |> put_assoc(:digitals, digitals |> Enum.map(&Map.take(&1, [:id, :price])))
     end
   end
 

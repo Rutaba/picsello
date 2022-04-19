@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
   use PicselloWeb, :live_component
 
-  alias Picsello.Category
+  alias Picsello.{Photos, Category}
 
   def update(assigns, socket) do
     socket
@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
       category
       |> to_event_args()
       |> Map.merge(%{
-        preview: path(nil),
+        preview: Photos.preview_url(nil, blank: true),
         width: nil,
         height: nil
       })
@@ -33,7 +33,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
       category
       |> to_event_args()
       |> Map.merge(%{
-        preview: path(photo.preview_url),
+        preview: Photos.preview_url(photo, blank: true),
         ratio: photo.aspect_ratio
       })
     )

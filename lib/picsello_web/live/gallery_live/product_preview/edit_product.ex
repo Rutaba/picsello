@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     |> assign(assigns)
     |> then(fn socket ->
       push_event(socket, "set_preview", %{
-        preview: get_preview(preview),
+        preview: preview_url(preview, blank: true),
         ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
         frame: frame,
         coords: coords,
@@ -78,9 +78,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:selected, true)
-    |> assign(:preview, path(preview))
+    |> assign(:preview, preview_url(preview, blank: true))
     |> push_event("set_preview", %{
-      preview: path(preview),
+      preview: preview_url(preview, blank: true),
       frame: frame,
       coords: coords,
       target: "#{category_id}-edit"
@@ -130,9 +130,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
     {:noreply, socket}
   end
-
-  def get_preview(%{preview_photo: %{preview_url: url}}), do: path(url)
-  def get_preview(_), do: path(nil)
 
   @impl true
   def render(assigns) do

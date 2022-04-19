@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.PhotoComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
-  alias Picsello.Galleries
+  alias Picsello.Photos
 
   @impl true
   def mount(socket) do
@@ -13,9 +13,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.PhotoComponent do
 
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
-    {:ok, photo} =
-      Galleries.get_photo(id)
-      |> Galleries.mark_photo_as_liked()
+    {:ok, photo} = Photos.toggle_liked(id)
 
     favorites_update =
       if photo.client_liked,

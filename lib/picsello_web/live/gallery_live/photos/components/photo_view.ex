@@ -11,7 +11,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
     photo = Galleries.get_photo(photo_id)
 
     socket
-    |> assign(url: path(photo.watermarked_preview_url || photo.preview_url))
+    |> assign(url: preview_url(photo, blank: true))
     |> ok()
   end
 

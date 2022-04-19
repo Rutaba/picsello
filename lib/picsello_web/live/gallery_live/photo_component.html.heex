@@ -19,7 +19,7 @@
                     phx-click="click"
                     phx-value-preview={@photo.preview_url}
                     phx-value-preview_photo_id={@photo.id}
-                    src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)}
+                    src={preview_url(@photo)}
                     class="relative"
                 />
             <% else %>

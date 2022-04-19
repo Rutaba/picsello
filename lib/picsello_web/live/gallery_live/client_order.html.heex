@@ -21,7 +21,10 @@
       <div>
         <p class="mt-8 text-lg">
           Thank you for shopping with <%= @organization_name %>.
-          We’ll send you a confirmation email with your order details and a download link for each product you’ve ordered. You can also download your purchased digital photos from the gallery at any time.
+          We’ll send you a confirmation email with your order details.
+          <%= if @order.digitals != [] do %>
+            You can download your purchased digital photos from the gallery at any time.
+          <% end %>
         </p>
       </div>
     <% else %>
@@ -45,12 +48,6 @@
     <% end %>
     <%= unless Enum.empty?(@order.digitals) do %>
       <div class="flex flex-col items-start justify-between px-5 py-5 mt-5 border border-base-225 md:px-7 md:flex-row md:items-center md:pr-16">
-        <div>
-          <h4 class="text-lg font-bold">Your download link will be sent to:</h4>
-
-          <p class="py-4 text-base md:pb-0"><%= @order.delivery_info.email %></p>
-        </div>
-
         <a
           download
           href={Routes.gallery_downloads_path(@socket, :download, @gallery.client_link_hash, @order.number)}
@@ -90,7 +87,7 @@
         <%= for item <- @order.products do %>
           <div class="relative py-5 md:py-7 md:first:border-t md:border-base-200">
             <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
-              <img src={item.editor_details.preview_url} class="h-24 mx-auto md:h-40"/>
+              <img src={item_image_url(item)} class="h-24 mx-auto md:h-40"/>
 
               <div class="flex flex-col px-4 md:px-8 md:pt-4">
                 <span class="text-sm md:text-base md:font-medium"> <%= item.editor_details.selections["size"] %> <.product_description id={item.editor_details.product_id} /></span>
@@ -122,12 +119,12 @@
         <%= for digital <- @order.digitals do %>
           <div class="flex items-center justify-between py-7 md:py-10 md:px-11">
             <div class="flex items-center">
-              <img class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] object-contain mr-4 md:mr-14" src={preview_url(digital)}/>
+              <img class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] object-contain mr-4 md:mr-14" src={item_image_url(digital)}/>
 
               <span>Digital download</span>
             </div>
 
-            <div class="font-bold"><%= digital.price %></div>
+            <div class="font-bold"><%= price_display(digital) %></div>
           </div>
         <% end %>
       </div>
@@ -135,8 +132,8 @@
 
     <div class="p-5 my-5 border border-base-225">
       <%= for {label, count, subtotal} <- summary_counts(@order), count > 0 do %>
-        <p class="text-xl capitalize">
-          <%= label %> (<span><%= count %></span>): <span class="font-medium text-base-300"><%= subtotal %></span>
+        <p class="flex justify-between text-lg">
+          <span><%= label %> (<%= count %>):</span><span class="font-semibold text-base-300 md:pr-8"><%= subtotal %></span>
         </p>
       <% end %>
 

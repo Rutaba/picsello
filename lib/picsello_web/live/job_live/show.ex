@@ -72,6 +72,18 @@ defmodule PicselloWeb.JobLive.Show do
       |> noreply()
 
   @impl true
+  def handle_event("open-stripe", _, %{assigns: %{job: job, current_user: current_user}} = socket) do
+    client = job |> Repo.preload(:client) |> Map.get(:client)
+
+    socket
+    |> redirect(
+      external:
+        "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/customers/#{client.stripe_customer_id}"
+    )
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("view-gallery", _, %{assigns: %{job: job}} = socket),
     do:
       socket

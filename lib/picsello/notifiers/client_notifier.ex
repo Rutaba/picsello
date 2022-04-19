@@ -1,7 +1,8 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  alias Picsello.{BookingProposal, Repo, Job}
+  alias Picsello.{BookingProposal, Repo, Job, Cart}
+  alias Cart.Order
 
   @doc """
   Deliver booking proposal email.
@@ -17,6 +18,58 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
   def deliver_email(message, to_email) do
     message |> client_message_to_email(:email_template) |> to(to_email) |> deliver_later()
+  end
+
+  def deliver_order_confirmation(
+        %{
+          gallery: %{job: %{client: %{organization: organization}}} = gallery,
+          delivery_info: %{name: client_name, address: address, email: to_email}
+        } = order,
+        helpers
+      ) do
+    %{user: %{time_zone: time_zone}} = Repo.preload(organization, :user)
+
+    products =
+      for(product <- order |> Cart.preload_products() |> Map.get(:products)) do
+        %{
+          item_name: Cart.product_name(product),
+          item_quantity: Cart.product_quantity(product),
+          item_price: Cart.price_display(product),
+          item_is_digital: false
+        }
+      end
+
+    digitals =
+      for(digital <- order.digitals) do
+        %{
+          item_name: "Digital Download",
+          item_quantity: 1,
+          item_price: Cart.price_display(digital),
+          item_is_digital: true
+        }
+      end
+
+    opts = [
+      client_name: client_name,
+      contains_digital: digitals != [],
+      contains_physical: products != [],
+      gallery_url: helpers.gallery_url(gallery),
+      logo_url: Picsello.Profiles.logo_url(organization),
+      order_address: products != [] && order_address(client_name, address),
+      order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
+      order_items: products ++ digitals,
+      order_number: Picsello.Cart.Order.number(order),
+      order_shipping: Order.shipping_cost(order),
+      order_subtotal: Order.subtotal_cost(order),
+      order_total: Order.total_cost(order),
+      order_url: helpers.order_url(gallery, order),
+      subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"
+    ]
+
+    sendgrid_template(:order_confirmation_template, opts)
+    |> to({client_name, to_email})
+    |> from({organization.name, "noreply@picsello.com"})
+    |> deliver_later()
   end
 
   defp client_message_to_email(message, template_name, opts \\ []) do
@@ -56,4 +109,14 @@ defmodule Picsello.Notifiers.ClientNotifier do
       user: organization.user
     )
   end
+
+  defp order_address(_, nil), do: nil
+
+  defp order_address(name, %{state: state, city: city, zip: zip, addr1: addr1, addr2: addr2}),
+    do:
+      for(
+        "" <> line <- [name, addr1, addr2, "#{city}, #{state} #{zip}"],
+        into: "",
+        do: "<p>#{line}</p>"
+      )
 end

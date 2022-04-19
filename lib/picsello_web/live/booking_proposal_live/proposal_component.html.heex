@@ -2,7 +2,7 @@
   <.close_x />
 
   <.banner title="Proposal" job={@job} package={@package}>
-    <p class="raw_html"><%= raw @package.description %></p>
+    <div class="line-clamp-2 raw_html"><%= raw @package.description %></div>
     <%=if @proposal.accepted_at do %>
       <p>Accepted on <%= strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %></p>
     <% end %>

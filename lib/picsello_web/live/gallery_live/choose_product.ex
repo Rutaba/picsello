@@ -15,7 +15,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       download_each_price: Galleries.download_each_price(gallery),
       photo: photo,
       products: GalleryProducts.get_gallery_products(gallery.id),
-      digital_status: Cart.digital_status(gallery, photo)
+      digital_status: Cart.digital_status(gallery, photo),
+      digital_credit: Cart.digital_credit(gallery)
     )
     |> ok()
   end
@@ -45,8 +46,10 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   def handle_event(
         "digital_add_to_cart",
         %{},
-        %{assigns: %{photo: photo, download_each_price: price}} = socket
+        %{assigns: %{photo: photo, download_each_price: price, gallery: gallery}} = socket
       ) do
+    price = if Cart.digital_credit(gallery) > 0, do: 0, else: price
+
     send(
       socket.root_pid,
       {:add_digital_to_cart, %Digital{photo: photo, price: price}}
@@ -61,16 +64,14 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply()
   end
 
-  defp url(photo), do: path(photo.watermarked_preview_url || photo.preview_url)
-
   defp option(assigns) do
     assigns = Enum.into(assigns, %{min_price: nil})
 
     ~H"""
-    <div {testid("product_option_#{@testid}")} class="p-5 xl:p-7 border border-base-225 rounded mb-4 lg:mb-7">
-      <div class="flex justify-between items-center">
+    <div {testid("product_option_#{@testid}")} class="p-5 mb-4 border rounded xl:p-7 border-base-225 lg:mb-7">
+      <div class="flex items-center justify-between">
         <div class="flex flex-col mr-2">
-          <p class="font-semibold text-lg text-base-300"><%= @title %></p>
+          <p class="text-lg font-semibold text-base-300"><%= @title %></p>
 
           <%= if @min_price do %>
             <p class="font-semibold text-base text-base-300 pt-1.5 text-opacity-60"> <%= @min_price %></p>
@@ -92,7 +93,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     assign(socket,
       photo: photo,
       photo_ids: photo_ids,
-      digital_status: Cart.digital_status(gallery, photo)
+      digital_status: Cart.digital_status(gallery, photo),
+      digital_credit: Cart.digital_credit(gallery)
     )
   end
 

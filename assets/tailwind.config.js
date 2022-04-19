@@ -82,7 +82,8 @@ module.exports = {
       boxShadow: {
         md: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
         lg: '0px 4px 14px 0px rgba(0, 0, 0, 0.15)',
-        xl: '0px 14px 14px 0px rgba(0, 0, 0, 0.20)'
+        xl: '0px 14px 14px 0px rgba(0, 0, 0, 0.20)',
+        top: '0px -14px 34px rgba(0, 0, 0, 0.15)'
       },
       zIndex: { '-10': '-10' },
       strokeWidth: {'3':'3', '4':'4'},

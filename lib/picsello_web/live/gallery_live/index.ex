@@ -198,7 +198,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     photo_update =
       %{
         id: photo.id,
-        url: display_photo(photo.watermarked_preview_url || photo.preview_url)
+        url: preview_url(photo)
       }
       |> Jason.encode!()
 

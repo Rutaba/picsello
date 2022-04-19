@@ -42,7 +42,6 @@ import Quill, {ClearQuillInput} from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
-import ToggleNavArrow from './hooks/toggle-nav-arrow';
 import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
@@ -147,7 +146,6 @@ const Hooks = {
   Select,
   TZCookie,
   ToggleContent,
-  ToggleNavArrow,
   ToggleSiblings,
   ResumeUpload,
   GallerySelector

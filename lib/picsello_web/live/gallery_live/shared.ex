@@ -3,9 +3,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   use Phoenix.Component
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.Gettext, only: [ngettext: 3]
 
-  alias Picsello.Repo
-  alias Picsello.{Galleries, Messages}
+  alias Picsello.{Repo, Galleries, Messages}
   alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent, GalleryMessageComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -31,22 +31,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
       else
         [exclude_album: true]
       end ++
-        [favorites_filter: filter, offset: per_page * page]
+        [favorites_filter: filter, limit: per_page + 1, offset: per_page * page]
     end
   end
 
   def assign_photos(
         %{
           assigns: %{
-            gallery: %{id: id},
-            page: page
+            gallery: %{id: id}
           }
         } = socket,
         per_page,
         exclude_all \\ nil
       ) do
     opts = make_opts(socket, per_page, exclude_all)
-    photos = Galleries.get_gallery_photos(id, per_page + 1, page, opts)
+    photos = Galleries.get_gallery_photos(id, opts)
 
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
@@ -254,4 +253,25 @@ defmodule PicselloWeb.GalleryLive.Shared do
     </div>
     """
   end
+
+  def summary_counts(order) do
+    for {label, collection, format_fn} <- [
+          {"Products", order.products, &sum_prices/1},
+          {"Digitals", Enum.filter(order.digitals, &Money.positive?(&1.price)), &sum_prices/1},
+          {"Digital credits used", Enum.filter(order.digitals, &Money.zero?(&1.price)),
+           &credits_display/1}
+        ] do
+      {label, Enum.count(collection), format_fn.(collection)}
+    end
+  end
+
+  defp credits_display(collection) do
+    "#{ngettext("%{count} credit", "%{count} credits", Enum.count(collection))} - #{sum_prices(collection)}"
+  end
+
+  defp sum_prices(collection) do
+    Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))
+  end
+
+  defdelegate price_display(product), to: Picsello.Cart
 end

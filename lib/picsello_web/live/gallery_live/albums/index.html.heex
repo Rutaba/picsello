@@ -39,13 +39,13 @@
             <%= for album <- @albums do %>
             <div class="flex flex-col mb-2 mr-2">
               <%= if album.thumbnail_url do %>
-                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> display_photo(album.thumbnail_url) <> ")"} phx-click="go_to_album" phx-value-album={album.id}>
+                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> preview_url(album.thumbnail_url, blank: true) <> ")"} phx-click="go_to_album" phx-value-album={album.id}>
                   <div class="flex flex-row items-end justify-start h-full gap-2">
                     <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                   </div>
                 </a>
               <% else %>
-                 <a class="mt-4 albumBlock md:w-full albumHeight" phx-click="go_to_album" style="background-image: url('/images/album_placeholder.png')" phx-value-album={album.id}>
+                 <a class="mt-4 albumBlock md:w-full albumHeight" phx-click="go_to_album" style={"background-image: url(" <> preview_url(nil, blank: true) <> ")"} phx-value-album={album.id}>
                     <div class="flex flex-row items-end justify-start h-full gap-2">
                       <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
                     </div>

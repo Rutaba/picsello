@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
       Map.merge(assigns, %{
         gallery: gallery,
         album: album,
-        preview_url: path(album.thumbnail_url),
+        preview_url: preview_url(album.thumbnail_url, blank: true),
         page_title: "Album thumbnail",
         thumbnail_url: album.thumbnail_url,
         favorites_count: Galleries.gallery_favorites_count(gallery),
@@ -62,10 +62,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
       ) do
     socket
     |> assign(:selected, true)
-    |> assign(:preview_url, path(preview))
+    |> assign(:preview_url, preview_url(preview, blank: true))
     |> assign(:thumbnail_url, preview)
     |> push_event("set_preview", %{
-      preview: path(preview),
+      preview: preview_url(preview, blank: true),
       frame: "card_blank.png",
       coords: @coordi,
       target: "#{frame_id}-edit"

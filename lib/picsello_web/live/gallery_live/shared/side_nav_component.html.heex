@@ -14,12 +14,11 @@
 
         <.form let={f} for={@changeset} phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
         <p class="text-3xl font-bold toggle-it text-base-300"><%= @gallery.name %> </p>
-                    <button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-it" parent-class="gallery-name-edit" type="button" class="flex items-center px-4 py-2 mt-4 font-sans border rounded-lg shadow-lg toggle-it hover:opacity-75 text-2m border-blue-planning-300"  icon="pencil">
-          <.icon name="pencil" class="w-4 h-4 mr-1 fill-current text-blue-planning-300" />
+          <.icon_button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-it" parent-class="gallery-name-edit" class="toggle-it bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
             Edit gallery name
-        </button>
-          <%= text_input f, :name, class: "toggle-it w-full text-input hidden", style: "border-radius: 0.5rem;" %>
-            <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+          </.icon_button>
+          <%= text_input f, :name, value: @gallery.name, class: "toggle-it w-full text-input hidden", style: "border-radius: 0.5rem;" %>
+            <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg" %>
         </.form>
       </div>
       <div class="grid grid-cols-1 p-5 mt-6 font-sans bg-gray-100 rounded-lg grid-container w-80 gap-y-1">
@@ -56,9 +55,9 @@
                     <% end %>
                    </div>
              </div>
-            <div class="flex items-center ml-auto">
+            <div class="flex px-2 items-center ml-auto">
              <%= if @total_progress > 0 && @total_progress < 100 do %>
-                <div class="flex px-4 sk-circle">
+                <div class="flex sk-circle">
                     <div class="sk-circle1 sk-child"></div>
                     <div class="sk-circle2 sk-child"></div>
                     <div class="sk-circle3 sk-child"></div>

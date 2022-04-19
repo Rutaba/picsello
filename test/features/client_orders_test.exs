@@ -2,7 +2,7 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
-  alias Picsello.{Repo, Cart.Order}
+  alias Picsello.{Repo, Cart.Order, Package}
 
   setup do
     Mox.verify_on_exit!()
@@ -22,6 +22,8 @@ defmodule Picsello.ClientOrdersTest do
               insert(:package, organization: organization, download_each_price: ~M[2500]USD)
           )
       )
+
+    insert(:watermark, gallery: gallery)
 
     for %{id: category_id} = category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo =
@@ -127,9 +129,16 @@ defmodule Picsello.ClientOrdersTest do
 
     Picsello.MockWHCCClient
     |> Mox.stub(:editor, fn args ->
+      assert %{
+               "photos" => [%{"url" => preview_url, "printUrl" => print_url}],
+               "redirects" => %{"complete" => %{"url" => complete_url}}
+             } = args
+
+      assert String.ends_with?(preview_url, "watermarked_preview.jpg")
+      assert String.ends_with?(print_url, "original.jpg")
+
       url =
-        args
-        |> get_in(["redirects", "complete", "url"])
+        complete_url
         |> URI.parse()
         |> Map.update!(:query, &String.replace(&1, "%EDITOR_ID%", "editor-id"))
         |> URI.to_string()
@@ -276,7 +285,13 @@ defmodule Picsello.ClientOrdersTest do
       |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
-        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
+        |> find(
+          css("img"),
+          fn img ->
+            src = Element.attr(img, "src")
+            assert String.ends_with?(src, "/watermarked_preview.jpg")
+          end
+        )
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
@@ -336,6 +351,10 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
         session
+        |> find(css("img"), fn img ->
+          src = Element.attr(img, "src")
+          assert String.ends_with?(src, "/preview.jpg")
+        end)
         |> find(
           link("Download photos"),
           &assert(
@@ -344,6 +363,52 @@ defmodule Picsello.ClientOrdersTest do
           )
         )
       end)
+    end
+
+    feature "with download credit", %{session: session} do
+      Repo.update_all(Package, set: [download_count: 2])
+
+      session
+      |> click(link("View Gallery"))
+      |> click_photo(1)
+      |> assert_has(testid("download-credit", text: "Download Credits available: 2"))
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "1"))
+      |> click_photo(2)
+      |> assert_has(testid("download-credit", text: "Download Credits available: 1"))
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "2"))
+      |> click(link("cart"))
+      |> assert_text("Total: $0.00")
+      |> assert_text("Minimum amount is $1")
+      |> assert_disabled(button("Continue"))
+      |> click(link("Home"))
+      |> click_photo(3)
+      |> refute_has(testid("download-credit"))
+      |> click(button("Add to cart"))
+      |> assert_has(link("cart", text: "3"))
+      |> click(link("cart"))
+      |> assert_text("Total: $25.00")
+      |> assert_enabled(button("Continue"))
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 0), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("1 credit - $0.00")
+      end)
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 1), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("1 credit - $0.00")
+      end)
+      |> find(css("*[data-testid^='digital-']", count: 3, at: 2), fn cart_item ->
+        cart_item
+        |> assert_text("Digital download")
+        |> assert_text("$25.00")
+      end)
+      |> assert_text("Total: $25.00")
+      |> click(button("Continue"))
+      |> assert_text("Digitals (1): $25.00")
+      |> assert_text("Digital Credits Used (2): 2 Credits - $0.00")
     end
   end
 end

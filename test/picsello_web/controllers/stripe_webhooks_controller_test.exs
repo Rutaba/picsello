@@ -35,6 +35,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
     job = insert(:lead, user: user) |> promote_to_job()
 
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
     Mox.verify_on_exit!()
     [user: user, job: job]
   end
@@ -46,8 +47,6 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       [deposit_payment, remainder_payment] = job.payment_schedules
 
       Repo.update_all(PaymentSchedule, set: [paid_at: nil])
-
-      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
       [
         proposal: proposal,
@@ -99,11 +98,13 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
   describe "orders" do
     setup do
       organization = insert(:organization, stripe_account_id: "connect-account-id")
+      _photographer = insert(:user, organization: organization)
 
-      gallery =
-        insert(:gallery, job: insert(:lead, client: insert(:client, organization: organization)))
+      client = insert(:client, organization: organization)
 
-      order = insert(:order, gallery: gallery)
+      gallery = insert(:gallery, job: insert(:lead, client: client))
+
+      order = insert(:order, gallery: gallery, delivery_info: %{email: "client@example.com"})
 
       stub_event(
         client_reference_id: "order_number_#{Order.number(order)}",
@@ -111,7 +112,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         payment_intent: "order-payment-intent-id"
       )
 
-      [order: order, gallery: gallery]
+      [order: order, gallery: gallery, client: client, organization: organization]
     end
 
     def expect_capture,
@@ -174,6 +175,77 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       make_request(conn)
 
       assert %{products: [%{whcc_confirmation: "whcc-order-confirmed-id"}]} = Repo.reload!(order)
+    end
+
+    test "emails the client", %{
+      conn: conn,
+      order: order,
+      organization: %{name: organization_name},
+      gallery: %{client_link_hash: gallery_hash}
+    } do
+      add_cart_product(order, ~M[1000]USD)
+
+      expect_retrieve(~M[1000])
+      expect_capture()
+
+      Mox.expect(
+        Picsello.MockWHCCClient,
+        :confirm_order,
+        fn _, _ ->
+          {:ok, "whcc-order-confirmed-id"}
+        end
+      )
+
+      make_request(conn)
+
+      assert_receive {:delivered_email,
+                      %{
+                        private: %{
+                          send_grid_template: %{
+                            dynamic_template_data: email_variables
+                          }
+                        },
+                        to: [{nil, "client@example.com"}]
+                      }}
+
+      order_number = Order.number(order)
+
+      assert %{
+               "client_name" => nil,
+               "gallery_url" => gallery_url,
+               "logo_url" => nil,
+               "order_address" => nil,
+               "order_date" => date,
+               "order_items" => [
+                 %{
+                   item_is_digital: false,
+                   item_name: " polo",
+                   item_price: ~M[1000]USD,
+                   item_quantity: 1
+                 }
+               ],
+               "order_number" => ^order_number,
+               "order_shipping" => ~M[0]USD,
+               "order_subtotal" => ~M[1000]USD,
+               "order_total" => ~M[1000]USD,
+               "order_url" => order_url,
+               "subject" => subject
+             } = email_variables
+
+      assert Regex.match?(~r|\d\d?/\d\d?/\d\d?|, date)
+
+      assert String.starts_with?(subject, organization_name)
+      assert String.ends_with?(subject, to_string(order_number))
+
+      assert ["/", "gallery", ^gallery_hash] =
+               gallery_url |> URI.parse() |> Map.get(:path) |> Path.split()
+
+      order_number = to_string(order_number)
+
+      assert ["/", "gallery", ^gallery_hash, "orders", ^order_number] =
+               order_url |> URI.parse() |> Map.get(:path) |> Path.split()
+
+      assert Jason.decode!(Jason.encode!(email_variables))
     end
 
     test "fails if WHCC breaks", %{conn: conn, order: order} do

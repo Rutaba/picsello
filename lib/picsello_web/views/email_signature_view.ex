@@ -10,7 +10,11 @@ defmodule PicselloWeb.EmailSignatureView do
       </tr>
       <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
         <td style="border-collapse:collapse;padding-bottom:10px;" border="0" cellpadding="0" cellspacing="0" width="100%">
-          <div style={"background-color:#{@organization.profile.color};text-align:center;padding:18px 16px;font-weight:bold;color:white;font-size:17px;border-radius:90px;width:26px;"}><%= User.initials(@user) %></div>
+          <%= if @organization.profile.logo && @organization.profile.logo.url do %>
+            <img src={@organization.profile.logo.url} height="40" style="height: 40px" />
+          <% else %>
+            <div style={"background-color:#{@organization.profile.color};text-align:center;padding:18px 16px;font-weight:bold;color:white;font-size:17px;border-radius:90px;width:26px;"}><%= User.initials(@user) %></div>
+          <% end %>
         </td>
       </tr>
       <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
