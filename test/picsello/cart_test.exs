@@ -343,9 +343,11 @@ defmodule Picsello.CartTest do
                    currency: :USD,
                    product_data: %{
                      images: [cart_product.editor_details.preview_url],
-                     name: "20 by 30 #{whcc_product.whcc_name}"
+                     name: "20 by 30 #{whcc_product.whcc_name}",
+                     tax_code: "txcd_99999999"
                    },
-                   unit_amount: 35_200
+                   unit_amount: 35_200,
+                   tax_behavior: "exclusive"
                  },
                  quantity: cart_product.editor_details.selections["quantity"]
                },
@@ -354,9 +356,11 @@ defmodule Picsello.CartTest do
                    currency: :USD,
                    product_data: %{
                      images: ["https://example.com/digital.jpg"],
-                     name: "Digital image"
+                     name: "Digital image",
+                     tax_code: "txcd_10501000"
                    },
-                   unit_amount: 500
+                   unit_amount: 500,
+                   tax_behavior: "exclusive"
                  },
                  quantity: 1
                }

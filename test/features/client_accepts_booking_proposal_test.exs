@@ -207,11 +207,16 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                       %{
                         success_url: stripe_success_url,
                         metadata: %{"paying_for" => ^deposit_payment_id},
+                        automatic_tax: %{enabled: true},
                         line_items: [
                           %{
                             price_data: %{
-                              product_data: %{name: "John Newborn 50% retainer"},
-                              unit_amount: 40
+                              product_data: %{
+                                name: "John Newborn 50% retainer",
+                                tax_code: "txcd_20030000"
+                              },
+                              unit_amount: 40,
+                              tax_behavior: "exclusive"
                             }
                           }
                         ]
@@ -250,11 +255,16 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                       %{
                         success_url: stripe_success_url,
                         metadata: %{"paying_for" => ^remainder_payment_id},
+                        automatic_tax: %{enabled: true},
                         line_items: [
                           %{
                             price_data: %{
-                              product_data: %{name: "John Newborn 50% remainder"},
-                              unit_amount: 40
+                              product_data: %{
+                                name: "John Newborn 50% remainder",
+                                tax_code: "txcd_20030000"
+                              },
+                              unit_amount: 40,
+                              tax_behavior: "exclusive"
                             }
                           }
                         ]

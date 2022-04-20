@@ -415,8 +415,10 @@ defmodule Picsello.Cart do
             unit_amount: unit_amount,
             product_data: %{
               name: product_name(product),
-              images: [item_image_url(product)]
-            }
+              images: [item_image_url(product)],
+              tax_code: Picsello.Payments.tax_code(:product)
+            },
+            tax_behavior: "exclusive"
           },
           quantity: quantity
         }
@@ -430,8 +432,10 @@ defmodule Picsello.Cart do
             unit_amount: price.amount,
             product_data: %{
               name: "Digital image",
-              images: [item_image_url(digital)]
-            }
+              images: [item_image_url(digital)],
+              tax_code: Picsello.Payments.tax_code(:digital)
+            },
+            tax_behavior: "exclusive"
           },
           quantity: 1
         }
@@ -448,8 +452,10 @@ defmodule Picsello.Cart do
               unit_amount: order.bundle_price.amount,
               product_data: %{
                 name: "Bundle - all digital downloads",
-                images: [item_image_url({:bundle, gallery})]
-              }
+                images: [item_image_url({:bundle, gallery})],
+                tax_code: Picsello.Payments.tax_code(:digital)
+              },
+              tax_behavior: "exclusive"
             },
             quantity: 1
           }
@@ -473,7 +479,9 @@ defmodule Picsello.Cart do
             fixed_amount: %{
               amount: shipping_cost.amount,
               currency: shipping_cost.currency
-            }
+            },
+            tax_code: Picsello.Payments.tax_code(:shipping),
+            tax_behavior: "exclusive"
           }
         }
       ]

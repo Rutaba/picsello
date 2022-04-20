@@ -7,6 +7,13 @@ defmodule Picsello.Payments do
 
   require Logger
 
+  @tax_codes %{
+    digital: "txcd_10501000",
+    product: "txcd_99999999",
+    services: "txcd_20030000",
+    shipping: "txcd_92010001"
+  }
+
   @moduledoc "behavior of (stripe) payout processor"
 
   @type product_data() :: %{
@@ -101,8 +108,18 @@ defmodule Picsello.Payments do
     params =
       Enum.into(params, %{
         payment_method_types: ["card"],
-        mode: "payment"
+        mode: "payment",
+        automatic_tax: %{enabled: true}
       })
+
+    case impl().create_session(params, opts) do
+      {:ok, %{url: url}} -> {:ok, url}
+      _error -> checkout_without_taxes(params, opts)
+    end
+  end
+
+  defp checkout_without_taxes(params, opts) do
+    params = Map.drop(params, [:automatic_tax])
 
     case impl().create_session(params, opts) do
       {:ok, %{url: url}} -> {:ok, url}
@@ -188,6 +205,8 @@ defmodule Picsello.Payments do
       error -> error
     end
   end
+
+  def tax_code(key), do: Map.get(@tax_codes, key)
 
   defp impl, do: Application.get_env(:picsello, :payments)
 end

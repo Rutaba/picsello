@@ -371,11 +371,16 @@ defmodule Picsello.ImportJobTest do
                     %{
                       success_url: stripe_success_url,
                       metadata: %{"paying_for" => ^payment_id},
+                      automatic_tax: %{enabled: true},
                       line_items: [
                         %{
                           price_data: %{
-                            product_data: %{name: "Elizabeth Taylor Wedding Payment 1"},
-                            unit_amount: 30_000
+                            product_data: %{
+                              name: "Elizabeth Taylor Wedding Payment 1",
+                              tax_code: "txcd_20030000"
+                            },
+                            unit_amount: 30_000,
+                            tax_behavior: "exclusive"
                           }
                         }
                       ]
