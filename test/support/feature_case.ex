@@ -7,11 +7,24 @@ defmodule Picsello.FeatureCase do
     import ExUnit.Assertions
     import Picsello.Factory
 
+    alias Picsello.Galleries.Photo
+
     def scroll_into_view(session, query) do
       case Wallaby.Query.compile(query) do
         {:css, css_selector} ->
           session
           |> execute_script("document.querySelector(`#{css_selector}`).scrollIntoView()")
+
+        {type, _selector} ->
+          raise "#{type} not supported. Use a css selector"
+      end
+    end
+
+    def scroll_to_bottom(session, query) do
+      case Wallaby.Query.compile(query) do
+        {:css, css_selector} ->
+          session
+          |> execute_script("document.querySelector(`#{css_selector}`).scrollHeight()")
 
         {type, _selector} ->
           raise "#{type} not supported. Use a css selector"
@@ -255,6 +268,25 @@ defmodule Picsello.FeatureCase do
     def authenticated_gallery(%{session: session}) do
       job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
       [session: session, gallery: insert(:gallery, job: job)]
+    end
+
+    def insert_photo(%{gallery: %{id: gallery_id}, total_photos: total_photos} = data) do
+      album = Map.get(data, :album, %{id: nil})
+      photo_url = "/images/print.png"
+
+      Enum.map(1..total_photos, fn index ->
+        %Photo{
+          album_id: album.id,
+          gallery_id: gallery_id,
+          preview_url: photo_url,
+          original_url: photo_url,
+          name: photo_url,
+          aspect_ratio: 2,
+          position: index + 100
+        }
+        |> insert()
+        |> Map.get(:id)
+      end)
     end
 
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do

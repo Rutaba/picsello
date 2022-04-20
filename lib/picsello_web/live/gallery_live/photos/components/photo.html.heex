@@ -8,9 +8,7 @@
         "}
 >
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
-        <div
-            id={"photo-#{@id}"}
-            class="galleryItem">
+        <div class="galleryItem">
             <%= if @component do %>
             <div
             id={"photo-#{@id}"}
@@ -77,23 +75,25 @@
                 <% end %>
 
                 <%= if @is_removable do %>
-                    <button
+                    <div
+                        id={"photo-#{@id}-remove"}
                         class="absolute removeBtn"
                         phx-click="delete_photo_popup"
                         phx-value-id={@id}
                     >
                         <.icon name="remove-icon" class="h-6 text-gray-200 w-7" />
-                    </button>
+                    </div>
                 <% end %>
                 <%= if @is_viewable do %>
-                    <button
+                    <div
+                        id={"photo-#{@id}-view"}
                         class="absolute viewBtn"
                         phx-click="photo_view"
                         phx-value-photo_id={@photo.id}
                         phx-value-id={@id}
                     >
                     <.icon name="eye" class="h-6 text-gray-200 w-7" />
-                   </button>
+                   </div>
                    <% end %>
                    <%= if @is_meatball do %>
                       <div id={"meatball-photo-#{@id}"} phx-hook="ToggleContent">
@@ -102,15 +102,16 @@
                           </button>
                            <ul class="absolute hidden font-sans bg-white rounded-md toggle-content meatballsdropdown w-36">
                                <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <button
+                                 <div
+                                 id={"photo-preview-#{@id}"}
                                  class="hover-drop-down"
                                  phx-click="photo_preview"
                                  phx-value-photo_id={@id}
                                  >
                                  Set as product preview
-                                 </button>
+                                 </div>
                                </li>
-                               <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
+                               <li class="flex hidden items-center hover:bg-blue-planning-100 hover:rounded-md">
                                  <button class="hover-drop-down">Download photo</button>
                                </li>
                            </ul>

@@ -1,3 +1,6 @@
+.photographer-gallery {
+  @apply before:content-[""] before:fixed before:left-96 before:top-0 before:right-0 before:bottom-0 before:bg-gray-100;
+}
 .gallery__coverImg {
   height: calc((4 / 6) * 100vw);
   @apply relative bg-center bg-cover bg-base-200;

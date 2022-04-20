@@ -1,6 +1,6 @@
 <div class="fixed top-0 bottom-0 left-0 flex flex-col h-screen px-5 pb-6 pt-2 overflow-y-auto bg-white z-1 shrink-0 w-[384px]">
     <div class="fixed">
-      <div class="circleBtn">
+      <div class="circleBtn font-sans">
         <ul>
             <li>
               <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
@@ -10,14 +10,14 @@
             </li>
         </ul>
       </div>
-      <div class="mt-2 gallery-name-edit">
+      <div class="mt-2 gallery-name-edit font-sans">
 
         <.form let={f} for={@changeset} phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
         <p class="text-3xl font-bold toggle-it text-base-300"><%= @gallery.name %> </p>
           <.icon_button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-it" parent-class="gallery-name-edit" class="toggle-it bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
             Edit gallery name
           </.icon_button>
-          <%= text_input f, :name, value: @gallery.name, class: "toggle-it w-full text-input hidden", style: "border-radius: 0.5rem;" %>
+          <%= text_input f, :name, value: @gallery.name <> " ", class: "toggle-it w-full text-input hidden", style: "border-radius: 0.5rem;" %>
             <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg" %>
         </.form>
       </div>

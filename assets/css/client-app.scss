@@ -23,8 +23,6 @@
 }
 
 .client-app {
-  @apply before:content-[""] before:fixed before:left-96 before:top-0 before:right-0 before:bottom-0 before:bg-gray-100;
-
   @apply font-client;
 
   .text-input,

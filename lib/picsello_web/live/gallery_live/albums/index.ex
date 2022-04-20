@@ -7,6 +7,8 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   alias PicselloWeb.GalleryLive.Photos.Upload
   alias PicselloWeb.GalleryLive.Albums.{AlbumSettings, AlbumThumbnail}
 
+  @blank_image "/images/album_placeholder.png"
+
   @impl true
   def mount(_params, _session, socket) do
     socket
@@ -229,5 +231,18 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset)
+  end
+
+  def thumbnail(assigns) do
+    url = assigns.album.thumbnail_url
+    image = if(url, do: preview_url(url, blank: true), else: @blank_image)
+
+    ~H"""
+    <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> image <> ")"} phx-click="go_to_album" phx-value-album={@album.id}>
+      <div class="flex flex-row items-end justify-start h-full gap-2">
+        <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
+      </div>
+    </a>
+    """
   end
 end
