@@ -1,6 +1,4 @@
-defmodule Picsello.GalleryProductTest do
-  @moduledoc false
-
+defmodule Picsello.GalleryProductPreviewTest do
   use Picsello.FeatureCase, async: true
 
   alias Picsello.Galleries.Photo
@@ -32,31 +30,33 @@ defmodule Picsello.GalleryProductTest do
   setup :onboarded
   setup :authenticated
 
-  test "redirect from galleries", %{
+  test "Product Preview render", %{
     session: session,
-    gallery: %{id: gallery_id},
-    products: [%{category_id: category_id, id: product_id} | _]
+    gallery: %{id: gallery_id}
   } do
     session
-    |> visit("/galleries/#{gallery_id}")
-    # "Edit this" link is behind bottom bar
-    |> force_simulate_click(css(".prod-link#{category_id}"))
-    |> assert_path("/galleries/#{gallery_id}/product/#{product_id}")
-    |> find(css(".item-content"))
+    |> visit("/galleries/#{gallery_id}/product-previews")
+    |> assert_has(css("#photo", count: 3))
   end
 
-  test "grid load", %{session: session, gallery: %{id: gallery_id, client_link_hash: hash}} do
-    photos = :lists.map(fn _ -> :rand.uniform(999_999) end, :lists.seq(1, 22))
+  test "Product Preview, edit product", %{
+    session: session,
+    gallery: %{id: gallery_id},
+    products: [%{id: product_id} | _]
+  } do
+    count = :lists.map(fn _ -> :rand.uniform(999_999) end, :lists.seq(1, 3))
 
-    Enum.map(photos, &Map.get(insert_photo(gallery_id, "/images/tmp/#{&1}.png"), :id))
+    photo_ids =
+      Enum.map(count, fn _ ->
+        Map.get(insert_photo(gallery_id, "/images/print.png"), :id)
+      end)
 
     session
-    |> visit("/galleries/#{gallery_id}")
-
-    session
-    |> visit("/gallery/#{hash}/login")
-    |> fill_in(css("#login_password"), with: "123456")
-    |> has_text?("Test Client Wedding")
+    |> visit("/galleries/#{gallery_id}/product-previews")
+    |> force_simulate_click(css("#productId#{product_id}"))
+    |> click(css("#photo-#{List.first(photo_ids)}"))
+    |> click(button("Save"))
+    |> find(css("#photo#{List.first(photo_ids)}"))
   end
 
   def insert_photo(gallery_id, photo_url) do

@@ -7,8 +7,8 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   alias Picsello.Galleries.Gallery
 
   @impl true
-  def update(assigns, socket) do
-    album = Map.get(%{gallery_id: gallery_id} = assigns, :album, nil)
+  def update(%{gallery_id: gallery_id} = assigns, socket) do
+    album = Map.get(assigns, :album, nil)
 
     changeset =
       if(album,
@@ -131,7 +131,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
         <div class="flex flex-col mt-4 font-bold">
           <h3 class="font-bold font-sans input-label">Password protection</h3>
-          <label class="flex text-1xl font-sans">
+          <label id="setPassword" class="flex text-1xl font-sans">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
             <div class="hidden peer-checked:flex font-sans">
               <div class="flex font-sans justify-end w-12 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">

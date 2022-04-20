@@ -1,4 +1,4 @@
-<div class="flex flex-col">
+<div class="flex flex-col photographer-gallery">
   <div class="flex flex-row bg-base-200">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 bg-gray-100 pl-96">
@@ -14,15 +14,10 @@
         </div>
       </div>
       <div>
-        <div class="relative flex flex-col w-full min-h-screen">
+        <div id="albums" class="relative flex flex-col w-full min-h-screen">
           <div class="grid grid-cols-2 pl-10 pr-7 sm:gap-2 md:gap-2">
-             <div class="flex flex-col mb-2 mr-2">
-                <a class="mt-4 cursor-pointer md:w-full albumBlock albumHeight" style="background-image: url('/images/album_placeholder.png')" phx-click="go_to_unsorted_photos">
-                  <div class="flex flex-row items-end justify-start h-full">
-                    <span class="font-sans font-bold text-white text-1xl">Unsorted Photos</span>
-                  </div>
-                </a>
-
+             <div class="album flex flex-col mb-2 mr-2">
+              <.thumbnail album={%{name: "Unsorted Photos", thumbnail_url: nil, id: "unsorted-photos"}}/>
               <div class="cursor-pointer actionBlock">
                 <.actions
                 id="unsorted_actions"
@@ -37,20 +32,8 @@
               </div>
             </div>
             <%= for album <- @albums do %>
-            <div class="flex flex-col mb-2 mr-2">
-              <%= if album.thumbnail_url do %>
-                <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> preview_url(album.thumbnail_url, blank: true) <> ")"} phx-click="go_to_album" phx-value-album={album.id}>
-                  <div class="flex flex-row items-end justify-start h-full gap-2">
-                    <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
-                  </div>
-                </a>
-              <% else %>
-                 <a class="mt-4 albumBlock md:w-full albumHeight" phx-click="go_to_album" style={"background-image: url(" <> preview_url(nil, blank: true) <> ")"} phx-value-album={album.id}>
-                    <div class="flex flex-row items-end justify-start h-full gap-2">
-                      <span class="font-sans font-bold text-white text-1xl"><%= album.name %></span>
-                    </div>
-                  </a>
-              <% end %>
+            <div class="album flex flex-col mb-2 mr-2">
+              <.thumbnail album={album}/>
               <div class="cursor-pointer actionBlock">
                 <.actions
                 id="actions"

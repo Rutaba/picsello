@@ -23,6 +23,7 @@ defmodule Picsello.Factory do
     Questionnaire,
     Questionnaire.Answer,
     Galleries.Gallery,
+    Galleries.Album,
     Galleries.Watermark,
     Galleries.Photo,
     Profiles.Profile
@@ -368,9 +369,20 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def album_factory(attrs) do
+    %Album{
+      name: "Test album",
+      set_password: false,
+      password: nil,
+      thumbnail_url: nil
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def gallery_factory(attrs) do
     %Gallery{
-      name: "Test Client Weding",
+      name: "Test Client Wedding",
       job: fn -> build(:lead) end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4()

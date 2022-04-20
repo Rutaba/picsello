@@ -1,4 +1,4 @@
-<div class="flex flex-col h-screen">
+<div class="flex flex-col h-screen photographer-gallery">
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
     <div class="w-full h-full bg-gray-100 pl-96 ">
@@ -62,7 +62,7 @@
                 </div>
                 <ul class="absolute z-30 toggle hidden w-32 mt-2 bg-white rounded-md popover-content">
                 <%= for option <- options(:select) do %>
-                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings" 
+                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
                 class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
                   <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
                   <.icon name="tick" class="toggle-it w-6 h-5 mr-3 hidden" />
@@ -84,7 +84,7 @@
                       <button class="album-actions" phx-click="remove_from_album">Remove from album</button>
                   </li>
                 <% end %>
-                  <li class="relative">
+                  <li class="relative hidden">
                     <button class="album-actions">Download photos</button>
                   </li>
               </.actions>

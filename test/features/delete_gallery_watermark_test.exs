@@ -17,7 +17,7 @@ defmodule Picsello.DeleteGalleryWatermarkTest do
     watermark: watermark
   } do
     session
-    |> visit("/galleries/#{gallery.id}/settings")
+    |> visit("/galleries/#{gallery.id}")
     |> assert_has(css("p", text: watermark.text))
     |> click(css("button#deleteWatermarkBtn"))
     |> click(css("button", text: "Yes, delete"))

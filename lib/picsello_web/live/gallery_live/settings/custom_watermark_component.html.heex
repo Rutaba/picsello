@@ -18,10 +18,10 @@
   <% end %>
 
   <div class="flex justify-start mb-4">
-    <button class={classes("watermarkTypeBtn font-sans", %{"active" => @case == :image})} phx-click="image_case" phx-target={@myself}>
+    <button id="waterMarkImage" class={classes("watermarkTypeBtn font-sans", %{"active" => @case == :image})} phx-click="image_case" phx-target={@myself}>
       <span>Image</span>
     </button>
-    <button class={classes("watermarkTypeBtn font-sans", %{"active" => @case == :text})} phx-click="text_case" phx-target={@myself}>
+    <button id="waterMarkText" class={classes("watermarkTypeBtn font-sans", %{"active" => @case == :text})} phx-click="text_case" phx-target={@myself}>
       <span>Text</span>
     </button>
   </div>
@@ -84,7 +84,7 @@
       <span>Cancel</span>
     </button>
     <%= if @ready_to_save do %>
-      <button class="btn-settings font-sans" phx-click="save" phx-target={@myself}>
+      <button id="saveWatermark" class="btn-settings font-sans" phx-click="save" phx-target={@myself}>
         Save
       </button>
     <% else %>

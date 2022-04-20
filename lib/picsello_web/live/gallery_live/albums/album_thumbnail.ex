@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
 
   @per_page 999_999
   @coordi [0, 0, 1120, 0, 0, 1100, 1120, 1100]
+  @frame "card_blank.png"
 
   @impl true
   def preload([assigns | _]) do
@@ -39,7 +40,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
     |> then(fn socket ->
       push_event(socket, "set_preview", %{
         preview: assigns[:preview_url],
-        frame: "card_blank.png",
+        frame: @frame,
         coords: @coordi,
         target: "#{assigns[:frame_id]}-edit"
       })
@@ -66,7 +67,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
     |> assign(:thumbnail_url, preview)
     |> push_event("set_preview", %{
       preview: preview_url(preview, blank: true),
-      frame: "card_blank.png",
+      frame: @frame,
       coords: @coordi,
       target: "#{frame_id}-edit"
     })

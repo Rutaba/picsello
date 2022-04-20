@@ -506,7 +506,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp page_title(:edit), do: "Edit Photos"
   defp page_title(:upload), do: "New Photos"
 
-  defp extract_album(album, album_retun, other) do
-    if album, do: Map.get(album, album_retun), else: other
+  defp extract_album(album, album_return, other) do
+    if album, do: Map.get(album, album_return), else: other
   end
 end

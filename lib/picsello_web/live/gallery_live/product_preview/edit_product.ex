@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     |> assign(assigns)
     |> then(fn socket ->
       push_event(socket, "set_preview", %{
-        preview: preview_url(preview, blank: true),
+        preview: preview_url(preview.preview_photo, blank: true),
         ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
         frame: frame,
         coords: coords,

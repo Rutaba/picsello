@@ -48,7 +48,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col justify-between" phx-hook="Preview">
+    <div id={"photo#{@photo && @photo.id}"} class="flex flex-col justify-between" phx-hook="Preview">
       <div class="items-center mt-8">
         <div class="font-sans text-lg font-bold pt-4 flex items-center">
         <%= @category.name %>
@@ -59,7 +59,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
                 class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
                 phx-click="edit"
                 phx-value-product_id={@product_id}
-                >
+                id={"productId#{@product_id}"}>
                   <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
                   <span>Edit this</span>
                 </div>
