@@ -49,8 +49,8 @@
         </div>
 
         <div class="px-6 py-4 border border-t-0 border-base-225 lg:px-16 divide-y lg:divide-y-0 divide-base-200">
-          <%= for item <- order.products do %>
-            <.item_frame item={item}>
+          <%= for %{line_item: item, price: price} <- priced_lines(order) do %>
+            <.item_frame item={item} price={price} >
               <:quantity>
                 <span class="text-sm mt-1.5">Quantity: <%= quantity(item) %></span>
               </:quantity>
@@ -68,11 +68,11 @@
           <%= if has_download?(order) do %>
             <div class="relative divide-y lg:divide-y-0 divide-base-200">
               <%= for item <- order.digitals do %>
-                <.item_frame item={item} />
+                <.item_frame item={item} price={price_display(item)} />
               <% end %>
 
               <%= if order.bundle_price do %>
-                <.item_frame item={{:bundle, order}} />
+                <.item_frame item={{:bundle, order}} price={order.bundle_price} />
               <% end %>
 
               <div class="pt-6 pb-6 lg:pt-16 lg:absolute lg:top-0 lg:right-0 lg:w-1/3">

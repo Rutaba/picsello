@@ -18,4 +18,9 @@ defmodule Picsello.WHCC.Editor.Export do
       pricing: pricing
     }
   end
+
+  def price(%__MODULE__{pricing: pricing}) do
+    %{"totalOrderBasePrice" => raw_price, "code" => "USD"} = pricing
+    Money.new(trunc(raw_price * 100), :USD)
+  end
 end

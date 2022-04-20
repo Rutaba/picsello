@@ -1,6 +1,6 @@
 defmodule Picsello.GalleryCartTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.Cart
+  alias Picsello.{Cart, Repo}
   alias Cart.Order
 
   setup :authenticated_gallery_client
@@ -15,7 +15,7 @@ defmodule Picsello.GalleryCartTest do
       )
 
     cart_product = build(:cart_product, %{product_id: whcc_product.whcc_id})
-    Cart.place_product(cart_product, gallery.id)
+    Cart.place_product(cart_product, gallery.id) |> Repo.preload(:digitals)
   end
 
   feature "redirects to gallery if cart is empty", %{session: session, gallery: gallery} do
@@ -26,17 +26,17 @@ defmodule Picsello.GalleryCartTest do
 
   feature "shows cart info", %{session: session, gallery: gallery} do
     order = fill_gallery_cart(gallery)
-    cart_product = Enum.at(order.products, 0)
+    %{line_item: cart_product, price: price} = order |> Order.priced_lines() |> hd
 
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")
     |> assert_path("/gallery/#{gallery.client_link_hash}/cart")
     |> assert_text("Cart Review")
     |> assert_text("20 by 30 inches poster")
-    |> assert_text(Money.to_string(cart_product.price))
+    |> assert_text(Money.to_string(price))
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
-    |> assert_text("Subtotal: " <> (order |> Order.subtotal_cost() |> Money.to_string()))
+    |> assert_text("Subtotal: #{Order.total_cost(order)}")
     |> assert_has(testid("product-#{cart_product.editor_details.editor_id}"))
   end
 
@@ -58,7 +58,6 @@ defmodule Picsello.GalleryCartTest do
     |> click(option("OK"))
     |> fill_in(text_field("delivery_info_address_zip"), with: "74104")
     |> wait_for_enabled_submit_button()
-    |> click(button("Continue"))
     |> assert_has(button("Check out with Stripe"))
   end
 end

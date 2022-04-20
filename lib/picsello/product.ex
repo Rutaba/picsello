@@ -85,6 +85,9 @@ defmodule Picsello.Product do
 
   def active, do: from(product in __MODULE__, where: is_nil(product.deleted_at))
 
+  def whcc_category(%__MODULE__{api: %{"category" => category}}),
+    do: Picsello.WHCC.Category.from_map(category)
+
   def with_attributes(query, %{organization_id: organization_id}) do
     default_markup = Picsello.Markup.default_markup()
 

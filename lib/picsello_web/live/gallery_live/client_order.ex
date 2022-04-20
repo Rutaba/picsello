@@ -67,7 +67,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     socket
     |> assign(
       gallery: gallery,
-      order: order,
+      order: Cart.preload_products(order),
       organization_name: gallery.job.client.organization.name,
       shipping_address: order.delivery_info.address,
       shipping_name: order.delivery_info.name
@@ -98,7 +98,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
-  defdelegate shipping_cost(order), to: Cart
+  defdelegate quantity(item), to: Cart.CartProduct
+  defdelegate priced_lines(order), to: Cart.Order
   defdelegate total_cost(order), to: Cart
   defdelegate has_download?(order), to: Cart
 end

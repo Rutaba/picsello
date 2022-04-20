@@ -9,21 +9,14 @@ defmodule Picsello.WHCC.ShippingTest do
     end
 
     test "All options available for small products" do
-      options = Shipping.options("Loose Prints", "8x12", Money.new(100), 30)
+      options = Shipping.options("Loose Prints", {8, 12})
       all = Shipping.all()
 
       assert Enum.count(all) == Enum.count(options)
     end
 
-    test "Loose Print shipping price" do
-      options = Shipping.options("Loose Prints", "8x8", Money.new(100), 1)
-
-      correct = Money.new(541)
-      assert [%{id: 2, price: ^correct}] = options
-    end
-
     test "Some options unavailable for huge products" do
-      options = Shipping.options("Loose Prints", "10x20", Money.new(100), 30)
+      options = Shipping.options("Loose Prints", {10, 20})
       all = Shipping.all()
 
       assert Enum.count(all) > Enum.count(options)
@@ -33,10 +26,8 @@ defmodule Picsello.WHCC.ShippingTest do
 
   describe "options into attributes" do
     test "correct attribute forming" do
-      %Shipping.Option{id: id} = Shipping.all() |> Enum.at(0)
-      correct = [%{"AttributeUID" => 1719}, %{"AttributeUID" => 96}] |> Enum.sort()
-
-      assert correct == Shipping.to_attributes(id) |> Enum.sort()
+      assert [%{"AttributeUID" => 1719}, %{"AttributeUID" => 96}] =
+               Shipping.to_attributes(%{attrs: [1719, 96]})
     end
   end
 end

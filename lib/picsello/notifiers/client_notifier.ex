@@ -30,11 +30,14 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{user: %{time_zone: time_zone}} = Repo.preload(organization, :user)
 
     products =
-      for(product <- order |> Cart.preload_products() |> Map.get(:products)) do
+      for(
+        %{line_item: product, price: price} <-
+          order |> Cart.preload_products() |> Order.priced_lines()
+      ) do
         %{
           item_name: Cart.product_name(product),
           item_quantity: Cart.product_quantity(product),
-          item_price: Cart.price_display(product),
+          item_price: price,
           item_is_digital: false
         }
       end
@@ -59,8 +62,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
       order_items: products ++ digitals,
       order_number: Picsello.Cart.Order.number(order),
-      order_shipping: Order.shipping_cost(order),
-      order_subtotal: Order.subtotal_cost(order),
+      order_shipping: Money.new(0),
+      order_subtotal: Order.total_cost(order),
       order_total: Order.total_cost(order),
       order_url: helpers.order_url(gallery, order),
       subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"
