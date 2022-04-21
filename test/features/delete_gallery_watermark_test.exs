@@ -6,9 +6,11 @@ defmodule Picsello.DeleteGalleryWatermarkTest do
 
   setup do
     gallery = insert(:gallery, %{name: "Diego Santos Weeding"})
-    watermark = insert(:watermark, gallery_id: gallery.id, type: "text", text: "007Agency:)")
 
-    %{gallery: gallery, watermark: watermark}
+    [
+      gallery: gallery,
+      watermark: insert(:watermark, gallery: gallery, type: "text", text: "007Agency:)")
+    ]
   end
 
   feature "user confirms deletion of watermark", %{
@@ -18,9 +20,10 @@ defmodule Picsello.DeleteGalleryWatermarkTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}")
+    |> scroll_to_bottom()
     |> assert_has(css("p", text: watermark.text))
-    |> click(css("button#deleteWatermarkBtn"))
-    |> click(css("button", text: "Yes, delete"))
+    |> click(button("remove watermark"))
+    |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(
       css("p",
         text: "Upload your logo and we’ll do the rest."

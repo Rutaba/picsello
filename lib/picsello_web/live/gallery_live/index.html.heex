@@ -78,31 +78,33 @@
       <div id="galleryWatermark" class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
          <h3 class="font-sans">Watermark</h3>
          <%= if @gallery.watermark do %>
-         <%= if @gallery.watermark.type == "image" do %>
-         <div class="flex justify-between py-3 font-sans">
-            <p><%= @gallery.watermark.name %></p>
-            <div class="flex">
-               <p><%= filesize(@gallery.watermark.size) %></p>
-               <button phx-click="delete_watermark_popup" class="pl-14" id="deleteWatermarkBtn">
-               <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
-               </button>
-            </div>
-         </div>
+           <%= if @gallery.watermark.type == "image" do %>
+             <div class="flex justify-between py-3 font-sans">
+               <p><%= @gallery.watermark.name %></p>
+
+               <div class="flex">
+                 <p><%= filesize(@gallery.watermark.size) %></p>
+
+                 <.remove_watermark_button />
+               </div>
+             </div>
+           <% else %>
+             <div class="flex justify-between font-sans">
+               <p><%= @gallery.watermark.text %></p>
+
+               <div class="flex items-center">
+                 <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
+
+                 <.remove_watermark_button />
+               </div>
+             </div>
+           <% end %>
+
+           <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="openCustomWatermarkPopupButton">Edit watermark</button>
          <% else %>
-         <div class="flex justify-between font-sans">
-            <p><%= @gallery.watermark.text %></p>
-            <div class="flex items-center">
-               <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
-               <button phx-click="delete_watermark_popup" class="pl-14" id="deleteWatermarkBtn">
-               <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
-               </button>
-            </div>
-         </div>
-         <% end %>
-         <button phx-click="watermark_popup" class="justify-center py-3 border border-black mt-7 rounded-lg font-sans" id="openCustomWatermarkPopupButton">Edit watermark</button>
-         <% else %>
-         <p class="font-sans">Upload your logo and we’ll do the rest.</p>
-         <button phx-click="watermark_popup" class="justify-center py-3 border rounded-lg border-black mt-7 font-sans" id="openCustomWatermarkPopupButton">Set watermark</button>
+           <p class="font-sans">Upload your logo and we’ll do the rest.</p>
+
+           <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="openCustomWatermarkPopupButton">Set watermark</button>
          <% end %>
       </div>
       <div id="deleteGallery" class="flex flex-col mb-12 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">

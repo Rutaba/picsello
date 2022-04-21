@@ -18,6 +18,9 @@ defmodule Picsello.FeatureCase do
       end
     end
 
+    def scroll_to_bottom(session),
+      do: execute_script(session, "window.scroll(0,document.body.clientHeight)")
+
     def fill_in_date(session, field, opts \\ []) do
       date = Keyword.get(opts, :with)
       input = find(session, field)
