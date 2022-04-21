@@ -499,9 +499,6 @@ defmodule Picsello.Cart do
     item_image_url({:bundle, gallery})
   end
 
-  def item_image_url({:bundle, %Gallery{cover_photo: %{id: path}}}),
-    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)
-
   def item_image_url({:bundle, %Gallery{id: id}}) do
     photo_query = Picsello.Photos.watermarked_query()
 
