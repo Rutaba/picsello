@@ -35,7 +35,7 @@ defmodule Picsello.Profiles do
     use Ecto.Schema
     import Ecto.Changeset
 
-    @colors ~w(#5C6578 #F2E8D4 #A5A5A5 #93B6D6 #A98C77 #ECABAE #9E5D5D #6E967E)
+    @colors ~w(#5C6578 #312B3F #865678 #93B6D6 #A98C77 #ECABAE #9E5D5D #6E967E)
     @default_color hd(@colors)
 
     def colors(), do: @colors
