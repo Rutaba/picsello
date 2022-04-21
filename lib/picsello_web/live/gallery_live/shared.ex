@@ -127,9 +127,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def bundle_image(assigns) do
     ~H"""
-    <div class="relative flex flex-row justify-center bg-base-200">
+    <div class="relative w-full h-full">
       <%= for c <- ~w[-rotate-3 rotate-2 rotate-0] do %>
-        <img src={@url} class={"absolute top-0 left-0 object-contain shadow #{c}"}>
+        <div class="absolute top-0 left-0 right-0 bottom-0 flex justify-center">
+          <img src={@url} class={"h-full object-contain object-center shadow #{c}"}>
+        </div>
       <% end %>
     </div>
     """

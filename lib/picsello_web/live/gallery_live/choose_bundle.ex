@@ -26,7 +26,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
       <p class="px-5 pt-10 pb-5 text-2xl font-bold text-base-300 lg:hidden">Select an option below</p>
 
       <div class="flex-row w-full px-5 select-none grid lg:flex lg:h-full lg:overflow-y-auto lg:justify-between lg:px-0 lg:pl-16 xl:pl-20">
-        <div class="relative w-full p-10 mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
+        <div class="w-full p-10 mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
           <.bundle_image url={item_image_url({:bundle, @gallery})} />
         </div>
 
