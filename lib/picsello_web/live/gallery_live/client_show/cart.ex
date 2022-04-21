@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.{Cart, Payments, WHCC, Galleries, GalleryProducts}
-  alias Cart.CartProduct
+  alias Cart.{CartProduct, Order}
   alias WHCC.Shipping
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   import PicselloWeb.GalleryLive.Shared
@@ -45,10 +45,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           assigns: %{
             step: :delivery_info,
             delivery_info_changeset: delivery_info_changeset,
-            order: %{products: [], digitals: [_ | _]} = order
+            order: %{products: [], digitals: digitals, bundle_price: bundle_price} = order
           }
         } = socket
-      ) do
+      )
+      when length(digitals) > 0 or bundle_price != nil do
     socket
     |> assign(order: Cart.store_order_delivery_info(order, delivery_info_changeset))
     |> then(fn socket ->
@@ -110,6 +111,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       case params do
         %{"editor-id" => editor_id} -> [editor_id: editor_id]
         %{"digital-id" => digital_id} -> [digital_id: String.to_integer(digital_id)]
+        %{"bundle" => _} -> :bundle
       end
 
     case Cart.delete_product(order, item) do
@@ -384,7 +386,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp product_id(%CartProduct{editor_details: %{editor_id: id}}), do: id
 
-  defp only_digitals?(order), do: match?(%{products: [], digitals: [_ | _]}, order)
+  defp only_digitals?(%Order{products: []}), do: true
+  defp only_digitals?(_order), do: false
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
 

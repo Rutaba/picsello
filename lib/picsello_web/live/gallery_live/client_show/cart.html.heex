@@ -14,6 +14,29 @@
           <div class="col-span-1 block lg:hidden"><.summary order={@order} /></div>
 
           <div class="col-span-1 lg:col-span-2">
+            <%= if @order.bundle_price do %>
+              <div class="border border-base-225 mb-5">
+                <div class="divide-y divide-base-200">
+                  <div {testid("bundle")} class="mx-8 py-8 border-t first:border-t-0 flex" >
+                    <div class="w-48 h-32 md:w-72 md:h-48 mr-4 md:mr-7 float-left">
+                      <.bundle_image url={item_image_url({:bundle, @gallery})} />
+                    </div>
+
+                    <div class="py-0 md:py-7">
+                      <div class="text-lg">Bundle - all digital downloads</div>
+
+                      <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9">
+                        <%= @order.bundle_price %>
+                      </div>
+
+                      <button type="button" phx-click="delete" phx-value-bundle={true} class="text-lg font-semibold text-blue-planning-300">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
             <%= for product <- @order.products do %>
               <div {testid("product-#{product_id(product)}")} class="border border-base-225 mb-5">
                 <div class="mx-8 py-8">
@@ -45,7 +68,7 @@
               </div>
             <% end %>
 
-      <div class={classes("border-base-225", border: Enum.any?(@order.digitals))}>
+            <div class={classes("border-base-225", border: Enum.any?(@order.digitals))}>
               <div class="divide-y divide-base-200">
                 <%= for digital <- @order.digitals do %>
                   <div {testid("digital-#{digital.id}")} class="mx-8 py-8 border-t first:border-t-0 flex" >
@@ -122,9 +145,9 @@
             </div>
 
             <div class="border border-base-225 w-full xl:w-1/3 px-4 py-6 mt-9 xl:mt-0 self-start">
-              <%= for {label, count, subtotal} <- summary_counts(@order), count > 0 do %>
+              <%= for {label, subtotal} <- summary_counts(@order) do %>
                 <p class="capitalize text-xl">
-                  <%= label %> (<span><%= count %></span>): <span class="font-medium text-base-300"><%= subtotal %></span>
+                  <%= label %>: <span class="font-medium text-base-300"><%= subtotal %></span>
                 </p>
               <% end %>
 
