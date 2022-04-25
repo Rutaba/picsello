@@ -59,7 +59,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
 
           <label class="block mt-4 input-label" for="editor">Message</label>
 
-          <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} placeholder={"Start typing…"} />
+          <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} placeholder={"Start typing…"} enable_size={true} />
         </fieldset>
 
         <%= if @review do %>

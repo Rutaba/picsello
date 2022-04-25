@@ -71,6 +71,53 @@ html {
 
   &.ql-toolbar {
     @apply border-gray-200 rounded-t-lg bg-blue-planning-100 text-blue-planning-300;
+
+    .ql-picker.ql-size {
+      @apply w-24 sm:w-20;
+
+      .ql-picker-label[data-value="10px"]::before, .ql-picker-item[data-value="10px"]::before {
+        content: 'Small';
+      }
+      .ql-picker-item[data-value="10px"]::before {
+        font-size: 10px;
+      }
+
+      .ql-picker-label[data-value="18px"]::before, .ql-picker-item[data-value="18px"]::before {
+        content: 'Large';
+      }
+      .ql-picker-item[data-value="18px"]::before {
+        font-size: 18px;
+      }
+
+      .ql-picker-label[data-value="32px"]::before, .ql-picker-item[data-value="32px"]::before {
+        content: 'Huge';
+      }
+      .ql-picker-item[data-value="32px"]::before {
+        font-size: 32px;
+      }
+    }
+
+    .ql-picker-label, .ql-picker-label.ql-active {
+      @apply text-blue-planning-300 hover:text-blue-planning-300;
+
+      .ql-stroke {
+        @apply stroke-current
+      }
+
+      &:hover  {
+        .ql-stroke {
+          @apply stroke-current
+        }
+      }
+    }
+  }
+
+  &.ql-toolbar .ql-picker-item {
+    @apply hover:text-blue-planning-200;
+
+    &.ql-selected {
+      @apply text-blue-planning-200;
+    }
   }
 
   .ql-tooltip {

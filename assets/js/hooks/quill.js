@@ -16,6 +16,10 @@ class CustomLink extends Link {
 
 Quill.register(CustomLink, true);
 
+const SizeStyle = Quill.import('attributors/style/size');
+SizeStyle.whitelist = ['10px', '18px', '32px'];
+Quill.register(SizeStyle, true);
+
 export default {
   mounted() {
     const editorEl = this.el.querySelector('#editor');
@@ -23,6 +27,7 @@ export default {
       placeholder = 'Compose message...',
       textFieldName,
       htmlFieldName,
+      enableSize,
     } = this.el.dataset;
     const textInput = textFieldName
       ? this.el.querySelector(`input[name="${textFieldName}"]`)
@@ -30,8 +35,25 @@ export default {
     const htmlInput = htmlFieldName
       ? this.el.querySelector(`input[name="${htmlFieldName}"]`)
       : null;
+
+    let toolbarOptions = [
+      'bold',
+      'italic',
+      'underline',
+      { list: 'bullet' },
+      { list: 'ordered' },
+      'link',
+    ];
+
+    if (enableSize !== undefined) {
+      toolbarOptions = [
+        { size: ['10px', false, '18px', '32px'] },
+        ...toolbarOptions,
+      ];
+    }
+
     const quill = new Quill(editorEl, {
-      modules: { toolbar: '#toolbar' },
+      modules: { toolbar: toolbarOptions },
       placeholder,
       theme: 'snow',
     });
@@ -65,9 +87,9 @@ export default {
 export const ClearQuillInput = {
   mounted() {
     this.el.addEventListener('click', () => {
-      const element = document.querySelector(".ql-editor");
-      element.innerHTML = "";
-      element.classList.add("ql-blank")
+      const element = document.querySelector('.ql-editor');
+      element.innerHTML = '';
+      element.classList.add('ql-blank');
     });
   },
 };

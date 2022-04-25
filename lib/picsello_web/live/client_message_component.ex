@@ -84,8 +84,8 @@ defmodule PicselloWeb.ClientMessageComponent do
         </div>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} />
-     <PicselloWeb.LiveModal.footer>
+        <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} enable_size={true} />
+        <PicselloWeb.LiveModal.footer>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
