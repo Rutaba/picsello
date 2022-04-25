@@ -71,10 +71,12 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       %{
         price_data: %{
           currency: "usd",
+          unit_amount: payment.price.amount,
           product_data: %{
-            name: "#{Job.name(job)} #{payment.description}"
+            name: "#{Job.name(job)} #{payment.description}",
+            tax_code: Picsello.Payments.tax_code(:services)
           },
-          unit_amount: payment.price.amount
+          tax_behavior: "exclusive"
         },
         quantity: 1
       }

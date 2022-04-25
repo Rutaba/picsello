@@ -232,8 +232,15 @@ defmodule Picsello.ClientOrdersTest do
        %{
          client_reference_id: "order_number_" <> _order_number,
          customer_email: "client@example.com",
+         automatic_tax: %{enabled: true},
          line_items: [
-           %{price_data: %{product_data: %{images: [_product_image]}, unit_amount: 500}}
+           %{
+             price_data: %{
+               product_data: %{images: [_product_image], tax_code: "txcd_99999999"},
+               unit_amount: 500,
+               tax_behavior: "exclusive"
+             }
+           }
          ]
        }}
     )
@@ -327,8 +334,15 @@ defmodule Picsello.ClientOrdersTest do
          %{
            client_reference_id: "order_number_" <> ^order_number,
            customer_email: "brian@example.com",
+           automatic_tax: %{enabled: true},
            line_items: [
-             %{price_data: %{product_data: %{images: [product_image]}, unit_amount: 2500}}
+             %{
+               price_data: %{
+                 product_data: %{images: [product_image], tax_code: "txcd_10501000"},
+                 unit_amount: 2500,
+                 tax_behavior: "exclusive"
+               }
+             }
            ]
          }}
       )
@@ -488,7 +502,13 @@ defmodule Picsello.ClientOrdersTest do
            client_reference_id: "order_number_" <> ^order_number,
            customer_email: "zach@example.com",
            line_items: [
-             %{price_data: %{product_data: %{images: [product_image]}, unit_amount: 5000}}
+             %{
+               price_data: %{
+                 product_data: %{images: [product_image], tax_code: "txcd_10501000"},
+                 unit_amount: 5000,
+                 tax_behavior: "exclusive"
+               }
+             }
            ]
          }}
       )

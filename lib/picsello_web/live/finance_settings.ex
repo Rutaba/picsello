@@ -23,23 +23,42 @@ defmodule PicselloWeb.Live.FinanceSettings do
         </div>
       </div>
       <hr class="my-4 sm:my-10" />
-      <div class="flex grid flex-row justify-between flex-1 flex-grow-0 gap-6 sm:grid-cols-2">
-        <div class="flex flex-row">
-          <.card title="Stripe account">
-            <p class="mt-10">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
-            <div class="mt-10 text-right">
-              <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-              error_class: "text-right",
-              class: "px-8 text-center btn-primary",
-              current_user: @current_user,
-              return_url: Routes.home_url(@socket, :index),
-              stripe_status: @stripe_status %>
-            </div>
-          </.card>
-        </div>
+      <div class="grid gap-6 sm:grid-cols-2">
+        <.card title="Tax info">
+          <p class="mt-2">Stripe can easily manage your tax settings to simplify filing.</p>
+          <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id)} data-article="625878185d0b9565e1733f7e">Do I need this?</a>
+          <div class="flex mt-6 justify-end">
+            <%= if @stripe_status == :charges_enabled do %>
+              <a class="text-center block btn-primary sm:w-auto w-full" href="https://dashboard.stripe.com/settings/tax" target="_blank" rel="noopener noreferrer">
+                View tax settings in Stripe
+              </a>
+            <% else %>
+              <div class="flex flex-col sm:w-auto w-full">
+                <button class="btn-primary" disabled>View tax settings in Stripe</button>
+                <em class="block pt-1 text-xs text-center">Set up Stripe to view tax settings</em>
+              </div>
+            <% end %>
+          </div>
+        </.card>
+        <.card title="Stripe account">
+          <p class="mt-2">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
+          <div class="flex mt-6 justify-end">
+            <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+            error_class: "text-right",
+            class: "px-8 text-center btn-primary sm:w-auto w-full",
+            container_class: "sm:w-auto w-full",
+            current_user: @current_user,
+            return_url: Routes.home_url(@socket, :index),
+            stripe_status: @stripe_status %>
+          </div>
+        </.card>
       </div>
     </.settings_nav>
     """
+  end
+
+  def handle_info({:stripe_status, status}, socket) do
+    socket |> assign(stripe_status: status) |> noreply()
   end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
