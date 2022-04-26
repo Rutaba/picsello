@@ -1,15 +1,15 @@
-<div class="item" id={"photo-item-#{@photo.id}"} style={wrapper_style(@photo_width,@photo)}>
-  <div id={"item-#{@id}"} class="item-content preview relative cursor-pointer">
+<div class="item" id={"photo-item-#{@photo.id}"} style={wrapper_style(@photo_width, @photo)}>
+  <div id={"item-#{@id}"} class="relative cursor-pointer item-content preview">
     <div id={"photo-#{@id}"} class="galleryItem" phx-click="click" phx-value-photo_id={@photo.id}>
-      <img src={display_photo(@photo.watermarked_preview_url || @photo.preview_url)} />
+      <img src={preview_url(@photo)} />
 
       <button class="likeBtn" phx-click={js_like_click(@id, @myself)} >
         <div id={"photo-#{@id}-liked"} class={classes(hidden: !@photo.client_liked)}>
-          <.icon name="heart-filled" class="w-7 h-7 text-gray-200"/>
+          <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
         </div>
 
         <div id={"photo-#{@id}-to-like"} class={classes(hidden: @photo.client_liked)}>
-          <.icon name="heart-white" class="w-7 h-7 fill-current text-transparent hover:text-base-200 hover:text-opacity-40" />
+          <.icon name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40" />
         </div>
       </button>
     </div>

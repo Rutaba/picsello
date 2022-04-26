@@ -1,7 +1,6 @@
 defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
-  import PicselloWeb.GalleryLive.Shared, only: [button: 1]
   alias Picsello.{Cart, Galleries, GalleryProducts}
   alias Cart.Digital
 
@@ -64,30 +63,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply()
   end
 
-  defp url(photo), do: path(photo.watermarked_preview_url || photo.preview_url)
-
-  defp option(assigns) do
-    assigns = Enum.into(assigns, %{min_price: nil})
-
-    ~H"""
-    <div {testid("product_option_#{@testid}")} class="p-5 xl:p-7 border border-base-225 rounded mb-4 lg:mb-7">
-      <div class="flex justify-between items-center">
-        <div class="flex flex-col mr-2">
-          <p class="font-semibold text-lg text-base-300"><%= @title %></p>
-
-          <%= if @min_price do %>
-            <p class="font-semibold text-base text-base-300 pt-1.5 text-opacity-60"> <%= @min_price %></p>
-          <% end %>
-        </div>
-
-        <%= for button <- @button do %>
-          <.button {button}><%= render_slot(button) %></.button>
-        <% end %>
-      </div>
-    </div>
-    """
-  end
-
   defp move_carousel(%{assigns: %{gallery: gallery, photo_ids: photo_ids}} = socket, fun) do
     photo_ids = fun.(photo_ids)
     photo = photo_ids |> CLL.value() |> Galleries.get_photo()
@@ -101,4 +76,5 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   end
 
   defdelegate min_price(category), to: Picsello.WHCC
+  defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
 end

@@ -10,7 +10,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
 
   def update(assigns, socket) do
     socket
-    |> assign(:uniq, UUID.uuid4)
+    |> assign(:uniq, UUID.uuid4())
     |> assign(@default_assigns)
     |> assign(assigns)
     |> set_preview()
@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
       category
       |> to_event_args(uniq)
       |> Map.merge(%{
-        preview: path(nil),
+        preview: preview_url(%{}),
         width: nil,
         height: nil
       })
@@ -38,7 +38,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
       category
       |> to_event_args(uniq)
       |> Map.merge(%{
-        preview: path(photo.preview_url),
+        preview: preview_url(photo),
         ratio: photo.aspect_ratio
       })
     )

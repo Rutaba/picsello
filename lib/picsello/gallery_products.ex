@@ -21,7 +21,8 @@ defmodule Picsello.GalleryProducts do
 
   defp gallery_products_query(gallery_id, :with_previews) do
     from(product in gallery_products_query(gallery_id, :with_or_without_previews),
-      inner_join: preview_photo in assoc(product, :preview_photo),
+      inner_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),
+      on: preview_photo.id == product.preview_photo_id,
       select_merge: %{preview_photo: preview_photo}
     )
   end

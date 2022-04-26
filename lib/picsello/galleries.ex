@@ -95,28 +95,43 @@ defmodule Picsello.Galleries do
     Repo.preload(get_gallery_by_hash(hash), [:cover_photo])
   end
 
+  @type get_gallery_photos_option ::
+          {:offset, number()} | {:limit, number()} | {:only_favorites, boolean()}
   @doc """
   Gets paginated photos by gallery id
 
-  Optional options:
+  Options:
     * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`;
-    * :offset. Defaults to `per_page * page`.
-
+    * :offset
+    * :limit
   """
-  @spec get_gallery_photos(id :: integer, per_page :: integer, page :: integer, opts :: keyword) ::
+  @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
-  def get_gallery_photos(id, per_page, page, opts \\ []) do
-    only_favorites = Keyword.get(opts, :only_favorites, false)
-    offset = Keyword.get(opts, :offset, per_page * page)
-
+  def get_gallery_photos(id, opts \\ []) do
     select_opts =
-      if(only_favorites, do: [client_liked: true], else: []) |> Keyword.merge(gallery_id: id)
+      if Keyword.get(opts, :only_favorites, false) do
+        [client_liked: true]
+      else
+        []
+      end
+      |> Keyword.merge(gallery_id: id)
 
-    Photo
-    |> where(^select_opts)
-    |> order_by(asc: :position)
-    |> offset(^offset)
-    |> limit(^per_page)
+    from(photo in Picsello.Photos.watermarked_query(),
+      where: ^select_opts,
+      order_by: [asc: :position]
+    )
+    |> then(
+      &case Keyword.get(opts, :offset) do
+        nil -> &1
+        number -> offset(&1, ^number)
+      end
+    )
+    |> then(
+      &case Keyword.get(opts, :limit) do
+        nil -> &1
+        number -> limit(&1, ^number)
+      end
+    )
     |> Repo.all()
   end
 
@@ -259,38 +274,6 @@ defmodule Picsello.Galleries do
   def set_gallery_hash(%Gallery{} = gallery), do: gallery
 
   @doc """
-  Loads the gallery photos.
-
-  ## Examples
-
-      iex> load_gallery_photos(gallery, "all")
-      [
-        %Photo{},
-        %Photo{},
-        %Photo{}
-      ]
-  """
-  def load_gallery_photos(%Gallery{} = gallery, type \\ "all") do
-    load_gallery_photos_by_type(gallery, type)
-  end
-
-  defp load_gallery_photos_by_type(gallery, "all") do
-    Photo
-    |> where(gallery_id: ^gallery.id)
-    |> order_by(asc: :position)
-    |> Repo.all()
-  end
-
-  defp load_gallery_photos_by_type(gallery, "favorites") do
-    Photo
-    |> where(gallery_id: ^gallery.id, client_liked: true)
-    |> order_by(asc: :position)
-    |> Repo.all()
-  end
-
-  defp load_gallery_photos_by_type(_, _), do: []
-
-  @doc """
   Loads the number of favorite photos from the gallery
 
   ## Examples
@@ -333,39 +316,7 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
-  @doc """
-  Gets a single photo by id.
-
-  Returns nil if the Photo does not exist.
-
-  ## Examples
-
-      iex> get_photo(123)
-      %Photo{}
-
-      iex> get_photo(44545)
-      nil
-
-  """
-  def get_photo(id), do: Repo.get(Photo, id)
-
-  @doc """
-  Marks a photo as liked/unliked.
-
-  ## Examples
-
-      iex> mark_photo_as_liked(%Photo{client_liked: false})
-      {:ok, %Photo{client_liked: true}}
-
-      iex> mark_photo_as_liked(%Photo{client_liked: true})
-      {:ok, %Photo{client_liked: false}}
-
-  """
-  def mark_photo_as_liked(%Photo{client_liked: client_liked} = photo) do
-    photo
-    |> Photo.update_changeset(%{client_liked: !client_liked})
-    |> Repo.update()
-  end
+  defdelegate get_photo(id), to: Picsello.Photos, as: :get
 
   @doc """
   Removes the photo from DB and all its versions from cloud bucket.
@@ -668,22 +619,16 @@ defmodule Picsello.Galleries do
 
   def populate_organization(%Gallery{} = gallery) do
     gallery
-    |> Repo.preload(job: [client: :organization])
+    |> Repo.preload([:package, job: [client: :organization]])
   end
 
   def populate_organization_user(%Gallery{} = gallery) do
     gallery
-    |> Repo.preload(job: [client: [organization: :user]])
+    |> Repo.preload([:package, job: [client: [organization: :user]]])
   end
 
-  def download_each_price(%{job_id: job_id}) do
-    from(package in Picsello.Package,
-      join: job in assoc(package, :jobs),
-      where: job.id == ^job_id,
-      select: struct(package, [:download_each_price])
-    )
-    |> Repo.one()
-    |> Map.get(:download_each_price)
+  def download_each_price(%Gallery{} = gallery) do
+    gallery |> get_package() |> Map.get(:download_each_price)
   end
 
   def products(%{id: gallery_id}),
@@ -697,5 +642,9 @@ defmodule Picsello.Galleries do
   def gallery_photographer(%Gallery{} = gallery) do
     %{job: %{client: %{organization: %{user: user}}}} = gallery |> populate_organization_user()
     user
+  end
+
+  def get_package(%Gallery{} = gallery) do
+    gallery |> Repo.preload(:package) |> Map.get(:package)
   end
 end

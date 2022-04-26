@@ -16,6 +16,7 @@ defmodule Picsello.Galleries.Photo do
     field :aspect_ratio, :float
     field :height, :integer
     field :width, :integer
+    field :watermarked, :boolean, virtual: true
 
     belongs_to(:gallery, Gallery)
 

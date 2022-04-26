@@ -2,7 +2,7 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
-  alias Picsello.{Repo, Cart.Order, Package}
+  alias Picsello.{Repo, Cart.Order, Package, Galleries.Photo}
 
   setup do
     Mox.verify_on_exit!()
@@ -13,15 +13,18 @@ defmodule Picsello.ClientOrdersTest do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
     _photographer = insert(:user, organization: organization)
 
+    package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+
     gallery =
       insert(:gallery,
         job:
           insert(:lead,
             client: insert(:client, organization: organization),
-            package:
-              insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+            package: package
           )
       )
+
+    insert(:watermark, gallery: gallery)
 
     for %{id: category_id} = category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo =
@@ -42,7 +45,7 @@ defmodule Picsello.ClientOrdersTest do
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
-    [gallery: gallery, organization: organization]
+    [gallery: gallery, organization: organization, package: package]
   end
 
   def click_photo(session, position) do
@@ -127,9 +130,16 @@ defmodule Picsello.ClientOrdersTest do
 
     Picsello.MockWHCCClient
     |> Mox.stub(:editor, fn args ->
+      assert %{
+               "photos" => [%{"url" => preview_url, "printUrl" => print_url}],
+               "redirects" => %{"complete" => %{"url" => complete_url}}
+             } = args
+
+      assert String.ends_with?(preview_url, "watermarked_preview.jpg")
+      assert String.ends_with?(print_url, "original.jpg")
+
       url =
-        args
-        |> get_in(["redirects", "complete", "url"])
+        complete_url
         |> URI.parse()
         |> Map.update!(:query, &String.replace(&1, "%EDITOR_ID%", "editor-id"))
         |> URI.to_string()
@@ -222,8 +232,15 @@ defmodule Picsello.ClientOrdersTest do
        %{
          client_reference_id: "order_number_" <> _order_number,
          customer_email: "client@example.com",
+         automatic_tax: %{enabled: true},
          line_items: [
-           %{price_data: %{product_data: %{images: [_product_image]}, unit_amount: 500}}
+           %{
+             price_data: %{
+               product_data: %{images: [_product_image], tax_code: "txcd_99999999"},
+               unit_amount: 500,
+               tax_behavior: "exclusive"
+             }
+           }
          ]
        }}
     )
@@ -235,7 +252,7 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   describe "digital downloads" do
-    feature "add to cart", %{session: session, organization: organization} do
+    feature "purchase single", %{session: session, organization: organization} do
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
@@ -276,7 +293,13 @@ defmodule Picsello.ClientOrdersTest do
       |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
-        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
+        |> find(
+          css("img"),
+          fn img ->
+            src = Element.attr(img, "src")
+            assert String.ends_with?(src, "/watermarked_preview.jpg")
+          end
+        )
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
@@ -311,8 +334,15 @@ defmodule Picsello.ClientOrdersTest do
          %{
            client_reference_id: "order_number_" <> ^order_number,
            customer_email: "brian@example.com",
+           automatic_tax: %{enabled: true},
            line_items: [
-             %{price_data: %{product_data: %{images: [product_image]}, unit_amount: 2500}}
+             %{
+               price_data: %{
+                 product_data: %{images: [product_image], tax_code: "txcd_10501000"},
+                 unit_amount: 2500,
+                 tax_behavior: "exclusive"
+               }
+             }
            ]
          }}
       )
@@ -331,11 +361,15 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("Home"))
       |> click(link("View Gallery"))
       |> click_photo(1)
-      |> assert_has(testid("product_option_digital_download", text: "Purchased"))
+      |> assert_has(testid("product_option_digital_download", text: "Download"))
       |> click(link("close"))
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
         session
+        |> find(css("img"), fn img ->
+          src = Element.attr(img, "src")
+          assert String.ends_with?(src, "/preview.jpg")
+        end)
         |> find(
           link("Download photos"),
           &assert(
@@ -390,6 +424,137 @@ defmodule Picsello.ClientOrdersTest do
       |> click(button("Continue"))
       |> assert_text("Digitals (1): $25.00")
       |> assert_text("Digital Credits Used (2): 2 Credits - $0.00")
+    end
+
+    feature "purchase bundle", %{session: session, package: package, organization: organization} do
+      %{stripe_account_id: connect_account_id} = organization
+      assert ~M[5000]USD = package.buy_all
+
+      Picsello.MockPayments
+      |> stub_create_session(%{connect_account: connect_account_id, session: "session-id"})
+      |> stub_retrieve_session(%{
+        connect_account: connect_account_id,
+        session: "session-id",
+        payment_intent: "payment-intent-id"
+      })
+      |> stub_retrieve_payment_intent(%{
+        connect_account: connect_account_id,
+        payment_intent: "payment-intent-id",
+        session: "session-id",
+        amount: 5000
+      })
+      |> stub_capture_payment_intent(%{
+        payment_intent: "payment-intent-id",
+        connect_account: connect_account_id
+      })
+
+      gallery_url = session |> current_url()
+      photo1 = from(photo in Photo, order_by: photo.position, limit: 1) |> Repo.one!()
+
+      session
+      |> click(link("View Gallery"))
+      |> click(button("Buy now"))
+      |> assert_text("Bundle - all digital downloads")
+      |> within_modal(&assert_has(&1, css("img[src$='/watermarked_preview.jpg']", count: 3)))
+      |> find(testid("product_option_bundle_download"), fn option ->
+        option
+        |> assert_text("All digital downloads")
+        |> assert_text("$50.00")
+        |> click(button("Add to cart"))
+      end)
+      |> assert_has(link("cart", text: "1"))
+      |> click_photo(1)
+      |> assert_has(testid("product_option_digital_download", text: "In cart"))
+      |> click(link("close"))
+      |> click(link("cart"))
+      |> assert_text("Total: $50.00")
+      |> find(testid("bundle"), fn option ->
+        option
+        |> assert_text("Bundle - all digital downloads")
+        |> assert_text("$50.00")
+        |> click(button("Delete"))
+      end)
+      |> click_photo(1)
+      |> within_modal(&click(&1, button("Add to cart")))
+      |> assert_has(link("cart", text: "1"))
+      |> click(button("Buy now"))
+      |> find(testid("product_option_bundle_download"), fn option ->
+        option
+        |> click(button("Add to cart"))
+      end)
+      |> assert_has(link("cart", text: "1"))
+      |> click(link("cart"))
+      |> assert_text("Total: $50.00")
+      |> click(button("Continue"))
+      |> assert_has(css("h2", text: "Enter digital delivery information"))
+      |> assert_text("Bundle - All Digital Downloads: $50.00")
+      |> assert_text("Total: $50.00")
+      |> fill_in(text_field("Email"), with: "zach@example.com")
+      |> fill_in(text_field("Name"), with: "Zach")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Continue"))
+
+      order_number = Order |> Repo.one!() |> Order.number() |> to_string()
+
+      assert_receive(
+        {:checkout_link,
+         %{
+           client_reference_id: "order_number_" <> ^order_number,
+           customer_email: "zach@example.com",
+           line_items: [
+             %{
+               price_data: %{
+                 product_data: %{images: [product_image], tax_code: "txcd_10501000"},
+                 unit_amount: 5000,
+                 tax_behavior: "exclusive"
+               }
+             }
+           ]
+         }}
+      )
+
+      assert String.ends_with?(product_image, "/preview.jpg")
+
+      session
+      |> assert_has(css("h3", text: "Thank you for your order!"))
+      |> assert_has(css("img[src$='/preview.jpg']", count: 3))
+      |> assert_text("All digital downloads")
+      |> assert_has(css("*[title='cart']", text: "0"))
+      |> find(
+        link("Download photos"),
+        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
+      )
+      |> click(link("Home"))
+      |> find(
+        link("Download all photos"),
+        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
+      )
+      |> click(link("View Gallery"))
+      |> click_photo(1)
+      |> within_modal(fn modal ->
+        modal
+        |> assert_has(css("img[src$='/preview.jpg']"))
+        |> assert_has(testid("product_option_digital_download", text: "Download"))
+        |> find(
+          link("Download"),
+          &assert(
+            Element.attr(&1, "href") == Path.join(gallery_url, "photos/#{photo1.id}/download")
+          )
+        )
+        |> click(link("close"))
+      end)
+      |> refute_has(button("Buy now"))
+      |> click(link("My orders"))
+      |> find(definition("Order number:"), fn number ->
+        session
+        |> find(
+          link("Download photos"),
+          &assert(
+            Element.attr(&1, "href") ==
+              Path.join([current_url(session), Element.text(number), "zip"])
+          )
+        )
+      end)
     end
   end
 end

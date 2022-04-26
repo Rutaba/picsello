@@ -18,11 +18,12 @@ defmodule PicselloWeb.StripeOnboardingComponent do
     assigns =
       assigns
       |> Enum.into(%{
-        class: nil
+        class: nil,
+        container_class: nil
       })
 
     ~H"""
-    <div>
+    <div class={@container_class}>
       <.form for={:stripe} phx-submit="link-stripe" phx-target={@myself}>
         <%= case @stripe_status do %>
           <% :loading -> %>
@@ -55,11 +56,9 @@ defmodule PicselloWeb.StripeOnboardingComponent do
             <em class="block pt-1 text-xs text-center">Your account has been created. Please wait for Stripe to verify your information.</em>
 
           <% :charges_enabled -> %>
-            <%= link to: URI.parse("https://dashboard.stripe.com/"), target: "_blank" do %>
-              <button type="button" class={@class}>
-                Go to Stripe account
-              </button>
-            <% end %>
+            <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer" class={"block #{@class}"}>
+              Go to Stripe account
+            </a>
 
         <% end %>
       </.form>

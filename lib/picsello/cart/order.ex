@@ -8,6 +8,7 @@ defmodule Picsello.Cart.Order do
     field :number, :integer, default: Enum.random(100_000..999_999)
     field :total_credits_amount, :integer, default: 0
     field :placed_at, :utc_datetime
+    field :bundle_price, Money.Ecto.Amount.Type
     belongs_to(:gallery, Gallery)
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
@@ -31,6 +32,12 @@ defmodule Picsello.Cart.Order do
     |> put_assoc(:digitals, [%{digital | position: 0}])
   end
 
+  def create_changeset({:bundle, price}, attrs) do
+    attrs
+    |> do_create_changeset()
+    |> put_change(:bundle_price, price)
+  end
+
   defp do_create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:gallery_id])
@@ -39,6 +46,13 @@ defmodule Picsello.Cart.Order do
   end
 
   def update_changeset(order, product, attrs \\ %{})
+
+  def update_changeset(order, {:bundle, price}, attrs) do
+    order
+    |> cast(attrs, [])
+    |> put_change(:bundle_price, price)
+    |> put_assoc(:digitals, [])
+  end
 
   def update_changeset(order, %CartProduct{} = product, attrs) do
     order
@@ -120,6 +134,11 @@ defmodule Picsello.Cart.Order do
 
   def delete_product_changeset(%__MODULE__{products: products} = order, opts) do
     case opts do
+      :bundle ->
+        order
+        |> change()
+        |> put_change(:bundle_price, nil)
+
       [editor_id: editor_id] ->
         order
         |> change()
@@ -172,7 +191,7 @@ defmodule Picsello.Cart.Order do
   def subtotal_cost(%__MODULE__{} = order) do
     order = Repo.preload(order, :digitals)
 
-    for field <- [:products, :digitals], reduce: Money.new(0) do
+    for field <- [:products, :digitals], reduce: order.bundle_price || Money.new(0) do
       acc ->
         for(entry <- Map.get(order, field), reduce: acc) do
           acc ->

@@ -81,4 +81,80 @@ defmodule Picsello.PaymentsTest do
       assert "/already-saved-stub-account-id" = url |> URI.parse() |> Map.get(:path)
     end
   end
+
+  describe "checkout_link" do
+    test "returns url when 1st attempt with automatic tax enabled succeeds" do
+      Picsello.MockPayments
+      |> Mox.expect(:create_session, 1, fn params, opts ->
+        assert %{
+                 automatic_tax: %{enabled: true},
+                 mode: "payment",
+                 payment_method_types: ["card"],
+                 success_url: "<URL>"
+               } == params
+
+        assert [connect_account: "123"] = opts
+        {:ok, %Stripe.Session{url: "<NEW_URL>"}}
+      end)
+
+      assert {:ok, "<NEW_URL>"} =
+               Payments.checkout_link(%{success_url: "<URL>"}, connect_account: "123")
+    end
+
+    test "returns url when 2nd attempt with automatic tax disabled succeeds" do
+      Picsello.MockPayments
+      |> Mox.expect(:create_session, 1, fn params, opts ->
+        assert %{
+                 automatic_tax: %{enabled: true},
+                 mode: "payment",
+                 payment_method_types: ["card"],
+                 success_url: "<URL>"
+               } == params
+
+        assert [connect_account: "123"] = opts
+        {:error, "ERROR"}
+      end)
+      |> Mox.expect(:create_session, 1, fn params, opts ->
+        assert %{
+                 mode: "payment",
+                 payment_method_types: ["card"],
+                 success_url: "<URL>"
+               } == params
+
+        assert [connect_account: "123"] = opts
+        {:ok, %Stripe.Session{url: "<NEW_URL>"}}
+      end)
+
+      assert {:ok, "<NEW_URL>"} =
+               Payments.checkout_link(%{success_url: "<URL>"}, connect_account: "123")
+    end
+
+    test "returns error when 2nd attempt with automatic tax disabled fails" do
+      Picsello.MockPayments
+      |> Mox.expect(:create_session, 1, fn params, opts ->
+        assert %{
+                 automatic_tax: %{enabled: true},
+                 mode: "payment",
+                 payment_method_types: ["card"],
+                 success_url: "<URL>"
+               } == params
+
+        assert [connect_account: "123"] = opts
+        {:error, "error"}
+      end)
+      |> Mox.expect(:create_session, 1, fn params, opts ->
+        assert %{
+                 mode: "payment",
+                 payment_method_types: ["card"],
+                 success_url: "<URL>"
+               } == params
+
+        assert [connect_account: "123"] = opts
+        {:error, "ERROR"}
+      end)
+
+      assert {:error, "ERROR"} =
+               Payments.checkout_link(%{success_url: "<URL>"}, connect_account: "123")
+    end
+  end
 end

@@ -1,29 +1,29 @@
 <div class="relative pb-10">
   <div class="choose-product__modal">
     <a href="#" phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
-      <.icon name="close-x" class="w-4 h-4 lg:w-5 lg:h-5 stroke-current stroke-2" />
+      <.icon name="close-x" class="w-4 h-4 stroke-current lg:w-5 lg:h-5 stroke-2" />
     </a>
 
-    <p class="text-2xl text-base-300 font-bold px-5 pt-10 pb-5 lg:hidden">Select an option below</p>
+    <p class="px-5 pt-10 pb-5 text-2xl font-bold text-base-300 lg:hidden">Select an option below</p>
 
-    <div class="select-none grid lg:flex lg:h-full lg:overflow-y-auto w-full flex-row lg:justify-between px-5 lg:px-0 lg:pl-16 xl:pl-20">
-      <div class="choose-product-item w-full h-96 lg:h-full lg:w-7/12 mb-5 lg:mb-0 relative">
-        <div id="wrapper" class="wrapper h-full flex-row justify-center flex">
-          <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="choose-product__btn left-0 top-1/2 transform -translate-y-1/2  transform -translate-x-1/4 swiper-button-prev">
-            <.icon name="back" class="w-8 h-8 text-blue-planning-300 cursor-pointer stroke-2" />
+    <div class="flex-row w-full px-5 select-none grid lg:flex lg:h-full lg:overflow-y-auto lg:justify-between lg:px-0 lg:pl-16 xl:pl-20">
+      <div class="relative w-full mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
+        <div id="wrapper" class="flex flex-row justify-center h-full wrapper">
+          <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="left-0 choose-product__btn top-1/2 transform -translate-y-1/2 -translate-x-1/4 swiper-button-prev">
+            <.icon name="back" class="w-8 h-8 cursor-pointer text-blue-planning-300 stroke-2" />
           </div>
 
-          <div phx-click="next" phx-target={@myself} class="choose-product__btn right-0 top-1/2 transform -translate-y-1/2  transform translate-x-1/4 swiper-button-next">
-            <.icon name="forth" class="w-8 h-8 text-blue-planning-300 cursor-pointer stroke-2" />
+          <div phx-click="next" phx-target={@myself} class="right-0 choose-product__btn top-1/2 transform -translate-y-1/2 translate-x-1/4 swiper-button-next">
+            <.icon name="forth" class="w-8 h-8 cursor-pointer text-blue-planning-300 stroke-2" />
           </div>
 
-          <img src={ url(@photo) } class="object-contain">
+          <img src={ preview_url(@photo) } class="object-contain">
         </div>
       </div>
 
-      <div class="choose-product-item lg:w-5/12 relative">
-        <div class="lg:w-11/12 flex flex-col ml-auto">
-          <p class="text-2xl text-base-300 font-bold mb-6 hidden lg:pt-2 lg:block">Select an option below</p>
+      <div class="relative choose-product-item lg:w-5/12">
+        <div class="flex flex-col ml-auto lg:w-11/12">
+          <p class="hidden mb-6 text-2xl font-bold text-base-300 lg:pt-2 lg:block">Select an option below</p>
 
           <%= for %{category: category, id: gallery_product_id} <- @products do %>
             <.option
@@ -48,7 +48,15 @@
               </.option>
             <% :purchased -> %>
               <.option testid={"digital_download"} title="Digital Download">
-                <:button disabled>Purchased</:button>
+                <:button
+                  element="a"
+                  download
+                  icon="download"
+                  icon_class="h-4 w-4 fill-current"
+                  class="my-4 mr-4 py-1.5 px-8"
+                  href={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}>
+                  Download
+                </:button>
               </.option>
             <% _ -> %>
               <.option testid={"digital_download"} title="Digital Download" min_price={if @digital_credit <= 0, do: @download_each_price}>
@@ -62,7 +70,7 @@
     </div>
   </div>
   <%= if @digital_credit > 0 do %>
-    <div {testid("download-credit")} class="bg-white pl-16 absolute bottom-0 left-0 right-0 shadow-top h-20 flex items-center">
+    <div {testid("download-credit")} class="absolute bottom-0 left-0 right-0 flex items-center h-20 pl-16 bg-white shadow-top">
       <p><span class="font-bold">Download Credits available: </span><%= @digital_credit %></p>
     </div>
   <% end %>
