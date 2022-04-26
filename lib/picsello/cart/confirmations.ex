@@ -129,15 +129,23 @@ defmodule Picsello.Cart.Confirmations do
   end
 
   defp confirm_order_changeset(%{
-         order: %Order{products: products, gallery: gallery, placed_at: nil} = order
+         order: %Order{gallery: gallery, placed_at: nil} = order
        }) do
     confirmed_products =
-      products
-      |> Task.async_stream(fn %CartProduct{whcc_order: %{confirmation: confirmation}} = product ->
+      order
+      |> Order.priced_lines()
+      |> Task.async_stream(fn %{
+                                line_item:
+                                  %CartProduct{whcc_order: %{confirmation: confirmation}} =
+                                    product,
+                                price: charged_price
+                              } ->
         {:ok, confirmation} =
           gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation)
 
-        CartProduct.add_confirmation(product, confirmation)
+        product
+        |> CartProduct.add_confirmation(confirmation)
+        |> Map.put(:charged_price, charged_price)
       end)
       |> Enum.map(fn {:ok, product} -> product end)
 

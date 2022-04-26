@@ -193,8 +193,14 @@ defmodule Picsello.Cart.Order do
 
   def priced_lines(order), do: order |> priced_lines_by_product() |> List.flatten()
 
-  def product_total(%__MODULE__{} = order) do
+  def product_total(%__MODULE__{placed_at: nil} = order) do
     for %{price: price} <- priced_lines(order), reduce: Money.new(0) do
+      sum -> Money.add(sum, price)
+    end
+  end
+
+  def product_total(%__MODULE__{products: products}) do
+    for %{charged_price: price} <- products, reduce: Money.new(0) do
       sum -> Money.add(sum, price)
     end
   end

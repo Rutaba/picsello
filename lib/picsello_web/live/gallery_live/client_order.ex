@@ -99,7 +99,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   defdelegate quantity(item), to: Cart.CartProduct
-  defdelegate priced_lines(order), to: Cart.Order
   defdelegate total_cost(order), to: Cart
   defdelegate has_download?(order), to: Cart
 end

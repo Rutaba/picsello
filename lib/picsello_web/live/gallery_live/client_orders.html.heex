@@ -49,8 +49,8 @@
         </div>
 
         <div class="px-6 py-4 border border-t-0 border-base-225 lg:px-16 divide-y lg:divide-y-0 divide-base-200">
-          <%= for %{line_item: item, price: price} <- priced_lines(order) do %>
-            <.item_frame item={item} price={price} >
+          <%= for item <- order.products do %>
+            <.item_frame item={item} price={item.charged_price} >
               <:quantity>
                 <span class="text-sm mt-1.5">Quantity: <%= quantity(item) %></span>
               </:quantity>

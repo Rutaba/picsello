@@ -9,18 +9,19 @@ defmodule Picsello.Cart.CartProduct do
 
   @primary_key false
   embedded_schema do
-    field :editor_details, WHCC.Editor.Details.Type
     field :base_price, Money.Ecto.Amount.Type
-    field :markup, Money.Ecto.Amount.Type
-    field :shipping_upcharge, :decimal
-    field :shipping_base_charge, Money.Ecto.Amount.Type
-    field :whcc_order, WHCC.Order.Created.Type
-    field :whcc_confirmation, :string
-    field :whcc_processing, :map
-    field :whcc_tracking, :map
-    field :whcc_product, :map, virtual: true
-    field :round_up_to_nearest, :integer
+    field :charged_price, Money.Ecto.Amount.Type
     field :created_at, :integer
+    field :editor_details, WHCC.Editor.Details.Type
+    field :markup, Money.Ecto.Amount.Type
+    field :round_up_to_nearest, :integer
+    field :shipping_base_charge, Money.Ecto.Amount.Type
+    field :shipping_upcharge, :decimal
+    field :whcc_confirmation, :string
+    field :whcc_order, WHCC.Order.Created.Type
+    field :whcc_processing, :map
+    field :whcc_product, :map, virtual: true
+    field :whcc_tracking, :map
   end
 
   def new(fields) do

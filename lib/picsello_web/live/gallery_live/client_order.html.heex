@@ -84,7 +84,7 @@
 
       <div class="divide-y divide-base-200">
 
-        <%= for %{line_item: item, price: price} <- priced_lines(@order) do %>
+        <%= for item <- @order.products do %>
           <div class="relative py-5 md:py-7 md:first:border-t md:border-base-200">
             <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
               <img src={item_image_url(item)} class="h-24 mx-auto md:h-40"/>
@@ -95,7 +95,7 @@
                 <span class="pt-2 text-xs md:text-sm md:py-5">Quantity: <%= quantity(item) %></span>
               </div>
 
-              <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= price %></span>
+              <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= item.charged_price %></span>
             </div>
 
             <%= if item.whcc_tracking do %>
