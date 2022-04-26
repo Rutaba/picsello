@@ -48,10 +48,11 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
 
       assert String.contains?(updated_render, "value=\"Client gallery\"")
 
-      assert String.contains?(
-               updated_render,
-               "<button class=\"btn-settings font-sans w-32 px-11 cursor-pointer\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button>"
-             )
+      assert "Save" ==
+               updated_render
+               |> Floki.parse_fragment!()
+               |> Floki.find("#updateGalleryNameForm button[type=submit]:not(:disabled)")
+               |> Floki.text()
     end
 
     test "update disabled with empty value", %{conn: conn, gallery: gallery} do
@@ -64,10 +65,11 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
           gallery: %{name: ""}
         })
 
-      assert String.contains?(
-               updated_render,
-               "<button class=\"btn-settings font-sans w-32 px-11 cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button>"
-             )
+      assert "Save" ==
+               updated_render
+               |> Floki.parse_fragment!()
+               |> Floki.find("#updateGalleryNameForm button[type=submit]:disabled")
+               |> Floki.text()
     end
 
     test "update disabled with too long value", %{conn: conn, gallery: gallery} do
@@ -80,10 +82,11 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
           gallery: %{name: "TestTestTestTestTestTestTestTestTestTestTestTestTestTest"}
         })
 
-      assert String.contains?(
-               updated_render,
-               "<button class=\"btn-settings font-sans w-32 px-11 cursor-pointer\" disabled=\"disabled\" phx-disable-with=\"Saving...\" type=\"submit\">Save</button>"
-             )
+      assert "Save" ==
+               updated_render
+               |> Floki.parse_fragment!()
+               |> Floki.find("#updateGalleryNameForm button[type=submit]:disabled")
+               |> Floki.text()
     end
 
     test "reset gallery name", %{conn: conn, gallery: gallery} do

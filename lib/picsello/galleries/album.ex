@@ -10,15 +10,14 @@ defmodule Picsello.Galleries.Album do
     field :name, :string
     field :password, :string
     field :set_password, :boolean
-    field :thumbnail_url, :string
-
     belongs_to(:gallery, Gallery)
+    belongs_to(:thumbnail_photo, Photo, on_replace: :nilify)
     has_many(:photos, Photo)
 
     timestamps(type: :utc_datetime)
   end
 
-  @attrs [:name, :set_password, :gallery_id, :password, :thumbnail_url]
+  @attrs [:name, :set_password, :gallery_id, :password]
   @required_attrs [:name, :set_password, :gallery_id]
 
   def create_changeset(attrs) do
@@ -30,5 +29,9 @@ defmodule Picsello.Galleries.Album do
   def update_changeset(struct, attrs \\ %{}) do
     struct
     |> cast(attrs, @attrs)
+  end
+
+  def update_thumbnail(album, photo) do
+    album |> change() |> put_assoc(:thumbnail_photo, photo)
   end
 end

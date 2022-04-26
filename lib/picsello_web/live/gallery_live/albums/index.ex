@@ -234,15 +234,15 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   def thumbnail(assigns) do
-    url = assigns.album.thumbnail_url
-    image = if(url, do: preview_url(url, blank: true), else: @blank_image)
-
     ~H"""
-    <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url(" <> image <> ")"} phx-click="go_to_album" phx-value-album={@album.id}>
+    <a class="mt-4 albumBlock md:w-full albumHeight" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click="go_to_album" phx-value-album={@album.id}>
       <div class="flex flex-row items-end justify-start h-full gap-2">
         <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
       </div>
     </a>
     """
   end
+
+  defp thumbnail_url(%{thumbnail_photo: nil}), do: @blank_image
+  defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
 end

@@ -109,7 +109,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> fill_in(text_field("textWatermarkForm_text"), with: "test watermark")
     |> within_modal(&click(&1, css("#saveWatermark")))
     |> assert_has(css("p", text: "test watermark"))
-    |> click(css("#deleteWatermarkBtn"))
+    |> click(button("remove watermark"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> refute_has(css("p", text: "test watermark"))
   end

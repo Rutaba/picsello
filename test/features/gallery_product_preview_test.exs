@@ -1,8 +1,6 @@
 defmodule Picsello.GalleryProductPreviewTest do
   use Picsello.FeatureCase, async: true
 
-  alias Picsello.Galleries.Photo
-
   setup do
     gallery = insert(:gallery, %{name: "Test Client Wedding"})
 
@@ -36,36 +34,39 @@ defmodule Picsello.GalleryProductPreviewTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
-    |> assert_has(css("#photo", count: 3))
+    |> assert_has(css("canvas", count: 3))
   end
 
   test "Product Preview, edit product", %{
     session: session,
-    gallery: %{id: gallery_id},
-    products: [%{id: product_id} | _]
+    gallery: gallery
   } do
-    count = :lists.map(fn _ -> :rand.uniform(999_999) end, :lists.seq(1, 3))
+    photo_url = "/images/different_preview.png"
 
-    photo_ids =
-      Enum.map(count, fn _ ->
-        Map.get(insert_photo(gallery_id, "/images/print.png"), :id)
-      end)
+    _photos =
+      insert_list(3, :photo,
+        gallery: gallery,
+        name: photo_url,
+        original_url: photo_url,
+        preview_url: photo_url
+      )
 
     session
-    |> visit("/galleries/#{gallery_id}/product-previews")
-    |> force_simulate_click(css("#productId#{product_id}"))
-    |> click(css("#photo-#{List.first(photo_ids)}"))
-    |> click(button("Save"))
-    |> find(css("#photo#{List.first(photo_ids)}"))
-  end
-
-  def insert_photo(gallery_id, photo_url) do
-    insert(%Photo{
-      gallery_id: gallery_id,
-      preview_url: photo_url,
-      original_url: photo_url,
-      name: photo_url,
-      position: 1
-    })
+    |> visit("/galleries/#{gallery.id}/product-previews")
+    |> click(button("Edit this", count: 3, at: 0))
+    |> within_modal(fn modal ->
+      modal
+      |> click(css("#muuri-grid .galleryItem", count: 4, at: 3))
+      |> click(css("button:not(:disabled)", text: "Save"))
+    end)
+    |> find(css("canvas", count: 3), fn canvases ->
+      assert photo_url in Enum.map(
+               canvases,
+               &(&1
+                 |> Element.attr("data-config")
+                 |> Jason.decode!()
+                 |> Map.get("preview"))
+             )
+    end)
   end
 end

@@ -2,11 +2,11 @@
   <div class="flex flex-row bg-base-200">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 bg-gray-100 pl-96">
-      <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pt-14 pb-5 pl-10 pr-10 bg-gray-100">
+      <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pb-5 pl-10 pr-10 bg-gray-100 pt-14">
         <div class="flex flex-col">
             <div class="flex flex-row justify-between">
-              <span class="text-4xl font-bold font-sans">Photos</span>
-              <.icon_button {testid("add-album-popup")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+              <span class="font-sans text-4xl font-bold">Photos</span>
+              <.icon_button {testid("add-album-popup")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
                 Add Album
               </.icon_button>
             </div>
@@ -15,40 +15,40 @@
       </div>
       <div>
         <div id="albums" class="relative flex flex-col w-full min-h-screen">
-          <div class="grid grid-cols-2 pl-10 pr-7 sm:gap-2 md:gap-2">
-             <div class="album flex flex-col mb-2 mr-2">
-              <.thumbnail album={%{name: "Unsorted Photos", thumbnail_url: nil, id: "unsorted-photos"}}/>
+          <div class="pl-10 grid grid-cols-2 pr-7 sm:gap-2 md:gap-2">
+             <div class="flex flex-col mb-2 mr-2 album">
+              <.thumbnail album={%{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}}/>
               <div class="cursor-pointer actionBlock">
                 <.actions
                 id="unsorted_actions"
-                class="flex-row justify-between -mt-1 border-2 font-sans rounded-b-lg md:w-full bg-base-100"
+                class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
                 delete_event="delete_all_unsorted_photos"
                 delete_title="Delete all unsorted photos"
                 delete_value={@gallery.id}>
-                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center font-sans justify-between">
-                      <button class="album-actions w-full">Go to unsorted photos</button>
+                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center justify-between font-sans">
+                      <button class="w-full album-actions">Go to unsorted photos</button>
                     </li>
                 </.actions>
               </div>
             </div>
             <%= for album <- @albums do %>
-            <div class="album flex flex-col mb-2 mr-2">
+            <div class="flex flex-col mb-2 mr-2 album">
               <.thumbnail album={album}/>
               <div class="cursor-pointer actionBlock">
                 <.actions
                 id="actions"
-                class="flex-row font-sans justify-between -mt-1 border-2 rounded-b-lg md:w-full bg-base-100"
+                class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
                 delete_event="delete_album_popup"
                 delete_title="Delete Album"
                 delete_value={album.id}>
-                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative font-sans flex items-center justify-between">
-                    <button class="album-actions w-full font-sans">Go to album</button>
+                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center justify-between font-sans">
+                    <button class="w-full font-sans album-actions">Go to album</button>
                   </li>
-                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative font-sans flex items-center justify-between">
-                    <button class="album-actions w-full font-sans">Go to album settings</button>
+                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center justify-between font-sans">
+                    <button class="w-full font-sans album-actions">Go to album settings</button>
                   </li>
                   <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center justify-between">
-                    <button class="album-actions w-full font-sans">Edit album thumbnail</button>
+                    <button class="w-full font-sans album-actions">Edit album thumbnail</button>
                   </li>
                 </.actions>
               </div>

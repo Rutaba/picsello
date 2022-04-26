@@ -373,8 +373,7 @@ defmodule Picsello.Factory do
     %Album{
       name: "Test album",
       set_password: false,
-      password: nil,
-      thumbnail_url: nil
+      password: nil
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

@@ -479,22 +479,6 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
-  Gets a single photo by id.
-
-  Returns nil if the Photo does not exist.
-
-  ## Examples
-
-      iex> get_photo(123)
-      %Photo{}
-
-      iex> get_photo(44545)
-      nil
-
-  """
-  def get_photo(id), do: Repo.get(Photo, id)
-
-  @doc """
   Marks a photo as liked/unliked.
 
   ## Examples
@@ -821,4 +805,6 @@ defmodule Picsello.Galleries do
       |> Oban.insert()
     end)
   end
+
+  defdelegate get_photo(id), to: Picsello.Photos, as: :get
 end
