@@ -91,10 +91,13 @@ export default {
     });
 
     const uploadImage = (file, onSuccess) => {
+      const normalizedName = file.name
+        .replace(/[^a-z0-9.-]/gi, '_')
+        .toLowerCase();
       this.pushEventTo(
         target,
         'get_signed_url',
-        { name: file.name, type: file.type },
+        { name: normalizedName, type: file.type },
         (reply) => {
           const formData = new FormData();
           const { url, fields } = reply;
@@ -102,7 +105,7 @@ export default {
           Object.entries(fields).forEach(([key, val]) =>
             formData.append(key, val)
           );
-          formData.append('file', file);
+          formData.append('file', file, normalizedName);
 
           const xhr = new XMLHttpRequest();
           xhr.open('POST', url, true);
