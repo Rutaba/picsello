@@ -31,14 +31,14 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session: session,
     gallery: %{id: gallery_id} = gallery
   } do
-    photo_ids = insert_photo(%{gallery: gallery, total_photos: 30})
-    photo_count = length(photo_ids)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+    photo_count = length(photo_ids) + 20
     per_page = 24
 
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: per_page))
-    |> scroll_to_bottom(css("#gallery"))
+    |> scroll_into_view(css("#gallery"))
     |> assert_has(css(".item", count: photo_count))
   end
 

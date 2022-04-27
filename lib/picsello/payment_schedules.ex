@@ -211,6 +211,9 @@ defmodule Picsello.PaymentSchedules do
       cancel_url: cancel_url,
       success_url: success_url,
       customer: customer_id,
+      customer_update: %{
+        address: "auto"
+      },
       line_items: line_items,
       metadata: Keyword.get(opts, :metadata, %{})
     }

@@ -17,6 +17,8 @@ defmodule Picsello.GalleryOverviewTest do
     |> visit("/galleries/#{gallery.id}/")
     |> fill_in(text_field("updateGalleryNameForm_name"), with: "")
     |> assert_has(css("button:disabled[id='saveGalleryName']"))
+    |> fill_in(text_field("updateGalleryNameForm_name"), with: "TestTestTestTestTestTestTestTestTestTestTestTestTestTest")
+    |> assert_has(css("button:disabled[id='saveGalleryName']"))
     |> fill_in(text_field("updateGalleryNameForm_name"), with: "Test Wedding")
     |> wait_for_enabled_submit_button()
     |> click(button("saveGalleryName"))
@@ -109,7 +111,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> fill_in(text_field("textWatermarkForm_text"), with: "test watermark")
     |> within_modal(&click(&1, css("#saveWatermark")))
     |> assert_has(css("p", text: "test watermark"))
-    |> click(css("#deleteWatermarkBtn"))
+    |> click(button("remove watermark"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> refute_has(css("p", text: "test watermark"))
   end

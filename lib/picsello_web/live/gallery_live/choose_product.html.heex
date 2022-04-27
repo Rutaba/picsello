@@ -48,7 +48,15 @@
               </.option>
             <% :purchased -> %>
               <.option testid={"digital_download"} title="Digital Download">
-                <:button disabled>Purchased</:button>
+                <:button
+                  element="a"
+                  download
+                  icon="download"
+                  icon_class="h-4 w-4 fill-current"
+                  class="my-4 mr-4 py-1.5 px-8"
+                  href={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}>
+                  Download
+                </:button>
               </.option>
             <% _ -> %>
               <.option testid={"digital_download"} title="Digital Download" min_price={if @digital_credit <= 0, do: @download_each_price}>

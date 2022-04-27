@@ -9,7 +9,7 @@ export default {
     window.addEventListener('scroll', function() {
       scrollPos = window.scrollY;
 
-      if (scrollpos >= 13) {
+      if (scrollPos >= 13) {
         addClassOnScroll()
       } else {
         removeClassOnScroll()

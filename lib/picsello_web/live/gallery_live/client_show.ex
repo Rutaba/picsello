@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign(:photo_updates, "false")
+    |> assign(photo_updates: "false", download_all_visible: false)
     |> ok()
   end
 
@@ -59,11 +59,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket
     |> assign(
       creator: Galleries.get_gallery_creator(gallery),
+      package: Galleries.get_package(gallery),
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
       page: 0,
       page_title: "Show Gallery",
+      download_all_visible: Cart.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id),
       update_mode: "append"
     )
@@ -153,7 +155,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> noreply()
   end
 
-  @impl true
+  def handle_event("buy-all-digitals", _, socket) do
+    socket
+    |> open_modal(PicselloWeb.GalleryLive.ChooseBundle, Map.take(socket.assigns, [:gallery]))
+    |> noreply()
+  end
+
   def handle_event(
         "click",
         %{"photo_id" => photo_id},
@@ -268,6 +275,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     order = Cart.place_product(digital, gallery.id)
+
+    socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
+  end
+
+  def handle_info(
+        {:add_bundle_to_cart, bundle_price},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    order = Cart.place_product({:bundle, bundle_price}, gallery.id)
 
     socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
   end

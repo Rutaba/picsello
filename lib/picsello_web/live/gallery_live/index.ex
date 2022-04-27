@@ -336,4 +336,12 @@ defmodule PicselloWeb.GalleryLive.Index do
     {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
     date
   end
+
+  defp remove_watermark_button(assigns) do
+    ~H"""
+    <button type="button" title="remove watermark" onclick="console.log(this)" phx-click="delete_watermark_popup" class="pl-14">
+      <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+    </button>
+    """
+  end
 end

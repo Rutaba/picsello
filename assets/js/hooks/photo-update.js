@@ -11,11 +11,10 @@ export default {
    * Update image of a photo
    */
   updatePhotoImage(id, url) {
-    const imgWrapper = document.querySelector(`#photo-${id}`);
+    const imgWrapper = document.querySelector(`#item-${id}`);
     const parent = document.querySelector(`#photo-item-${id}`);
     const isLoader = imgWrapper?.querySelector('.galleryLoader');
     const img = imgWrapper.querySelector(`img`);
-
     if (isLoader) {
       isLoader.classList.remove('galleryLoader');
       isLoader.classList.add('galleryLoaderFinished');

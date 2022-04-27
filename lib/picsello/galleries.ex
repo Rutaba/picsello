@@ -772,22 +772,16 @@ defmodule Picsello.Galleries do
 
   def populate_organization(%Gallery{} = gallery) do
     gallery
-    |> Repo.preload(job: [client: :organization])
+    |> Repo.preload([:package, job: [client: :organization]])
   end
 
   def populate_organization_user(%Gallery{} = gallery) do
     gallery
-    |> Repo.preload(job: [client: [organization: :user]])
+    |> Repo.preload([:package, job: [client: [organization: :user]]])
   end
 
-  def download_each_price(%{job_id: job_id}) do
-    from(package in Picsello.Package,
-      join: job in assoc(package, :jobs),
-      where: job.id == ^job_id,
-      select: struct(package, [:download_each_price])
-    )
-    |> Repo.one()
-    |> Map.get(:download_each_price)
+  def download_each_price(%Gallery{} = gallery) do
+    gallery |> get_package() |> Map.get(:download_each_price)
   end
 
   def products(%{id: gallery_id}),
@@ -801,6 +795,10 @@ defmodule Picsello.Galleries do
   def gallery_photographer(%Gallery{} = gallery) do
     %{job: %{client: %{organization: %{user: user}}}} = gallery |> populate_organization_user()
     user
+  end
+
+  def get_package(%Gallery{} = gallery) do
+    gallery |> Repo.preload(:package) |> Map.get(:package)
   end
 
   defp clean_store([]), do: nil
