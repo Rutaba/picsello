@@ -20,6 +20,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     |> assert_text(job.client.email)
     |> fill_in(text_field("Subject line"), with: "Check this out")
     |> assert_has(css(".ql-size"))
+    |> assert_has(css(".ql-image"))
     |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> within_modal(&wait_for_enabled_submit_button/1)

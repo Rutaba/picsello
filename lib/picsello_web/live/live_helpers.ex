@@ -121,6 +121,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def ok(socket), do: {:ok, socket}
   def noreply(socket), do: {:noreply, socket}
+  def reply(socket, payload), do: {:reply, payload, socket}
 
   def testid(id) do
     if Application.get_env(:picsello, :render_test_ids) do

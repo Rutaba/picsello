@@ -20,6 +20,29 @@ const SizeStyle = Quill.import('attributors/style/size');
 SizeStyle.whitelist = ['10px', '18px', '32px'];
 Quill.register(SizeStyle, true);
 
+const BlockEmbed = Quill.import('blots/block/embed');
+
+class ImageBlot extends BlockEmbed {
+  static create(value) {
+    const node = super.create();
+    node.setAttribute('src', value.url);
+    node.style.maxWidth = '100%';
+    node.style.marginLeft = 'auto';
+    node.style.marginRight = 'auto';
+    return node;
+  }
+
+  static value(node) {
+    return {
+      url: node.getAttribute('src'),
+    };
+  }
+}
+ImageBlot.blotName = 'image';
+ImageBlot.tagName = 'img';
+
+Quill.register(ImageBlot, true);
+
 export default {
   mounted() {
     const editorEl = this.el.querySelector('#editor');
@@ -28,6 +51,8 @@ export default {
       textFieldName,
       htmlFieldName,
       enableSize,
+      enableImage,
+      target,
     } = this.el.dataset;
     const textInput = textFieldName
       ? this.el.querySelector(`input[name="${textFieldName}"]`)
@@ -36,7 +61,7 @@ export default {
       ? this.el.querySelector(`input[name="${htmlFieldName}"]`)
       : null;
 
-    let toolbarOptions = [
+    const toolbarOptions = [
       'bold',
       'italic',
       'underline',
@@ -46,14 +71,68 @@ export default {
     ];
 
     if (enableSize !== undefined) {
-      toolbarOptions = [
-        { size: ['10px', false, '18px', '32px'] },
-        ...toolbarOptions,
-      ];
+      toolbarOptions.unshift({ size: ['10px', false, '18px', '32px'] });
+    }
+
+    if (enableImage !== undefined) {
+      toolbarOptions.push('image');
+    }
+
+    const uploadImage = (file, onSuccess) => {
+      this.pushEventTo(
+        target,
+        'get_signed_url',
+        { name: file.name, type: file.type },
+        (reply) => {
+          const formData = new FormData();
+          const { url, fields } = reply;
+
+          Object.entries(fields).forEach(([key, val]) =>
+            formData.append(key, val)
+          );
+          formData.append('file', file);
+
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', url, true);
+          xhr.onload = () => {
+            const status = xhr.status;
+            if (status === 204) {
+              onSuccess(`${url}/${fields.key}`);
+            } else {
+              alert('Something went wrong!');
+            }
+          };
+
+          xhr.onerror = () => alert('Something went wrong!');
+          xhr.send(formData);
+        }
+      );
+    };
+
+    function imageHandler() {
+      const quill = this.quill;
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.setAttribute('accept', 'image/jpeg,image/png');
+      input.click();
+      input.onchange = () => {
+        const file = input.files[0];
+        uploadImage(file, (url) => {
+          const range = quill.getSelection(true);
+          quill.insertText(range.index, '\n', Quill.sources.USER);
+          quill.insertEmbed(range.index, 'image', { url }, Quill.sources.USER);
+          quill.setSelection(range.index + 2, Quill.sources.SILENT);
+        });
+      };
     }
 
     const quill = new Quill(editorEl, {
-      modules: { toolbar: toolbarOptions },
+      modules: {
+        toolbar: {
+          container: toolbarOptions,
+          handlers: { image: imageHandler },
+        },
+      },
       placeholder,
       theme: 'snow',
     });

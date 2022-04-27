@@ -119,32 +119,6 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  def quill_input(assigns) do
-    assigns =
-      assigns
-      |> Enum.into(%{
-        html_field: nil,
-        text_field: nil,
-        placeholder: nil,
-        style: nil,
-        enable_size: false
-      })
-
-    ~H"""
-    <div class="col-span-2">
-      <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2"
-        data-placeholder={@placeholder}
-        data-html-field-name={input_name(@f, @html_field)}
-        data-text-field-name={input_name(@f, @text_field)}
-        data-enable-size={@enable_size}>
-        <div id="editor" style={@style}></div>
-        <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: "500" %>
-        <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: "500" %>
-      </div>
-    </div>
-    """
-  end
-
   def current(%{source: changeset}), do: current(changeset)
   def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 

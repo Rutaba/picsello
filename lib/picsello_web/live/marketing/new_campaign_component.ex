@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Marketing
-  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
+  import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -59,7 +59,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
 
           <label class="block mt-4 input-label" for="editor">Message</label>
 
-          <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} placeholder={"Start typing…"} enable_size={true} />
+          <.quill_input f={f} html_field={:body_html} text_field={:body_text} placeholder="Start typing…" enable_size={true} enable_image={true} current_user={@current_user} />
         </fieldset>
 
         <%= if @review do %>
