@@ -12,7 +12,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     [lead: insert(:lead, user: user)]
   end
 
-  def compose_and_send_email(session, job) do
+  def compose_email(session, job) do
     session
     |> click(button("Manage"))
     |> click(@compose_email_button)
@@ -24,6 +24,10 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> within_modal(&wait_for_enabled_submit_button/1)
+  end
+
+  def send_email(session, job) do
+    session
     |> click(@send_email_button)
     |> assert_text("Email sent")
 
@@ -46,7 +50,8 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
   feature "user sends booking proposal from lead", %{session: session, lead: lead} do
     session
     |> visit("/leads/#{lead.id}")
-    |> compose_and_send_email(lead)
+    |> compose_email(lead)
+    |> send_email(lead)
   end
 
   feature "user sends email from job", %{session: session, lead: lead} do
@@ -54,6 +59,47 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
     session
     |> visit("/jobs/#{job.id}")
-    |> compose_and_send_email(job)
+    |> compose_email(lead)
+    |> send_email(lead)
+  end
+
+  feature "user attaches image on email", %{session: session, lead: lead} do
+    job = promote_to_job(lead)
+    %{port: port} = bypass = Bypass.open()
+
+    upload_url = "http://localhost:#{port}"
+
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:params_for_upload, fn options ->
+      assert %{key: key, field: %{"content-type" => "image/png"}} = Enum.into(options, %{})
+      assert key =~ "favicon-128.png"
+      %{url: upload_url, fields: %{key: "image.png"}}
+    end)
+
+    Bypass.expect_once(bypass, "POST", "/", fn conn ->
+      conn
+      |> Plug.Conn.put_resp_header("Access-Control-Allow-Origin", "*")
+      |> Plug.Conn.resp(204, "")
+    end)
+
+    Bypass.expect_once(bypass, "GET", "/image.png", fn conn ->
+      conn
+      |> Plug.Conn.resp(200, "")
+    end)
+
+    session
+    |> visit("/jobs/#{job.id}")
+    |> compose_email(lead)
+    |> attach_file(testid("quill-image-input", visible: false),
+      path: "assets/static/favicon-128.png"
+    )
+    |> click(@send_email_button)
+    |> assert_text("Email sent")
+
+    assert_receive {:delivered_email, email}
+
+    assert """
+           <p>This is 1st line</p><p>2nd line</p><img src="http://localhost:#{port}/image.png" style="max-width: 100%; margin-left: auto; margin-right: auto;"><p><br></p><p><br></p>
+           """ =~ email |> email_substitutions |> Map.get("body_html")
   end
 end

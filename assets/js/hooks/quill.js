@@ -60,6 +60,7 @@ export default {
     const htmlInput = htmlFieldName
       ? this.el.querySelector(`input[name="${htmlFieldName}"]`)
       : null;
+    const fileInput = this.el.querySelector('input[type=file]');
 
     const toolbarOptions = [
       'bold',
@@ -77,6 +78,17 @@ export default {
     if (enableImage !== undefined) {
       toolbarOptions.push('image');
     }
+
+    const quill = new Quill(editorEl, {
+      modules: {
+        toolbar: {
+          container: toolbarOptions,
+          handlers: { image: () => fileInput.click() },
+        },
+      },
+      placeholder,
+      theme: 'snow',
+    });
 
     const uploadImage = (file, onSuccess) => {
       this.pushEventTo(
@@ -109,33 +121,25 @@ export default {
       );
     };
 
-    function imageHandler() {
-      const quill = this.quill;
-      const input = document.createElement('input');
-      input.setAttribute('type', 'file');
-      input.setAttribute('accept', 'image/jpeg,image/png');
-      input.click();
-      input.onchange = () => {
-        const file = input.files[0];
-        uploadImage(file, (url) => {
-          const range = quill.getSelection(true);
-          quill.insertText(range.index, '\n', Quill.sources.USER);
-          quill.insertEmbed(range.index, 'image', { url }, Quill.sources.USER);
-          quill.setSelection(range.index + 2, Quill.sources.SILENT);
-        });
+    if (fileInput) {
+      fileInput.setAttribute('accept', 'image/jpeg,image/png');
+      fileInput.onchange = () => {
+        const file = fileInput.files[0];
+        if (file) {
+          uploadImage(file, (url) => {
+            const range = quill.getSelection(true);
+            quill.insertText(range.index, '\n', Quill.sources.USER);
+            quill.insertEmbed(
+              range.index,
+              'image',
+              { url },
+              Quill.sources.USER
+            );
+            quill.setSelection(range.index + 2, Quill.sources.SILENT);
+          });
+        }
       };
     }
-
-    const quill = new Quill(editorEl, {
-      modules: {
-        toolbar: {
-          container: toolbarOptions,
-          handlers: { image: imageHandler },
-        },
-      },
-      placeholder,
-      theme: 'snow',
-    });
 
     function textChange() {
       htmlInput.value = quill.root.innerHTML;

@@ -25,6 +25,9 @@ defmodule PicselloWeb.Shared.Quill do
       data-enable-size={@enable_size}
       data-enable-image={@enable_image}
       data-target={@myself}>
+      <%= if @enable_image do %>
+        <input type="file" class="hidden" {testid("quill-image-input")} />
+      <% end %>
       <div id="editor" class="min-h-[8rem]"></div>
       <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: "500" %>
       <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: "500" %>
@@ -34,7 +37,7 @@ defmodule PicselloWeb.Shared.Quill do
 
   def quill_input(assigns) do
     ~H"""
-    <%= live_component __MODULE__, assigns |> Map.merge(%{id: "quill_input"}) %>
+    <.live_component module={__MODULE__} id="quill_input" {assigns} />
     """
   end
 
