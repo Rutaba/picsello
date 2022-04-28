@@ -75,6 +75,7 @@
             id: "expiration-date-#{@gallery.id}",
             gallery: @gallery %>
       </div>
+      <%= unless Galleries.do_not_charge_for_download?(@gallery) do %>
       <div id="galleryWatermark" class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
          <h3 class="font-sans">Watermark</h3>
          <%= if @gallery.watermark do %>
@@ -106,6 +107,7 @@
          <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="openCustomWatermarkPopupButton">Set watermark</button>
          <% end %>
       </div>
+      <% end %>
       <div id="deleteGallery" class="flex flex-col mb-12 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
          <h3 class="font-sans">Delete gallery</h3>
          <p class="font-sans">If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>

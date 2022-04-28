@@ -10,8 +10,7 @@
 @import './components/helpScoutFacade.css';
 @import 'intro.js/introjs.css';
 @import './components/intro.css';
-@import 'quill/dist/quill.core.css';
-@import 'quill/dist/quill.snow.css';
+@import './components/quill.scss';
 @import './client-app.scss';
 
 html {
@@ -30,65 +29,6 @@ html {
 
 .pac-item {
   @apply p-2;
-}
-
-.ql-snow {
-  &.ql-toolbar button:hover {
-    @apply text-blue-planning-200 bg-blue-planning-100;
-
-    .ql-stroke {
-      @apply stroke-current;
-    }
-
-    .ql-fill {
-      @apply fill-current;
-    }
-  }
-
-  &.ql-toolbar button.ql-active {
-    @apply text-blue-planning-200 bg-blue-planning-100;
-
-    .ql-stroke {
-      @apply stroke-current;
-    }
-
-    .ql-fill {
-      @apply fill-current;
-    }
-  }
-
-  .ql-stroke {
-    @apply stroke-current;
-  }
-
-  .ql-fill {
-    @apply fill-current;
-  }
-
-  a {
-    @apply text-blue-planning-300;
-  }
-
-  &.ql-container {
-    @apply border-gray-200 rounded-b-lg;
-  }
-
-  &.ql-toolbar {
-    @apply border-gray-200 rounded-t-lg bg-blue-planning-100 text-blue-planning-300;
-  }
-
-  .ql-tooltip {
-    @apply border-gray-200 rounded-lg ml-24;
-    @media (max-width: 640px) {
-      left: 50% !important;
-      transform: translate(-50%, 0) !important;
-      margin-left: unset;
-    }
-
-    &.ql-editing input[type='text'] {
-      @apply text-input;
-    }
-  }
 }
 
 .raw_html {

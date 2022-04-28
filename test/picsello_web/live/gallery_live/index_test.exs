@@ -1,8 +1,9 @@
 defmodule PicselloWeb.GalleryLive.IndexTest do
   @moduledoc false
   use PicselloWeb.ConnCase, async: true
-
+  import Money.Sigils
   import Phoenix.LiveViewTest
+  alias Picsello.{Repo, Package}
 
   setup %{conn: conn} do
     conn = conn |> log_in_user(insert(:user) |> onboard!)
@@ -11,7 +12,8 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
     |> Mox.stub(:path_to_url, & &1)
     |> Mox.stub(:params_for_upload, fn _ -> [] end)
 
-    %{conn: conn, gallery: insert(:gallery, %{name: "Ukasha Habib Wedding"})}
+    package = insert(:package, download_each_price: ~M[2500]USD)
+    %{conn: conn, gallery: insert(:gallery, %{name: "Ukasha Habib Wedding", job: insert(:lead, package: package)})}
   end
 
   describe "general render" do
@@ -23,6 +25,15 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
       assert html |> Floki.text() =~ "Expiration date"
       assert html |> Floki.text() =~ "Watermark"
       assert html |> Floki.text() =~ "Delete gallery"
+    end
+
+    test "custom watermark is not present when package does not charge for downloads", %{
+      conn: conn,
+      gallery: gallery
+    } do
+      Repo.update_all(Package, set: [download_each_price: ~M[0]USD])
+      {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}")
+      refute html |> Floki.text() =~ "Watermark"
     end
   end
 

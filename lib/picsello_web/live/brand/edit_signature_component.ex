@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Organization, Repo}
   import PicselloWeb.Live.Brand.Shared, only: [email_signature_preview: 1]
-  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
+  import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -28,13 +28,13 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
         </div>
 
         <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
-          <%= inputs_for f, :email_signature, fn e -> %>
+          <%= for e <- inputs_for(f, :email_signature) do %>
             <div class="grid mt-4 grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-12 mb-6">
 
               <div class="col-span-2">
                 <div class="input-label">Extra content</div>
 
-                <.quill_input f={e} style={"min-height: 8rem;"} html_field={:content} placeholder={"Start typing…"} />
+                <.quill_input f={e} html_field={:content} placeholder="Start typing…" />
               </div>
               <label class="flex flex-col justify-center">
                 <div class="input-label">Show your phone number?</div>

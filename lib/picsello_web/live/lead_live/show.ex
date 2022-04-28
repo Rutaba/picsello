@@ -64,7 +64,7 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event(
         "finish-proposal",
         %{},
-        %{assigns: %{job: job}} = socket
+        %{assigns: %{job: job, current_user: current_user}} = socket
       ) do
     %{body_template: body_html, subject_template: subject} =
       case Repo.get_by(Picsello.EmailPreset, job_type: job.type, job_state: :booking_proposal) do
@@ -84,6 +84,9 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(:job, job)
     |> PicselloWeb.ClientMessageComponent.open(%{
       composed_event: :proposal_message_composed,
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
       presets: [],
       body_html: body_html,
       subject: subject
