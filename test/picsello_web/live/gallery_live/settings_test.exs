@@ -1,8 +1,9 @@
 defmodule PicselloWeb.GalleryLive.SettingsTest do
   @moduledoc false
   use PicselloWeb.ConnCase, async: true
-
+  import Money.Sigils
   import Phoenix.LiveViewTest
+  alias Picsello.{Repo, Package}
 
   setup %{conn: conn} do
     conn = conn |> log_in_user(insert(:user) |> onboard!)
@@ -11,7 +12,15 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
     |> Mox.stub(:path_to_url, & &1)
     |> Mox.stub(:params_for_upload, fn _ -> [] end)
 
-    %{conn: conn, gallery: insert(:gallery, %{name: "Diego Santos Weeding"})}
+    package = insert(:package, download_each_price: ~M[2500]USD)
+
+    gallery =
+      insert(:gallery,
+        name: "Diego Santos Weeding",
+        job: insert(:lead, package: package)
+      )
+
+    %{conn: conn, gallery: gallery}
   end
 
   describe "general render" do
@@ -21,6 +30,15 @@ defmodule PicselloWeb.GalleryLive.SettingsTest do
       assert html |> Floki.text() =~ "Gallery name"
       assert html |> Floki.text() =~ "Gallery password"
       assert html |> Floki.text() =~ "Custom watermark"
+    end
+
+    test "custom watermark is not present when package does not charge for downloads", %{
+      conn: conn,
+      gallery: gallery
+    } do
+      Repo.update_all(Package, set: [download_each_price: ~M[0]USD])
+      {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}/settings")
+      refute html |> Floki.text() =~ "Custom watermark"
     end
   end
 

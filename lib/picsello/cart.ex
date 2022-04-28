@@ -90,7 +90,7 @@ defmodule Picsello.Cart do
     cond do
       bundle_purchased?(gallery) -> :purchased
       digital_purchased?(gallery, photo) -> :purchased
-      do_not_charge_for_download?(gallery) -> :purchased
+      Galleries.do_not_charge_for_download?(gallery) -> :purchased
       contains_bundle?(gallery) -> :in_cart
       contains_digital?(gallery, photo) -> :in_cart
       true -> :available
@@ -566,12 +566,7 @@ defmodule Picsello.Cart do
   def has_download?(%Order{bundle_price: bundle_price, digitals: digitals}),
     do: bundle_price != nil || digitals != []
 
-  def do_not_charge_for_download?(%Gallery{} = gallery) do
-    package = Galleries.get_package(gallery)
-    package && Money.zero?(package.download_each_price)
-  end
-
   def can_download_all?(%Gallery{} = gallery) do
-    do_not_charge_for_download?(gallery) || bundle_purchased?(gallery)
+    Galleries.do_not_charge_for_download?(gallery) || bundle_purchased?(gallery)
   end
 end

@@ -647,4 +647,9 @@ defmodule Picsello.Galleries do
   def get_package(%Gallery{} = gallery) do
     gallery |> Repo.preload(:package) |> Map.get(:package)
   end
+
+  def do_not_charge_for_download?(%Gallery{} = gallery) do
+    package = get_package(gallery)
+    package && Money.zero?(package.download_each_price)
+  end
 end
