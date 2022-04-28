@@ -11,10 +11,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Packages.PackagePricing
   }
 
+  import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+
   import PicselloWeb.PackageLive.Shared,
     only: [
       package_card: 1,
-      quill_input: 1,
       package_basic_fields: 1,
       digital_download_fields: 1,
       current: 1
@@ -211,7 +212,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             Clear
           </.icon_button>
         </.input_label>
-        <.quill_input f={@f} style={"min-height: 8rem;"} html_field={:description} placeholder={"Full wedding package ideal for multiple shoots across the entire wedding journey."} />
+        <.quill_input f={@f} html_field={:description} placeholder="Full wedding package ideal for multiple shoots across the entire wedding journey." />
       </div>
 
       <%= if @is_template do %>

@@ -175,8 +175,19 @@ defmodule PicselloWeb.InboxLive.Index do
   end
 
   @impl true
-  def handle_event("compose-message", %{}, %{assigns: %{job: job}} = socket) do
-    socket |> PicselloWeb.ClientMessageComponent.open(%{subject: Job.name(job)}) |> noreply()
+  def handle_event(
+        "compose-message",
+        %{},
+        %{assigns: %{job: job, current_user: current_user}} = socket
+      ) do
+    socket
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      subject: Job.name(job),
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true
+    })
+    |> noreply()
   end
 
   @impl true
