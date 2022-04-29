@@ -13,7 +13,7 @@
       <div class="mt-2 gallery-name-edit font-sans">
 
         <.form let={f} for={@changeset} phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
-        <p class="text-3xl font-bold toggle-it text-base-300"><%= @gallery.name %> </p>
+        <p class="w-96 text-3xl font-bold toggle-it text-base-300"><%= @gallery.name %> </p>
           <.icon_button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-it" parent-class="gallery-name-edit" class="toggle-it bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
             Edit gallery name
           </.icon_button>

@@ -245,9 +245,12 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_info(:expiration_saved, socket) do
+  def handle_info(:expiration_saved, %{assigns: %{gallery: gallery}} = socket) do
+    gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery()
+
     socket
-    |> put_flash(:gallery_success, "The expiration successfully updated")
+    |> assign(:gallery, gallery)
+    |> put_flash(:gallery_success, "The expiration date has been successfully updated")
     |> noreply()
   end
 

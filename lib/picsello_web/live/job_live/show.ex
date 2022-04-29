@@ -99,7 +99,7 @@ defmodule PicselloWeb.JobLive.Show do
       })
 
     socket
-    |> push_redirect(to: Routes.gallery_show_path(socket, :upload, gallery.id))
+    |> push_redirect(to: Routes.gallery_index_path(socket, :index, gallery.id))
     |> noreply()
   end
 

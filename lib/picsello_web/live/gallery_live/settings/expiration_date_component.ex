@@ -281,9 +281,9 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
       <h3 class="font-sans">Expiration date</h3>
       <.form let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
         <div class="flex justify-between">
-          <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "w-1/3 select_exp", disabled: @is_never_expires %>
-          <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "w-1/3 mx-2 md:mx-3 select_exp", disabled: @is_never_expires %>
-          <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "w-1/3 select_exp", disabled: @is_never_expires %>
+          <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "w-1/3 select-exp", disabled: @is_never_expires %>
+          <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "w-1/3 mx-2 md:mx-3 select-exp", disabled: @is_never_expires %>
+          <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "w-1/3 select-exp", disabled: @is_never_expires %>
         </div>
         <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
             <%= submit "Save", class: "btn-settings w-32 px-11", disabled: !@is_valid, phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
