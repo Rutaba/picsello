@@ -18,53 +18,36 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
     %{gallery_id: gallery_id, product_id: product_id} = assigns
 
     gallery = Galleries.get_gallery!(gallery_id)
-    product = GalleryProducts.get(%{:id => to_integer(product_id)})
-    preview = GalleryProducts.get(%{id: product_id, gallery_id: gallery_id})
+    product = GalleryProducts.get(id: to_integer(product_id))
+    preview = GalleryProducts.get(id: product_id, gallery_id: gallery_id)
 
     [
       Map.merge(assigns, %{
         gallery: gallery,
         product: product,
         preview: preview,
+        photo: preview.preview_photo,
         favorites_count: Galleries.gallery_favorites_count(gallery),
-        frame: Picsello.Category.frame_image(preview.category),
-        coords: Picsello.Category.coords(preview.category),
-        frame_id: preview.category.id,
-        category_id: preview.category.id,
+        frame_id: preview.category_id,
+        category: preview.category,
         title: "#{product.category.name} preview"
       })
     ]
   end
 
   @impl true
-  def update(
-        %{
-          preview: preview,
-          frame: frame,
-          coords: coords
-        } = assigns,
-        socket
-      ) do
+  def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> then(fn socket ->
-      push_event(socket, "set_preview", %{
-        preview: preview_url(preview.preview_photo, blank: true),
-        ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
-        frame: frame,
-        coords: coords,
-        target: "#{preview.category.id}-edit"
-      })
-    end)
     |> assign(
-      :description,
-      "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor."
+      description:
+        "Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.",
+      favorites_filter: false,
+      page: 0,
+      page_title: "Product Preview",
+      preview_photo_id: nil,
+      selected: false
     )
-    |> assign(:page_title, "Product Preview")
-    |> assign(:page, 0)
-    |> assign(:favorites_filter, false)
-    |> assign(:preview_photo_id, nil)
-    |> assign(:selected, false)
     |> assign_photos(@per_page, "all_photos")
     |> ok()
   end
@@ -72,19 +55,17 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
   @impl true
   def handle_event(
         "click",
-        %{"preview" => preview, "preview_photo_id" => preview_photo_id},
-        %{assigns: %{category_id: category_id, frame: frame, coords: coords}} = socket
+        %{"preview_photo_id" => preview_photo_id},
+        socket
       ) do
+    preview_photo_id = to_integer(preview_photo_id)
+
     socket
-    |> assign(:preview_photo_id, to_integer(preview_photo_id))
-    |> assign(:selected, true)
-    |> assign(:preview, preview_url(preview, blank: true))
-    |> push_event("set_preview", %{
-      preview: preview_url(preview, blank: true),
-      frame: frame,
-      coords: coords,
-      target: "#{category_id}-edit"
-    })
+    |> assign(
+      preview_photo_id: preview_photo_id,
+      selected: true,
+      photo: Galleries.get_photo(preview_photo_id)
+    )
     |> noreply
   end
 
@@ -108,11 +89,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
         fn x -> to_integer(x) end
       )
 
-    result =
-      GalleryProducts.get(%{
-        id: to_integer(product_id),
-        gallery_id: to_integer(gallery_id)
-      })
+    result = GalleryProducts.get(id: to_integer(product_id), gallery_id: to_integer(gallery_id))
 
     if result != nil do
       result
@@ -124,23 +101,36 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
       send(
         self(),
-        {:save, %{preview_photo_id: preview_photo_id, frame_id: frame_id, title: title}}
+        {:save, %{title: title}}
       )
     end
 
-    {:noreply, socket}
+    socket |> noreply()
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="bg-white h-screen w-screen overflow-auto">
-      <.preview assigns={assigns}>
-        <div id={"preview-#{@category_id}"} class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
-          <canvas id={"canvas-#{@category_id}-edit"} width="300" height="255" class="edit bg-gray-300"></canvas>
+    <div class="w-screen h-screen overflow-auto bg-white">
+      <.preview
+        description={@description}
+        favorites_count={@favorites_count}
+        favorites_filter={@favorites_filter}
+        gallery={@gallery}
+        has_more_photos={@has_more_photos}
+        page={@page}
+        page_title={@page_title}
+        photos={@photos}
+        selected={@selected}
+        myself={@myself}
+        title={@title}>
+        <div class="flex items-start justify-center row-span-2 previewImg">
+          <.framed_preview category={@category} photo={@photo} id="framed-edit-preview" />
         </div>
       </.preview>
     </div>
     """
   end
+
+  defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
 end

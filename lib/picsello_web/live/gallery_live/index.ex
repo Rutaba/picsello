@@ -5,15 +5,20 @@ defmodule PicselloWeb.GalleryLive.Index do
   import PicselloWeb.GalleryLive.Shared
 
   alias Phoenix.PubSub
-  alias Picsello.Galleries
-  alias PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent
-  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
-  alias Picsello.Galleries.CoverPhoto
-  alias Picsello.Galleries.Workers.PhotoStorage
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Messages
-  alias Picsello.Notifiers.ClientNotifier
-  alias PicselloWeb.GalleryLive.Photos.Upload
+  alias Picsello.{Galleries, Messages, Notifiers.ClientNotifier}
+
+  alias PicselloWeb.GalleryLive.{
+    Settings.CustomWatermarkComponent,
+    Shared.ConfirmationComponent,
+    Photos.Upload
+  }
+
+  alias Galleries.{
+    CoverPhoto,
+    Workers.PhotoStorage,
+    PhotoProcessing.ProcessingManager,
+    PhotoProcessing.Waiter
+  }
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -154,22 +159,31 @@ defmodule PicselloWeb.GalleryLive.Index do
         {:message_composed, message_changeset},
         %{
           assigns: %{
-            job: job
+            job: job,
+            gallery: gallery
           }
         } = socket
       ) do
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
-      socket
-      |> close_modal()
-      |> noreply()
-    else
-      _error ->
-        socket
-        |> put_flash(:error, "Something went wrong")
-        |> close_modal()
-        |> noreply()
-    end
+    serialized_message =
+      message_changeset
+      |> :erlang.term_to_binary()
+      |> Base.encode64()
+
+    %{id: oban_job_id} =
+      %{message: serialized_message, email: job.client.email, job_id: job.id}
+      |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
+      |> Oban.insert!()
+
+    Waiter.postpone(gallery.id, fn ->
+      Oban.cancel_job(oban_job_id)
+
+      {:ok, message} = Messages.add_message_to_job(message_changeset, job)
+      ClientNotifier.deliver_email(message, job.client.email)
+    end)
+
+    socket
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true
@@ -339,7 +353,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   defp remove_watermark_button(assigns) do
     ~H"""
-    <button type="button" title="remove watermark" onclick="console.log(this)" phx-click="delete_watermark_popup" class="pl-14">
+    <button type="button" title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
       <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
     </button>
     """

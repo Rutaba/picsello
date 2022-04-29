@@ -26,14 +26,10 @@ defmodule Picsello.Photos do
     end
   end
 
-  def preview_url(url, opts) do
-    preview_url(%{watermarked: false, preview_url: url}, opts)
-  end
-
   def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}),
     do: path_to_url(path)
 
-  def preview_url(%{watermarked: _, preview_url: "" <> path}), do: path_to_url(path)
+  def preview_url(%{watermarked: false, preview_url: "" <> path}), do: path_to_url(path)
 
   def preview_url(_), do: @gallery_icon
 

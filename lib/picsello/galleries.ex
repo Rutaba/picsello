@@ -208,15 +208,17 @@ defmodule Picsello.Galleries do
       end,
       []
     )
+    |> Ecto.Multi.update_all(
+      :thumbnail,
+      fn _ -> Albums.remove_album_thumbnail(album.photos) end,
+      []
+    )
     |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photos))
     |> Ecto.Multi.delete(:album, album)
-    |> Ecto.Multi.run(:clean_store, fn _, _ ->
-      clean_store(album.photos)
-      {:ok, album.photos}
-    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{album: album}} ->
+        clean_store(album.photos)
         {:ok, album}
 
       {:error, reason} ->
@@ -247,13 +249,10 @@ defmodule Picsello.Galleries do
       []
     )
     |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
-    |> Ecto.Multi.run(:clean_store, fn _, _ ->
-      clean_store(photos)
-      {:ok, photos}
-    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->
+        clean_store(photos)
         {:ok, photos}
 
       {:error, reason} ->
@@ -380,13 +379,10 @@ defmodule Picsello.Galleries do
     |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
     |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
     |> Ecto.Multi.delete(:gallery, gallery)
-    |> Ecto.Multi.run(:clean_store, fn _, _ ->
-      clean_store(gallery.photos)
-      {:ok, gallery.photos}
-    end)
     |> Repo.transaction()
     |> then(fn
-      {:ok, %{gallery: gallery}} ->
+      {:ok, _} ->
+        clean_store(gallery.photos)
         {:ok, gallery}
 
       {:error, reason} ->
@@ -477,22 +473,6 @@ defmodule Picsello.Galleries do
     )
     |> Repo.update_all(set: [album_id: album_id])
   end
-
-  @doc """
-  Gets a single photo by id.
-
-  Returns nil if the Photo does not exist.
-
-  ## Examples
-
-      iex> get_photo(123)
-      %Photo{}
-
-      iex> get_photo(44545)
-      nil
-
-  """
-  def get_photo(id), do: Repo.get(Photo, id)
 
   @doc """
   Marks a photo as liked/unliked.
@@ -824,4 +804,6 @@ defmodule Picsello.Galleries do
       |> Oban.insert()
     end)
   end
+
+  defdelegate get_photo(id), to: Picsello.Photos, as: :get
 end

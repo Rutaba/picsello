@@ -1,18 +1,18 @@
-<li class="flex flex-col justify-between" phx-hook="Preview">
+<li class="flex flex-col justify-between">
   <%= if @click_params do %>
     <div phx-click="product_preview_photo_click" phx-value-params={@click_params} class="productPreview_photo">
       <div class="flex items-center justify-center p-4 photos__rect sm:p-8">
-        <canvas id={"canvas#{@category.id}-#{@uniq}"} width="200" height="170"></canvas>
+        <.framed_preview category={@category} photo={@photo} width="200" height="170" />
       </div>
     </div>
   <% else %>
     <%= if @has_product_info do %>
       <div class="flex items-center justify-center p-4 photos__rect sm:p-8">
-        <canvas id={"canvas#{@category.id}-#{@uniq}"} width="200" height="170"></canvas>
+        <.framed_preview category={@category} photo={@photo} width="200" height="170" />
       </div>
     <% else %>
       <div class="flex items-center justify-center photos__rect xl:h-96">
-        <canvas id={"canvas#{@category.id}-#{@uniq}"} width="452" height="384"></canvas>
+        <.framed_preview category={@category} photo={@photo} width="452" height="384" />
       </div>
     <% end %>
   <% end %>

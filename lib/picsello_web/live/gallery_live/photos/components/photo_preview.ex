@@ -45,9 +45,6 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
         product.id == String.to_integer(product_id)
       end)
 
-    frame = Picsello.Category.frame_image(preview.category)
-    coords = Picsello.Category.coords(preview.category)
-
     selected =
       if Enum.member?(selected, product_id) do
         List.delete(selected, product_id)
@@ -57,15 +54,9 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
 
     socket
     |> assign(:preview_photo_id, to_integer(photo.id))
-    |> assign(:preview, url)
+    |> assign(preview: url, category: preview.category)
     |> assign(:selected, selected)
     |> assign(:changeset, changeset(%{preview_photo_id: photo.id}, [:preview_photo_id]))
-    |> push_event("set_preview", %{
-      preview: url,
-      frame: frame,
-      coords: coords,
-      target: product_id
-    })
     |> noreply
   end
 
@@ -88,11 +79,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
           product.id == String.to_integer(product_id)
         end)
 
-      result =
-        GalleryProducts.get(%{
-          id: to_integer(preview.id),
-          gallery_id: to_integer(gallery_id)
-        })
+      result = GalleryProducts.get(id: to_integer(preview.id), gallery_id: to_integer(gallery_id))
 
       if result != nil do
         result
@@ -118,46 +105,42 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col bg-white p-10 rounded-lg">
+    <div class="flex flex-col p-10 bg-white rounded-lg">
       <div class="flex items-start justify-between flex-shrink-0">
-          <h1 class="text-3xl font-bold font-sans">
+          <h1 class="font-sans text-3xl font-bold">
             Set as preview for which products?
           </h1>
           <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
             <.icon name="close-x" class="w-2 h-2 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
           </button>
       </div>
-      <div class="font-sans flex bg-white py-10 relative">
-          <div id="product-preview" class="grid grid-cols-3 gap-4 items-center" phx-hook="Preview">
+      <div class="relative flex py-10 font-sans bg-white">
+          <div id="product-preview" class="items-center grid grid-cols-3 gap-4">
               <%= for product <- @products do %>
               <div class="items-center">
                 <div
                 id={"product-#{product.id}"}
-                class="font-sans flex h-52 w-52 p-6 bg-gray-100 text-black"
+                class="flex p-6 font-sans text-black bg-gray-100 h-52 w-52"
                 phx-click="click" phx-target={@myself}
                 phx-value-product={product.id}
                 >
-                  <img
-                  id={"img-#{product.id}"}
-                  src={Routes.static_path(PicselloWeb.Endpoint, "/images/#{product.category.frame_image}")}
-                  class="mx-auto bg-gray-300 items-center cursor-pointer"/>
-                  <div id={"preview-#{product.id}"} class="flex justify-center row-span-2 previewImg">
-                      <canvas id={"canvas-#{product.id}"} width="300" height="255" class="edit"></canvas>
+                  <div class="flex justify-center row-span-2 previewImg">
+                    <.framed_preview  item_id={product.category} category={product.category} photo={product.preview_photo} />
                   </div>
                 </div>
-                <div class="font-sans fomt-bold pt-4 flex items-center">
+                <div class="flex items-center pt-4 font-sans fomt-bold">
                   <%= product.category.name %>
                 </div>
               </div>
               <% end %>
           </div>
       </div>
-      <div class="flex font-sans flex-row items-center justify-end w-full lg:items-start">
+      <div class="flex flex-row items-center justify-end w-full font-sans lg:items-start">
           <button
           phx-click="modal"
           phx-value-action="close"
           title="close modal"
-          class="mr-3 py-2 px-6 float-right rounded-lg border bg-white border-black"
+          class="float-right px-6 py-2 mr-3 bg-white border border-black rounded-lg"
           >
             Cancel
           </button>
@@ -165,7 +148,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
           phx-click="save"
           phx-target={@myself}
           aria-label="save"
-          class="py-2 px-6 float-right rounded-lg bg-black text-white"
+          class="float-right px-6 py-2 text-white bg-black rounded-lg"
           >
             Save changes
           </button>
@@ -173,4 +156,6 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
     </div>
     """
   end
+
+  defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
 end

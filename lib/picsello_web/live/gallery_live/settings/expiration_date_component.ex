@@ -197,13 +197,13 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   defp days_options({year_now, month_now, day_now}, year, month) do
     cond do
       year == year_now and month == month_now ->
-        day_now..Date.days_in_month(Date.new!(year, month, day_now))
+        day_now..Calendar.ISO.days_in_month(year, month)
 
       !is_nil(month) and !is_nil(year) ->
-        1..Date.days_in_month(Date.new!(year, month, day_now))
+        1..Calendar.ISO.days_in_month(year, month)
 
       !is_nil(month) and is_nil(year) ->
-        1..Date.days_in_month(Date.new!(@non_leap_year, month, day_now))
+        1..Calendar.ISO.days_in_month(@non_leap_year, month)
 
       true ->
         1..28

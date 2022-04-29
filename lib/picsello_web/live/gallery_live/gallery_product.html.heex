@@ -1,10 +1,10 @@
 <div class="bg-base-200">
-    <div class="p-11 flex">
+    <div class="flex p-11">
             <div class="circleBtn mr-9">
               <ul>
                 <li>
                     <%= live_redirect to: Routes.gallery_show_path(@socket, :show, @gallery.id) do %>
-                        <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300 stroke-2" />
+                        <.icon name="back" class="stroke-current w-14 h-14 text-blue-planning-300 stroke-2" />
                         <span>Back to gallery</span>
                     <% end %>
                  </li>
@@ -15,7 +15,7 @@
 </div>
 
 <div phx-hook="GalleryMobile" id="gallery_mobile">
-    <div class="py-10 px-6 mobileGalleryButtons hidden galleryShowMobile">
+    <div class="hidden px-6 py-10 mobileGalleryButtons galleryShowMobile">
         <p>Mobile view is not supported for Gallery, but you can still manage settings.</p>
         <button class="btn-primary text-base py-3.5 w-full max-w-screen-md mt-7">
         </button>
@@ -25,34 +25,23 @@
     </div>
 
     <div class="galleryHideDesktop">
+      <div class="flex py-8 mx-auto max-w-screen-lg pt-14 pb-14 grid grid-cols-3 grid-rows-preview">
+        <div id="preview" class="flex items-start justify-center row-span-2 previewImg">
+          <.framed_preview category={@preview.category} photo={@preview} />
+        </div>
+        <div class="description ml-11 row-span-2 col-span-2">
+          <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id), "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}>
+            <%= @title %>
+          </h1>
 
-        <div class="max-w-screen-lg	mx-auto py-8 pt-14 pb-14 grid grid-cols-3 grid-rows-preview flex">
-        <!--<div class="col-span-3">
-                    <span class="text-base font-bold">Product preview</span>
-                    <svg width="11" height="11" class="stroke-current inline-block mr-2 fill-current rounded-full" >
-                        <use href="/images/icons.svg#gallery-info"></use>
-                    </svg>
-                </div> -->
-        <div id="preview" class="flex justify-center items-start row-span-2 previewImg" phx-hook="Preview">
-            <canvas id="canvas" width="300" height="255" class="edit"></canvas>
+          <p class="pt-3 text-base pb-11">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
+
+          <.form let={f} for={@changeset} action="#" phx-submit="save">
+            <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
+            <%= submit "Save", title: "Save", class: "save-button w-full btn-primary", disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
+          </.form>
         </div>
-            <div class="description ml-11 row-span-2 col-span-2">
-                <h1 class={classes("text-4xl font-bold mt-2", %{ "text-base-300" => !Map.has_key?(@changeset.changes, :preview_photo_id),
-                "text-orange-inbox-300" => Map.has_key?(@changeset.changes, :preview_photo_id)})}>
-                    <%= if @title === "Framed Prints" do %>
-                        Wall Art
-                    <% else %>
-                        <%= @title %>
-                    <% end %>
-                </h1>
-                <p class="pt-3 pb-11 text-base">Select one of your gallery photos that best showcases this product - your client will use this as a starting point, and can customize their product further in the editor.</p>
-                <.form let={f} for={@changeset} action="#" phx-submit="save">
-                    <%= hidden_input f, :preview_photo_id, value: @preview_photo_id %>
-                    <%= submit "Save", title: "Save", class: "save-button w-full btn-primary",
-                        disabled: !Map.has_key?(@changeset.changes, :preview_photo_id), phx_disable_with: "Saving..." %>
-            </.form>
-            </div>
-        </div>
+      </div>
 
         <div id="gallery_product_form" class="p-11 preview__shadow">
             <div

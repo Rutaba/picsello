@@ -20,17 +20,6 @@ defmodule Picsello.FeatureCase do
       end
     end
 
-    def scroll_to_bottom(session, query) do
-      case Wallaby.Query.compile(query) do
-        {:css, css_selector} ->
-          session
-          |> execute_script("document.querySelector(`#{css_selector}`).scrollHeight()")
-
-        {type, _selector} ->
-          raise "#{type} not supported. Use a css selector"
-      end
-    end
-
     def fill_in_date(session, field, opts \\ []) do
       date = Keyword.get(opts, :with)
       input = find(session, field)

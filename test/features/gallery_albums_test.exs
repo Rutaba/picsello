@@ -1,15 +1,13 @@
 defmodule Picsello.GalleryAlbumsTest do
   use Picsello.FeatureCase, async: true
-  # use Oban.Testing, repo: Picsello.Repo
+
+  alias Picsello.Repo
 
   setup do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
-    total_photos = 20
-
-    gallery = insert(:gallery, %{total_count: total_photos})
-    album = insert(:album, %{gallery_id: gallery.id})
-
+    gallery = insert(:gallery, %{total_count: 20})
+    album = insert(:album, %{gallery_id: gallery.id}) |> Repo.preload([:photos, :thumbnail_photo])
     [gallery: gallery, album: album]
   end
 
@@ -101,6 +99,11 @@ defmodule Picsello.GalleryAlbumsTest do
     |> assert_has(css("p", text: "Album settings successfully updated"))
   end
 
+  def placeholder_background_image,
+    do: """
+    *[style="background-image: url('/images/album_placeholder.png')"]
+    """
+
   test "Albums, album action dropdown, Edit album thumbnail", %{
     session: session,
     gallery: gallery,
@@ -110,17 +113,13 @@ defmodule Picsello.GalleryAlbumsTest do
 
     session
     |> visit("/galleries/#{gallery.id}/albums")
-    |> assert_has(
-      css("*[style='background-image: url(/images/album_placeholder.png)']", count: 2)
-    )
+    |> assert_has(css(placeholder_background_image(), count: 2))
     |> click(css("#actions"))
     |> click(css("button", text: "Edit album thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))
     |> click(css("#actions"))
-    |> assert_has(
-      css("*[style='background-image: url(/images/album_placeholder.png)']", count: 1)
-    )
+    |> assert_has(css(placeholder_background_image(), count: 1))
   end
 
   test "Albums, album action dropdown, delete album", %{

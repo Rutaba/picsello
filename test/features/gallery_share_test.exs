@@ -1,18 +1,22 @@
 defmodule Picsello.GalleryShareTest do
-  use Picsello.FeatureCase, async: false
+  use Picsello.FeatureCase, async: true
   use Oban.Testing, repo: Picsello.Repo
 
   alias Picsello.Galleries.PhotoProcessing.Waiter
 
   setup :authenticated
   setup :onboarded
-  setup :authenticated_gallery
 
-  setup(context) do
-    Ecto.Adapters.SQL.Sandbox.mode(Picsello.Repo, {:shared, self()})
+  setup %{user: user} do
+    Mox.verify_on_exit!()
 
-    context
-    |> Mox.set_mox_from_context()
+    Picsello.Sandbox.allow(
+      Picsello.Repo,
+      self(),
+      Process.whereis(Picsello.Galleries.PhotoProcessing.Waiter)
+    )
+
+    [gallery: insert(:gallery, job: insert(:lead, user: user))]
   end
 
   feature "test `share gallery` gets delayed till processing completed", %{
@@ -20,6 +24,18 @@ defmodule Picsello.GalleryShareTest do
     gallery: gallery
   } do
     Waiter.start_tracking(gallery.id, 1)
+
+    test_pid = self()
+
+    :ok =
+      :telemetry.attach(
+        "oban-job-finish",
+        [:oban, :engine, :cancel_job, :stop],
+        fn _event, _stats, job, _args ->
+          send(test_pid, {:job_canceled, job})
+        end,
+        []
+      )
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -30,12 +46,8 @@ defmodule Picsello.GalleryShareTest do
 
     assert_enqueued(worker: Picsello.Workers.ScheduleEmail)
     refute_receive {:delivered_email, _}
-    Process.sleep(100)
-
-    Mox.expect(Picsello.MockBambooAdapter, :deliver, fn email, _ -> {:ok, email} end)
-
     Waiter.complete_tracking(gallery.id, 1)
-    Process.sleep(100)
-    assert [] = all_enqueued()
+    assert_receive {:job_canceled, _}, 500
+    assert_receive {:delivered_email, _}
   end
 end

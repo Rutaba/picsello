@@ -1,6 +1,6 @@
 defmodule Picsello.GalleryOverviewTest do
   use Picsello.FeatureCase, async: false
-  use Oban.Testing, repo: Picsello.Repo
+  import Money.Sigils
 
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.ExpirationDateComponent
@@ -17,7 +17,9 @@ defmodule Picsello.GalleryOverviewTest do
     |> visit("/galleries/#{gallery.id}/")
     |> fill_in(text_field("updateGalleryNameForm_name"), with: "")
     |> assert_has(css("button:disabled[id='saveGalleryName']"))
-    |> fill_in(text_field("updateGalleryNameForm_name"), with: "TestTestTestTestTestTestTestTestTestTestTestTestTestTest")
+    |> fill_in(text_field("updateGalleryNameForm_name"),
+      with: "TestTestTestTestTestTestTestTestTestTestTestTestTestTest"
+    )
     |> assert_has(css("button:disabled[id='saveGalleryName']"))
     |> fill_in(text_field("updateGalleryNameForm_name"), with: "Test Wedding")
     |> wait_for_enabled_submit_button()
@@ -66,7 +68,7 @@ defmodule Picsello.GalleryOverviewTest do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#expiration_component"))
-    |> click(checkbox("neverExpire"))
+    |> click(css("#updateGalleryNeverExpire"))
     |> click(css("#saveGalleryExpiration"))
 
     updated_gallery = Galleries.get_gallery!(gallery.id)
@@ -91,7 +93,10 @@ defmodule Picsello.GalleryOverviewTest do
     assert ~U[2023-01-02 12:00:00Z] == updated_gallery.expired_at
   end
 
-  feature "Watermark, Set text watermark", %{session: session, gallery: gallery} do
+  feature "Watermark, Set text watermark", %{session: session} do
+    package = insert(:package, download_each_price: ~M[2500]USD)
+    gallery = insert(:gallery, %{job: insert(:lead, package: package)})
+
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#galleryWatermark"))
@@ -102,7 +107,10 @@ defmodule Picsello.GalleryOverviewTest do
     |> assert_has(css("p", text: "test watermark"))
   end
 
-  feature "Watermark, Delete text watermark", %{session: session, gallery: gallery} do
+  feature "Watermark, Delete watermark", %{session: session} do
+    package = insert(:package, download_each_price: ~M[2500]USD)
+    gallery = insert(:gallery, %{job: insert(:lead, package: package)})
+
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#galleryWatermark"))
@@ -114,6 +122,11 @@ defmodule Picsello.GalleryOverviewTest do
     |> click(button("remove watermark"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> refute_has(css("p", text: "test watermark"))
+    |> assert_has(
+      css("p",
+        text: "Upload your logo and we’ll do the rest."
+      )
+    )
   end
 
   feature "Delete Gallery", %{session: session, gallery: gallery} do

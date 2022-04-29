@@ -13,7 +13,12 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
     |> Mox.stub(:params_for_upload, fn _ -> [] end)
 
     package = insert(:package, download_each_price: ~M[2500]USD)
-    %{conn: conn, gallery: insert(:gallery, %{name: "Ukasha Habib Wedding", job: insert(:lead, package: package)})}
+
+    %{
+      conn: conn,
+      gallery:
+        insert(:gallery, %{name: "Ukasha Habib Wedding", job: insert(:lead, package: package)})
+    }
   end
 
   describe "general render" do
@@ -34,6 +39,81 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
       Repo.update_all(Package, set: [download_each_price: ~M[0]USD])
       {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}")
       refute html |> Floki.text() =~ "Watermark"
+    end
+  end
+
+  describe "gallery name update" do
+    def render_update_name(attrs) do
+      gallery = insert(:gallery, attrs)
+
+      render_component(PicselloWeb.GalleryLive.Settings.UpdateNameComponent,
+        id: :test,
+        gallery: gallery
+      )
+    end
+
+    test "update with valid input", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
+
+      updated_render =
+        view
+        |> element("#updateGalleryNameForm")
+        |> render_change(%{
+          gallery: %{name: "Client gallery"}
+        })
+
+      assert String.contains?(updated_render, "value=\"Client gallery\"")
+
+      assert "Save" ==
+               updated_render
+               |> Floki.parse_fragment!()
+               |> Floki.find("#updateGalleryNameForm button[type=submit]:not(:disabled)")
+               |> Floki.text()
+    end
+
+    test "update disabled with empty value", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
+
+      updated_render =
+        view
+        |> element("#updateGalleryNameForm")
+        |> render_change(%{
+          gallery: %{name: ""}
+        })
+
+      assert "Save" ==
+               updated_render
+               |> Floki.parse_fragment!()
+               |> Floki.find("#updateGalleryNameForm button[type=submit]:disabled")
+               |> Floki.text()
+    end
+
+    test "update disabled with too long value", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
+
+      updated_render =
+        view
+        |> element("#updateGalleryNameForm")
+        |> render_change(%{
+          gallery: %{name: "TestTestTestTestTestTestTestTestTestTestTestTestTestTest"}
+        })
+
+      assert "Save" ==
+               updated_render
+               |> Floki.parse_fragment!()
+               |> Floki.find("#updateGalleryNameForm button[type=submit]:disabled")
+               |> Floki.text()
+    end
+
+    test "reset gallery name", %{conn: conn, gallery: gallery} do
+      {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
+
+      updated_render =
+        view
+        |> element("button", "Reset")
+        |> render_click()
+
+      String.contains?(updated_render, gallery.name)
     end
   end
 

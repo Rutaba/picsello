@@ -25,19 +25,8 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
          socket
          |> assign(
            frame_id: preview.category.id,
-           frame: Picsello.Category.frame_image(preview.category),
-           coords: Picsello.Category.coords(preview.category),
            preview: preview
          )
-         |> then(fn %{assigns: %{coords: coords, frame: frame}} = socket ->
-           push_event(socket, "set_preview", %{
-             preview: preview_url(preview.preview_photo),
-             ratio: get_in(preview, [:preview_photo, :aspect_ratio]),
-             frame: frame,
-             coords: coords,
-             target: "canvas"
-           })
-         end)
          |> assign(:changeset, changeset(%{}, []))
          |> assign(:preview_photo_id, nil)}
     end
@@ -46,7 +35,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def check_preview(%{:gallery_id => gallery_id, :id => gallery_product_id}) do
     gallery = Galleries.get_gallery!(gallery_id)
 
-    preview = GalleryProducts.get(%{id: gallery_product_id, gallery_id: gallery_id})
+    preview = GalleryProducts.get(id: gallery_product_id, gallery_id: gallery_id)
 
     if nil in [preview, gallery] do
       gallery == nil &&
@@ -81,19 +70,10 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         %{"preview" => preview, "preview_photo_id" => preview_photo_id},
         socket
       ) do
-    frame = Map.get(socket.assigns, :frame)
-    coords = Map.get(socket.assigns, :coords)
-
     socket
     |> assign(:preview_photo_id, to_integer(preview_photo_id))
     |> assign(:preview, preview_url(preview))
     |> assign(:changeset, changeset(%{preview_photo_id: preview_photo_id}, [:preview_photo_id]))
-    |> push_event("set_preview", %{
-      preview: preview_url(preview),
-      frame: frame,
-      coords: coords,
-      target: "canvas"
-    })
     |> noreply
   end
 
@@ -114,11 +94,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
         fn x -> to_integer(x) end
       )
 
-    result =
-      GalleryProducts.get(%{
-        id: to_integer(product_id),
-        gallery_id: to_integer(gallery_id)
-      })
+    result = GalleryProducts.get(id: to_integer(product_id), gallery_id: to_integer(gallery_id))
 
     if result != nil do
       result
@@ -138,7 +114,7 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
   def handle_params(%{"id" => id, "gallery_product_id" => gallery_product_id}, _, socket) do
     gallery = Galleries.get_gallery!(id)
 
-    GalleryProducts.get(%{:id => to_integer(gallery_product_id)})
+    GalleryProducts.get(id: to_integer(gallery_product_id))
     |> case do
       nil ->
         {:noreply, redirect(socket, to: "/")}
@@ -177,4 +153,6 @@ defmodule PicselloWeb.GalleryLive.GalleryProduct do
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
   end
+
+  defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
 end

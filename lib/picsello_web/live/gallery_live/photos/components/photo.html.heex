@@ -17,61 +17,81 @@
             phx-click-away={JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
                 to: "#item-#{@id}")}
             >
+            <img
+                phx-click="click"
+                phx-target={@component}
+                phx-value-preview={@photo.preview_url}
+                phx-value-preview_photo_id={@photo.id}
+                src={preview_url(@photo)}
+                class="relative"
+            />
+        </div>
+        <% else %>
+        <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+            <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+
+            <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                 <img
                     phx-click="click"
-                    phx-target={@component}
                     phx-value-preview={@photo.preview_url}
                     phx-value-preview_photo_id={@photo.id}
                     src={preview_url(@photo)}
                     class="relative"
                 />
-            </div>
             <% else %>
-            <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
-                <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-
-                <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
+                <div class="galleryLoader">
                     <img
                         phx-click="click"
-                        phx-value-preview={@photo.preview_url}
+                        phx-value-preview="/images/gallery-icon.svg"
                         phx-value-preview_photo_id={@photo.id}
-                        src={preview_url(@photo)}
+                        src={Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")}
                         class="relative"
                     />
-                <% else %>
-                    <div class="galleryLoader">
-                        <img
-                            phx-click="click"
-                            phx-value-preview="/images/gallery-icon.svg"
-                            phx-value-preview_photo_id={@photo.id}
-                            src={Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")}
-                            class="relative"
+                </div>
+            <% end %>
+        </div>
+        <% end %>
+        <%= if !@is_gallery_category_page do %>
+            <%= if @is_likable do %>
+                <button
+                    class="likeBtn"
+                    phx-click={js_like_click(@id, @myself)}
+                >
+                    <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
+                        <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+                    </div>
+
+                    <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
+                        <.icon
+                        name="heart-white"
+                        class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
                         />
                     </div>
-                <% end %>
-            </div>
+                </button>
+            <% else %>
+                <button class="likeBtn">
+                    <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
+                </button>
             <% end %>
-            <%= if !@is_gallery_category_page do %>
-                <%= if @is_likable do %>
-                    <button
-                        class="likeBtn"
-                        phx-click={js_like_click(@id, @myself)}
-                    >
-                        <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
-                            <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
-                        </div>
 
-                        <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
-                            <.icon
-                            name="heart-white"
-                            class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
-                            />
-                        </div>
-                    </button>
-                <% else %>
-                    <button class="likeBtn">
-                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
-                    </button>
+            <%= if @is_removable do %>
+                <button
+                    class="absolute removeBtn"
+                    phx-click="delete_photo_popup"
+                    phx-value-id={@id}
+                >
+                    <.icon name="remove-icon" class="h-6 text-gray-200 w-7" />
+                </button>
+            <% end %>
+            <%= if @is_viewable do %>
+                <button
+                    class="absolute viewBtn"
+                    phx-click="photo_view"
+                    phx-value-photo_id={@photo.id}
+                    phx-value-id={@id}
+                >
+                <.icon name="eye" class="h-6 text-gray-200 w-7" />
+                </button>
                 <% end %>
 
                 <%= if @is_removable do %>

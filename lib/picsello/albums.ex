@@ -36,10 +36,17 @@ defmodule Picsello.Albums do
   """
   def get_albums_by_gallery_id(gallery_id) do
     from(a in Album,
+      left_join: thumbnail_photo in subquery(Picsello.Photos.watermarked_query()),
+      on: a.thumbnail_photo_id == thumbnail_photo.id,
       where: a.gallery_id == ^gallery_id,
-      order_by: a.id
+      order_by: a.id,
+      select_merge: %{thumbnail_photo: thumbnail_photo}
     )
     |> Repo.all()
+    |> Enum.map(fn
+      %{thumbnail_photo: %{id: nil}} = album -> %{album | thumbnail_photo: nil}
+      album -> album
+    end)
   end
 
   @doc """
@@ -54,12 +61,14 @@ defmodule Picsello.Albums do
   def update_album(album, params \\ %{}),
     do: album |> Album.update_changeset(params) |> Repo.update()
 
-  def remove_album_thumbnail(photos) do
-    urls = Enum.map(photos, & &1.preview_url)
+  def save_thumbnail(album, photo), do: album |> Album.update_thumbnail(photo) |> Repo.update()
 
-    from(gp in Album,
-      where: gp.thumbnail_url in ^urls,
-      update: [set: [thumbnail_url: nil]]
+  def remove_album_thumbnail(photos) do
+    ids = Enum.map(photos, & &1.id)
+
+    from(album in Album,
+      where: album.thumbnail_photo_id in ^ids,
+      update: [set: [thumbnail_photo_id: nil]]
     )
   end
 end

@@ -5,7 +5,6 @@ defmodule Picsello.GalleryAlbumTest do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     total_photos = 20
-
     gallery = insert(:gallery, %{total_count: total_photos})
     album = insert(:album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: total_photos})
@@ -57,19 +56,20 @@ defmodule Picsello.GalleryAlbumTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(
-      css("*[style='background-image: url(/images/album_placeholder.png)']", count: 2)
-    )
+    |> assert_has(css(placeholder_background_image(), count: 2))
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> click(testid("edit-album-thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))
     |> assert_has(css("p", text: "#{album.name} successfully updated"))
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(
-      css("*[style='background-image: url(/images/album_placeholder.png)']", count: 1)
-    )
+    |> assert_has(css(placeholder_background_image(), count: 1))
   end
+
+  def placeholder_background_image,
+    do: """
+    *[style="background-image: url('/images/album_placeholder.png')"]
+    """
 
   test "Album, photo view", %{
     session: session,

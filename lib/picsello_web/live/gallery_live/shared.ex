@@ -169,7 +169,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md popover-content">
         <%= render_slot(@inner_block) %>
         <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
-          <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center font-sans w-full h-6 py-4 pl-2 overflow-hidden text-gray-700 transition duration-300 ease-in-out text-ellipsis">
+          <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-4 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis">
             <%= @delete_title %>
           </button>
           <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
@@ -206,9 +206,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def preview(assigns) do
-    inner_block = Map.get(assigns, :inner_block)
-    assigns = Map.get(assigns, :assigns)
-
     ~H"""
     <div class="fixed z-30 bg-white scroll-shadow">
         <div class="absolute top-4 right-4">
@@ -216,21 +213,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
             </button>
         </div>
-        <div class="flex items-center text-base-300 mx-24 mt-5 text-2xl font-bold font-sans lg:justify-start">
+        <div class="flex items-center mx-24 mt-5 font-sans text-2xl font-bold text-base-300 lg:justify-start">
             <p><%= @page_title %></p>
         </div>
         <h1 class={classes("text-md mt-4 mx-24 font-sans", %{ "text-base-300" => !@selected, "text-orange-inbox-300" => @selected})}>
             <%= @title %>
         </h1>
-        <div class="mx-24 pt-6 pb-6 grid grid-cols-3 grid-rows-preview flex">
-          <%= render_slot(inner_block) %>
+        <div class="flex pt-6 pb-6 mx-24 grid grid-cols-3 grid-rows-preview">
+          <%= render_slot(@inner_block) %>
           <div class="description ml-11 row-span-2 col-span-2">
-              <p class="pt-3 pb-11 text-base font-sans"><%= @description %></p>
-              <button phx-click="save" phx-target={@myself} disabled={!@selected} class="save-button w-full btn-settings rounded-lg">Save</button>
+              <p class="pt-3 font-sans text-base pb-11"><%= @description %></p>
+              <button phx-click="save" phx-target={@myself} disabled={!@selected} class="w-full rounded-lg save-button btn-settings">Save</button>
           </div>
         </div>
     </div>
-    <div id="gallery_form" class="pb-11 px-11 pt-56 mt-52">
+    <div id="gallery_form" class="pt-56 pb-11 px-11 mt-52">
       <div
           phx-hook="MasonryGrid"
           phx-update="append"
@@ -245,7 +242,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
           data-is-sortable="false"
           data-has-more-photos={"#{@has_more_photos}"}
           data-photo-width="300">
-          <%= for photo <- @photos do%>
+          <%= for photo <- @photos do %>
           <%= live_component PicselloWeb.GalleryLive.Photos.Photo,
               id: photo.id,
               photo: photo,

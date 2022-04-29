@@ -1,33 +1,35 @@
 <div class="flex flex-col h-screen photographer-gallery">
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "product_previews", album_dropdown_show: false %>
-    <div class="w-full h-full bg-gray-100 pl-96 pt-14">
-        <div class="relative pl-10 pb-10 items-center justify-between md:flex-row">
-        <div class="flex items-center font-black text-4xl font-bold font-sans lg:justify-start">
+
+    <div class="w-full h-full bg-base-100 pl-96 pt-14">
+      <div class="relative items-center justify-between px-16 pb-10 md:flex-row">
+        <div class="flex items-center font-sans text-4xl font-bold font-black lg:justify-start">
           <p>Product Previews</p>
-          <span class="inline-block relative pl-3" data-hint="Showcase products your client will love." data-hint-position="middle-middle">
-            <.icon name="tooltip" class="inline-block mr-6 rounded-sm fill-current text-blue-planning-300 w-4 h-4"/>
+
+          <span class="relative inline-block pl-3" data-hint="Showcase products your client will love." data-hint-position="middle-middle">
+            <.icon name="tooltip" class="inline-block w-4 h-4 mr-6 rounded-sm fill-current text-blue-planning-300" />
           </span>
         </div>
+
         <div class="flex mt-3 font-sans text-gray-400">
           <p>Showcase products your clients will love.</p>
         </div>
-        <div class="grid-cols-2 grid">
-        <%= for product <- @products do %>
-            <.live_component
-              id={product.id}
-              category={product.category}
-              product_id={product.id}
-              module={Preview}
-              photo={product.preview_photo} />
+
+        <div class="grid-cols-2 gap-7 grid">
+          <%= for product <- @products do %>
+            <.live_component id={product.id} category={product.category} product_id={product.id} module={Preview} photo={product.preview_photo} />
           <% end %>
         </div>
       </div>
+
       <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
+
       <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
     </div>
   </div>
+
   <div class="fixed bottom-0 left-0 right-0 z-10">
-  <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
   </div>
 </div>
