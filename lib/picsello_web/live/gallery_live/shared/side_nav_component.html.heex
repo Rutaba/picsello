@@ -28,10 +28,11 @@
                 <.icon name="world" class="w-6 h-6" />
               </div>
               <div class="ml-3">
-                 <%= if @arrow_show == "overview" do %>
-                  <span class= "text-blue-planning-300">Overview</span>
-                <% else %>
-                  <span>Overview</span>
+                <span class={@arrow_show == "overview" && "text-blue-planning-300"}>Overview</span>
+              </div>
+              <div class="flex px-2 items-center ml-auto">
+              <%= if expire_soon(@gallery) do %>
+                <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
                 <% end %>
               </div>
             </div>
@@ -48,12 +49,8 @@
                     <.icon name="photos" class="w-4 h-4" />
                   </div>
                   <div class="justify-start ml-3">
-                     <%= if @arrow_show == "photos" do %>
-                      <span class= "text-blue-planning-300">Photos</span>
-                    <% else %>
-                      <span>Photos</span>
-                    <% end %>
-                   </div>
+                     <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>
+                  </div>
              </div>
             <div class="flex px-2 items-center ml-auto">
              <%= if @total_progress > 0 && @total_progress < 100 do %>
@@ -96,14 +93,14 @@
                 <%= if length(@albums) > 0 do %>
                         <ul>
                           <li phx-click="go_to_unsorted_photos" phx-target={@myself} class="relative">
-                            <button href="#!" class={"#{if @selected_album == nil, do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}>Unsorted photos</button>
+                            <button class={"#{if @selected_album == nil, do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}>Unsorted photos</button>
                           </li>
                         </ul>
                       <% end %>
                   <%= for album <- @albums do %>
                         <ul>
                           <li phx-click="go_to_album_selected" phx-target={@myself} phx-value-album={album.id} class="relative">
-                            <button href="#!" class={"#{if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}><%= album.name %></button>
+                            <button class={"#{if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}><%= album.name %></button>
                           </li>
                         </ul>
                   <% end %>
@@ -116,11 +113,7 @@
                     <.icon name="product-preview" class="w-4 h-4" />
                   </div>
                   <div class="ml-3">
-                    <%= if @arrow_show == "product_previews" do %>
-                      <span class= "text-blue-planning-300">Product previews</span>
-                    <% else %>
-                      <span>Product previews</span>
-                    <% end %>
+                    <span class={@arrow_show == "product_previews" && "text-blue-planning-300"}>Product previews</span>
                   </div>
               </div>
               <%= if @arrow_show == "product_previews" do %>

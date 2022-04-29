@@ -61,7 +61,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(testid("edit-album-thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))
-    |> assert_has(css("p", text: "#{album.name} successfully updated"))
+    |> assert_has(css("p", text: "Album thumbnail successfully updated"))
     |> visit("/galleries/#{gallery_id}/albums")
     |> assert_has(css(placeholder_background_image(), count: 1))
   end

@@ -328,32 +328,6 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
   end
 
-  defp expire_soon(gallery) do
-    expired_at = get_expiry_date(gallery)
-
-    case DateTime.compare(DateTime.utc_now() |> DateTime.truncate(:second), expired_at) do
-      :lt -> false
-      :gt -> true
-    end
-    |> never_expire(expired_at)
-  end
-
-  defp never_expire(result, expired_at) do
-    result && DateTime.compare(get_expiry_date(), expired_at) != :eq
-  end
-
-  defp get_expiry_date(%{expired_at: expired_at}) do
-    case expired_at do
-      nil -> get_expiry_date()
-      _ -> expired_at
-    end
-  end
-
-  defp get_expiry_date() do
-    {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
-    date
-  end
-
   defp remove_watermark_button(assigns) do
     ~H"""
     <button type="button" title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">

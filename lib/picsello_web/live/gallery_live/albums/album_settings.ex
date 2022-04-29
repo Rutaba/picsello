@@ -134,16 +134,16 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <label id="setPassword" class="flex text-1xl font-sans">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
             <div class="hidden peer-checked:flex font-sans">
-              <div class="flex font-sans justify-end w-12 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
-                  <div class="w-6 h-6 rounded-full bg-base-100"></div>
+              <div class="flex font-sans justify-end items-center w-12 h-6 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
+                  <div class="w-4 h-4 rounded-full bg-base-100"></div>
               </div>
-              <span class="mt-2">On</span>
+              <span>On</span>
             </div>
             <div class="flex peer-checked:hidden" >
-              <div class="flex w-12 p-1 mr-4 border rounded-full border-blue-planning-300">
-                  <div class="w-6 h-6 rounded-full bg-blue-planning-300"></div>
+              <div class="flex w-12 h-6 items-center p-1 mr-4 border rounded-full border-blue-planning-300">
+                  <div class="w-4 h-4 rounded-full bg-blue-planning-300"></div>
               </div>
-              <span class="mt-2">Off</span>
+              <span>Off</span>
             </div>
           </label>
           <%= if @set_password do %>
@@ -164,9 +164,9 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
                     <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250"/>
                   <% end %>
                 </a>
-                <button type="button" id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@album && @album.password}
+                <button type="button" id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@album_password}
                   class="h-12 py-2 mt-1 border rounded-lg bg-base-100 border-blue-planning-300 text-blue-planning-300 w-36">
-                  <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+                  <div class="hidden p-1 text-sm rounded bg-white font-sans shadow" role="tooltip">
                       Copied!
                   </div>
                     Copy password

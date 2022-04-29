@@ -26,7 +26,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
   def render(assigns) do
     ~H"""
     <div>
-      <div class="choose-product lg:h-full lg:overflow-y-scroll w-full flex lg:justify-between lg:px-0 lg:pl-16 xl:pl-20 lg:pr-16 xl:pr-20">
+      <div class="choose-product lg:h-full lg:overflow-y-scroll w-full flex lg:justify-between">
         <div class="choose-product-item w-full h-96 lg:h-full lg:w-full mb-5 lg:mb-0 relative">
           <div id="wrapper" class="wrapper h-full justify-center">
             <a phx-click="close" phx-target={@myself} class="absolute p-2 rounded-full cursor-pointer right-5 top-5">

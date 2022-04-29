@@ -1,9 +1,11 @@
 defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Galleries, Albums}
   alias Phoenix.PubSub
+
 
   @impl true
   def update(
