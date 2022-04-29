@@ -1,5 +1,6 @@
 defmodule Picsello.PaymentSchedules do
   @moduledoc "context module for payment schedules"
+  import Money.Sigils
 
   alias Picsello.{
     Repo,
@@ -13,6 +14,8 @@ defmodule Picsello.PaymentSchedules do
     Shoot
   }
 
+  @zero_price ~M[0]USD
+
   def build_payment_schedules_for_lead(%Job{} = job) do
     %{package: package, shoots: shoots} = job |> Repo.preload([:package, :shoots])
 
@@ -20,7 +23,7 @@ defmodule Picsello.PaymentSchedules do
     next_shoot = shoots |> Enum.at(0, %Shoot{}) |> Map.get(:starts_at)
     last_shoot = shoots |> Enum.at(-1, %Shoot{}) |> Map.get(:starts_at)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    price = if package, do: Package.price(package), else: Money.new(0)
+    price = if package, do: Package.price(package), else: @zero_price
 
     info =
       payment_schedules_info(%{
@@ -43,6 +46,20 @@ defmodule Picsello.PaymentSchedules do
         })
       end
     )
+  end
+
+  def free?(%Job{} = job) do
+    job
+    |> payment_schedules()
+    |> Enum.all?(&Money.zero?(&1.price))
+  end
+
+  defp payment_schedules_info(%{price: @zero_price, now: now}) do
+    %{
+      label: "Payment",
+      details: "100% discount",
+      payments: [%{description: "100% discount", due_at: now, price: @zero_price}]
+    }
   end
 
   defp payment_schedules_info(%{type: type, price: price, now: now})
@@ -195,6 +212,18 @@ defmodule Picsello.PaymentSchedules do
       {:error, _} = error -> error
       error -> {:error, error}
     end
+  end
+
+  def mark_as_paid(%BookingProposal{} = proposal, helpers) do
+    Repo.transaction(fn ->
+      proposal
+      |> Repo.preload(:job)
+      |> Map.get(:job)
+      |> payment_schedules()
+      |> Enum.each(&(&1 |> PaymentSchedule.paid_changeset() |> Repo.update!()))
+
+      UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
+    end)
   end
 
   def checkout_link(%BookingProposal{} = proposal, line_items, opts) do

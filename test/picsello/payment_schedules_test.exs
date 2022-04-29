@@ -4,6 +4,32 @@ defmodule Picsello.PaymentSchedulesTest do
   alias Picsello.{PaymentSchedules}
 
   describe "build_payment_schedules_for_lead/1" do
+    test "when package total price is zero" do
+      %{id: lead_id} =
+        lead =
+        insert(:lead,
+          package: %{shoot_count: 1, base_price: 2000, base_multiplier: 0},
+          shoots: [%{starts_at: ~U[2029-09-30 19:00:00Z]}]
+        )
+
+      price = Money.new(0)
+
+      assert %{
+               label: "Payment",
+               details: "100% discount",
+               payments: [
+                 %{
+                   job_id: ^lead_id,
+                   price: ^price,
+                   due_at: deposit_due,
+                   description: "100% discount"
+                 }
+               ]
+             } = PaymentSchedules.build_payment_schedules_for_lead(lead)
+
+      assert deposit_due |> DateTime.to_date() == DateTime.utc_now() |> DateTime.to_date()
+    end
+
     test "when type is headshot or mini" do
       for type <- ~w[headshot mini] do
         %{id: lead_id} =

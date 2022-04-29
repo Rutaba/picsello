@@ -49,6 +49,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     do: socket |> assign(answer: answer, proposal: %{proposal | answer: answer}) |> noreply()
 
   @impl true
+  def handle_info({:update_payment_schedules}, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
+      |> show_confetti_banner()
+      |> noreply()
+
+  @impl true
   def handle_info(
         {:confetti, stripe_session_id},
         %{assigns: %{organization: organization, job: job}} = socket
@@ -132,11 +140,11 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots} = job}} = socket) do
     {title, subtitle} =
-      if PaymentSchedules.all_paid?(job) do
-        {"Paid in full. Thank you!", "Now it’s time to make some memories."}
-      else
+      if !PaymentSchedules.all_paid?(job) || PaymentSchedules.free?(job) do
         {"Thank you! Your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
          "We are so excited to be working with you, thank you for your business. See you soon."}
+      else
+        {"Paid in full. Thank you!", "Now it’s time to make some memories."}
       end
 
     socket
