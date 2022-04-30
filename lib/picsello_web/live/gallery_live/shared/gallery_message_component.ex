@@ -67,14 +67,14 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
     ~H"""
     <div class="modal" style="border-radius: 0.375rem;">
     <div class="flex justify-between">
-        <h1 class="mb-4 text-3xl font-bold"><%= @modal_title %></h1>
+        <h1 class="mb-4 text-3xl font-bold font-sans"><%= @modal_title %></h1>
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
 
       <%= if @show_client_email do %>
-        <div class="pt-5 font-bold input-label">
+        <div class="pt-5 font-sans input-label">
           Client's email
         </div>
         <div class="relative font-sans text-input text-base-250" style="border-radius: 0.375rem;">
@@ -83,11 +83,11 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
       <% end %>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <div class="grid grid-flow-col gap-4 mt-4 font-bold auto-cols-fr">
+        <div class="grid grid-flow-col gap-4 mt-4 font-sans auto-cols-fr">
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "font-sans h-12", phx_debounce: "500",  style: "border-radius: 0.375rem;" %>
         </div>
 
-        <label class="block mt-4 font-bold input-label" for="editor">Message</label>
+        <label class="block mt-4 font-sans input-label" for="editor">Message</label>
         <.custom_quill_input f={f} style={"min-height: 4rem; font-family: 'Be Vietnam'; font-style: normal; font-weight: 500; font-size: 15.4282px;
         line-height: 23px; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;"} html_field={:body_html} text_field={:body_text}/>
 
