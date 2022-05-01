@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   alias Picsello.{Galleries, Albums}
   alias Phoenix.PubSub
 
-
   @impl true
   def update(
         %{

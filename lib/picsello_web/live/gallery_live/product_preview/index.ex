@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   @moduledoc false
   use PicselloWeb,
     live_view: [
-      layout: "live_client"
+      layout: "live_photographer"
     ]
 
   import PicselloWeb.GalleryLive.Shared

@@ -281,14 +281,14 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
       <h3 class="font-sans">Expiration date</h3>
       <.form let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
         <div class="flex justify-between">
-          <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "border-blue-planning-300 select-exp w-1/3 #{@is_never_expires && 'bg-base-200 border-base-200'}", disabled: @is_never_expires %>
-          <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "border-blue-planning-300 select-exp mx-2 md:mx-3 w-1/3 #{@is_never_expires && 'bg-base-200 border-base-200'}", disabled: @is_never_expires %>
-          <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "border-blue-planning-300 select-exp w-1/3 #{@is_never_expires && 'bg-base-200 border-base-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "border-blue-planning-300 w-1/3 #{@is_never_expires && 'text-gray-400 border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "border-blue-planning-300 mx-2 md:mx-3 w-1/3 #{@is_never_expires && 'text-gray-400 border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "border-blue-planning-300 w-1/3 #{@is_never_expires && 'text-gray-400 border-blue-planning-200'}", disabled: @is_never_expires %>
         </div>
         <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
             <%= submit "Save", class: "btn-settings w-32 px-11", disabled: !@is_valid, phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
             <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself} id="updateGalleryNeverExpire">
-                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox_exp"  checked={@is_never_expires} />
+                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp"  checked={@is_never_expires} />
                 <label class="cursor-pointer font-sans" style="vertical-align: middle">
                     Never expires
                 </label>
