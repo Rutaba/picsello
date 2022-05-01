@@ -18,7 +18,7 @@
             Edit gallery name
           </.icon_button>
           <%= text_input f, :name, value: @gallery.name <> " ", class: "toggle-it w-full text-input hidden"%>
-            <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg" %>
+            <%= submit "Save", disabled: !@changeset.valid?, target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden btn-save-side-nav" %>
         </.form>
       </div>
       <div class="grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-lg grid-container w-80 gap-y-1">

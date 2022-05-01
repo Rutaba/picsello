@@ -106,10 +106,9 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
       end
     end)
 
-    socket
-    |> close_modal()
-    |> put_flash(:gallery_success, "Photo preview successfully created")
-    |> noreply
+    send(self(), {:save, %{message: "Photo preview successfully created"}})
+
+    socket |> noreply
   end
 
   def changeset(data, prop) do
@@ -150,7 +149,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
               <% end %>
           </div>
       </div>
-      <div class="flex flex-row items-center justify-end w-full lg:items-start">
+      <div class="flex flex-row items-center justify-end w-full font-sans lg:items-start">
           <button
           phx-click="modal"
           phx-value-action="close"
