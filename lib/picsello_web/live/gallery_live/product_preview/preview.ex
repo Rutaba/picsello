@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
             </button>
           </div>
 
-          <div class="flex items-center justify-center mt-4"><.framed_preview category={@category} photo={@photo}/></div>
+          <div class="flex items-center justify-center mt-4"><.framed_preview item_id={@category.id} category={@category} photo={@photo}/></div>
         </div>
       </div>
     </div>

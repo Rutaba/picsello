@@ -13,7 +13,7 @@ defmodule Picsello.Photos do
   }
 
   @gallery_icon "/images/gallery-icon.svg"
-  @card_blank "/images/card_blank.png"
+  @card_blank "/images/card_gray.png"
 
   def preview_url(%{watermarked: _} = photo, opts) do
     url = preview_url(photo)

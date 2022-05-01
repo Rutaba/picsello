@@ -57,7 +57,7 @@ defmodule Picsello.GalleryAlbumTest do
     session
     |> visit("/galleries/#{gallery_id}/albums")
     |> assert_has(css(placeholder_background_image(), count: 2))
-    |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
+    |> visit("/galleries/#{gallery_id}/albums/#{album.id}/")
     |> click(testid("edit-album-thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))

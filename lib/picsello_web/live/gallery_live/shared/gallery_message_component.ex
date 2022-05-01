@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Job}
-  import PicselloWeb.PackageLive.Shared
+  import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -88,8 +88,7 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
         </div>
 
         <label class="block mt-4 font-sans input-label" for="editor">Message</label>
-        <.custom_quill_input f={f} style={"min-height: 4rem; font-family: 'Be Vietnam'; font-style: normal; font-weight: 500; font-size: 15.4282px;
-        line-height: 23px; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;"} html_field={:body_html} text_field={:body_text}/>
+        <.quill_input f={f} html_field={:body_html} text_field={:body_text} placeholder="Start typing…" enable_size={true} enable_image={true} />
 
         <PicselloWeb.LiveModal.footer class="pt-10">
           <button class="btn-settings ml-4 px-11 py-3.5 cursor-pointer" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">

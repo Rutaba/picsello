@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryLive.Index do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
+  use PicselloWeb, live_view: [layout: "live_photographer"]
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
 

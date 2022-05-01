@@ -8,7 +8,6 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
   @defaults %{
     width: 300,
     height: 255,
-    class: "bg-gray-300",
     preview: nil
   }
 
@@ -23,7 +22,6 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
 
     ~H"""
     <canvas
-      class={@class}
       data-config={Jason.encode!(@config)}
       height={@height}
       id={@id}

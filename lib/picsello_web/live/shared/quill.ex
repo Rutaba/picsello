@@ -12,13 +12,14 @@ defmodule PicselloWeb.Shared.Quill do
         html_field: nil,
         text_field: nil,
         placeholder: nil,
+        class: nil,
         enable_size: false,
         enable_image: false,
         current_user: nil
       })
 
     ~H"""
-    <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2"
+    <div id="editor-wrapper" class={@class} phx-hook="Quill" phx-update="ignore" class="mt-2"
       data-placeholder={@placeholder}
       data-html-field-name={input_name(@f, @html_field)}
       data-text-field-name={input_name(@f, @text_field)}

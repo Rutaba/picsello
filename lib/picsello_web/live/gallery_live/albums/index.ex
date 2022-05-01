@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryLive.Albums.Index do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
+  use PicselloWeb, live_view: [layout: "live_photographer"]
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Galleries, Albums}
@@ -215,7 +215,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
-  def handle_info(_, %{assigns: %{gallery_id: gallery_id}} = socket) do
+  def handle_info({:save, _}, %{assigns: %{gallery_id: gallery_id}} = socket) do
     socket
     |> close_modal()
     |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id))
@@ -235,7 +235,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   def thumbnail(assigns) do
     ~H"""
-    <a class="mt-4 albumBlock md:w-full albumHeight cursor-pointer" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click="go_to_album" phx-value-album={@album.id}>
+    <a class="mt-4 albumBlock md:w-full h-72 cursor-pointer" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click={@event} phx-value-album={@album.id}>
       <div class="flex flex-row items-end justify-start h-full gap-2">
         <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
       </div>

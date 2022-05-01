@@ -209,25 +209,6 @@ canvas {
   }
 }
 
-.checkbox_exp {
-  @apply form-checkbox text-blue-planning-300 focus:ring-1 focus:ring-blue-planning-300 rounded;
-  height: 1.5rem;
-  width: 1.5rem;
-}
-.albumHeight
-{
-  width: 404px;
-  height: 278px;
-}
-.actionHeight
-{
-  width: 404px;
-  height: 38px;
-}
-.select-exp {
-  @apply font-sans font-medium text-base-300;
-  border-radius: 0.5rem !important;
-}
 // reset background gradient
 // for photographer editing the grid
 #gallery_product_form {

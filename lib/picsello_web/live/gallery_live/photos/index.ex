@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @moduledoc false
   use PicselloWeb,
     live_view: [
-      layout: "live_client"
+      layout: "live_photographer"
     ]
 
   import PicselloWeb.LiveHelpers
@@ -418,10 +418,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:save, %{title: title}}, socket) do
+  def handle_info({:save, _}, socket) do
     socket
     |> close_modal()
-    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> put_flash(:gallery_success, "Album thumbnail successfully updated")
     |> assign_photos(@per_page)
     |> noreply
   end
