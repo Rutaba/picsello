@@ -118,22 +118,22 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col modal" style="border-radius: 0.8rem;">
+    <div class="flex flex-col modal">
       <div class="flex items-start justify-between flex-shrink-0">
-        <h1 class="mb-4 font-sans text-3xl font-bold"><%= @title %></h1>
+        <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
         <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
-      <.form for={@changeset} let={f} phx-submit="submit" phx-change="validate" phx-target={@myself} class="font-sans">
-        <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", style: "border-radius: 0.5rem;"%>
+      <.form for={@changeset} let={f} phx-submit="submit" phx-change="validate" phx-target={@myself}>
+        <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
         <%= hidden_input f, :gallery_id%>
 
         <div class="flex flex-col mt-4 font-bold">
-          <h3 class="font-bold font-sans input-label">Password protection</h3>
-          <label id="setPassword" class="flex text-1xl font-sans">
+          <h3 class="font-bold input-label">Password protection</h3>
+          <label id="setPassword" class="flex text-1xl">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
-            <div class="hidden peer-checked:flex font-sans">
+            <div class="hidden peer-checked:flex">
               <div class="flex font-sans justify-end items-center w-12 h-6 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
                   <div class="w-4 h-4 rounded-full bg-base-100"></div>
               </div>

@@ -150,7 +150,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
               <% end %>
           </div>
       </div>
-      <div class="flex flex-row items-center justify-end w-full font-sans lg:items-start">
+      <div class="flex flex-row items-center justify-end w-full lg:items-start">
           <button
           phx-click="modal"
           phx-value-action="close"

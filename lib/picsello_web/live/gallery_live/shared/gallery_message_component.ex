@@ -65,29 +65,29 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="modal" style="border-radius: 0.375rem;">
+    <div class="modal">
     <div class="flex justify-between">
-        <h1 class="mb-4 text-3xl font-bold font-sans"><%= @modal_title %></h1>
+        <h1 class="mb-4 text-3xl font-bold"><%= @modal_title %></h1>
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
 
       <%= if @show_client_email do %>
-        <div class="pt-5 font-sans input-label">
+        <div class="pt-5 input-label">
           Client's email
         </div>
-        <div class="relative font-sans text-input text-base-250" style="border-radius: 0.375rem;">
+        <div class="relative text-input text-base-250">
           <%= client_email @job %>
         </div>
       <% end %>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <div class="grid grid-flow-col gap-4 mt-4 font-sans auto-cols-fr">
-          <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "font-sans h-12", phx_debounce: "500",  style: "border-radius: 0.375rem;" %>
+        <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
+          <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
         </div>
 
-        <label class="block mt-4 font-sans input-label" for="editor">Message</label>
+        <label class="block mt-4 input-label" for="editor">Message</label>
         <.quill_input f={f} html_field={:body_html} text_field={:body_text} placeholder="Start typing…" enable_size={true} enable_image={true} />
 
         <PicselloWeb.LiveModal.footer class="pt-10">

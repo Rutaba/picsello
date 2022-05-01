@@ -42,9 +42,9 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
 
         <a phx-click="toggle_visibility" phx-target={@myself} class="absolute h-full -translate-y-1/2 right-5 top-1/2" id="togglePasswordVisibility">
           <%= if @visibility do %>
-            <.icon name="eye" class="w-5 h-full ml-1 text-base-250"/>
+            <.icon name="eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
           <% else %>
-            <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250"/>
+            <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
           <% end %>
         </a>
       </div>
@@ -53,7 +53,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
             Re-generate
         </button>
         <button id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
-        class="py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 font-sans">
+        class="py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36">
         <div class="hidden p-1 text-sm rounded bg-white font-sans shadow" role="tooltip">
             Copied!
         </div>

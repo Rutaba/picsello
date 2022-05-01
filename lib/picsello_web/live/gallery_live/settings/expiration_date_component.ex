@@ -278,7 +278,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <h3 class="font-sans">Expiration date</h3>
+      <h3>Expiration date</h3>
       <.form let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
         <div class="flex justify-between">
           <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "border-blue-planning-300 w-1/3 #{@is_never_expires && 'text-gray-400 border-blue-planning-200'}", disabled: @is_never_expires %>
@@ -288,8 +288,8 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
             <%= submit "Save", class: "btn-settings w-32 px-11", disabled: !@is_valid, phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
             <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself} id="updateGalleryNeverExpire">
-                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp"  checked={@is_never_expires} />
-                <label class="cursor-pointer font-sans" style="vertical-align: middle">
+                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp cursor-pointer"  checked={@is_never_expires} />
+                <label class="cursor-pointer">
                     Never expires
                 </label>
             </div>

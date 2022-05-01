@@ -127,7 +127,6 @@
 
 .settings__wrapper2 > div {
   @apply pt-4 pb-6 pr-6 border-2 border-solid rounded-lg border-base-200 pl-9;
-  font-family: sans-serif;
   background: linear-gradient(
     to right,
     #4daac6 17px,

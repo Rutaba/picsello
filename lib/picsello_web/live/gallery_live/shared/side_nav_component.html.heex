@@ -1,6 +1,6 @@
 <div class="fixed top-0 bottom-0 left-0 flex flex-col h-screen px-5 pb-6 pt-2 overflow-y-auto bg-white z-1 shrink-0 w-[384px]">
     <div class="fixed">
-      <div class="circleBtn font-sans">
+      <div class="circleBtn">
         <ul>
             <li>
               <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
@@ -10,18 +10,18 @@
             </li>
         </ul>
       </div>
-      <div class="mt-2 gallery-name-edit font-sans">
+      <div class="mt-2 gallery-name-edit">
 
         <.form let={f} for={@changeset} phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
         <p class="w-96 text-3xl font-bold toggle-it text-base-300"><%= @gallery.name %> </p>
           <.icon_button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-it" parent-class="gallery-name-edit" class="toggle-it bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
             Edit gallery name
           </.icon_button>
-          <%= text_input f, :name, value: @gallery.name <> " ", class: "toggle-it w-full text-input hidden", style: "border-radius: 0.5rem;" %>
+          <%= text_input f, :name, value: @gallery.name <> " ", class: "toggle-it w-full text-input hidden"%>
             <%= submit "Save", target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden items-center flex px-4 py-2 font-sans border rounded-lg hover:opacity-75 text-2m border-blue-planning-300 mt-4 shadow-lg" %>
         </.form>
       </div>
-      <div class="grid grid-cols-1 p-5 mt-6 font-sans bg-gray-100 rounded-lg grid-container w-80 gap-y-1">
+      <div class="grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-lg grid-container w-80 gap-y-1">
         <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
             <div phx-click="select_overview" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
               <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
