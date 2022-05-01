@@ -616,5 +616,9 @@
   .checkbox-exp {
     @apply form-checkbox h-6 w-6 text-blue-planning-300 focus:ring-1 focus:ring-blue-planning-300 rounded;
   }  
+
+  .btn-save-side-nav {
+    @apply flex px-4 py-2 border rounded-lg hover:opacity-75 border-blue-planning-300 mt-4 shadow-lg;
+  }
 }
 

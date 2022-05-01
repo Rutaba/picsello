@@ -73,9 +73,9 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
         _,
         %{assigns: %{album: album, thumbnail: thumbnail}} = socket
       ) do
-    {:ok, album} = album |> Albums.save_thumbnail(thumbnail)
+    album |> Albums.save_thumbnail(thumbnail)
 
-    send(self(), {:save, %{title: album.name}})
+    send(self(), {:save, %{message: "Album thumbnail successfully updated"}})
 
     socket
     |> noreply()

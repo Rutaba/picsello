@@ -418,10 +418,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:save, _}, socket) do
+  def handle_info({:save, %{message: message}}, socket) do
     socket
     |> close_modal()
-    |> put_flash(:gallery_success, "Album thumbnail successfully updated")
+    |> put_flash(:gallery_success, message)
     |> assign_photos(@per_page)
     |> noreply
   end
