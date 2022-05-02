@@ -11,7 +11,7 @@
         <div class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-14 lg:pb-10">Cart Review</div>
 
         <div class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <div class="block col-span-1 lg:hidden"><.summary order={@order} /></div>
+          <div class="block col-span-1 lg:hidden"><.summary class="top-summary" order={@order} /></div>
 
           <div {testid("line-items")} class="col-span-1 lg:col-span-2">
             <%= if @order.bundle_price do %>
@@ -98,7 +98,7 @@
             </div>
           </div>
 
-          <div class="col-span-1"><.summary order={@order} /></div>
+          <div class="col-span-1"><.summary class="bottom-summary" order={@order} /></div>
         </div>
       <% :delivery_info -> %>
         <div class="w-full m-auto max-w-screen-xl">
