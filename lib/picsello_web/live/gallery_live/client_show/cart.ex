@@ -218,11 +218,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp summary(assigns) do
-    assigns = assign_new(assigns, :class, fn -> "summary" end)
+    assigns =
+      assigns
+      |> assign_new(:class, fn -> "summary" end)
+      |> assign_new(:button, fn -> "Continue" end)
+      |> assign_new(:type, fn -> "button" end)
+      |> assign_new(:disabled, fn -> false end)
+      |> assign_new(:click, fn -> nil end)
 
     ~H"""
     <div class={"flex flex-col border border-base-200 #{@class}"}>
       <button
+        type="button"
         phx-click={JS.toggle(to: ".#{@class} > button .toggle") |> JS.toggle(to: ".#{@class} .grid .toggle")}
         class="block px-5 pt-4 text-base-250 lg:hidden">
         <div class="flex items-center pb-2">
@@ -266,7 +273,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         </dl>
       </div>
 
-      <button type="button" class="mx-5 mt-5 text-lg mb-7 btn-primary" phx-click="continue" disabled={zero_subtotal?(@order)}>Continue</button>
+      <button type={@type} class="mx-5 mt-5 text-lg mb-7 btn-primary" phx-click={@click} disabled={zero_subtotal?(@order) || @disabled}><%= @button %></button>
 
       <%= if zero_subtotal?(@order) do %>
         <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
