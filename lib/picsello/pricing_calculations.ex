@@ -121,7 +121,7 @@ defmodule Picsello.PricingCalculations do
     |> cast(attrs, [:max_session_per_year, :job_type, :base_price])
   end
 
-  def compare_income_bracket(
+  def find_income_tax_bracket?(
         %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
           income_max: %Money{amount: income_max},
           income_min: %Money{amount: income_min}
@@ -140,26 +140,16 @@ defmodule Picsello.PricingCalculations do
     end
   end
 
-  def compare_income_bracket(
+  def find_income_tax_bracket?(
         %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
-          income_max: %Money{amount: income_max},
-          income_min: %Money{amount: income_min}
-        },
-        desired_salary_text
+          income_max: %Money{amount: _income_max},
+          income_min: %Money{amount: _income_min}
+        } = income_bracket,
+        "" <> desired_salary_text
       ) do
     {:ok, value} = Money.parse(desired_salary_text)
-    %Money{amount: desired_salary} = value
 
-    cond do
-      income_max == 0 ->
-        income_min <= desired_salary
-
-      income_min == 0 ->
-        desired_salary < income_max
-
-      true ->
-        income_min <= desired_salary and desired_salary < income_max
-    end
+    find_income_tax_bracket?(income_bracket, value)
   end
 
   def get_income_bracket(value) do
@@ -167,14 +157,13 @@ defmodule Picsello.PricingCalculations do
 
     scrub_input =
       case value do
-        "$" -> Money.new(000)
-        nil -> Money.new(000)
+        "$" -> Money.new(0)
+        nil -> Money.new(0)
         _ -> value
       end
 
     income_brackets
-    |> Enum.filter(fn bracket -> compare_income_bracket(bracket, scrub_input) end)
-    |> Enum.at(0)
+    |> Enum.find(fn bracket -> find_income_tax_bracket?(bracket, scrub_input) end)
   end
 
   def calculate_after_tax_income(
@@ -198,16 +187,16 @@ defmodule Picsello.PricingCalculations do
         %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{},
         nil
       ) do
-    Money.new(000)
+    Money.new(0)
   end
 
   def calculate_after_tax_income(
         %Picsello.PricingCalculatorTaxSchedules.IncomeBracket{
-          fixed_cost_start: fixed_cost_start,
-          fixed_cost: fixed_cost,
-          percentage: percentage
-        },
-        desired_salary_text
+          fixed_cost_start: _fixed_cost_start,
+          fixed_cost: _fixed_cost,
+          percentage: _percentage
+        } = income_bracket,
+        "" <> desired_salary_text
       ) do
     scrub_input =
       case desired_salary_text do
@@ -217,13 +206,7 @@ defmodule Picsello.PricingCalculations do
 
     {:ok, desired_salary} = Money.parse(scrub_input)
 
-    taxes_owed =
-      desired_salary
-      |> Money.subtract(fixed_cost_start)
-      |> Money.multiply(Decimal.div(percentage, 100))
-      |> Money.add(fixed_cost)
-
-    desired_salary |> Money.subtract(taxes_owed)
+    calculate_after_tax_income(income_bracket, desired_salary)
   end
 
   def calculate_take_home_income(percentage, after_tax_income),
@@ -241,7 +224,9 @@ defmodule Picsello.PricingCalculations do
         _ -> amount
       end
 
-    Money.new(div(Money.parse(scrub_input, :USD) |> elem(1) |> Map.get(:amount), 12))
+    Money.parse!(scrub_input)
+    |> Money.divide(12)
+    |> List.first()
   end
 
   def day_options(),
@@ -306,19 +291,20 @@ defmodule Picsello.PricingCalculations do
 
   def calculate_all_costs(business_costs) do
     business_costs
-    |> Enum.filter(fn %{active: active} -> active == true end)
+    |> Enum.filter(& &1.active)
     |> Enum.map(fn %{line_items: line_items} ->
-      line_items |> calculate_costs_by_category() |> Map.get(:amount)
+      line_items |> calculate_costs_by_category()
     end)
-    |> total_business_cost()
-    |> Money.new()
+    |> Enum.reduce(Money.new(0), fn item, acc ->
+      Money.add(acc, item)
+    end)
   end
 
   def calculate_costs_by_category(line_items) do
     line_items
-    |> Enum.map(fn %{yearly_cost: %Money{amount: amount}} -> amount end)
-    |> total_business_cost()
-    |> Money.new()
+    |> Enum.reduce(Money.new(0), fn item, acc ->
+      Money.add(acc, item.yearly_cost)
+    end)
   end
 
   def calculate_costs_by_category(_line_items, %{"line_items" => line_items} = _params) do
@@ -331,18 +317,13 @@ defmodule Picsello.PricingCalculations do
           _ -> yearly_cost
         end
 
-      Money.parse(scrub_input, :USD) |> elem(1) |> Map.get(:amount)
+      %{yearly_cost: Money.parse!(scrub_input, :USD)}
     end)
-    |> total_business_cost()
-    |> Money.new()
+    |> calculate_costs_by_category()
   end
 
-  def calculate_costs_by_category(line_items, %{} = _params) do
-    line_items
-    |> Enum.map(fn %{yearly_cost: %Money{amount: amount}} -> amount end)
-    |> total_business_cost()
-    |> Money.new()
-  end
+  def calculate_costs_by_category(line_items, %{} = _params),
+    do: calculate_costs_by_category(line_items)
 
   def calculate_pricing_by_job_types(%{
         min_years_experience: min_years_experience,
@@ -388,9 +369,4 @@ defmodule Picsello.PricingCalculations do
 
   def calculate_min_sessions_a_year(%Money{amount: gross_revenue}, %Money{amount: base_price}),
     do: div(gross_revenue, base_price)
-
-  defp total_business_cost(list), do: recursively_add_business_cost(list, 0)
-
-  defp recursively_add_business_cost([], acc), do: acc
-  defp recursively_add_business_cost([h | t], acc), do: recursively_add_business_cost(t, acc + h)
 end

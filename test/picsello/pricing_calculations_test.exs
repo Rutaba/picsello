@@ -206,62 +206,62 @@ defmodule Picsello.PricingCalculationsTest do
   end
 
   describe "calculation cases" do
-    test "compare_income_bracket with %Money{}" do
+    test "find_income_tax_bracket? with %Money{}" do
       income_brackets = PricingCalculations.tax_schedule().income_brackets
 
       assert true ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket(~M[5000])
+               |> PricingCalculations.find_income_tax_bracket?(~M[5000])
 
       assert true ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket(~M[500000000])
+               |> PricingCalculations.find_income_tax_bracket?(~M[500000000])
 
       assert false ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket(~M[000])
+               |> PricingCalculations.find_income_tax_bracket?(~M[000])
 
       assert true ==
                income_brackets
                |> List.first()
-               |> PricingCalculations.compare_income_bracket(~M[000])
+               |> PricingCalculations.find_income_tax_bracket?(~M[000])
 
       assert false ==
                income_brackets
                |> List.first()
-               |> PricingCalculations.compare_income_bracket(~M[500000000])
+               |> PricingCalculations.find_income_tax_bracket?(~M[500000000])
     end
 
-    test "compare_income_bracket with raw text" do
+    test "find_income_tax_bracket? with raw text" do
       income_brackets = PricingCalculations.tax_schedule().income_brackets
 
       assert true ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket("5000")
+               |> PricingCalculations.find_income_tax_bracket?("5000")
 
       assert true ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket("500000000")
+               |> PricingCalculations.find_income_tax_bracket?("500000000")
 
       assert false ==
                income_brackets
                |> List.last()
-               |> PricingCalculations.compare_income_bracket("000")
+               |> PricingCalculations.find_income_tax_bracket?("000")
 
       assert true ==
                income_brackets
                |> List.first()
-               |> PricingCalculations.compare_income_bracket("000")
+               |> PricingCalculations.find_income_tax_bracket?("000")
 
       assert false ==
                income_brackets
                |> List.first()
-               |> PricingCalculations.compare_income_bracket("500000000")
+               |> PricingCalculations.find_income_tax_bracket?("500000000")
     end
 
     test "get_income_bracket with multiple string values from form params" do
