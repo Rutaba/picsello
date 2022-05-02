@@ -400,6 +400,23 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def whcc_editor_export_factory(attrs) do
+    unit_base_price = Map.get(attrs, :unit_base_price, ~M[1]USD)
+    quantity = Map.get(attrs, :quantity, 1)
+
+    %Picsello.WHCC.Editor.Export{
+      items: [
+        %Picsello.WHCC.Editor.Export.Item{quantity: quantity, unit_base_price: unit_base_price}
+      ],
+      order: %{},
+      pricing: %{
+        "totalOrderBasePrice" => Money.multiply(unit_base_price, quantity).amount / 100,
+        "code" => "USD"
+      }
+    }
+    |> merge_attributes(Map.drop(attrs, [:quantity, :unit_base_price]))
+  end
+
   def category_factory,
     do: %Picsello.Category{
       whcc_id: sequence("whcc_id"),
@@ -409,7 +426,7 @@ defmodule Picsello.Factory do
       shipping_base_charge: ~M[900]USD,
       shipping_upcharge: Decimal.new("0.09"),
       icon: "book",
-      default_markup: 2.0,
+      default_markup: 1.0,
       hidden: false
     }
 
@@ -482,19 +499,20 @@ defmodule Picsello.Factory do
 
   def cart_product_factory(attrs \\ %{}) do
     %Picsello.Cart.CartProduct{
-      base_price: %Money{amount: 17_600, currency: :USD},
+      created_at: System.os_time(:millisecond),
       editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity])),
-      markup: %Money{amount: 35_200, currency: :USD},
+      quantity: 1,
+      round_up_to_nearest: 500,
       shipping_base_charge: %Money{amount: 900, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
+      unit_markup: %Money{amount: 35_200, currency: :USD},
+      unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_confirmation: nil,
       whcc_order: nil,
       whcc_processing: nil,
-      whcc_tracking: nil,
-      round_up_to_nearest: 500,
-      created_at: System.os_time(:millisecond)
+      whcc_tracking: nil
     }
-    |> merge_attributes(Map.drop(attrs, [:product_id, :quantity]))
+    |> merge_attributes(Map.drop(attrs, [:product_id]))
   end
 
   def whcc_order_created_factory do

@@ -9,14 +9,15 @@ defmodule Picsello.Cart.CartProduct do
 
   @primary_key false
   embedded_schema do
-    field :base_price, Money.Ecto.Amount.Type
     field :charged_price, Money.Ecto.Amount.Type
     field :created_at, :integer
     field :editor_details, WHCC.Editor.Details.Type
-    field :markup, Money.Ecto.Amount.Type
+    field :unit_markup, Money.Ecto.Amount.Type
+    field :quantity, :integer
     field :round_up_to_nearest, :integer
     field :shipping_base_charge, Money.Ecto.Amount.Type
     field :shipping_upcharge, :decimal
+    field :unit_price, Money.Ecto.Amount.Type
     field :whcc_confirmation, :string
     field :whcc_order, WHCC.Order.Created.Type
     field :whcc_processing, :map
@@ -53,19 +54,18 @@ defmodule Picsello.Cart.CartProduct do
 
   def price(
         %__MODULE__{
-          markup: markup,
-          base_price: base_price,
+          unit_markup: markup,
+          unit_price: unit_price,
           shipping_upcharge: shipping_upcharge,
           shipping_base_charge: shipping_base_charge,
           round_up_to_nearest: nearest
         } = product,
         opts \\ []
       ) do
-    shipping_upcharge = Money.multiply(base_price, shipping_upcharge)
+    base_price = Money.multiply(unit_price, quantity(product))
 
     shipping_base_charge_multiplier =
       case Keyword.get(opts, :shipping_base_charge) do
-        :no_discount -> quantity(product)
         true -> 1
         _ -> 0
       end
@@ -73,8 +73,8 @@ defmodule Picsello.Cart.CartProduct do
     for(
       money <- [
         Money.multiply(shipping_base_charge, shipping_base_charge_multiplier),
-        shipping_upcharge,
-        markup,
+        Money.multiply(markup, quantity(product)),
+        Money.multiply(base_price, shipping_upcharge),
         base_price
       ],
       reduce: Money.new(0)
@@ -84,8 +84,7 @@ defmodule Picsello.Cart.CartProduct do
     |> round_to_nearest(nearest)
   end
 
-  def quantity(%__MODULE__{editor_details: %{selections: selections}}),
-    do: Map.get(selections, "quantity", 1)
+  def quantity(%__MODULE__{quantity: quantity}), do: quantity
 
   defp round_to_nearest(money, nearest) do
     Map.update!(money, :amount, fn cents ->

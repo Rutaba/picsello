@@ -13,10 +13,9 @@ defmodule Picsello.Cart.OrderTest do
               &build_list(2, :cart_product,
                 product_id: &1.whcc_id,
                 round_up_to_nearest: 100,
-                markup: ~M[100]USD,
-                base_price: ~M[0]USD,
                 shipping_base_charge: ~M[300]USD,
-                quantity: 1
+                unit_markup: ~M[100]USD,
+                unit_price: ~M[0]USD
               )
             )
             |> Enum.with_index()
@@ -37,10 +36,10 @@ defmodule Picsello.Cart.OrderTest do
           products: [
             build(:cart_product,
               round_up_to_nearest: 100,
-              markup: ~M[100]USD,
-              base_price: ~M[0]USD,
               shipping_base_charge: ~M[300]USD,
-              shipping_upcharge: Decimal.new(0)
+              shipping_upcharge: Decimal.new(0),
+              unit_markup: ~M[100]USD,
+              unit_price: ~M[0]USD
             )
           ]
         )
@@ -55,17 +54,18 @@ defmodule Picsello.Cart.OrderTest do
         insert(:order,
           products: [
             build(:cart_product,
-              round_up_to_nearest: 100,
-              markup: ~M[100]USD,
-              base_price: ~M[0]USD,
+              quantity: 2,
+              round_up_to_nearest: 1,
+              shipping_upcharge: Decimal.new(0),
               shipping_base_charge: ~M[300]USD,
-              quantity: 2
+              unit_markup: ~M[100]USD,
+              unit_price: ~M[0]USD
             )
           ]
         )
 
       assert [
-               %{price: ~M[400]USD, price_without_discount: ~M[700]USD}
+               %{price: ~M[500]USD, price_without_discount: ~M[800]USD}
              ] = Order.priced_lines(order)
     end
 
@@ -78,10 +78,9 @@ defmodule Picsello.Cart.OrderTest do
             build_list(2, :cart_product,
               product_id: product_id,
               round_up_to_nearest: 100,
-              markup: ~M[100]USD,
-              base_price: ~M[0]USD,
               shipping_base_charge: ~M[300]USD,
-              quantity: 1
+              unit_markup: ~M[100]USD,
+              unit_price: ~M[0]USD
             )
         )
 
@@ -100,10 +99,9 @@ defmodule Picsello.Cart.OrderTest do
               &build_list(2, :cart_product,
                 product_id: &1.whcc_id,
                 round_up_to_nearest: 100,
-                markup: ~M[100]USD,
-                base_price: ~M[0]USD,
                 shipping_base_charge: ~M[300]USD,
-                quantity: 1
+                unit_markup: ~M[100]USD,
+                unit_price: ~M[0]USD
               )
             )
         )

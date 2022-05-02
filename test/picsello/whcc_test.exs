@@ -1,5 +1,6 @@
 defmodule Picsello.WHCCTest do
   use Picsello.DataCase
+  import Money.Sigils
 
   def read_fixture(path) do
     "test/support/fixtures/whcc/api/v1"
@@ -296,30 +297,37 @@ defmodule Picsello.WHCCTest do
           attribute_categories: [
             %{
               "name" => "size",
-              "attributes" => [%{"id" => "10x10", "metadata" => %{"height" => 10, "width" => 10}}]
+              "attributes" => [%{"id" => "10x10", "metadata" => %{"height" => 10, "width" => 10}}],
+              "_id" => "size"
             }
           ]
         )
 
-      details = %Picsello.WHCC.Editor.Details{
-        product_id: "ABC",
-        selections: %{"size" => "10x10", "quantity" => 3}
-      }
+      details =
+        build(:whcc_editor_details,
+          product_id: "ABC",
+          selections: %{"size" => "10x10", "quantity" => 3}
+        )
 
-      assert %Money{amount: 22_500} =
-               Picsello.WHCC.price_details(product, details, %Money{amount: 0}).markup
+      assert ~M[7500]USD =
+               Picsello.WHCC.price_details(product, details, %{
+                 unit_base_price: ~M[0]USD,
+                 quantity: 3
+               }).unit_markup
     end
 
     test "defaults to product category" do
-      product = insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 3.0))
+      product = insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 2.0))
 
       details = %Picsello.WHCC.Editor.Details{
         product_id: "ABC"
       }
 
-      total = Money.new(2000)
-
-      assert %Money{amount: 4000} = Picsello.WHCC.price_details(product, details, total).markup
+      assert ~M[4000]USD =
+               Picsello.WHCC.price_details(product, details, %{
+                 unit_base_price: ~M[2000]USD,
+                 quantity: 1
+               }).unit_markup
     end
   end
 

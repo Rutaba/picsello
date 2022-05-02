@@ -2,6 +2,7 @@ defmodule Picsello.WHCC do
   @moduledoc "WHCC context module"
 
   # extracted from https://docs.google.com/spreadsheets/d/19epUUDsDmHWNePViH9v8x5BXGp0Anu0x/edit#gid=1549535757
+  # {in², $dollars}
   @area_markups [
     {24, 25},
     {35, 35},
@@ -171,17 +172,31 @@ defmodule Picsello.WHCC do
 
   def price_details(editor_id, account_id) do
     details = editor_details(account_id, editor_id)
-    base_price = editor_export(account_id, editor_id) |> Picsello.WHCC.Editor.Export.price()
-    details |> get_product |> price_details(details, base_price)
+    %{items: [item]} = editor_export(account_id, editor_id)
+
+    details
+    |> get_product
+    |> price_details(
+      details,
+      item |> Map.from_struct() |> Map.take([:unit_base_price, :quantity])
+    )
   end
 
-  def price_details(%{category: category} = product, details, base_price) do
+  def price_details(%{category: category} = product, details, %{
+        unit_base_price: unit_price,
+        quantity: quantity
+      }) do
     %{
-      markup: mark_up_price(product, details, base_price),
+      unit_markup: mark_up_price(product, details, unit_price),
       editor_details: details,
-      base_price: base_price
+      unit_price: unit_price,
+      quantity: quantity
     }
-    |> Map.merge(Map.take(category, [:shipping_upcharge, :shipping_base_charge]))
+    |> Map.merge(
+      category
+      |> Map.from_struct()
+      |> Map.take([:shipping_upcharge, :shipping_base_charge])
+    )
   end
 
   defp get_product(%Details{product_id: product_id}) do
@@ -196,47 +211,35 @@ defmodule Picsello.WHCC do
   defp mark_up_price(
          product,
          %{selections: selections},
-         %Money{} = price
+         %Money{} = unit_price
        ) do
     case product do
       %{
-        category: %{whcc_id: @area_markup_category} = category,
-        attribute_categories: attribute_categories
+        category: %{whcc_id: @area_markup_category} = category
       } ->
-        size = Map.get(selections, "size")
+        %{"size" => %{"metadata" => metadata}} =
+          Picsello.WHCC.Product.selection_details(product, selections)
 
-        [metadata] =
-          for(
-            %{"name" => "size", "attributes" => attributes} <- attribute_categories,
-            %{"id" => ^size, "metadata" => %{"height" => _, "width" => _} = metadata} <-
-              attributes,
-            do: metadata
-          )
-
-        category
-        |> mark_up_price(%{metadata: metadata})
-        |> Money.multiply(Map.get(selections, "quantity", 1))
+        mark_up_price(category, %{metadata: metadata, unit_price: unit_price})
 
       %{category: category} ->
-        mark_up_price(category, %{price: price})
+        mark_up_price(category, unit_price)
     end
-    |> Money.subtract(price)
   end
 
   defp mark_up_price(
          %{whcc_id: @area_markup_category} = _category,
          %{
-           metadata: %{"height" => height, "width" => width}
+           metadata: %{"height" => height, "width" => width},
+           unit_price: unit_price
          } = _selection_summary
        ) do
     [{_, dollars} | _] = Enum.sort_by(@area_markups, &abs(height * width - elem(&1, 0)))
-    Money.new(dollars * 100)
+    Money.new(dollars * 100) |> Money.subtract(unit_price)
   end
 
-  defp mark_up_price(%{default_markup: default_markup}, %{price: price}) do
-    price
-    |> Money.multiply(default_markup)
-  end
+  defp mark_up_price(%{default_markup: default_markup}, %Money{} = unit_price),
+    do: Money.multiply(unit_price, default_markup)
 
   def min_price_details(%{products: [_ | _] = products} = category) do
     products
@@ -246,7 +249,7 @@ defmodule Picsello.WHCC do
       price_details(
         %{product | category: category},
         details,
-        price
+        %{unit_base_price: price, quantity: 1}
       )
     end)
   end

@@ -185,7 +185,9 @@ defmodule Picsello.Cart.Order do
           line_item: product_line,
           price: CartProduct.price(product_line, shipping_base_charge: index == 0),
           price_without_discount:
-            CartProduct.price(product_line, shipping_base_charge: :no_discount)
+            %{product_line | quantity: 1}
+            |> CartProduct.price(shipping_base_charge: true)
+            |> Money.multiply(CartProduct.quantity(product_line))
         }
       end
     end

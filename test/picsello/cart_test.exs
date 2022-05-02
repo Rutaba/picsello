@@ -11,8 +11,8 @@ defmodule Picsello.CartTest do
           product_id: Keyword.get(opts, :product_id),
           editor_id: Keyword.get(opts, :editor_id)
         ),
-      base_price: Keyword.get(opts, :price, ~M[100]USD),
-      markup: ~M[0]USD,
+      unit_price: Keyword.get(opts, :price, ~M[100]USD),
+      unit_markup: ~M[0]USD,
       shipping_base_charge: ~M[0]USD,
       shipping_upcharge: Decimal.new(0),
       round_up_to_nearest: 100

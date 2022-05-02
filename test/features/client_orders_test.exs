@@ -161,11 +161,7 @@ defmodule Picsello.ClientOrdersTest do
       }
     end)
     |> Mox.stub(:editor_export, fn _wat, "editor-id" ->
-      %Picsello.WHCC.Editor.Export{
-        items: [],
-        order: %{},
-        pricing: %{"totalOrderBasePrice" => 3.00, "code" => "USD"}
-      }
+      build(:whcc_editor_export, unit_base_price: ~M[300]USD)
     end)
     |> Mox.stub(:create_order, fn _account_id, _editor_id, _opts ->
       %Picsello.WHCC.Order.Created{total: "69"}

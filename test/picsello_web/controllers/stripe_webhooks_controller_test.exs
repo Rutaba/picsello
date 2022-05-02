@@ -140,11 +140,11 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         order
         |> Order.update_changeset(
           build(:cart_product,
-            base_price: price,
-            whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id"),
             shipping_base_charge: ~M[0]USD,
             shipping_upcharge: Decimal.new(0),
-            markup: ~M[0]USD
+            unit_markup: ~M[0]USD,
+            unit_price: price,
+            whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id")
           )
         )
         |> Repo.update!()
