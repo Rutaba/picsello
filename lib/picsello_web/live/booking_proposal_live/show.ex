@@ -18,6 +18,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     socket
     |> assign_defaults(session)
     |> assign_proposal(token)
+    |> assign_stripe_status()
     |> maybe_confetti(params)
     |> ok()
   end
@@ -37,6 +38,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       when page in @pages do
     socket
     |> open_page_modal(page, read_only)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:stripe_status, status}, socket) do
+    socket
+    |> assign(stripe_status: status)
+    |> maybe_display_stripe_error()
     |> noreply()
   end
 
@@ -209,13 +218,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp maybe_confetti(socket, %{}), do: socket
 
-  defp invoice_disabled?(%BookingProposal{
-         accepted_at: accepted_at,
-         signed_at: signed_at,
-         job: job
-       }) do
+  defp invoice_disabled?(
+         %BookingProposal{accepted_at: accepted_at, signed_at: signed_at, job: job},
+         :charges_enabled
+       ) do
     !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))
   end
+
+  defp invoice_disabled?(_proposal, _stripe_status), do: true
 
   defp open_compose(%{assigns: %{organization: %{name: organization_name}, job: job}} = socket),
     do:
@@ -229,4 +239,21 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         send_button: "Send"
       })
       |> noreply()
+
+  defp assign_stripe_status(%{assigns: %{photographer: photographer}} = socket) do
+    socket
+    |> assign(stripe_status: Payments.status(photographer))
+    |> maybe_display_stripe_error()
+  end
+
+  defp assign_stripe_status(socket), do: socket
+
+  defp maybe_display_stripe_error(%{assigns: %{stripe_status: stripe_status}} = socket) do
+    if Enum.member?([:charges_enabled, :loading], stripe_status) do
+      socket
+    else
+      socket
+      |> put_flash(:error, "Payment is not enabled yet. Please contact your photographer.")
+    end
+  end
 end

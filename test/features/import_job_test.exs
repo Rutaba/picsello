@@ -1,12 +1,20 @@
 defmodule Picsello.ImportJobTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Package, Job, Client, PaymentSchedule, BookingProposal}
+  alias Picsello.{Repo, Package, Job, Client, PaymentSchedule, BookingProposal, Organization}
 
   setup :onboarded
   setup :authenticated
 
   @client_name "Elizabeth Taylor"
   @client_email "taylor@example.com"
+
+  setup %{user: user} do
+    user.organization
+    |> Organization.assign_stripe_account_changeset("stripe_id")
+    |> Repo.update!()
+
+    :ok
+  end
 
   def fill_in_client_form(session) do
     session
@@ -56,6 +64,36 @@ defmodule Picsello.ImportJobTest do
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
     |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "02/01/2030"))
     |> assert_text("Remaining to collect: $0.00")
+  end
+
+  def stub_stripe_account!(charges_enabled \\ true) do
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: charges_enabled}}
+    end)
+  end
+
+  def import_job(session) do
+    session
+    |> click(testid("jobs-card"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> fill_in_client_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in_package_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> fill_in_payments_form()
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> click(css("div[title='Mary Jane']"))
+    |> click(button("Logout"))
+    |> assert_path("/")
   end
 
   feature "user imports job", %{session: session} do
@@ -305,27 +343,7 @@ defmodule Picsello.ImportJobTest do
   end
 
   feature "client pays invoice from imported job", %{session: session} do
-    session
-    |> click(testid("jobs-card"))
-    |> click(link("Import existing job"))
-    |> find(testid("import-job-card"), &click(&1, button("Next")))
-    |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
-    |> wait_for_enabled_submit_button(text: "Next")
-    |> click(button("Next"))
-    |> assert_text("Import Existing Job: Package & Payment")
-    |> fill_in_package_form()
-    |> wait_for_enabled_submit_button(text: "Next")
-    |> click(button("Next"))
-    |> assert_text("Import Existing Job: Custom Invoice")
-    |> fill_in_payments_form()
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
-    |> assert_has(css("#modal-wrapper.hidden", visible: false))
-    |> assert_text("Wedding Deluxe")
-    |> click(css("div[title='Mary Jane']"))
-    |> click(button("Logout"))
-    |> assert_path("/")
+    import_job(session)
 
     %{booking_proposals: [proposal], payment_schedules: [%{id: payment_id} = payment | _]} =
       Repo.one(Job) |> Repo.preload([:booking_proposals, :payment_schedules])
@@ -334,7 +352,7 @@ defmodule Picsello.ImportJobTest do
 
     test_pid = self()
 
-    Picsello.MockPayments
+    stub_stripe_account!()
     |> Mox.stub(:create_customer, fn %{email: @client_email, name: @client_name}, _ ->
       {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
     end)
@@ -392,5 +410,18 @@ defmodule Picsello.ImportJobTest do
 
     %{paid_at: time} = payment |> Repo.reload!()
     refute is_nil(time)
+  end
+
+  feature "invoice is disabled when stripe account is not enabled", %{session: session} do
+    import_job(session)
+    %{booking_proposals: [proposal]} = Repo.one(Job) |> Repo.preload([:booking_proposals])
+    url = BookingProposal.url(proposal.id)
+
+    stub_stripe_account!(false)
+
+    session
+    |> visit(url)
+    |> assert_disabled(button("Invoice"))
+    |> assert_flash(:error, text: "Payment is not enabled yet")
   end
 end
