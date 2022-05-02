@@ -1,6 +1,6 @@
 defmodule Picsello.JobIndexTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, Organization}
 
   @leads_card css("li[title='Leads']")
   @jobs_card css("li[title='Jobs']")
@@ -21,6 +21,23 @@ defmodule Picsello.JobIndexTest do
   setup :onboarded
   setup :authenticated
 
+  setup do
+    Repo.update_all(Organization, set: [stripe_account_id: "stripe_id"])
+
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+
+    :ok
+  end
+
+  def delete_job() do
+    Repo.delete_all(Picsello.BookingProposal)
+    Repo.delete_all(Picsello.Shoot)
+    Repo.delete_all(Picsello.PaymentSchedule)
+    Repo.delete_all(Picsello.Job)
+  end
+
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
     |> click(@leads_card)
@@ -34,22 +51,30 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(link("Jobs"))
   end
 
-  feature "empty jobs", %{session: session, job: job, proposal: proposal, shoot: shoot} do
+  feature "empty jobs", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Jobs"))
     |> refute_has(link("Go to your leads"))
     |> refute_has(Query.link("Create a lead"))
 
-    Repo.delete(proposal)
-    Repo.delete(shoot)
-    Repo.delete_all(Picsello.PaymentSchedule)
-    Repo.delete(job)
+    delete_job()
 
     session
     |> visit("/jobs")
     |> assert_text("You don't have any jobs at the moment")
     |> assert_has(link("Create a lead"))
+  end
+
+  feature "empty jobs with stripe not enabled", %{session: session} do
+    Repo.update_all(Organization, set: [stripe_account_id: nil])
+    delete_job()
+
+    session
+    |> click(css("#hamburger-menu"))
+    |> click(link("Jobs"))
+    |> assert_text("A Stripe account is required for job import")
+    |> assert_has(button("Set up Stripe"))
   end
 
   feature "empty leads", %{session: session, lead: lead} do

@@ -13,6 +13,8 @@ defmodule Picsello.ImportJobTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
+    stub_stripe_account!()
+
     :ok
   end
 
@@ -352,7 +354,7 @@ defmodule Picsello.ImportJobTest do
 
     test_pid = self()
 
-    stub_stripe_account!()
+    Picsello.MockPayments
     |> Mox.stub(:create_customer, fn %{email: @client_email, name: @client_name}, _ ->
       {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
     end)

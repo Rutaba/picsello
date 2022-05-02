@@ -26,8 +26,8 @@
 <%= if Enum.empty? @jobs do %>
   <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none" {intro(@current_user, "intro_leads_empty")}>
     <div></div> <%# flex in thirds %>
-    <%= case @live_action do %>
-      <% :leads -> %>
+    <%= case {@live_action, @stripe_status} do %>
+      <% {:leads, _stripe_status} -> %>
         <div class="flex flex-col">
           <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
           <p class="block text-lg lg:text-2xl lg:w-1/2">You don't have any leads at the moment.</p>
@@ -37,7 +37,7 @@
             Create a lead
           </a>
         </div>
-      <% :jobs -> %>
+      <% {:jobs, :charges_enabled} -> %>
         <div class="flex flex-col">
           <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Welcome!</h1>
           <p class="block text-lg lg:text-2xl lg:w-1/2">
@@ -51,6 +51,21 @@
           <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-secondary lg:ml-4" phx-click="create-lead">
             Create a lead
           </a>
+        </div>
+      <% {:jobs, :loading} -> %>
+      <% {:jobs, _stripe_status} -> %>
+        <div class="flex flex-col">
+          <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">First thing’s first</h1>
+          <p class="block text-lg lg:text-2xl lg:w-1/2">
+            <strong>A Stripe account is required for job import.</strong> This allows your clients to pay you securely. After your Stripe account has been created, we’ll send you back to this page.
+          </p>
+        </div>
+        <div class="lg:inline-flex">
+          <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+                current_user: @current_user,
+                class: "w-full mt-6 btn-primary",
+                return_url: Routes.job_url(@socket, :jobs),
+                stripe_status: @stripe_status %>
         </div>
     <% end %>
   </div>
