@@ -2,7 +2,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Job}
-  import PicselloWeb.PackageLive.Shared, only: [quill_input: 1]
+  import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -10,7 +10,10 @@ defmodule PicselloWeb.ClientMessageComponent do
     send_button: "Send Email",
     show_cc: false,
     show_client_email: true,
-    show_subject: true
+    show_subject: true,
+    current_user: nil,
+    enable_size: false,
+    enable_image: false
   }
 
   defmodule PresetHelper do
@@ -84,8 +87,8 @@ defmodule PicselloWeb.ClientMessageComponent do
         </div>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <.quill_input f={f} style={"min-height: 4rem;"} html_field={:body_html} text_field={:body_text} />
-     <PicselloWeb.LiveModal.footer>
+        <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
+        <PicselloWeb.LiveModal.footer>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
@@ -152,7 +155,10 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
           optional(:subject) => String.t(),
-          optional(:presets) => [%Picsello.EmailPreset{}]
+          optional(:presets) => [%Picsello.EmailPreset{}],
+          optional(:current_user) => %Picsello.Accounts.User{},
+          optional(:enable_size) => boolean,
+          optional(:enable_image) => boolean
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:

@@ -1,0 +1,140 @@
+@import 'quill/dist/quill.core.css';
+@import 'quill/dist/quill.snow.css';
+
+.ql-snow {
+  &.ql-toolbar button:hover {
+    @apply text-blue-planning-200 bg-blue-planning-100;
+
+    .ql-stroke {
+      @apply stroke-current;
+    }
+
+    .ql-fill {
+      @apply fill-current;
+    }
+  }
+
+  &.ql-toolbar button.ql-active {
+    @apply text-blue-planning-200 bg-blue-planning-100;
+
+    .ql-stroke {
+      @apply stroke-current;
+    }
+
+    .ql-fill {
+      @apply fill-current;
+    }
+  }
+
+  .ql-stroke {
+    @apply stroke-current;
+  }
+
+  .ql-fill {
+    @apply fill-current;
+  }
+
+  a {
+    @apply text-blue-planning-300;
+  }
+
+  &.ql-container {
+    @apply border-gray-200 rounded-b-lg;
+  }
+
+  &.ql-toolbar {
+    @apply border-gray-200 rounded-t-lg bg-blue-planning-100 text-blue-planning-300;
+
+    .ql-picker.ql-size {
+      @apply w-24 sm:w-20;
+
+      .ql-picker-label[data-value="10px"]::before, .ql-picker-item[data-value="10px"]::before {
+        content: 'Small';
+      }
+      .ql-picker-item[data-value="10px"]::before {
+        font-size: 10px;
+      }
+
+      .ql-picker-label[data-value="18px"]::before, .ql-picker-item[data-value="18px"]::before {
+        content: 'Large';
+      }
+      .ql-picker-item[data-value="18px"]::before {
+        font-size: 18px;
+      }
+
+      .ql-picker-label[data-value="32px"]::before, .ql-picker-item[data-value="32px"]::before {
+        content: 'Huge';
+      }
+      .ql-picker-item[data-value="32px"]::before {
+        font-size: 32px;
+      }
+    }
+
+    .ql-picker-label, .ql-picker-label.ql-active {
+      @apply text-blue-planning-300 hover:text-blue-planning-300;
+
+      .ql-stroke {
+        @apply stroke-current
+      }
+
+      &:hover  {
+        .ql-stroke {
+          @apply stroke-current
+        }
+      }
+    }
+  }
+
+  &.ql-toolbar .ql-picker-item {
+    @apply hover:text-blue-planning-200;
+
+    &.ql-selected {
+      @apply text-blue-planning-200;
+    }
+  }
+
+  .ql-tooltip {
+    @apply border-gray-200 rounded-lg ml-24;
+    @media (max-width: 640px) {
+      left: 50% !important;
+      transform: translate(-50%, 0) !important;
+      margin-left: unset;
+    }
+
+    &.ql-editing input[type='text'] {
+      @apply text-input;
+    }
+  }
+}
+
+.client-app {
+  .ql-snow {
+    &.ql-toolbar button:hover {
+      @apply text-base-250 bg-base-200;
+    }
+
+    &.ql-toolbar button.ql-active {
+      @apply text-base-250 bg-base-200;
+    }
+
+    &.ql-container {
+      @apply border-gray-200 rounded-none;
+    }
+
+    &.ql-toolbar {
+      @apply border-gray-200 rounded-none bg-base-200 text-base-300;
+    }
+
+    .ql-tooltip {
+      @apply rounded-none;
+
+      &.ql-editing input[type='text'] {
+        @apply rounded-none focus:border-black focus:ring-black;
+      }
+    }
+
+    .ql-picker-label, .ql-picker-label.ql-active {
+      @apply text-base-300 hover:text-base-300;
+    }
+  }
+}

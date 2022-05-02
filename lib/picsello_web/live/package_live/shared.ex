@@ -119,30 +119,6 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  def quill_input(assigns) do
-    html_field = assigns |> Map.get(:html_field)
-    text_field = assigns |> Map.get(:text_field)
-
-    ~H"""
-    <div class="col-span-2">
-      <div id="editor-wrapper" phx-hook="Quill" phx-update="ignore" class="mt-2" data-placeholder={assigns |> Map.get(:placeholder)}
-         data-html-field-name={input_name(@f, html_field)} data-text-field-name={input_name(@f, text_field)}>
-        <div id="toolbar" class="bg-blue-planning-100 text-blue-planning-300">
-          <button class="ql-bold"></button>
-          <button class="ql-italic"></button>
-          <button class="ql-underline"></button>
-          <button class="ql-list" value="bullet"></button>
-          <button class="ql-list" value="ordered"></button>
-          <button class="ql-link"></button>
-        </div>
-        <div id="editor" style={assigns |> Map.get(:style)}> </div>
-          <%= if (html_field), do: hidden_input @f, html_field, phx_debounce: "500" %>
-          <%= if (text_field), do: hidden_input @f, text_field, phx_debounce: "500" %>
-        </div>
-      </div>
-    """
-  end
-
   def current(%{source: changeset}), do: current(changeset)
   def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 

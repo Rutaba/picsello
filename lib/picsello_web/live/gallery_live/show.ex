@@ -236,6 +236,7 @@ defmodule PicselloWeb.GalleryLive.Show do
         _,
         %{
           assigns: %{
+            current_user: current_user,
             gallery: gallery
           }
         } = socket
@@ -275,6 +276,9 @@ defmodule PicselloWeb.GalleryLive.Show do
     socket
     |> assign(:job, gallery.job)
     |> PicselloWeb.ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
       body_html: html,
       body_text: text,
       subject: subject,

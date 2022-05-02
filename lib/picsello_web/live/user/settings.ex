@@ -356,5 +356,6 @@ defmodule PicselloWeb.Live.User.Settings do
     |> DateTime.diff(DateTime.utc_now(), :millisecond)
     |> Kernel./(1000 * 60 * 60 * 24)
     |> trunc()
+    |> Kernel.max(0)
   end
 end

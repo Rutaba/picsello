@@ -91,6 +91,7 @@ defmodule Picsello.MixProject do
         {:mox, "~> 1.0.0", only: [:dev, :test]}
       ],
       [
+        {:bypass, "~> 2.1", only: :test},
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
         {:httpoison, "~> 1.8.0"},
         {:wallaby, "~> 0.29.1", runtime: false, only: :test}
