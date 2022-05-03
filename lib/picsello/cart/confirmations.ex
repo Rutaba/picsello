@@ -68,6 +68,7 @@ defmodule Picsello.Cart.Confirmations do
         preload: [digitals: :photo, gallery: [job: [client: :organization]]]
       )
       |> repo.one!()
+      |> Picsello.Cart.preload_products()
 
     {:ok, order}
   end

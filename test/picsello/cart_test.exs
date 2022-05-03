@@ -8,14 +8,14 @@ defmodule Picsello.CartTest do
     build(:cart_product,
       editor_details:
         build(:whcc_editor_details,
-          product_id: Keyword.get(opts, :product_id),
           editor_id: Keyword.get(opts, :editor_id)
         ),
-      unit_price: Keyword.get(opts, :price, ~M[100]USD),
-      unit_markup: ~M[0]USD,
+      round_up_to_nearest: 100,
       shipping_base_charge: ~M[0]USD,
       shipping_upcharge: Decimal.new(0),
-      round_up_to_nearest: 100
+      unit_markup: ~M[0]USD,
+      unit_price: Keyword.get(opts, :price, ~M[100]USD),
+      whcc_product: insert(:product)
     )
   end
 
@@ -108,6 +108,7 @@ defmodule Picsello.CartTest do
         |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
         |> Repo.update!()
         |> Repo.preload(:digitals)
+        |> Picsello.Cart.preload_products()
 
       assert {:loaded,
               %Order{
@@ -229,12 +230,10 @@ defmodule Picsello.CartTest do
 
   describe "get_unconfirmed_order" do
     test "preloads products" do
+      insert(:product, whcc_id: "abc")
+
       %{gallery_id: gallery_id} =
-        insert(:order)
-        |> Order.update_changeset(
-          cart_product(product_id: insert(:product, whcc_id: "abc").whcc_id)
-        )
-        |> Repo.update!()
+        insert(:order, products: build_list(1, :cart_product, product_id: "abc"))
 
       assert {:ok, %{products: [%{whcc_product: %{whcc_id: "abc"}}]}} =
                Cart.get_unconfirmed_order(gallery_id, preload: [:products])
@@ -246,11 +245,13 @@ defmodule Picsello.CartTest do
       whcc_id = Keyword.get(opts, :whcc_id)
       placed_at = Keyword.get(opts, :placed_at, DateTime.utc_now())
 
-      insert(:order, gallery: gallery, placed_at: placed_at)
-      |> Order.update_changeset(
-        cart_product(product_id: insert(:product, whcc_id: whcc_id).whcc_id)
+      insert(:product, whcc_id: whcc_id)
+
+      insert(:order,
+        gallery: gallery,
+        placed_at: placed_at,
+        products: build_list(1, :cart_product, product_id: whcc_id)
       )
-      |> Repo.update!()
     end
 
     test "preloads products" do

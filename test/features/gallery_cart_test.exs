@@ -15,7 +15,10 @@ defmodule Picsello.GalleryCartTest do
       )
 
     cart_product = build(:cart_product, %{product_id: whcc_product.whcc_id})
-    Cart.place_product(cart_product, gallery.id) |> Repo.preload(:digitals)
+
+    Cart.place_product(cart_product, gallery.id)
+    |> Repo.preload(:digitals)
+    |> Picsello.Cart.preload_products()
   end
 
   feature "redirects to gallery if cart is empty", %{session: session, gallery: gallery} do

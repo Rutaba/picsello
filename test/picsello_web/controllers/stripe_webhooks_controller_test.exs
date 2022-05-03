@@ -144,7 +144,8 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
             shipping_upcharge: Decimal.new(0),
             unit_markup: ~M[0]USD,
             unit_price: price,
-            whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id")
+            whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id"),
+            whcc_product: insert(:product)
           )
         )
         |> Repo.update!()

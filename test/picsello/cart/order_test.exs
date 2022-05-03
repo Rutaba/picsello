@@ -8,14 +8,14 @@ defmodule Picsello.Cart.OrderTest do
       order =
         insert(:order,
           products:
-            build_list(2, :product)
+            insert_list(2, :product)
             |> Enum.flat_map(
               &build_list(2, :cart_product,
-                product_id: &1.whcc_id,
                 round_up_to_nearest: 100,
                 shipping_base_charge: ~M[300]USD,
                 unit_markup: ~M[100]USD,
-                unit_price: ~M[0]USD
+                unit_price: ~M[0]USD,
+                whcc_product: &1
               )
             )
             |> Enum.with_index()
@@ -23,8 +23,10 @@ defmodule Picsello.Cart.OrderTest do
         )
 
       assert [
-               [%{line_item: %{created_at: 3}}, %{line_item: %{created_at: 2}}],
-               [%{line_item: %{created_at: 1}}, %{line_item: %{created_at: 0}}]
+               {%Picsello.Product{},
+                [%{line_item: %{created_at: 3}}, %{line_item: %{created_at: 2}}]},
+               {%Picsello.Product{},
+                [%{line_item: %{created_at: 1}}, %{line_item: %{created_at: 0}}]}
              ] = Order.priced_lines_by_product(order)
     end
   end
@@ -39,7 +41,8 @@ defmodule Picsello.Cart.OrderTest do
               shipping_base_charge: ~M[300]USD,
               shipping_upcharge: Decimal.new(0),
               unit_markup: ~M[100]USD,
-              unit_price: ~M[0]USD
+              unit_price: ~M[0]USD,
+              whcc_product: insert(:product)
             )
           ]
         )
@@ -59,7 +62,8 @@ defmodule Picsello.Cart.OrderTest do
               shipping_upcharge: Decimal.new(0),
               shipping_base_charge: ~M[300]USD,
               unit_markup: ~M[100]USD,
-              unit_price: ~M[0]USD
+              unit_price: ~M[0]USD,
+              whcc_product: insert(:product)
             )
           ]
         )
@@ -70,17 +74,15 @@ defmodule Picsello.Cart.OrderTest do
     end
 
     test "with 2 lines for 1 product, quantity 1 - discount on second" do
-      %{whcc_id: product_id} = insert(:product)
-
       order =
         insert(:order,
           products:
             build_list(2, :cart_product,
-              product_id: product_id,
               round_up_to_nearest: 100,
               shipping_base_charge: ~M[300]USD,
               unit_markup: ~M[100]USD,
-              unit_price: ~M[0]USD
+              unit_price: ~M[0]USD,
+              whcc_product: insert(:product)
             )
         )
 
@@ -94,14 +96,14 @@ defmodule Picsello.Cart.OrderTest do
       order =
         insert(:order,
           products:
-            build_list(2, :product)
+            insert_list(2, :product)
             |> Enum.flat_map(
               &build_list(2, :cart_product,
-                product_id: &1.whcc_id,
                 round_up_to_nearest: 100,
                 shipping_base_charge: ~M[300]USD,
                 unit_markup: ~M[100]USD,
-                unit_price: ~M[0]USD
+                unit_price: ~M[0]USD,
+                whcc_product: &1
               )
             )
         )

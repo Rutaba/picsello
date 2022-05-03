@@ -180,21 +180,23 @@ defmodule Picsello.Cart.Order do
   def placed?(%__MODULE__{}), do: true
 
   def priced_lines_by_product(order) do
-    for product_lines <- line_items_by_product(order) do
-      for {product_line, index} <- Enum.with_index(product_lines) do
-        %{
-          line_item: product_line,
-          price: CartProduct.price(product_line, shipping_base_charge: index == 0),
-          price_without_discount:
-            %{product_line | quantity: 1}
-            |> CartProduct.price(shipping_base_charge: true)
-            |> Money.multiply(CartProduct.quantity(product_line))
-        }
-      end
+    for {product, product_lines} <- line_items_by_product(order) do
+      {product,
+       for {product_line, index} <- Enum.with_index(product_lines) do
+         %{
+           line_item: product_line,
+           price: CartProduct.price(product_line, shipping_base_charge: index == 0),
+           price_without_discount:
+             %{product_line | quantity: 1}
+             |> CartProduct.price(shipping_base_charge: true)
+             |> Money.multiply(CartProduct.quantity(product_line))
+         }
+       end}
     end
   end
 
-  def priced_lines(order), do: order |> priced_lines_by_product() |> List.flatten()
+  def priced_lines(order),
+    do: order |> priced_lines_by_product() |> Enum.map(&elem(&1, 1)) |> List.flatten()
 
   def product_total(%__MODULE__{placed_at: nil} = order) do
     for %{price: price} <- priced_lines(order), reduce: Money.new(0) do
@@ -221,9 +223,9 @@ defmodule Picsello.Cart.Order do
   defp line_items_by_product(%__MODULE__{products: products}) do
     products
     |> Enum.sort_by(&(-1 * &1.created_at))
-    |> Enum.group_by(&CartProduct.product_id/1)
-    |> Map.values()
-    |> Enum.sort_by(fn line_items ->
+    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{} = product} -> product end)
+    |> Map.to_list()
+    |> Enum.sort_by(fn {_product, line_items} ->
       -1 * (line_items |> Enum.map(& &1.created_at) |> Enum.max())
     end)
   end

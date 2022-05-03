@@ -1,6 +1,7 @@
 defmodule Picsello.Product do
   @moduledoc false
   use Ecto.Schema
+  use StructAccess
   import Ecto.Query, only: [from: 2, join: 5, with_cte: 3, order_by: 3, select: 3]
 
   @attributes_with_markups_cte """

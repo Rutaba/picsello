@@ -498,6 +498,8 @@ defmodule Picsello.Factory do
   end
 
   def cart_product_factory(attrs \\ %{}) do
+    attrs = Map.put_new(attrs, :product_id, get_in(attrs, [:whcc_product, :whcc_id]))
+
     %Picsello.Cart.CartProduct{
       created_at: System.os_time(:millisecond),
       editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity])),
@@ -510,7 +512,8 @@ defmodule Picsello.Factory do
       whcc_confirmation: nil,
       whcc_order: nil,
       whcc_processing: nil,
-      whcc_tracking: nil
+      whcc_tracking: nil,
+      whcc_product: nil
     }
     |> merge_attributes(Map.drop(attrs, [:product_id]))
   end
