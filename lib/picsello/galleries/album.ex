@@ -20,6 +20,10 @@ defmodule Picsello.Galleries.Album do
   @attrs [:name, :set_password, :gallery_id, :password]
   @required_attrs [:name, :set_password, :gallery_id]
 
+  @spec create_changeset(
+          :invalid
+          | %{optional(:__struct__) => none, optional(atom | binary) => any}
+        ) :: Ecto.Changeset.t()
   def create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, @attrs)

@@ -48,20 +48,30 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           }
         } = socket
       ) do
-    if album do
-      Albums.update_album(album, params)
 
-      socket
-      |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
-      |> put_flash(:gallery_success, "Album settings successfully updated")
-      |> noreply()
+    message = if album do
+      Albums.update_album(album, params)
+      make_message(album, params)
     else
       Albums.insert_album(params)
+      "Album successfully created"
+    end
 
-      socket
-      |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
-      |> put_flash(:gallery_success, "Album successfully created")
+    send(self(), {:album_settings, %{message: message, album: album}})
+
+    socket
+      |> close_modal()
+      |> put_flash(:gallery_success, "Album settings successfully updated")
       |> noreply()
+  end
+
+  defp make_message(album, params) do
+    case Album.update_changeset(album, params) do
+      %{valid?: true, changes: %{name: _, password: _}} -> "Album settings successfully updated"
+      %{valid?: true, changes: %{password: _}} -> "Album password successfully updated"
+      %{valid?: true, changes: %{name: _}} -> "Album successfully renamed"
+      %{valid?: true} -> "Password protection successfully updated"
+      _ -> "Something went wrong"
     end
   end
 
@@ -79,7 +89,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
     changeset =
       if album do
-        Album.update_changeset(album, %{set_password: set_password})
+        Album.update_changeset(album, params)
       else
         Album.create_changeset(params)
       end

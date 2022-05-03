@@ -12,13 +12,13 @@
       </div>
       <div class="mt-2 gallery-name-edit">
 
-        <.form let={f} for={@changeset} phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
-        <p class="w-96 text-3xl font-bold toggle-it text-base-300"><%= @gallery.name %> </p>
-          <.icon_button id="gallery-input" phx-hook="ToggleSiblings" target-class="toggle-it" parent-class="gallery-name-edit" class="toggle-it bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
+        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
+        <p class={"#{if(!@edit_name, do: "hidden")} w-[370px] text-3xl font-bold text-base-300"}><%= @gallery.name %> </p>
+          <.icon_button phx_click="click" phx-target={@myself} class={"#{!@edit_name && "hidden"} bg-white pt-2 pb-2 mt-4 shadow-lg"} title="Edit gallery name" color="blue-planning-300" icon="pencil">
             Edit gallery name
           </.icon_button>
-          <%= text_input f, :name, value: @gallery.name <> " ", class: "toggle-it w-full text-input hidden"%>
-            <%= submit "Save", disabled: !@changeset.valid?, target_class: "toggle-it", parent_class: "gallery-name-edit", class: "toggle-it hidden btn-save-side-nav" %>
+          <%= text_input f, :name, value: @gallery.name <> " ", class: "#{@edit_name && "hidden"} w-full text-input" %>
+            <%= submit "Save", disabled: !@changeset.valid?, class: "#{@edit_name && "hidden"} btn-save-side-nav" %>
         </.form>
       </div>
       <div class="grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-lg grid-container w-80 gap-y-1">

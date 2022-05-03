@@ -37,6 +37,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
      |> assign(:id, id)
      |> assign(:total_progress, total_progress || 0)
      |> assign(:gallery, gallery)
+     |> assign(:edit_name, true)
      |> assign(:albums, albums)
      |> assign(:arrow_show, arrow_show)
      |> assign(:album_dropdown_show, album_dropdown_show)
@@ -48,6 +49,21 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   def handle_event("validate", %{"gallery" => %{"name" => name}}, socket) do
     socket
     |> assign_gallery_changeset(%{name: name})
+    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
+      case changeset do
+        %{valid?: false} ->
+          socket
+          |> put_flash(:gallery_success, "Name should be at most 50 characters")
+        _ -> socket
+      end
+    end)
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("click", _, socket) do
+    socket
+    |> assign(:edit_name, false)
     |> noreply
   end
 
@@ -59,6 +75,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     arrow == "overview" && send(self(), {:update_name, %{gallery: gallery}})
 
     socket
+    |> assign(:edit_name, true)
     |> assign(:gallery, gallery)
     |> noreply
   end
