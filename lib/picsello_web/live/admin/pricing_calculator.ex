@@ -275,7 +275,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     socket
     |> assign(
       tax_schedules:
-        Enum.each(tax_schedules, fn
+        Enum.map(tax_schedules, fn
           %{tax_schedule: %{id: ^id} = tax_schedule} ->
             tax_schedule_update_fn.(tax_schedule, Map.drop(params, ["id"]))
 
@@ -295,7 +295,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     socket
     |> assign(
       business_costs:
-        Enum.each(business_costs, fn
+        Enum.map(business_costs, fn
           %{business_cost: %{id: ^id} = business_cost} ->
             fcosts.(business_cost, Map.drop(params, ["id"]))
 
@@ -328,5 +328,5 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     )
   end
 
-  def generate_years(), do: Enum.map(0..5, &Date.add(~D[2022-12-31], &1 * 365).year)
+  def generate_years(), do: Enum.map(0..5, &(2022 + &1))
 end
