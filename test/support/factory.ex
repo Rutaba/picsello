@@ -663,4 +663,24 @@ defmodule Picsello.Factory do
       ]
     }
   end
+
+  def tax_schedule(%{session: _session}) do
+    Picsello.PricingCalculatorTaxSchedules.changeset(
+      %Picsello.PricingCalculatorTaxSchedules{},
+      tax_schedule_factory()
+    )
+    |> Picsello.Repo.insert!()
+
+    {:ok, %{}}
+  end
+
+  def business_costs(%{session: _session}) do
+    Picsello.PricingCalculatorBusinessCosts.changeset(
+      %Picsello.PricingCalculatorBusinessCosts{},
+      business_cost_factory()
+    )
+    |> Picsello.Repo.insert!()
+
+    {:ok, %{}}
+  end
 end

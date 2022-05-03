@@ -36,7 +36,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
                 <div class="col-start-2 font-bold">Tax Schedule Active</div>
                 <div class="col-start-3 font-bold">Tax Schedule Fixed Self Employment Tax</div>
                 <%= hidden_input f, :id %>
-                <%= select f, :year, [2022,2023,2024], class: "select py-3", phx_debounce: 200 %>
+                <%= select f, :year, generate_years(), class: "select py-3", phx_debounce: 200 %>
                 <%= select f, :active, [true, false], class: "select py-3", phx_debounce: 200 %>
                 <%= input f, :self_employment_percentage, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
               </div>
@@ -268,7 +268,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
   defp update_tax_schedules(
          %{assigns: %{tax_schedules: tax_schedules}} = socket,
          %{"pricing_calculator_tax_schedules" => %{"id" => id} = params},
-         f
+         tax_schedule_update_fn
        ) do
     id = String.to_integer(id)
 
@@ -276,8 +276,11 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     |> assign(
       tax_schedules:
         Enum.map(tax_schedules, fn
-          %{tax_schedule: %{id: ^id} = tax_schedule} -> f.(tax_schedule, Map.drop(params, ["id"]))
-          tax_schedule -> tax_schedule
+          %{tax_schedule: %{id: ^id} = tax_schedule} ->
+            tax_schedule_update_fn.(tax_schedule, Map.drop(params, ["id"]))
+
+          tax_schedule ->
+            tax_schedule
         end)
     )
   end
@@ -324,4 +327,6 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         )
     )
   end
+
+  def generate_years(), do: Enum.map(0..5, &Date.add(~D[2022-12-31], &1 * 365).year)
 end

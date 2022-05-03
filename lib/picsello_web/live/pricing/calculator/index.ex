@@ -295,17 +295,19 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         costs
       )
 
+    assigns = Enum.into(assigns, %{costs: costs, gross_revenue: gross_revenue})
+
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Based on what you told us—we’ve calculated some suggestions on how much to charge and how many shoots you should do.</h4>
         <p class="text-xl">The suggested pricing and shoot counts are calculated for the entire year if you focused on one.</p>
         <div class="my-6">
           <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(@pricing_calculations)) do %>
-            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
+            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
           <% end %>
         </div>
         <h4 class="text-2xl font-bold mb-4">Financial Summary</h4>
-        <.financial_review take_home={@pricing_calculations.take_home} costs={costs} />
+        <.financial_review take_home={@pricing_calculations.take_home} costs={@costs} />
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
           <button type="submit" class="btn-primary">Email results</button>
@@ -353,10 +355,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <div class="circleBtn absolute bottom-12 left-12">
         <ul>
           <li>
-              <a href="javascript:void(0); history.back()">
-                <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300 rounded-full" />
-                <span class="overflow-hidden">Exit calculator</span>
-              </a>
+            <%= live_redirect to: Routes.home_path(@socket, :index), class: "w-full sm:w-auto btn-primary flex-grow flex justify-center" do %>
+              <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300 rounded-full" />
+              <span class="overflow-hidden">Exit calculator</span>
+            <% end %>
           </li>
         </ul>
       </div>
@@ -371,7 +373,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <li class="flex items-center mb-2 md:w-1/2 w-full"><span class="bg-blue-planning-300 text-white w-8 h-8 block flex items-center justify-center mr-2 rounded-full font-bold"><span class="-mt-1">4</span></span>Results</li>
         </ul>
         <div class="flex justify-end mt-8">
-          <a href="javascript:void(0); history.back()" class="btn-secondary inline-block mr-4">Go back</a>
+            <%= live_redirect "Go back", to: Routes.home_path(@socket, :index), class: "btn-secondary inline-block mr-4" %>
           <button type="button" class="btn-primary" phx-click="start">Get started</button>
         </div>
       </div>
@@ -574,6 +576,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     min_sessions_per_year =
       PricingCalculations.calculate_min_sessions_a_year(assigns.gross_revenue, assigns.base_price)
 
+    assigns = Enum.into(assigns, %{min_sessions_per_year: min_sessions_per_year})
+
     ~H"""
       <div class="border p-4 rounded-lg mb-4">
         <div class="grid lg:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
@@ -591,7 +595,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <div class="bg-gray-100 rounded-lg flex flex-col flex-wrap items-center justify-center p-4">
             <span class="block w-full text-center text-2xl font-bold">
-            <%= min_sessions_per_year %>
+            <%= @min_sessions_per_year %>
             </span>
             <span class="block w-full text-center font-italic">
               Min. Shoots per year
@@ -606,7 +610,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </span>
           </div>
         </div>
-        <%= if min_sessions_per_year > @max_session_per_year do %>
+        <%= if @min_sessions_per_year > @max_session_per_year do %>
         <div class="bg-orange-inbox-100 p-4 rounded-lg mt-4">
           Based on our experience, you're only able to physically handle <strong><%= @max_session_per_year %> sessions</strong> a year for <strong><%= dyn_gettext @job_type %> shoots</strong>. Keep that in mind when deciding what to charge and what you offer.
         </div>
@@ -630,15 +634,20 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def sidebar_step(%{step: step, current_step: current_step} = assigns) do
     next_step = step + 1
-    active = current_step >= next_step
-    done = current_step > next_step
+
+    assigns =
+      Enum.into(assigns, %{
+        next_step: next_step,
+        active: current_step >= next_step,
+        done: current_step > next_step
+      })
 
     ~H"""
-      <li {output_step_nav(done, next_step)} class={classes("flex items-center mb-4 p-3 bg-gray-200 bold rounded-lg font-bold text-blue-planning-300 cursor-pointer", %{"text-gray-500 opacity-70 cursor-default" => !active})}
+      <li {output_step_nav(@done, @next_step)} class={classes("flex items-center mb-4 p-3 bg-gray-200 bold rounded-lg font-bold text-blue-planning-300 cursor-pointer", %{"text-gray-500 opacity-70 cursor-default" => !@active})}
       )}>
         <span class={classes("bg-blue-planning-300 text-white w-6 h-6 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-sm font-bold",
-        %{"bg-gray-300 text-gray-500 opacity-70" => !active})}>
-          <%= if done do %>
+        %{"bg-gray-300 text-gray-500 opacity-70" => !@active})}>
+          <%= if @done do %>
             <.icon name="checkmark" class="text-white p-2" />
           <% else %>
             <span class="-mt-1"><%= @step %></span>
