@@ -50,7 +50,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
             <%= for {label, value} <- @discounts do %>
               <dt class="hidden toggle lg:block"><%= label %></dt>
 
-              <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
+              <dd class="self-center hidden toggle lg:block justify-self-end">-<%= Money.neg(value) %></dd>
             <% end %>
           </dl>
         <% end %>
