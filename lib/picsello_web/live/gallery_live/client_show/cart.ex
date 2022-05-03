@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
-    case Cart.get_unconfirmed_order(gallery.id, :preload_products) do
+    case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals, :package]) do
       {:ok, order} ->
         gallery = Galleries.populate_organization_user(gallery)
 

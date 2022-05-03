@@ -12,6 +12,7 @@ defmodule Picsello.Cart.Order do
     belongs_to(:gallery, Gallery)
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
+    has_one :package, through: [:gallery, :package]
 
     has_many :digitals, Digital, on_replace: :delete, on_delete: :delete_all
 

@@ -64,7 +64,7 @@ defmodule Picsello.Cart do
   def place_product(product, gallery_id) do
     params = %{gallery_id: gallery_id}
 
-    case get_unconfirmed_order(gallery_id) do
+    case get_unconfirmed_order(gallery_id, preload: [:digitals]) do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
     end
@@ -120,7 +120,9 @@ defmodule Picsello.Cart do
       end)
 
   defp contains_digital?(%{id: gallery_id}, photo) do
-    case(get_unconfirmed_order(gallery_id)) do
+    gallery_id
+    |> get_unconfirmed_order(preload: [:digitals])
+    |> case do
       {:ok, order} -> contains_digital?(order, photo)
       _ -> false
     end
@@ -176,25 +178,27 @@ defmodule Picsello.Cart do
   @doc """
   Gets the current order for gallery.
   """
-  def get_unconfirmed_order(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
-    )
-    |> preload_digitals()
+  @spec get_unconfirmed_order(integer(), preload: [:digitals | :products | :package]) ::
+          {:ok, Order.t()} | {:error, :no_unconfirmed_order}
+  def get_unconfirmed_order(gallery_id, opts \\ []) do
+    preloads = Keyword.get(opts, :preload, [])
+
+    for assoc <- preloads,
+        fun = Map.get(%{digitals: &preload_digitals/1, package: &preload(&1, :package)}, assoc),
+        reduce:
+          from(order in Order,
+            where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
+          ) do
+      query ->
+        fun.(query)
+    end
     |> Repo.one()
     |> case do
-      %Order{} = order -> {:ok, order}
-      _ -> {:error, :no_unconfirmed_order}
-    end
-  end
+      %Order{} = order ->
+        {:ok, if(:products in preloads, do: preload_products(order), else: order)}
 
-  def get_unconfirmed_order(gallery_id, :preload_products) do
-    case get_unconfirmed_order(gallery_id) do
-      {:ok, order} ->
-        {:ok, order |> preload_products()}
-
-      error ->
-        error
+      _ ->
+        {:error, :no_unconfirmed_order}
     end
   end
 

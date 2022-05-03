@@ -237,7 +237,7 @@ defmodule Picsello.CartTest do
         |> Repo.update!()
 
       assert {:ok, %{products: [%{whcc_product: %{whcc_id: "abc"}}]}} =
-               Cart.get_unconfirmed_order(gallery_id, :preload_products)
+               Cart.get_unconfirmed_order(gallery_id, preload: [:products])
     end
   end
 
