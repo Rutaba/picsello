@@ -184,7 +184,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
        ) do
     id = String.to_integer(id)
 
-    Enum.map(tax_schedules, fn
+    Enum.each(tax_schedules, fn
       %{tax_schedule: %{id: ^id} = tax_schedule} ->
         PricingCalculatorTaxSchedules.add_income_bracket_changeset(
           tax_schedule,
@@ -211,7 +211,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
        ) do
     id = String.to_integer(id)
 
-    Enum.map(business_costs, fn
+    Enum.each(business_costs, fn
       %{business_cost: %{id: ^id} = business_cost} ->
         PricingCalculatorBusinessCosts.add_business_cost_changeset(
           business_cost,
@@ -275,12 +275,12 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     socket
     |> assign(
       tax_schedules:
-        Enum.map(tax_schedules, fn
+        Enum.each(tax_schedules, fn
           %{tax_schedule: %{id: ^id} = tax_schedule} ->
             tax_schedule_update_fn.(tax_schedule, Map.drop(params, ["id"]))
 
-          tax_schedule ->
-            tax_schedule
+          _tax_schedule ->
+            nil
         end)
     )
   end
@@ -295,12 +295,12 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
     socket
     |> assign(
       business_costs:
-        Enum.map(business_costs, fn
+        Enum.each(business_costs, fn
           %{business_cost: %{id: ^id} = business_cost} ->
             fcosts.(business_cost, Map.drop(params, ["id"]))
 
-          business_cost ->
-            business_cost
+          _business_cost ->
+            nil
         end)
     )
   end
