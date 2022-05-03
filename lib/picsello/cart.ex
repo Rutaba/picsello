@@ -128,8 +128,6 @@ defmodule Picsello.Cart do
     end
   end
 
-  defp contains_digital?(_, _), do: false
-
   defp contains_bundle?(%{id: gallery_id}) do
     case(get_unconfirmed_order(gallery_id)) do
       {:ok, order} -> order.bundle_price != nil
@@ -548,6 +546,7 @@ defmodule Picsello.Cart do
   defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
   defdelegate total_cost(order), to: Order
   defdelegate priced_lines_by_product(order), to: Order
+  defdelegate priced_lines(order), to: Order
 
   def price_display(%Digital{} = digital) do
     "#{if Money.zero?(digital.price), do: "1 credit - "}#{digital.price}"

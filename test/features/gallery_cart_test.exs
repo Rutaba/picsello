@@ -36,7 +36,7 @@ defmodule Picsello.GalleryCartTest do
     |> assert_text(Money.to_string(price))
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
-    |> assert_text("Subtotal: #{Order.total_cost(order)}")
+    |> assert_has(definition("Subtotal", text: order |> Order.total_cost() |> to_string()))
     |> assert_has(testid("product-#{cart_product.editor_details.editor_id}"))
   end
 

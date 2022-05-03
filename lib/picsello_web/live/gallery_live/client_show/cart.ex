@@ -5,7 +5,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias WHCC.Shipping
   import PicselloWeb.GalleryLive.Shared
-  alias Phoenix.LiveView.JS
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -140,6 +139,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
+  defp continue_summary(assigns) do
+    ~H"""
+    <.summary order={@order} id={@id}>
+      <button type="button" disabled={zero_subtotal?(@order)} phx-click="continue" class="mx-5 mt-5 text-lg mb-7 btn-primary">
+        Continue
+      </button>
+
+      <%= if zero_subtotal?(@order) do %>
+        <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
+      <% end %>
+    </.summary>
+    """
+  end
+
   defp checkout_link(%{assigns: %{order: order, gallery: gallery}} = socket) do
     {:ok, checkout_link} =
       order
@@ -217,87 +230,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     )
   end
 
-  defp summary(assigns) do
-    assigns =
-      assigns
-      |> assign_new(:class, fn -> "summary" end)
-      |> assign_new(:button, fn -> "Continue" end)
-      |> assign_new(:type, fn -> "button" end)
-      |> assign_new(:disabled, fn -> false end)
-      |> assign_new(:click, fn -> nil end)
-
-    ~H"""
-    <div class={"flex flex-col border border-base-200 #{@class}"}>
-      <button
-        type="button"
-        phx-click={JS.toggle(to: ".#{@class} > button .toggle") |> JS.toggle(to: ".#{@class} .grid .toggle")}
-        class="block px-5 pt-4 text-base-250 lg:hidden">
-        <div class="flex items-center pb-2">
-          <.icon name="up" class="toggle w-5 h-2.5 stroke-2 stroke-current mr-2.5" />
-          <.icon name="down" class="hidden toggle w-5 h-2.5 stroke-2 stroke-current mr-2.5" />
-          See&nbsp;
-          <span class="toggle">more</span>
-          <span class="hidden toggle">less</span>
-        </div>
-        <hr class="mb-1 border-base-200">
-      </button>
-
-      <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6">
-        <dl class="text-lg contents">
-          <%= for {label, value} <- charges(@order) do %>
-            <dt class="hidden toggle lg:block"><%= label %></dt>
-
-            <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
-          <% end %>
-
-          <dt class="hidden text-2xl toggle lg:block">Subtotal</dt>
-          <dd class="self-center hidden text-2xl toggle lg:block justify-self-end"><%= Money.new(1000) %></dd>
-        </dl>
-
-        <hr class="hidden mt-2 mb-3 toggle lg:block col-span-2 border-base-200">
-
-        <dl class="text-lg contents text-green-finances-300">
-          <%= for {label, value} <- discounts(@order) do %>
-            <dt class="hidden toggle lg:block"><%= label %></dt>
-
-            <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
-          <% end %>
-        </dl>
-
-        <hr class="hidden mt-2 mb-3 col-span-2 border-base-200 toggle lg:block">
-
-        <dl class="contents">
-          <dt class="text-2xl font-extrabold">Total</dt>
-
-          <dd class="self-center text-2xl font-extrabold justify-self-end"><%= total_cost(@order) %></dd>
-        </dl>
-      </div>
-
-      <button type={@type} class="mx-5 mt-5 text-lg mb-7 btn-primary" phx-click={@click} disabled={zero_subtotal?(@order) || @disabled}><%= @button %></button>
-
-      <%= if zero_subtotal?(@order) do %>
-        <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
-      <% end %>
-    </div>
-    """
-  end
-
-  defp charges(order) do
-    [
-      {"Products (6)", Money.new(100)},
-      {"Shipping & handling", "Included"},
-      {"Digital Downloads (4)", Money.new(100)}
-    ]
-  end
-
-  defp discounts(order) do
-    [
-      {"Volume discount", Money.new(100)},
-      {"Digital download credit (4)", Money.new(100)},
-      {"Print credit used", Money.new(100)}
-    ]
-  end
-
   defp return_to_address() do
     %{
       "Name" => "Returns Department",
@@ -349,5 +281,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate product_id(item), to: Cart.CartProduct
   defdelegate product_name(product), to: Cart
   defdelegate product_quantity(product), to: Cart
+  defdelegate summary(assigns), to: __MODULE__.Summary
   defdelegate total_cost(order), to: Cart
+
+  defp zero_total?(order),
+    do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
 end

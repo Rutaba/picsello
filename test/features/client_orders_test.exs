@@ -291,7 +291,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "2"))
       |> click(link("cart"))
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Total", text: "$50.00"))
       |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
@@ -305,7 +305,7 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Total", text: "$25.00"))
       |> find(css("*[data-testid^='digital-']", count: 1, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
@@ -321,8 +321,8 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("cart"))
       |> click(button("Continue"))
       |> assert_has(css("h2", text: "Enter digital delivery information"))
-      |> assert_text("Digitals (1): $25.00")
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Digital downloads (1)", text: "$25.00"))
+      |> assert_has(definition("Total", text: "$25.00"))
       |> fill_in(text_field("Email"), with: "brian@example.com")
       |> fill_in(text_field("Name"), with: "Brian")
       |> refute_has(text_field("Shipping address"))
@@ -394,9 +394,8 @@ defmodule Picsello.ClientOrdersTest do
       |> click_photo(2)
       |> assert_has(testid("download-credit", text: "Download Credits available: 1"))
       |> click(button("Add to cart"))
-      |> assert_has(link("cart", text: "2"))
-      |> click(link("cart"))
-      |> assert_text("Total: $0.00")
+      |> click(link("cart", text: "2"))
+      |> assert_has(definition("Total", text: "$0.00"))
       |> assert_text("Minimum amount is $1")
       |> assert_disabled(button("Continue"))
       |> click(link("Home"))
@@ -405,7 +404,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "3"))
       |> click(link("cart"))
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Total", text: "$25.00"))
       |> assert_enabled(button("Continue"))
       |> find(css("*[data-testid^='digital-']", count: 3, at: 0), fn cart_item ->
         cart_item
@@ -422,10 +421,10 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("Digital download")
         |> assert_text("$25.00")
       end)
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Total", text: "$25.00"))
       |> click(button("Continue"))
-      |> assert_text("Digitals (1): $25.00")
-      |> assert_text("Digital Credits Used (2): 2 Credits - $0.00")
+      |> assert_has(definition("Digital downloads (3)", text: "$75.00"))
+      |> assert_has(definition("Digital download credit (2)", text: "-$50"))
     end
 
     feature "purchase bundle", %{session: session, package: package, organization: organization} do
@@ -469,7 +468,7 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
       |> click(link("close"))
       |> click(link("cart"))
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Total", text: "$50.00"))
       |> find(testid("bundle"), fn option ->
         option
         |> assert_text("Bundle - all digital downloads")
@@ -486,11 +485,11 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> assert_has(link("cart", text: "1"))
       |> click(link("cart"))
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Total", text: "$50.00"))
       |> click(button("Continue"))
       |> assert_has(css("h2", text: "Enter digital delivery information"))
-      |> assert_text("Bundle - All Digital Downloads: $50.00")
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Bundle - all digital downloads", text: "$50.00"))
+      |> assert_has(definition("Total", text: "$50.00"))
       |> fill_in(text_field("Email"), with: "zach@example.com")
       |> fill_in(text_field("Name"), with: "Zach")
       |> wait_for_enabled_submit_button()
