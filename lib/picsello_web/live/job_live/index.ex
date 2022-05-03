@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Job, Repo, Package}
+  alias Picsello.{Job, Repo, Package, Payments}
   require Ecto.Query
   alias Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
@@ -23,6 +23,7 @@ defmodule PicselloWeb.JobLive.Index do
     |> assign_new(:pagination, fn -> %Pagination{} end)
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
     |> assign_jobs()
+    |> assign_stripe_status()
     |> ok()
   end
 
@@ -67,6 +68,15 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  @impl true
+  def handle_info({:stripe_status, status}, socket) do
+    socket |> assign(stripe_status: status) |> noreply()
+  end
+
+  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+    socket |> assign(stripe_status: Payments.status(current_user))
+  end
 
   defp assign_jobs(
          %{assigns: %{current_user: current_user, live_action: action, pagination: pagination}} =
