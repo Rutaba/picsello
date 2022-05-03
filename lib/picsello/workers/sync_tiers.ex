@@ -53,7 +53,7 @@ defmodule Picsello.Workers.SyncTiers do
           turnaround,
           max_session_per_year,
           description
-        ] = cells_by_column(row, [?A, ?B, ?C, ?D, ?E, ?F, ?G, ?H, ?O, ?T])
+        ] = cells_by_column(row, [?A, ?B, ?C, ?D, ?E, ?F, ?G, ?H, ?I, ?T])
 
         [min_years_experience] = Regex.run(~r/^\d+/, experience_range)
         job_type = Map.get(@job_type_map, type, String.downcase(type))

@@ -269,7 +269,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 4} = assigns) do
     ~H"""
       <.container {assigns}>
-        <h4 class="text-2xl font-bold">All businesses have costs. Lorem ipsum dolor sit amet content here.</h4>
+        <h4 class="text-2xl font-bold">All businesses have costs.</h4>
         <p class="italic">(We’ll provide you a rough estimate on what these should cost you by what you’ve answered so far. You can go in tweak what you need.)</p>
         <.financial_review take_home={@pricing_calculations.take_home} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
         <h4 class="text-2xl font-bold mb-4">Cost categories</h4>
@@ -355,10 +355,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <div class="circleBtn absolute bottom-12 left-12">
         <ul>
           <li>
-            <%= live_redirect to: Routes.home_path(@socket, :index), class: "w-full sm:w-auto btn-primary flex-grow flex justify-center" do %>
+            <a phx-click="exit">
               <.icon name="back" class="w-14 h-14 stroke-current text-blue-planning-300 rounded-full" />
               <span class="overflow-hidden">Exit calculator</span>
-            <% end %>
+            </a>
           </li>
         </ul>
       </div>
