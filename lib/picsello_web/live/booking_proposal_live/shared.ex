@@ -26,15 +26,21 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   def total(assigns) do
     ~H"""
     <div class="contents">
-      <dl class="flex justify-between text-2xl font-bold">
+      <%= with discount_percent when discount_percent != nil <- Packages.discount_percent(@package) do %>
+        <dl class="flex justify-between">
+          <dt>Session fee</dt>
+          <dd><%= Package.base_price(@package) %></dd>
+        </dl>
+        <dl class="flex justify-between text-green-finances-300 my-2">
+          <dt>Discount</dt>
+          <dd><%= discount_percent %>%</dd>
+        </dl>
+      <% end %>
+      <dl class="flex justify-between text-xl font-bold">
         <dt>Total</dt>
-
         <dd><%= Package.price(@package) %></dd>
       </dl>
 
-      <%= with discount_percent when discount_percent != nil <- Packages.discount_percent(@package) do %>
-        <i class="block text-green-finances-300 text-right"><%= discount_percent %>% discount applied</i>
-      <% end %>
     </div>
     """
   end

@@ -89,7 +89,7 @@
               <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
             <% end %>
             <div class="flex items-center justify-between w-full">
-              Pay your invoice
+              <%= if PaymentSchedules.free?(@job), do: "Finish booking", else: "Pay your invoice" %>
               <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
             </div>
           </div>

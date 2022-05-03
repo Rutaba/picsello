@@ -28,25 +28,32 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
               <dd><%= @package.collected_price %></dd>
             </dl>
           <% end %>
-          <%= for payment <- @job.payment_schedules do %>
-            <dl class={classes("flex justify-between", %{"text-green-finances-300" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
-              <%= if PaymentSchedules.paid?(payment) do %>
-                <dt><%= payment.description %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
-              <% else %>
-                <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
-              <% end %>
-              <dd><%= payment.price %></dd>
-            </dl>
+          <%= unless PaymentSchedules.free?(@job) do %>
+            <%= for payment <- @job.payment_schedules do %>
+              <dl class={classes("flex justify-between", %{"text-green-finances-300" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
+                <%= if PaymentSchedules.paid?(payment) do %>
+                  <dt><%= payment.description %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
+                <% else %>
+                  <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
+                <% end %>
+                <dd><%= payment.price %></dd>
+              </dl>
+            <% end %>
           <% end %>
         </.items>
 
         <.footer>
-          <%= unless @read_only do %>
-            <button type="submit" class="btn-primary" phx-disabled-with="Pay Invoice">
-              Pay Invoice
-            </button>
+          <%= cond do %>
+            <% @read_only -> %>
+            <% PaymentSchedules.free?(@job) -> %>
+              <button type="submit" class="btn-primary" phx-disabled-with="Finish booking">
+                Finish booking
+              </button>
+            <% !PaymentSchedules.free?(@job) -> %>
+              <button type="submit" class="btn-primary" phx-disabled-with="Pay Invoice">
+                Pay Invoice
+              </button>
           <% end %>
-
           <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">Close</button>
         </.footer>
       </form>
@@ -55,16 +62,43 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   end
 
   @impl true
-  def handle_event(
-        "submit",
-        %{},
+  def handle_event("submit", %{}, %{assigns: %{job: job}} = socket) do
+    if PaymentSchedules.free?(job) do
+      finish_booking(socket)
+    else
+      stripe_checkout(socket)
+    end
+  end
+
+  def open_modal_from_proposal(socket, proposal, read_only \\ true) do
+    %{
+      job:
         %{
-          assigns: %{
-            proposal: proposal,
-            job: job
-          }
-        } = socket
-      ) do
+          client: client,
+          shoots: shoots,
+          package: %{organization: %{user: photographer} = organization} = package
+        } = job
+    } =
+      proposal
+      |> Repo.preload(
+        [job: [:client, :shoots, :payment_schedules, package: [organization: :user]]],
+        force: true
+      )
+
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: read_only || PaymentSchedules.all_paid?(job),
+      job: job,
+      proposal: proposal,
+      photographer: photographer,
+      organization: organization,
+      client: client,
+      shoots: shoots,
+      package: package
+    })
+  end
+
+  defp stripe_checkout(%{assigns: %{proposal: proposal, job: job}} = socket) do
     payment = PaymentSchedules.unpaid_payment(job)
 
     line_items = [
@@ -97,31 +131,14 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     end
   end
 
-  def open_modal_from_proposal(socket, proposal, read_only \\ true) do
-    %{
-      job:
-        %{
-          client: client,
-          shoots: shoots,
-          package: %{organization: %{user: photographer} = organization} = package
-        } = job
-    } =
-      proposal
-      |> Repo.preload(
-        [job: [:client, :shoots, :payment_schedules, package: [organization: :user]]],
-        force: true
-      )
+  def finish_booking(%{assigns: %{proposal: proposal}} = socket) do
+    case PaymentSchedules.mark_as_paid(proposal, PicselloWeb.Helpers) do
+      {:ok, _} ->
+        send(self(), {:update_payment_schedules})
+        socket |> noreply()
 
-    socket
-    |> open_modal(__MODULE__, %{
-      read_only: read_only || PaymentSchedules.all_paid?(job),
-      job: job,
-      proposal: proposal,
-      photographer: photographer,
-      organization: organization,
-      client: client,
-      shoots: shoots,
-      package: package
-    })
+      {:error, _} ->
+        socket |> put_flash(:error, "Couldn't finish booking") |> noreply()
+    end
   end
 end
