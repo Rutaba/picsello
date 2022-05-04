@@ -49,6 +49,10 @@ defmodule Picsello.Albums do
     end)
   end
 
+  def change_album(%Album{} = album, params \\ %{}) do
+    album |> Album.update_changeset(params)
+  end
+
   @doc """
   Insert album
   """

@@ -37,6 +37,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
      |> assign(:id, id)
      |> assign(:total_progress, total_progress || 0)
      |> assign(:gallery, gallery)
+     |> assign(:edit_name, true)
      |> assign(:albums, albums)
      |> assign(:arrow_show, arrow_show)
      |> assign(:album_dropdown_show, album_dropdown_show)
@@ -52,6 +53,13 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   end
 
   @impl true
+  def handle_event("click", _, socket) do
+    socket
+    |> assign(:edit_name, false)
+    |> noreply
+  end
+
+  @impl true
   def handle_event("save", %{"gallery" => %{"name" => name}}, socket) do
     %{assigns: %{gallery: gallery, arrow_show: arrow}} = socket
     {:ok, gallery} = Galleries.update_gallery(gallery, %{name: name})
@@ -59,6 +67,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     arrow == "overview" && send(self(), {:update_name, %{gallery: gallery}})
 
     socket
+    |> assign(:edit_name, true)
     |> assign(:gallery, gallery)
     |> noreply
   end
@@ -183,10 +192,17 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   end
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
-    do: socket |> assign(:changeset, Galleries.change_gallery(gallery))
+    do:
+      socket
+      |> assign(:changeset, Galleries.change_gallery(gallery) |> Map.put(:action, :validate))
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
-    do: socket |> assign(:changeset, Galleries.change_gallery(gallery, attrs))
+    do:
+      socket
+      |> assign(
+        :changeset,
+        Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
+      )
 
   defp is_selected_album(album, selected_album),
     do: selected_album && album.id == selected_album.id

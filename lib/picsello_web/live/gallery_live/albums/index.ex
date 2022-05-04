@@ -224,6 +224,15 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
+  def handle_info({:album_settings, %{message: message, album: album}}, socket) do
+    socket
+    |> close_modal()
+    |> assign(:album, album)
+    |> put_flash(:gallery_success, message)
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:total_progress, total_progress}, socket) do
     socket |> assign(:total_progress, total_progress) |> noreply()
   end

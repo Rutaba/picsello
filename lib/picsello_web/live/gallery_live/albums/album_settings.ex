@@ -10,16 +10,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   def update(%{gallery_id: gallery_id} = assigns, socket) do
     album = Map.get(assigns, :album, nil)
 
-    changeset =
-      if(album,
-        do: Album.update_changeset(album),
-        else: Album.create_changeset(%{set_password: false, gallery_id: gallery_id})
-      )
-
     socket
     |> assign(:album, album)
     |> assign(:gallery_id, gallery_id)
-    |> assign(:changeset, changeset)
+    |> assign_album_changeset()
     |> assign(:visibility, false)
     |> then(fn socket ->
       if album do
@@ -41,53 +35,39 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   def handle_event(
         "submit",
         %{"album" => params},
-        %{
-          assigns: %{
-            album: album,
-            gallery_id: gallery_id
-          }
-        } = socket
+        %{assigns: %{album: album, gallery_id: gallery_id}} = socket
       ) do
     if album do
-      Albums.update_album(album, params)
+      {album, message} =
+        upsert_album(Albums.update_album(album, params), "Album settings successfully updated")
 
-      socket
-      |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
-      |> put_flash(:gallery_success, "Album settings successfully updated")
-      |> noreply()
+      send(self(), {:album_settings, %{message: message, album: album}})
+      socket |> noreply()
     else
-      Albums.insert_album(params)
+      {_, message} = upsert_album(Albums.insert_album(params), "Album successfully created")
 
       socket
       |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
-      |> put_flash(:gallery_success, "Album successfully created")
+      |> put_flash(:gallery_success, message)
       |> noreply()
     end
   end
 
+  @impl true
   def handle_event(
         "validate",
         %{"album" => params},
         %{
           assigns: %{
-            album: album,
             album_password: album_password
           }
         } = socket
       ) do
     set_password = String.to_existing_atom(params["set_password"])
-
-    changeset =
-      if album do
-        Album.update_changeset(album, %{set_password: set_password})
-      else
-        Album.create_changeset(params)
-      end
-
     password = generate_password(set_password, album_password)
 
     socket
-    |> assign(:changeset, changeset)
+    |> assign_album_changeset(params)
     |> assign(:set_password, set_password)
     |> assign(:album_password, password)
     |> noreply
@@ -113,6 +93,27 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     else
       album_password
     end
+  end
+
+  defp upsert_album(result, message) do
+    case result do
+      {:ok, album} -> {album, message}
+      _ -> {nil, "something went wrong"}
+    end
+  end
+
+  defp assign_album_changeset(
+         %{assigns: %{album: album, gallery_id: gallery_id}} = socket,
+         attrs \\ %{}
+       ) do
+    changeset =
+      if(album,
+        do: Albums.change_album(album, attrs),
+        else: Albums.change_album(%Album{set_password: false, gallery_id: gallery_id}, attrs)
+      )
+
+    socket
+    |> assign(:changeset, changeset |> Map.put(:action, :validate))
   end
 
   @impl true

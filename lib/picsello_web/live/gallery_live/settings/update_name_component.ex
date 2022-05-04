@@ -41,10 +41,17 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
   end
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
-    do: socket |> assign(:changeset, Galleries.change_gallery(gallery))
+    do:
+      socket
+      |> assign(:changeset, Galleries.change_gallery(gallery) |> Map.put(:action, :validate))
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
-    do: socket |> assign(:changeset, Galleries.change_gallery(gallery, attrs))
+    do:
+      socket
+      |> assign(
+        :changeset,
+        Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
+      )
 
   @impl true
   def render(assigns) do
@@ -52,7 +59,7 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
     <div>
       <h3 class="font-sans">Gallery name</h3>
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
-        <%= text_input f, :name, class: "gallerySettingsInput" %>
+        <%= input f, :name, class: "gallerySettingsInput" %>
         <div class="flex items-center justify-between w-full mt-5 lg:items-start">
           <button type="button" phx-click="reset" phx-target={@myself} class="p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0">Reset</button>
           <%= submit "Save", id: "saveGalleryName", class: "btn-settings font-sans w-32 px-11 cursor-pointer", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>

@@ -24,14 +24,20 @@ defmodule Picsello.Galleries.Album do
     %__MODULE__{}
     |> cast(attrs, @attrs)
     |> validate_required(@required_attrs)
+    |> validate_name()
   end
 
   def update_changeset(struct, attrs \\ %{}) do
     struct
     |> cast(attrs, @attrs)
+    |> validate_required(@required_attrs)
+    |> validate_name()
   end
 
   def update_thumbnail(album, photo) do
     album |> change() |> put_assoc(:thumbnail_photo, photo)
   end
+
+  defp validate_name(changeset),
+    do: validate_length(changeset, :name, max: 40)
 end
