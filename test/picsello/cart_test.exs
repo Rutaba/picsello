@@ -274,7 +274,7 @@ defmodule Picsello.CartTest do
   describe "cart product updates" do
     test "find and save processing status" do
       gallery = insert(:gallery)
-      cart_product = confirmed_product()
+      cart_product = build(:cart_product)
       order = Cart.place_product(cart_product, gallery.id)
 
       editor_id = cart_product.editor_details.editor_id
@@ -304,7 +304,7 @@ defmodule Picsello.CartTest do
       gallery = insert(:gallery)
       whcc_product = insert(:product)
 
-      cart_product = build(:ordered_cart_product, product_id: whcc_product.whcc_id)
+      cart_product = build(:cart_product, product_id: whcc_product.whcc_id)
 
       order =
         for product <-
@@ -378,6 +378,47 @@ defmodule Picsello.CartTest do
     end
   end
 
+  describe "create_whcc_order" do
+    setup do
+      cart_products =
+        for {%{whcc_id: product_id}, index} <-
+              Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
+          build(:cart_product, product_id: product_id, created_at: index)
+        end
+
+      %{gallery_id: gallery_id} = order = insert(:order, products: cart_products)
+
+      [
+        cart_products: cart_products,
+        order: Cart.preload_products(order),
+        account_id: Picsello.Galleries.account_id(gallery_id),
+        order_number: Cart.Order.number(order)
+      ]
+    end
+
+    test "exports editors, providing shipping information", %{
+      order: order,
+      account_id: account_id,
+      order_number: order_number,
+      cart_products: cart_products
+    } do
+      Picsello.MockWHCCClient
+      |> Mox.expect(:editors_export, fn ^account_id, editors, opts ->
+        assert cart_products |> Enum.map(&Cart.CartProduct.id/1) |> MapSet.new() ==
+                 editors |> Enum.map(& &1.id) |> MapSet.new()
+
+        assert to_string(order_number) == Keyword.get(opts, :entry_id)
+
+        %Picsello.WHCC.Editor.Export{}
+      end)
+      |> Mox.expect(:create_order, fn ^account_id, _export ->
+        build(:whcc_order_created)
+      end)
+
+      Cart.create_whcc_order(order)
+    end
+  end
+
   describe "confirm_order" do
     def confirm_order(session) do
       Cart.confirm_order(
@@ -418,36 +459,6 @@ defmodule Picsello.CartTest do
       })
     end
   end
-
-  defp confirmed_product(editor_id \\ "hkazbRKGjcoWwnEq3"),
-    do: %{
-      cart_product(editor_id: editor_id, price: ~M[17_600]USD)
-      | whcc_confirmation: :confirmed,
-        whcc_order: %Picsello.WHCC.Order.Created{
-          confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-          entry: editor_id,
-          products: [
-            %{
-              "Price" => "176.00",
-              "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
-              "Quantity" => 1
-            },
-            %{
-              "Price" => "8.80",
-              "ProductDescription" => "Peak Season Surcharge",
-              "Quantity" => 1
-            },
-            %{
-              "Price" => "65.60",
-              "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
-              "Quantity" => 1
-            }
-          ],
-          total: "250.40"
-        },
-        whcc_processing: nil,
-        whcc_tracking: nil
-    }
 
   defp processing_status(id),
     do: %{

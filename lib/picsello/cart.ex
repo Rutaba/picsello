@@ -24,17 +24,34 @@ defmodule Picsello.Cart do
 
   @doc """
   Creates order on WHCC side
-
-  Requires following options
-     - ship_to - map with address where to deliver product to
-     - return_to - map with address where to return product if not delivered
-     - attributes - list with WHCC attributes. Can be used tto selecccct shipping options
   """
-  def order_product(product, account_id, opts) do
-    created_order = WHCC.create_order(account_id, CartProduct.id(product), opts)
+  def create_whcc_order(
+        %Order{
+          products: products,
+          delivery_info: delivery_info,
+          gallery_id: gallery_id
+        } = order
+      ) do
+    editors =
+      for product <- products do
+        product
+        |> CartProduct.id()
+        |> WHCC.Editor.Export.Editor.new(
+          order_attributes: Picsello.WHCC.Shipping.to_attributes(product)
+        )
+      end
 
-    product
-    |> CartProduct.add_order(created_order)
+    account_id = Galleries.account_id(gallery_id)
+
+    export =
+      WHCC.editors_export(account_id, editors,
+        entry_id: order |> Order.number() |> to_string(),
+        address: delivery_info
+      )
+
+    order
+    |> Order.whcc_order_changeset(WHCC.create_order(account_id, export))
+    |> Repo.update!()
   end
 
   @doc "stores processing info in product it finds"
@@ -47,15 +64,6 @@ defmodule Picsello.Cart do
   def store_cart_product_tracking(%{"EntryId" => editor_id} = params) do
     editor_id
     |> seek_and_map(&CartProduct.add_tracking(&1, params))
-  end
-
-  def store_cart_product_checkout(
-        order,
-        product
-      ) do
-    order
-    |> Order.checkout_changeset(product)
-    |> Repo.update!()
   end
 
   @doc """

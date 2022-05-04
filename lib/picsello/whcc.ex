@@ -20,7 +20,7 @@ defmodule Picsello.WHCC do
 
   import Ecto.Query, only: [from: 2]
 
-  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor.Params, WHCC.Editor.Details}
+  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor}
 
   def sync() do
     # fetch latest from whcc api
@@ -156,15 +156,15 @@ defmodule Picsello.WHCC do
         opts \\ []
       ) do
     product
-    |> Params.build(photo, opts)
+    |> Editor.Params.build(photo, opts)
     |> Adapter.editor()
   end
 
   defdelegate get_existing_editor(account_id, editor_id), to: Adapter
   defdelegate editor_details(account_id, editor_id), to: Adapter
-  defdelegate editor_export(account_id, editor_id), to: Adapter
+  defdelegate editors_export(account_id, editor_ids, opts \\ []), to: Adapter
   defdelegate editor_clone(account_id, editor_id), to: Adapter
-  defdelegate create_order(account_id, editor_id, opts), to: Adapter
+  defdelegate create_order(account_id, export), to: Adapter
   defdelegate confirm_order(account_id, confirmation), to: Adapter
   defdelegate webhook_register(url), to: Adapter
   defdelegate webhook_verify(hash), to: Adapter
@@ -172,7 +172,7 @@ defmodule Picsello.WHCC do
 
   def price_details(account_id, editor_id) do
     details = editor_details(account_id, editor_id)
-    %{items: [item]} = editor_export(account_id, editor_id)
+    %{items: [item]} = editors_export(account_id, [Editor.Export.Editor.new(editor_id)])
 
     details
     |> get_product
@@ -199,7 +199,7 @@ defmodule Picsello.WHCC do
     )
   end
 
-  defp get_product(%Details{product_id: product_id}) do
+  defp get_product(%Editor.Details{product_id: product_id}) do
     from(product in Picsello.Product,
       join: category in assoc(product, :category),
       where: product.whcc_id == ^product_id,

@@ -75,10 +75,8 @@ defmodule Picsello.WHCC.Shipping do
 
   @doc "Converts shipping option into order attributes"
   def to_attributes(%Picsello.Cart.CartProduct{} = product) do
-    product |> options() |> hd() |> to_attributes()
+    product |> options() |> hd() |> Map.get(:attrs)
   end
-
-  def to_attributes(%{attrs: attrs}), do: attrs |> Enum.map(&%{"AttributeUID" => &1})
 
   defp fits?({a, b}, {x, y}), do: a <= x and b <= y
 end

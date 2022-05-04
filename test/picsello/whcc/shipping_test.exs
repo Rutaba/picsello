@@ -1,5 +1,5 @@
 defmodule Picsello.WHCC.ShippingTest do
-  use ExUnit.Case, async: true
+  use Picsello.DataCase, async: true
 
   alias Picsello.WHCC.Shipping
 
@@ -26,8 +26,8 @@ defmodule Picsello.WHCC.ShippingTest do
 
   describe "options into attributes" do
     test "correct attribute forming" do
-      assert [%{"AttributeUID" => 1719}, %{"AttributeUID" => 96}] =
-               Shipping.to_attributes(%{attrs: [1719, 96]})
+      assert [96, 546] =
+               Shipping.to_attributes(build(:cart_product, whcc_product: insert(:product)))
     end
   end
 end
