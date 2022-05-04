@@ -369,6 +369,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_info({:album_settings, %{message: message, album: album}}, socket) do
+    socket
+    |> close_modal()
+    |> assign(:album, album |> Repo.preload(:photos))
+    |> put_flash(:gallery_success, message)
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{

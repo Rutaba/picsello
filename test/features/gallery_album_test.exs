@@ -36,16 +36,14 @@ defmodule Picsello.GalleryAlbumTest do
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> click(css("#actions"))
     |> click(testid("edit-album-settings"))
-    |> fill_in(css("#album_name"), with: "Test album 2")
     |> click(css("span", text: "Off"))
+    |> fill_in(css("#album_name"), with: "Test album 2")
     |> assert_has(css("#password", value: "#{album.password}"))
     |> click(css("#toggle-visibility"))
     |> click(button("Re-generate"))
     |> refute_has(css("#password", value: "#{album.password}"))
     |> click(button("Save"))
     |> assert_has(css("p", text: "Album settings successfully updated"))
-
-    assert current_path(session) == "/galleries/#{gallery_id}/albums"
   end
 
   test "Albums, album action dropdown, Edit album thumbnail", %{

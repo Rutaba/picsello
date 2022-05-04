@@ -34,9 +34,11 @@ defmodule Picsello.GalleryAlbumsTest do
     session
     |> visit("/galleries/#{gallery_id}/albums")
     |> click(testid("add-album-popup"))
+    |> click(css("span", text: "Off"))
     |> fill_in(css("#album_name"), with: "Test album 2")
-    |> wait_for_enabled_submit_button()
+    |> click(css("#toggle-visibility"))
     |> click(button("Save"))
+    |> assert_has(css("p", text: "Album successfully created"))
     |> find(css("#albums .album", count: 3))
   end
 
@@ -89,8 +91,8 @@ defmodule Picsello.GalleryAlbumsTest do
     |> visit("/galleries/#{gallery_id}/albums")
     |> click(css("#actions"))
     |> click(css("button", text: "Go to album settings"))
-    |> fill_in(css("#album_name"), with: "Test album 2")
     |> click(css("span", text: "Off"))
+    |> fill_in(css("#album_name"), with: "Test album 2")
     |> assert_has(css("#password", value: "#{album.password}"))
     |> click(css("#toggle-visibility"))
     |> click(button("Re-generate"))

@@ -106,7 +106,14 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
       end
     end)
 
-    send(self(), {:save, %{message: "Photo preview successfully created"}})
+    send(
+      self(),
+      {:save,
+       %{
+         message:
+           "Product #{ngettext("preview", "previews", Enum.count(selected))} successfully updated"
+       }}
+    )
 
     socket |> noreply
   end
@@ -160,9 +167,10 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
           </button>
           <button
           phx-click="save"
+          disabled={Enum.empty?(@selected)}
           phx-target={@myself}
           aria-label="save"
-          class="float-right px-6 py-2 text-white bg-black rounded-lg"
+          class="btn-settings float-right px-6 py-2"
           >
             Save changes
           </button>
