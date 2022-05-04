@@ -80,6 +80,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           %{
             prompt: "How do you want to see these images?",
             type: :multiselect,
+            optional: true,
             options: [
               "Prints",
               "Greeting cards",
@@ -107,6 +108,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           %{
             prompt: "How do you want to see these images?",
             type: :multiselect,
+            optional: true,
             options: [
               "Prints",
               "Greeting cards",
@@ -150,6 +152,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           %{
             prompt: "How do you want to see these images?",
             type: :multiselect,
+            optional: true,
             options: [
               "Prints",
               "Greeting cards",
@@ -170,6 +173,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
           %{
             prompt: "How do you want to see these images?",
             type: :multiselect,
+            optional: true,
             options: [
               "Prints",
               "Greeting cards",
