@@ -19,7 +19,7 @@ defmodule Picsello.Cart do
   }
 
   def new_product(editor_id, account_id) do
-    WHCC.price_details(editor_id, account_id) |> CartProduct.new()
+    account_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
 
   @doc """

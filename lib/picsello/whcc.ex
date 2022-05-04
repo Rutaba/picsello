@@ -170,7 +170,7 @@ defmodule Picsello.WHCC do
   defdelegate webhook_verify(hash), to: Adapter
   defdelegate webhook_validate(data, signature), to: Adapter
 
-  def price_details(editor_id, account_id) do
+  def price_details(account_id, editor_id) do
     details = editor_details(account_id, editor_id)
     %{items: [item]} = editor_export(account_id, editor_id)
 
