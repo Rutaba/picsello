@@ -2,16 +2,21 @@ defmodule Picsello.CartTest do
   use Picsello.DataCase, async: true
   import Money.Sigils
   alias Picsello.{Cart, Repo}
-  alias Cart.{Order, Digital, CartProduct}
+  alias Cart.{Order, Digital}
 
   defp cart_product(opts) do
-    %CartProduct{
-      editor_details: %Picsello.WHCC.Editor.Details{
-        product_id: Keyword.get(opts, :product_id),
-        editor_id: Keyword.get(opts, :editor_id)
-      },
-      price: Keyword.get(opts, :price, ~M[100]USD)
-    }
+    build(:cart_product,
+      editor_details:
+        build(:whcc_editor_details,
+          editor_id: Keyword.get(opts, :editor_id)
+        ),
+      round_up_to_nearest: 100,
+      shipping_base_charge: ~M[0]USD,
+      shipping_upcharge: Decimal.new(0),
+      unit_markup: ~M[0]USD,
+      unit_price: Keyword.get(opts, :price, ~M[100]USD),
+      whcc_product: insert(:product)
+    )
   end
 
   setup do
@@ -37,7 +42,7 @@ defmodule Picsello.CartTest do
                gallery_id: ^gallery_id
              } = order = Cart.place_product(digital, gallery_id)
 
-      assert Order.subtotal_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[100]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -53,7 +58,7 @@ defmodule Picsello.CartTest do
                gallery_id: ^gallery_id
              } = order = Cart.place_product(digital, gallery_id)
 
-      assert Order.subtotal_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[100]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -72,7 +77,7 @@ defmodule Picsello.CartTest do
                gallery_id: ^gallery_id
              } = order = Cart.place_product(digital_2, gallery_id)
 
-      assert Order.subtotal_cost(order) == ~M[200]USD
+      assert Order.total_cost(order) == ~M[200]USD
     end
 
     test "won't add the same digital twice",
@@ -87,7 +92,7 @@ defmodule Picsello.CartTest do
                gallery_id: ^gallery_id
              } = order = Cart.place_product(digital, gallery_id)
 
-      assert Order.subtotal_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[100]USD
     end
   end
 
@@ -102,13 +107,15 @@ defmodule Picsello.CartTest do
         |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
         |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
         |> Repo.update!()
+        |> Repo.preload(:digitals)
+        |> Picsello.Cart.preload_products()
 
       assert {:loaded,
               %Order{
                 products: [%{editor_details: %{editor_id: "123"}}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.subtotal_cost(order) == ~M[200]USD
+      assert Order.total_cost(order) == ~M[200]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
@@ -129,7 +136,7 @@ defmodule Picsello.CartTest do
                 products: []
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.subtotal_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[100]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -154,7 +161,7 @@ defmodule Picsello.CartTest do
                order
                |> Cart.delete_product(digital_id: delete_digital_id)
 
-      assert Order.subtotal_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[100]USD
     end
 
     test "with a digital id and free and paid digitals removes the free digital and updates the first paid digital to free",
@@ -177,7 +184,7 @@ defmodule Picsello.CartTest do
                order
                |> Cart.delete_product(digital_id: delete_free_digital_id)
 
-      assert Order.subtotal_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[100]USD
     end
 
     test "with a digital id and a product removes the digital", %{order: order} do
@@ -202,7 +209,7 @@ defmodule Picsello.CartTest do
                 products: [^product]
               } = order} = Cart.delete_product(order, digital_id: digital_id)
 
-      assert Order.subtotal_cost(order) == ~M[300]USD
+      assert Order.total_cost(order) == ~M[300]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do
@@ -223,15 +230,13 @@ defmodule Picsello.CartTest do
 
   describe "get_unconfirmed_order" do
     test "preloads products" do
+      insert(:product, whcc_id: "abc")
+
       %{gallery_id: gallery_id} =
-        insert(:order)
-        |> Order.update_changeset(
-          cart_product(product_id: insert(:product, whcc_id: "abc").whcc_id)
-        )
-        |> Repo.update!()
+        insert(:order, products: build_list(1, :cart_product, product_id: "abc"))
 
       assert {:ok, %{products: [%{whcc_product: %{whcc_id: "abc"}}]}} =
-               Cart.get_unconfirmed_order(gallery_id, :preload_products)
+               Cart.get_unconfirmed_order(gallery_id, preload: [:products])
     end
   end
 
@@ -240,11 +245,13 @@ defmodule Picsello.CartTest do
       whcc_id = Keyword.get(opts, :whcc_id)
       placed_at = Keyword.get(opts, :placed_at, DateTime.utc_now())
 
-      insert(:order, gallery: gallery, placed_at: placed_at)
-      |> Order.update_changeset(
-        cart_product(product_id: insert(:product, whcc_id: whcc_id).whcc_id)
+      insert(:product, whcc_id: whcc_id)
+
+      insert(:order,
+        gallery: gallery,
+        placed_at: placed_at,
+        products: build_list(1, :cart_product, product_id: whcc_id)
       )
-      |> Repo.update!()
     end
 
     test "preloads products" do
@@ -297,7 +304,7 @@ defmodule Picsello.CartTest do
       gallery = insert(:gallery)
       whcc_product = insert(:product)
 
-      cart_product = build(:ordered_cart_product, %{product_id: whcc_product.whcc_id})
+      cart_product = build(:ordered_cart_product, product_id: whcc_product.whcc_id)
 
       order =
         for product <-
@@ -337,19 +344,22 @@ defmodule Picsello.CartTest do
               )
         })
 
+      quantity = cart_product.editor_details.selections["quantity"]
+
       assert [
                %{
                  price_data: %{
                    currency: :USD,
                    product_data: %{
                      images: [cart_product.editor_details.preview_url],
-                     name: "20 by 30 #{whcc_product.whcc_name}",
-                     tax_code: "txcd_99999999"
+                     tax_code: "txcd_99999999",
+                     name: "20 by 30 #{whcc_product.whcc_name} (Qty #{quantity})"
                    },
-                   unit_amount: 35_200,
+                   unit_amount:
+                     Cart.CartProduct.price(cart_product, shipping_base_charge: true).amount,
                    tax_behavior: "exclusive"
                  },
-                 quantity: cart_product.editor_details.selections["quantity"]
+                 quantity: quantity
                },
                %{
                  price_data: %{
@@ -394,7 +404,7 @@ defmodule Picsello.CartTest do
     end
 
     test "cancels payment intent on failure" do
-      order = insert(:order)
+      order = insert(:order) |> Repo.preload(:digitals)
 
       Picsello.MockPayments
       |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
@@ -410,46 +420,33 @@ defmodule Picsello.CartTest do
   end
 
   defp confirmed_product(editor_id \\ "hkazbRKGjcoWwnEq3"),
-    do: %Picsello.Cart.CartProduct{
-      base_price: %Money{amount: 17_600, currency: :USD},
-      editor_details: %Picsello.WHCC.Editor.Details{
-        editor_id: editor_id,
-        preview_url:
-          "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
-        product_id: "f5QQgHg9mAEom37bQ",
-        selections: %{
-          "display_options" => "no",
-          "quantity" => 1,
-          "size" => "20x30",
-          "surface" => "1_4in_acrylic_with_styrene_backing"
-        }
-      },
-      price: %Money{amount: 35_200, currency: :USD},
-      whcc_confirmation: :confirmed,
-      whcc_order: %Picsello.WHCC.Order.Created{
-        confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-        entry: editor_id,
-        products: [
-          %{
-            "Price" => "176.00",
-            "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
-            "Quantity" => 1
-          },
-          %{
-            "Price" => "8.80",
-            "ProductDescription" => "Peak Season Surcharge",
-            "Quantity" => 1
-          },
-          %{
-            "Price" => "65.60",
-            "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
-            "Quantity" => 1
-          }
-        ],
-        total: "250.40"
-      },
-      whcc_processing: nil,
-      whcc_tracking: nil
+    do: %{
+      cart_product(editor_id: editor_id, price: ~M[17_600]USD)
+      | whcc_confirmation: :confirmed,
+        whcc_order: %Picsello.WHCC.Order.Created{
+          confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
+          entry: editor_id,
+          products: [
+            %{
+              "Price" => "176.00",
+              "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
+              "Quantity" => 1
+            },
+            %{
+              "Price" => "8.80",
+              "ProductDescription" => "Peak Season Surcharge",
+              "Quantity" => 1
+            },
+            %{
+              "Price" => "65.60",
+              "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
+              "Quantity" => 1
+            }
+          ],
+          total: "250.40"
+        },
+        whcc_processing: nil,
+        whcc_tracking: nil
     }
 
   defp processing_status(id),

@@ -3,6 +3,7 @@ defmodule Picsello.Category do
   use Ecto.Schema
   import Ecto.Query
   import Ecto.Changeset
+  import Picsello.Package, only: [validate_money: 2]
 
   @preview_templates %{
     "album_transparency.png" => [800, 715, 1720, 715, 800, 1620, 1720, 1620],
@@ -20,6 +21,8 @@ defmodule Picsello.Category do
     field :whcc_name, :string
     field :default_markup, :decimal
     field :frame_image, :string
+    field :shipping_base_charge, Money.Ecto.Type
+    field :shipping_upcharge, :decimal
     has_many(:products, Picsello.Product)
     has_many(:gallery_products, Picsello.Galleries.GalleryProduct)
 
@@ -38,9 +41,25 @@ defmodule Picsello.Category do
 
   def changeset(category, attrs \\ %{}) do
     category
-    |> cast(attrs, [:hidden, :icon, :name, :default_markup, :frame_image])
-    |> validate_required([:icon, :name, :default_markup])
+    |> cast(attrs, [
+      :default_markup,
+      :frame_image,
+      :hidden,
+      :icon,
+      :name,
+      :shipping_base_charge,
+      :shipping_upcharge
+    ])
+    |> validate_required([
+      :icon,
+      :name,
+      :default_markup,
+      :shipping_base_charge,
+      :shipping_upcharge
+    ])
     |> validate_number(:default_markup, greater_than_or_equal_to: 1.0)
+    |> validate_money(:shipping_base_charge)
+    |> validate_number(:shipping_upcharge, greater_than_or_equal_to: 0.0)
     |> validate_inclusion(:icon, Picsello.Icon.names())
     |> validate_inclusion(:frame_image, frame_images())
     |> unique_constraint(:position)

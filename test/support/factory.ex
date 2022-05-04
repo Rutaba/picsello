@@ -318,7 +318,7 @@ defmodule Picsello.Factory do
   end
 
   def lead_factory(attrs) do
-    user_attr = Map.take(attrs, [:user])
+    user_attr = attrs |> Map.put_new_lazy(:user, fn -> insert(:user) end) |> Map.take([:user])
 
     build_package_template = fn ->
       build(:package, user_attr)
@@ -400,14 +400,33 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def whcc_editor_export_factory(attrs) do
+    unit_base_price = Map.get(attrs, :unit_base_price, ~M[1]USD)
+    quantity = Map.get(attrs, :quantity, 1)
+
+    %Picsello.WHCC.Editor.Export{
+      items: [
+        %Picsello.WHCC.Editor.Export.Item{quantity: quantity, unit_base_price: unit_base_price}
+      ],
+      order: %{},
+      pricing: %{
+        "totalOrderBasePrice" => Money.multiply(unit_base_price, quantity).amount / 100,
+        "code" => "USD"
+      }
+    }
+    |> merge_attributes(Map.drop(attrs, [:quantity, :unit_base_price]))
+  end
+
   def category_factory,
     do: %Picsello.Category{
       whcc_id: sequence("whcc_id"),
       whcc_name: "shirts",
       name: "cool shirts",
       position: sequence(:category_position, & &1),
+      shipping_base_charge: ~M[900]USD,
+      shipping_upcharge: Decimal.new("0.09"),
       icon: "book",
-      default_markup: 2.0,
+      default_markup: 1.0,
       hidden: false
     }
 
@@ -461,7 +480,7 @@ defmodule Picsello.Factory do
       download_count: 10
     }
 
-  def whcc_editor_details_factory do
+  def whcc_editor_details_factory(attrs \\ %{}) do
     %Picsello.WHCC.Editor.Details{
       editor_id: sequence("hkazbRKGjcoWwnEq3"),
       preview_url:
@@ -469,23 +488,32 @@ defmodule Picsello.Factory do
       product_id: fn -> insert(:product).whcc_id end,
       selections: %{
         "display_options" => "no",
-        "quantity" => 1,
+        "quantity" => Map.get(attrs, :quantity, 1),
         "size" => "20x30",
         "surface" => "1_4in_acrylic_with_styrene_backing"
       }
     }
+    |> merge_attributes(Map.drop(attrs, [:quantity]))
     |> evaluate_lazy_attributes()
   end
 
   def cart_product_factory(attrs \\ %{}) do
+    attrs = Map.put_new(attrs, :product_id, get_in(attrs, [:whcc_product, :whcc_id]))
+
     %Picsello.Cart.CartProduct{
-      base_price: %Money{amount: 17_600, currency: :USD},
-      editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id])),
-      price: %Money{amount: 35_200, currency: :USD},
+      created_at: System.os_time(:millisecond),
+      editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity])),
+      quantity: 1,
+      round_up_to_nearest: 500,
+      shipping_base_charge: %Money{amount: 900, currency: :USD},
+      shipping_upcharge: Decimal.new("0.09"),
+      unit_markup: %Money{amount: 35_200, currency: :USD},
+      unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_confirmation: nil,
       whcc_order: nil,
       whcc_processing: nil,
-      whcc_tracking: nil
+      whcc_tracking: nil,
+      whcc_product: nil
     }
     |> merge_attributes(Map.drop(attrs, [:product_id]))
   end
@@ -515,47 +543,37 @@ defmodule Picsello.Factory do
     }
   end
 
-  def ordered_cart_product_factory(%{product_id: product_id}) do
-    %Picsello.Cart.CartProduct{
-      base_price: %Money{amount: 17_600, currency: :USD},
-      editor_details: %Picsello.WHCC.Editor.Details{
-        editor_id: "hkazbRKGjcoWwnEq3",
-        preview_url:
-          "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
-        product_id: product_id,
-        selections: %{
-          "display_options" => "no",
-          "quantity" => 1,
-          "size" => "20x30",
-          "surface" => "1_4in_acrylic_with_styrene_backing"
-        }
-      },
-      price: %Money{amount: 35_200, currency: :USD},
-      whcc_confirmation: nil,
-      whcc_order: %Picsello.WHCC.Order.Created{
-        confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-        entry: "hkazbRKGjcoWwnEq3",
-        products: [
-          %{
-            "Price" => "176.00",
-            "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
-            "Quantity" => 1
-          },
-          %{
-            "Price" => "8.80",
-            "ProductDescription" => "Peak Season Surcharge",
-            "Quantity" => 1
-          },
-          %{
-            "Price" => "65.60",
-            "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
-            "Quantity" => 1
-          }
-        ],
-        total: "250.40"
-      },
-      whcc_processing: nil,
-      whcc_tracking: nil
+  def ordered_cart_product_factory(attrs) do
+    cart_product = build(:cart_product)
+
+    %{
+      cart_product
+      | editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id])),
+        whcc_confirmation: nil,
+        whcc_order: %Picsello.WHCC.Order.Created{
+          confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
+          entry: "hkazbRKGjcoWwnEq3",
+          products: [
+            %{
+              "Price" => "176.00",
+              "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
+              "Quantity" => 1
+            },
+            %{
+              "Price" => "8.80",
+              "ProductDescription" => "Peak Season Surcharge",
+              "Quantity" => 1
+            },
+            %{
+              "Price" => "65.60",
+              "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
+              "Quantity" => 1
+            }
+          ],
+          total: "250.40"
+        },
+        whcc_processing: nil,
+        whcc_tracking: nil
     }
   end
 
@@ -601,14 +619,12 @@ defmodule Picsello.Factory do
       price: 5000
     }
 
-  def subscription_event_factory(attrs),
-    do:
-      %Picsello.SubscriptionEvent{
-        stripe_subscription_id: "sub_123",
-        current_period_start: DateTime.utc_now(),
-        current_period_end: DateTime.utc_now() |> DateTime.add(60 * 60 * 24)
-      }
-      |> merge_attributes(attrs)
+  def subscription_event_factory,
+    do: %Picsello.SubscriptionEvent{
+      stripe_subscription_id: "sub_123",
+      current_period_start: DateTime.utc_now(),
+      current_period_end: DateTime.utc_now() |> DateTime.add(60 * 60 * 24)
+    }
 
   def digital_factory,
     do:

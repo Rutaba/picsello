@@ -12,11 +12,14 @@ defmodule Picsello.Cart.Order do
     belongs_to(:gallery, Gallery)
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_many :products, CartProduct, on_replace: :delete
+    has_one :package, through: [:gallery, :package]
 
     has_many :digitals, Digital, on_replace: :delete, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end
+
+  @type t :: %__MODULE__{}
 
   def create_changeset(product, attrs \\ %{})
 
@@ -94,10 +97,10 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:products, products)
   end
 
-  def checkout_changeset(%__MODULE__{} = order, products, attrs \\ %{}) do
+  def checkout_changeset(%__MODULE__{} = order, product) do
     order
-    |> cast(attrs, [])
-    |> replace_products(products)
+    |> change()
+    |> replace_products([product])
   end
 
   def confirmation_changeset(%__MODULE__{} = order, confirmed_products) do
@@ -117,16 +120,16 @@ defmodule Picsello.Cart.Order do
   def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
 
   defp replace_products(changeset, new_products) do
-    new_product_ids = Enum.map(new_products, fn product -> product.editor_details.editor_id end)
+    new_product_ids = Enum.map(new_products, &CartProduct.id/1)
 
     products_to_remain =
       changeset
       |> get_field(:products)
-      |> Enum.filter(fn product -> product.editor_details.editor_id not in new_product_ids end)
+      |> Enum.filter(fn product -> CartProduct.id(product) not in new_product_ids end)
 
     products_to_store =
       (products_to_remain ++ new_products)
-      |> Enum.sort(&(&1.created_at < &2.created_at))
+      |> Enum.sort(&(&1.created_at > &2.created_at))
 
     changeset
     |> put_embed(:products, products_to_store)
@@ -144,7 +147,7 @@ defmodule Picsello.Cart.Order do
         |> change()
         |> put_embed(
           :products,
-          Enum.reject(products, &(&1.editor_details.editor_id == editor_id))
+          Enum.reject(products, &(CartProduct.id(&1) == editor_id))
         )
 
       [digital_id: digital_id] ->
@@ -173,37 +176,57 @@ defmodule Picsello.Cart.Order do
     end
   end
 
-  def shipping_cost(%__MODULE__{products: products}) do
-    for(
-      %{product: %{base_price: base_price, whcc_order: %{total: total}}} <- products,
-      reduce: Money.new(0)
-    ) do
-      cost ->
-        [Money.new(0), total |> Money.parse!() |> Money.subtract(base_price)]
-        |> Enum.max(Money)
-        |> Money.add(cost)
-    end
-  end
-
   def placed?(%__MODULE__{placed_at: nil}), do: false
   def placed?(%__MODULE__{}), do: true
 
-  def subtotal_cost(%__MODULE__{} = order) do
-    order = Repo.preload(order, :digitals)
-
-    for field <- [:products, :digitals], reduce: order.bundle_price || Money.new(0) do
-      acc ->
-        for(entry <- Map.get(order, field), reduce: acc) do
-          acc ->
-            Money.add(acc, entry.price)
-        end
+  def priced_lines_by_product(order) do
+    for {product, product_lines} <- line_items_by_product(order) do
+      {product,
+       for {product_line, index} <- Enum.with_index(product_lines) do
+         %{
+           line_item: product_line,
+           price: CartProduct.price(product_line, shipping_base_charge: index == 0),
+           price_without_discount:
+             %{product_line | quantity: 1}
+             |> CartProduct.price(shipping_base_charge: true)
+             |> Money.multiply(CartProduct.quantity(product_line))
+         }
+       end}
     end
   end
 
-  def total_cost(order) do
-    for f <- [&subtotal_cost/1, &shipping_cost/1], reduce: Money.new(0) do
-      acc ->
-        Money.add(acc, f.(order))
+  def priced_lines(order),
+    do: order |> priced_lines_by_product() |> Enum.map(&elem(&1, 1)) |> List.flatten()
+
+  def product_total(%__MODULE__{placed_at: nil} = order) do
+    for %{price: price} <- priced_lines(order), reduce: Money.new(0) do
+      sum -> Money.add(sum, price)
     end
+  end
+
+  def product_total(%__MODULE__{products: products}) do
+    for %{charged_price: price} <- products, reduce: Money.new(0) do
+      sum -> Money.add(sum, price)
+    end
+  end
+
+  def digital_total(%__MODULE__{digitals: digitals, bundle_price: bundle_price}) do
+    for %{price: price} <- digitals, reduce: bundle_price || Money.new(0) do
+      sum -> Money.add(sum, price)
+    end
+  end
+
+  def total_cost(%__MODULE__{} = order) do
+    Money.add(digital_total(order), product_total(order))
+  end
+
+  defp line_items_by_product(%__MODULE__{products: products}) do
+    products
+    |> Enum.sort_by(&(-1 * &1.created_at))
+    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{} = product} -> product end)
+    |> Map.to_list()
+    |> Enum.sort_by(fn {_product, line_items} ->
+      -1 * (line_items |> Enum.map(& &1.created_at) |> Enum.max())
+    end)
   end
 end

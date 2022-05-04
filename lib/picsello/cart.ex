@@ -19,14 +19,7 @@ defmodule Picsello.Cart do
   }
 
   def new_product(editor_id, account_id) do
-    details = WHCC.editor_details(account_id, editor_id)
-    export = WHCC.editor_export(account_id, editor_id)
-
-    %{"totalOrderBasePrice" => raw_price, "code" => "USD"} = export.pricing
-    base_price = Money.new(trunc(raw_price * 100), :USD)
-    price = WHCC.mark_up_price(details, base_price)
-
-    CartProduct.new(details, price, base_price)
+    WHCC.price_details(editor_id, account_id) |> CartProduct.new()
   end
 
   @doc """
@@ -38,7 +31,7 @@ defmodule Picsello.Cart do
      - attributes - list with WHCC attributes. Can be used tto selecccct shipping options
   """
   def order_product(product, account_id, opts) do
-    created_order = WHCC.create_order(account_id, product.editor_details.editor_id, opts)
+    created_order = WHCC.create_order(account_id, CartProduct.id(product), opts)
 
     product
     |> CartProduct.add_order(created_order)
@@ -56,13 +49,12 @@ defmodule Picsello.Cart do
     |> seek_and_map(&CartProduct.add_tracking(&1, params))
   end
 
-  @doc "stores checkout info in order it finds"
-  def store_cart_products_checkout(
-        [%CartProduct{editor_details: %{editor_id: editor_id}} | _] = products
+  def store_cart_product_checkout(
+        order,
+        product
       ) do
-    editor_id
-    |> order_with_editor()
-    |> Order.checkout_changeset(products)
+    order
+    |> Order.checkout_changeset(product)
     |> Repo.update!()
   end
 
@@ -72,7 +64,7 @@ defmodule Picsello.Cart do
   def place_product(product, gallery_id) do
     params = %{gallery_id: gallery_id}
 
-    case get_unconfirmed_order(gallery_id) do
+    case get_unconfirmed_order(gallery_id, preload: [:digitals]) do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
     end
@@ -128,13 +120,13 @@ defmodule Picsello.Cart do
       end)
 
   defp contains_digital?(%{id: gallery_id}, photo) do
-    case(get_unconfirmed_order(gallery_id)) do
+    gallery_id
+    |> get_unconfirmed_order(preload: [:digitals])
+    |> case do
       {:ok, order} -> contains_digital?(order, photo)
       _ -> false
     end
   end
-
-  defp contains_digital?(_, _), do: false
 
   defp contains_bundle?(%{id: gallery_id}) do
     case(get_unconfirmed_order(gallery_id)) do
@@ -184,25 +176,27 @@ defmodule Picsello.Cart do
   @doc """
   Gets the current order for gallery.
   """
-  def get_unconfirmed_order(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
-    )
-    |> preload_digitals()
+  @spec get_unconfirmed_order(integer(), preload: [:digitals | :products | :package]) ::
+          {:ok, Order.t()} | {:error, :no_unconfirmed_order}
+  def get_unconfirmed_order(gallery_id, opts \\ []) do
+    preloads = Keyword.get(opts, :preload, [])
+
+    for assoc <- preloads,
+        fun = Map.get(%{digitals: &preload_digitals/1, package: &preload(&1, :package)}, assoc),
+        reduce:
+          from(order in Order,
+            where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
+          ) do
+      query ->
+        fun.(query)
+    end
     |> Repo.one()
     |> case do
-      %Order{} = order -> {:ok, order}
-      _ -> {:error, :no_unconfirmed_order}
-    end
-  end
+      %Order{} = order ->
+        {:ok, if(:products in preloads, do: preload_products(order), else: order)}
 
-  def get_unconfirmed_order(gallery_id, :preload_products) do
-    case get_unconfirmed_order(gallery_id) do
-      {:ok, order} ->
-        {:ok, order |> preload_products()}
-
-      error ->
-        error
+      _ ->
+        {:error, :no_unconfirmed_order}
     end
   end
 
@@ -210,7 +204,7 @@ defmodule Picsello.Cart do
     ids =
       for(%{products: [_ | _] = products} <- orders, reduce: []) do
         acc ->
-          acc ++ for(%{editor_details: %{product_id: id}} <- products, do: id)
+          acc ++ for(product <- products, do: CartProduct.product_id(product))
       end
 
     products_by_whcc_id =
@@ -224,8 +218,11 @@ defmodule Picsello.Cart do
         order
         | products:
             for(
-              %{editor_details: %{product_id: id}} = product <- products,
-              do: %{product | whcc_product: Map.get(products_by_whcc_id, id)}
+              product <- products,
+              do: %{
+                product
+                | whcc_product: Map.get(products_by_whcc_id, CartProduct.product_id(product))
+              }
             )
       }
     end
@@ -377,16 +374,22 @@ defmodule Picsello.Cart do
     DeliveryInfo.changeset(delivery_info, attrs)
   end
 
-  def store_order_delivery_info(%Order{} = order, delivery_info_change) do
+  def store_order_delivery_info(order, delivery_info_change) do
     order
     |> Order.store_delivery_info(delivery_info_change)
-    |> Repo.update!()
+    |> update_order_preserving_lines!()
   end
 
   def set_order_number(order) do
     order
     |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
+    |> update_order_preserving_lines!()
+  end
+
+  defp update_order_preserving_lines!(%{data: order} = changeset) do
+    changeset
     |> Repo.update!()
+    |> then(&Map.merge(&1, Map.take(order, [:products, :digitals])))
   end
 
   def item_count(%{products: products, bundle_price: bundle_price} = order),
@@ -401,28 +404,23 @@ defmodule Picsello.Cart do
       |> Enum.map(&Enum.count/1)
       |> Enum.sum()
 
-  def checkout_params(%Order{products: products, digitals: digitals} = order) do
+  def checkout_params(%Order{digitals: digitals} = order) do
     product_line_items =
-      Enum.map(products, fn %{
-                              price: price
-                            } = product ->
-        quantity = product_quantity(product)
-        unit_amount = price |> Money.divide(quantity) |> hd |> Map.get(:amount)
-
+      for %{price: price, line_item: line_item} <- Order.priced_lines(order) do
         %{
           price_data: %{
             currency: price.currency,
-            unit_amount: unit_amount,
+            unit_amount: price.amount,
             product_data: %{
-              name: product_name(product),
-              images: [item_image_url(product)],
+              name: "#{product_name(line_item)} (Qty #{product_quantity(line_item)})",
+              images: [item_image_url(line_item)],
               tax_code: Picsello.Payments.tax_code(:product)
             },
             tax_behavior: "exclusive"
           },
-          quantity: quantity
+          quantity: 1
         }
-      end)
+      end
 
     digital_line_items =
       Enum.map(digitals, fn %{price: price} = digital ->
@@ -464,39 +462,35 @@ defmodule Picsello.Cart do
         []
       end
 
-    shipping_cost = shipping_cost(order)
-
     %{
       line_items: product_line_items ++ digital_line_items ++ bundle_line_items,
       customer_email: order.delivery_info.email,
       client_reference_id: "order_number_#{Order.number(order)}",
-      payment_intent_data: %{capture_method: :manual},
-      shipping_options: [
-        %{
-          shipping_rate_data: %{
-            type: "fixed_amount",
-            display_name: "Shipping",
-            fixed_amount: %{
-              amount: shipping_cost.amount,
-              currency: shipping_cost.currency
-            },
-            tax_code: Picsello.Payments.tax_code(:shipping),
-            tax_behavior: "exclusive"
-          }
-        }
-      ]
+      payment_intent_data: %{capture_method: :manual}
     }
   end
 
-  def product_name(%CartProduct{
-        editor_details: %{selections: selections},
-        whcc_product: %{whcc_name: name} = product
-      }) do
-    size =
-      product |> Picsello.WHCC.Product.selection_details(selections) |> get_in(["size", "name"])
+  def product_name(
+        %CartProduct{
+          whcc_product: %{whcc_name: name}
+        } = line_item
+      ) do
+    size = line_item |> product_size() |> Map.get("name")
 
     Enum.join([size, name], " ")
   end
+
+  def product_size(%CartProduct{
+        editor_details: %{selections: selections},
+        whcc_product: product
+      }),
+      do:
+        product
+        |> Picsello.WHCC.Product.selection_details(selections)
+        |> (case do
+              %{"size" => %{} = size} -> size
+              _ -> %{}
+            end)
 
   def item_image_url(%CartProduct{editor_details: %{preview_url: url}}), do: url
 
@@ -526,7 +520,7 @@ defmodule Picsello.Cart do
     with order <- order_with_editor(editor_id),
          true <- order != nil and is_list(order.products),
          {[target], rest} <-
-           Enum.split_with(order.products, &(&1.editor_details.editor_id == editor_id)),
+           Enum.split_with(order.products, &(CartProduct.id(&1) == editor_id)),
          true <- target != nil do
       order
       |> Order.change_products([fun.(target) | rest])
@@ -549,12 +543,10 @@ defmodule Picsello.Cart do
     |> Repo.update!()
   end
 
-  def product_quantity(%CartProduct{editor_details: %{selections: selections}}),
-    do: Map.get(selections, "quantity", 1)
-
+  defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
   defdelegate total_cost(order), to: Order
-  defdelegate subtotal_cost(order), to: Order
-  defdelegate shipping_cost(order), to: Order
+  defdelegate priced_lines_by_product(order), to: Order
+  defdelegate priced_lines(order), to: Order
 
   def price_display(%Digital{} = digital) do
     "#{if Money.zero?(digital.price), do: "1 credit - "}#{digital.price}"

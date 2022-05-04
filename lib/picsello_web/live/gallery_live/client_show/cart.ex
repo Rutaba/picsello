@@ -1,15 +1,14 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.{Cart, Payments, WHCC, Galleries, GalleryProducts}
-  alias Cart.{CartProduct, Order}
-  alias WHCC.Shipping
+  alias Picsello.{Cart, Payments, WHCC, Galleries}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
+  alias WHCC.Shipping
   import PicselloWeb.GalleryLive.Shared
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
-    case Cart.get_unconfirmed_order(gallery.id, :preload_products) do
+    case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals, :package]) do
       {:ok, order} ->
         gallery = Galleries.populate_organization_user(gallery)
 
@@ -39,43 +38,27 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   def handle_event(
-        "continue",
+        "checkout",
         _,
         %{
           assigns: %{
             step: :delivery_info,
             delivery_info_changeset: delivery_info_changeset,
-            order: %{products: [], digitals: digitals, bundle_price: bundle_price} = order
-          }
-        } = socket
-      )
-      when length(digitals) > 0 or bundle_price != nil do
-    socket
-    |> assign(order: Cart.store_order_delivery_info(order, delivery_info_changeset))
-    |> then(fn socket ->
-      socket
-      |> redirect(external: checkout_link(socket))
-      |> noreply()
-    end)
-  end
-
-  def handle_event(
-        "continue",
-        _,
-        %{
-          assigns: %{
-            step: :delivery_info,
-            delivery_info_changeset: delivery_info_changeset,
-            order: %{products: products, digitals: []} = order
+            order: order
           }
         } = socket
       ) do
     socket
-    |> assign(:step, :shipping_opts)
-    |> assign(:order, Cart.store_order_delivery_info(order, delivery_info_changeset))
-    |> assign(:ordering_tasks, %{})
-    |> assign_shipping_opts()
-    |> schedule_products_ordering(products)
+    |> assign(order: Cart.store_order_delivery_info(order, delivery_info_changeset))
+    |> case do
+      %{assigns: %{order: %{products: []}}} = socket ->
+        redirect(socket, external: checkout_link(socket))
+
+      %{assigns: %{order: %{products: products}}} = socket ->
+        socket
+        |> assign(:ordering_tasks, %{})
+        |> schedule_products_ordering(products)
+    end
     |> noreply()
   end
 
@@ -141,33 +124,33 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  def handle_event("checkout", _, socket) do
-    socket
-    |> redirect(external: checkout_link(socket))
-    |> noreply()
-  end
-
-  def handle_event(
-        "click",
-        %{"option-uid" => option_uid, "product-editor-id" => editor_id},
-        %{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket
-      ) do
-    product = Enum.find(products, fn p -> p.editor_details.editor_id == editor_id end)
-
-    socket
-    |> update_shipping_opts(String.to_integer(option_uid), editor_id)
-    |> schedule_products_ordering([product])
-    |> noreply()
-  end
-
   @impl true
-  def handle_info({_ref, product}, %{assigns: %{ordering_tasks: tasks}} = socket) do
-    Task.shutdown(tasks[product.editor_details.editor_id], :brutal_kill)
+  @doc "called when Task.async completes"
+  def handle_info({_ref, product}, %{assigns: %{order: order, ordering_tasks: tasks}} = socket) do
+    Task.shutdown(tasks[item_id(product)], :brutal_kill)
+    tasks = Map.drop(tasks, [item_id(product)])
 
     socket
-    |> assign(:order, Cart.store_cart_products_checkout([product]))
-    |> assign(:ordering_tasks, Map.drop(tasks, [product.editor_details.editor_id]))
+    |> assign(:order, Cart.store_cart_product_checkout(order, product))
+    |> assign(:ordering_tasks, tasks)
+    |> then(fn socket ->
+      if Enum.empty?(tasks), do: socket |> redirect(external: checkout_link(socket)), else: socket
+    end)
     |> noreply()
+  end
+
+  defp continue_summary(assigns) do
+    ~H"""
+    <.summary order={@order} id={@id}>
+      <button type="button" disabled={zero_subtotal?(@order)} phx-click="continue" class="mx-5 mt-5 text-lg mb-7 btn-primary">
+        Continue
+      </button>
+
+      <%= if zero_subtotal?(@order) do %>
+        <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
+      <% end %>
+    </.summary>
+    """
   end
 
   defp checkout_link(%{assigns: %{order: order, gallery: gallery}} = socket) do
@@ -197,14 +180,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     checkout_link
   end
 
-  defp product_shipping_options(%{assigns: %{shipping_opts: shipping_opts}}, product) do
-    shipping_opts
-    |> Enum.find(fn opt ->
-      opt[:editor_id] == product.editor_details.editor_id
-    end)
-    |> then(& &1.current)
-  end
-
   defp schedule_products_ordering(socket, %{}) do
     socket
     |> noreply()
@@ -225,21 +200,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     tasks =
       products
       |> Enum.reduce(ordering_tasks, fn product, tasks ->
-        case ordering_tasks[product.editor_details.editor_id] do
+        case ordering_tasks[item_id(product)] do
           nil -> :ignore
           task -> Task.shutdown(task, :brutal_kill)
         end
 
-        shipping_options = product_shipping_options(socket, product)
-
         Map.put(
           tasks,
-          product.editor_details.editor_id,
+          item_id(product),
           Task.async(fn ->
             try do
-              order_product(product, account_id, delivery_info, shipping_options)
+              order_product(product, account_id, delivery_info)
             rescue
-              _ -> order_product(product, account_id, delivery_info, shipping_options)
+              _ -> order_product(product, account_id, delivery_info)
             end
           end)
         )
@@ -249,105 +222,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(:ordering_tasks, tasks)
   end
 
-  defp order_product(product, account_id, delivery_info, shipping_options) do
+  defp order_product(product, account_id, delivery_info) do
     Cart.order_product(product, account_id,
       ship_to: form_ship_address(delivery_info),
       return_to: return_to_address(),
-      attributes: Shipping.to_attributes(shipping_options)
+      attributes: Shipping.to_attributes(product)
     )
   end
-
-  defp update_shipping_opts(%{assigns: %{shipping_opts: opts}} = socket, option_uid, editor_id) do
-    socket
-    |> assign(
-      :shipping_opts,
-      Enum.map(opts, fn
-        %{editor_id: id, current: %{id: uid}} = opt
-        when editor_id == id and option_uid == uid ->
-          opt
-
-        %{editor_id: id} = opt when editor_id == id ->
-          Map.put(
-            opt,
-            :current,
-            Enum.find(opt[:list], fn list_opt -> option_uid == list_opt.id end)
-          )
-
-        opt ->
-          opt
-      end)
-    )
-  end
-
-  defp assign_shipping_opts(
-         %{assigns: %{step: :shipping_opts, order: %{products: products}}} = socket
-       ) do
-    socket
-    |> assign(
-      :shipping_opts,
-      Enum.map(products, fn product -> shipping_opts_for_product(product) end)
-    )
-  end
-
-  defp summary(assigns) do
-    ~H"""
-    <div class="flex flex-col p-5 border border-base-225">
-      <div class="text-xl">
-        <%= unless Enum.empty?(@order.products) do %> Subtotal: <% else %> Total: <% end %>
-
-        <span class="ml-2 font-bold"><%= subtotal_cost(@order) %></span>
-      </div>
-
-      <button type="button" class="mt-5 text-lg btn-primary" phx-click="continue" disabled={zero_subtotal?(@order)}>Continue</button>
-
-      <%= if zero_subtotal?(@order) do %>
-        <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
-      <% end %>
-    </div>
-    """
-  end
-
-  defp display_shipping_opts(assigns) do
-    ~H"""
-    <form>
-      <%= for option <- @options do %>
-        <%= render_slot(@inner_block, option) %>
-      <% end %>
-    </form>
-    """
-  end
-
-  defp shipping_opts_for_product(%{
-         editor_details: %{
-           editor_id: editor_id,
-           selections: %{"size" => size},
-           product_id: product_id
-         },
-         base_price: price
-       }) do
-    category = GalleryProducts.get_whcc_product_category(product_id)
-
-    %{editor_id: editor_id, list: Shipping.options(category.whcc_name, size, price)}
-    |> then(&Map.put(&1, :current, List.first(&1.list)))
-  end
-
-  defp shipping_opts_for_product(opts, %{editor_details: %{editor_id: editor_id}}) do
-    Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
-    |> then(& &1.list)
-  end
-
-  defp is_current_shipping_option?(opts, option, %{editor_details: %{editor_id: editor_id}}) do
-    Enum.find(opts, fn %{editor_id: id} -> id == editor_id end)
-    |> then(&(&1.current == option))
-  end
-
-  defp is_product_ordering?(ordering_tasks, product) do
-    Map.has_key?(ordering_tasks, product.editor_details.editor_id)
-  end
-
-  defp shipping_option_uid(%{id: id}), do: "#{id}"
-  defp shipping_option_cost(%{price: price}), do: price
-  defp shipping_option_label(%{name: label}), do: label
 
   defp return_to_address() do
     %{
@@ -384,21 +265,25 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     }
   end
 
-  defp product_id(%CartProduct{editor_details: %{editor_id: id}}), do: id
-
-  defp only_digitals?(%Order{products: []}), do: true
-  defp only_digitals?(_order), do: false
+  defp only_digitals?(%{products: [], digitals: [_ | _]}), do: true
+  defp only_digitals?(%{products: [], digitals: [], bundle_price: %Money{}}), do: true
+  defp only_digitals?(_), do: false
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
 
   defp zero_subtotal?(order),
-    do: only_digitals?(order) && order |> subtotal_cost() |> Money.zero?()
+    do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
 
-  defdelegate item_image_url(item), to: Cart
-  defdelegate product_quantity(product), to: Cart
   defdelegate cart_count(order), to: Cart, as: :item_count
+  defdelegate item_id(item), to: Cart.CartProduct, as: :id
+  defdelegate item_image_url(item), to: Cart
+  defdelegate priced_lines_by_product(order), to: Cart
+  defdelegate product_id(item), to: Cart.CartProduct
   defdelegate product_name(product), to: Cart
-  defdelegate shipping_cost(order), to: Cart
-  defdelegate subtotal_cost(order), to: Cart
+  defdelegate product_quantity(product), to: Cart
+  defdelegate summary(assigns), to: __MODULE__.Summary
   defdelegate total_cost(order), to: Cart
+
+  defp zero_total?(order),
+    do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
 end

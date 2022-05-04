@@ -1,5 +1,6 @@
 defmodule Picsello.WHCCTest do
   use Picsello.DataCase
+  import Money.Sigils
 
   def read_fixture(path) do
     "test/support/fixtures/whcc/api/v1"
@@ -287,49 +288,46 @@ defmodule Picsello.WHCCTest do
     end
   end
 
-  describe "mark_up_price" do
+  describe "price_details" do
     test "for prints it looks up size in size table" do
-      insert(:product,
-        category: build(:category, whcc_id: "h3GrtaTf5ipFicdrJ"),
-        whcc_id: "ABC",
-        attribute_categories: [
-          %{
-            "name" => "size",
-            "attributes" => [%{"id" => "10x10", "metadata" => %{"height" => 10, "width" => 10}}]
-          }
-        ]
-      )
+      product =
+        insert(:product,
+          category: build(:category, whcc_id: "h3GrtaTf5ipFicdrJ"),
+          whcc_id: "ABC",
+          attribute_categories: [
+            %{
+              "name" => "size",
+              "attributes" => [%{"id" => "10x10", "metadata" => %{"height" => 10, "width" => 10}}],
+              "_id" => "size"
+            }
+          ]
+        )
 
-      details = %Picsello.WHCC.Editor.Details{
-        product_id: "ABC",
-        selections: %{"size" => "10x10", "quantity" => 3}
-      }
+      details =
+        build(:whcc_editor_details,
+          product_id: "ABC",
+          selections: %{"size" => "10x10", "quantity" => 3}
+        )
 
-      assert %Money{amount: 22_500} = Picsello.WHCC.mark_up_price(details, %Money{amount: 0})
+      assert ~M[7500]USD =
+               Picsello.WHCC.price_details(product, details, %{
+                 unit_base_price: ~M[0]USD,
+                 quantity: 3
+               }).unit_markup
     end
 
     test "defaults to product category" do
-      insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 3.0))
+      product = insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 2.0))
 
       details = %Picsello.WHCC.Editor.Details{
         product_id: "ABC"
       }
 
-      total = Money.new(2000)
-
-      assert %Money{amount: 6000} = Picsello.WHCC.mark_up_price(details, total)
-    end
-
-    test "rounds price to nearest $5" do
-      insert(:product, whcc_id: "ABC", category: build(:category, default_markup: 3.0))
-
-      details = %Picsello.WHCC.Editor.Details{
-        product_id: "ABC"
-      }
-
-      total = Money.new(2300)
-
-      assert %Money{amount: 7000} = Picsello.WHCC.mark_up_price(details, total)
+      assert ~M[4000]USD =
+               Picsello.WHCC.price_details(product, details, %{
+                 unit_base_price: ~M[2000]USD,
+                 quantity: 1
+               }).unit_markup
     end
   end
 
