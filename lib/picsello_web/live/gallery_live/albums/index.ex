@@ -224,10 +224,13 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
-  def handle_info({:album_settings, %{message: message, album: album}}, socket) do
+  def handle_info(
+        {:album_settings, %{message: message}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     socket
     |> close_modal()
-    |> assign(:album, album)
+    |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery.id))
     |> put_flash(:gallery_success, message)
     |> noreply()
   end

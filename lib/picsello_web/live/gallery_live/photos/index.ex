@@ -518,4 +518,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp extract_album(album, album_return, other) do
     if album, do: Map.get(album, album_return), else: other
   end
+
+  defp album_actions(assigns) do
+    assigns = assigns |> Enum.into(%{exclude_album_id: nil})
+
+    ~H"""
+    <%= for album <- @albums do %>
+      <%= if @exclude_album_id != album.id do %>
+      <li class="relative">
+        <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
+      </li>
+      <% end %>
+    <% end %>
+    """
+  end
 end

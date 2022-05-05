@@ -74,12 +74,9 @@
             <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
               <.actions id="actions" class="w-64 text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                 <%= if(is_nil(@album)) do %>
-                  <%= for album <- @gallery.albums do %>
-                  <li class="relative">
-                    <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
-                  </li>
-                  <% end %>
+                  <.album_actions albums={@gallery.albums} />
                 <% else %>
+                  <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
                   <li class="relative">
                       <button class="album-actions" phx-click="remove_from_album">Remove from album</button>
                   </li>
