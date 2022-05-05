@@ -67,9 +67,7 @@ defmodule Picsello.Albums do
 
   def save_thumbnail(album, photo), do: album |> Album.update_thumbnail(photo) |> Repo.update()
 
-  def remove_album_thumbnail(photos) do
-    ids = Enum.map(photos, & &1.id)
-
+  def remove_album_thumbnail(ids) do
     from(album in Album,
       where: album.thumbnail_photo_id in ^ids,
       update: [set: [thumbnail_photo_id: nil]]

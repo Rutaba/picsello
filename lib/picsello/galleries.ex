@@ -189,36 +189,48 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  @spec remove_photos_from_album(list(photo_ids :: integer)) :: {integer, nil}
+  defp move_photos_from_album_transaction(photo_ids) do
+    IO.inspect(photo_ids)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update_all(
+      :thumbnail,
+      fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.update_all(
+      :photos,
+      fn _ ->
+        from(p in Photo,
+          where: p.id in ^photo_ids,
+          update: [set: [album_id: nil]]
+        )
+      end,
+      []
+    )
+  end
+
   def remove_photos_from_album(photo_ids) do
-    Photo
-    |> where([p], p.id in ^photo_ids)
-    |> Repo.update_all(set: [album_id: nil])
+    move_photos_from_album_transaction(photo_ids)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        {:ok, photo_ids}
+
+      {:error, reason} ->
+        reason
+    end)
   end
 
   def delete_album(album) do
     album = album |> Repo.preload(:photos)
+    photo_ids = Enum.map(album.photos, & &1.id)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
-      :preview,
-      fn _ ->
-        photo_ids = Enum.map(album.photos, & &1.id)
-        GalleryProducts.remove_photo_preview(photo_ids)
-      end,
-      []
-    )
-    |> Ecto.Multi.update_all(
-      :thumbnail,
-      fn _ -> Albums.remove_album_thumbnail(album.photos) end,
-      []
-    )
-    |> Ecto.Multi.delete_all(:photos, Ecto.assoc(album, :photos))
+    move_photos_from_album_transaction(photo_ids)
     |> Ecto.Multi.delete(:album, album)
     |> Repo.transaction()
     |> then(fn
-      {:ok, %{album: album}} ->
-        clean_store(album.photos)
+      {:ok, _} ->
         {:ok, album}
 
       {:error, reason} ->
@@ -245,7 +257,7 @@ defmodule Picsello.Galleries do
     )
     |> Ecto.Multi.update_all(
       :thumbnail,
-      fn _ -> Albums.remove_album_thumbnail(photos) end,
+      fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
     |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
@@ -377,7 +389,7 @@ defmodule Picsello.Galleries do
     |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
     |> Ecto.Multi.update_all(
       :thumbnail,
-      fn _ -> Albums.remove_album_thumbnail(gallery.photos) end,
+      fn _ -> Albums.remove_album_thumbnail(Enum.map(gallery.photos, & &1.id)) end,
       []
     )
     |> Ecto.Multi.delete_all(:delete_photos, Ecto.assoc(gallery, :photos))

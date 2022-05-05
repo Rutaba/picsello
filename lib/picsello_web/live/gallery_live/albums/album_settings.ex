@@ -1,6 +1,7 @@
 defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   @moduledoc false
   use PicselloWeb, :live_component
+  import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.Albums
   alias Picsello.Galleries.Album
@@ -85,6 +86,31 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     socket
     |> assign(:album_password, Gallery.generate_password())
     |> noreply
+  end
+
+  @impl true
+  def handle_event(
+        "delete_album_popup",
+        %{"id" => id},
+        %{
+          assigns: %{
+            album: album,
+            gallery_id: gallery_id
+          }
+        } = socket
+      ) do
+    albums = Albums.get_albums_by_gallery_id(gallery_id)
+
+    opts = [
+      event: "delete_album",
+      title: "Delete album?",
+      subtitle:
+        "Are you sure you wish to delete #{album.name}? Any photos within this album will be moved to your #{ngettext("Photos", "Unsorted photos", total(albums))}.",
+      payload: %{album_id: id}
+    ]
+
+    socket
+    |> make_delete_popup(opts)
   end
 
   defp generate_password(set_password, album_password) do
@@ -182,6 +208,14 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <% end %>
         </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
+          <%= if @album do %>
+          <div class="flex flex-row items-center justify-start w-full lg:items-start">
+            <button type="button" phx-click="delete_album_popup" phx-target={@myself} phx-value-id={@album.id} class="btn-settings-secondary flex items-center border-gray-200" id="close">
+              <.icon name="trash" class="flex w-4 h-5 mr-2 text-red-400" />
+              Delete
+            </button>
+          </div>
+          <% end %>
           <button type="button" phx-click="modal" phx-value-action="close" class="btn-settings-secondary" id="close">
             Close
           </button>
