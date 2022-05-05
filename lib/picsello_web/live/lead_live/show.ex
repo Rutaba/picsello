@@ -143,6 +143,13 @@ defmodule PicselloWeb.LeadLive.Show do
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
+  def handle_event("edit-contract", %{}, socket) do
+    socket
+    |> PicselloWeb.ContractFormComponent.open(Map.take(socket.assigns, [:job, :current_user]))
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
@@ -223,6 +230,15 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def handle_info({:stripe_status, status}, socket) do
     socket |> assign(stripe_status: status) |> noreply()
+  end
+
+  @impl true
+  def handle_info({:contract_saved, job}, socket) do
+    socket
+    |> assign(job: job)
+    |> put_flash(:success, "New contract added successfully")
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true

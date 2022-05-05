@@ -66,10 +66,4 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
       organization: organization
     })
   end
-
-  def li(assigns) do
-    ~H"""
-    <li class="py-3"><strong class="mx-1"><%=@title%></strong><%= render_slot @inner_block%></li>
-    """
-  end
 end

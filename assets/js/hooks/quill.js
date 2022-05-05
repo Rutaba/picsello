@@ -61,6 +61,7 @@ export default {
       ? this.el.querySelector(`input[name="${htmlFieldName}"]`)
       : null;
     const fileInput = this.el.querySelector('input[type=file]');
+    const quillSourceInput = this.el.querySelector('input[name*=quill_source]');
 
     const toolbarOptions = [
       'bold',
@@ -144,7 +145,7 @@ export default {
       };
     }
 
-    function textChange() {
+    function textChange(_delta, _oldDelta, source) {
       htmlInput.value = quill.root.innerHTML;
       const text = quill.getText();
 
@@ -157,16 +158,20 @@ export default {
         textInput.value = text;
         textInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
+
+      if (quillSourceInput) {
+        quillSourceInput.value = source || '';
+      }
     }
 
     quill.on('text-change', textChange);
 
     this.handleEvent('quill:update', ({ html }) => {
-      quill.root.innerHTML = html;
+      quill.clipboard.dangerouslyPasteHTML(html, 'api');
       textChange();
     });
 
-    quill.root.innerHTML = htmlInput.value;
+    quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
   },
 };
 

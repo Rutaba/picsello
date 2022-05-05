@@ -138,3 +138,12 @@
     }
   }
 }
+
+.ql-editor {
+  ol, ul {
+    padding-left: unset;
+    li:not(.ql-direction-rtl) {
+      @apply pb-2;
+    }
+  }
+}

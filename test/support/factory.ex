@@ -646,6 +646,22 @@ defmodule Picsello.Factory do
       }
       |> evaluate_lazy_attributes()
 
+  def contract_factory(attrs) do
+    %Picsello.Contract{
+      name: "My custom contract",
+      job_types: ["wedding"],
+      content: "the greatest contract",
+      organization: fn ->
+        case attrs do
+          %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
+          _ -> build(:organization)
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user]))
+    |> evaluate_lazy_attributes()
+  end
+
   def tax_schedule_factory do
     %{
       year: 2022,

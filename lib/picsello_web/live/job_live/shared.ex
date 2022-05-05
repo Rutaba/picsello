@@ -511,7 +511,7 @@ defmodule PicselloWeb.JobLive.Shared do
     job =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Ecto.Query.preload([:client, :package, :job_status, :gallery, :contract])
       |> Repo.get!(job_id)
 
     if job.job_status.is_lead do
