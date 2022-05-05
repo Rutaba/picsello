@@ -12,20 +12,20 @@ defmodule PicselloWeb.LeadContactIframeView do
         <div class="flex flex-col mt-3">
           <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
-          <%= input f, :name, placeholder: "Type your first and last name...", required: true %>
+          <%= input f, :name, placeholder: "First and last name", required: true %>
         </div>
 
         <div class="flex flex-col lg:flex-row">
           <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
             <%= label_for f, :email, label: "Your email", class: "py-2 font-bold" %>
 
-            <%= input f, :email, type: :email_input, placeholder: "Type email...", required: true %>
+            <%= input f, :email, type: :email_input, placeholder: "email@example.com", required: true %>
           </div>
 
           <div class="flex flex-col flex-1 mt-3">
             <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-bold" %>
 
-            <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", required: true, id: "phone" %>
+            <%= input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", required: true, id: "phone" %>
           </div>
         </div>
 
@@ -40,7 +40,7 @@ defmodule PicselloWeb.LeadContactIframeView do
         <div class="flex flex-col mt-7">
           <%= label_for f, :message, label: "Your message", class: "py-2 font-bold" %>
 
-          <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, required: true %>
+          <%= input f, :message, type: :textarea, placeholder: "e.g. Date(s), what you're looking for, any relevant information, etc.", rows: 5, required: true %>
         </div>
 
         <div class="mt-8 text-right"><button type="submit" class="w-full lg:w-auto btn-primary">Submit</button></div>

@@ -30,7 +30,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
         <.form let={f} for={@changeset}, phx-change="validate" phx-submit="save" phx-target={@myself}>
 
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
-            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "Engagement Shoot", wrapper_class: "sm:col-span-3" %>
+            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. Engagement Shoot, Newborn Session, etc.", wrapper_class: "sm:col-span-3" %>
             <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "sm:col-span-3", class: "w-full" %>
             <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }),
                   label: "Shoot Duration",
@@ -63,7 +63,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
               </div>
             <% end %>
 
-            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "type notes here", wrapper_class: "sm:col-span-6" %>
+            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "e.g. Anything you'd like to remember", wrapper_class: "sm:col-span-6" %>
           </div>
 
           <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />

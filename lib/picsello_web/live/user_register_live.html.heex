@@ -11,8 +11,8 @@
   <.form let={f} for={@changeset} action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
 
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
-    <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", wrapper_class: "mt-4", label: "Name", autocomplete: "name" %>
-    <%= labeled_input f, :email, type: :email_input, placeholder: "jack.nimble@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
+    <%= labeled_input f, :name, placeholder: "First and last name", phx_debounce: "500", wrapper_class: "mt-4", label: "Name", autocomplete: "name" %>
+    <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password %>
 
     <div class="flex flex-col-reverse justify-between mt-5 sm:mt-9 sm:flex-row">
