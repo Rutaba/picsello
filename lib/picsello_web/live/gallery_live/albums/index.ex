@@ -113,14 +113,17 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
         %{"id" => id},
         %{
           assigns: %{
-            gallery: gallery
+            albums: albums
           }
         } = socket
       ) do
+    [album | _] = Enum.filter(albums, &(&1.id == String.to_integer(id)))
+
     opts = [
       event: "delete_album",
-      title: "Delete this album?",
-      subtitle: "Are you sure you wish to permanently delete this album from #{gallery.name} ?",
+      title: "Delete album?",
+      subtitle:
+        "Are you sure you wish to delete #{album.name}? Any photos within this album will be moved to your #{ngettext("Photos", "Unsorted photos", total(albums))}.",
       payload: %{album_id: id}
     ]
 

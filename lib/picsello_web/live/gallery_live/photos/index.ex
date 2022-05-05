@@ -89,7 +89,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, album: album})
+    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, album: album, target: self()})
     |> noreply()
   end
 

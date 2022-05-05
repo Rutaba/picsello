@@ -7,11 +7,6 @@
             <div class="flex items-end text-4xl font-bold font-sans lg:justify-start">
               <span><%= extract_album(@album, :name, "Photos") %></span>
           </div>
-          <div id="selected-photos-count" class="flex items-end ml-8 font-sans text-lg text-base-250 lg:justify-start">
-              <%= if total(@selected_photos) > 0 do %>
-              <%= total(@selected_photos) %> <%= ngettext("photo", "photos", Enum.count(@selected_photos)) %> selected
-              <% end %>
-          </div>
           <div class="flex ml-auto">
               <%= if @album do %>
                   <.icon_button {testid("edit-album-settings")} class="bg-white ml-5 shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
@@ -87,7 +82,11 @@
               </.actions>
             </div>
           </div>
-
+          <div id="selected-photos-count" class="flex items-end ml-8 font-sans text-lg text-base-250 lg:justify-start">
+              <%= if total(@selected_photos) > 0 do %>
+              <%= total(@selected_photos) %> <%= ngettext("photo", "photos", Enum.count(@selected_photos)) %> selected
+              <% end %>
+          </div>
           <div class="flex flex-col items-start min-w-0 lg:flex-row lg:justify-end">
             <label id="toggle_favorites" class="flex items-center float-right cursor-pointer">
               <div class="font-sans text-sm lg:text-lg">Show favorites only
