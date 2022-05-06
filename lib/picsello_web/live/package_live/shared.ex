@@ -107,7 +107,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             Set a "buy them all" price
           </label>
           <%= if p |> current() |> Map.get(:is_buy_all) do %>
-            <%= input(@package_form, :buy_all, placeholder: "$0.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= input(@package_form, :buy_all, placeholder: "$750.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
           <% end %>
         </div>
       <% end %>
