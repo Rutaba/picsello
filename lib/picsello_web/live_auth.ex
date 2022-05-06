@@ -166,6 +166,7 @@ defmodule PicselloWeb.LiveAuth do
     else
       true ->
         socket |> cont()
+
       _ ->
         socket
     end

@@ -1,10 +1,19 @@
 defmodule Picsello.GalleryProductPreviewTest do
   use Picsello.FeatureCase, async: true
+  import Money.Sigils
 
-  setup do
-    gallery = insert(:gallery, %{name: "Test Client Wedding"})
+  setup :onboarded
+  setup :authenticated
 
+  setup %{user: user} do
+    total_photos = 20
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    organization = insert(:organization, user: user)
+    package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+    client = insert(:client, organization: organization)
+    job = insert(:lead, type: "wedding", client: client, package: package) |> promote_to_job()
+
+    gallery = insert(:gallery, %{job: job, total_count: total_photos})
 
     products =
       Enum.map(Picsello.Category.frame_images(), fn frame_image ->
@@ -20,13 +29,10 @@ defmodule Picsello.GalleryProductPreviewTest do
         end)
       end)
 
-    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: total_photos})
 
     [gallery: gallery, products: products, photo_ids: photo_ids]
   end
-
-  setup :onboarded
-  setup :authenticated
 
   test "Product Preview render", %{
     session: session,

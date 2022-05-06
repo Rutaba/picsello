@@ -167,23 +167,22 @@ defmodule PicselloWeb.Router do
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
-  scope "/galleries/:id", PicselloWeb do
+  scope "/galleries/:id", PicselloWeb.GalleryLive do
     live_session :gallery_photographer, on_mount: {PicselloWeb.LiveAuth, :gallery_photographer} do
       pipe_through :browser
 
-      live "/", GalleryLive.Index, :index
-      live "/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
-      as: :preview
+      live "/", Index, :index
+      live "/product/:gallery_product_id", GalleryProduct, :preview, as: :preview
 
-      live "/photos", GalleryLive.Photos.Index, :index
-      live "/product-previews", GalleryLive.ProductPreview.Index, :index
+      live "/photos", Photos.Index, :index
+      live "/product-previews", ProductPreview.Index, :index
 
-      live "/orders", GalleryLive.PhotographerOrders, :orders
-      live "/upload", GalleryLive.Show, :upload
+      live "/orders", PhotographerOrders, :orders
+      live "/upload", Show, :upload
 
       scope "/albums" do
-        live "/", GalleryLive.Albums.Index, :index
-        live "/:album_id", GalleryLive.Photos.Index, :index
+        live "/", Albums.Index, :index
+        live "/:album_id", Photos.Index, :index
       end
     end
   end

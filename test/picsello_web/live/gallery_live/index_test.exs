@@ -15,10 +15,10 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
 
     package = insert(:package, download_each_price: ~M[2500]USD)
     job = insert(:lead, type: "wedding", user: user, package: package) |> promote_to_job()
+
     %{
       conn: conn,
-      gallery:
-        insert(:gallery, %{name: "Ukasha Habib Wedding", job: job})
+      gallery: insert(:gallery, %{name: "Ukasha Habib Wedding", job: job})
     }
   end
 

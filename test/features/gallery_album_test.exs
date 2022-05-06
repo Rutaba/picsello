@@ -1,19 +1,21 @@
 defmodule Picsello.GalleryAlbumTest do
   use Picsello.FeatureCase, async: true
 
-  setup do
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+  setup :onboarded
+  setup :authenticated
 
+  setup %{user: user} do
     total_photos = 20
-    gallery = insert(:gallery, %{total_count: total_photos})
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    organization = insert(:organization, user: user)
+    client = insert(:client, organization: organization)
+    job = insert(:lead, type: "wedding", client: client) |> promote_to_job()
+    gallery = insert(:gallery, %{job: job, total_count: total_photos})
     album = insert(:album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: total_photos})
 
     [gallery: gallery, album: album, photo_ids: photo_ids, photos_count: length(photo_ids)]
   end
-
-  setup :onboarded
-  setup :authenticated
 
   test "Album, render album", %{
     session: session,
