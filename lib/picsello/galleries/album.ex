@@ -39,5 +39,5 @@ defmodule Picsello.Galleries.Album do
   end
 
   defp validate_name(changeset),
-    do: validate_length(changeset, :name, max: 40)
+    do: validate_length(changeset, :name, max: 35)
 end
