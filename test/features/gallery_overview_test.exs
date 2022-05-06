@@ -5,9 +5,20 @@ defmodule Picsello.GalleryOverviewTest do
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.ExpirationDateComponent
 
-  setup :authenticated
   setup :onboarded
-  setup :authenticated_gallery
+  setup :authenticated
+
+  setup %{user: user} do
+    total_photos = 20
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    organization = insert(:organization, user: user)
+    package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+    client = insert(:client, organization: organization)
+    job = insert(:lead, type: "wedding", client: client, package: package) |> promote_to_job()
+    gallery = insert(:gallery, %{job: job, total_count: total_photos})
+
+    [gallery: gallery, job: job]
+  end
 
   feature "Validate and update gallery name", %{
     session: session,
@@ -48,8 +59,8 @@ defmodule Picsello.GalleryOverviewTest do
     refute "Test Wedding" == gallery.name
   end
 
-  feature "Update gallery password", %{session: session} do
-    gallery = insert(:gallery, %{password: "666666"})
+  feature "Update gallery password", %{session: session, job: job} do
+    gallery = insert(:gallery, %{job: job, password: "666666"})
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -62,8 +73,8 @@ defmodule Picsello.GalleryOverviewTest do
     refute "666666" == updated_gallery.password
   end
 
-  feature "Expiration date, set gallery to never expire", %{session: session} do
-    gallery = insert(:gallery, %{expired_at: ~U[2021-02-01 12:00:00Z]})
+  feature "Expiration date, set gallery to never expire", %{session: session, job: job} do
+    gallery = insert(:gallery, %{job: job, expired_at: ~U[2021-02-01 12:00:00Z]})
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -77,9 +88,7 @@ defmodule Picsello.GalleryOverviewTest do
     assert never_date == updated_gallery.expired_at
   end
 
-  feature "Expiration date, set gallery expiry", %{session: session} do
-    gallery = insert(:gallery)
-
+  feature "Expiration date, set gallery expiry", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#expiration_component"))
@@ -93,10 +102,7 @@ defmodule Picsello.GalleryOverviewTest do
     assert ~U[2023-01-02 12:00:00Z] == updated_gallery.expired_at
   end
 
-  feature "Watermark, Set text watermark", %{session: session} do
-    package = insert(:package, download_each_price: ~M[2500]USD)
-    gallery = insert(:gallery, %{job: insert(:lead, package: package)})
-
+  feature "Watermark, Set text watermark", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#galleryWatermark"))
@@ -107,10 +113,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> assert_has(css("p", text: "test watermark"))
   end
 
-  feature "Watermark, Delete watermark", %{session: session} do
-    package = insert(:package, download_each_price: ~M[2500]USD)
-    gallery = insert(:gallery, %{job: insert(:lead, package: package)})
-
+  feature "Watermark, Delete watermark", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#galleryWatermark"))

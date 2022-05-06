@@ -383,16 +383,16 @@ defmodule Picsello.Galleries do
     gallery = gallery |> Repo.preload(:photos)
 
     Ecto.Multi.new()
-    |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
-    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
     |> Ecto.Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(Enum.map(gallery.photos, & &1.id)) end,
       []
     )
+    |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
+    |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
     |> Ecto.Multi.delete_all(:delete_photos, Ecto.assoc(gallery, :photos))
     |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
-    |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
+    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
     |> Ecto.Multi.delete(:gallery, gallery)
     |> Repo.transaction()
     |> then(fn

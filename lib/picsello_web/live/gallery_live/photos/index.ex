@@ -408,6 +408,36 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_info(
+        {:confirm_event, "delete_album", %{album_id: album_id}},
+        %{assigns: %{gallery: %{id: gallery_id}}} = socket
+      ) do
+    album = Albums.get_album!(album_id)
+
+    case Galleries.delete_album(album) do
+      {:ok, _album} ->
+        albums = Albums.get_albums_by_gallery_id(gallery_id)
+
+        if Enum.empty?(albums) do
+          socket
+          |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery_id))
+        else
+          socket
+          |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
+        end
+        |> close_modal()
+        |> put_flash(:gallery_success, "Album deleted successfully")
+        |> noreply()
+
+      _any ->
+        socket
+        |> close_modal()
+        |> put_flash(:gallery_success, "Could not delete album")
+        |> noreply()
+    end
+  end
+
+  @impl true
   def handle_info({:total_progress, total_progress}, socket) do
     socket
     |> assign(:total_progress, total_progress)
