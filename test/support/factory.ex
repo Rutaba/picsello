@@ -528,28 +528,37 @@ defmodule Picsello.Factory do
 
     %Picsello.Cart.CartProduct{
       created_at: System.os_time(:millisecond),
-      editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity])),
+      editor_details:
+        build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity, :editor_id])),
       quantity: 1,
       round_up_to_nearest: 500,
       shipping_base_charge: %Money{amount: 900, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
-      whcc_processing: nil,
-      whcc_tracking: nil,
       whcc_product: nil
     }
-    |> merge_attributes(Map.drop(attrs, [:product_id]))
+    |> merge_attributes(Map.drop(attrs, [:product_id, :editor_id]))
+  end
+
+  def whcc_order_created_order_factory do
+    %Picsello.WHCC.Order.Created.Order{
+      total: ~M[100]USD,
+      sequence_number: sequence(:order_sequence_number, & &1)
+    }
   end
 
   def whcc_order_created_factory(attrs) do
     %Picsello.WHCC.Order.Created{
-      confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-      entry: "hkazbRKGjcoWwnEq3",
+      confirmation_id: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
+      entry_id: "hkazbRKGjcoWwnEq3",
       orders: fn ->
         case attrs do
-          %{total: total} -> [%Picsello.WHCC.Order.Created.Order{total: total}]
-          _ -> []
+          %{total: total} ->
+            build_list(1, :whcc_order_created_order, total: total)
+
+          _ ->
+            []
         end
       end
     }
@@ -561,26 +570,6 @@ defmodule Picsello.Factory do
     do:
       %Picsello.Cart.Order{gallery: fn -> build(:gallery) end}
       |> evaluate_lazy_attributes()
-
-  def confirmed_order_factory(attrs) do
-    %Picsello.Cart.Order{
-      delivery_info: %Picsello.Cart.DeliveryInfo{
-        address: %Picsello.Cart.DeliveryInfo.Address{
-          addr1: "1234 Hogwarts Way",
-          addr2: nil,
-          city: "New York",
-          country: "US",
-          state: "NY",
-          zip: "10001"
-        },
-        email: "hello@gmail.com",
-        name: "Harry Potter"
-      },
-      number: 226_160,
-      placed_at: ~U[2022-01-17 09:42:05Z]
-    }
-    |> merge_attributes(attrs)
-  end
 
   def email_preset_factory,
     do: %Picsello.EmailPreset{

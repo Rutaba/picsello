@@ -17,7 +17,7 @@ defmodule Picsello.Cart.Order do
     has_many :digitals, Digital, on_replace: :delete, on_delete: :delete_all
 
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
-    embeds_one :whcc_order, Picsello.WHCC.Order.Created
+    embeds_one :whcc_order, Picsello.WHCC.Order.Created, on_replace: :delete
 
     embeds_many :products, CartProduct, on_replace: :delete
 
@@ -102,10 +102,10 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:products, products)
   end
 
-  def whcc_order_changeset(order, whcc_order) do
+  def whcc_order_changeset(order, params) do
     order
-    |> change()
-    |> put_embed(:whcc_order, whcc_order)
+    |> cast(%{whcc_order: params}, [])
+    |> cast_embed(:whcc_order)
   end
 
   def confirmation_changeset(

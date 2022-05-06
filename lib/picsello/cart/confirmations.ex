@@ -135,11 +135,11 @@ defmodule Picsello.Cart.Confirmations do
              gallery: gallery,
              placed_at: nil,
              products: [_ | _],
-             whcc_order: %{confirmation: confirmation}
+             whcc_order: %{confirmation_id: confirmation_id}
            } = order
        }) do
     {:ok, confirmation_result} =
-      gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation)
+      gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation_id)
 
     confirmed_products =
       for %{line_item: product, price: charged_price} <- Order.priced_lines(order) do

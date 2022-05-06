@@ -85,17 +85,27 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
-  defp tracking_link(%{info: info}) do
-    data = info["ShippingInfo"] |> Enum.at(0)
-
-    assigns = %{
-      url: data["TrackingUrl"],
-      text: [data["Carrier"], data["TrackingNumber"]] |> Enum.join(" ")
-    }
-
+  defp tracking_link(assigns) do
     ~H"""
-      <a href={@url} class="underline cursor-pointer"><%= @text %></a>
+    <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- @info.shipping_info do %>
+      <a href={url} class="underline cursor-pointer">
+        <%= carrier %>
+        <%= tracking_number %>
+      </a>
+    <% end %>
     """
+  end
+
+  defp tracking(%{whcc_order: %{orders: sub_orders}}, item) do
+    editor_id = item |> Cart.CartProduct.id()
+
+    Enum.find_value(sub_orders, fn
+      %{editor_id: ^editor_id, whcc_tracking: tracking} ->
+        tracking
+
+      _ ->
+        nil
+    end)
   end
 
   defdelegate quantity(item), to: Cart.CartProduct

@@ -1,6 +1,6 @@
 defmodule Picsello.Cart do
   @moduledoc """
-  Context for cart related functions
+  Context for cart and order related functions
   """
 
   import Ecto.Query
@@ -54,16 +54,18 @@ defmodule Picsello.Cart do
     |> Repo.update!()
   end
 
-  @doc "stores processing info in product it finds"
-  def store_cart_product_processing(%{"EntryId" => editor_id} = params) do
-    editor_id
-    |> seek_and_map(&CartProduct.add_processing(&1, params))
-  end
+  @doc "stores processing info in order it finds"
+  def update_whcc_order(%{entry_id: entry_id} = payload) do
+    case from(order in Order, where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id))
+         |> Repo.one() do
+      nil ->
+        {:error, "order not found"}
 
-  @doc "stores processing info in product it finds"
-  def store_cart_product_tracking(%{"EntryId" => editor_id} = params) do
-    editor_id
-    |> seek_and_map(&CartProduct.add_tracking(&1, params))
+      order ->
+        order
+        |> Order.whcc_order_changeset(payload)
+        |> Repo.update()
+    end
   end
 
   @doc """
@@ -523,20 +525,6 @@ defmodule Picsello.Cart do
 
   defdelegate confirm_order(order_number, stripe_session_id, helpers),
     to: __MODULE__.Confirmations
-
-  defp seek_and_map(editor_id, fun) do
-    with order <- order_with_editor(editor_id),
-         true <- order != nil and is_list(order.products),
-         {[target], rest} <-
-           Enum.split_with(order.products, &(CartProduct.id(&1) == editor_id)),
-         true <- target != nil do
-      order
-      |> Order.change_products([fun.(target) | rest])
-      |> Repo.update()
-    else
-      _ -> :ignored
-    end
-  end
 
   defp create_order_with_product(product, attrs) do
     product

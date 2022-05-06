@@ -5,18 +5,24 @@ defmodule Picsello.WHCC.Order.Created do
     @moduledoc "stores one item from the orders list in the created response"
 
     use Ecto.Schema
-    @primary_key false
+    import Ecto.Changeset
+    @primary_key {:sequence_number, :integer, autogenerate: false}
     embedded_schema do
       field :total, Money.Ecto.Type
+      field :editor_id, :string
       field :api, :map
+      embeds_one :whcc_processing, Picsello.WHCC.Webhooks.Status
+      embeds_one :whcc_tracking, Picsello.WHCC.Webhooks.Event
     end
 
     @type t :: %__MODULE__{
             api: map(),
-            total: Money.t()
+            sequence_number: integer(),
+            total: Money.t(),
+            editor_id: nil | String.t()
           }
 
-    def new(%{"Total" => total} = order) do
+    def new(%{"Total" => total, "SequenceNumber" => sequence_number} = order) do
       total =
         total
         |> Decimal.new()
@@ -25,35 +31,73 @@ defmodule Picsello.WHCC.Order.Created do
         |> Decimal.to_integer()
         |> Money.new()
 
-      %__MODULE__{total: total, api: Map.drop(order, ["Total"])}
+      %__MODULE__{
+        total: total,
+        sequence_number: String.to_integer(sequence_number),
+        api: Map.drop(order, ["Total", "SequenceNumber"])
+      }
+    end
+
+    def changeset(order, %Picsello.WHCC.Webhooks.Event{} = status) do
+      order |> change() |> put_embed(:whcc_tracking, status)
+    end
+
+    def changeset(order, %Picsello.WHCC.Webhooks.Status{} = status) do
+      order |> change() |> put_embed(:whcc_processing, status)
+    end
+
+    def changeset(order, params) do
+      order
+      |> cast(params |> Map.from_struct(), ~w[total editor_id api sequence_number]a)
     end
   end
 
-  use StructAccess
   use Ecto.Schema
-  @primary_key false
+  import Ecto.Changeset
+
+  @primary_key {:entry_id, :string, autogenerate: false}
   embedded_schema do
-    field :entry, :string
-    field :confirmation, :string
-    embeds_many :orders, Order
+    field :confirmation_id, :string
+    embeds_many :orders, Order, on_replace: :delete
   end
 
   @type t :: %__MODULE__{
-          entry: String.t(),
-          confirmation: String.t(),
+          entry_id: String.t(),
+          confirmation_id: String.t(),
           orders: [Order.t()]
         }
 
-  def new(%{
-        "ConfirmationID" => confirmation,
-        "EntryID" => entry,
-        "Orders" => orders
-      }),
-      do: %__MODULE__{
-        confirmation: confirmation,
-        entry: entry,
-        orders: Enum.map(orders, &Order.new/1)
-      }
+  def new(%{"ConfirmationID" => confirmation_id, "EntryID" => entry_id, "Orders" => orders}) do
+    %__MODULE__{
+      confirmation_id: confirmation_id,
+      entry_id: entry_id,
+      orders: Enum.map(orders, &Order.new/1)
+    }
+  end
+
+  def changeset(
+        %{orders: orders} = created,
+        %{sequence_number: status_sequence_number} = status
+      ) do
+    created
+    |> cast(
+      %{
+        orders:
+          for(
+            order <- orders,
+            do: if(order.sequence_number == status_sequence_number, do: status, else: order)
+          )
+      },
+      []
+    )
+    |> cast_embed(:orders)
+  end
+
+  def changeset(created, payload) do
+    created
+    |> cast(Map.from_struct(payload), [:entry_id, :confirmation_id])
+    |> cast_embed(:orders)
+  end
 
   def total(%__MODULE__{orders: orders}),
     do:

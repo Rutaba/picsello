@@ -152,7 +152,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
           )
         )
         |> Order.whcc_order_changeset(
-          build(:whcc_order_created, confirmation: "whcc-order-created-id")
+          build(:whcc_order_created, confirmation_id: "whcc-order-created-id")
         )
         |> Repo.update!()
 

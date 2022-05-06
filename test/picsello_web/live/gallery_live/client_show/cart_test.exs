@@ -47,7 +47,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     test "places one whcc order when multiple products", %{
       conn: conn,
       cart_path: cart_path,
-      order: %{products: products}
+      order: order
     } do
       Picsello.MockWHCCClient
       |> Mox.expect(:editors_export, fn _account_id, editors, options ->
@@ -64,7 +64,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
                  name: "Brian"
                } = Keyword.get(options, :address)
 
-        assert Enum.map(editors, & &1.id) == Enum.map(products, &Picsello.Cart.CartProduct.id/1)
+        assert order |> Picsello.Cart.Order.number() |> to_string() ==
+                 Keyword.get(options, :entry_id)
+
+        assert Enum.map(editors, & &1.id) ==
+                 Enum.map(order.products, &Picsello.Cart.CartProduct.id/1)
+
         build(:whcc_editor_export)
       end)
       |> Mox.expect(:create_order, fn _account_ie, _export ->

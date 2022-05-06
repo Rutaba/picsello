@@ -160,11 +160,21 @@ defmodule Picsello.WHCC do
     |> Adapter.editor()
   end
 
+  def create_order(account_id, %{items: items} = export) do
+    %{orders: orders} = created_order = Adapter.create_order(account_id, export)
+
+    orders =
+      for(order <- orders, item <- items, item.order_sequence_number == order.sequence_number) do
+        %{order | editor_id: item.id}
+      end
+
+    %{created_order | orders: orders}
+  end
+
   defdelegate get_existing_editor(account_id, editor_id), to: Adapter
   defdelegate editor_details(account_id, editor_id), to: Adapter
   defdelegate editors_export(account_id, editor_ids, opts \\ []), to: Adapter
   defdelegate editor_clone(account_id, editor_id), to: Adapter
-  defdelegate create_order(account_id, export), to: Adapter
   defdelegate confirm_order(account_id, confirmation), to: Adapter
   defdelegate webhook_register(url), to: Adapter
   defdelegate webhook_verify(hash), to: Adapter

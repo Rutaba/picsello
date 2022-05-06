@@ -272,26 +272,118 @@ defmodule Picsello.CartTest do
   end
 
   describe "cart product updates" do
-    test "find and save processing status" do
+    setup do
       gallery = insert(:gallery)
       cart_product = build(:cart_product)
+
       order = Cart.place_product(cart_product, gallery.id)
 
-      editor_id = cart_product.editor_details.editor_id
+      entry_id =
+        order
+        |> Order.number()
+        |> to_string()
 
-      found_order = Cart.order_with_editor(editor_id)
+      [
+        order:
+          order
+          |> Order.whcc_order_changeset(
+            build(:whcc_order_created, entry_id: entry_id, total: ~M[100]USD)
+          )
+          |> Repo.update!(),
+        entry_id: entry_id
+      ]
+    end
 
-      assert found_order.id == order.id
-      assert found_order.products |> Enum.at(0) |> Map.get(:whcc_processing) == nil
+    def processing_status(entry_id, sequence_number),
+      do: %Picsello.WHCC.Webhooks.Status{
+        entry_id: entry_id,
+        event: "Processed",
+        sequence_number: sequence_number,
+        status: "Accepted"
+      }
 
-      Cart.store_cart_product_processing(processing_status(editor_id))
+    def processing_event(entry_id, sequence_number),
+      do: %Picsello.WHCC.Webhooks.Event{
+        entry_id: entry_id,
+        event: "Shipped",
+        sequence_number: sequence_number,
+        shipping_info: [
+          %Picsello.WHCC.Webhooks.ShippingInfo{
+            carrier: "FedEx",
+            ship_date: ~U[2018-12-31 12:18:38Z],
+            tracking_number: "512376671311227",
+            tracking_url: "http://www.fedex.com/Tracking?tracknumbers=512376671311227",
+            weight: 0.35
+          }
+        ]
+      }
 
-      updated_order = Cart.order_with_editor(editor_id)
+    test "find and save processing status", %{order: order} do
+      assert %{
+               whcc_order: %{
+                 entry_id: entry_id,
+                 orders: [%{whcc_processing: nil, sequence_number: sequence_number}]
+               }
+             } = order
 
-      assert updated_order.id == order.id
+      Cart.update_whcc_order(processing_status(entry_id, sequence_number))
 
-      assert updated_order.products |> Enum.at(0) |> Map.get(:whcc_processing) !=
-               nil
+      assert %{whcc_order: %{orders: [%{whcc_processing: %{status: "Accepted"}}]}} =
+               Repo.reload!(order)
+    end
+
+    test "updates correct sub-order", %{order: order, entry_id: entry_id} do
+      order =
+        order
+        |> Order.whcc_order_changeset(
+          build(:whcc_order_created,
+            entry_id: entry_id,
+            orders: build_list(2, :whcc_order_created_order)
+          )
+        )
+        |> Repo.update!()
+
+      assert %{
+               whcc_order: %{
+                 entry_id: entry_id,
+                 orders: [%{}, %{whcc_processing: nil, sequence_number: sequence_number}]
+               }
+             } = order
+
+      Cart.update_whcc_order(processing_status(entry_id, sequence_number))
+
+      assert %{
+               whcc_order: %{
+                 orders: [%{whcc_processing: nil}, %{whcc_processing: %{status: "Accepted"}}]
+               }
+             } = Repo.reload!(order)
+    end
+
+    test "works with shipping updates too", %{order: order, entry_id: entry_id} do
+      order =
+        order
+        |> Order.whcc_order_changeset(
+          build(:whcc_order_created,
+            entry_id: entry_id,
+            orders: build_list(2, :whcc_order_created_order)
+          )
+        )
+        |> Repo.update!()
+
+      assert %{
+               whcc_order: %{
+                 entry_id: entry_id,
+                 orders: [%{}, %{whcc_processing: nil, sequence_number: sequence_number}]
+               }
+             } = order
+
+      Cart.update_whcc_order(processing_event(entry_id, sequence_number))
+
+      assert %{
+               whcc_order: %{
+                 orders: [%{whcc_tracking: nil}, %{whcc_tracking: %{event: "Shipped"}}]
+               }
+             } = Repo.reload!(order)
     end
   end
 
@@ -459,15 +551,4 @@ defmodule Picsello.CartTest do
       })
     end
   end
-
-  defp processing_status(id),
-    do: %{
-      "Status" => "Accepted",
-      "Errors" => [],
-      "OrderNumber" => 14_989_342,
-      "Event" => "Processed",
-      "ConfirmationId" => "a3ff9b4a-3112-4101-88ab-6ba025fd7600",
-      "EntryId" => id,
-      "Reference" => "OrderID 12345"
-    }
 end
