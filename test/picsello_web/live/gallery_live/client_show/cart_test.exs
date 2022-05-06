@@ -33,7 +33,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     test "groups by product", %{conn: conn, cart_path: cart_path} do
       {:ok, _view, html} = live(conn, cart_path)
 
-      assert [2, 1, 0] =
+      assert [2, 1] =
                html
                |> Floki.parse_document!()
                |> Floki.find("div[data-testid=line-items] > div")

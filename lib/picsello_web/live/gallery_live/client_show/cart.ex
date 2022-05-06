@@ -178,9 +178,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp schedule_products_ordering(%{assigns: %{order: order}} = socket),
     do: assign(socket, :ordering_task, Task.async(fn -> Cart.create_whcc_order(order) end))
 
-  defp only_digitals?(%{products: [], digitals: [_ | _]}), do: true
-  defp only_digitals?(%{products: [], digitals: [], bundle_price: %Money{}}), do: true
-  defp only_digitals?(_), do: false
+  defp only_digitals?(%{products: []} = order), do: digitals?(order)
+  defp only_digitals?(%{products: [_ | _]}), do: false
+  defp digitals?(%{digitals: [_ | _]}), do: true
+  defp digitals?(%{digitals: [], bundle_price: %Money{}}), do: true
+  defp digitals?(_), do: false
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
 
