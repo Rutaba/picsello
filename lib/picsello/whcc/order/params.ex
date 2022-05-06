@@ -3,7 +3,7 @@ defmodule Picsello.WHCC.Order.Params do
   alias Picsello.WHCC.Editor.Export
 
   def from_export(
-        %Export{items: [%{"id" => editor_id} | _]} = export,
+        %Export{items: [%{id: editor_id} | _]} = export,
         opts
       ) do
     %{} = ship_to = Keyword.get(opts, :ship_to)

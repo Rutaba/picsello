@@ -1,6 +1,7 @@
 defmodule Picsello.Product do
   @moduledoc false
   use Ecto.Schema
+  use StructAccess
   import Ecto.Query, only: [from: 2, join: 5, with_cte: 3, order_by: 3, select: 3]
 
   @attributes_with_markups_cte """
@@ -84,6 +85,9 @@ defmodule Picsello.Product do
   end
 
   def active, do: from(product in __MODULE__, where: is_nil(product.deleted_at))
+
+  def whcc_category(%__MODULE__{api: %{"category" => category}}),
+    do: Picsello.WHCC.Category.from_map(category)
 
   def with_attributes(query, %{organization_id: organization_id}) do
     default_markup = Picsello.Markup.default_markup()

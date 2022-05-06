@@ -1,6 +1,7 @@
 defmodule PicselloWeb.GalleryEditorEndpointTest do
   use PicselloWeb.ConnCase, async: true
   import Ecto.Query
+  import Money.Sigils
 
   alias Picsello.Galleries
 
@@ -52,11 +53,7 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
         }
       end)
       |> Mox.stub(:editor_export, fn _wat, "editor-id" ->
-        %Picsello.WHCC.Editor.Export{
-          items: [],
-          order: %{},
-          pricing: %{"totalOrderBasePrice" => 1.00, "code" => "USD"}
-        }
+        build(:whcc_editor_export, unit_base_price: ~M[100]USD)
       end)
       |> Mox.stub(:editor_clone, fn _wat, "editor-id" -> "clone-editor-id" end)
       |> Mox.stub(:get_existing_editor, fn _wat, id ->

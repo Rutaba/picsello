@@ -45,7 +45,7 @@
 
         <%= if total(@photos) > 0 || @favorites_filter do %>
         <div class="grid pt-8 lg:grid-cols-2">
-          <div class="flex flex-col justify-start md:flex-row gap-x-5">
+          <div class="flex flex-col justify-start md:flex-row">
             <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
               <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
                 <div class="flex items-center w-32 dropdown text-ellipsis">
@@ -66,7 +66,7 @@
                 </ul>
               </div>
             </div>
-            <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer">
+            <div class="h-10 mb-4 font-sans bg-white rounded-md cursor-pointer mx-5">
               <.actions id="actions" class="w-64 text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                 <%= if(is_nil(@album)) do %>
                   <.album_actions albums={@gallery.albums} />
@@ -83,7 +83,7 @@
             </div>
           </div>
           <div class="flex flex-col items-start min-w-0 lg:flex-row">
-            <div id="selected-photos-count" class="flex items-end font-sans text-md text-base-250 lg:justify-start">
+            <div id="selected-photos-count" class="flex items-end pt-1 font-sans text-md text-base-250 lg:justify-start">
                 <%= if total(@selected_photos) > 0 do %>
                 <%= total(@selected_photos) %> <%= ngettext("photo", "photos", Enum.count(@selected_photos)) %> selected
                 <% end %>

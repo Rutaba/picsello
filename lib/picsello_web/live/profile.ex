@@ -278,7 +278,7 @@ defmodule PicselloWeb.Live.Profile do
   end
 
   defp drag_image_upload(assigns) do
-    assigns = assigns |> Enum.into(%{class: "", label_class: ""})
+    assigns = assigns |> Enum.into(%{class: "", label_class: "", supports_class: ""})
 
     ~H"""
     <form id={"#{@image_upload.name}-form"} phx-submit="save-image" class={"flex #{@class}"} phx-change="validate-image" phx-drop-target={@image_upload.ref}>
@@ -287,7 +287,7 @@ defmodule PicselloWeb.Live.Profile do
           <.progress image={@image_upload} class="m-4"/>
         <% else %>
           <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
-          <div>
+          <div class={@supports_class}>
             Drag your <%= @image_title %> or
             <span class="text-blue-planning-300">browse</span>
             <p class="text-sm font-normal text-base-250">Supports <%= @supports %></p>
@@ -327,8 +327,7 @@ defmodule PicselloWeb.Live.Profile do
           <div class="absolute top-8 right-8"><.edit_image_button image={@uploads.main_image} image_field={"main_image"} /></div>
         <% else %>
           <div class="bg-[#F6F6F6] w-full aspect-h-1 aspect-w-2" >
-
-            <.drag_image_upload image={@image} image_upload={@uploads.main_image} supports="JPG or PNG" image_title="main image" label_class="justify-center flex-col" class="flex w-11/12 m-auto h-5/6" />
+            <.drag_image_upload image={@image} image_upload={@uploads.main_image} supports_class="text-center" supports="JPEG or PNG: 1060x650 under 10mb" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
           </div>
         <% end %>
 

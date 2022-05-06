@@ -1,6 +1,7 @@
 defmodule Picsello.WHCC.Product.AttributeCategory do
   @moduledoc "find the cheapest set of selections for a product's attribute categories"
 
+  @spec cheapest_selections(%{}, %{}) :: Picsello.WHCC.Product.SelectionSummary.t()
   def cheapest_selections(%{"attributes" => attributes} = category, valid_selections) do
     attributes
     |> Enum.flat_map(&selections(&1, category, valid_selections))

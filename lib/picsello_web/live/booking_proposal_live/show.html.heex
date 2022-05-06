@@ -81,7 +81,7 @@
           <% end %>
         <% end %>
 
-        <button title="Invoice" type="button" {if invoice_disabled?(@proposal), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal)})} disabled={invoice_disabled?(@proposal)}>
+        <button title="Invoice" type="button" {if invoice_disabled?(@proposal, @stripe_status), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status)})} disabled={invoice_disabled?(@proposal, @stripe_status)}>
           <div class="flex flex-col items-start w-full">
             <%= if PaymentSchedules.all_paid?(@job) do %>
               <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
@@ -89,7 +89,7 @@
               <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
             <% end %>
             <div class="flex items-center justify-between w-full">
-              Pay your invoice
+              <%= if PaymentSchedules.free?(@job), do: "Finish booking", else: "Pay your invoice" %>
               <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
             </div>
           </div>

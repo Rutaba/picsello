@@ -12,6 +12,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
     socket |> assign(@default_assigns) |> assign(assigns) |> ok()
   end
 
-  defdelegate min_price(category), to: Picsello.WHCC
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
+  defdelegate min_price(category), to: Picsello.Galleries
 end

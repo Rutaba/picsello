@@ -190,8 +190,6 @@ defmodule Picsello.Galleries do
   end
 
   defp move_photos_from_album_transaction(photo_ids) do
-    IO.inspect(photo_ids)
-
     Ecto.Multi.new()
     |> Ecto.Multi.update_all(
       :thumbnail,
@@ -801,6 +799,12 @@ defmodule Picsello.Galleries do
   def do_not_charge_for_download?(%Gallery{} = gallery) do
     package = get_package(gallery)
     package && Money.zero?(package.download_each_price)
+  end
+
+  def min_price(category) do
+    Picsello.WHCC.min_price_details(category)
+    |> Picsello.Cart.CartProduct.new()
+    |> Picsello.Cart.CartProduct.price(shipping_base_charge: true)
   end
 
   defp clean_store([]), do: nil

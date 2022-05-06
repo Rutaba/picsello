@@ -36,7 +36,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
           <div class="flex flex-col justify-center py-2 align-self-center">
             <div class="flex items-baseline lg:flex-col">
               <span class="mr-2 text-lg lg:text-base lg:font-medium"><%= product_name(@item) %></span>
-              <span class="text-lg font-extrabold lg:mt-2"><%= price_display(@item) %></span>
+              <span class="text-lg font-extrabold lg:mt-2"><%= @price %></span>
             </div>
 
             <%= render_slot(@quantity) %>
@@ -63,11 +63,10 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     """
   end
 
-  defp quantity(%{editor_details: %{selections: %{"quantity" => quantity}}}), do: quantity
-
-  defdelegate total_cost(order), to: Cart
-  defdelegate item_image_url(item), to: Cart
   defdelegate has_download?(order), to: Cart
+  defdelegate item_image_url(item), to: Cart
+  defdelegate quantity(item), to: Cart.CartProduct
+  defdelegate total_cost(order), to: Cart
   defp product_name({:bundle, _}), do: "All digital downloads"
   defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
   defp product_name(item), do: Cart.product_name(item)

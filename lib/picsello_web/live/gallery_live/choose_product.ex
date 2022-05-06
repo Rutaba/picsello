@@ -75,6 +75,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     )
   end
 
-  defdelegate min_price(category), to: Picsello.WHCC
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
+  defdelegate min_price(category), to: Galleries
 end

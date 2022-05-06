@@ -1,6 +1,6 @@
 defmodule Picsello.ClientAcceptsBookingProposalTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Job, Repo, Organization, BookingProposal, PaymentSchedule}
+  alias Picsello.{Job, Repo, Organization, BookingProposal, PaymentSchedule, Package}
 
   @send_email_button button("Send Email")
   @invoice_button button("Invoice")
@@ -159,7 +159,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(definition("From:", text: "Photography LLC"))
       |> assert_has(definition("Email:", text: "photographer@example.com"))
       |> assert_has(definition("Package:", text: "My Package"))
-      |> assert_text("20% discount applied")
+      |> assert_has(definition("Session fee", text: "$1.00"))
+      |> assert_has(definition("Discount", text: "20%"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
       |> assert_has(testid("shoot-title", text: "September 30, 2029"))
@@ -182,7 +183,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Accept Contract"))
       |> assert_has(button("Completed Read and agree to your contract"))
       |> click(button("To-Do Pay your invoice"))
-      |> assert_text("20% discount applied")
+      |> assert_has(definition("Discount", text: "20%"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(definition("50% retainer due today", text: "$0.40"))
       |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
@@ -408,5 +409,49 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> assert_flash(:error, text: "not available")
+  end
+
+  @sessions 2
+  feature "proposal is free", %{
+    sessions: [photographer_session, client_session],
+    lead: lead
+  } do
+    Repo.update_all(Package, set: [base_multiplier: 0])
+    Repo.update_all(PaymentSchedule, set: [price: 0])
+
+    photographer_session
+    |> visit("/leads/#{lead.id}")
+    |> click(checkbox("Questionnaire included", selected: true))
+    |> assert_text("100% discount")
+    |> click(button("Finish booking proposal"))
+    |> wait_for_enabled_submit_button()
+    |> click(@send_email_button)
+
+    assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
+
+    client_session
+    |> visit(url)
+    |> assert_has(css("h2", text: "Welcome."))
+    |> click(button("To-Do Review your proposal"))
+    |> click(button("Accept Quote"))
+    |> click(button("To-Do Read and agree to your contract"))
+    |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Accept Contract"))
+    |> click(button("To-Do Finish booking"))
+    |> assert_has(definition("Session fee", text: "$1.00"))
+    |> assert_has(definition("Discount", text: "100%"))
+    |> assert_has(definition("Total", text: "$0.00"))
+    |> within_modal(&click(&1, button("Finish booking")))
+    |> assert_has(css("h1", text: "Thank you"))
+    |> assert_has(css("h1", text: "Your session is now booked."))
+    |> click(button("Got it"))
+    |> assert_has(button("Completed Finish booking"))
+
+    assert_receive {:delivered_email, email}
+    %{"subject" => subject, "body" => body} = email |> email_substitutions
+    assert "John just completed their booking proposal!" = subject
+    assert body =~ "John completed their proposal."
   end
 end
