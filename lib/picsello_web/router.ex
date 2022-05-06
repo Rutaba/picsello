@@ -143,18 +143,6 @@ defmodule PicselloWeb.Router do
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
-
-      live "/galleries/:id/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
-        as: :preview
-
-      live "/galleries/:id/photos", GalleryLive.Photos.Index, :index
-      live "/galleries/:id/product-previews", GalleryLive.ProductPreview.Index, :index
-
-      live "/galleries/:id", GalleryLive.Index, :index
-      live "/galleries/:id/orders", GalleryLive.PhotographerOrders, :orders
-      live "/galleries/:id/upload", GalleryLive.Show, :upload
-      live "/galleries/:id/albums", GalleryLive.Albums.Index, :index
-      live "/galleries/:id/albums/:album_id", GalleryLive.Photos.Index, :index
     end
   end
 
@@ -177,6 +165,27 @@ defmodule PicselloWeb.Router do
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
 
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
+  end
+
+  scope "/galleries/:id", PicselloWeb do
+    live_session :gallery_photographer, on_mount: {PicselloWeb.LiveAuth, :gallery_photographer} do
+      pipe_through :browser
+
+      live "/", GalleryLive.Index, :index
+      live "/product/:gallery_product_id", GalleryLive.GalleryProduct, :preview,
+      as: :preview
+
+      live "/photos", GalleryLive.Photos.Index, :index
+      live "/product-previews", GalleryLive.ProductPreview.Index, :index
+
+      live "/orders", GalleryLive.PhotographerOrders, :orders
+      live "/upload", GalleryLive.Show, :upload
+
+      scope "/albums" do
+        live "/", GalleryLive.Albums.Index, :index
+        live "/:album_id", GalleryLive.Photos.Index, :index
+      end
+    end
   end
 
   scope "/gallery/:hash", PicselloWeb do

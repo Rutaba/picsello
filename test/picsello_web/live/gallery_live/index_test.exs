@@ -6,18 +6,19 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
   alias Picsello.{Repo, Package}
 
   setup %{conn: conn} do
-    conn = conn |> log_in_user(insert(:user) |> onboard!)
+    user = insert(:user)
+    conn = conn |> log_in_user(user |> onboard!)
 
     Picsello.PhotoStorageMock
     |> Mox.stub(:path_to_url, & &1)
     |> Mox.stub(:params_for_upload, fn _ -> [] end)
 
     package = insert(:package, download_each_price: ~M[2500]USD)
-
+    job = insert(:lead, type: "wedding", user: user, package: package) |> promote_to_job()
     %{
       conn: conn,
       gallery:
-        insert(:gallery, %{name: "Ukasha Habib Wedding", job: insert(:lead, package: package)})
+        insert(:gallery, %{name: "Ukasha Habib Wedding", job: job})
     }
   end
 
