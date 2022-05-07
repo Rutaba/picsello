@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.{PhotoPreview, PhotoView}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
-  @per_page 24
+  @per_page 30
 
   @impl true
   def mount(_params, _session, socket) do

@@ -14,7 +14,7 @@
             id={"photo-#{@id}"}
             class="galleryItem"
             phx-click={toggle_border(@id, @is_gallery_category_page)}
-            phx-click-away={JS.remove_class("before:absolute before:border-8 before:border-blue-planning-300 before:left-0 before:top-0 before:bottom-0 before:right-0 before:z-10 selected",
+            phx-click-away={JS.remove_class("item-border",
                 to: "#item-#{@id}")}
             >
             <img
