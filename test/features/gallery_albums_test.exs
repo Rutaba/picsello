@@ -5,17 +5,12 @@ defmodule Picsello.GalleryAlbumsTest do
 
   setup :onboarded
   setup :authenticated
+  setup :authenticated_gallery
 
-  setup %{user: user} do
+  setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
-    organization = insert(:organization, user: user)
-    client = insert(:client, organization: organization)
-    job = insert(:lead, type: "wedding", client: client) |> promote_to_job()
-    gallery = insert(:gallery, %{job: job, total_count: 20})
     album = insert(:album, %{gallery_id: gallery.id}) |> Repo.preload([:photos, :thumbnail_photo])
-
-    [gallery: gallery, album: album]
+    [album: album]
   end
 
   test "Albums, render albums", %{

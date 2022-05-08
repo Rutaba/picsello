@@ -5,12 +5,11 @@ defmodule Picsello.GalleryAlbumTest do
   setup :authenticated
   setup :authenticated_gallery
 
-  setup %{user: user, gallery: gallery} do
-    total_photos = 20
+  setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     album = insert(:album, %{gallery_id: gallery.id})
-    photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: total_photos})
+    photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
 
     [album: album, photo_ids: photo_ids, photos_count: length(photo_ids)]
   end

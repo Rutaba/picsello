@@ -1,23 +1,16 @@
 defmodule Picsello.GalleryOverviewTest do
   use Picsello.FeatureCase, async: false
-  import Money.Sigils
 
   alias Picsello.Galleries
   alias PicselloWeb.GalleryLive.Settings.ExpirationDateComponent
 
   setup :onboarded
   setup :authenticated
+  setup :authenticated_gallery
 
-  setup %{user: user} do
-    total_photos = 20
+  setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-    organization = insert(:organization, user: user)
-    package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
-    client = insert(:client, organization: organization)
-    job = insert(:lead, type: "wedding", client: client, package: package) |> promote_to_job()
-    gallery = insert(:gallery, %{job: job, total_count: total_photos})
-
-    [gallery: gallery, job: job]
+    [job: gallery.job]
   end
 
   feature "Validate and update gallery name", %{
@@ -106,7 +99,7 @@ defmodule Picsello.GalleryOverviewTest do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#galleryWatermark"))
-    |> click(css("#openCustomWatermarkPopupButton"))
+    |> click(css("#watermark_popup"))
     |> click(css("#waterMarkText"))
     |> fill_in(text_field("textWatermarkForm_text"), with: "test watermark")
     |> within_modal(&click(&1, css("#saveWatermark")))
@@ -117,7 +110,7 @@ defmodule Picsello.GalleryOverviewTest do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#galleryWatermark"))
-    |> click(css("#openCustomWatermarkPopupButton"))
+    |> click(css("#watermark_popup"))
     |> click(css("#waterMarkText"))
     |> fill_in(text_field("textWatermarkForm_text"), with: "test watermark")
     |> within_modal(&click(&1, css("#saveWatermark")))

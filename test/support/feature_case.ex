@@ -6,6 +6,7 @@ defmodule Picsello.FeatureCase do
     import Wallaby.{Browser, Query}
     import ExUnit.Assertions
     import Picsello.Factory
+    import Money.Sigils
 
     alias Picsello.Galleries.Photo
 
@@ -255,8 +256,10 @@ defmodule Picsello.FeatureCase do
     end
 
     def authenticated_gallery(%{session: session, user: user}) do
-      client = insert(:client, organization: insert(:organization, user: user))
-      job = insert(:lead, type: "wedding", client: client) |> promote_to_job()
+      organization = insert(:organization, user: user)
+      client = insert(:client, organization: organization)
+      package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+      job = insert(:lead, type: "wedding", client: client, package: package) |> promote_to_job()
 
       [session: session, gallery: insert(:gallery, %{job: job, total_count: 20})]
     end
