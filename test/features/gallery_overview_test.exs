@@ -132,11 +132,14 @@ defmodule Picsello.GalleryOverviewTest do
     )
   end
 
-  feature "Delete Gallery", %{session: session, gallery: gallery} do
+  feature "Delete Gallery", %{session: session, job: job, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#deleteGallery"))
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, delete")))
+    |> assert_has(testid("overview-Gallery", text: "Looks like you need to upload photos."))
+
+    assert current_path(session) == "/jobs/#{job.id}"
   end
 end

@@ -271,7 +271,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       {:ok, _gallery} ->
         socket
         |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
-        |> put_flash(:gallery_success, "The gallery has been deleted")
+        |> put_flash(:success, "The gallery has been deleted")
         |> noreply()
 
       _any ->

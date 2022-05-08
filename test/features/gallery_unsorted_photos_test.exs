@@ -30,11 +30,12 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
 
   test "Unsorted Photos, pagination", %{
     session: session,
-    gallery: %{id: gallery_id} = gallery
+    gallery: %{id: gallery_id} = gallery,
+    photos_count: photos_count
   } do
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
-    photo_count = length(photo_ids) + 20
-    per_page = 24
+    photo_count = length(photo_ids) + photos_count
+    per_page = 30
 
     session
     |> visit("/galleries/#{gallery_id}/photos")

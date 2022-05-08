@@ -48,6 +48,21 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(css("p", text: "Album settings successfully updated"))
   end
 
+  test "Album, album settings, delete gallery", %{
+    session: session,
+    gallery: %{id: gallery_id},
+    album: album
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
+    |> click(css("#actions"))
+    |> click(testid("edit-album-settings"))
+    |> click(button("Delete"))
+    |> within_modal(&click(&1, button("Yes, delete")))
+    |> visit("/galleries/#{gallery_id}/albums")
+    |> assert_has(css(placeholder_background_image(), count: 1))
+  end
+
   test "Albums, album action dropdown, Edit album thumbnail", %{
     session: session,
     gallery: %{id: gallery_id},
