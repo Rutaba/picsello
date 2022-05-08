@@ -552,7 +552,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   defp truncate(string) do
     case get_class(string) do
-      "name" ->
+      "tooltip" ->
         {string, _} = String.split_at(string, @string_length)
         string <> "..."
 
@@ -561,7 +561,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     end
   end
 
-  defp get_class(string), do: if(String.length(string) > @string_length, do: "name", else: nil)
+  defp get_class(string), do: if(String.length(string) > @string_length, do: "tooltip", else: nil)
 
   defp album_actions(assigns) do
     assigns = assigns |> Enum.into(%{exclude_album_id: nil})
@@ -571,8 +571,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       <%= if @exclude_album_id != album.id do %>
       <li class={"relative #{get_class(album.name)}"}>
         <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
-        <div class="tooltip introjs-arrow left"></div>
-        <div class="tooltip p-2 bg-white rounded-lg w-52 top-[0px] left-[262px] cursor-default">Move to <%= album.name %></div>
+        <div class="tooltiptext cursor-default">Move to <%= album.name %></div>
       </li>
       <% end %>
     <% end %>
