@@ -154,8 +154,12 @@ export default {
     const grid_id = '#' + this.el.dataset.id + " .item";
     const uploading = this.el.dataset.uploading;
     if(uploading == 100 || uploading == 0) {
-      grid.remove(grid.getItems());
-      grid.add(document.querySelectorAll(grid_id));
+      const grid_items = grid.getItems();
+      const items = document.querySelectorAll(grid_id);
+      if(grid_items.length != items.length) {
+        grid.remove(grid_items);
+        grid.add(items);
+      }
       grid.refreshItems();
     }
   },

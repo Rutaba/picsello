@@ -254,6 +254,13 @@ defmodule Picsello.FeatureCase do
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
+    def authenticated_gallery(%{session: session, user: user}) do
+      client = insert(:client, organization: insert(:organization, user: user))
+      job = insert(:lead, type: "wedding", client: client) |> promote_to_job()
+
+      [session: session, gallery: insert(:gallery, %{job: job, total_count: 20})]
+    end
+
     def authenticated_gallery(%{session: session}) do
       job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
       [session: session, gallery: insert(:gallery, job: job)]
