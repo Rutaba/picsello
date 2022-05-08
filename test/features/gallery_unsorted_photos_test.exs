@@ -3,21 +3,17 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
 
   setup :onboarded
   setup :authenticated
+  setup :authenticated_gallery
 
-  setup %{user: user} do
-    total_photos = 20
+  setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-    organization = insert(:organization, user: user)
-    client = insert(:client, organization: organization)
-    job = insert(:lead, type: "wedding", client: client) |> promote_to_job()
-    gallery = insert(:gallery, %{job: job, total_count: total_photos})
     album = insert(:album, %{gallery_id: gallery.id})
-    photo_ids = insert_photo(%{gallery: gallery, total_photos: total_photos})
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
-    [gallery: gallery, album: album, photo_ids: photo_ids, photos_count: length(photo_ids)]
+    [album: album, photo_ids: photo_ids, photos_count: length(photo_ids)]
   end
 
-  test "Unsorted Photos, render unsorted photos and album", %{
+  test "Unsorted Photos, render unsorted photos", %{
     session: session,
     gallery: %{id: gallery_id}
   } do

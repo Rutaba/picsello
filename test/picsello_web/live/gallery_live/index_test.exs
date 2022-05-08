@@ -164,7 +164,7 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
 
       view
-      |> element("#openCustomWatermarkPopupButton")
+      |> element("#watermark_popup")
       |> render_click()
 
       [popup_view | _] = live_children(view)
@@ -179,7 +179,7 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
 
       view
-      |> element("#openCustomWatermarkPopupButton")
+      |> element("#watermark_popup")
       |> render_click()
 
       [popup_view | _] = live_children(view)
@@ -200,7 +200,7 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
 
       view
-      |> element("#openCustomWatermarkPopupButton")
+      |> element("#watermark_popup")
       |> render_click()
 
       [popup_view | _] = live_children(view)
@@ -224,7 +224,7 @@ defmodule PicselloWeb.GalleryLive.IndexTest do
       {:ok, view, _html} = live(conn, "/galleries/#{gallery.id}")
 
       view
-      |> element("#openCustomWatermarkPopupButton")
+      |> element("#watermark_popup")
       |> render_click()
 
       [popup_view | _] = live_children(view)
