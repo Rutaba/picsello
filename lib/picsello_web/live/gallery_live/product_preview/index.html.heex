@@ -2,16 +2,13 @@
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "product_previews", album_dropdown_show: false %>
 
-    <div class="w-full h-full bg-base-100 pl-96 pt-14">
+    <div class="w-full h-full bg-base-100 pl-96 pt-16">
       <div class="relative items-center justify-between px-16 pb-10 md:flex-row">
-        <div class="flex items-center font-sans text-4xl font-bold font-black lg:justify-start">
-          <p>Product Previews</p>
-
-          <span class="relative inline-block pl-3" data-hint="Showcase products your client will love." data-hint-position="middle-middle">
-            <.icon name="tooltip" class="inline-block w-4 h-4 mr-6 rounded-sm fill-current text-blue-planning-300" />
-          </span>
-        </div>
-
+        <span class="font-sans text-2xl font-bold font-black" {intro_hints_only("intro_hints_only_product_preview")}>
+          Product Previews
+        </span>
+        <.intro_hint class="-top-1" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
+100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>         
         <div class="flex mt-3 font-sans text-gray-400">
           <p>Showcase products your clients will love.</p>
         </div>

@@ -16,6 +16,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
   @per_page 30
+  @string_length 20
 
   @impl true
   def mount(_params, _session, socket) do
@@ -549,14 +550,29 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     if album, do: Map.get(album, album_return), else: other
   end
 
+  defp truncate(string) do
+    case get_class(string) do
+      "name" ->
+        {string, _} = String.split_at(string, @string_length)
+        string <> "..."
+
+      _ ->
+        string
+    end
+  end
+
+  defp get_class(string), do: if(String.length(string) > @string_length, do: "name", else: nil)
+
   defp album_actions(assigns) do
     assigns = assigns |> Enum.into(%{exclude_album_id: nil})
 
     ~H"""
     <%= for album <- @albums do %>
       <%= if @exclude_album_id != album.id do %>
-      <li class="relative">
-        <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= album.name %></button>
+      <li class={"relative #{get_class(album.name)}"}>
+        <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
+        <div class="tooltip introjs-arrow left"></div>
+        <div class="tooltip p-2 bg-white rounded-lg w-52 top-[0px] left-[262px] cursor-default">Move to <%= album.name %></div>
       </li>
       <% end %>
     <% end %>

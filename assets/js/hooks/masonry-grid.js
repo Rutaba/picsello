@@ -154,6 +154,7 @@ export default {
     const grid_id = '#' + this.el.dataset.id + " .item";
     const uploading = this.el.dataset.uploading;
     if(uploading == 100 || uploading == 0) {
+      grid.remove(grid.getItems());
       grid.add(document.querySelectorAll(grid_id));
       grid.refreshItems();
     }

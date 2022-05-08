@@ -4,34 +4,34 @@
     <div class="w-full h-full bg-gray-100 pl-96 ">
       <div id="page-scroll" phx-hook="PageScroll" class="fixed top-0 right-0 z-20 pt-14 pl-10 pr-10 bg-gray-100 left-96">
         <div class="flex flex-col md:flex-row">
-            <div class="flex items-center text-xl font-bold font-sans lg:justify-start">
-              <span><%= extract_album(@album, :name, "Photos") %></span>
+              <div class="flex items-center font-sans lg:justify-start">
+             <%= if length(@gallery.albums) > 0 do %>
+              <.crumbs class="mt-2 font-sans text-xs text-base-250">
+                <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
+                <:crumb><span class="font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
+              </.crumbs>
+              <% end %>
             </div>
             <div class="flex ml-auto shrink-0">
-                <%= if @album do %>
-                    <.icon_button {testid("edit-album-settings")} class="bg-white ml-5 shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
-                      Album settings
-                    </.icon_button>
-                    <%= if total(@photos) > 0 do %>
-                    <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="album_thumbnail_popup" color="blue-planning-300" icon="pencil">
-                      Edit thumbnail
-                    </.icon_button>
-                    <% end %>
-                <% end %>
-                <%= if length(@gallery.albums) == 0 do %>
-                <.icon_button {testid("add-album")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
-                  Add Album
-                </.icon_button>
-                <% end %>
-            <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
+              <%= if @album do %>
+                  <.icon_button {testid("edit-album-settings")} class="bg-white ml-5 shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
+                    Album settings
+                  </.icon_button>
+                  <%= if total(@photos) > 0 do %>
+                  <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                    Edit thumbnail
+                  </.icon_button>
+                  <% end %>
+              <% end %>
+              <%= if length(@gallery.albums) == 0 do %>
+              <.icon_button {testid("add-album")} class="bg-white ml-5 shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
+                Add Album
+              </.icon_button>
+              <% end %>
+              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
             </div>
           </div>
-        <%= if length(@gallery.albums) > 0 do %>
-        <.crumbs class="mt-2 font-sans text-blue-planning-300">
-          <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
-          <:crumb><span class="font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
-        </.crumbs>
-        <% end %>
+          <span class="flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
         <div class="flex items-center hidden mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
           <div class="flex justify-center pb-1 pl-5">
             <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
@@ -42,7 +42,6 @@
             to resolve errors.
           </div>
         </div>
-
         <%= if total(@photos) > 0 || @favorites_filter do %>
         <div class="grid pt-8 lg:grid-cols-2">
           <div class="flex flex-col justify-start md:flex-row">

@@ -3,15 +3,13 @@
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 bg-gray-100 pl-96">
       <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pb-5 pl-10 pr-10 bg-gray-100 pt-14">
-        <div class="flex flex-col">
-            <div class="flex flex-row justify-between">
-              <span class="font-sans text-4xl font-bold">Photos</span>
-              <.icon_button {testid("add-album-popup")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
-                Add Album
-              </.icon_button>
-            </div>
-            <p class="mt-4 font-sans text-gray-400"><%= length(@albums) %> albums</p>
+        <div class="flex justify-between">
+          <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
+          <.icon_button {testid("add-album-popup")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+            Add Album
+          </.icon_button>
         </div>
+        <p class="mt-4 font-sans text-gray-400"><%= length(@albums) %> albums</p>
       </div>
       <div>
         <div id="albums" class="relative flex flex-col w-full min-h-screen">

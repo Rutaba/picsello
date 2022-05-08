@@ -49,6 +49,18 @@ html {
   }
 }
 
+#actions .tooltip {
+  @apply absolute hidden;
+}
+
+#actions .left {
+  @apply left-[252px] top-[12px];
+}
+
+#actions .name:hover .tooltip {
+  @apply block;
+}
+
 .center-container {
   @apply xl:container xl:mx-auto;
 }

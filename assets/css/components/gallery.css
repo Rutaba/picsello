@@ -137,7 +137,7 @@
 }
 
 .settings__wrapper2 h3 {
-  @apply pb-4 text-2xl font-bold text-blue-planning-300;
+  @apply pb-4 text-xl font-bold text-blue-planning-300;
 }
 
 .settings__wrapper h3 {

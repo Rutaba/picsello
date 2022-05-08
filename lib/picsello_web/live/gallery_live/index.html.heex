@@ -3,10 +3,10 @@
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "overview", album_dropdown_show: false %>
 
     <div class="w-full h-full font-sans bg-gray-100 pl-96">
-    <div class="relative pb-10 pl-10 pr-10 pt-14">
+    <div class="relative pb-10 pl-10 pr-10 pt-16">
     <div>
     <div class="flex">
-      <span class="font-sans text-4xl font-bold">Overview</span>
+      <span class="font-sans text-2xl font-bold">Overview</span>
     </div>
     <%= if expire_soon(@gallery) do %>
       <div class="flex mt-4 rounded-lg shadow-lg cursor-pointer bg-[#fcf0ea]" role="alert">
