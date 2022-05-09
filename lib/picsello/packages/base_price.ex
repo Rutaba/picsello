@@ -12,6 +12,7 @@ defmodule Picsello.Packages.BasePrice do
     field :job_type, :string
     field :min_years_experience, :integer
     field :shoot_count, :integer
+    field :max_session_per_year, :integer
     field :tier, :string
     field :turnaround_weeks, :integer
   end
