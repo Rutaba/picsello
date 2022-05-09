@@ -1,12 +1,4 @@
-<div
-    class="item flex m-1.5"
-    id={"photo-item-#{@photo.id}"}
-    style={"
-        width: @photo_width;
-        height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{200 / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "100px"};
-        margin: 5px;
-        "}
->
+<div class="item flex m-1.5 bg-gray-200" id={"photo-item-#{@photo.id}"} style={"height: 130px; margin: 5px;"}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
         <div class="galleryItem">
             <%= if @component do %>
@@ -29,7 +21,6 @@
         <% else %>
         <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
             <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-
             <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                 <img
                     phx-click="click"
@@ -37,6 +28,7 @@
                     phx-value-preview_photo_id={@photo.id}
                     src={preview_url(@photo)}
                     class="relative"
+                    style="object-fit: contain;"
                 />
             <% else %>
                 <div class="galleryLoader">
@@ -46,6 +38,7 @@
                         phx-value-preview_photo_id={@photo.id}
                         src={Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")}
                         class="relative"
+                        style="object-fit: contain;"
                     />
                 </div>
             <% end %>

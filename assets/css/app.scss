@@ -145,6 +145,7 @@ canvas {
       width: 100%;
       object-fit: cover;
       max-width: unset;
+      object-fit: contain;
     }
 
     @media (min-width: 640px) {
@@ -164,6 +165,7 @@ canvas {
         object-fit: cover;
         max-width: unset;
         height: 100%;
+        object-fit: contain;
       }
 
       .galleryItem {
@@ -201,10 +203,6 @@ canvas {
     svg {
       filter: drop-shadow(3px 5px 2px rgba(0, 0, 0, 0.4));
     }
-  }
-
-  .item .item-content img {
-    background-color: gray;
   }
 }
 

@@ -22,7 +22,6 @@ export default {
 
     if (img && img.src && img.src != url) {
       img.src = url;
-      parent.style.height = "fit-content";
     }
   },
 };
