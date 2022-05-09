@@ -51,7 +51,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   def package_basic_fields(assigns) do
     ~H"""
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-7">
-      <%= labeled_input @form, :name, label: "Title", placeholder: "e.g. #{@job_type |> String.capitalize()} Deluxe", phx_debounce: "500", wrapper_class: "mt-4" %>
+      <%= labeled_input @form, :name, label: "Title", placeholder: "e.g. #{dyn_gettext @job_type} Deluxe", phx_debounce: "500", wrapper_class: "mt-4" %>
       <div class="grid gap-2 grid-cols-2 sm:contents">
         <%= labeled_select @form, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", class: "py-3", phx_update: "ignore" %>
 
