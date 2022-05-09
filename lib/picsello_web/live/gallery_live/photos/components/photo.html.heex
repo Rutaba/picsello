@@ -113,7 +113,7 @@
                           <button class="absolute meatballs">
                           <.icon name="meatballs" class="text-gray-200 w-7 h-7" />
                           </button>
-                           <ul class="absolute hidden bg-white rounded-md toggle-content meatballsdropdown w-36">
+                           <ul class="absolute hidden bg-white rounded-md toggle-content meatballsdropdown w-40 overflow-visible">
                                <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
                                  <div
                                  id={"photo-preview-#{@id}"}
@@ -124,6 +124,28 @@
                                  Set as product preview
                                  </div>
                                </li>
+                                <%= if @album do %>
+                               <li class="flex relative items-center hover:bg-blue-planning-100">
+                                 <div
+                                 id={"photo-thumbnail-#{@id}"}
+                                 class="hover-drop-down"
+                                 phx-click="set_album_thumbnail_popup"
+                                 phx-value-photo_id={@id}
+                                 >
+                                 Set as album thumbnail
+                                 </div>
+                               </li>
+                               <li class="flex relative items-center hover:bg-blue-planning-100 hover:rounded-md">
+                                 <div
+                                 id={"photo-remove-#{@id}"}
+                                 class="hover-drop-down pb-2"
+                                 phx-click="remove_from_album_popup"
+                                 phx-value-photo_id={@id}
+                                 >
+                                 Remove from album
+                                 </div>
+                               </li>
+                             <% end %>
                                <li class="flex hidden items-center hover:bg-blue-planning-100 hover:rounded-md">
                                  <button class="hover-drop-down">Download photo</button>
                                </li>

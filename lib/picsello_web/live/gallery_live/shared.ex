@@ -45,9 +45,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
             } = assigns
         },
         per_page,
-        exlclue_all \\ nil
+        exclude_all \\ nil
       ) do
-    if exlclue_all do
+    if exclude_all do
       []
     else
       album = Map.get(assigns, :album, nil)
@@ -78,19 +78,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 
-  def make_delete_popup(socket, opts) do
-    payload = Keyword.get(opts, :payload, %{})
-
+  def make_popup(socket, opts) do
     socket
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",
       confirm_event: opts[:event],
       class: "dialog-photographer",
-      confirm_label: "Yes, delete",
-      icon: "warning-orange",
+      confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
+      confirm_label: Keyword.get(opts, :confirm_label, "Yes, delete"),
+      icon: Keyword.get(opts, :icon, "warning-orange"),
       title: opts[:title],
       subtitle: opts[:subtitle],
-      payload: payload
+      payload: Keyword.get(opts, :payload, %{})
     })
     |> noreply()
   end

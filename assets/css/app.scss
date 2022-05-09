@@ -258,33 +258,8 @@ canvas {
       display: none;
     }
 
-    thead tr {
-      th:first-child {
-        @apply rounded-l-lg;
-      }
-      th:last-child {
-        @apply rounded-r-lg;
-      }
-    }
-
     tbody tr:nth-child(even) {
-      @apply bg-blue-planning-100;
-      td:first-child {
-        @apply rounded-l-lg;
-      }
-      td:last-child {
-        @apply rounded-r-lg;
-      }
+      @apply bg-gray-100;
     }
-  }
-}
-
-.responsive-table {
-  td:not(:last-child) {
-    @apply border-b-0;
-  }
-
-  th:not(:last-child) {
-    @apply border-b-2 border-white sm:border-none;
   }
 }

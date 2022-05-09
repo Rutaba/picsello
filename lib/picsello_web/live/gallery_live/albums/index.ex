@@ -128,7 +128,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     ]
 
     socket
-    |> make_delete_popup(opts)
+    |> make_popup(opts)
   end
 
   @impl true
@@ -148,7 +148,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     ]
 
     socket
-    |> make_delete_popup(opts)
+    |> make_popup(opts)
   end
 
   @impl true
