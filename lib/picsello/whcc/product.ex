@@ -3,6 +3,31 @@ defmodule Picsello.WHCC.Product do
   @moduledoc "a product from the whcc api"
   defstruct [:id, :name, :category, :attribute_categories, :api]
 
+  import Money.Sigils
+
+  defmodule SelectionSummary do
+    @moduledoc """
+      a set of WHCC editor selections, the resulting price and the related metadata
+    """
+
+    defstruct selections: %{}, metadata: %{}, price: ~M[0]USD
+
+    @type t :: %__MODULE__{
+            selections: %{},
+            metadata: %{},
+            price: %Money{}
+          }
+
+    @spec merge(t(), t()) :: t()
+    def merge(a, b),
+      do:
+        Map.merge(a, b, fn
+          :selections, a, b -> Map.merge(a, b)
+          :metadata, a, b -> Map.merge(a, b)
+          :price, a, b -> Money.add(a, b)
+        end)
+  end
+
   @type t :: %__MODULE__{
           id: String.t(),
           name: String.t(),
@@ -23,6 +48,7 @@ defmodule Picsello.WHCC.Product do
     }
   end
 
+  @spec cheapest_selections(%{attribute_categories: [%{}]}) :: SelectionSummary.t()
   def cheapest_selections(%{attribute_categories: attribute_categories} = _product) do
     valid_selections =
       for(
@@ -42,7 +68,7 @@ defmodule Picsello.WHCC.Product do
       acc ->
         attribute_category
         |> AttributeCategory.cheapest_selections(valid_selections)
-        |> merge_selections(acc)
+        |> SelectionSummary.merge(acc)
     end
   end
 
@@ -65,12 +91,4 @@ defmodule Picsello.WHCC.Product do
       {category_id, get_in(map, [category_id, attribute_id])}
     end
   end
-
-  defp merge_selections(a, b),
-    do:
-      Map.merge(a, b, fn
-        :selections, a, b -> Map.merge(a, b)
-        :metadata, a, b -> Map.merge(a, b)
-        :price, a, b -> Money.add(a, b)
-      end)
 end

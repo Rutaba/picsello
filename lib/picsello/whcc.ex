@@ -2,6 +2,7 @@ defmodule Picsello.WHCC do
   @moduledoc "WHCC context module"
 
   # extracted from https://docs.google.com/spreadsheets/d/19epUUDsDmHWNePViH9v8x5BXGp0Anu0x/edit#gid=1549535757
+  # {in², $dollars}
   @area_markups [
     {24, 25},
     {35, 35},
@@ -169,70 +170,87 @@ defmodule Picsello.WHCC do
   defdelegate webhook_verify(hash), to: Adapter
   defdelegate webhook_validate(data, signature), to: Adapter
 
-  def mark_up_price(
-        %Details{product_id: product_id, selections: selections},
-        %Money{} = price
-      ) do
-    from(category in Picsello.Category,
-      join: product in assoc(category, :products),
-      where: product.whcc_id == ^product_id,
-      select: %{
-        default_markup: category.default_markup,
-        attribute_categories: product.attribute_categories,
-        category_whcc_id: category.whcc_id
-      }
+  def price_details(editor_id, account_id) do
+    details = editor_details(account_id, editor_id)
+    %{items: [item]} = editor_export(account_id, editor_id)
+
+    details
+    |> get_product
+    |> price_details(
+      details,
+      item |> Map.from_struct() |> Map.take([:unit_base_price, :quantity])
     )
-    |> Repo.one()
-    |> then(fn
-      %{category_whcc_id: @area_markup_category, attribute_categories: attribute_categories} ->
-        size = Map.get(selections, "size")
-
-        [metadata] =
-          for(
-            %{"name" => "size", "attributes" => attributes} <- attribute_categories,
-            %{"id" => ^size, "metadata" => %{"height" => _, "width" => _} = metadata} <-
-              attributes,
-            do: metadata
-          )
-
-        %{whcc_id: @area_markup_category}
-        |> mark_up_price(%{metadata: metadata})
-        |> Money.multiply(Map.get(selections, "quantity", 1))
-
-      row ->
-        mark_up_price(row, %{price: price})
-    end)
   end
 
-  def mark_up_price(%{whcc_id: @area_markup_category}, %{
-        metadata: %{"height" => height, "width" => width}
+  def price_details(%{category: category} = product, details, %{
+        unit_base_price: unit_price,
+        quantity: quantity
       }) do
+    %{
+      unit_markup: mark_up_price(product, details, unit_price),
+      editor_details: details,
+      unit_price: unit_price,
+      quantity: quantity
+    }
+    |> Map.merge(
+      category
+      |> Map.from_struct()
+      |> Map.take([:shipping_upcharge, :shipping_base_charge])
+    )
+  end
+
+  defp get_product(%Details{product_id: product_id}) do
+    from(product in Picsello.Product,
+      join: category in assoc(product, :category),
+      where: product.whcc_id == ^product_id,
+      preload: [category: category]
+    )
+    |> Repo.one!()
+  end
+
+  defp mark_up_price(
+         product,
+         %{selections: selections},
+         %Money{} = unit_price
+       ) do
+    case product do
+      %{
+        category: %{whcc_id: @area_markup_category} = category
+      } ->
+        %{"size" => %{"metadata" => metadata}} =
+          Picsello.WHCC.Product.selection_details(product, selections)
+
+        mark_up_price(category, %{metadata: metadata, unit_price: unit_price})
+
+      %{category: category} ->
+        mark_up_price(category, unit_price)
+    end
+  end
+
+  defp mark_up_price(
+         %{whcc_id: @area_markup_category} = _category,
+         %{
+           metadata: %{"height" => height, "width" => width},
+           unit_price: unit_price
+         } = _selection_summary
+       ) do
     [{_, dollars} | _] = Enum.sort_by(@area_markups, &abs(height * width - elem(&1, 0)))
-    Money.new(dollars * 100) |> round_to_nearest(500)
+    Money.new(dollars * 100) |> Money.subtract(unit_price)
   end
 
-  def mark_up_price(%{default_markup: default_markup}, %{price: price}) do
-    price
-    |> Money.multiply(default_markup)
-    |> round_to_nearest(500)
-  end
+  defp mark_up_price(%{default_markup: default_markup}, %Money{} = unit_price),
+    do: Money.multiply(unit_price, default_markup)
 
-  def min_price(%{products: [_ | _] = products} = category) do
+  def min_price_details(%{products: [_ | _] = products} = category) do
     products
-    |> Enum.map(fn product ->
-      mark_up_price(category, cheapest_selections(product))
-    end)
-    |> Enum.min(fn -> Money.new(0) end)
-  end
-
-  defp round_to_nearest(money, nearest) do
-    Map.update!(money, :amount, fn cents ->
-      cents
-      |> Decimal.new()
-      |> Decimal.div(nearest)
-      |> Decimal.round()
-      |> Decimal.mult(nearest)
-      |> Decimal.to_integer()
+    |> Enum.map(&{&1, cheapest_selections(&1)})
+    |> Enum.min_by(fn {_, %{price: price}} -> price end)
+    |> then(fn {product, %{price: price} = details} ->
+      price_details(
+        %{product | category: category},
+        details,
+        %{unit_base_price: price, quantity: 1}
+      )
     end)
   end
 

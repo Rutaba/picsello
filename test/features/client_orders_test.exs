@@ -118,12 +118,19 @@ defmodule Picsello.ClientOrdersTest do
     gallery: %{id: gallery_id} = gallery,
     organization: organization
   } do
-    {gallery_product_id, whcc_product_id} =
+    {gallery_product_id, whcc_product_id, size} =
       from(whcc_product in Picsello.Product,
         join: whcc_category in assoc(whcc_product, :category),
         join: gallery_product in assoc(whcc_category, :gallery_products),
         where: gallery_product.gallery_id == ^gallery_id,
-        select: {gallery_product.id, whcc_product.whcc_id},
+        select:
+          {gallery_product.id, whcc_product.whcc_id,
+           fragment(
+             """
+             jsonb_path_query(?, '$[*] \\? (@._id == "size")[0].attributes[0].id')
+             """,
+             whcc_product.attribute_categories
+           )},
         limit: 1
       )
       |> Picsello.Repo.one()
@@ -149,16 +156,12 @@ defmodule Picsello.ClientOrdersTest do
     |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
       %Picsello.WHCC.Editor.Details{
         product_id: whcc_product_id,
-        selections: %{"size" => "6x9", "quantity" => 1},
+        selections: %{"size" => size, "quantity" => 1},
         editor_id: "editor-id"
       }
     end)
     |> Mox.stub(:editor_export, fn _wat, "editor-id" ->
-      %Picsello.WHCC.Editor.Export{
-        items: [],
-        order: %{},
-        pricing: %{"totalOrderBasePrice" => 3.00, "code" => "USD"}
-      }
+      build(:whcc_editor_export, unit_base_price: ~M[300]USD)
     end)
     |> Mox.stub(:create_order, fn _account_id, _editor_id, _opts ->
       %Picsello.WHCC.Order.Created{total: "69"}
@@ -179,7 +182,7 @@ defmodule Picsello.ClientOrdersTest do
     |> stub_retrieve_payment_intent(%{
       connect_account: connect_account_id,
       payment_intent: "payment-intent-id",
-      amount: 500
+      amount: 1000
     })
     |> stub_capture_payment_intent(%{
       payment_intent: "payment-intent-id",
@@ -196,11 +199,11 @@ defmodule Picsello.ClientOrdersTest do
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
                {"Wall Displays", "$25.00"},
-               {"Albums", "$50.00"},
+               {"Albums", "$55.00"},
                {"Books", "$45.00"},
                {"Ornaments", "$40.00"},
                {"Loose Prints", "$25.00"},
-               {"Press Printed Cards", "$0.00"},
+               {"Press Printed Cards", "$5.00"},
                {"Display Products", "$80.00"},
                {"Digital Download", "$25.00"}
              ] =
@@ -224,7 +227,6 @@ defmodule Picsello.ClientOrdersTest do
     |> click(option("OK"))
     |> fill_in(text_field("delivery_info_address_zip"), with: "74104")
     |> wait_for_enabled_submit_button()
-    |> click(button("Continue"))
     |> click(button("Check out with Stripe"))
 
     assert_receive(
@@ -237,7 +239,7 @@ defmodule Picsello.ClientOrdersTest do
            %{
              price_data: %{
                product_data: %{images: [_product_image], tax_code: "txcd_99999999"},
-               unit_amount: 500,
+               unit_amount: 1000,
                tax_behavior: "exclusive"
              }
            }
@@ -248,7 +250,7 @@ defmodule Picsello.ClientOrdersTest do
     session
     |> assert_has(css("h3", text: "Thank you for your order!"))
     |> click(link("My orders"))
-    |> find(definition("Order total:"), &assert(Element.text(&1) == "$5.00"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$10.00"))
   end
 
   describe "digital downloads" do
@@ -289,7 +291,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "2"))
       |> click(link("cart"))
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Total", text: "$50.00"))
       |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
@@ -303,7 +305,7 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Total", text: "$25.00"))
       |> find(css("*[data-testid^='digital-']", count: 1, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
@@ -319,13 +321,13 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("cart"))
       |> click(button("Continue"))
       |> assert_has(css("h2", text: "Enter digital delivery information"))
-      |> assert_text("Digitals (1): $25.00")
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Digital downloads (1)", text: "$25.00"))
+      |> assert_has(definition("Total", text: "$25.00"))
       |> fill_in(text_field("Email"), with: "brian@example.com")
       |> fill_in(text_field("Name"), with: "Brian")
       |> refute_has(text_field("Shipping address"))
       |> wait_for_enabled_submit_button()
-      |> click(button("Continue"))
+      |> click(button("Check out with Stripe"))
 
       order_number = Order |> Repo.one!() |> Order.number() |> to_string()
 
@@ -392,9 +394,8 @@ defmodule Picsello.ClientOrdersTest do
       |> click_photo(2)
       |> assert_has(testid("download-credit", text: "Download Credits available: 1"))
       |> click(button("Add to cart"))
-      |> assert_has(link("cart", text: "2"))
-      |> click(link("cart"))
-      |> assert_text("Total: $0.00")
+      |> click(link("cart", text: "2"))
+      |> assert_has(definition("Total", text: "$0.00"))
       |> assert_text("Minimum amount is $1")
       |> assert_disabled(button("Continue"))
       |> click(link("Home"))
@@ -403,7 +404,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "3"))
       |> click(link("cart"))
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Total", text: "$25.00"))
       |> assert_enabled(button("Continue"))
       |> find(css("*[data-testid^='digital-']", count: 3, at: 0), fn cart_item ->
         cart_item
@@ -420,10 +421,10 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("Digital download")
         |> assert_text("$25.00")
       end)
-      |> assert_text("Total: $25.00")
+      |> assert_has(definition("Total", text: "$25.00"))
       |> click(button("Continue"))
-      |> assert_text("Digitals (1): $25.00")
-      |> assert_text("Digital Credits Used (2): 2 Credits - $0.00")
+      |> assert_has(definition("Digital downloads (3)", text: "$75.00"))
+      |> assert_has(definition("Digital download credit (2)", text: "-$50"))
     end
 
     feature "purchase bundle", %{session: session, package: package, organization: organization} do
@@ -467,7 +468,7 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
       |> click(link("close"))
       |> click(link("cart"))
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Total", text: "$50.00"))
       |> find(testid("bundle"), fn option ->
         option
         |> assert_text("Bundle - all digital downloads")
@@ -484,15 +485,15 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> assert_has(link("cart", text: "1"))
       |> click(link("cart"))
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Total", text: "$50.00"))
       |> click(button("Continue"))
       |> assert_has(css("h2", text: "Enter digital delivery information"))
-      |> assert_text("Bundle - All Digital Downloads: $50.00")
-      |> assert_text("Total: $50.00")
+      |> assert_has(definition("Bundle - all digital downloads", text: "$50.00"))
+      |> assert_has(definition("Total", text: "$50.00"))
       |> fill_in(text_field("Email"), with: "zach@example.com")
       |> fill_in(text_field("Name"), with: "Zach")
       |> wait_for_enabled_submit_button()
-      |> click(button("Continue"))
+      |> click(button("Check out with Stripe"))
 
       order_number = Order |> Repo.one!() |> Order.number() |> to_string()
 

@@ -18,19 +18,19 @@ defmodule PicselloWeb.Live.Admin.Categories do
     <header class="p-8 bg-gray-100">
       <h1 class="text-4xl font-bold">Manage Categories</h1>
     </header>
-    <div class="p-8">
-      <div class="mt-4 grid gap-2 items-center">
-        <div class="col-start-1 font-bold">WHCC Name</div>
-        <div class="col-start-2 font-bold">WHCC ID</div>
-        <div class="col-start-3 font-bold">hidden</div>
-        <div class="col-start-4 font-bold">icon</div>
-        <div class="col-start-5 font-bold">name</div>
-        <div class="col-start-6 font-bold">default markup</div>
-        <div class="col-start-7 font-bold">frame image</div>
-        <div class="col-start-8 font-bold">position</div>
-
-        <%= for(%{category: %{id: id, whcc_id: whcc_id, whcc_name: whcc_name}, changeset: changeset} <- @rows) do %>
-
+    <div class="p-4">
+      <div class="items-center mt-4 grid gap-2 grid-cols-[repeat(10,min-content)]">
+        <div class="font-bold">WHCC Name</div>
+        <div class="font-bold">WHCC ID</div>
+        <div class="font-bold">hidden</div>
+        <div class="font-bold">icon</div>
+        <div class="font-bold">name</div>
+        <div class="font-bold">default markup</div>
+        <div class="font-bold">shipping base charge (cents)</div>
+        <div class="font-bold">shipping upcharge (multiplier)</div>
+        <div class="font-bold">frame image</div>
+        <div class="font-bold">position</div>
+        <%= for(%{category: %{id: id, whcc_id: whcc_id, whcc_name: whcc_name, icon: icon}, changeset: changeset} <- @rows) do %>
           <div class="contents">
             <div class="col-start-1"><%= whcc_name %></div>
             <div><%= whcc_id %></div>
@@ -38,15 +38,20 @@ defmodule PicselloWeb.Live.Admin.Categories do
             <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{whcc_id}"}>
               <%= hidden_input f, :id %>
               <%= checkbox f, :hidden, class: "checkbox", phx_debounce: 200 %>
-              <%= input f, :icon, phx_debounce: 200 %>
+              <div>
+                <.icon name={icon} class="w-4 h-4" />
+                <%= select f, :icon, Picsello.Icon.names(), phx_debounce: 200 %>
+              </div>
               <%= input f, :name, phx_debounce: 200 %>
-              <%= input f, :default_markup, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
+              <%= input f, :default_markup, type: :number_input, phx_debounce: 200, step: 0.01, min: 1.0, class: "w-24" %>
+              <%= input f, :shipping_base_charge, phx_debounce: 200, step: 1, min: 0, class: "w-24", phx_hook: "PriceMask" %>
+              <%= input f, :shipping_upcharge, type: :number_input, phx_debounce: 200, step: 0.01, min: 0.0, class: "w-24" %>
               <%= select f, :frame_image, [""| Picsello.Category.frame_images()], phx_debounce: 200 %>
             </.form>
 
-            <div class="flex justify-evenly text-center">
-              <a class="flex-grow border rounded p-2 mr-2" phx-value-id={id} phx-value-direction="up" phx-click="reorder" href="#">↑</a>
-              <a class="flex-grow border rounded p-2" phx-value-id={id} phx-value-direction="down" phx-click="reorder" href="#">↓</a>
+            <div class="flex text-center justify-evenly">
+              <a class="flex-grow p-2 mr-2 border rounded" phx-value-id={id} phx-value-direction="up" phx-click="reorder" href="#">↑</a>
+              <a class="flex-grow p-2 border rounded" phx-value-id={id} phx-value-direction="down" phx-click="reorder" href="#">↓</a>
             </div>
           </div>
         <% end %>

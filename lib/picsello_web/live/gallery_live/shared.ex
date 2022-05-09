@@ -70,17 +70,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def summary_counts(order) do
     [
-      products_summary(order.products),
+      products_summary(order),
       digitals_summary(Enum.filter(order.digitals, &Money.positive?(&1.price))),
       digital_credits_summary(Enum.filter(order.digitals, &Money.zero?(&1.price))),
       bundle_summary(order.bundle_price)
     ]
   end
 
-  defp products_summary([] = _products), do: nil
+  defp products_summary(%{products: []}), do: nil
 
-  defp products_summary(products),
-    do: {"Products (#{Enum.count(products)})", sum_prices(products)}
+  defp products_summary(order),
+    do: {"Products (#{Enum.count(order.products)})", Picsello.Cart.Order.product_total(order)}
 
   defp digitals_summary([] = _digitals), do: nil
 
@@ -129,7 +129,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
     <div class="relative w-full h-full">
       <%= for c <- ~w[-rotate-3 rotate-2 rotate-0] do %>
-        <div class="absolute top-0 left-0 right-0 bottom-0 flex justify-center">
+        <div class="absolute top-0 bottom-0 left-0 right-0 flex justify-center">
           <img src={@url} class={"h-full object-contain object-center shadow #{c}"}>
         </div>
       <% end %>
