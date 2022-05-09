@@ -146,6 +146,10 @@ export default {
     return this.init_masonry();
   },
 
+  set_height() {
+    this.el.style.height = this.grid['_layout']['height'] + 'px';
+  },
+
   /**
    * Recollects all item elements to apply changes to the DOM to Masonry
    */
@@ -162,6 +166,7 @@ export default {
       }
       grid.refreshItems();
     }
+    this.set_height();
   },
 
   /**

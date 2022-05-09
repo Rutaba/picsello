@@ -115,7 +115,7 @@
         <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
         </div>
         <% else %>
-        <div class="px-0 pt-40 pb-32 mx-0 gallery__container" id="gallery">
+        <div class="px-0 pt-40 pb-16 mx-0 gallery__container" id="gallery">
           <div
             phx-hook="MasonryGrid"
             phx-update={@update_mode}
