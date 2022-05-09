@@ -3,7 +3,7 @@
     id={"photo-item-#{@photo.id}"}
     style={"
         width: @photo_width;
-        height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{200 / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "450px"};
+        height: #{if @photo.watermarked_preview_url || @photo.preview_url , do: "#{if @photo.aspect_ratio, do: if @photo_width, do: "#{200 / @photo.aspect_ratio}px", else: "#{300 / @photo.aspect_ratio}px"}", else: "100px"};
         margin: 5px;
         "}
 >
