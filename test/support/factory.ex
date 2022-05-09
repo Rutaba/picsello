@@ -634,4 +634,69 @@ defmodule Picsello.Factory do
         position: sequence(:position, & &1)
       }
       |> evaluate_lazy_attributes()
+
+  def tax_schedule_factory do
+    %{
+      year: 2022,
+      self_employment_percentage: 15.3,
+      active: true,
+      income_brackets: [
+        %{
+          fixed_cost_start: ~M[000]USD,
+          fixed_cost: ~M[000]USD,
+          income_min: ~M[000]USD,
+          income_max: ~M[999500]USD,
+          percentage: 10
+        },
+        %{
+          fixed_cost_start: ~M[999600]USD,
+          fixed_cost: ~M[100000]USD,
+          income_min: ~M[999500]USD,
+          income_max: ~M[000]USD,
+          percentage: 24
+        }
+      ]
+    }
+  end
+
+  def business_cost_factory do
+    %{
+      category: "Equipment",
+      active: true,
+      description:
+        "Everything you use to run your photography business. Cameras, stands, lights, etc",
+      line_items: [
+        %{
+          title: "Camera",
+          description: "The core to your business",
+          yearly_cost: ~M[600000]USD
+        },
+        %{
+          title: "Light",
+          description: "Light up your subjects",
+          yearly_cost: ~M[50000]USD
+        }
+      ]
+    }
+  end
+
+  def tax_schedule(%{session: _session}) do
+    Picsello.PricingCalculatorTaxSchedules.changeset(
+      %Picsello.PricingCalculatorTaxSchedules{},
+      tax_schedule_factory()
+    )
+    |> Picsello.Repo.insert!()
+
+    {:ok, %{}}
+  end
+
+  def business_costs(%{session: _session}) do
+    Picsello.PricingCalculatorBusinessCosts.changeset(
+      %Picsello.PricingCalculatorBusinessCosts{},
+      business_cost_factory()
+    )
+    |> Picsello.Repo.insert!()
+
+    {:ok, %{}}
+  end
 end

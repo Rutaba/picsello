@@ -51,8 +51,9 @@ defmodule Picsello.Workers.SyncTiers do
           shoots,
           downloads,
           turnaround,
+          max_session_per_year,
           description
-        ] = cells_by_colum(row, [?A, ?B, ?C, ?D, ?E, ?F, ?G, ?H, ?T])
+        ] = cells_by_column(row, [?A, ?B, ?C, ?D, ?E, ?F, ?G, ?H, ?I, ?T])
 
         [min_years_experience] = Regex.run(~r/^\d+/, experience_range)
         job_type = Map.get(@job_type_map, type, String.downcase(type))
@@ -66,18 +67,20 @@ defmodule Picsello.Workers.SyncTiers do
           shoot_count: String.to_integer(shoots),
           download_count: String.to_integer(downloads),
           turnaround_weeks: String.to_integer(turnaround),
+          max_session_per_year: String.to_integer(max_session_per_year),
           description: description
         }
       end
 
     Repo.insert_all(BasePrice, rows,
       on_conflict:
-        {:replace, ~w[base_price shoot_count download_count turnaround_weeks description]a},
+        {:replace,
+         ~w[base_price shoot_count download_count turnaround_weeks max_session_per_year description]a},
       conflict_target: ~w[tier job_type full_time min_years_experience]a
     )
   end
 
-  defp cells_by_colum(row, columns) do
+  defp cells_by_column(row, columns) do
     columns
     |> Enum.map(fn column ->
       row |> Enum.at(column - ?A)
