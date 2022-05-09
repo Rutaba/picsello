@@ -79,23 +79,23 @@ defmodule Picsello.PackagesTest do
           {name, tsv} <- %{
             prices:
               """
-              Time	Experience	Type	Tier	Price	Shoots	Downloads Turnaround
-              Part-Time	0	Other	Essential	$100.00	1	5	3
-              Full-Time	0	Other	Essential	$200.00	1	5	3
-              Full-Time	0	Other	Keepsake	$300.00	1	10	3
-              Full-Time	0	Other	Heirloom	$400.00	1	20	3
-              Full-Time	1-2	Wedding	Essential	$500.00	2	5	12
-              Full-Time	1-2	Wedding	Keepsake	$600.00	2	10	12
-              Full-Time	1-2	Wedding	Heirloom	$700.00	2	20	12
-              Full-Time	1-2	Family	Essential	$800.00	1	5	3
-              Full-Time	1-2	Family	Keepsake	$900.00	1	10	3
-              Full-Time	1-2	Family	Heirloom	$1,000.00	1	20	3
-              Full-Time	1-2	Event	Essential	$1,100.00	1	5	3
-              Full-Time	1-2	Event	Keepsake	$1,200.00	1	10	3
-              Full-Time	1-2	Event	Heirloom	$1,300.00	1	20	3
-              Full-Time	0	Wedding	Essential	$1,4000.00	2	5	12
-              Full-Time	0	Wedding	Keepsake	$1,5000.00	2	10	12
-              Full-Time	0	Wedding	Heirloom	$1,6000.00	2	20	12
+              Time	Experience	Type	Tier	Price	Shoots	Downloads	Turnaround	Max
+              Part-Time	0	Other	Essential	$100.00	1	5	3	3
+              Full-Time	0	Other	Essential	$200.00	1	5	3	3
+              Full-Time	0	Other	Keepsake	$300.00	1	10	3	3
+              Full-Time	0	Other	Heirloom	$400.00	1	20	3	3
+              Full-Time	1-2	Wedding	Essential	$500.00	2	5	12	3
+              Full-Time	1-2	Wedding	Keepsake	$600.00	2	10	12	3
+              Full-Time	1-2	Wedding	Heirloom	$700.00	2	20	12	3
+              Full-Time	1-2	Family	Essential	$800.00	1	5	3	3
+              Full-Time	1-2	Family	Keepsake	$900.00	1	10	3	3
+              Full-Time	1-2	Family	Heirloom	$1,000.00	1	20	3	3
+              Full-Time	1-2	Event	Essential	$1,100.00	1	5	3	3
+              Full-Time	1-2	Event	Keepsake	$1,200.00	1	10	3	3
+              Full-Time	1-2	Event	Heirloom	$1,300.00	1	20	3	3
+              Full-Time	0	Wedding	Essential	$1,4000.00	2	5	12	3
+              Full-Time	0	Wedding	Keepsake	$1,5000.00	2	10	12	3
+              Full-Time	0	Wedding	Heirloom	$1,6000.00	2	20	12	3
               """
               |> String.trim(),
             cost_of_living: """

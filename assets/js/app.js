@@ -38,7 +38,7 @@ import PhotoUpdate from './hooks/photo-update';
 import PlacesAutocomplete from './hooks/places-autocomplete';
 import Preview from './hooks/preview';
 import PriceMask from './hooks/price-mask';
-import Quill, {ClearQuillInput} from './hooks/quill';
+import Quill, { ClearQuillInput } from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
@@ -47,6 +47,7 @@ import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
 import PageScroll from "./hooks/page-scroll";
+import DefaultCostTooltip from './hooks/default-cost-tooltip';
 
 const Modal = {
   mounted() {
@@ -96,8 +97,8 @@ const ClearInput = {
     } = el;
 
     const input = this.el
-        .closest('form')
-        .querySelector(`*[name*='${inputName}']`);
+      .closest('form')
+      .querySelector(`*[name*='${inputName}']`);
 
     let inputWasFocussed = false;
 
@@ -115,7 +116,7 @@ const ClearInput = {
 
 const TZCookie = {
   mounted() {
-    const {timeZone} = Intl.DateTimeFormat().resolvedOptions();
+    const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
     document.cookie = `time_zone=${timeZone}; path=/`;
   },
 };
@@ -126,6 +127,7 @@ const Hooks = {
   ClearInput,
   ClearQuillInput,
   Clipboard,
+  DefaultCostTooltip,
   DragDrop,
   GalleryMobile,
   IFrameAutoHeight,
@@ -154,7 +156,7 @@ const Hooks = {
 let Uploaders = {};
 Uploaders.GCS = function (entries, onViewError) {
   (function (items) {
-    let queue = []
+    let queue = [];
     const try_next = () =>
       setTimeout(() => {
         const next = queue.shift();

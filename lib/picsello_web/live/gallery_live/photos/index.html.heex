@@ -82,7 +82,7 @@
             </div>
           </div>
           <div class="flex flex-col items-start min-w-0 lg:flex-row">
-            <div id="selected-photos-count" class="flex items-end pt-1 font-sans text-sm text-base-250 lg:justify-start">
+            <div id="selected-photos-count" class="flex items-end pt-[0.40rem] font-sans text-sm text-base-250 lg:justify-start">
                 <%= if total(@selected_photos) > 0 do %>
                 <%= total(@selected_photos) %> <%= ngettext("photo", "photos", Enum.count(@selected_photos)) %> selected
                 <% end %>
