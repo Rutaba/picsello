@@ -151,7 +151,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "move_to_album",
+        "move_to_album_popup",
         %{"album_id" => album_id},
         %{
           assigns: %{
@@ -160,17 +160,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    Galleries.move_to_album(String.to_integer(album_id), selected_photos)
+
+        [album | _] =
+      gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
+
+    opts = [
+      event: "move_to_album",
+      title: "Move to album?",
+      confirm_label: "Yes, move #{ngettext("photo", "photos", Enum.count(selected_photos))}",
+      subtitle: "Are you sure you wish to move the selected #{ngettext("photo", "photos", Enum.count(selected_photos))} to #{album.name}?",
+      payload: %{album_id: album_id}
+    ]
 
     socket
-    |> assign(:selected_photos, [])
-    |> push_event("remove_items", %{"ids" => selected_photos})
-    |> assign_photos(@per_page)
-    |> put_flash(
-      :gallery_success,
-      move_to_album_success_message(selected_photos, album_id, gallery)
-    )
-    |> noreply()
+    |> make_popup(opts)
   end
 
   @impl true
@@ -198,14 +201,21 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_event(
         "remove_from_album_popup",
         %{"photo_id" => photo_id},
-        %{assigns: %{album: album}} = socket
+        %{assigns: %{album: album, selected_photos: selected_photos}} = socket
       ) do
+
+        id = if Enum.empty?(selected_photos) do
+          [photo_id]
+        else
+         selected_photos
+         end
+
     opts = [
       event: "remove_from_album",
       title: "Remove from album?",
       confirm_label: "Yes, remove",
-      subtitle: "Are you sure you wish to remove this photo from #{album.name}?",
-      payload: %{photo_id: photo_id}
+      subtitle: "Are you sure you wish to remove #{ngettext("this photo", "these photos", Enum.count(id))} from #{album.name}?",
+      payload: %{photo_id: id}
     ]
 
     socket
@@ -485,15 +495,35 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    Galleries.remove_photos_from_album([id])
+    Galleries.remove_photos_from_album(id)
 
     socket
     |> close_modal()
-    |> push_event("remove_items", %{"ids" => [id]})
+    |> assign(:selected_photos, [])
+    |> push_event("remove_items", %{"ids" => id})
     |> assign_photos(@per_page)
-    |> put_flash(:gallery_success, "Photo successfully removed from #{album.name}")
+    |> put_flash(:gallery_success, remove_from_album_success_message(id, album))
     |> noreply()
   end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "move_to_album", %{album_id: album_id}},
+        %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
+      ) do
+
+        Galleries.move_to_album(String.to_integer(album_id), selected_photos)
+        socket
+        |> close_modal()
+        |> assign(:selected_photos, [])
+        |> push_event("remove_items", %{"ids" => selected_photos})
+        |> assign_photos(@per_page)
+        |> put_flash(
+          :gallery_success,
+          move_to_album_success_message(selected_photos, album_id, gallery)
+        )
+        |> noreply()
+      end
 
   @impl true
   def handle_info(
@@ -605,6 +635,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp remove_from_album_success_message(selected_photos, album) do
+    IO.inspect(selected_photos)
     photos_count = total(selected_photos)
 
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"
@@ -645,7 +676,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     <%= for album <- @albums do %>
       <%= if @exclude_album_id != album.id do %>
       <li class={"relative #{get_class(album.name)}"}>
-        <button class="album-actions" phx-click="move_to_album" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
+        <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
         <div class="tooltiptext cursor-default">Move to <%= album.name %></div>
       </li>
       <% end %>

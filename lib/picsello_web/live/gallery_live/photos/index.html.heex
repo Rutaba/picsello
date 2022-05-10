@@ -72,7 +72,7 @@
                 <% else %>
                   <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
                   <li class="relative">
-                      <button class="album-actions" phx-click="remove_from_album">Remove from album</button>
+                      <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
                   </li>
                 <% end %>
                   <li class="relative hidden">
