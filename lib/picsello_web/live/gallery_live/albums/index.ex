@@ -250,10 +250,9 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   def thumbnail(assigns) do
     ~H"""
-    <a class="mt-4 albumBlock md:w-full h-72 cursor-pointer" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click={@event} phx-value-album={@album.id}>
-      <div class="flex flex-row items-end justify-start h-full gap-2">
-        <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
-      </div>
+    <a class="mt-4 relative albumBlock h-72 cursor-pointer p-0 bg-gray-200" phx-click={@event} phx-value-album={@album.id}>
+      <img class="h-72 object-contain m-auto" src={thumbnail_url(@album)} />
+      <span class="font-sans absolute bottom-4 left-4 font-bold text-white text-1xl"><%= @album.name %></span>
     </a>
     """
   end
