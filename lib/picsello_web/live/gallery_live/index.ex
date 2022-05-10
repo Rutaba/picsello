@@ -130,7 +130,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       one later."
     ]
 
-    make_delete_popup(socket, opts)
+    make_popup(socket, opts)
   end
 
   @impl true

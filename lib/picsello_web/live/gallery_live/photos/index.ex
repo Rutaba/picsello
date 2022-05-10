@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "album_thumbnail_popup",
+        "edit_album_thumbnail_popup",
         _,
         %{
           assigns: %{
@@ -76,6 +76,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> open_modal(AlbumThumbnail, %{album_id: album.id, gallery_id: gallery.id})
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "set_album_thumbnail_popup",
+        %{"photo_id" => photo_id},
+        %{assigns: %{album: album}} = socket
+      ) do
+    opts = [
+      event: "set_album_thumbnail",
+      title: "Set as album thumbnail?",
+      subtitle: "Are you sure you wish to set this photo as the thumbnail for #{album.name}?",
+      confirm_label: "Yes, set as thumbnail",
+      confirm_class: "btn-settings",
+      icon: nil,
+      payload: %{photo_id: photo_id}
+    ]
+
+    socket
+    |> make_popup(opts)
   end
 
   @impl true
@@ -176,6 +196,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
+        "remove_from_album_popup",
+        %{"photo_id" => photo_id},
+        %{assigns: %{album: album}} = socket
+      ) do
+    opts = [
+      event: "remove_from_album",
+      title: "Remove from album?",
+      confirm_label: "Yes, remove",
+      subtitle: "Are you sure you wish to remove this photo from #{album.name}?",
+      payload: %{photo_id: photo_id}
+    ]
+
+    socket
+    |> make_popup(opts)
+  end
+
+  @impl true
+  def handle_event(
         "load-more",
         _,
         %{
@@ -259,7 +297,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     ]
 
     socket
-    |> make_delete_popup(opts)
+    |> make_popup(opts)
   end
 
   @impl true
@@ -272,7 +310,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     ]
 
     socket
-    |> make_delete_popup(opts)
+    |> make_popup(opts)
   end
 
   @impl true
@@ -436,6 +474,43 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         |> put_flash(:gallery_success, "Could not delete album")
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "remove_from_album", %{photo_id: id}},
+        %{
+          assigns: %{
+            album: album
+          }
+        } = socket
+      ) do
+    Galleries.remove_photos_from_album([id])
+
+    socket
+    |> close_modal()
+    |> push_event("remove_items", %{"ids" => [id]})
+    |> assign_photos(@per_page)
+    |> put_flash(:gallery_success, "Photo successfully removed from #{album.name}")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "set_album_thumbnail", %{photo_id: photo_id}},
+        %{
+          assigns: %{
+            album: album
+          }
+        } = socket
+      ) do
+    thumbnail = Galleries.get_photo(String.to_integer(photo_id))
+    album |> Repo.preload([:photos, :thumbnail_photo]) |> Albums.save_thumbnail(thumbnail)
+
+    socket
+    |> close_modal()
+    |> put_flash(:gallery_success, "Album thumbnail successfully updated")
+    |> noreply()
   end
 
   @impl true

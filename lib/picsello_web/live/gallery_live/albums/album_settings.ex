@@ -110,7 +110,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     ]
 
     socket
-    |> make_delete_popup(opts)
+    |> make_popup(opts)
   end
 
   defp generate_password(set_password, album_password) do

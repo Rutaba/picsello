@@ -18,7 +18,7 @@
                     Album settings
                   </.icon_button>
                   <%= if total(@photos) > 0 do %>
-                  <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                  <.icon_button {testid("edit-album-thumbnail")} class="bg-white ml-5 shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
                     Edit thumbnail
                   </.icon_button>
                   <% end %>
@@ -134,6 +134,7 @@
             <%= live_component PicselloWeb.GalleryLive.Photos.Photo,
                 id: photo.id,
                 photo: photo,
+                album: @album,
                 photo_width: 300,
                 is_likable: true,
                 is_removable: true,
