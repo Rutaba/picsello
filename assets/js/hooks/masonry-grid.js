@@ -146,27 +146,36 @@ export default {
     return this.init_masonry();
   },
 
-  set_height() {
-    this.el.style.height = this.grid['_layout']['height'] + 'px';
+  refresh(id, item_id) {
+    const grid = this.get_grid();
+    const grid_items = grid.getItems();
+    const items = document.querySelectorAll(item_id);
+
+    if(id == 'photos') {
+      if(grid_items.length != items.length) {
+        grid.remove(grid_items);
+        grid.add(items);  
+      }
+    } else {
+      grid.remove(grid_items);    
+      grid.add(items);    
+    }
+    grid.refreshItems();
   },
 
   /**
    * Recollects all item elements to apply changes to the DOM to Masonry
    */
   reload_masonry() {
-    const grid = this.get_grid();
-    const grid_id = '#' + this.el.dataset.id + " .item";
+    const id = this.el.dataset.id;
+    const item_id = '#' + id + " .item";
     const uploading = this.el.dataset.uploading;
+    
     if(uploading == 100 || uploading == 0) {
-      const grid_items = grid.getItems();
-      const items = document.querySelectorAll(grid_id);
-      if(grid_items.length != items.length) {
-        grid.remove(grid_items);
-        grid.add(items);
-      }
-      grid.refreshItems();
+      this.refresh(id, item_id)
     }
-    this.set_height();
+    
+    this.el.style.height = this.grid['_layout']['height'] + 'px';
   },
 
   /**

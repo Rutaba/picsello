@@ -248,6 +248,16 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     add_message_and_notify(socket, message_changeset)
   end
 
+  def thumbnail(%{album: %{thumbnail_photo: nil}} = assigns) do
+    ~H"""
+    <a class="mt-4 albumBlock md:w-full h-72 cursor-pointer" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click={@event} phx-value-album={@album.id}>
+      <div class="flex flex-row items-end justify-start h-full gap-2">
+        <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
+      </div>
+    </a>
+    """
+  end
+
   def thumbnail(assigns) do
     ~H"""
     <a class="mt-4 relative albumBlock h-72 cursor-pointer p-0 bg-gray-200" phx-click={@event} phx-value-album={@album.id}>
