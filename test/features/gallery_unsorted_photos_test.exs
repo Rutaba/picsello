@@ -126,6 +126,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(button("All"))
     |> click(css("#actions"))
     |> click(button("Move to #{album.name}"))
+    |> within_modal(&click(&1, button("Yes, move photos")))
     |> assert_has(css("p", text: "#{photos_count} photos successfully moved to #{album.name}"))
     |> assert_has(css("#drag-drop"))
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")

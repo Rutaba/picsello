@@ -635,7 +635,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp remove_from_album_success_message(selected_photos, album) do
-    IO.inspect(selected_photos)
     photos_count = total(selected_photos)
 
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"

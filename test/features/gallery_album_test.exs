@@ -99,7 +99,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(css("#wrapper a"))
   end
 
-  test "Album, delete signle photo", %{
+  test "Album, delete single photo", %{
     session: session,
     gallery: %{id: gallery_id},
     album: %{id: album_id},
@@ -148,6 +148,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(button("All"))
     |> click(css("#actions"))
     |> click(button("Remove from album"))
+    |> within_modal(&click(&1, button("Yes, remove")))
     |> assert_has(
       css("p", text: "#{photos_count} photos successfully removed from #{album.name}")
     )
