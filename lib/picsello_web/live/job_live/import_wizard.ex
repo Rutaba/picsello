@@ -186,7 +186,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     ~H"""
     <.form for={@package_changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
       <h2 class="text-xl font-bold">Package Details</h2>
-      <.package_basic_fields form={f} />
+      <.package_basic_fields form={f} job_type={Ecto.Changeset.get_field(@job_changeset, :type)} />
 
       <hr class="mt-8 border-gray-100">
 

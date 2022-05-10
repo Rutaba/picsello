@@ -51,7 +51,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   def package_basic_fields(assigns) do
     ~H"""
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-7">
-      <%= labeled_input @form, :name, label: "Title", placeholder: "Wedding Deluxe, or 1 Hour Portrait Session", phx_debounce: "500", wrapper_class: "mt-4" %>
+      <%= labeled_input @form, :name, label: "Title", placeholder: "e.g. #{dyn_gettext @job_type} Deluxe", phx_debounce: "500", wrapper_class: "mt-4" %>
       <div class="grid gap-2 grid-cols-2 sm:contents">
         <%= labeled_select @form, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", class: "py-3", phx_update: "ignore" %>
 
@@ -107,7 +107,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             Set a "buy them all" price
           </label>
           <%= if p |> current() |> Map.get(:is_buy_all) do %>
-            <%= input(@package_form, :buy_all, placeholder: "$0.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= input(@package_form, :buy_all, placeholder: "$750.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
           <% end %>
         </div>
       <% end %>

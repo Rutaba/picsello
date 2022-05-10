@@ -202,7 +202,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :details} = assigns) do
     ~H"""
-      <.package_basic_fields form={@f} />
+      <.package_basic_fields form={@f} job_type={if !@is_template do @job.type else "wedding" end} />
 
       <div class="flex flex-col mt-4">
 
@@ -212,7 +212,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             Clear
           </.icon_button>
         </.input_label>
-        <.quill_input f={@f} html_field={:description} placeholder="Full wedding package ideal for multiple shoots across the entire wedding journey." />
+        <.quill_input f={@f} html_field={:description} placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
       </div>
 
       <%= if @is_template do %>

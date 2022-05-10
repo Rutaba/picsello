@@ -38,7 +38,7 @@ defmodule PicselloWeb.Live.Session.New do
             <p class="text-red-sales-300"><%= @error_message %></p>
           <% end %>
           <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
-          <%= labeled_input f, :email, type: :email_input, placeholder: "jane@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
+          <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
 
           <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :log_in_password %>
 

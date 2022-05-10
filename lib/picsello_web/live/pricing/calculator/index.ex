@@ -163,7 +163,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
           <label class="flex flex-col mt-4">
             <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
-            <%= input @f, :min_years_experience, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
+            <%= input @f, :min_years_experience, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
             <%= error_tag @f, :min_years_experience, class: "text-red-sales-300 text-sm" %>
           </label>
         </div>
@@ -171,7 +171,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
           <label class="flex flex-col mt-4">
             <p class="py-2 font-extrabold">What's your zipcode?</p>
-            <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "12345", class: "p-4" %>
+            <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "00000", class: "p-4" %>
             <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
           </label>
 

@@ -28,9 +28,9 @@ defmodule PicselloWeb.Live.Contacts.ContactFormComponent do
 
         <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <%= labeled_input f, :name, placeholder: "Enter first and last name…", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
-            <%= labeled_input f, :email, type: :email_input, placeholder: "Enter email…", phx_debounce: "500" %>
-            <%= labeled_input f, :phone, type: :telephone_input, placeholder: "Enter phone number…", phx_hook: "Phone", phx_debounce: "500" %>
+            <%= labeled_input f, :name, placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
+            <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500" %>
+            <%= labeled_input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500" %>
           </div>
 
           <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />

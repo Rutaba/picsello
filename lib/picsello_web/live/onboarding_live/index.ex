@@ -106,7 +106,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <label class="flex flex-col">
           <p class="py-2 font-extrabold">What’s the name of your photography business?</p>
 
-          <%= input org, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: "p-4" %>
+          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: "p-4" %>
           <%= error_tag org, :name, prefix: "Photography business name", class: "text-red-sales-300 text-sm" %>
         </label>
       <% end %>
@@ -122,7 +122,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <label class="flex flex-col mt-4">
           <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
 
-          <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "22", class: "p-4" %>
+          <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
           <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
         </label>
 
