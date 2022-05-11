@@ -36,7 +36,13 @@
       <hr class="mt-2 col-span-2">
     </div>
 
-    <%= raw Phoenix.View.render_to_string(PicselloWeb.DefaultContractView, "show.html", organization: @organization, package: @package, photographer: @photographer) %>
+    <%= if @contract do %>
+      <div class="mt-4 raw_html">
+        <%= raw @contract.content %>
+      </div>
+    <% else %>
+      <%= raw Phoenix.View.render_to_string(PicselloWeb.DefaultContractView, "show.html", organization: @organization, package: @package, photographer: @photographer) %>
+    <% end %>
 
     <p class="mt-4 font-semibold">I confirm that I have read and understood this contract, and I agree to enter into this contract with <%= @organization.name %></p>
     <hr class="my-6" />

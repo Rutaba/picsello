@@ -123,7 +123,7 @@ defmodule Picsello.ImportJobTest do
     |> find(testid("proposal-details"), fn details ->
       details
       |> assert_text("Questionnaire\nExternal")
-      |> assert_text("Standard Contract\nExternal")
+      |> assert_text("Contract\nExternal")
     end)
     |> click(css("a[title='Invoice']"))
     |> assert_has(definition("Previously collected", text: "$200.00"))
