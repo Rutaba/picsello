@@ -29,9 +29,9 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     gallery: %{id: gallery_id} = gallery,
     photos_count: photos_count
   } do
-    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 80})
     photo_count = length(photo_ids) + photos_count
-    per_page = 30
+    per_page = 100
 
     session
     |> visit("/galleries/#{gallery_id}/photos")
@@ -55,7 +55,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(css("#select"))
     |> click(button("None"))
     |> refute_has(css("#selected-photos-count", text: "#{photos_count} photos selected"))
-    |> click(css("#photo-#{List.first(photo_ids)}-to-like"))
+    |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
     |> click(css("#select"))
     |> click(button("Favorite"))
     |> assert_has(css("#selected-photos-count", text: "1 photo selected"))
@@ -73,9 +73,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
-    |> click(css("#select"))
-    |> click(button("None"))
-    |> click(css("#photo-#{List.first(photo_ids)}-view"))
+    |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-view"))
     |> click(css("#wrapper a"))
   end
 
@@ -88,10 +86,8 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
-    |> click(css("#select"))
-    |> click(button("None"))
     |> assert_has(css("#item-#{List.first(photo_ids)}"))
-    |> click(css("#photo-#{List.first(photo_ids)}-remove"))
+    |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-remove"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> refute_has(css("#photo-#{List.first(photo_ids)}-remove"))
     |> assert_has(css("p", text: "1 photo deleted successfully"))
@@ -142,9 +138,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
-    |> click(css("#select"))
-    |> click(button("None"))
-    |> click(css("#photo-#{List.first(photo_ids)}-to-like"))
+    |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
     |> click(css("#toggle_favorites"))
     |> assert_has(css(".item", count: 1))
     |> click(css("#toggle_favorites"))

@@ -1,4 +1,4 @@
-<div class="item flex m-1.5 bg-gray-200" id={"photo-item-#{@photo.id}"} style={"height: 130px; margin: 5px;"}>
+<div class="item flex m-1.5 bg-gray-200" id={"photo-item-#{@photo.id}"} style={"height: 130px; width: 200px; margin: 5px;"}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
         <div class="galleryItem">
             <%= if @component do %>
@@ -6,152 +6,58 @@
             id={"photo-#{@id}"}
             class="galleryItem"
             phx-click={toggle_border(@id, @is_gallery_category_page)}
-            phx-click-away={JS.remove_class("item-border",
-                to: "#item-#{@id}")}
-            >
-            <img
-                phx-click="click"
-                phx-target={@component}
-                phx-value-preview={@photo.preview_url}
-                phx-value-preview_photo_id={@photo.id}
-                src={preview_url(@photo)}
-                class="relative"
-            />
-        </div>
-        <% else %>
-        <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
-            <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-            <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
-                <img
-                    phx-click="click"
-                    phx-value-preview={@photo.preview_url}
-                    phx-value-preview_photo_id={@photo.id}
-                    src={preview_url(@photo)}
-                    class="relative"
-                    style="object-fit: contain;"
-                />
+            phx-click-away={JS.remove_class("item-border", to: "#item-#{@id}")}>
+                <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo)}/>                 
+            </div>
             <% else %>
-                <div class="galleryLoader">
-                    <img
-                        phx-click="click"
-                        phx-value-preview="/images/gallery-icon.svg"
-                        phx-value-preview_photo_id={@photo.id}
-                        src={Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")}
-                        class="relative"
-                        style="object-fit: contain;"
-                    />
-                </div>
-            <% end %>
-        </div>
-        <% end %>
-        <%= if !@is_gallery_category_page do %>
-            <%= if @is_likable do %>
-                <button
-                    class="likeBtn"
-                    phx-click={js_like_click(@id, @myself)}
-                >
-                    <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
-                        <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+            <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+                <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+                <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
+                    <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo)}/>
+                <% else %>
+                    <div class="galleryLoader">
+                        <.photo target={@component} preview={@url} photo_id={@photo.id} url={@url}/>
                     </div>
-
-                    <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
-                        <.icon
-                        name="heart-white"
-                        class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
-                        />
-                    </div>
-                </button>
-            <% else %>
-                <button class="likeBtn">
-                    <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
-                </button>
+                <% end %>
+            </div>
             <% end %>
+            <%= if !@is_gallery_category_page do %>
+                <%= if @is_likable do %>
+                    <button
+                        class="likeBtn"
+                        phx-click={js_like_click(@id, @myself)}
+                    >
+                        <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
+                            <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+                        </div>
 
-            <%= if @is_removable do %>
-                <button
-                    class="absolute removeBtn"
-                    phx-click="delete_photo_popup"
-                    phx-value-id={@id}
-                >
-                    <.icon name="remove-icon" class="h-6 text-gray-200 w-7" />
-                </button>
-            <% end %>
-            <%= if @is_viewable do %>
-                <button
-                    class="absolute viewBtn"
-                    phx-click="photo_view"
-                    phx-value-photo_id={@photo.id}
-                    phx-value-id={@id}
-                >
-                <.icon name="eye" class="h-6 text-gray-200 w-7" />
-                </button>
+                        <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
+                            <.icon
+                            name="heart-white"
+                            class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
+                            />
+                        </div>
+                    </button>
+                <% else %>
+                    <button class="likeBtn">
+                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
+                    </button>
                 <% end %>
 
                 <%= if @is_removable do %>
-                    <div
-                        id={"photo-#{@id}-remove"}
-                        class="absolute removeBtn"
-                        phx-click="delete_photo_popup"
-                        phx-value-id={@id}
-                    >
-                        <.icon name="remove-icon" class="h-6 text-gray-200 w-7" />
-                    </div>
+                    <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
                 <% end %>
                 <%= if @is_viewable do %>
-                    <div
-                        id={"photo-#{@id}-view"}
-                        class="absolute viewBtn"
-                        phx-click="photo_view"
-                        phx-value-photo_id={@photo.id}
-                        phx-value-id={@id}
-                    >
-                    <.icon name="eye" class="h-6 text-gray-200 w-7" />
-                   </div>
-                   <% end %>
-                   <%= if @is_meatball do %>
-                      <div id={"meatball-photo-#{@id}"} phx-hook="ToggleContent">
-                          <button class="absolute meatballs">
-                          <.icon name="meatballs" class="text-gray-200 w-7 h-7" />
-                          </button>
-                           <ul class="absolute hidden bg-white rounded-md toggle-content meatballsdropdown w-40 overflow-visible">
-                               <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <div
-                                 id={"photo-preview-#{@id}"}
-                                 class="hover-drop-down"
-                                 phx-click="photo_preview"
-                                 phx-value-photo_id={@id}
-                                 >
-                                 Set as product preview
-                                 </div>
-                               </li>
-                                <%= if @album do %>
-                               <li class="flex relative items-center hover:bg-blue-planning-100">
-                                 <div
-                                 id={"photo-thumbnail-#{@id}"}
-                                 class="hover-drop-down"
-                                 phx-click="set_album_thumbnail_popup"
-                                 phx-value-photo_id={@id}
-                                 >
-                                 Set as album thumbnail
-                                 </div>
-                               </li>
-                               <li class="flex relative items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <div
-                                 id={"photo-remove-#{@id}"}
-                                 class="hover-drop-down pb-2"
-                                 phx-click="remove_from_album_popup"
-                                 phx-value-photo_id={@id}
-                                 >
-                                 Remove from album
-                                 </div>
-                               </li>
-                             <% end %>
-                               <li class="flex hidden items-center hover:bg-blue-planning-100 hover:rounded-md">
-                                 <button class="hover-drop-down">Download photo</button>
-                               </li>
-                           </ul>
-                      </div>
-                    <% end %>
+                    <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
+                <% end %>
+                <%= if @is_meatball do %>
+                    <div id={"meatball-photo-#{@id}"} phx-hook="ToggleContent">
+                        <button class="absolute meatballs">
+                        <.icon name="meatballs" class="text-gray-200 w-7 h-7" />
+                        </button>
+                        <.ul id={@id} entries={meatball(@album, @id)} />
+                    </div>
+                <% end %>
             <% end %>
         </div>
     </div>

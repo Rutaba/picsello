@@ -106,7 +106,7 @@
         <% end %>
       </div>
 
-      <div class= "pt-16 pb-10 pl-[4.5rem] pr-8">
+      <div class= "pt-16 pb-10 pl-10 pr-8">
         <%= if total(@photos) == 0 && !@favorites_filter do %>
         <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
             Oops, there's nothing here - upload photos now to get started!
@@ -131,7 +131,7 @@
             data-has-more-photos={ "#{@has_more_photos}" }
             data-photo-width="300">
             <%= for photo <- @photos do%>
-            <%= live_component PicselloWeb.GalleryLive.Photos.Photo,
+            <%= live_component Photo,
                 id: photo.id,
                 photo: photo,
                 album: @album,

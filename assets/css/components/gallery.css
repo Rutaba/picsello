@@ -15,7 +15,7 @@
 }
 
 .hover-drop-down {
-  @apply flex items-center pl-2 pt-2 text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-36 whitespace-nowrap;
+  @apply flex items-center pl-2 py-1 text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-36 whitespace-nowrap;
 }
 
 .album-select {
@@ -37,7 +37,6 @@
 }
 
 .gallery__container {
-  max-width: 1440px;
   @apply h-full px-16 py-0 mx-auto my-0;
 }
 
@@ -352,10 +351,7 @@
 }
 
 .viewBtn{
-    left: 1rem;
-    top: 1rem;
-    z-index: 10;
-    opacity: 0;
+  @apply z-10 opacity-0 left-4 top-4;
 }
 
 .meatballs{

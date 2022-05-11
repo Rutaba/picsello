@@ -161,13 +161,13 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <label id="setPassword" class="flex text-1xl">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
             <div class="hidden peer-checked:flex">
-              <div class="flex font-sans justify-end items-center w-12 h-6 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
+              <div class="flex font-sans cursor-pointer justify-end items-center w-12 h-6 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
                   <div class="w-4 h-4 rounded-full bg-base-100"></div>
               </div>
               <span>On</span>
             </div>
             <div class="flex peer-checked:hidden" >
-              <div class="flex w-12 h-6 items-center p-1 mr-4 border rounded-full border-blue-planning-300">
+              <div class="flex w-12 h-6 cursor-pointer items-center p-1 mr-4 border rounded-full border-blue-planning-300">
                   <div class="w-4 h-4 rounded-full bg-blue-planning-300"></div>
               </div>
               <span>Off</span>
@@ -186,9 +186,9 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
               <div class="absolute flex h-full -translate-y-1/2 right-1 top-1/2">
                 <a phx-click="toggle_visibility" phx-target={@myself} class="mr-4" id="toggle-visibility">
                   <%= if @visibility do %>
-                    <.icon name="eye" class="w-5 h-full ml-1 text-base-250"/>
+                    <.icon name="eye" class="w-5 cursor-pointer h-full ml-1 text-base-250"/>
                   <% else %>
-                    <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250"/>
+                    <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
                   <% end %>
                 </a>
                 <button type="button" id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@album_password}

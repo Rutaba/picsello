@@ -12,10 +12,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias Phoenix.PubSub
   alias Picsello.{Repo, Galleries, Albums}
   alias Picsello.Galleries.Workers.PositionNormalizer
-  alias PicselloWeb.GalleryLive.Photos.{PhotoPreview, PhotoView}
+  alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
-  @per_page 30
+  @per_page 100
   @string_length 20
 
   @impl true
@@ -130,7 +130,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "photo_preview",
+        "photo_preview_pop",
         %{"photo_id" => photo_id},
         %{
           assigns: %{
@@ -160,15 +160,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-
-        [album | _] =
+    [album | _] =
       gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
 
     opts = [
       event: "move_to_album",
       title: "Move to album?",
       confirm_label: "Yes, move #{ngettext("photo", "photos", Enum.count(selected_photos))}",
-      subtitle: "Are you sure you wish to move the selected #{ngettext("photo", "photos", Enum.count(selected_photos))} to #{album.name}?",
+      subtitle:
+        "Are you sure you wish to move the selected #{ngettext("photo", "photos", Enum.count(selected_photos))} to #{album.name}?",
       payload: %{album_id: album_id}
     ]
 
@@ -203,18 +203,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{"photo_id" => photo_id},
         %{assigns: %{album: album, selected_photos: selected_photos}} = socket
       ) do
-
-        id = if Enum.empty?(selected_photos) do
-          [photo_id]
-        else
-         selected_photos
-         end
+    id =
+      if Enum.empty?(selected_photos) do
+        [photo_id]
+      else
+        selected_photos
+      end
 
     opts = [
       event: "remove_from_album",
       title: "Remove from album?",
       confirm_label: "Yes, remove",
-      subtitle: "Are you sure you wish to remove #{ngettext("this photo", "these photos", Enum.count(id))} from #{album.name}?",
+      subtitle:
+        "Are you sure you wish to remove #{ngettext("this photo", "these photos", Enum.count(id))} from #{album.name}?",
       payload: %{photo_id: id}
     ]
 
@@ -297,13 +298,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event("delete_photo_popup", %{"id" => id}, socket) do
+  def handle_event("delete_photo_popup", %{"photo_id" => photo_id}, socket) do
     opts = [
       event: "delete_photo",
       title: "Delete this photo?",
       subtitle:
         "Are you sure you wish to permanently delete this photo from #{socket.assigns.gallery.name} ?",
-      payload: %{photo_id: id}
+      payload: %{photo_id: photo_id}
     ]
 
     socket
@@ -511,19 +512,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:confirm_event, "move_to_album", %{album_id: album_id}},
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
+    Galleries.move_to_album(String.to_integer(album_id), selected_photos)
 
-        Galleries.move_to_album(String.to_integer(album_id), selected_photos)
-        socket
-        |> close_modal()
-        |> assign(:selected_photos, [])
-        |> push_event("remove_items", %{"ids" => selected_photos})
-        |> assign_photos(@per_page)
-        |> put_flash(
-          :gallery_success,
-          move_to_album_success_message(selected_photos, album_id, gallery)
-        )
-        |> noreply()
-      end
+    socket
+    |> close_modal()
+    |> assign(:selected_photos, [])
+    |> push_event("remove_items", %{"ids" => selected_photos})
+    |> assign_photos(@per_page)
+    |> put_flash(
+      :gallery_success,
+      move_to_album_success_message(selected_photos, album_id, gallery)
+    )
+    |> noreply()
+  end
 
   @impl true
   def handle_info(
@@ -610,6 +611,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> assign(:selected_photos, [])
       |> close_modal()
       |> push_event("remove_items", %{"ids" => selected_photos})
+      |> push_event("select_mode", %{"mode" => "selected_none"})
       |> put_flash(
         :gallery_success,
         "#{total(selected_photos)} #{ngettext("photo", "photos", Enum.count(selected_photos))} deleted successfully"

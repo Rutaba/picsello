@@ -93,13 +93,118 @@ export default {
     const gridElement = document.querySelector(grid_id);
     if (gridElement) {
       const opts = {
-        layout: {
-          fillGaps: true,
-          syncWithLayout: false,
-          layoutOnResize: true,
-          layoutDuration: 0,
-          layoutEasing: 'ease-in',
-          rounding: false,
+        layout: function (grid, layoutId, items, width, height, callback) {
+          var layout = {
+            fillGaps: true,
+            syncWithLayout: false,
+            layoutOnResize: true,
+            layoutDuration: 0,
+            layoutEasing: 'ease-in',
+            rounding: false,  
+            id: layoutId,
+            items: items,
+            slots: [],
+            styles: {},
+          };
+
+          var item;
+          var m;
+          var x = 0;
+          var y = 0;
+          var w = 0;
+          var h = 0;
+
+          var maxW = width / 2;
+          var currentW = 0;
+          var currentRowH = 0;
+          var currentRowW = 0;
+          var rowSizes = [];
+          var rowFixes = [];
+
+          var xPre, yPre, wPre, hPre;
+          var numToFix = 0;
+
+          for (var i = 0; i < items.length; i++) {
+              item = items[i];
+
+              m = item.getMargin();
+              wPre = item.getWidth() + m.left + m.right;
+              hPre = item.getHeight() + m.top + m.bottom;
+              xPre += wPre;
+
+              if (hPre > currentRowH) {
+                  currentRowH = hPre;
+              }
+
+              if (w < currentRowW) {
+                  currentRowW = wPre;
+              }
+
+              rowSizes.push(width / 2);
+              numToFix++;
+              currentW += wPre;
+
+              var k = 0;
+
+              for (var j = 0; j < numToFix; j++) {
+                  rowSizes[i - j] -= wPre / 2;
+              }
+
+              if (numToFix > 1) {
+                  rowSizes[i] -= (wPre / 2) * (numToFix - 1);
+                  k += (wPre / 2);
+              }
+
+              currentW -= k;
+              rowFixes.push(k);
+
+              if (currentW >= maxW) {
+                  yPre += currentRowH;
+                  currentRowH = 0;
+                  xPre = 0;
+                  numToFix -= 1;
+                  currentW = 0;
+                  numToFix = 0;
+                  k = 0;
+              }
+          }
+
+          maxW = width / 2;
+          currentW = 0;
+          currentRowH = 0;
+          currentRowW = 0;
+
+          for (var i = 0; i < items.length; i++) {
+              item = items[i];
+              x += w;
+
+              if (h > currentRowH) {
+                  currentRowH = h;
+              }
+
+              if (w < currentRowW) {
+                  currentRowW = w;
+              }
+
+              currentW += w - rowFixes[i];
+
+              if (currentW >= maxW) {
+                  y += currentRowH;
+                  currentRowH = 0;
+                  x = 0;
+                  currentW = 0;
+              }
+
+              m = item.getMargin();
+              w = item.getWidth() + m.left + m.right;
+              h = item.getHeight() + m.top + m.bottom;
+              layout.slots.push(x + rowSizes[i], y);
+          }
+
+          layout.styles.width = '100%';
+          layout.styles.height = y + h + 1 + 'px';
+
+          callback(layout);
         },
         dragEnabled: true,
         dragStartPredicate: (item, e) => {
@@ -150,7 +255,6 @@ export default {
     const grid = this.get_grid();
     const grid_items = grid.getItems();
     const items = document.querySelectorAll(item_id);
-
     if(id == 'photos') {
       if(grid_items.length != items.length) {
         grid.remove(grid_items);
@@ -160,7 +264,12 @@ export default {
       grid.remove(grid_items);    
       grid.add(items);    
     }
-    grid.refreshItems();
+  },
+
+  load_more() {
+    if((this.el.style.height.slice(0, -2) < screen.height) && this.hasMorePhotoToLoad()){
+      this.pushEvent('load-more', {});
+    }
   },
 
   /**
@@ -170,12 +279,11 @@ export default {
     const id = this.el.dataset.id;
     const item_id = '#' + id + " .item";
     const uploading = this.el.dataset.uploading;
-    
+    const grid = this.get_grid();
     if(uploading == 100 || uploading == 0) {
       this.refresh(id, item_id)
     }
-    
-    this.el.style.height = this.grid['_layout']['height'] + 'px';
+    grid.refreshItems();
   },
 
   /**
@@ -213,9 +321,10 @@ export default {
   remove_item(id) {
     const grid = this.get_grid();
     const itemElement = document.getElementById(`photo-item-${id}`);
-    const item = grid.getItem(itemElement);
-
-    grid.remove([item], { removeElements: true });
+    if(itemElement) {
+      const item = grid.getItem(itemElement);
+      grid.remove([item], { removeElements: true });
+    }
   },
 
   remove_items(ids) {
@@ -223,9 +332,13 @@ export default {
     let items = [];
     ids.forEach(id => {
       const itemElement = document.getElementById(`photo-item-${id}`);
-      items.push(grid.getItem(itemElement))
+      if(itemElement) {
+        items.push(grid.getItem(itemElement))
+      }
     });
-    grid.remove(items, { removeElements: true });
+    if(items.length > 0) {
+      grid.remove(items, { removeElements: true });
+    }
   },
 
   select_mode(mode) {
@@ -272,6 +385,7 @@ export default {
 
     this.init_masonry();
     this.init_listeners();
+    this.load_more();
   },
 
   /**
@@ -285,11 +399,16 @@ export default {
    * Updated callback
    */
   updated() {
+    const grid = this.get_grid();
     this.pending = this.page();
+
     if (this.pending === '0') {
+      this.load_more();
       this.reload_masonry();
     } else {
       this.inject_new_items();
     }
+    this.el.style.height = grid['_layout']['styles']['height'];
   },
 };
+
