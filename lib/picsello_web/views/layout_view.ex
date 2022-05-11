@@ -27,9 +27,7 @@ defmodule PicselloWeb.LayoutView do
     do: [
       {:error, "error", "text-red-sales-300"},
       {:info, "info", "text-blue-planning-300"},
-      {:success, "checkmark", "text-green-finances-300"},
-      {:gallery_success, "tick", "text-green-finances-300"},
-      {:gallery_error, "warning-white", "text-red-sales-300"}
+      {:success, "tick", "text-green-finances-300"}
     ]
 
   def flash(flash) do
@@ -38,8 +36,8 @@ defmodule PicselloWeb.LayoutView do
     ~H"""
     <div>
       <%= for {key, icon, text_color} <- flash_styles(), message <- [live_flash(@flash, key)], message do %>
-        <%= if(key in [:error, :info, :success, :gallery_success, :gallery_error])  do %>
-        <div phx-hook="Flash" id={key} phx-click="lv:clear-flash" phx-value-key={key} title={key} class="fixed right-10-md right-0 top-1.5 z-30 max-w-lg px-1.5 px-0-md" role="alert">
+        <%= if(key in [:error, :info, :success])  do %>
+        <div phx-hook="Flash" id={"flash-#{DateTime.to_unix(DateTime.utc_now)}"} phx-click="lv:clear-flash" phx-value-key={key} title={key} class="fixed right-10-md right-0 top-1.5 z-30 max-w-lg px-1.5 px-0-md" role="alert">
           <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
             <div class={classes(["flex items-center justify-center p-3", text_color])}>
               <.icon name={icon} class="w-6 h-6 stroke-current" />

@@ -250,7 +250,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     socket
     |> assign(:gallery, gallery)
-    |> put_flash(:gallery_success, "The expiration date has been successfully updated")
+    |> put_flash(:success, "The expiration date has been successfully updated")
     |> noreply()
   end
 
