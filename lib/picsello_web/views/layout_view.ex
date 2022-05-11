@@ -44,7 +44,9 @@ defmodule PicselloWeb.LayoutView do
             <div class={classes(["flex items-center justify-center p-3", text_color])}>
               <.icon name={icon} class="w-6 h-6 stroke-current" />
             </div>
-            <div class="flex items-center justify-center font-sans flex-grow px-3 py-2 mr-7"><%= message %></div>
+            <div class="flex items-center justify-center font-sans flex-grow px-3 py-2 mr-7">
+              <p><%= message %></p>
+            </div>
             <div class="flex items-center justify-center mr-3">
               <.icon name="close-x" class="w-3 h-3 stroke-current" />
             </div>
