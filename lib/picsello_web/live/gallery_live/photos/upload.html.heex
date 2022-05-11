@@ -1,0 +1,40 @@
+<div>
+    <%= case @view do %>
+    <% "add_button" -> %>
+    <form id="addPhoto-form" phx-submit="save" phx-change="start">
+        <div class="dragDrop" id="addPhoto" phx-hook="DragDrop" phx-drop-target={@uploads.photo.ref}>
+            <label class="flex flex-col items-center justify-center float-right cursor-pointer">
+                <div class="max-w-xs mx-auto">
+                    <div class="dragDrop__content">
+                        <p class="text-center">
+                            <div class="flex items-center bg-white ml-5 lg:justify-end uploadBtn">
+                                <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
+                                Add photos
+                            </div>
+                            <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                        </p>
+                    </div>
+                </div>
+            </label>
+        </div>
+    </form>
+    <% "drag_drop" -> %>
+    <form id="dragDrop-upload-form" phx-submit="save" phx-change="start">
+        <div class="dragDrop" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@uploads.photo.ref}>
+        <label class="flex flex-col mt-32 items-center justify-center w-full h-full gap-8 cursor-pointer">
+            <div class="max-w-xs mx-auto">
+                <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
+                <div class="flex flex-col items-center justify-center dragDrop__content">
+                    <p class="text-center">
+                        <span class="font-bold">Drag your images or </span>
+                        <span class="font-bold cursor-pointer primary">browse</span>
+                        <%= live_file_input @uploads.photo, class: "dragDropInput" %>
+                    </p>
+                    <p class="text-center gray">Supports JPEG or PNG</p>
+                </div>
+            </div>
+        </label>
+        </div>
+    </form>
+    <% end %>
+</div>

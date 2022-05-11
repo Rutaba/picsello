@@ -28,7 +28,6 @@ defmodule PicselloWeb.GalleryLive.ShowTest do
                |> render_hook(:open_upload_popup, %{})
                |> Floki.text()
 
-      assert popup =~ "Upload photos to #{@gallery_name}"
       assert popup =~ "Drop images or Browse"
       assert popup =~ "Supports JPEG or PNG"
     end
@@ -39,7 +38,6 @@ defmodule PicselloWeb.GalleryLive.ShowTest do
         |> render_component(%{id: UploadComponent, gallery: gallery})
         |> Floki.text()
 
-      assert component =~ "Upload photos to #{@gallery_name}"
       assert component =~ "Drop images or Browse"
       assert component =~ "Supports JPEG or PNG"
     end

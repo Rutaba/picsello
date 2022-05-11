@@ -9,47 +9,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   }
 
   def update(assigns, socket) do
-    socket
-    |> assign(:uniq, UUID.uuid4())
-    |> assign(@default_assigns)
-    |> assign(assigns)
-    |> set_preview()
-    |> ok
+    socket |> assign(@default_assigns) |> assign(assigns) |> ok()
   end
 
-  defp set_preview(%{assigns: %{category: category, photo: nil, uniq: uniq}} = socket) do
-    socket
-    |> push_event(
-      "set_preview",
-      category
-      |> to_event_args(uniq)
-      |> Map.merge(%{
-        preview: preview_url(%{}),
-        width: nil,
-        height: nil
-      })
-    )
-  end
-
-  defp set_preview(%{assigns: %{category: category, photo: photo, uniq: uniq}} = socket) do
-    socket
-    |> push_event(
-      "set_preview",
-      category
-      |> to_event_args(uniq)
-      |> Map.merge(%{
-        preview: preview_url(photo),
-        ratio: photo.aspect_ratio
-      })
-    )
-  end
-
+  defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
   defdelegate min_price(category), to: Picsello.Galleries
-
-  defp to_event_args(category, uniq),
-    do: %{
-      frame: Picsello.Category.frame_image(category),
-      coords: Picsello.Category.coords(category),
-      target: "canvas#{category.id}-#{uniq}"
-    }
 end

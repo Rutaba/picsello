@@ -19,7 +19,7 @@ defmodule Picsello.WHCC.Editor.Params do
 
     gallery_photos =
       if product.category.whcc_name in @multi_photo_categories do
-        Galleries.get_gallery_photos(gallery.id, only_favorites: favorites_only)
+        Galleries.get_gallery_photos(gallery.id, favorites_filter: favorites_only)
       else
         []
       end

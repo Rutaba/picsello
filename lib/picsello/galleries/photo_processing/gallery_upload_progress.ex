@@ -63,7 +63,11 @@ defmodule Picsello.Galleries.PhotoProcessing.GalleryUploadProgress do
   def total_progress(%__MODULE__{} = progress) do
     {done, total} = done_total_progress(progress)
 
-    trunc(done * 100 / total)
+    if total > 0 do
+      trunc(done * 100 / total)
+    else
+      total
+    end
   end
 
   defp done_total_progress(progress) do

@@ -171,8 +171,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
           }
         } = socket
       ) do
-    photo_ids =
-      Galleries.get_photo_ids(gallery_id: gallery.id, favorites_filter: favorites_filter)
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
 
     photo_id = to_integer(photo_id)
 
@@ -311,14 +310,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
                id: id
              },
              page: page,
-             favorites_filter: filter
+             favorites_filter: favorites_filter
            }
          } = socket,
          per_page \\ @per_page
        ) do
     photos =
       Galleries.get_gallery_photos(id,
-        only_favorites: filter,
+        favorites_filter: favorites_filter,
         offset: per_page * page,
         limit: per_page + 1
       )

@@ -7,9 +7,27 @@ defmodule Picsello.GalleryProducts do
   alias Picsello.Galleries.GalleryProduct
 
   def get(fields) do
-    GalleryProduct
-    |> Repo.get_by(fields)
-    |> Repo.preload([:preview_photo, category: :products])
+    from(gp in GalleryProduct,
+      left_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),
+      on: gp.preview_photo_id == preview_photo.id,
+      select_merge: %{preview_photo: preview_photo},
+      where: ^fields,
+      preload: :category
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Get all the gallery product categories
+  """
+  def get_gallery_product_categories(gallery_id) do
+    from(gp in GalleryProduct,
+      inner_join: category in assoc(gp, :category),
+      where: gp.gallery_id == ^gallery_id and not category.hidden and is_nil(category.deleted_at),
+      preload: [:category],
+      order_by: category.position
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -20,28 +38,29 @@ defmodule Picsello.GalleryProducts do
   end
 
   defp gallery_products_query(gallery_id, :with_previews) do
-    from(product in gallery_products_query(gallery_id, :with_or_without_previews),
-      inner_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),
-      on: preview_photo.id == product.preview_photo_id,
-      select_merge: %{preview_photo: preview_photo}
-    )
+    gallery_products_query(gallery_id, :with_or_without_previews)
+    |> where([preview_photo: preview_photo], not is_nil(preview_photo.id))
   end
 
   defp gallery_products_query(gallery_id, :with_or_without_previews) do
     from(product in GalleryProduct,
       inner_join: category in assoc(product, :category),
+      left_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),
+      on: preview_photo.id == product.preview_photo_id,
+      as: :preview_photo,
       where:
         product.gallery_id == ^gallery_id and not category.hidden and is_nil(category.deleted_at),
-      preload: [:preview_photo, category: :products],
+      preload: [category: :products],
+      select_merge: %{preview_photo: preview_photo},
       order_by: category.position
     )
   end
 
-  def check_is_photo_selected_as_preview(photo_id) do
-    from(p in Picsello.Galleries.GalleryProduct,
-      where: p.preview_photo_id == ^photo_id
+  def remove_photo_preview(photo_ids) do
+    from(p in GalleryProduct,
+      where: p.preview_photo_id in ^photo_ids,
+      update: [set: [preview_photo_id: nil]]
     )
-    |> Repo.update_all(set: [preview_photo_id: nil])
   end
 
   @doc """

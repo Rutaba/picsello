@@ -73,7 +73,7 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def render(assigns) do
     ~H"""
-    <div role="dialog" id="modal-wrapper" phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/20 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
+    <div role="dialog" id="modal-wrapper" phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/90 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
       <%= if @modal.state != :closed do %>
         <div class="modal-container">
           <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
@@ -84,13 +84,13 @@ defmodule PicselloWeb.LiveModal do
   end
 
   def footer(assigns) do
-    assigns = Enum.into(assigns, %{disabled: false, inner_block: nil})
+    assigns = Enum.into(assigns, %{disabled: false, inner_block: nil, class: "pt-40"})
 
     ~H"""
-      <div class="pt-40"></div>
+      <div class={@class}></div>
 
       <div {testid("modal-buttons")} class="sticky px-4 -m-4 bg-white -bottom-6 sm:px-8 sm:-m-8 sm:-bottom-8">
-        <div class="flex flex-col py-6 bg-white gap-2 sm:flex-row-reverse">
+        <div class="flex flex-col gap-2 py-6 bg-white sm:flex-row-reverse">
           <%= if @inner_block do %>
             <%= render_block @inner_block %>
           <% else %>

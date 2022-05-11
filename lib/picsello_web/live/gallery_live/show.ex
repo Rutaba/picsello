@@ -12,7 +12,6 @@ defmodule PicselloWeb.GalleryLive.Show do
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Workers.PositionNormalizer
-  alias Picsello.Galleries.PhotoProcessing.Waiter
   alias Picsello.Messages
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
@@ -110,7 +109,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
   @impl true
   def handle_event(
-        "gallery_settings",
+        "preview_gallery",
         _,
         %{
           assigns: %{
@@ -118,8 +117,23 @@ defmodule PicselloWeb.GalleryLive.Show do
           }
         } = socket
       ) do
+    hash =
+      gallery
+      |> Galleries.set_gallery_hash()
+      |> Map.get(:client_link_hash)
+
     socket
-    |> push_redirect(to: Routes.gallery_settings_path(socket, :settings, gallery))
+    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "gallery_settings",
+        _,
+        socket
+      ) do
+    socket
     |> noreply()
   end
 
@@ -246,10 +260,7 @@ defmodule PicselloWeb.GalleryLive.Show do
       |> Galleries.set_gallery_hash()
       |> Map.get(:client_link_hash)
 
-    gallery =
-      gallery.id
-      |> Galleries.get_gallery!()
-      |> Picsello.Repo.preload(job: :client)
+    gallery = Picsello.Repo.preload(gallery, job: :client)
 
     link = Routes.gallery_client_show_url(socket, :show, hash)
     client_name = gallery.job.client.name
@@ -275,6 +286,7 @@ defmodule PicselloWeb.GalleryLive.Show do
 
     socket
     |> assign(:job, gallery.job)
+    |> assign(:gallery, gallery)
     |> PicselloWeb.ClientMessageComponent.open(%{
       current_user: current_user,
       enable_size: true,
@@ -291,31 +303,22 @@ defmodule PicselloWeb.GalleryLive.Show do
         {:message_composed, message_changeset},
         %{
           assigns: %{
-            job: job,
-            gallery: gallery
+            job: job
           }
         } = socket
       ) do
-    serialized_message =
-      message_changeset
-      |> :erlang.term_to_binary()
-      |> Base.encode64()
-
-    %{id: oban_job_id} =
-      %{message: serialized_message, email: job.client.email, job_id: job.id}
-      |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
-      |> Oban.insert!()
-
-    Waiter.postpone(gallery.id, fn ->
-      Oban.cancel_job(oban_job_id)
-
-      {:ok, message} = Messages.add_message_to_job(message_changeset, job)
-      ClientNotifier.deliver_email(message, job.client.email)
-    end)
-
-    socket
-    |> close_modal()
-    |> noreply()
+    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+      socket
+      |> close_modal()
+      |> noreply()
+    else
+      _error ->
+        socket
+        |> put_flash(:error, "Something went wrong")
+        |> close_modal()
+        |> noreply()
+    end
   end
 
   @impl true
@@ -333,6 +336,8 @@ defmodule PicselloWeb.GalleryLive.Show do
     |> assign(:cover_photo_processing, false)
     |> noreply()
   end
+
+  def handle_info({:photo_click, _}, socket), do: noreply(socket)
 
   @impl true
   def handle_info(
@@ -354,8 +359,7 @@ defmodule PicselloWeb.GalleryLive.Show do
           }
         } = socket
       ) do
-    Galleries.get_photo(id)
-    |> Galleries.delete_photo()
+    Galleries.delete_photos([id])
 
     {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count - 1})
 
@@ -445,14 +449,14 @@ defmodule PicselloWeb.GalleryLive.Show do
                id: id
              },
              page: page,
-             favorites_filter: filter
+             favorites_filter: favorites_filter
            }
          } = socket,
          per_page \\ @per_page
        ) do
     photos =
       Galleries.get_gallery_photos(id,
-        only_favorites: filter,
+        favorites_filter: favorites_filter,
         offset: per_page * page,
         limit: per_page + 1
       )

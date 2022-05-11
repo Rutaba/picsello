@@ -42,7 +42,11 @@ import Quill, { ClearQuillInput } from './hooks/quill';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
+import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
+import ResumeUpload from './hooks/resume_upload';
+import GallerySelector from './hooks/gallery-selector';
+import PageScroll from "./hooks/page-scroll";
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
 
 const Modal = {
@@ -131,6 +135,7 @@ const Hooks = {
   IntroJS,
   MasonryGrid,
   Modal,
+  PageScroll,
   PercentMask,
   Phone,
   PhotoUpdate,
@@ -143,6 +148,9 @@ const Hooks = {
   Select,
   TZCookie,
   ToggleContent,
+  ToggleSiblings,
+  ResumeUpload,
+  GallerySelector
 };
 
 let Uploaders = {};

@@ -62,7 +62,11 @@
 
 #dragDrop-form, .dragDrop {
     @apply h-full
-    w-full
+    transition-all
+    duration-300;
+}
+#dragDrop-form-1, .dragDrop {
+    @apply h-full
     transition-all
     duration-300;
 }
@@ -129,10 +133,8 @@
 }
 
 .uploadEntry .error {
-    @apply border-2
-    border-solid
-    border-red-sales-300
-    bg-red-sales-100
+    @apply bg-red-sales-100
+    cursor-default
 }
 
 .uploadEntry .retry {

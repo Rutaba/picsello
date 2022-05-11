@@ -5,7 +5,7 @@ defmodule Picsello.Galleries do
 
   import Ecto.Query, warn: false
 
-  alias Picsello.{Repo, GalleryProducts, Category, Galleries}
+  alias Picsello.{Repo, GalleryProducts, Category, Galleries, Albums}
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
@@ -96,30 +96,27 @@ defmodule Picsello.Galleries do
   end
 
   @type get_gallery_photos_option ::
-          {:offset, number()} | {:limit, number()} | {:only_favorites, boolean()}
+          {:offset, number()}
+          | {:limit, number()}
+          | {:album_id, number()}
+          | {:exclude_album, boolean()}
+          | {:favorites_filter, boolean()}
   @doc """
   Gets paginated photos by gallery id
 
   Options:
-    * :only_favorites. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :favorites_filter. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :exclude_album. if set to `true`, then only unsorted photos(photos not associated with any album) will be returned. Defaluts to `false`;
+    * :album_id
     * :offset
     * :limit
   """
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
   def get_gallery_photos(id, opts \\ []) do
-    select_opts =
-      if Keyword.get(opts, :only_favorites, false) do
-        [client_liked: true]
-      else
-        []
-      end
-      |> Keyword.merge(gallery_id: id)
-
-    from(photo in Picsello.Photos.watermarked_query(),
-      where: ^select_opts,
-      order_by: [asc: :position]
-    )
+    from(photo in Picsello.Photos.watermarked_query())
+    |> where(^conditions(id, opts))
+    |> order_by(asc: :position)
     |> then(
       &case Keyword.get(opts, :offset) do
         nil -> &1
@@ -136,16 +133,156 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
-  Creates a gallery.
+  Get list of photo ids from gallery.
+  """
+  @spec get_gallery_photo_ids(id :: integer, opts :: keyword) :: list(integer)
+  def get_gallery_photo_ids(id, opts) do
+    Photo
+    |> where(^conditions(id, opts))
+    |> order_by(asc: :position)
+    |> select([photo], photo.id)
+    |> Repo.all()
+  end
+
+  defp conditions(id, opts) do
+    favorites_filter = Keyword.get(opts, :favorites_filter, false)
+    exclude_album = Keyword.get(opts, :exclude_album, false)
+    album_id = Keyword.get(opts, :album_id, false)
+
+    conditions = dynamic([p], p.gallery_id == ^id)
+
+    conditions =
+      if favorites_filter do
+        dynamic([p], p.client_liked == true and ^conditions)
+      else
+        conditions
+      end
+
+    if exclude_album do
+      dynamic([p], is_nil(p.album_id) and ^conditions)
+    else
+      if album_id do
+        dynamic([p], p.album_id == ^album_id and ^conditions)
+      else
+        conditions
+      end
+    end
+  end
+
+  @spec get_all_album_photos(
+          id :: integer,
+          album_id :: integer
+        ) ::
+          list(Photo)
+  def get_all_album_photos(id, album_id) do
+    Photo
+    |> where([p], p.gallery_id == ^id and p.album_id == ^album_id)
+    |> order_by(asc: :position)
+    |> Repo.all()
+  end
+
+  @spec get_all_unsorted_photos(id :: integer) :: list(Photo)
+  def get_all_unsorted_photos(id) do
+    Photo
+    |> where([p], p.gallery_id == ^id and is_nil(p.album_id))
+    |> order_by(asc: :position)
+    |> Repo.all()
+  end
+
+  defp move_photos_from_album_transaction(photo_ids) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.update_all(
+      :thumbnail,
+      fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.update_all(
+      :photos,
+      fn _ ->
+        from(p in Photo,
+          where: p.id in ^photo_ids,
+          update: [set: [album_id: nil]]
+        )
+      end,
+      []
+    )
+  end
+
+  def remove_photos_from_album(photo_ids) do
+    move_photos_from_album_transaction(photo_ids)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        {:ok, photo_ids}
+
+      {:error, reason} ->
+        reason
+    end)
+  end
+
+  def delete_album(album) do
+    album = album |> Repo.preload(:photos)
+    photo_ids = Enum.map(album.photos, & &1.id)
+
+    move_photos_from_album_transaction(photo_ids)
+    |> Ecto.Multi.delete(:album, album)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        {:ok, album}
+
+      {:error, reason} ->
+        reason
+    end)
+  end
+
+  @doc """
+  Deletes photos by photo_ids.
 
   ## Examples
 
+      iex> delete_photos(photo_ids)
+      {:ok, [%photo{}]}
+  """
+  def delete_photos(photo_ids) do
+    photos = get_photos_by_ids(photo_ids)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update_all(
+      :preview,
+      fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.update_all(
+      :thumbnail,
+      fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        clean_store(photos)
+        {:ok, photos}
+
+      {:error, reason} ->
+        reason
+    end)
+  end
+
+  @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)
+  def get_photos_by_ids(photo_ids) do
+    from(p in Photo, where: p.id in ^photo_ids)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a gallery.
+  ## Examples
       iex> create_gallery(%{field: value})
       {:ok, %Gallery{}}
-
       iex> create_gallery(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
-
   """
   def create_gallery(attrs \\ %{}) do
     Ecto.Multi.new()
@@ -243,7 +380,33 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
-    Repo.delete(gallery)
+    gallery = gallery |> Repo.preload(:photos)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update_all(
+      :thumbnail,
+      fn _ -> Albums.remove_album_thumbnail(Enum.map(gallery.photos, & &1.id)) end,
+      []
+    )
+    |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
+    |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
+    |> Ecto.Multi.delete_all(:delete_photos, Ecto.assoc(gallery, :photos))
+    |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
+    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
+    |> Ecto.Multi.delete(:gallery, gallery)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        clean_store(gallery.photos)
+        {:ok, gallery}
+
+      {:error, reason} ->
+        reason
+    end)
+  end
+
+  defp gallery_products_query(gallery) do
+    from(gp in GalleryProduct, where: gp.gallery_id == ^gallery.id)
   end
 
   @doc """
@@ -316,27 +479,32 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
-  defdelegate get_photo(id), to: Picsello.Photos, as: :get
+  @doc """
+  updates album_id for multiple photos.
+  """
+  def move_to_album(album_id, selected_photos) do
+    from(p in Photo,
+      where: p.id in ^selected_photos
+    )
+    |> Repo.update_all(set: [album_id: album_id])
+  end
 
   @doc """
-  Removes the photo from DB and all its versions from cloud bucket.
+  Marks a photo as liked/unliked.
+
+  ## Examples
+
+      iex> mark_photo_as_liked(%Photo{client_liked: false})
+      {:ok, %Photo{client_liked: true}}
+
+      iex> mark_photo_as_liked(%Photo{client_liked: true})
+      {:ok, %Photo{client_liked: false}}
+
   """
-  def delete_photo(%Photo{} = photo) do
-    GalleryProducts.check_is_photo_selected_as_preview(photo.id)
-
-    Repo.delete(photo)
-
-    [
-      photo.original_url,
-      photo.preview_url,
-      photo.watermarked_url,
-      photo.watermarked_preview_url
-    ]
-    |> Enum.each(fn path ->
-      %{path: path}
-      |> CleanStore.new()
-      |> Oban.insert()
-    end)
+  def mark_photo_as_liked(%Photo{client_liked: client_liked} = photo) do
+    photo
+    |> Photo.update_changeset(%{client_liked: !client_liked})
+    |> Repo.update()
   end
 
   @doc """
@@ -589,26 +757,6 @@ defmodule Picsello.Galleries do
     |> (& &1.job.client.organization.user).()
   end
 
-  @doc """
-  Get list of photo ids from gallery.
-  """
-  def get_photo_ids([gallery_id: _gallery_id, favorites_filter: favorites_filter] = opts) do
-    opts = Keyword.delete(opts, :favorites_filter)
-
-    opts =
-      if favorites_filter do
-        Keyword.put(opts, :client_liked, true)
-      else
-        opts
-      end
-
-    Photo
-    |> where(^opts)
-    |> order_by(asc: :position)
-    |> select([photo], photo.id)
-    |> Repo.all()
-  end
-
   def account_id(%Gallery{} = gallery), do: account_id(gallery.id)
 
   def account_id(gallery_id) do
@@ -658,4 +806,25 @@ defmodule Picsello.Galleries do
     |> Picsello.Cart.CartProduct.new()
     |> Picsello.Cart.CartProduct.price(shipping_base_charge: true)
   end
+
+  defp clean_store([]), do: nil
+
+  defp clean_store(photos) when is_list(photos),
+    do: Enum.each(photos, fn photo -> clean_store(photo) end)
+
+  defp clean_store(photo) do
+    [
+      photo.original_url,
+      photo.preview_url,
+      photo.watermarked_url,
+      photo.watermarked_preview_url
+    ]
+    |> Enum.each(fn path ->
+      %{path: path}
+      |> CleanStore.new()
+      |> Oban.insert()
+    end)
+  end
+
+  defdelegate get_photo(id), to: Picsello.Photos, as: :get
 end

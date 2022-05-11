@@ -87,7 +87,7 @@ defmodule PicselloWeb.JobLive.Show do
   def handle_event("view-gallery", _, %{assigns: %{job: job}} = socket),
     do:
       socket
-      |> push_redirect(to: Routes.gallery_show_path(socket, :show, job.gallery.id))
+      |> push_redirect(to: Routes.gallery_index_path(socket, :index, job.gallery.id))
       |> noreply()
 
   @impl true
@@ -99,7 +99,7 @@ defmodule PicselloWeb.JobLive.Show do
       })
 
     socket
-    |> push_redirect(to: Routes.gallery_show_path(socket, :upload, gallery.id))
+    |> push_redirect(to: Routes.gallery_index_path(socket, :index, gallery.id))
     |> noreply()
   end
 

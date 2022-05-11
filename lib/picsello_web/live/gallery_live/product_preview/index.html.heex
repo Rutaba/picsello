@@ -1,0 +1,32 @@
+<div class="flex flex-col h-screen photographer-gallery">
+  <div class="flex root">
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "product_previews", album_dropdown_show: false %>
+
+    <div class="w-full h-full bg-base-100 pl-96 pt-16">
+      <div class="relative items-center justify-between px-16 pb-10 md:flex-row">
+        <span class="font-sans text-2xl font-bold font-black" {intro_hints_only("intro_hints_only_product_preview")}>
+          Product Previews
+        </span>
+        <.intro_hint class="-top-1" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
+100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>         
+        <div class="flex mt-3 font-sans text-gray-400">
+          <p>Showcase products your clients will love.</p>
+        </div>
+
+        <div class="grid-cols-2 gap-7 grid">
+          <%= for product <- @products do %>
+            <.live_component id={product.id} category={product.category} product_id={product.id} module={Preview} photo={product.preview_photo} />
+          <% end %>
+        </div>
+      </div>
+
+      <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
+
+      <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
+    </div>
+  </div>
+
+  <div class="fixed bottom-0 left-0 right-0 z-10">
+    <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id %>
+  </div>
+</div>

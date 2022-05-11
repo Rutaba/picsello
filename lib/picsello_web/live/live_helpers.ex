@@ -281,6 +281,7 @@ defmodule PicselloWeb.LiveHelpers do
   def display_cover_photo(_), do: %{}
 
   defdelegate preview_url(photo), to: Picsello.Photos
+  defdelegate preview_url(photo, opts), to: Picsello.Photos
 
   def initials_circle(assigns) do
     assigns =

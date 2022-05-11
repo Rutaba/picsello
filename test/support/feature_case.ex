@@ -6,6 +6,9 @@ defmodule Picsello.FeatureCase do
     import Wallaby.{Browser, Query}
     import ExUnit.Assertions
     import Picsello.Factory
+    import Money.Sigils
+
+    alias Picsello.Galleries.Photo
 
     def scroll_into_view(session, query) do
       case Wallaby.Query.compile(query) do
@@ -252,9 +255,37 @@ defmodule Picsello.FeatureCase do
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
+    def authenticated_gallery(%{session: session, user: user}) do
+      organization = insert(:organization, user: user)
+      client = insert(:client, organization: organization)
+      package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+      job = insert(:lead, type: "wedding", client: client, package: package) |> promote_to_job()
+
+      [session: session, gallery: insert(:gallery, %{job: job, total_count: 20})]
+    end
+
     def authenticated_gallery(%{session: session}) do
       job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
       [session: session, gallery: insert(:gallery, job: job)]
+    end
+
+    def insert_photo(%{gallery: %{id: gallery_id}, total_photos: total_photos} = data) do
+      album = Map.get(data, :album, %{id: nil})
+      photo_url = "/images/print.png"
+
+      Enum.map(1..total_photos, fn index ->
+        %Photo{
+          album_id: album.id,
+          gallery_id: gallery_id,
+          preview_url: photo_url,
+          original_url: photo_url,
+          name: photo_url,
+          aspect_ratio: 2,
+          position: index + 100
+        }
+        |> insert()
+        |> Map.get(:id)
+      end)
     end
 
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do

@@ -12,14 +12,26 @@ defmodule Picsello.Photos do
     Galleries.Workers.PhotoStorage
   }
 
-  @blank "/images/gallery-icon.svg"
+  @gallery_icon "/images/gallery-icon.svg"
+  @card_blank "/images/card_gray.png"
+
+  def preview_url(%{watermarked: _} = photo, opts) do
+    url = preview_url(photo)
+
+    with true <- url == @gallery_icon,
+         true <- Keyword.get(opts, :blank, false) do
+      @card_blank
+    else
+      _ -> url
+    end
+  end
 
   def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}),
     do: path_to_url(path)
 
   def preview_url(%{watermarked: false, preview_url: "" <> path}), do: path_to_url(path)
 
-  def preview_url(_), do: @blank
+  def preview_url(_), do: @gallery_icon
 
   def original_url(%{original_url: path}), do: path_to_url(path)
 

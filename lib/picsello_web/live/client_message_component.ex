@@ -1,8 +1,9 @@
 defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Job}
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+
+  alias Picsello.{Job}
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -69,8 +70,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
-      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
-
+    <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
       <%= if @show_client_email do %>
         <div class="pt-5 input-label">
           Client's email
@@ -79,9 +79,8 @@ defmodule PicselloWeb.ClientMessageComponent do
           <%= client_email @job %>
         </div>
       <% end %>
-
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
+        <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
         </div>

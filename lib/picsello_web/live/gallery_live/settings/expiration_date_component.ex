@@ -123,7 +123,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     socket
     |> assign(:gallery, gallery)
     |> assign_controls()
-    |> assign_valid()
     |> react_form()
   end
 
@@ -198,13 +197,13 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   defp days_options({year_now, month_now, day_now}, year, month) do
     cond do
       year == year_now and month == month_now ->
-        day_now..Date.days_in_month(Date.new!(year, month, day_now))
+        day_now..Calendar.ISO.days_in_month(year, month)
 
       !is_nil(month) and !is_nil(year) ->
-        1..Date.days_in_month(Date.new!(year, month, day_now))
+        1..Calendar.ISO.days_in_month(year, month)
 
       !is_nil(month) and is_nil(year) ->
-        1..Date.days_in_month(Date.new!(@non_leap_year, month, day_now))
+        1..Calendar.ISO.days_in_month(@non_leap_year, month)
 
       true ->
         1..28
@@ -273,5 +272,30 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   def never_date() do
     {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
     date
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <div>
+      <h3>Expiration date</h3>
+      <.form let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
+        <div class="flex justify-between">
+          <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "border-blue-planning-300 mx-2 md:mx-3 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
+        </div>
+        <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
+            <%= submit "Save", class: "btn-settings w-32 px-11", disabled: !@is_valid, phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
+            <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself} id="updateGalleryNeverExpire">
+                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp cursor-pointer"  checked={@is_never_expires} />
+                <label class="cursor-pointer">
+                    Never expires
+                </label>
+            </div>
+        </div>
+      </.form>
+    </div>
+    """
   end
 end

@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.UploadComponent do
     {:ok,
      socket
      |> assign(:upload_bucket, @bucket)
+     |> assign(:toggle, "show")
      |> assign(:overall_progress, 0)
      |> assign(:estimate, "n/a")
      |> assign(:uploaded_files, 0)

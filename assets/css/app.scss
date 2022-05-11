@@ -23,6 +23,10 @@ html {
   left: 0px !important;
 }
 
+.delete_btn{
+  @apply py-3 font-sans px-6 text-base-300 bg-white border border-base-300 rounded-lg hover:border-base-250 hover:text-base-300 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem];
+}
+
 .pac-item {
   @apply p-2;
 }
@@ -71,6 +75,10 @@ html {
   @apply max-w-md bare-modal;
 }
 
+.dialog-photographer {
+  @apply max-w-md bare-modal rounded-lg;
+}
+
 .badge {
   @apply px-2 py-1 font-bold text-white rounded;
   font-size: 0.5rem;
@@ -87,7 +95,7 @@ canvas {
   box-sizing: border-box;
 
   .item {
-    display: block;
+    display: flex;
     position: absolute;
     z-index: 1;
   }
@@ -108,15 +116,11 @@ canvas {
     position: relative;
     overflow: hidden;
     width: 100%;
-    height: 100%;
   }
 
   .item {
     margin: 0.75rem;
-    width: calc(100% - 1.5rem);
-    height: 100%;
-    border: 4px solid white;
-
+  
     .galleryItem {
       height: 100%;
     }
@@ -137,32 +141,8 @@ canvas {
     img,
     .galleryLoaderFinished {
       width: 100%;
-      object-fit: cover;
-      max-width: unset;
-    }
-
-    @media (min-width: 640px) {
-      width: calc(50% - 1.5rem);
-    }
-
-    @media (min-width: 1100px) {
-      width: calc(33.33% - 1.5rem);
-    }
-
-    @media (min-width: 1200px) {
-      width: calc(25% - 1.5rem);
-
-      img,
-      .galleryLoaderFinished {
-        width: 100%;
-        object-fit: cover;
-        max-width: unset;
-        height: 100%;
-      }
-
-      .galleryItem {
-        height: 100%;
-      }
+      height: 100%;
+      object-fit: contain;
     }
 
     .galleryLoader {
@@ -196,10 +176,6 @@ canvas {
       filter: drop-shadow(3px 5px 2px rgba(0, 0, 0, 0.4));
     }
   }
-
-  .item .item-content img {
-    background-color: gray;
-  }
 }
 
 // reset background gradient
@@ -217,7 +193,6 @@ canvas {
     }
   }
 }
-
 /**
  * only used on photographer settings / gallery pricing
  **/
