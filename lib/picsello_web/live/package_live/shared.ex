@@ -28,11 +28,14 @@ defmodule PicselloWeb.PackageLive.Shared do
         <div class="mb-2 line-clamp-2 raw_html"><%= raw @package.description %></div>
 
         <dl class="flex flex-row-reverse items-center justify-end mt-auto">
-          <dt class="ml-2 text-gray-500">Downloadable photos</dt>
-
-          <dd class="flex items-center justify-center w-8 h-8 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+        <%= if Money.zero?(@package.download_each_price) do %>
+          <dt class="text-gray-500">Unlimited Complimentary Downloads</dt>
+        <% else %>
+          <dt class="text-gray-500">Complimentary Downloads</dt>
+          <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
             <%= @package.download_count %>
           </dd>
+        <% end %>
         </dl>
 
         <hr class="my-4" />
@@ -44,6 +47,15 @@ defmodule PicselloWeb.PackageLive.Shared do
             <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
           </div>
         </div>
+
+        <div class="flex items-center justify-between">
+          <div class="text-gray-500">Download Price</div>
+
+          <div class="text-lg font-bold">
+            <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
+          </div>
+        </div>
+
       </div>
     """
   end
