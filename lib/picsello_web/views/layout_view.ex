@@ -115,7 +115,7 @@ defmodule PicselloWeb.LayoutView do
       </div>
       <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
         <nav class="flex flex-col w-64 ml-8 mr-16 overflow-hidden bg-white rounded-lg shadow-md my-11">
-          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
+          <a href="#" class="flex items-center px-2 py-2 m-4 mb-0 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
             <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
             Help Center
           </a>
@@ -151,7 +151,16 @@ defmodule PicselloWeb.LayoutView do
         path: Routes.finance_settings_path(socket, :index)
       },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
-      %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"}
+      %{
+        title: "Business Coaching",
+        icon: "camera-laptop",
+        path: "#business-coaching"
+      },
+      %{
+        title: "Help",
+        icon: "question-mark",
+        path: "https://support.picsello.com/"
+      }
     ]
     |> Enum.filter(&Map.get(&1, :path))
   end

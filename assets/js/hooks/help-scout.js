@@ -64,7 +64,7 @@ const initHelpScout = (
     // attach listener to instance
     // to reset facade when user closes
     window.Beacon('on', 'close', () => {
-      toggleMenu('block');
+      if (window.innerWidth >= 640) toggleMenu('block');
       window.Beacon('destroy');
     });
   }

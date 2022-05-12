@@ -173,6 +173,9 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def nav_link(assigns) do
+    assigns =
+      Enum.into(assigns, %{html_attributes: %{target: "_blank", rel: "noopener noreferrer"}})
+
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
         <%= if String.starts_with?(@to, "/") do %>
@@ -180,7 +183,7 @@ defmodule PicselloWeb.LiveHelpers do
             <%= render_slot(@inner_block, active) %>
           <% end %>
         <% else %>
-          <a href={@to} class={@class} target="_blank" rel="noopener noreferrer">
+          <a href={@to} class={@class} {if String.starts_with?(@to, "#business-coaching") do help_scout_output(@current_user, :help_scout_id_business) else @html_attributes end}>
             <%= render_slot(@inner_block, active) %>
           </a>
         <% end %>
