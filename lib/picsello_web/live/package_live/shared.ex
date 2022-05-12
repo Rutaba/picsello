@@ -28,14 +28,14 @@ defmodule PicselloWeb.PackageLive.Shared do
         <div class="mb-2 line-clamp-2 raw_html"><%= raw @package.description %></div>
 
         <dl class="flex flex-row-reverse items-center justify-end mt-auto">
-        <%= if Money.zero?(@package.download_each_price) do %>
-          <dt class="text-gray-500">Unlimited Complimentary Downloads</dt>
-        <% else %>
-          <dt class="text-gray-500">Complimentary Downloads</dt>
-          <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-            <%= @package.download_count %>
-          </dd>
-        <% end %>
+          <%= if Money.zero?(@package.download_each_price) do %>
+            <dt class="text-gray-500">Unlimited Complimentary Downloads</dt>
+          <% else %>
+            <dt class="text-gray-500">Complimentary Downloads</dt>
+            <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+              <%= @package.download_count %>
+            </dd>
+          <% end %>
         </dl>
 
         <hr class="my-4" />
