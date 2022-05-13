@@ -3,6 +3,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
 
+  import Phoenix.HTML.Form
+
   def mount(socket) do
     socket
     |> assign(:password_is_correct, true)
@@ -15,6 +17,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
   def handle_event("change", %{"login" => params}, socket) do
     socket
     |> assign(:password_changeset, Galleries.gallery_password_change(params))
+    |> noreply()
+  end
+
+  def handle_event("remember_me", _, socket) do
+    socket
     |> noreply()
   end
 

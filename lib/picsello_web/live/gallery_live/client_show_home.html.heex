@@ -1,0 +1,19 @@
+<div {display_cover_photo(@gallery)} class="flex text-left flex-nowrap gallery__coverImg active">
+  <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
+    <div class="relative z-10 flex flex-wrap items-end content-center pb-2 pb-20 pr-2 mt-auto text-center text-base-100 md:pr-0 sm:pb-60">
+      <h3 class="w-full text-base font-medium lg:text-2xl">
+        <%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %>
+      </h3>
+
+      <h1 class="w-full mb-10 text-2xl font-bold lg:text-6xl">
+        <%= @gallery.name %>
+      </h1>
+
+      <p class="w-full text-center">
+        <a class="text-center text-white bg-transparent border-white gallery__button btn-secondary hover:bg-white/10" phx-click="view_gallery">
+          View Gallery
+        </a>
+      </p>
+    </div>
+  </div>
+</div>

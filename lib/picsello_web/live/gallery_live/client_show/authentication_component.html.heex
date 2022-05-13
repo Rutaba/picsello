@@ -1,7 +1,7 @@
 <div class={classes("min-h-screen w-screen flex flex-col p-20 md:p-0", %{"bg-white" => !@gallery.cover_photo})}>
     <div class="container sm:max-w-sm mx-auto flex-1 flex flex-col items-center md:justify-start justify-center pt-0 sm:pt-36 px-0 sm:px-2">
-        <div class="bg-white p-6 rounded-lg shadow-md text-black w-full">
-            <h1 class="mb-4 text-3xl font-medium text-start">Enter the password to view the gallery</h1>
+        <div class="bg-white p-6 shadow-md text-black w-full">
+            <h1 class="mb-4 text-3xl font-bold text-start">Password protected</h1>
             <p class="text-base">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>
             <.form let={f} for={@password_changeset} as={:login} action={Routes.gallery_session_path(@socket, :post, @gallery.client_link_hash)} phx-target={@myself} phx-change="change" phx-submit="check" phx_trigger_action={@submit}>
               <%= hidden_input f, :session_token, value: @session_token %>
@@ -10,8 +10,13 @@
                 <p class="errorPwdMsg text-red-error-300 pt-6 -mb-4 text-xs">Unfortunately, we do not recognize this password.</p>
               <% end %>
 
-              <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "" %>
-
+              <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "", placeholder: "Enter password", class: "bg-base-200" %>
+              
+              <label class="flex mt-4 items-center">              
+                <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="remember_me" checked={"disabled"}/>   
+                <h3 class="pl-3 flex items-center text-base">Remember me</h3>
+              </label>
+                
               <div class="mt-6 text-center">
                 <%= submit "Submit", class: "btn-primary w-full" %>
               </div>
