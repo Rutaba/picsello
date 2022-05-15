@@ -61,7 +61,7 @@
 
         <%= labeled_input f, :email, type: :email_input, wrapper_class: "mt-4"  %>
 
-        <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :current_password, name: :current_password, label: "Current password" %>
+        <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :current_password, name: :current_password, label: "Current password", placeholder: "Enter password" %>
 
           <div class="mt-5 text-right">
             <%= submit "Change email", class: "btn-primary mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Changing email..." %>
@@ -75,9 +75,9 @@
         <.form let={f} for={@password_changeset} action={Routes.user_settings_path(@socket, :update)} phx-change="validate" phx-submit="save" method="put" phx-trigger-action={@submit_changed_password}>
           <%= hidden_input f, :action, name: "action", value: "update_password" %>
 
-          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :change_new_password, label: "New password" %>
+          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :change_new_password, label: "New password", placeholder: "Enter password" %>
 
-          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password_to_change, name: :password_to_change, label: "Current password" %>
+          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password_to_change, name: :password_to_change, label: "Current password", placeholder: "Enter password" %>
 
           <div class="mt-5 text-right">
             <%= submit "Change password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Changing password..." %>

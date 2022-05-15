@@ -12,11 +12,6 @@
 
               <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "", placeholder: "Enter password", class: "bg-base-200" %>
               
-              <label class="flex mt-4 items-center">              
-                <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="remember_me" checked={"disabled"}/>   
-                <h3 class="pl-3 flex items-center text-base">Remember me</h3>
-              </label>
-                
               <div class="mt-6 text-center">
                 <%= submit "Submit", class: "btn-primary w-full" %>
               </div>

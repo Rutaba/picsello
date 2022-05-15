@@ -4,12 +4,14 @@ defmodule PicselloWeb.PasswordFieldComponent do
 
   @impl true
   def render(assigns) do
+    class = Map.get(assigns, :class, nil)
+
     ~H"""
     <div class='flex flex-col mt-4'>
       <%= label_for @f, @name, label: @label %>
       <div class='relative'>
         <% password_input_type = if @hide_password, do: :password_input, else: :text_input %>
-        <%= input @f, @name, type: password_input_type, placeholder: @placeholder, value: input_value(@f, @name), phx_debounce: "500", wrapper_class: "mt-4", class: "w-full pr-16 "<>@class %>
+        <%= input @f, @name, type: password_input_type, placeholder: @placeholder, value: input_value(@f, @name), phx_debounce: "500", wrapper_class: "mt-4", class: "w-full pr-16 #{class}"%>
 
         <a href='#' phx-click="toggle-password" phx-target={ @myself } class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 right-2">
           <%= if @hide_password do %>

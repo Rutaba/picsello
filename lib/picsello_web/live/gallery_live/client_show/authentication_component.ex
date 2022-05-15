@@ -3,8 +3,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
 
-  import Phoenix.HTML.Form
-
   def mount(socket) do
     socket
     |> assign(:password_is_correct, true)
@@ -20,17 +18,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> noreply()
   end
 
-  def handle_event("remember_me", _, socket) do
-    socket
-    |> noreply()
-  end
-
   def handle_event(
         "check",
         %{"login" => %{"password" => password}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    case Galleries.build_gallery_session_token(gallery, password) do
+   case Galleries.build_gallery_session_token(gallery, password) do
       {:ok, token} ->
         socket |> assign(submit: true, session_token: token)
 
