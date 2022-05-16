@@ -88,7 +88,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   defp tracking_link(assigns) do
     ~H"""
     <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- @info.shipping_info do %>
-      <a href={url} class="underline cursor-pointer">
+      <a href={url} target="_blank" class="underline cursor-pointer">
         <%= carrier %>
         <%= tracking_number %>
       </a>
