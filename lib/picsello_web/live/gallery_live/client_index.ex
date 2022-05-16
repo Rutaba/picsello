@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.ClientShow do
+defmodule PicselloWeb.GalleryLive.ClientIndex do
   @moduledoc false
 
   use PicselloWeb,
@@ -12,6 +12,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
   alias Picsello.Cart
+  alias PicselloWeb.GalleryLive.Photos.Photo
 
   @per_page 12
 
@@ -19,6 +20,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
   def mount(_params, _session, socket) do
     socket
     |> assign(photo_updates: "false", download_all_visible: false)
+    |> assign(:active, false)
     |> ok()
   end
 
@@ -70,7 +72,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       update_mode: "append"
     )
     |> assign_cart_count(gallery)
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -86,8 +88,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
       ) do
     socket
     |> assign(page: page + 1)
-    |> assign(:update_mode, "append")
-    |> assign_photos()
+    |> assign_photos(@per_page)
     |> noreply()
   end
 
@@ -105,7 +106,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
     |> assign(:favorites_filter, !toggle_state)
-    |> assign_photos()
+    |> assign_photos(@per_page)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("view_gallery", _, socket) do
+    socket
+    |> assign(:active, true)
     |> noreply()
   end
 
@@ -163,7 +171,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
 
   def handle_event(
         "click",
-        %{"photo_id" => photo_id},
+        %{"preview_photo_id" => photo_id},
         %{
           assigns: %{
             gallery: gallery,
@@ -232,12 +240,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
         whcc_product,
         photo,
         complete_url:
-          Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
+          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
             "?editorId=%EDITOR_ID%",
         secondary_url:
-          Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash) <>
+          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
             "?editorId=%EDITOR_ID%&clone=true",
-        cancel_url: Routes.gallery_client_show_url(socket, :show, gallery.client_link_hash),
+        cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash),
         size: size,
         favorites_only: favorites
       )
@@ -303,27 +311,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow do
     socket
   end
 
-  defp assign_photos(
-         %{
-           assigns: %{
-             gallery: %{
-               id: id
-             },
-             page: page,
-             favorites_filter: favorites_filter
-           }
-         } = socket,
-         per_page \\ @per_page
-       ) do
-    photos =
-      Galleries.get_gallery_photos(id,
-        favorites_filter: favorites_filter,
-        offset: per_page * page,
-        limit: per_page + 1
-      )
-
-    socket
-    |> assign(:photos, photos |> Enum.take(per_page))
-    |> assign(:has_more_photos, length(photos) > per_page)
+  defp photos_count(count) do
+    "#{count} #{ngettext("photo", "photos", count)}"
   end
 end

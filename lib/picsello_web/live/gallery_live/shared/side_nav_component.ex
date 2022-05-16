@@ -83,7 +83,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_index_path(socket, :index, gallery))
+    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery))
     |> noreply()
   end
 

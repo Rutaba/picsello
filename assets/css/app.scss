@@ -119,8 +119,8 @@ canvas {
   }
 
   .item {
-    margin: 0.75rem;
-  
+    @apply m-[5px] h-[130px] w-[200px];
+
     .galleryItem {
       height: 100%;
     }

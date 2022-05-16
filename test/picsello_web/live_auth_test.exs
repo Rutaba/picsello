@@ -73,12 +73,12 @@ defmodule PicselloWeb.LiveAuthTest do
         conn: conn,
         gallery: gallery,
         user: user,
-        show_path: Routes.gallery_client_show_path(conn, :show, gallery.client_link_hash)
+        show_path: Routes.gallery_client_index_path(conn, :index, gallery.client_link_hash)
       ]
     end
 
     test "/gallery/:hash with no gallery is 404", %{conn: conn} do
-      client_show_path = Routes.gallery_client_show_path(conn, :show, "wrong-hash")
+      client_show_path = Routes.gallery_client_index_path(conn, :index, "wrong-hash")
 
       assert_raise Ecto.NoResultsError, fn ->
         conn |> live(client_show_path)
@@ -89,7 +89,7 @@ defmodule PicselloWeb.LiveAuthTest do
       expired_at = DateTime.utc_now() |> DateTime.add(@expired)
       user = insert(:user)
       gallery = insert(:gallery, expired_at: expired_at, job: insert(:lead, user: user))
-      show_path = Routes.gallery_client_show_path(conn, :show, gallery.client_link_hash)
+      show_path = Routes.gallery_client_index_path(conn, :index, gallery.client_link_hash)
       to = "/gallery-expired/" <> gallery.client_link_hash
 
       assert {:error, {:live_redirect, %{flash: %{}, to: ^to}}} = live(conn, show_path)
@@ -103,7 +103,7 @@ defmodule PicselloWeb.LiveAuthTest do
       insert(:subscription_event, user: user, subscription_plan: plan, status: "canceled")
       gallery = insert(:gallery, job: insert(:lead, user: user))
 
-      show_path = Routes.gallery_client_show_path(conn, :show, gallery.client_link_hash)
+      show_path = Routes.gallery_client_index_path(conn, :index, gallery.client_link_hash)
       to = "/gallery-expired/" <> gallery.client_link_hash
 
       assert {:error, {:live_redirect, %{flash: %{}, to: ^to}}} = live(conn, show_path)

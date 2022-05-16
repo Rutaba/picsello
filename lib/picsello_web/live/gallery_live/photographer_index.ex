@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.Index do
+defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_photographer"]
   import PicselloWeb.LiveHelpers
@@ -114,10 +114,6 @@ defmodule PicselloWeb.GalleryLive.Index do
       gallery_count: gallery.total_count
     })
     |> noreply()
-  end
-
-  def handle_event("share_link", params, socket) do
-    PicselloWeb.GalleryLive.Show.handle_event("client-link", params, socket)
   end
 
   @impl true

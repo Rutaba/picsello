@@ -26,7 +26,7 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
     [
       %{
         title: "Home",
-        path: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash)
+        path: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
       },
       %{
         title: "My orders",

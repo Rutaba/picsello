@@ -17,13 +17,13 @@
     <.icon name="hamburger" class="h-4 text-base-300 w-6" />
   </div>
 
-  <div class="px-6 sm:pl-0 sm:pr-9 py-2">
-    <div class="flex justify-center py-8 md:justify-start md:py-14">
+  <div class="px-6 sm:pl-0 sm:pr-9">
+    <div class="flex justify-center md:justify-start">
         <.photographer_logo {assigns} />
      </div>
   </div>
 
-  <ul class="sm:flex items-center pb-4 pt-8 hidden">
+  <ul class="sm:flex items-center pt-4 hidden">
     <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
       <li>
         <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center text-lg mr-6 text-base" active_class="bg-blue-planning-100 font-bold">

@@ -7,7 +7,7 @@
 
   <div class="px-6 pt-5 mx-auto lg:pt-14 lg:px-14 max-w-screen-xl">
     <%= if @from_checkout do %>
-      <%= live_redirect class: "flex items-center font-extrabold text-base-250", to: Routes.gallery_client_show_path(@socket, :show, @gallery.client_link_hash) do %>
+      <%= live_redirect class: "flex items-center font-extrabold text-base-250", to: Routes.gallery_client_index_path(@socket, :show, @gallery.client_link_hash) do %>
         <.icon name="back" class="h-3 w-2 mr-2 stroke-[3px]" />
         Back to gallery
       <% end %>
