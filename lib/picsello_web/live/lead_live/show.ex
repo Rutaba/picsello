@@ -10,7 +10,8 @@ defmodule PicselloWeb.LeadLive.Show do
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
-    PaymentSchedules
+    PaymentSchedules,
+    Contracts
   }
 
   import PicselloWeb.JobLive.Shared,
@@ -182,6 +183,7 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
         PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
       end)
+      |> maybe_create_contract(job)
       |> Ecto.Multi.insert(
         :message,
         Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
@@ -190,7 +192,9 @@ defmodule PicselloWeb.LeadLive.Show do
 
     case result do
       {:ok, %{message: message}} ->
-        %{client: client} = job = job |> Repo.preload([:client, :job_status], force: true)
+        %{client: client} =
+          job = job |> Repo.preload([:client, :job_status, :contract], force: true)
+
         ClientNotifier.deliver_booking_proposal(message, client.email)
 
         socket
@@ -249,5 +253,15 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp maybe_create_contract(multi, job) do
+    contract = job |> Repo.preload(:contract) |> Map.get(:contract)
+
+    if contract do
+      multi
+    else
+      Contracts.add_default_contract_to_job(multi, job)
+    end
   end
 end

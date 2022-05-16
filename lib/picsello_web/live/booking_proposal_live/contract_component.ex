@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, BookingProposal}
+  alias Picsello.{Repo, BookingProposal, Contracts}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
 
@@ -61,7 +61,12 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
       read_only: read_only || proposal.signed_at != nil,
       client: client,
       job: job,
-      contract: contract,
+      contract_content:
+        Contracts.contract_content(
+          contract,
+          job,
+          PicselloWeb.Helpers
+        ),
       proposal: proposal,
       package: package,
       photographer: photographer,

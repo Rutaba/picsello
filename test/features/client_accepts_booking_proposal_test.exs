@@ -394,7 +394,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     sessions: [photographer_session, client_session],
     lead: lead
   } do
-    insert(:contract,
+    insert(:contract_template,
       user: user,
       job_type: "newborn",
       content: "My custom contract",

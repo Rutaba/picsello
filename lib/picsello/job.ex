@@ -25,7 +25,7 @@ defmodule Picsello.Job do
     field(:completed_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
-    belongs_to(:contract, Contract)
+    has_one(:contract, Contract)
     has_one(:job_status, JobStatus)
     has_one(:gallery, Gallery)
     has_many(:payment_schedules, PaymentSchedule, preload_order: [asc: :due_at])
@@ -59,12 +59,6 @@ defmodule Picsello.Job do
     |> cast(attrs, [:package_id])
     |> validate_required([:package_id])
     |> assoc_constraint(:package)
-  end
-
-  def add_contract_changeset(job \\ %__MODULE__{}, attrs) do
-    job
-    |> cast(attrs, [:contract_id])
-    |> assoc_constraint(:contract)
   end
 
   def notes_changeset(job \\ %__MODULE__{}, attrs) do

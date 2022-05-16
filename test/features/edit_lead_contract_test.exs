@@ -86,17 +86,17 @@ defmodule Picsello.EditLeadContractTest do
     lead: lead,
     user: user
   } do
-    insert(:contract, user: user, job_type: "wedding", name: "Contract 1")
-    insert(:contract, user: user, job_type: "family", name: "Contract 2")
+    insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+    insert(:contract_template, user: user, job_type: "family", name: "Contract 2")
     other_user = insert(:user)
-    insert(:contract, user: other_user, job_type: "wedding", name: "Contract 3")
+    insert(:contract_template, user: other_user, job_type: "wedding", name: "Contract 3")
 
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> click(button("Customize or Select New"))
     |> assert_text("Add Custom Wedding Contract")
     |> find(select("Select a Contract Template"), fn element ->
-      assert ["New Contract", "Picsello Default Contract", "Contract 1"] =
+      assert ["New Contract", "Contract 1", "Picsello Default Contract"] =
                element |> all(css("option")) |> Enum.map(&Wallaby.Element.text/1)
     end)
     |> fill_in(text_field("Contract Name"), with: "Contract 1")
