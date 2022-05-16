@@ -113,6 +113,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   @impl true
   def handle_event("view_gallery", _, socket) do
     socket
+    |> push_event("reload_grid", %{})
     |> assign(:active, true)
     |> noreply()
   end

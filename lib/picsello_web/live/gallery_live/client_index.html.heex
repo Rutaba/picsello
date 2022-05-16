@@ -17,7 +17,7 @@
     </div>
   </div>
 </div>
-<div class={"#{!@active && 'block sm:invisible'}"}>
+<div class={"#{!@active && 'block sm:hidden'}"}>
   <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
   </div>
