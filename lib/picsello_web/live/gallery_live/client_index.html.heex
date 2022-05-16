@@ -1,0 +1,134 @@
+<div {display_cover_photo(@gallery)} class={"flex text-left flex-nowrap gallery__coverImg #{@active && 'block sm:hidden'}"}>
+  <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
+    <div class="relative z-10 flex flex-wrap items-end content-center pb-2 pb-20 pr-2 mt-auto text-center text-base-100 md:pr-0 sm:pb-60">
+      <h3 class="w-full text-base font-medium lg:text-2xl">
+        <%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %>
+      </h3>
+
+      <h1 class="w-full mb-10 text-2xl font-bold lg:text-6xl">
+        <%= @gallery.name %>
+      </h1>
+
+      <p class="w-full text-center hidden sm:block">
+        <a id="view-gallery" phx-click="view_gallery" class="text-center text-white bg-transparent border-white gallery__button btn-secondary hover:bg-white/10">
+          View Gallery
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+<div class={"#{!@active && 'block sm:invisible'}"}>
+  <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
+  </div>
+
+  <hr>
+
+  <%= unless Enum.empty?(@products) do %>
+    <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+      <div class="pt-8 lg:pt-14">
+        <div class="text-base font-bold lg:text-3xl">
+          Order custom products with <%= @creator.name %>
+        </div>
+
+        <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
+          <%= for product <- @products do %>
+            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} photo={product.preview_photo} category={product.category} click_params={product.id} />
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <%= if @package.buy_all && !@download_all_visible do %>
+    <div class="py-8 sm:py-6 bg-blue-planning-100">
+      <div class="flex flex-col justify-center px-7 sm:mx-16 sm:flex-row">
+        <div class="sm:mr-28">
+          <h3 class="text-xl font-extrabold sm:text-2xl">All digital downloads</h3>
+
+          <p class="text-base-250 mt-2.5">Bundle all your digital images for savings!</p>
+        </div>
+
+        <.button {testid("buy-bundle")} title="Buy now" class="w-full mt-6 mb-0 sm:my-3 sm:w-60" phx-click="buy-all-digitals">Buy now</.button>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Content -->
+  <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+    <div class="pt-5 lg:pt-16" id="gallery">
+      <div class="flex flex-col mb-8 sm:flex-row sm:justify-between sm:items-end lg:mb-16">
+        <div>
+          <div class="text-lg font-bold lg:text-3xl"> <%= @gallery.name %> Gallery </div>
+
+          <div class="flex items-center">
+            <%= if @download_all_visible do %>
+              <.button
+                element="a"
+                icon="download"
+                icon_class="h-4 w-4 fill-current"
+                class="my-4 mr-4 py-1.5 px-8"
+                download
+                href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash)}>
+                Download all photos
+              </.button>
+            <% end %>
+            <div class="text-sm lg:text-xl text-base-250"> <%= photos_count(@gallery.total_count) %></div>
+          </div>
+        </div>
+
+        <div>
+          <label class="flex items-center cursor-pointer">
+            <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
+
+            <div class="relative ml-3">
+              <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
+
+              <%= if @favorites_filter do %>
+                <div class="block h-8 border rounded-full bg-blue-planning-100 w-14 border-blue-planning-300"></div>
+
+                <div class="absolute w-6 h-6 rounded-full dot right-1 top-1 bg-blue-planning-300 transition"></div>
+              <% else %>
+                <div class="block h-8 bg-gray-200 border rounded-full w-14 border-blue-planning-300"></div>
+
+                <div class="absolute w-6 h-6 rounded-full dot left-1 top-1 bg-blue-planning-300 transition"></div>
+              <% end %>
+            </div>
+          </label>
+        </div>
+      </div>
+      <!-- images -->
+      <div
+        id="muuri-grid"
+        class="muuri grid"
+        phx-hook="MasonryGrid"
+        phx-update={@update_mode}
+        data-page={@page}
+        data-id="muuri-grid"
+        data-uploading="0"
+        data-total={@gallery.total_count}
+        data-favorites-count={@favorites_count}
+        data-is-favorites-shown={ "#{@favorites_filter}" }
+        data-has-more-photos={ "#{@has_more_photos}" }
+        data-photo-width="300">
+        <%= for photo <- @photos do%>
+        <%= live_component Photo,
+            id: photo.id,
+            photo: photo,
+            photo_width: 300,
+            is_client_gallery: true,
+            is_likable: true
+        %>
+      <% end %>
+      </div>
+
+      <div class="hidden">
+        <div
+          id="photo-update-listener"
+          phx-hook="PhotoUpdate"
+          data-photo-updates={@photo_updates}
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>

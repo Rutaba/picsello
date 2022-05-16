@@ -3,6 +3,6 @@ defmodule PicselloWeb.GallerySessionController do
 
   def post(conn, %{"hash" => hash, "login" => %{"session_token" => token}}) do
     conn = conn |> put_session("gallery_session_token", token)
-    conn |> redirect(to: Routes.gallery_client_show_path(conn, :show, hash))
+    conn |> redirect(to: Routes.gallery_client_index_path(conn, :index, hash))
   end
 end

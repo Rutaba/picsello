@@ -2,31 +2,40 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
-  alias Picsello.Galleries
+  alias Picsello.Photos
 
   @impl true
-  def mount(socket) do
+  def update(assigns, socket) do
     socket
-    |> assign(:preview_photo_id, nil)
-    |> assign(:url, Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg"))
+    |> assign(
+      preview_photo_id: nil,
+      is_likable: false,
+      is_removable: false,
+      is_viewable: false,
+      is_meatball: false,
+      is_gallery_category_page: false,
+      is_client_gallery: false,
+      album: nil,
+      component: false,
+      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg"),
+     )
+    |> assign(assigns)
     |> ok
   end
 
   @impl true
-  def handle_event("like", %{"id" => id}, socket) do
-    {:ok, _} =
-      Galleries.get_photo(id)
-      |> Galleries.mark_photo_as_liked()
+  def handle_event("like", %{"id" => id}, %{assigns: %{is_client_gallery: is_client_gallery}} = socket) do
+    {:ok, photo} = Photos.toggle_liked(id)
+    if is_client_gallery do
+      favorites_update =
+        if photo.client_liked,
+          do: :increase_favorites_count,
+          else: :reduce_favorites_count
+
+      send(self(), favorites_update)
+    end
 
     socket |> noreply()
-  end
-
-  @impl true
-  def handle_event("click", _, %{assigns: %{photo: photo}} = socket) do
-    send(self(), {:photo_click, photo})
-
-    socket
-    |> noreply()
   end
 
   defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
@@ -70,9 +79,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       ]
   end
 
+  defp photo_wrapper(assigns) do
+    ~H"""
+    <%= if @is_client_gallery do %>
+      <div id={"img-#{@id}"} class="galleryItem" phx-click="click" phx-value-preview_photo_id={@id}>
+      <%= render_block(@inner_block) %>
+      </div>
+    <% else %>
+      <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+        <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+        <%= render_block(@inner_block) %>
+      </div>
+    <% end%>
+    """
+  end
+
   defp photo(%{target: false} = assigns) do
     ~H"""
-    <img phx-click="click" phx-value-preview={@preview} phx-value-preview_photo_id={@photo_id} src={@url} class="relative" />
+    <img src={@url} class="relative" />
     """
   end
 
@@ -99,7 +123,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   defp actions(assigns) do
     ~H"""
     <div id={@id} class={"absolute #{@class}"} phx-click={@event} phx-value-photo_id={@photo_id}>
-      <.icon name={@icon} class="h-6 text-gray-200 w-7"/>
+      <.icon name={@icon} class="h-6 text-white w-7"/>
     </div>
     """
   end

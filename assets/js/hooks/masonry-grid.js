@@ -66,7 +66,7 @@ const positionChange = (movedId, order) => {
  */
  const maybeSelectedOnScroll = (items) => {
   const element = document.querySelector('#selected-mode');
-  if (!element.classList.contains('selected_none')) {
+  if (element && !element.classList.contains('selected_none')) {
     items.forEach(item => {
       const e = item.querySelector('.toggle-it');
       e && e.classList.add('item-border');
@@ -401,7 +401,7 @@ export default {
   updated() {
     const grid = this.get_grid();
     this.pending = this.page();
-
+    
     if (this.pending === '0') {
       this.load_more();
       this.reload_masonry();

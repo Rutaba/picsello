@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.IndexTest do
+defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
   @moduledoc false
   use PicselloWeb.ConnCase, async: true
   import Money.Sigils

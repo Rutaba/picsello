@@ -10,7 +10,7 @@ defmodule PicselloWeb.Helpers do
   def inbox_thread_url(id), do: Routes.inbox_url(Endpoint, :show, id)
 
   def gallery_url(%{client_link_hash: hash, password: password}),
-    do: Routes.gallery_client_show_url(Endpoint, :show, hash, pw: password)
+    do: Routes.gallery_client_index_url(Endpoint, :index, hash, pw: password)
 
   def order_url(%{client_link_hash: hash, password: password}, order),
     do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password)

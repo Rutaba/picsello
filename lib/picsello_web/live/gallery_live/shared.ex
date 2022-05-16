@@ -108,7 +108,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     gallery = Repo.preload(gallery, job: :client)
 
-    link = Routes.gallery_client_show_url(socket, :show, hash)
+    link = Routes.gallery_client_index_url(socket, :index, hash)
     client_name = gallery.job.client.name
 
     subject = "#{gallery.name} photos"

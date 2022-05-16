@@ -489,23 +489,6 @@ defmodule Picsello.Galleries do
     |> Repo.update_all(set: [album_id: album_id])
   end
 
-  @doc """
-  Marks a photo as liked/unliked.
-
-  ## Examples
-
-      iex> mark_photo_as_liked(%Photo{client_liked: false})
-      {:ok, %Photo{client_liked: true}}
-
-      iex> mark_photo_as_liked(%Photo{client_liked: true})
-      {:ok, %Photo{client_liked: false}}
-
-  """
-  def mark_photo_as_liked(%Photo{client_liked: client_liked} = photo) do
-    photo
-    |> Photo.update_changeset(%{client_liked: !client_liked})
-    |> Repo.update()
-  end
 
   @doc """
   Normalizes photos positions within a gallery
