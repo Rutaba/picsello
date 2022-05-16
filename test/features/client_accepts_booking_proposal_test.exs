@@ -396,7 +396,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   } do
     insert(:contract,
       user: user,
-      job_types: ["newborn"],
+      job_type: "newborn",
       content: "My custom contract",
       name: "Contract 1"
     )

@@ -86,10 +86,10 @@ defmodule Picsello.EditLeadContractTest do
     lead: lead,
     user: user
   } do
-    insert(:contract, user: user, job_types: ["wedding"], name: "Contract 1")
-    insert(:contract, user: user, job_types: ["family"], name: "Contract 2")
+    insert(:contract, user: user, job_type: "wedding", name: "Contract 1")
+    insert(:contract, user: user, job_type: "family", name: "Contract 2")
     other_user = insert(:user)
-    insert(:contract, user: other_user, job_types: ["wedding"], name: "Contract 3")
+    insert(:contract, user: other_user, job_type: "wedding", name: "Contract 3")
 
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))

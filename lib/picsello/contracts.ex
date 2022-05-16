@@ -20,7 +20,7 @@ defmodule Picsello.Contracts do
         :contract_template,
         params
         |> Map.put("organization_id", organization.id)
-        |> Map.put("job_types", [job.type])
+        |> Map.put("job_type", job.type)
         |> Contract.template_changeset()
       )
       |> Ecto.Multi.insert(:contract, fn changes ->
@@ -47,7 +47,7 @@ defmodule Picsello.Contracts do
       join: client in assoc(organization, :clients),
       where:
         client.id == ^job.client_id and contract.organization_id == organization.id and
-          ^job.type in contract.job_types,
+          ^job.type == contract.job_type,
       order_by: contract.name
     )
   end

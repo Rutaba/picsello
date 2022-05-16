@@ -649,7 +649,7 @@ defmodule Picsello.Factory do
   def contract_factory(attrs) do
     %Picsello.Contract{
       name: "My custom contract",
-      job_types: ["wedding"],
+      job_type: "wedding",
       content: "the greatest contract",
       organization: fn ->
         case attrs do

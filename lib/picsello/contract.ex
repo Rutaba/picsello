@@ -2,12 +2,12 @@ defmodule Picsello.Contract do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Organization, JobType}
+  alias Picsello.Organization
 
   schema "contracts" do
     field :content, :string
     field :name, :string
-    field :job_types, {:array, :string}
+    field :job_type, :string
     belongs_to(:organization, Organization)
     belongs_to(:contract_template, __MODULE__)
 
@@ -31,9 +31,8 @@ defmodule Picsello.Contract do
 
   def template_changeset(contract \\ %__MODULE__{}, attrs) do
     contract
-    |> cast(attrs, [:name, :content, :organization_id, :job_types])
-    |> validate_required([:name, :content, :organization_id, :job_types])
-    |> validate_subset(:job_types, JobType.all())
+    |> cast(attrs, [:name, :content, :organization_id, :job_type])
+    |> validate_required([:name, :content, :organization_id, :job_type])
     |> unsafe_validate_unique([:name, :organization_id], Picsello.Repo)
   end
 end

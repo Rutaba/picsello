@@ -6,7 +6,7 @@ defmodule Picsello.Repo.Migrations.CreateContracts do
       add :name, :string, null: false
       add :content, :text, null: false
       add :organization_id, references(:organizations, on_delete: :nothing), null: false
-      add :job_types, {:array, :string}, null: false, default: "{}"
+      add :job_type, references(:job_types, column: :name, type: :string)
       add :contract_template_id, references(:contracts, on_delete: :nothing)
 
       timestamps()
@@ -19,7 +19,8 @@ defmodule Picsello.Repo.Migrations.CreateContracts do
     # 0                     0    =  invalid -- 1 off contract without template are not allowed
     create(
       constraint("contracts", "contracts_must_have_types",
-        check: "((contract_template_id is not null)::integer + (job_types != '{}')::integer) = 1"
+        check:
+          "((contract_template_id is not null)::integer + (job_type is not null)::integer) = 1"
       )
     )
 
