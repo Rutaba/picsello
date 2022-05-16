@@ -10,7 +10,7 @@ defmodule PicselloWeb.UserRegisterLive do
     socket
     |> assign_defaults(session)
     |> assign(%{
-      page_title: "Sign up",
+      page_title: "Sign Up",
       meta_attrs: %{
         description:
           "Let's get started! Get signed up and start growing your business. Register with Picsello and start managing, marketing, and monetizing your photography business today."
