@@ -10,7 +10,13 @@ defmodule PicselloWeb.Live.PasswordReset.New do
 
     socket
     |> assign_defaults(session)
-    |> assign(:page_title, "Reset Password")
+    |> assign(%{
+      page_title: "Reset Password",
+      meta_attrs: %{
+        description:
+          "Forgot your password? Use this page to reset your password. Enter your email and we will get you back to building your photography business right away."
+      }
+    })
     |> assign(changeset: changeset, trigger_submit: false)
     |> ok()
   end

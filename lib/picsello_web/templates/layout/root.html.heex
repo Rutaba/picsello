@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes" />
-    <%= for {name, content} <- meta_tags() do %>
+    <%= for {name, content} <- meta_tags(assigns[:meta_attrs]) do %>
       <meta name={name} content={content} />
     <% end %>
     <%= csrf_meta_tag() %>
