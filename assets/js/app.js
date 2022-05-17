@@ -48,6 +48,7 @@ import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
 import PageScroll from "./hooks/page-scroll";
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
+import ClientGalleryCookie from './hooks/client-gallery-cookie';
 
 const Modal = {
   mounted() {
@@ -150,7 +151,8 @@ const Hooks = {
   ToggleContent,
   ToggleSiblings,
   ResumeUpload,
-  GallerySelector
+  GallerySelector,
+  ClientGalleryCookie
 };
 
 let Uploaders = {};

@@ -1,4 +1,11 @@
-<div {display_cover_photo(@gallery)} class={"flex text-left flex-nowrap gallery__coverImg #{@active && 'block sm:hidden'}"}>
+<div {display_cover_photo(@gallery)} 
+class={"flex text-left flex-nowrap gallery__coverImg hidden #{@active && 'block sm:hidden'}"}
+id="gallery-conver-photo"
+phx-hook="ClientGalleryCookie"
+data-name={cover_photo_cookie(@gallery.id)}
+data-max_age={max_age()}
+data-active={"#{@active}"}
+>
   <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
     <div class="relative z-10 flex flex-wrap items-end content-center pb-2 pb-20 pr-2 mt-auto text-center text-base-100 md:pr-0 sm:pb-60">
       <h3 class="w-full text-base font-medium lg:text-2xl">
@@ -17,7 +24,7 @@
     </div>
   </div>
 </div>
-<div class={"#{!@active && 'block sm:hidden'}"}>
+<div id="gallery" class={"#{!@active && 'block sm:hidden'}"}>
   <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
   </div>
