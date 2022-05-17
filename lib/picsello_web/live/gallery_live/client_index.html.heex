@@ -7,7 +7,7 @@ data-max_age={max_age()}
 data-active={"#{@active}"}
 >
   <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
-    <div class="relative z-10 flex flex-wrap items-end content-center pb-2 pb-20 pr-2 mt-auto text-center text-base-100 md:pr-0 sm:pb-60">
+    <div class="relative z-10 flex flex-wrap items-end content-center pb-2 md:pb-60 pr-2 pl-2 md:pl-0 mt-auto text-start text-base-100 md:pr-0 md:text-center">
       <h3 class="w-full text-base font-medium lg:text-2xl">
         <%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %>
       </h3>
