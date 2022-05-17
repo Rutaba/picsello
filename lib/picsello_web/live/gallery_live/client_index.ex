@@ -25,7 +25,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       photo_updates: "false",
       download_all_visible: false,
       active: false
-     )
+    )
     |> ok()
   end
 

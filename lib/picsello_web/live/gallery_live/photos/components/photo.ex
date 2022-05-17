@@ -17,15 +17,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
-      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg"),
-     )
+      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
+    )
     |> assign(assigns)
     |> ok
   end
 
   @impl true
-  def handle_event("like", %{"id" => id}, %{assigns: %{is_client_gallery: is_client_gallery}} = socket) do
+  def handle_event(
+        "like",
+        %{"id" => id},
+        %{assigns: %{is_client_gallery: is_client_gallery}} = socket
+      ) do
     {:ok, photo} = Photos.toggle_liked(id)
+
     if is_client_gallery do
       favorites_update =
         if photo.client_liked,
