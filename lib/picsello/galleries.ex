@@ -489,7 +489,6 @@ defmodule Picsello.Galleries do
     |> Repo.update_all(set: [album_id: album_id])
   end
 
-
   @doc """
   Normalizes photos positions within a gallery
   """
