@@ -12,11 +12,12 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("You don’t have any packages")
   end
 
-  feature "view list", %{session: session, user: user} do
+  feature "view list with unlimited", %{session: session, user: user} do
     insert(:package_template,
       user: user,
       name: "Deluxe Template",
       download_count: 5,
+      download_each_price: 0,
       buy_all: 20,
       print_credits: 20
     )
@@ -25,7 +26,25 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> assert_text("Deluxe Template")
-    |> assert_has(definition("Downloadable photos", text: "5"))
+    |> assert_text("Unlimited Complimentary Downloads")
+  end
+
+  feature "view list with download price", %{session: session, user: user} do
+    insert(:package_template,
+      user: user,
+      name: "Super Deluxe Template",
+      download_count: 5,
+      download_each_price: 20,
+      buy_all: 20,
+      print_credits: 20
+    )
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> assert_text("Super Deluxe Template")
+    |> assert_has(definition("Complimentary Downloads", text: "5"))
+    |> assert_text("$0.20/each")
   end
 
   feature "add", %{session: session, user: user} do
