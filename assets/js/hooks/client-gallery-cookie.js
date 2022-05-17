@@ -2,20 +2,18 @@ export default {
   mounted() {
     const { el } = this;
     const name = el.dataset.name;
-    const gallery = document.querySelector('#gallery')
+    const gallery = document.querySelector('#gallery');
     if(getCookie(name)) {
       gallery.classList.remove("sm:hidden");
     } else {
       el.classList.remove("hidden");
-      gallery.classList.remove("hidden");
     }
   },
   updated() {
     const { el } = this;
-    const name = el.dataset.name;
-    console.log(name);
-    console.log(el.dataset);
-    el.dataset.active && setCookie(name, true, el.dataset.max_age);
+    if(el.dataset.active == 'true') {
+      setCookie(el.dataset.name, true, el.dataset.max_age);
+    }
   },
 };
 
@@ -26,7 +24,6 @@ function setCookie(name, value, days) {
       date.setDate(date.getDate() + days);
       expires = `; Expires=${date.toUTCString()}`;
   }
-  console.log(name + "=" + (value || "")  + expires + "; path=/");
   document.cookie = name + "=" + (value || "")  + expires + "; path=/";
 }
 
