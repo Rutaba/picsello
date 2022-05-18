@@ -222,7 +222,7 @@ defmodule PicselloWeb.FormHelpers do
               autocomplete: "url",
               novalidate: true,
               phx_hook: "PrefixHttp",
-              class: "p-4 sm:pr-48" %>
+              class: classes("p-4", %{"sm:pr-48" => @show_checkbox?}) %>
           <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
 
           <%= if @show_checkbox? do %>
