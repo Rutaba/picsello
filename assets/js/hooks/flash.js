@@ -1,5 +1,7 @@
 export default {
   mounted() {
-    setTimeout(() => this.el.remove(), 5000);
+    setTimeout(() => {
+      this.pushEvent('lv:clear-flash', { key: this.el.dataset.phxValueKey });
+    }, 5000);
   },
 };
