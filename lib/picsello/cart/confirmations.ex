@@ -65,10 +65,13 @@ defmodule Picsello.Cart.Confirmations do
     order =
       from(order in Order,
         where: order.id == ^order_id,
-        preload: [digitals: :photo, gallery: [job: [client: :organization]]]
+        preload: [
+          products: :whcc_product,
+          digitals: :photo,
+          gallery: [job: [client: :organization]]
+        ]
       )
       |> repo.one!()
-      |> Picsello.Cart.preload_products()
 
     {:ok, order}
   end
@@ -141,12 +144,7 @@ defmodule Picsello.Cart.Confirmations do
     {:ok, confirmation_result} =
       gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation_id)
 
-    confirmed_products =
-      for %{line_item: product, price: charged_price} <- Order.priced_lines(order) do
-        %{product | charged_price: charged_price}
-      end
-
-    Order.confirmation_changeset(order, confirmation_result, confirmed_products)
+    Order.confirmation_changeset(order, confirmation_result)
   end
 
   defp confirm_order_changeset(%{

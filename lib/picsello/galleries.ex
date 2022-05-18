@@ -802,9 +802,10 @@ defmodule Picsello.Galleries do
   end
 
   def min_price(category) do
-    Picsello.WHCC.min_price_details(category)
-    |> Picsello.Cart.CartProduct.new()
-    |> Picsello.Cart.CartProduct.price(shipping_base_charge: true)
+    category
+    |> Picsello.WHCC.min_price_details()
+    |> Picsello.Cart.Product.new()
+    |> Picsello.Cart.Product.example_price()
   end
 
   defp clean_store([]), do: nil

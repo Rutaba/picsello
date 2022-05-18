@@ -66,8 +66,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
   defdelegate has_download?(order), to: Cart
   defdelegate item_image_url(item), to: Cart
-  defdelegate quantity(item), to: Cart.CartProduct
+  defdelegate quantity(item), to: Cart.Product
   defdelegate total_cost(order), to: Cart
+  defdelegate priced_lines(order), to: Cart.Order
   defp product_name({:bundle, _}), do: "All digital downloads"
   defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
   defp product_name(item), do: Cart.product_name(item)

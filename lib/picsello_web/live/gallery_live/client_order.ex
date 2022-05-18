@@ -96,9 +96,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
-  defp tracking(%{whcc_order: %{orders: sub_orders}}, item) do
-    editor_id = item |> Cart.CartProduct.id()
-
+  defp tracking(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
     Enum.find_value(sub_orders, fn
       %{editor_id: ^editor_id, whcc_tracking: tracking} ->
         tracking
@@ -108,7 +106,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     end)
   end
 
-  defdelegate quantity(item), to: Cart.CartProduct
+  defdelegate quantity(item), to: Cart.Product
   defdelegate priced_lines(order), to: Cart.Order
   defdelegate total_cost(order), to: Cart
   defdelegate has_download?(order), to: Cart

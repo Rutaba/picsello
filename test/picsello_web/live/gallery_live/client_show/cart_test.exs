@@ -22,9 +22,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
   describe "with multiple products" do
     setup %{gallery: gallery} do
       cart_products =
-        for {%{whcc_id: product_id}, index} <-
+        for {product, index} <-
               Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
-          build(:cart_product, product_id: product_id, created_at: index)
+          build(:cart_product,
+            whcc_product: product,
+            inserted_at: DateTime.utc_now() |> DateTime.add(index)
+          )
         end
 
       [order: insert(:order, gallery: gallery, products: cart_products)]
@@ -68,7 +71,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
                  Keyword.get(options, :entry_id)
 
         assert Enum.map(editors, & &1.id) ==
-                 Enum.map(order.products, &Picsello.Cart.CartProduct.id/1)
+                 Enum.map(order.products, & &1.editor_id)
 
         build(:whcc_editor_export)
       end)

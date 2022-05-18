@@ -6,7 +6,6 @@ defmodule Picsello.Cart do
   import Ecto.Query
 
   alias Picsello.{
-    Cart.CartProduct,
     Cart.DeliveryInfo,
     Cart.Digital,
     Cart.Order,
@@ -17,6 +16,8 @@ defmodule Picsello.Cart do
     Repo,
     WHCC
   }
+
+  alias Picsello.Cart.Product, as: CartProduct
 
   def new_product(editor_id, account_id) do
     account_id |> WHCC.price_details(editor_id) |> CartProduct.new()
@@ -34,9 +35,7 @@ defmodule Picsello.Cart do
       ) do
     editors =
       for product <- products do
-        product
-        |> CartProduct.id()
-        |> WHCC.Editor.Export.Editor.new(
+        WHCC.Editor.Export.Editor.new(product.editor_id,
           order_attributes: Picsello.WHCC.Shipping.to_attributes(product)
         )
       end
@@ -56,7 +55,10 @@ defmodule Picsello.Cart do
 
   @doc "stores processing info in order it finds"
   def update_whcc_order(%{entry_id: entry_id} = payload) do
-    case from(order in Order, where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id))
+    case from(order in Order,
+           where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id),
+           preload: [products: :whcc_product]
+         )
          |> Repo.one() do
       nil ->
         {:error, "order not found"}
@@ -74,7 +76,7 @@ defmodule Picsello.Cart do
   def place_product(product, gallery_id) do
     params = %{gallery_id: gallery_id}
 
-    case get_unconfirmed_order(gallery_id, preload: [:digitals]) do
+    case get_unconfirmed_order(gallery_id, preload: [:products, :digitals]) do
       {:ok, order} -> place_product_in_order(order, product, params)
       {:error, _} -> create_order_with_product(product, params)
     end
@@ -192,7 +194,15 @@ defmodule Picsello.Cart do
     preloads = Keyword.get(opts, :preload, [])
 
     for assoc <- preloads,
-        fun = Map.get(%{digitals: &preload_digitals/1, package: &preload(&1, :package)}, assoc),
+        fun =
+          Map.get(
+            %{
+              products: &preload(&1, products: :whcc_product),
+              digitals: &preload_digitals/1,
+              package: &preload(&1, :package)
+            },
+            assoc
+          ),
         reduce:
           from(order in Order,
             where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
@@ -203,46 +213,14 @@ defmodule Picsello.Cart do
     |> Repo.one()
     |> case do
       %Order{} = order ->
-        {:ok, if(:products in preloads, do: preload_products(order), else: order)}
+        {:ok, order}
 
       _ ->
         {:error, :no_unconfirmed_order}
     end
   end
 
-  def preload_products([_ | _] = orders) do
-    ids =
-      for(%{products: [_ | _] = products} <- orders, reduce: []) do
-        acc ->
-          acc ++ for(product <- products, do: CartProduct.product_id(product))
-      end
-
-    products_by_whcc_id =
-      from(product in Picsello.Product, where: product.whcc_id in ^ids)
-      |> Repo.all()
-      |> Enum.map(&{&1.whcc_id, &1})
-      |> Map.new()
-
-    for(%{products: products} = order <- orders) do
-      %{
-        order
-        | products:
-            for(
-              product <- products,
-              do: %{
-                product
-                | whcc_product: Map.get(products_by_whcc_id, CartProduct.product_id(product))
-              }
-            )
-      }
-    end
-  end
-
-  def preload_products(%{products: [_ | _]} = order) do
-    [order] |> preload_products |> hd
-  end
-
-  def preload_products(order), do: order
+  def preload_products(order), do: Repo.preload(order, products: :whcc_product)
 
   def get_placed_gallery_order!(gallery, order_number) do
     gallery
@@ -351,21 +329,19 @@ defmodule Picsello.Cart do
       order_by: [desc: order.placed_at]
     )
     |> preload_digitals()
+    |> preload(products: :whcc_product)
     |> Repo.all()
-    |> preload_products()
   end
 
   def order_with_editor(editor_id) do
-    arg = %{id: editor_id}
-
     from(order in Order,
+      as: :order,
       where:
-        fragment(
-          ~s|jsonb_path_exists(?, '$[*] \\? (@.editor_details.editor_id == $id)', ?)|,
-          order.products,
-          ^arg
+        exists(
+          from product in CartProduct,
+            where: product.order_id == parent_as(:order).id and product.editor_id == ^editor_id
         ),
-      preload: [digitals: :photo]
+      preload: [digitals: :photo, products: :whcc_product]
     )
     |> Repo.one()
   end
@@ -414,9 +390,11 @@ defmodule Picsello.Cart do
       |> Enum.map(&Enum.count/1)
       |> Enum.sum()
 
-  def checkout_params(%Order{digitals: digitals} = order) do
+  def checkout_params(%Order{digitals: digitals, products: products} = order) do
     product_line_items =
-      for %{price: price, line_item: line_item} <- Order.priced_lines(order) do
+      for line_item <- products do
+        price = CartProduct.charged_price(line_item)
+
         %{
           price_data: %{
             currency: price.currency,
@@ -433,7 +411,9 @@ defmodule Picsello.Cart do
       end
 
     digital_line_items =
-      Enum.map(digitals, fn %{price: price} = digital ->
+      Enum.map(digitals, fn digital ->
+        price = Digital.charged_price(digital)
+
         %{
           price_data: %{
             currency: price.currency,
@@ -491,7 +471,7 @@ defmodule Picsello.Cart do
   end
 
   def product_size(%CartProduct{
-        editor_details: %{selections: selections},
+        selections: selections,
         whcc_product: product
       }),
       do:
@@ -502,7 +482,7 @@ defmodule Picsello.Cart do
               _ -> %{}
             end)
 
-  def item_image_url(%CartProduct{editor_details: %{preview_url: url}}), do: url
+  def item_image_url(%CartProduct{preview_url: url}), do: url
 
   def item_image_url(%Digital{photo: photo}), do: Picsello.Photos.preview_url(photo)
 

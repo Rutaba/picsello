@@ -524,21 +524,29 @@ defmodule Picsello.Factory do
   end
 
   def cart_product_factory(attrs \\ %{}) do
-    attrs = Map.put_new(attrs, :product_id, get_in(attrs, [:whcc_product, :whcc_id]))
-
-    %Picsello.Cart.CartProduct{
-      created_at: System.os_time(:millisecond),
-      editor_details:
-        build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity, :editor_id])),
+    %Picsello.Cart.Product{
+      editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
       round_up_to_nearest: 500,
       shipping_base_charge: %Money{amount: 900, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
-      whcc_product: nil
+      whcc_product: fn -> build(:product) end,
+      preview_url:
+        "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+      selections: %{
+        "display_options" => "no",
+        "quantity" => Map.get(attrs, :quantity, 1),
+        "size" => "20x30",
+        "surface" => "1_4in_acrylic_with_styrene_backing"
+      },
+      volume_discount: ~M[0]USD,
+      print_credit_discount: ~M[0]USD,
+      price: ~M[55500]USD
     }
-    |> merge_attributes(Map.drop(attrs, [:product_id, :editor_id]))
+    |> evaluate_lazy_attributes()
+    |> merge_attributes(attrs)
   end
 
   def whcc_order_created_order_factory do

@@ -189,11 +189,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp zero_subtotal?(order),
     do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
 
+  defp item_id(item), do: item.editor_id
+
   defdelegate cart_count(order), to: Cart, as: :item_count
-  defdelegate item_id(item), to: Cart.CartProduct, as: :id
   defdelegate item_image_url(item), to: Cart
   defdelegate priced_lines_by_product(order), to: Cart
-  defdelegate product_id(item), to: Cart.CartProduct
   defdelegate product_name(product), to: Cart
   defdelegate product_quantity(product), to: Cart
   defdelegate summary(assigns), to: __MODULE__.Summary

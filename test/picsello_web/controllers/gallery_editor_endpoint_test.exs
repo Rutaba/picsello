@@ -46,11 +46,11 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
 
       Picsello.MockWHCCClient
       |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
-        %Picsello.WHCC.Editor.Details{
+        build(:whcc_editor_details,
           product_id: whcc_product_id,
           selections: %{"size" => "6x9"},
           editor_id: "editor-id"
-        }
+        )
       end)
       |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
         build(:whcc_editor_export, unit_base_price: ~M[100]USD)
@@ -79,7 +79,7 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
 
       {:ok, order} = Picsello.Cart.get_unconfirmed_order(gallery.id)
 
-      assert 1 == order.products |> Enum.count()
+      assert 1 == order |> Ecto.assoc(:products) |> Picsello.Repo.aggregate(:count)
     end
   end
 end
