@@ -14,58 +14,6 @@ defmodule PicselloWeb.Live.Marketing do
   end
 
   @impl true
-  def handle_event("public-profile", %{}, socket),
-    do:
-      socket
-      |> push_redirect(to: Routes.profile_settings_path(socket, :index))
-      |> noreply()
-
-  def assign_attention_items(socket) do
-    items = [
-      %{
-        action: "public-profile",
-        title: "Review your Public Profile",
-        body:
-          "We highly suggest you review your Picsello Public Profile. We provide options to insert links into your emails (wardrobe guide, pricing, etc)",
-        icon: "three-people",
-        button_label: "Take me to settings",
-        button_class: "btn-secondary",
-        external_link: "",
-        color: "purple-marketing-300",
-        class: "border-purple-marketing-300"
-      },
-      %{
-        action: "external-link",
-        title: "Marketing tip: SEO",
-        body:
-          "Google loves their own products. Rank higher in search by adding a YouTube Video or Google Maps to your website!",
-        icon: "three-people",
-        button_label: "Check out our blog",
-        button_class: "btn-secondary",
-        external_link:
-          "https://www.picsello.com/post/best-business-resources-for-new-photographers",
-        color: "purple-marketing-300",
-        class: "border-purple-marketing-300"
-      },
-      %{
-        action: "external-link",
-        title: "Marketing tip: SEO",
-        body:
-          "Setup Google My Business if you haven’t already and ask for more reviews—they really help your search results!",
-        icon: "three-people",
-        button_label: "Check out our blog",
-        button_class: "btn-secondary",
-        external_link:
-          "https://www.picsello.com/post/best-business-resources-for-new-photographers",
-        color: "purple-marketing-300",
-        class: "border-purple-marketing-300"
-      }
-    ]
-
-    socket |> assign(:attention_items, items)
-  end
-
-  @impl true
   def render(assigns) do
     ~H"""
     <header class="bg-gray-100">
@@ -168,6 +116,13 @@ defmodule PicselloWeb.Live.Marketing do
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
+  def handle_event("public-profile", %{}, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.profile_settings_path(socket, :index))
+      |> noreply()
+
+  @impl true
   def handle_info({:update, _campaign}, socket) do
     socket
     |> assign_campaigns()
@@ -191,6 +146,51 @@ defmodule PicselloWeb.Live.Marketing do
 
     socket
     |> noreply()
+  end
+
+  def assign_attention_items(socket) do
+    items = [
+      %{
+        action: "public-profile",
+        title: "Review your Public Profile",
+        body:
+          "We highly suggest you review your Picsello Public Profile. We provide options to insert links into your emails (wardrobe guide, pricing, etc)",
+        icon: "three-people",
+        button_label: "Take me to settings",
+        button_class: "btn-secondary",
+        external_link: "",
+        color: "purple-marketing-300",
+        class: "border-purple-marketing-300"
+      },
+      %{
+        action: "external-link",
+        title: "Marketing tip: SEO",
+        body:
+          "Google loves their own products. Rank higher in search by adding a YouTube Video or Google Maps to your website!",
+        icon: "three-people",
+        button_label: "Check out our blog",
+        button_class: "btn-secondary",
+        external_link:
+          "https://www.picsello.com/post/best-business-resources-for-new-photographers",
+        color: "purple-marketing-300",
+        class: "border-purple-marketing-300"
+      },
+      %{
+        action: "external-link",
+        title: "Marketing tip: SEO",
+        body:
+          "Setup Google My Business if you haven’t already and ask for more reviews—they really help your search results!",
+        icon: "three-people",
+        button_label: "Check out our blog",
+        button_class: "btn-secondary",
+        external_link:
+          "https://www.picsello.com/post/best-business-resources-for-new-photographers",
+        color: "purple-marketing-300",
+        class: "border-purple-marketing-300"
+      }
+    ]
+
+    socket |> assign(:attention_items, items)
   end
 
   def assign_organization(%{assigns: %{current_user: current_user}} = socket) do
