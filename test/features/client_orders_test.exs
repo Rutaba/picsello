@@ -514,7 +514,7 @@ defmodule Picsello.ClientOrdersTest do
          }}
       )
 
-      assert String.ends_with?(product_image, "/preview.jpg")
+      assert String.ends_with?(product_image, "/watermarked_preview.jpg")
 
       session
       |> assert_has(css("h3", text: "Thank you for your order!"))
