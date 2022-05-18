@@ -3,13 +3,18 @@ defmodule PicselloWeb.Live.Marketing do
   use PicselloWeb, :live_view
   alias Picsello.{Marketing, Profiles}
 
+  import PicselloWeb.Live.Profile.Shared,
+    only: [
+      assign_organization: 2
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Marketing")
     |> assign_attention_items()
-    |> assign_links()
     |> assign_organization()
+    |> assign_links()
     |> assign_campaigns()
     |> ok()
   end
@@ -142,8 +147,7 @@ defmodule PicselloWeb.Live.Marketing do
 
   @impl true
   def handle_event("edit-link", %{"link-id" => link_id}, socket) do
-    IO.inspect(link_id)
-    socket |> noreply()
+    socket |> PicselloWeb.Live.Marketing.EditLinkComponent.open(link_id) |> noreply()
   end
 
   @impl true
@@ -162,6 +166,14 @@ defmodule PicselloWeb.Live.Marketing do
     socket
     |> assign_campaigns()
     |> put_flash(:success, "Promotional Email sent")
+    |> noreply()
+  end
+
+  def handle_info({:update_org, organization}, socket) do
+    socket
+    |> assign_organization(organization)
+    |> assign_links()
+    |> put_flash(:success, "Link updated")
     |> noreply()
   end
 
@@ -186,11 +198,10 @@ defmodule PicselloWeb.Live.Marketing do
   def assign_links(
         %{
           assigns: %{
-            current_user: %{
-              organization: %{
-                profile: %{
-                  website: website
-                }
+            organization: %{
+              profile: %{
+                website: website,
+                website_login: website_login
               }
             }
           }
@@ -209,8 +220,8 @@ defmodule PicselloWeb.Live.Marketing do
         action: "edit-link",
         title: "Manage Website",
         icon: "website",
-        link: website,
-        link_id: "manage-website",
+        link: website_login,
+        link_id: "website_login",
         can_edit?: true
       },
       %{

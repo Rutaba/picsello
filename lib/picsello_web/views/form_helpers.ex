@@ -201,14 +201,20 @@ defmodule PicselloWeb.FormHelpers do
   def website_field(assigns) do
     assigns =
       assigns
-      |> Enum.into(%{class: "", placeholder: "www.mystudio.com"})
+      |> Enum.into(%{
+        class: "",
+        placeholder: "www.mystudio.com",
+        label: "What is your website URL?",
+        name: :website,
+        show_checkbox?: true
+      })
 
     ~H"""
     <label class={"flex flex-col #{@class}"}>
-        <p class="py-2 font-extrabold">What is your website URL? <i class="italic font-light">(No worries if you don’t have one)</i></p>
+        <p class="py-2 font-extrabold"><%= @label %> <i class="italic font-light">(No worries if you don’t have one)</i></p>
 
         <div class="relative flex flex-col">
-          <%= input @form, :website,
+          <%= input @form, @name,
               type: :url_input,
               phx_debounce: "500",
               disabled: input_value(@form, :no_website) == true,
@@ -217,13 +223,15 @@ defmodule PicselloWeb.FormHelpers do
               novalidate: true,
               phx_hook: "PrefixHttp",
               class: "p-4 sm:pr-48" %>
-          <%= error_tag @form, :website, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
+          <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
 
-          <label id="clear-website" phx-hook="ClearInput" data-input-name="website" class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
+          <%= if @show_checkbox? do %>
+          <label id="clear-website" phx-hook="ClearInput" data-input-name={@name} class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
             <%= checkbox @form, :no_website, class: "w-5 h-5 checkbox" %>
 
             <p class="ml-2">I don't have one</p>
           </label>
+          <% end %>
         </div>
       </label>
     """
