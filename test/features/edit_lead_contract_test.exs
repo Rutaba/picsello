@@ -20,7 +20,7 @@ defmodule Picsello.EditLeadContractTest do
     |> find(testid("contract"), fn element ->
       element
       |> assert_text("Picsello Default Contract")
-      |> click(button("Customize or Select New"))
+      |> click(button("Edit or Select New"))
     end)
     |> assert_text("Add Custom Wedding Contract")
     |> assert_has(css("*[role='status']", text: "No edits made"))
@@ -34,7 +34,7 @@ defmodule Picsello.EditLeadContractTest do
     |> find(testid("contract"), fn element ->
       element
       |> assert_text("My greatest wedding contract")
-      |> click(button("Customize or Select New"))
+      |> click(button("Edit or Select New"))
     end)
     |> within_modal(fn modal ->
       modal
@@ -51,7 +51,7 @@ defmodule Picsello.EditLeadContractTest do
   feature "user adds new contract", %{session: session, lead: lead} do
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("Customize or Select New"))
+    |> click(button("Edit or Select New"))
     |> assert_text("Add Custom Wedding Contract")
     |> find(select("Select a Contract Template"), &click(&1, option("New Contract")))
     |> fill_in(text_field("Contract Name"), with: "My greatest wedding contract")
@@ -63,7 +63,7 @@ defmodule Picsello.EditLeadContractTest do
     |> find(testid("contract"), fn element ->
       element
       |> assert_text("My greatest wedding contract")
-      |> click(button("Customize or Select New"))
+      |> click(button("Edit or Select New"))
     end)
     |> within_modal(fn modal ->
       modal
@@ -93,7 +93,7 @@ defmodule Picsello.EditLeadContractTest do
 
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("Customize or Select New"))
+    |> click(button("Edit or Select New"))
     |> assert_text("Add Custom Wedding Contract")
     |> find(select("Select a Contract Template"), fn element ->
       assert ["New Contract", "Contract 1", "Picsello Default Contract"] =

@@ -315,10 +315,14 @@ defmodule Picsello.Factory do
 
     insert_list(shoot_count - Enum.count(shoots), :shoot, job: job)
 
-    default_contract = Picsello.Contracts.default_contract(job)
-    insert(:contract, job_id: job.id, contract_template_id: default_contract.id)
+    add_contract(job)
 
     job |> Repo.preload(:shoots, force: true)
+  end
+
+  def add_contract(%Job{} = job) do
+    default_contract = Picsello.Contracts.default_contract(job)
+    insert(:contract, job_id: job.id, contract_template_id: default_contract.id)
   end
 
   def lead_factory(attrs) do

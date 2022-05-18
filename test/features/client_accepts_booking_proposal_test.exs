@@ -65,7 +65,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       photographer_session
       |> visit("/leads/#{lead.id}")
       |> click(checkbox("Questionnaire included", selected: true))
-      |> click(button("Finish booking proposal"))
+      |> click(button("Send proposal", count: 2, at: 1))
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
       |> assert_value(text_field("Subject line"), "here is what I propose")
@@ -350,7 +350,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Finish booking proposal"))
+    |> click(button("Send proposal", count: 2, at: 1))
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -404,12 +404,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
-    |> click(button("Customize or Select New"))
+    |> click(button("Edit or Select New"))
     |> find(select("Select a Contract Template"), &click(&1, option("Contract 1")))
     |> fill_in(text_field("Contract Name"), with: "Contract 2")
     |> within_modal(&wait_for_enabled_submit_button/1)
     |> click(button("Save"))
-    |> click(button("Finish booking proposal"))
+    |> click(button("Send proposal", count: 2, at: 1))
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -431,7 +431,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Finish booking proposal"))
+    |> click(button("Send proposal", count: 2, at: 1))
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -457,7 +457,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
     |> assert_text("100% discount")
-    |> click(button("Finish booking proposal"))
+    |> click(button("Send proposal", count: 2, at: 1))
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
