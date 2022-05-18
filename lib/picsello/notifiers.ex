@@ -8,7 +8,8 @@ defmodule Picsello.Notifiers do
     dynamic_fields
     |> Enum.reduce(
       new_email()
-      |> with_template(Application.get_env(:picsello, Picsello.Mailer)[template_key]),
+      |> with_template(Application.get_env(:picsello, Picsello.Mailer)[template_key])
+      |> with_bypass_list_management(true),
       fn {k, v}, e -> add_dynamic_field(e, k, v) end
     )
   end
