@@ -7,7 +7,7 @@ defmodule PicselloWeb.LayoutView do
 
   use Phoenix.Component
 
-  def default_meta_tags do
+  defp default_meta_tags do
     for(
       {meta_name, config_key} <- %{
         "google-site-verification" => :google_site_verification,
