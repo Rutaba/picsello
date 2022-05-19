@@ -217,7 +217,7 @@ defmodule PicselloWeb.FormHelpers do
           <%= input @form, @name,
               type: :url_input,
               phx_debounce: "500",
-              disabled: input_value(@form, :no_website) == true,
+              disabled: @show_checkbox? && input_value(@form, :no_website) == true,
               placeholder: @placeholder,
               autocomplete: "url",
               novalidate: true,

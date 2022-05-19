@@ -62,7 +62,7 @@ defmodule PicselloWeb.Live.Marketing do
               <% [] -> %>
               <% links -> %>
               <%= for %{title: title, icon: icon, action: action, link: link, link_id: link_id, can_edit?: can_edit?} <- links do %>
-                <div class="flex items-center mb-4">
+                <div {testid("marketing-links")} class="flex items-center mb-4">
                   <div class="flex items-center justify-center w-20 h-20 ml-1 mr-3 rounded-full flex-shrink-0 bg-base-200 p-6">
                     <.icon name={icon} />
                   </div>
