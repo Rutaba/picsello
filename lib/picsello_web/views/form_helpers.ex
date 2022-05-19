@@ -206,7 +206,7 @@ defmodule PicselloWeb.FormHelpers do
         placeholder: "www.mystudio.com",
         label: "What is your website URL?",
         name: :website,
-        show_checkbox?: true
+        show_checkbox: true
       })
 
     ~H"""
@@ -217,20 +217,20 @@ defmodule PicselloWeb.FormHelpers do
           <%= input @form, @name,
               type: :url_input,
               phx_debounce: "500",
-              disabled: @show_checkbox? && input_value(@form, :no_website) == true,
+              disabled: @show_checkbox && input_value(@form, :no_website) == true,
               placeholder: @placeholder,
               autocomplete: "url",
               novalidate: true,
               phx_hook: "PrefixHttp",
-              class: classes("p-4", %{"sm:pr-48" => @show_checkbox?}) %>
+              class: classes("p-4", %{"sm:pr-48" => @show_checkbox}) %>
           <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
 
-          <%= if @show_checkbox? do %>
-          <label id="clear-website" phx-hook="ClearInput" data-input-name={@name} class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
-            <%= checkbox @form, :no_website, class: "w-5 h-5 checkbox" %>
+          <%= if @show_checkbox do %>
+            <label id="clear-website" phx-hook="ClearInput" data-input-name={@name} class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
+              <%= checkbox @form, :no_website, class: "w-5 h-5 checkbox" %>
 
-            <p class="ml-2">I don't have one</p>
-          </label>
+              <p class="ml-2">I don't have one</p>
+            </label>
           <% end %>
         </div>
       </label>

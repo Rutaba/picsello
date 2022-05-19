@@ -3,11 +3,6 @@ defmodule PicselloWeb.Live.Marketing do
   use PicselloWeb, :live_view
   alias Picsello.{Marketing, Profiles}
 
-  import PicselloWeb.Live.Profile.Shared,
-    only: [
-      assign_organization: 2
-    ]
-
   @impl true
   def mount(_params, _session, socket) do
     socket
@@ -26,31 +21,31 @@ defmodule PicselloWeb.Live.Marketing do
       <div class="pt-10 pb-8 center-container">
         <h1 class="px-6 text-4xl font-bold">Marketing</h1>
         <%= case @attention_items do %>
-        <% [] -> %>
-        <% items -> %>
-          <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
-          <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-next-up">
-            <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} <- items do %>
-            <li {testid("marketing-attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
-              <div>
-                <h3 class="text-lg font-bold">
-                  <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
-                  <%= title %>
-                </h3>
-                <p class="my-2 text-sm"><%= body %></p>
-                <%= case action do %>
-                  <% "public-profile" -> %>
-                    <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
-                  <% _ -> %>
-                    <a href={external_link} class={"#{button_class} text-center text-sm w-full py-2 mt-2 inline-block"} target="_blank" rel="noopener noreferrer">
-                      <%= button_label %>
-                    </a>
-                <% end %>
-              </div>
-            </li>
-            <% end %>
-          </ul>
-      <% end %>
+          <% [] -> %>
+          <% items -> %>
+            <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
+            <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-next-up">
+              <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} <- items do %>
+              <li {testid("marketing-attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
+                <div>
+                  <h3 class="text-lg font-bold">
+                    <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
+                    <%= title %>
+                  </h3>
+                  <p class="my-2 text-sm"><%= body %></p>
+                  <%= case action do %>
+                    <% "public-profile" -> %>
+                      <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
+                    <% _ -> %>
+                      <a href={external_link} class={"#{button_class} text-center text-sm w-full py-2 mt-2 inline-block"} target="_blank" rel="noopener noreferrer">
+                        <%= button_label %>
+                      </a>
+                  <% end %>
+                </div>
+              </li>
+              <% end %>
+            </ul>
+        <% end %>
       </div>
     </header>
     <div class="px-6 center-container" {intro(@current_user, "intro_marketing")}>
@@ -72,7 +67,7 @@ defmodule PicselloWeb.Live.Marketing do
                       <%= if link do %>
                         <a href={link} target="_blank" rel="noopener noreferrer" class="px-1 pb-1 font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300 hover:bg-blue-planning-100">Open</a>
                       <% else %>
-                      <span role="status" class="px-2 py-0.5 text-xs font-semibold rounded bg-red-sales-100 text-red-sales-300">Missing link</span>
+                        <.badge color={:red}>Missing link</.badge>
                       <% end %>
                       <%= if can_edit? do %>
                         <button phx-click={action} phx-value-link-id={link_id} class="ml-2 text-blue-planning-300 underline">Edit</button>
@@ -171,7 +166,7 @@ defmodule PicselloWeb.Live.Marketing do
 
   def handle_info({:update_org, organization}, socket) do
     socket
-    |> assign_organization(organization)
+    |> assign(:organization, organization)
     |> assign_links()
     |> put_flash(:success, "Link updated")
     |> noreply()

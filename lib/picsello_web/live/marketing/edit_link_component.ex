@@ -25,7 +25,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
           <%= if @link_id == "website" do  %>
             <.website_field form={p} class="mt-4" placeholder="Add your website…" />
           <% else %>
-            <.website_field form={p} class="mt-4" placeholder="Add your website login url…" name={:website_login} show_checkbox?={false} label="Where do you login to edit your website?" />
+            <.website_field form={p} class="mt-4" placeholder="Add your website login url…" name={:website_login} show_checkbox={false} label="Where do you login to edit your website?" />
           <% end %>
         <% end %>
 
