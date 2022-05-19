@@ -1,4 +1,4 @@
-defmodule Picsello.UserSendsMarketingCampaignTest do
+defmodule Picsello.UserManagesMarketingBrandLinksTest do
   use Picsello.FeatureCase, async: false
 
   setup :onboarded
