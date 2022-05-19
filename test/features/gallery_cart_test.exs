@@ -2,6 +2,7 @@ defmodule Picsello.GalleryCartTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Cart, Repo}
   alias Cart.Order
+  import Money.Sigils
 
   setup :authenticated_gallery_client
 
@@ -46,8 +47,8 @@ defmodule Picsello.GalleryCartTest do
   feature "continue", %{session: session, gallery: gallery} do
     fill_gallery_cart(gallery)
 
-    Mox.stub(Picsello.MockWHCCClient, :create_order, fn _account_id, _editor_id, _opts ->
-      %Picsello.WHCC.Order.Created{total: "0"}
+    Mox.stub(Picsello.MockWHCCClient, :create_order, fn _account_id, _export ->
+      build(:whcc_order_created, total: ~M[0]USD)
     end)
 
     session

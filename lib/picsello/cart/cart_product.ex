@@ -12,17 +12,13 @@ defmodule Picsello.Cart.CartProduct do
     field :charged_price, Money.Ecto.Amount.Type
     field :created_at, :integer
     field :editor_details, WHCC.Editor.Details.Type
-    field :unit_markup, Money.Ecto.Amount.Type
     field :quantity, :integer
     field :round_up_to_nearest, :integer
     field :shipping_base_charge, Money.Ecto.Amount.Type
     field :shipping_upcharge, :decimal
+    field :unit_markup, Money.Ecto.Amount.Type
     field :unit_price, Money.Ecto.Amount.Type
-    field :whcc_confirmation, :string
-    field :whcc_order, WHCC.Order.Created.Type
-    field :whcc_processing, :map
     field :whcc_product, :map, virtual: true
-    field :whcc_tracking, :map
   end
 
   def new(fields) do
@@ -31,22 +27,6 @@ defmodule Picsello.Cart.CartProduct do
       round_up_to_nearest: 500
     }
     |> Map.merge(fields)
-  end
-
-  def add_order(%__MODULE__{} = product, order) do
-    %{product | whcc_order: order}
-  end
-
-  def add_confirmation(%__MODULE__{} = product, confirmation) do
-    %{product | whcc_confirmation: confirmation}
-  end
-
-  def add_tracking(%__MODULE__{} = product, tracking) do
-    %{product | whcc_tracking: tracking}
-  end
-
-  def add_processing(%__MODULE__{} = product, processing) do
-    %{product | whcc_processing: processing}
   end
 
   def id(%__MODULE__{editor_details: %{editor_id: editor_id}}), do: editor_id

@@ -272,26 +272,118 @@ defmodule Picsello.CartTest do
   end
 
   describe "cart product updates" do
-    test "find and save processing status" do
+    setup do
       gallery = insert(:gallery)
-      cart_product = confirmed_product()
+      cart_product = build(:cart_product)
+
       order = Cart.place_product(cart_product, gallery.id)
 
-      editor_id = cart_product.editor_details.editor_id
+      entry_id =
+        order
+        |> Order.number()
+        |> to_string()
 
-      found_order = Cart.order_with_editor(editor_id)
+      [
+        order:
+          order
+          |> Order.whcc_order_changeset(
+            build(:whcc_order_created, entry_id: entry_id, total: ~M[100]USD)
+          )
+          |> Repo.update!(),
+        entry_id: entry_id
+      ]
+    end
 
-      assert found_order.id == order.id
-      assert found_order.products |> Enum.at(0) |> Map.get(:whcc_processing) == nil
+    def processing_status(entry_id, sequence_number),
+      do: %Picsello.WHCC.Webhooks.Status{
+        entry_id: entry_id,
+        event: "Processed",
+        sequence_number: sequence_number,
+        status: "Accepted"
+      }
 
-      Cart.store_cart_product_processing(processing_status(editor_id))
+    def processing_event(entry_id, sequence_number),
+      do: %Picsello.WHCC.Webhooks.Event{
+        entry_id: entry_id,
+        event: "Shipped",
+        sequence_number: sequence_number,
+        shipping_info: [
+          %Picsello.WHCC.Webhooks.ShippingInfo{
+            carrier: "FedEx",
+            ship_date: ~U[2018-12-31 12:18:38Z],
+            tracking_number: "512376671311227",
+            tracking_url: "http://www.fedex.com/Tracking?tracknumbers=512376671311227",
+            weight: 0.35
+          }
+        ]
+      }
 
-      updated_order = Cart.order_with_editor(editor_id)
+    test "find and save processing status", %{order: order} do
+      assert %{
+               whcc_order: %{
+                 entry_id: entry_id,
+                 orders: [%{whcc_processing: nil, sequence_number: sequence_number}]
+               }
+             } = order
 
-      assert updated_order.id == order.id
+      Cart.update_whcc_order(processing_status(entry_id, sequence_number))
 
-      assert updated_order.products |> Enum.at(0) |> Map.get(:whcc_processing) !=
-               nil
+      assert %{whcc_order: %{orders: [%{whcc_processing: %{status: "Accepted"}}]}} =
+               Repo.reload!(order)
+    end
+
+    test "updates correct sub-order", %{order: order, entry_id: entry_id} do
+      order =
+        order
+        |> Order.whcc_order_changeset(
+          build(:whcc_order_created,
+            entry_id: entry_id,
+            orders: build_list(2, :whcc_order_created_order)
+          )
+        )
+        |> Repo.update!()
+
+      assert %{
+               whcc_order: %{
+                 entry_id: entry_id,
+                 orders: [%{}, %{whcc_processing: nil, sequence_number: sequence_number}]
+               }
+             } = order
+
+      Cart.update_whcc_order(processing_status(entry_id, sequence_number))
+
+      assert %{
+               whcc_order: %{
+                 orders: [%{whcc_processing: nil}, %{whcc_processing: %{status: "Accepted"}}]
+               }
+             } = Repo.reload!(order)
+    end
+
+    test "works with shipping updates too", %{order: order, entry_id: entry_id} do
+      order =
+        order
+        |> Order.whcc_order_changeset(
+          build(:whcc_order_created,
+            entry_id: entry_id,
+            orders: build_list(2, :whcc_order_created_order)
+          )
+        )
+        |> Repo.update!()
+
+      assert %{
+               whcc_order: %{
+                 entry_id: entry_id,
+                 orders: [%{}, %{whcc_processing: nil, sequence_number: sequence_number}]
+               }
+             } = order
+
+      Cart.update_whcc_order(processing_event(entry_id, sequence_number))
+
+      assert %{
+               whcc_order: %{
+                 orders: [%{whcc_tracking: nil}, %{whcc_tracking: %{event: "Shipped"}}]
+               }
+             } = Repo.reload!(order)
     end
   end
 
@@ -304,7 +396,7 @@ defmodule Picsello.CartTest do
       gallery = insert(:gallery)
       whcc_product = insert(:product)
 
-      cart_product = build(:ordered_cart_product, product_id: whcc_product.whcc_id)
+      cart_product = build(:cart_product, product_id: whcc_product.whcc_id)
 
       order =
         for product <-
@@ -378,6 +470,47 @@ defmodule Picsello.CartTest do
     end
   end
 
+  describe "create_whcc_order" do
+    setup do
+      cart_products =
+        for {%{whcc_id: product_id}, index} <-
+              Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
+          build(:cart_product, product_id: product_id, created_at: index)
+        end
+
+      %{gallery_id: gallery_id} = order = insert(:order, products: cart_products)
+
+      [
+        cart_products: cart_products,
+        order: Cart.preload_products(order),
+        account_id: Picsello.Galleries.account_id(gallery_id),
+        order_number: Cart.Order.number(order)
+      ]
+    end
+
+    test "exports editors, providing shipping information", %{
+      order: order,
+      account_id: account_id,
+      order_number: order_number,
+      cart_products: cart_products
+    } do
+      Picsello.MockWHCCClient
+      |> Mox.expect(:editors_export, fn ^account_id, editors, opts ->
+        assert cart_products |> Enum.map(&Cart.CartProduct.id/1) |> MapSet.new() ==
+                 editors |> Enum.map(& &1.id) |> MapSet.new()
+
+        assert to_string(order_number) == Keyword.get(opts, :entry_id)
+
+        %Picsello.WHCC.Editor.Export{}
+      end)
+      |> Mox.expect(:create_order, fn ^account_id, _export ->
+        build(:whcc_order_created)
+      end)
+
+      Cart.create_whcc_order(order)
+    end
+  end
+
   describe "confirm_order" do
     def confirm_order(session) do
       Cart.confirm_order(
@@ -418,45 +551,4 @@ defmodule Picsello.CartTest do
       })
     end
   end
-
-  defp confirmed_product(editor_id \\ "hkazbRKGjcoWwnEq3"),
-    do: %{
-      cart_product(editor_id: editor_id, price: ~M[17_600]USD)
-      | whcc_confirmation: :confirmed,
-        whcc_order: %Picsello.WHCC.Order.Created{
-          confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-          entry: editor_id,
-          products: [
-            %{
-              "Price" => "176.00",
-              "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
-              "Quantity" => 1
-            },
-            %{
-              "Price" => "8.80",
-              "ProductDescription" => "Peak Season Surcharge",
-              "Quantity" => 1
-            },
-            %{
-              "Price" => "65.60",
-              "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
-              "Quantity" => 1
-            }
-          ],
-          total: "250.40"
-        },
-        whcc_processing: nil,
-        whcc_tracking: nil
-    }
-
-  defp processing_status(id),
-    do: %{
-      "Status" => "Accepted",
-      "Errors" => [],
-      "OrderNumber" => 14_989_342,
-      "Event" => "Processed",
-      "ConfirmationId" => "a3ff9b4a-3112-4101-88ab-6ba025fd7600",
-      "EntryId" => id,
-      "Reference" => "OrderID 12345"
-    }
 end

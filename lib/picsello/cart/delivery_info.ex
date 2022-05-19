@@ -7,13 +7,18 @@ defmodule Picsello.Cart.DeliveryInfo do
   import EctoCommons.EmailValidator
   alias __MODULE__.Address
 
-  @derive {Jason.Encoder, only: [:name, :email, :address]}
   @primary_key false
   embedded_schema do
     field :name, :string
     field :email, :string
     embeds_one :address, Address
   end
+
+  @type t :: %__MODULE__{
+          name: String.t(),
+          email: String.t(),
+          address: Address.t()
+        }
 
   def changeset(nil, attrs), do: changeset(%__MODULE__{}, attrs)
 
@@ -99,7 +104,6 @@ defmodule Picsello.Cart.DeliveryInfo do
       WI: "WI",
       WY: "WY"
     ]
-    @derive {Jason.Encoder, only: [:addr1, :addr2, :state, :city, :zip]}
     @primary_key false
     embedded_schema do
       field :country, :string, default: "US"
@@ -109,6 +113,14 @@ defmodule Picsello.Cart.DeliveryInfo do
       field :addr1, :string
       field :addr2, :string
     end
+
+    @type t :: %__MODULE__{
+            addr1: String.t(),
+            addr2: String.t(),
+            city: String.t(),
+            state: String.t(),
+            zip: String.t()
+          }
 
     def changeset(struct, attrs) do
       struct

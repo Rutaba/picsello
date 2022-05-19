@@ -104,7 +104,11 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       gallery = insert(:gallery, job: insert(:lead, client: client))
 
-      order = insert(:order, gallery: gallery, delivery_info: %{email: "client@example.com"})
+      order =
+        insert(:order,
+          gallery: gallery,
+          delivery_info: %{email: "client@example.com"}
+        )
 
       stub_event(
         client_reference_id: "order_number_#{Order.number(order)}",
@@ -144,14 +148,17 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
             shipping_upcharge: Decimal.new(0),
             unit_markup: ~M[0]USD,
             unit_price: price,
-            whcc_order: build(:whcc_order_created, confirmation: "whcc-order-created-id"),
             whcc_product: insert(:product)
           )
+        )
+        |> Order.whcc_order_changeset(
+          build(:whcc_order_created, confirmation_id: "whcc-order-created-id")
         )
         |> Repo.update!()
 
     test "marks order as paid", %{conn: conn, order: order} do
-      expect_retrieve(~M[0]USD)
+      insert(:digital, order: order, price: ~M[10]USD)
+      expect_retrieve(~M[10]USD)
 
       expect_capture()
 
@@ -178,7 +185,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       make_request(conn)
 
-      assert %{products: [%{whcc_confirmation: "whcc-order-confirmed-id"}]} = Repo.reload!(order)
+      assert %{placed_at: %DateTime{}} = Repo.reload!(order)
     end
 
     test "emails the client", %{
@@ -223,7 +230,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
                "order_items" => [
                  %{
                    item_is_digital: false,
-                   item_name: " polo",
+                   item_name: "20×30 polo",
                    item_price: ~M[1000]USD,
                    item_quantity: 1
                  }
@@ -261,7 +268,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       Process.flag(:trap_exit, true)
 
-      assert_raise(FunctionClauseError, fn ->
+      assert_raise(MatchError, fn ->
         capture_log(fn ->
           make_request(conn)
         end)

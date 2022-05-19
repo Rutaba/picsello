@@ -5,16 +5,21 @@ defmodule Picsello.Cart.Order do
   alias Picsello.{Cart.CartProduct, Cart.DeliveryInfo, Cart.Digital, Galleries.Gallery, Repo}
 
   schema "gallery_orders" do
-    field :number, :integer, default: Enum.random(100_000..999_999)
-    field :total_credits_amount, :integer, default: 0
-    field :placed_at, :utc_datetime
     field :bundle_price, Money.Ecto.Amount.Type
+    field :number, :integer, default: Enum.random(100_000..999_999)
+    field :placed_at, :utc_datetime
+    field :total_credits_amount, :integer, default: 0
+
     belongs_to(:gallery, Gallery)
-    embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
-    embeds_many :products, CartProduct, on_replace: :delete
+
     has_one :package, through: [:gallery, :package]
 
     has_many :digitals, Digital, on_replace: :delete, on_delete: :delete_all
+
+    embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
+    embeds_one :whcc_order, Picsello.WHCC.Order.Created, on_replace: :delete
+
+    embeds_many :products, CartProduct, on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
@@ -97,13 +102,17 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:products, products)
   end
 
-  def checkout_changeset(%__MODULE__{} = order, product) do
+  def whcc_order_changeset(order, params) do
     order
-    |> change()
-    |> replace_products([product])
+    |> cast(%{whcc_order: params}, [])
+    |> cast_embed(:whcc_order)
   end
 
-  def confirmation_changeset(%__MODULE__{} = order, confirmed_products) do
+  def confirmation_changeset(
+        %__MODULE__{} = order,
+        _confirmation \\ nil,
+        confirmed_products \\ []
+      ) do
     attrs = %{placed_at: DateTime.utc_now()}
 
     order

@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.{Cart, Galleries}
+  alias Cart.Order
 
   import PicselloWeb.GalleryLive.Shared,
     only: [assign_cart_count: 2, price_display: 1, bundle_image: 1]

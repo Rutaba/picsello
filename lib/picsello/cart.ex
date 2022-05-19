@@ -1,6 +1,6 @@
 defmodule Picsello.Cart do
   @moduledoc """
-  Context for cart related functions
+  Context for cart and order related functions
   """
 
   import Ecto.Query
@@ -19,43 +19,53 @@ defmodule Picsello.Cart do
   }
 
   def new_product(editor_id, account_id) do
-    WHCC.price_details(editor_id, account_id) |> CartProduct.new()
+    account_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
 
   @doc """
   Creates order on WHCC side
-
-  Requires following options
-     - ship_to - map with address where to deliver product to
-     - return_to - map with address where to return product if not delivered
-     - attributes - list with WHCC attributes. Can be used tto selecccct shipping options
   """
-  def order_product(product, account_id, opts) do
-    created_order = WHCC.create_order(account_id, CartProduct.id(product), opts)
-
-    product
-    |> CartProduct.add_order(created_order)
-  end
-
-  @doc "stores processing info in product it finds"
-  def store_cart_product_processing(%{"EntryId" => editor_id} = params) do
-    editor_id
-    |> seek_and_map(&CartProduct.add_processing(&1, params))
-  end
-
-  @doc "stores processing info in product it finds"
-  def store_cart_product_tracking(%{"EntryId" => editor_id} = params) do
-    editor_id
-    |> seek_and_map(&CartProduct.add_tracking(&1, params))
-  end
-
-  def store_cart_product_checkout(
-        order,
-        product
+  def create_whcc_order(
+        %Order{
+          products: products,
+          delivery_info: delivery_info,
+          gallery_id: gallery_id
+        } = order
       ) do
+    editors =
+      for product <- products do
+        product
+        |> CartProduct.id()
+        |> WHCC.Editor.Export.Editor.new(
+          order_attributes: Picsello.WHCC.Shipping.to_attributes(product)
+        )
+      end
+
+    account_id = Galleries.account_id(gallery_id)
+
+    export =
+      WHCC.editors_export(account_id, editors,
+        entry_id: order |> Order.number() |> to_string(),
+        address: delivery_info
+      )
+
     order
-    |> Order.checkout_changeset(product)
+    |> Order.whcc_order_changeset(WHCC.create_order(account_id, export))
     |> Repo.update!()
+  end
+
+  @doc "stores processing info in order it finds"
+  def update_whcc_order(%{entry_id: entry_id} = payload) do
+    case from(order in Order, where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id))
+         |> Repo.one() do
+      nil ->
+        {:error, "order not found"}
+
+      order ->
+        order
+        |> Order.whcc_order_changeset(payload)
+        |> Repo.update()
+    end
   end
 
   @doc """
@@ -515,20 +525,6 @@ defmodule Picsello.Cart do
 
   defdelegate confirm_order(order_number, stripe_session_id, helpers),
     to: __MODULE__.Confirmations
-
-  defp seek_and_map(editor_id, fun) do
-    with order <- order_with_editor(editor_id),
-         true <- order != nil and is_list(order.products),
-         {[target], rest} <-
-           Enum.split_with(order.products, &(CartProduct.id(&1) == editor_id)),
-         true <- target != nil do
-      order
-      |> Order.change_products([fun.(target) | rest])
-      |> Repo.update()
-    else
-      _ -> :ignored
-    end
-  end
 
   defp create_order_with_product(product, attrs) do
     product

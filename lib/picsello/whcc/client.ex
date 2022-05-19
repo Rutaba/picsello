@@ -6,6 +6,16 @@ defmodule Picsello.WHCC.Client do
 
   alias Picsello.WHCC
 
+  @from_address %{
+    "name" => "Returns Department",
+    "addr1" => "3432 Denmark Ave",
+    "addr2" => "Suite 390",
+    "city" => "Eagan",
+    "state" => "MN",
+    "zip" => "55123",
+    "country" => "US"
+  }
+
   @moduledoc "client for whcc http api"
   @behaviour WHCC.Adapter
 
@@ -93,14 +103,31 @@ defmodule Picsello.WHCC.Client do
   end
 
   @impl WHCC.Adapter
-  def editor_export(account_id, id) when not is_list(id), do: editor_export(account_id, [id])
+  def editors_export(account_id, editors, opts \\ []) do
+    opts = Keyword.update(opts, :address, nil, &format_address/1)
 
-  @impl WHCC.Adapter
-  def editor_export(account_id, ids) do
     params =
-      ids
-      |> Enum.map(&%{"editorId" => &1})
-      |> then(&%{"editors" => &1})
+      for {option_key, param_key} <- [
+            entry_id: "entryId",
+            reference: "reference",
+            address: "shipToAddress"
+          ],
+          reduce: %{
+            "editors" => editors
+          } do
+        params ->
+          case Keyword.get(opts, option_key) do
+            nil -> params
+            value -> Map.put(params, param_key, value)
+          end
+      end
+      |> case do
+        %{"shipToAddress" => _} = params ->
+          Map.put(params, "shipFromAddress", @from_address)
+
+        params ->
+          params
+      end
 
     {:ok, %{body: body}} =
       account_id
@@ -110,19 +137,17 @@ defmodule Picsello.WHCC.Client do
     body |> WHCC.Editor.Export.new()
   end
 
-  @impl WHCC.Adapter
-  def create_order(account_id, editor_id, opts) do
-    params =
-      account_id
-      |> editor_export(editor_id)
-      |> WHCC.Order.Params.from_export(opts)
+  defp format_address(%{name: name, address: address}),
+    do: address |> Map.from_struct() |> Map.put(:name, name)
 
+  @impl WHCC.Adapter
+  def create_order(account_id, %WHCC.Editor.Export{order: order}) do
     {:ok, %{body: body}} =
       account_id
       |> new()
-      |> post("/oas/orders/create", params)
+      |> post("/oas/orders/create", order)
 
-    body |> WHCC.Order.Created.new()
+    WHCC.Order.Created.new(body)
   end
 
   @impl WHCC.Adapter
