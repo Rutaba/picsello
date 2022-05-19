@@ -1,7 +1,7 @@
 defmodule Picsello.Repo.Migrations.ExtractCartProducts do
   use Ecto.Migration
 
-  def change do
+  def up do
     execute("""
       create table product_line_items (
         id bigserial primary key,
@@ -80,7 +80,11 @@ defmodule Picsello.Repo.Migrations.ExtractCartProducts do
         )
     """)
 
-    execute("alter table digital_line_items add column is_credit boolean default false")
+    execute("""
+    alter table digital_line_items
+      add column is_credit boolean default false,
+      drop column position
+    """)
 
     execute("""
     update
@@ -103,12 +107,18 @@ defmodule Picsello.Repo.Migrations.ExtractCartProducts do
     """)
 
     execute("alter table gallery_orders drop column products")
+
+    execute("create unique index on digital_line_items (order_id, photo_id)")
   end
 
   def down do
     execute("alter table gallery_orders add column products jsonb not null default '[]'")
 
-    execute("alter table digital_line_items drop column is_credit")
+    execute("""
+    alter table digital_line_items
+    drop column is_credit,
+    add column position integer not null default 0
+    """)
 
     execute("""
       update

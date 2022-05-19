@@ -74,11 +74,11 @@ defmodule Picsello.Cart do
   Puts the product, digital, or bundle in the cart.
   """
   def place_product(product, gallery_id) do
-    params = %{gallery_id: gallery_id}
+    opts = [digital_credit: digital_credit(%{id: gallery_id})]
 
     case get_unconfirmed_order(gallery_id, preload: [:products, :digitals]) do
-      {:ok, order} -> place_product_in_order(order, product, params)
-      {:error, _} -> create_order_with_product(product, params)
+      {:ok, order} -> place_product_in_order(order, product, opts)
+      {:error, _} -> create_order_with_product(product, %{gallery_id: gallery_id}, opts)
     end
   end
 
@@ -114,7 +114,7 @@ defmodule Picsello.Cart do
     digital_count =
       from(order in Order,
         join: digital in assoc(order, :digitals),
-        where: order.gallery_id == ^gallery_id and digital.price == 0
+        where: order.gallery_id == ^gallery_id and digital.is_credit
       )
       |> Repo.aggregate(:count)
 
@@ -169,21 +169,24 @@ defmodule Picsello.Cart do
   @doc """
   Deletes the product from order. Deletes order if order has only the one product.
   """
-  def delete_product(%Order{} = order, editor_id) do
-    case item_count(order) do
+  def delete_product(%Order{} = order, opts) do
+    order = Repo.preload(order, [:digitals, :products])
+
+    order
+    |> item_count()
+    |> case do
       1 ->
-        order |> Repo.delete!()
+        order |> Repo.delete()
 
       _ ->
         order
-        |> Order.delete_product_changeset(editor_id)
-        |> Repo.update!()
+        |> Order.delete_product_changeset(opts)
+        |> Repo.update()
     end
-    |> order_with_state()
+    |> case do
+      {:ok, %Order{__meta__: %Ecto.Schema.Metadata{state: state}} = order} -> {state, order}
+    end
   end
-
-  defp order_with_state(%Order{__meta__: %Ecto.Schema.Metadata{state: state}} = order),
-    do: {state, order}
 
   @doc """
   Gets the current order for gallery.
@@ -506,16 +509,16 @@ defmodule Picsello.Cart do
   defdelegate confirm_order(order_number, stripe_session_id, helpers),
     to: __MODULE__.Confirmations
 
-  defp create_order_with_product(product, attrs) do
+  defp create_order_with_product(product, attrs, opts) do
     product
-    |> Order.create_changeset(attrs)
+    |> Order.create_changeset(attrs, opts)
     |> Repo.insert!()
     |> set_order_number()
   end
 
-  defp place_product_in_order(%Order{} = order, product, attrs) do
+  defp place_product_in_order(%Order{} = order, product, opts) do
     order
-    |> Order.update_changeset(product, attrs)
+    |> Order.update_changeset(product, %{}, opts)
     |> Repo.update!()
   end
 
@@ -524,9 +527,8 @@ defmodule Picsello.Cart do
   defdelegate priced_lines_by_product(order), to: Order
   defdelegate priced_lines(order), to: Order
 
-  def price_display(%Digital{} = digital) do
-    "#{if Money.zero?(digital.price), do: "1 credit - "}#{digital.price}"
-  end
+  def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
+  def price_display(%Digital{price: price}), do: price
 
   def price_display({:bundle, %Order{bundle_price: price}}), do: price
   def price_display(product), do: product.price

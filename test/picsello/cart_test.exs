@@ -82,16 +82,21 @@ defmodule Picsello.CartTest do
     test "won't add the same digital twice",
          %{
            gallery: %{id: gallery_id},
-           digital: %{photo_id: digital_1_photo_id} = digital
+           digital: digital
          } do
-      Cart.place_product(digital, gallery_id)
+      order = Cart.place_product(digital, gallery_id)
 
-      assert %Order{
-               digitals: [%{photo_id: ^digital_1_photo_id}],
-               gallery_id: ^gallery_id
-             } = order = Cart.place_product(digital, gallery_id)
+      assert ~M[100]USD == order |> Repo.preload(:products) |> Order.total_cost()
 
-      assert Order.total_cost(order) == ~M[100]USD
+      assert_raise(Ecto.ConstraintError, fn ->
+        Cart.place_product(digital, gallery_id)
+      end)
+
+      assert ~M[100]USD ==
+               order
+               |> Repo.reload!()
+               |> Repo.preload([:digitals, :products])
+               |> Order.total_cost()
     end
   end
 
@@ -127,6 +132,7 @@ defmodule Picsello.CartTest do
 
       order =
         order
+        |> Repo.preload(:digitals)
         |> Order.update_changeset(digital)
         |> Repo.update!()
         |> Repo.preload(products: :whcc_product)
@@ -155,8 +161,8 @@ defmodule Picsello.CartTest do
     end
 
     test "with a digital id and multiple digitals removes the digital", %{order: order} do
-      %{id: delete_digital_id} = insert(:digital, order: order, position: 0, price: ~M[200]USD)
-      %{id: remaining_digital_id} = insert(:digital, order: order, position: 1, price: ~M[100]USD)
+      %{id: delete_digital_id} = insert(:digital, order: order, price: ~M[200]USD)
+      %{id: remaining_digital_id} = insert(:digital, order: order, price: ~M[100]USD)
 
       assert {:loaded,
               %Order{
@@ -171,26 +177,29 @@ defmodule Picsello.CartTest do
 
     test "with a digital id and free and paid digitals removes the free digital and updates the first paid digital to free",
          %{order: order} do
-      %{id: delete_free_digital_id} = insert(:digital, order: order, position: 0, price: ~M[0]USD)
+      now = DateTime.utc_now()
+
+      %{id: delete_free_digital_id} =
+        insert(:digital, order: order, is_credit: true, inserted_at: now)
 
       %{id: remaining_digital_id_1} =
-        insert(:digital, order: order, position: 1, price: ~M[100]USD)
+        insert(:digital, order: order, inserted_at: DateTime.add(now, 1))
 
       %{id: remaining_digital_id_2} =
-        insert(:digital, order: order, position: 2, price: ~M[100]USD)
+        insert(:digital, order: order, inserted_at: DateTime.add(now, 2))
 
-      assert {:loaded,
-              %Order{
-                digitals: [
-                  %{id: ^remaining_digital_id_1, price: ~M[0]USD},
-                  %{id: ^remaining_digital_id_2, price: ~M[100]USD}
-                ]
-              } = order} =
+      assert {:loaded, order} =
                order
-               |> Repo.preload(:products)
                |> Cart.delete_product(digital_id: delete_free_digital_id)
 
-      assert Order.total_cost(order) == ~M[100]USD
+      assert [
+               %{id: ^remaining_digital_id_1, is_credit: false},
+               %{id: ^remaining_digital_id_2, is_credit: true}
+             ] =
+               order.digitals
+               |> Enum.map(&Map.take(&1, [:id, :is_credit]))
+
+      assert Order.total_cost(order) == ~M[500]USD
     end
 
     test "with a digital id and a product removes the digital", %{order: order} do
@@ -205,6 +214,7 @@ defmodule Picsello.CartTest do
       %{digitals: [%{id: digital_id}]} =
         order =
         order
+        |> Repo.preload(:digitals)
         |> Order.update_changeset(digital)
         |> Repo.update!()
         |> Repo.preload(:products)
@@ -220,6 +230,7 @@ defmodule Picsello.CartTest do
       %{digitals: [%{id: digital_id}]} =
         order =
         order
+        |> Repo.preload(:digitals)
         |> Order.update_changeset(%Digital{
           photo_id: insert(:photo).id,
           price: ~M[100]USD,

@@ -8,7 +8,6 @@ defmodule Picsello.Cart.Digital do
     belongs_to :order, Picsello.Cart.Order
     field :price, Money.Ecto.Amount.Type
     field :is_credit, :boolean, default: false
-    field :position, :integer
     field :preview_url, :string, virtual: true
 
     timestamps(type: :utc_datetime)

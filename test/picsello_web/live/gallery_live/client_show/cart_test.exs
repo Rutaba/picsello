@@ -70,8 +70,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
         assert order |> Picsello.Cart.Order.number() |> to_string() ==
                  Keyword.get(options, :entry_id)
 
-        assert Enum.map(editors, & &1.id) ==
-                 Enum.map(order.products, & &1.editor_id)
+        assert editors |> Enum.map(& &1.id) |> MapSet.new() ==
+                 order.products |> Enum.map(& &1.editor_id) |> MapSet.new()
 
         build(:whcc_editor_export)
       end)

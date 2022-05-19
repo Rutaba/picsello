@@ -2,7 +2,7 @@ defmodule Picsello.Cart.Order do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Cart.Product, Cart.DeliveryInfo, Cart.Digital, Galleries.Gallery, Repo}
+  alias Picsello.{Cart.Product, Cart.DeliveryInfo, Cart.Digital, Galleries.Gallery}
 
   schema "gallery_orders" do
     field :bundle_price, Money.Ecto.Amount.Type
@@ -14,8 +14,15 @@ defmodule Picsello.Cart.Order do
 
     has_one :package, through: [:gallery, :package]
 
-    has_many :digitals, Digital, on_replace: :delete, on_delete: :delete_all
-    has_many :products, Product, on_replace: :delete, on_delete: :delete_all
+    has_many :digitals, Digital,
+      on_replace: :delete,
+      on_delete: :delete_all,
+      preload_order: [desc: :inserted_at]
+
+    has_many :products, Product,
+      on_replace: :delete,
+      on_delete: :delete_all,
+      preload_order: [desc: :inserted_at]
 
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_one :whcc_order, Picsello.WHCC.Order.Created, on_replace: :delete
@@ -35,10 +42,12 @@ defmodule Picsello.Cart.Order do
     ])
   end
 
-  def create_changeset(%Digital{} = digital, attrs, _opts) do
+  def create_changeset(%Digital{} = digital, attrs, opts) do
+    is_credit = Keyword.get(opts, :digital_credit, 0) > 0
+
     attrs
     |> do_create_changeset()
-    |> put_assoc(:digitals, [%{digital | position: 0}])
+    |> put_assoc(:digitals, [%{digital | is_credit: is_credit}])
   end
 
   def create_changeset({:bundle, price}, attrs, _opts) do
@@ -70,38 +79,13 @@ defmodule Picsello.Cart.Order do
     |> put_assoc(:products, update_prices([product | products], opts))
   end
 
-  def update_changeset(%__MODULE__{} = order, %Digital{} = digital, attrs, _opts) do
-    order
-    |> Repo.preload(:digitals)
-    |> cast(attrs, [])
-    |> then(fn changeset ->
-      digitals = get_field(changeset, :digitals, [])
+  def update_changeset(%__MODULE__{digitals: digitals} = order, %Digital{} = digital, attrs, opts)
+      when is_list(digitals) do
+    is_credit = Keyword.get(opts, :digital_credit, 0) > 0
 
-      if Enum.any?(digitals, &(&1.photo_id == digital.photo_id)) do
-        changeset
-      else
-        put_assoc(changeset, :digitals, [
-          %{
-            digital
-            | position: (digitals |> Enum.map(& &1.position) |> Enum.max(fn -> -1 end)) + 1
-          }
-          | digitals
-        ])
-      end
-    end)
-  end
-
-  def update_changeset(changeset, %Digital{} = digital, attrs, _opts),
-    do: changeset |> apply_changes() |> update_changeset(digital, attrs)
-
-  def change_products(
-        %__MODULE__{} = order,
-        products,
-        attrs \\ %{}
-      ) do
     order
     |> cast(attrs, [])
-    |> put_embed(:products, products)
+    |> put_assoc(:digitals, [%{digital | is_credit: is_credit} | digitals])
   end
 
   def whcc_order_changeset(%{products: products} = order, params) when is_list(products) do
@@ -128,14 +112,14 @@ defmodule Picsello.Cart.Order do
 
   def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
 
-  def delete_product_changeset(%__MODULE__{products: products} = order, opts) do
-    case opts do
-      :bundle ->
+  def delete_product_changeset(%__MODULE__{} = order, opts) do
+    case {opts, order} do
+      {:bundle, _} ->
         order
         |> change()
         |> put_change(:bundle_price, nil)
 
-      [editor_id: editor_id] ->
+      {[editor_id: editor_id], %{products: products}} when is_list(products) ->
         order
         |> change()
         |> put_assoc(
@@ -143,29 +127,20 @@ defmodule Picsello.Cart.Order do
           products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
         )
 
-      [digital_id: digital_id] ->
-        order = Repo.preload(order, :digitals)
+      {[digital_id: digital_id], %{digitals: digitals}} when is_list(digitals) ->
+        order_credit_count = Enum.count(digitals, & &1.is_credit)
 
-        digital_to_delete = Enum.find(order.digitals, &(&1.id == digital_id))
-        digitals = Enum.reject(order.digitals, &(&1.id == digital_id))
+        {_, digitals} =
+          digitals
+          |> Enum.reduce({0, []}, fn
+            %{id: ^digital_id}, acc ->
+              acc
 
-        digitals =
-          if Money.zero?(digital_to_delete.price) do
-            index_non_free = Enum.find_index(digitals, &Money.positive?(&1.price))
+            digital, {index, acc} ->
+              {index + 1, [%{digital | is_credit: index < order_credit_count} | acc]}
+          end)
 
-            digitals
-            |> Enum.with_index()
-            |> Enum.map(fn
-              {digital, ^index_non_free} -> Map.put(digital, :price, Money.new(0))
-              {digital, _} -> digital
-            end)
-          else
-            digitals
-          end
-
-        order
-        |> change()
-        |> put_assoc(:digitals, digitals |> Enum.map(&Map.take(&1, [:id, :price])))
+        order |> change() |> put_assoc(:digitals, digitals)
     end
   end
 
@@ -197,8 +172,8 @@ defmodule Picsello.Cart.Order do
 
   def digital_total(%__MODULE__{digitals: digitals, bundle_price: bundle_price})
       when is_list(digitals) do
-    for %{price: price} <- digitals, reduce: bundle_price || Money.new(0) do
-      sum -> Money.add(sum, price)
+    for digital <- digitals, reduce: bundle_price || Money.new(0) do
+      sum -> Money.add(sum, Digital.charged_price(digital))
     end
   end
 
@@ -225,7 +200,7 @@ defmodule Picsello.Cart.Order do
 
   defp sort_products(products) do
     products
-    |> Enum.map(& &1.inserted_at)
+    |> Enum.sort_by(& &1.inserted_at)
     |> Enum.reduce(
       [],
       fn %{whcc_product: %Picsello.Product{id: whcc_product_id} = product} = line, acc ->

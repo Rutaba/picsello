@@ -114,14 +114,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       end
 
     digital_discount_lines =
-      case Enum.count(order.digitals, &Money.zero?(&1.price)) do
-        0 ->
+      case Enum.filter(order.digitals, & &1.is_credit) do
+        [] ->
           []
 
-        count ->
+        credited ->
           [
-            {"Digital download credit (#{count})",
-             Money.multiply(order.package.download_each_price, -count)}
+            {"Digital download credit (#{length(credited)})",
+             credited |> Enum.reduce(Money.new(0), &Money.add(&2, &1.price)) |> Money.neg()}
           ]
       end
 

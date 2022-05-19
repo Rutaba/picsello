@@ -11,7 +11,7 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
 
   setup do
     photographer = insert(:user)
-    gallery = insert(:gallery, job: insert(:lead, user: photographer))
+    gallery = insert(:gallery, job: :lead |> insert(user: photographer) |> promote_to_job())
 
     for category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")

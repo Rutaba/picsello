@@ -380,9 +380,11 @@ defmodule Picsello.Factory do
   end
 
   def gallery_factory(attrs) do
+    {lead_attrs, attrs} = Map.split(attrs, [:package])
+
     %Gallery{
       name: "Test Client Wedding",
-      job: fn -> build(:lead) end,
+      job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4()
     }
@@ -607,8 +609,7 @@ defmodule Picsello.Factory do
     do:
       %Picsello.Cart.Digital{
         price: ~M[500]USD,
-        photo: fn _ -> build(:photo) end,
-        position: sequence(:position, & &1)
+        photo: fn _ -> build(:photo) end
       }
       |> evaluate_lazy_attributes()
 
