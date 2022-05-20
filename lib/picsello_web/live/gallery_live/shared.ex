@@ -187,15 +187,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
     previews =
       Enum.filter(products, fn product ->
         case product.preview_photo do
-          %{id: nil} -> false
-          nil -> false
-          _ -> true
+          %{id: nil} -> true
+          nil -> true
+          _ -> false
         end
       end)
 
-    case total(previews) == 0 do
+    case total(previews) > 0 do
       true ->
-        Enum.each(products, fn %{category_id: category_id} = product ->
+        Enum.each(previews, fn %{category_id: category_id} = product ->
           product
           |> Map.drop([:category, :preview_photo])
           |> GalleryProducts.upsert_gallery_product(%{
