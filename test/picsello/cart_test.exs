@@ -111,10 +111,10 @@ defmodule Picsello.CartTest do
         |> Repo.preload(:products)
         |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
         |> Repo.update!()
-        |> Repo.preload(:products)
+        |> Repo.preload([products: :whcc_product], force: true)
         |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
         |> Repo.update!()
-        |> Repo.preload(:digitals, products: :whcc_product)
+        |> Repo.preload([:digitals, products: :whcc_product], force: true)
 
       assert {:loaded,
               %Order{

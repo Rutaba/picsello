@@ -17,12 +17,12 @@ defmodule Picsello.Cart.Order do
     has_many :digitals, Digital,
       on_replace: :delete,
       on_delete: :delete_all,
-      preload_order: [desc: :inserted_at]
+      preload_order: [desc: :id]
 
     has_many :products, Product,
       on_replace: :delete,
       on_delete: :delete_all,
-      preload_order: [desc: :inserted_at]
+      preload_order: [desc: :id]
 
     embeds_one :delivery_info, DeliveryInfo, on_replace: :delete
     embeds_one :whcc_order, Picsello.WHCC.Order.Created, on_replace: :delete
@@ -75,8 +75,8 @@ defmodule Picsello.Cart.Order do
   def update_changeset(%{products: products} = cart, %Product{} = product, attrs, opts)
       when is_list(products) do
     cart
-    |> cast(attrs, [])
-    |> put_assoc(:products, update_prices([product | products], opts))
+    |> cast(Map.put(attrs, :products, update_prices([product | products], opts)), [])
+    |> cast_assoc(:products)
   end
 
   def update_changeset(%__MODULE__{digitals: digitals} = order, %Digital{} = digital, attrs, opts)
@@ -147,33 +147,16 @@ defmodule Picsello.Cart.Order do
   def placed?(%__MODULE__{placed_at: nil}), do: false
   def placed?(%__MODULE__{}), do: true
 
-  def priced_lines_by_product(order) do
-    for {product, product_lines} <- line_items_by_product(order) do
-      {product,
-       for %{price: price, volume_discount: volume_discount} = product_line <- product_lines do
-         %{
-           line_item: product_line,
-           price: Money.subtract(price, volume_discount),
-           price_without_discount: price
-         }
-       end}
-    end
-  end
-
-  # no longer needed?
-  def priced_lines(order),
-    do: order |> priced_lines_by_product() |> Enum.map(&elem(&1, 1)) |> List.flatten()
-
-  def product_total(%__MODULE__{products: products} = order) when is_list(products) do
-    for %{price: price} <- priced_lines(order), reduce: Money.new(0) do
-      sum -> Money.add(sum, price)
+  def product_total(%__MODULE__{products: products}) when is_list(products) do
+    for product <- products, reduce: Money.new(0) do
+      sum -> product |> Product.charged_price() |> Money.add(sum)
     end
   end
 
   def digital_total(%__MODULE__{digitals: digitals, bundle_price: bundle_price})
       when is_list(digitals) do
     for digital <- digitals, reduce: bundle_price || Money.new(0) do
-      sum -> Money.add(sum, Digital.charged_price(digital))
+      sum -> digital |> Digital.charged_price() |> Money.add(sum)
     end
   end
 
@@ -192,32 +175,20 @@ defmodule Picsello.Cart.Order do
             ]
         end
     end
+    |> Enum.reverse()
   end
 
-  defp line_items_by_product(%__MODULE__{products: products}) do
-    products |> sort_products()
-  end
+  def lines_by_product(%__MODULE__{products: products}), do: products |> sort_products()
 
   defp sort_products(products) do
     products
-    |> Enum.sort_by(& &1.inserted_at)
-    |> Enum.reduce(
-      [],
-      fn %{whcc_product: %Picsello.Product{id: whcc_product_id} = product} = line, acc ->
-        {added, grouped} =
-          Enum.reduce(acc, {false, []}, fn
-            {%{id: ^whcc_product_id} = p, lines}, {_added, grouped} ->
-              {true, [{p, [line | lines]} | grouped]}
-
-            entry, {added, grouped} ->
-              {added, [entry | grouped]}
-          end)
-
-        if added, do: grouped, else: [{product, [line]} | grouped]
-      end
-    )
-    |> Enum.sort_by(fn {_product, line_items} ->
-      line_items |> Enum.map(& &1.inserted_at) |> Enum.max()
+    |> Enum.sort_by(& &1.id)
+    |> Enum.reverse()
+    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{} = whcc_product} ->
+      Map.take(whcc_product, [:id, :whcc_name])
+    end)
+    |> Enum.sort_by(fn {_whcc_product, cart_products} ->
+      cart_products |> Enum.map(& &1.id) |> Enum.max()
     end)
     |> Enum.reverse()
   end

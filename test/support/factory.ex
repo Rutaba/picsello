@@ -451,6 +451,7 @@ defmodule Picsello.Factory do
 
     whcc_product =
       product_json
+      |> update_in(["category", "id"], &"#{&1}-#{sequence("whcc_id")}")
       |> Picsello.WHCC.Product.from_map()
       |> Picsello.WHCC.Product.add_details(product_json)
 
@@ -511,8 +512,7 @@ defmodule Picsello.Factory do
   def whcc_editor_details_factory(attrs \\ %{}) do
     %Picsello.WHCC.Editor.Details{
       editor_id: sequence("hkazbRKGjcoWwnEq3"),
-      preview_url:
-        "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
       product_id: fn -> insert(:product).whcc_id end,
       selections: %{
         "display_options" => "no",
@@ -534,9 +534,8 @@ defmodule Picsello.Factory do
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
-      whcc_product: fn -> build(:product) end,
-      preview_url:
-        "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+      whcc_product: fn -> insert(:product) end,
+      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
       selections: %{
         "display_options" => "no",
         "quantity" => Map.get(attrs, :quantity, 1),

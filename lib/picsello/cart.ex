@@ -524,14 +524,13 @@ defmodule Picsello.Cart do
 
   defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
   defdelegate total_cost(order), to: Order
-  defdelegate priced_lines_by_product(order), to: Order
-  defdelegate priced_lines(order), to: Order
+  defdelegate lines_by_product(order), to: Order
 
   def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
   def price_display(%Digital{price: price}), do: price
 
   def price_display({:bundle, %Order{bundle_price: price}}), do: price
-  def price_display(product), do: product.price
+  def price_display(product), do: Money.subtract(product.price, product.volume_discount)
 
   def has_download?(%Order{bundle_price: bundle_price, digitals: digitals}),
     do: bundle_price != nil || digitals != []

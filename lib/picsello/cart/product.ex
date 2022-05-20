@@ -3,6 +3,7 @@ defmodule Picsello.Cart.Product do
     line items of customized whcc products
   """
 
+  import Ecto.Changeset
   import Money.Sigils
 
   use Ecto.Schema
@@ -20,7 +21,7 @@ defmodule Picsello.Cart.Product do
 
     # recalculate for all items in cart on add or remove or edit of any product in cart
     field :print_credit_discount, Money.Ecto.Amount.Type, default: ~M[0]USD
-    field :volume_discount, Money.Ecto.Amount.Type, default: ~M[0]USD
+    field :volume_discount, Money.Ecto.Amount.Type
 
     field :price, Money.Ecto.Amount.Type
 
@@ -29,6 +30,24 @@ defmodule Picsello.Cart.Product do
 
     timestamps(type: :utc_datetime)
   end
+
+  def changeset(
+        product,
+        %__MODULE__{whcc_product_id: nil, whcc_product: %{id: whcc_product_id}} = attrs
+      )
+      when is_integer(whcc_product_id) do
+    changeset(product, %{attrs | whcc_product_id: whcc_product_id})
+  end
+
+  def changeset(product, %__MODULE__{} = attrs), do: changeset(product, Map.from_struct(attrs))
+
+  def changeset(product, attrs),
+    do:
+      cast(
+        product,
+        attrs,
+        ~w[editor_id preview_url quantity round_up_to_nearest selections shipping_base_charge shipping_upcharge unit_markup unit_price print_credit_discount volume_discount price whcc_product_id]a
+      )
 
   def new(fields) do
     %__MODULE__{

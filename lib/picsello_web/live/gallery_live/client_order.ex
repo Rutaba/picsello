@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Cart, GalleryProducts, Galleries}
+  alias Picsello.{Cart, Galleries}
   import Cart, only: [item_image_url: 1]
 
   def mount(_, _, socket) do
@@ -75,16 +75,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> assign_cart_count(gallery)
   end
 
-  defp product_description(%{id: id}) do
-    assigns = %{
-      product: GalleryProducts.get_whcc_product(id)
-    }
-
-    ~H"""
-    <%= @product.whcc_name %>
-    """
-  end
-
   defp tracking_link(assigns) do
     ~H"""
     <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- @info.shipping_info do %>
@@ -106,8 +96,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     end)
   end
 
-  defdelegate quantity(item), to: Cart.Product
-  defdelegate priced_lines(order), to: Cart.Order
-  defdelegate total_cost(order), to: Cart
   defdelegate has_download?(order), to: Cart
+  defdelegate product_name(order), to: Cart
+  defdelegate quantity(item), to: Cart.Product
+  defdelegate total_cost(order), to: Cart
 end

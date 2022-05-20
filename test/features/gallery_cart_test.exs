@@ -28,8 +28,7 @@ defmodule Picsello.GalleryCartTest do
   end
 
   feature "shows cart info", %{session: session, gallery: gallery} do
-    order = fill_gallery_cart(gallery)
-    %{line_item: cart_product, price: price} = order |> Order.priced_lines() |> hd
+    %{products: [%{price: price} = cart_product]} = order = fill_gallery_cart(gallery)
 
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")

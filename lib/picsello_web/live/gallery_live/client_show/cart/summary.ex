@@ -4,14 +4,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   """
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
-  alias Picsello.Cart
+  import Money.Sigils
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
     |> then(fn %{assigns: %{id: id, order: order}} = socket ->
-      socket |> assign_new(:class, fn -> id end) |> assign(details(order))
+      socket
+      |> assign_new(:class, fn -> id end)
+      |> assign(details(order))
     end)
     |> ok()
   end
@@ -69,7 +71,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
-  def details(order) do
+  def details(%{products: products, digitals: digitals} = order)
+      when is_list(products) and is_list(digitals) do
     charges = charges(order)
     discounts = discounts(order)
 
@@ -94,80 +97,69 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     do: JS.toggle(to: ".#{class} > button .toggle") |> JS.toggle(to: ".#{class} .grid .toggle")
 
   defp sum_lines(charges) do
-    for {_label, %Money{} = price} <- charges, reduce: Money.new(0) do
+    for {_label, %Money{} = price} <- charges, reduce: ~M[0]USD do
       acc -> Money.add(acc, price)
     end
   end
 
-  defp discounts(order) do
-    discount_sum =
-      for %{price_without_discount: no_discount, price: price} <- priced_lines(order),
-          reduce: Money.new(0) do
-        acc -> Money.add(acc, Money.subtract(price, no_discount))
-      end
+  defp sum_prices(items) do
+    for %{price: price} <- items, reduce: ~M[0]USD do
+      acc -> Money.add(acc, price)
+    end
+  end
 
-    product_discount_lines =
-      if Money.negative?(discount_sum) do
-        [{"Volume discount", discount_sum}]
-      else
+  defp discounts(order),
+    do:
+      Enum.flat_map(
+        [&product_discount_lines/1, &digital_discount_lines/1],
+        & &1.(order)
+      )
+
+  defp charges(order),
+    do:
+      Enum.flat_map(
+        [&product_charge_lines/1, &digital_charge_lines/1, &bundle_charge_lines/1],
+        & &1.(order)
+      )
+
+  defp product_charge_lines(%{products: []}), do: []
+
+  defp product_charge_lines(%{products: products}),
+    do: [
+      {"Products (#{length(products)})", sum_prices(products)},
+      {"Shipping & handling", "Included"}
+    ]
+
+  defp digital_charge_lines(%{digitals: []}), do: []
+
+  defp digital_charge_lines(%{digitals: digitals}),
+    do: [{"Digital downloads (#{length(digitals)})", sum_prices(digitals)}]
+
+  defp bundle_charge_lines(%{bundle_price: nil}), do: []
+
+  defp bundle_charge_lines(%{bundle_price: price}),
+    do: [{"Bundle - all digital downloads", price}]
+
+  defp product_discount_lines(%{products: products}) do
+    for %{volume_discount: discount} <- products, reduce: ~M[0]USD do
+      acc -> Money.add(acc, discount)
+    end
+    |> case do
+      ~M[0]USD -> []
+      sum -> [{"Volume discount", Money.neg(sum)}]
+    end
+  end
+
+  defp digital_discount_lines(order) do
+    case Enum.filter(order.digitals, & &1.is_credit) do
+      [] ->
         []
-      end
 
-    digital_discount_lines =
-      case Enum.filter(order.digitals, & &1.is_credit) do
-        [] ->
-          []
-
-        credited ->
-          [
-            {"Digital download credit (#{length(credited)})",
-             credited |> Enum.reduce(Money.new(0), &Money.add(&2, &1.price)) |> Money.neg()}
-          ]
-      end
-
-    product_discount_lines ++ digital_discount_lines
+      credited ->
+        [
+          {"Digital download credit (#{length(credited)})",
+           credited |> Enum.reduce(~M[0]USD, &Money.add(&2, &1.price)) |> Money.neg()}
+        ]
+    end
   end
-
-  defp charges(order) do
-    lines = priced_lines(order)
-
-    total_without_discount =
-      for %{price_without_discount: price} <- lines, reduce: Money.new(0) do
-        acc -> Money.add(acc, price)
-      end
-
-    product_lines =
-      case lines do
-        [] ->
-          []
-
-        _prices ->
-          [
-            {"Products (#{Enum.count(lines)})", total_without_discount},
-            {"Shipping & handling", "Included"}
-          ]
-      end
-
-    digital_lines =
-      case Enum.count(order.digitals) do
-        0 ->
-          []
-
-        count ->
-          [
-            {"Digital downloads (#{count})",
-             Money.multiply(order.package.download_each_price, count)}
-          ]
-      end
-
-    bundle_lines =
-      case order.bundle_price do
-        nil -> []
-        price -> [{"Bundle - all digital downloads", price}]
-      end
-
-    product_lines ++ digital_lines ++ bundle_lines
-  end
-
-  defdelegate priced_lines(order), to: Cart
 end
