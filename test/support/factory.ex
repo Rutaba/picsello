@@ -315,6 +315,9 @@ defmodule Picsello.Factory do
 
     insert_list(shoot_count - Enum.count(shoots), :shoot, job: job)
 
+    default_contract = Picsello.Contracts.default_contract(job)
+    insert(:contract, job_id: job.id, contract_template_id: default_contract.id)
+
     job |> Repo.preload(:shoots, force: true)
   end
 
@@ -603,6 +606,30 @@ defmodule Picsello.Factory do
         position: sequence(:position, & &1)
       }
       |> evaluate_lazy_attributes()
+
+  def contract_template_factory(attrs) do
+    %Picsello.Contract{
+      name: "My custom contract",
+      job_type: "wedding",
+      content: "the greatest contract",
+      organization: fn ->
+        case attrs do
+          %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
+          _ -> build(:organization)
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def contract_factory(attrs) do
+    %Picsello.Contract{
+      name: "My job custom contract",
+      content: "the greatest job contract"
+    }
+    |> merge_attributes(attrs)
+  end
 
   def tax_schedule_factory do
     %{

@@ -411,11 +411,11 @@ defmodule PicselloWeb.JobLive.Shared do
       <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => (Job.imported?(@job) && PaymentSchedules.has_payments?(@job)) || @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
         <%= if Job.imported?(@job) do %>
           <.proposal_details_item title="Proposal" icon="document" pending_status={nil} current_user={@current_user} action="details" />
-          <.proposal_details_item title="Standard Contract" icon="document" status="External" />
+          <.proposal_details_item title="Contract" icon="document" status="External" />
           <.proposal_details_item title="Questionnaire" icon="document" status="External" />
         <% else %>
           <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
-          <.proposal_details_item title="Standard Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
+          <.proposal_details_item title="Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
           <%= if @proposal.questionnaire_id do %>
             <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
           <% end %>
@@ -511,7 +511,7 @@ defmodule PicselloWeb.JobLive.Shared do
     job =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Ecto.Query.preload([:client, :package, :job_status, :gallery, :contract])
       |> Repo.get!(job_id)
 
     if job.job_status.is_lead do
