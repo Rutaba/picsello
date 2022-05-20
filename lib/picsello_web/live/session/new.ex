@@ -40,7 +40,7 @@ defmodule PicselloWeb.Live.Session.New do
           <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
           <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
 
-          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :log_in_password %>
+          <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :log_in_password, placeholder: "Enter password" %>
 
           <div class="flex flex-col items-center justify-between mt-8 lg:flex-row-reverse">
                <div class="flex flex-col w-full lg:flex-row-reverse lg:justify-between lg:w-1/2">
