@@ -31,6 +31,10 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
       %{
         title: "My orders",
         path: Routes.gallery_client_orders_path(socket, :show, gallery.client_link_hash)
+      },
+      %{
+        title: "Help",
+        path: "https://support.picsello.com/category/45-client-experience"
       }
     ]
   end

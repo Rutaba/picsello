@@ -68,13 +68,13 @@ data-active={"#{@active}"}
         <div>
           <div class="text-lg font-bold lg:text-3xl"> <%= @gallery.name %> Gallery </div>
 
-          <div class="flex items-center">
+          <div class="flex items-end">
             <%= if @download_all_visible do %>
               <.button
                 element="a"
                 icon="download"
                 icon_class="h-4 w-4 fill-current"
-                class="my-4 mr-4 py-1.5 px-8"
+                class="mt-4 mr-4 py-1.5 px-8"
                 download
                 href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash)}>
                 Download all photos
