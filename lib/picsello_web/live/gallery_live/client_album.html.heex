@@ -11,7 +11,7 @@
       <p class="mt-1">Back to gallery</p>
     <% end %>
     
-    <h3 class="text-lg font-bold lg:text-3xl">Really cool <%= @album.name %></h3>
+    <h3 class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
   </div>
   <%= unless Enum.empty?(@products) do %>
     <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
@@ -23,7 +23,7 @@
     </div>
   <% end %>
 
-  <hr>
+    <hr class="lg:mx-16 mt-8 mx-8">
 
   <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
     <div class="pt-5 lg:pt-16" id="gallery">
@@ -74,7 +74,6 @@
         %>
       <% end %>
       </div>
-
       <div class="hidden">
         <div
           id="photo-update-listener"
