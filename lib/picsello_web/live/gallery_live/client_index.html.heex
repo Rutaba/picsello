@@ -66,7 +66,9 @@ data-active={"#{@active}"}
     <div class="pt-5 lg:pt-16" id="gallery">
       <div class="flex flex-col mb-8 sm:flex-row sm:justify-between sm:items-end lg:mb-16">
         <div>
-          <div class="text-lg font-bold lg:text-3xl"> <%= @gallery.name %> Gallery </div>
+          <div class="text-lg font-bold lg:text-3xl"> 
+          <%= if(Enum.count(@albums) > 0, do: "Your curated albums", else: "#{@gallery.name} Gallery") %>
+          </div>
 
           <div class="flex items-end">
             <%= if @download_all_visible do %>
@@ -84,7 +86,7 @@ data-active={"#{@active}"}
           </div>
         </div>
 
-        <div>
+        <div class={Enum.count(@albums) > 0 && "hidden"}>
           <label class="flex items-center cursor-pointer mt-4">
             <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
 
@@ -104,6 +106,17 @@ data-active={"#{@active}"}
           </label>
         </div>
       </div>
+      <%= if(Enum.count(@albums) > 0) do %>
+      <!-- albums -->
+      <%= for album <- @albums do %>
+        <a class="mt-4 relative albumBlock cursor-pointer p-0 bg-gray-200" phx-click="go_to_album" phx-value-album={album.id}>
+          <div class="flex flex-col mb-2 mr-2 album w-[420px] h-[289px]">
+            <img class="object-contain m-auto" src={thumbnail_url(album)} />
+            <span class="font-sans absolute bottom-4 left-4 font-bold text-white text-1xl"><%= album.name %></span>
+          </div>
+        </a>
+        <% end %>      
+      <% else %>
       <!-- images -->
       <div
         id="muuri-grid"
@@ -136,6 +149,7 @@ data-active={"#{@active}"}
           data-photo-updates={@photo_updates}
         ></div>
       </div>
+      <% end %>
     </div>
   </div>
 </div>
