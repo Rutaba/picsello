@@ -120,7 +120,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
       Phoenix.PubSub.broadcast(
         Picsello.PubSub,
-        "gallery:#{gallery.id}",
+        "photographer-gallery:#{gallery.id}",
         {:upload_success_message, upload_success_message(socket, uploaded_files)}
       )
 
