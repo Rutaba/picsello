@@ -132,4 +132,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     </div>
     """
   end
+
+  defp wrapper_style(true, width, photo), do: "width: #{width}px;height: #{width / photo.aspect_ratio}px;"
+  defp wrapper_style(_, _, _), do: nil
 end
