@@ -29,9 +29,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     )
     |> ok()
   end
+
   @impl true
   def handle_params(
-      %{"album_id" => album_id},
+        %{"album_id" => album_id},
         _,
         %{
           assigns: %{
