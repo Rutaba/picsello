@@ -8,6 +8,7 @@ defmodule Picsello.ClientViewsOrdersTest do
     session: session
   } do
     session
+    |> click(css("a", text: "View Gallery"))
     |> click(link("My orders"))
     |> assert_text("ordered anything")
   end
@@ -44,6 +45,7 @@ defmodule Picsello.ClientViewsOrdersTest do
     Mox.stub(Picsello.MockWHCCClient, :webhook_validate, fn _, _ -> %{"isValid" => true} end)
 
     session
+    |> click(css("a", text: "View Gallery"))
     |> click(link("My orders"))
     |> click(link("View details"))
     |> assert_text("We’ll provide tracking info once your item ships")

@@ -51,6 +51,7 @@ defmodule Picsello.GalleryCartTest do
 
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
+    |> click(css("a", text: "View Gallery"))
     |> click(link("cart"))
     |> click(button("Continue"))
     |> fill_in(text_field("Email address"), with: "client@example.com")

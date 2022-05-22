@@ -49,7 +49,7 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   def click_photo(session, position) do
-    session |> click(css("#muuri-grid .muuri-item-shown:nth-child(#{position}) *[id^='photo']"))
+    session |> click(css("#muuri-grid .muuri-item-shown:nth-child(#{position}) *[id^='img']"))
   end
 
   setup :authenticated_gallery_client
@@ -193,7 +193,7 @@ defmodule Picsello.ClientOrdersTest do
 
     session
     |> assert_text(gallery.name)
-    |> click(link("View Gallery"))
+    |> click(css("a", text: "View Gallery"))
     |> click_photo(1)
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
@@ -278,7 +278,7 @@ defmodule Picsello.ClientOrdersTest do
       gallery_path = current_path(session)
 
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> click_photo(1)
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
@@ -315,7 +315,6 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> assert_path(gallery_path)
       |> assert_has(css("*[title='cart']", text: "0"))
-      |> click(link("View Gallery"))
       |> click_photo(1)
       |> within_modal(&click(&1, button("Add to cart")))
       |> click(link("cart"))
@@ -361,7 +360,6 @@ defmodule Picsello.ClientOrdersTest do
         &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
       )
       |> click(link("Home"))
-      |> click(link("View Gallery"))
       |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "Download"))
       |> click(link("close"))
@@ -386,7 +384,7 @@ defmodule Picsello.ClientOrdersTest do
       Repo.update_all(Package, set: [download_count: 2])
 
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> click_photo(1)
       |> assert_has(testid("download-credit", text: "Download Credits available: 2"))
       |> click(button("Add to cart"))
@@ -453,7 +451,7 @@ defmodule Picsello.ClientOrdersTest do
       photo1 = from(photo in Photo, order_by: photo.position, limit: 1) |> Repo.one!()
 
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> click(button("Buy now"))
       |> assert_text("Bundle - all digital downloads")
       |> within_modal(&assert_has(&1, css("img[src$='/watermarked_preview.jpg']", count: 3)))
@@ -530,7 +528,6 @@ defmodule Picsello.ClientOrdersTest do
         link("Download all photos"),
         &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
       )
-      |> click(link("View Gallery"))
       |> click_photo(1)
       |> within_modal(fn modal ->
         modal
