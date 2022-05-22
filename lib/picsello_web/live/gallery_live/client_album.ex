@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.ClientIndex do
+defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @moduledoc false
 
   use PicselloWeb,
@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   import PicselloWeb.GalleryLive.Shared
 
   alias Phoenix.PubSub
-  alias Picsello.{Galleries, Albums}
+  alias Picsello.{Repo, Galleries, Albums}
   alias Picsello.GalleryProducts
   alias Picsello.Cart
   alias PicselloWeb.GalleryLive.Photos.Photo
@@ -29,28 +29,9 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     )
     |> ok()
   end
-
   @impl true
   def handle_params(
-        %{"editorId" => whcc_editor_id},
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> place_product_in_cart(whcc_editor_id)
-    |> push_redirect(
-      to: Routes.gallery_client_show_cart_path(socket, :cart, gallery.client_link_hash)
-    )
-    |> noreply()
-  end
-
-  @impl true
-  def handle_params(
-        _params,
+      %{"album_id" => album_id},
         _,
         %{
           assigns: %{
@@ -59,10 +40,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         } = socket
       ) do
     gallery = Galleries.populate_organization_user(gallery)
-
-    if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-    end
+    album = Albums.get_album!(album_id) |> Repo.preload(:photos)
 
     socket
     |> assign(
@@ -71,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
-      albums: Albums.get_albums_by_gallery_id(gallery.id),
+      album: album,
       page: 0,
       page_title: "Show Gallery",
       download_all_visible: Cart.can_download_all?(gallery),
@@ -205,24 +183,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     )
     |> noreply
   end
-
-  @impl true
-  def handle_event(
-        "go_to_album",
-        %{"album" => album_id},
-        %{
-          assigns: %{
-            gallery: %{
-              client_link_hash: client_link_hash
-            }
-          }
-        } = socket
-      ) do
-    socket
-    |> push_redirect(to: Routes.gallery_client_album_path(socket, :album, client_link_hash, album_id))
-    |> noreply()
-  end
-
 
   @impl true
   def handle_info(
