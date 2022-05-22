@@ -219,10 +219,11 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         } = socket
       ) do
     socket
-    |> push_redirect(to: Routes.gallery_client_album_path(socket, :album, client_link_hash, album_id))
+    |> push_redirect(
+      to: Routes.gallery_client_album_path(socket, :album, client_link_hash, album_id)
+    )
     |> noreply()
   end
-
 
   @impl true
   def handle_info(
