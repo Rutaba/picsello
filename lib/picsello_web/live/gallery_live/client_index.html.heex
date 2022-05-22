@@ -1,5 +1,5 @@
 <div {display_cover_photo(@gallery)} 
-class={"flex text-left flex-nowrap gallery__coverImg hidden #{@active && 'block sm:hidden'}"}
+class={"flex text-left flex-nowrap gallery__coverImg #{if(@active, do: 'block sm:hidden', else: 'hidden')}"}
 id="gallery-conver-photo"
 phx-hook="ClientGalleryCookie"
 data-name={cover_photo_cookie(@gallery.id)}
@@ -24,7 +24,7 @@ data-active={"#{@active}"}
     </div>
   </div>
 </div>
-<div id="gallery" class={"#{!@active && 'block sm:hidden'}"}>
+<div id="gallery-client" class={"#{!@active && 'block sm:hidden'}"}>
   <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
   </div>
@@ -85,7 +85,7 @@ data-active={"#{@active}"}
         </div>
 
         <div>
-          <label class="flex items-center cursor-pointer">
+          <label class="flex items-center cursor-pointer mt-4">
             <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
 
             <div class="relative ml-3">

@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   alias PicselloWeb.GalleryLive.Photos.Photo
 
   @per_page 12
-  @max_age 60 * 60 * 24 * 7
+  @max_age 7
   @cover_photo_cookie "_picsello_web_gallery"
 
   @impl true
@@ -317,6 +317,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     socket
   end
 
+  defp photos_count(nil), do: "photo"
   defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
   defp max_age, do: @max_age
   defp cover_photo_cookie(gallery_id), do: "#{@cover_photo_cookie}_#{gallery_id}"

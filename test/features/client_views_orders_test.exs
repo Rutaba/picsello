@@ -7,6 +7,7 @@ defmodule Picsello.ClientViewsOrdersTest do
     session: session
   } do
     session
+    |> click(css("a", text: "View Gallery"))
     |> click(link("My orders"))
     |> assert_text("ordered anything")
   end
