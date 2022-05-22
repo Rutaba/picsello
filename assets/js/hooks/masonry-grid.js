@@ -93,118 +93,13 @@ export default {
     const gridElement = document.querySelector(grid_id);
     if (gridElement) {
       const opts = {
-        layout: function (grid, layoutId, items, width, height, callback) {
-          var layout = {
-            fillGaps: true,
-            syncWithLayout: false,
-            layoutOnResize: true,
-            layoutDuration: 0,
-            layoutEasing: 'ease-in',
-            rounding: false,  
-            id: layoutId,
-            items: items,
-            slots: [],
-            styles: {},
-          };
-
-          var item;
-          var m;
-          var x = 0;
-          var y = 0;
-          var w = 0;
-          var h = 0;
-
-          var maxW = width / 2;
-          var currentW = 0;
-          var currentRowH = 0;
-          var currentRowW = 0;
-          var rowSizes = [];
-          var rowFixes = [];
-
-          var xPre, yPre, wPre, hPre;
-          var numToFix = 0;
-
-          for (var i = 0; i < items.length; i++) {
-              item = items[i];
-
-              m = item.getMargin();
-              wPre = item.getWidth() + m.left + m.right;
-              hPre = item.getHeight() + m.top + m.bottom;
-              xPre += wPre;
-
-              if (hPre > currentRowH) {
-                  currentRowH = hPre;
-              }
-
-              if (w < currentRowW) {
-                  currentRowW = wPre;
-              }
-
-              rowSizes.push(width / 2);
-              numToFix++;
-              currentW += wPre;
-
-              var k = 0;
-
-              for (var j = 0; j < numToFix; j++) {
-                  rowSizes[i - j] -= wPre / 2;
-              }
-
-              if (numToFix > 1) {
-                  rowSizes[i] -= (wPre / 2) * (numToFix - 1);
-                  k += (wPre / 2);
-              }
-
-              currentW -= k;
-              rowFixes.push(k);
-
-              if (currentW >= maxW) {
-                  yPre += currentRowH;
-                  currentRowH = 0;
-                  xPre = 0;
-                  numToFix -= 1;
-                  currentW = 0;
-                  numToFix = 0;
-                  k = 0;
-              }
-          }
-
-          maxW = width / 2;
-          currentW = 0;
-          currentRowH = 0;
-          currentRowW = 0;
-
-          for (var i = 0; i < items.length; i++) {
-              item = items[i];
-              x += w;
-
-              if (h > currentRowH) {
-                  currentRowH = h;
-              }
-
-              if (w < currentRowW) {
-                  currentRowW = w;
-              }
-
-              currentW += w - rowFixes[i];
-
-              if (currentW >= maxW) {
-                  y += currentRowH;
-                  currentRowH = 0;
-                  x = 0;
-                  currentW = 0;
-              }
-
-              m = item.getMargin();
-              w = item.getWidth() + m.left + m.right;
-              h = item.getHeight() + m.top + m.bottom;
-              layout.slots.push(x + rowSizes[i], y);
-          }
-
-          layout.styles.width = '100%';
-          layout.styles.height = y + h + 1 + 'px';
-
-          callback(layout);
+        layout: {
+          fillGaps: true,
+          syncWithLayout: false,
+          layoutOnResize: true,
+          layoutDuration: 0,
+          layoutEasing: 'ease-in',
+          rounding: false
         },
         dragEnabled: true,
         dragStartPredicate: (item, e) => {
@@ -251,6 +146,29 @@ export default {
     return this.init_masonry();
   },
 
+  grid_alignment() {
+    const grid = this.get_grid();
+    const grid_items = grid.getItems();
+    const w = grid['_width'];
+    var iw = 0;
+    var count = 1;
+
+    grid_items.some((item, index) => {
+      const iw_total = iw + item['_width'];
+      if(w > iw_total){
+        iw = iw_total;
+      }else{
+        count += index; 
+        return true;
+      }
+    })
+
+    const offset = (w - iw - (count * 10))/2;
+    if(offset > 0){
+      this.el.style.marginLeft = offset + 'px';
+    }
+  },  
+  
   refresh(id, item_id) {
     const grid = this.get_grid();
     const grid_items = grid.getItems();
@@ -387,6 +305,7 @@ export default {
     this.init_masonry();
     this.init_listeners();
     this.load_more();
+    this.grid_alignment();
   },
 
   /**
@@ -402,6 +321,7 @@ export default {
   updated() {
     const grid = this.get_grid();
     this.pending = this.page();
+    this.grid_alignment();
     
     if (this.pending === '0') {
       this.load_more();

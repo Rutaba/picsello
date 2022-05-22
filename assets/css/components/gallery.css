@@ -92,10 +92,16 @@
 
 .productPreview__client > li > .productPreview-photo::after {
   content: 'View product';
-  @apply absolute z-20 flex items-center justify-center w-11/12 h-12 p-4 text-center transition-all duration-300 -translate-x-1/2 border rounded-lg opacity-0 text-base-100 bottom-4 left-1/2 border-base-100;
+  @apply absolute z-20 flex items-center justify-center w-11/12 h-12 p-4 text-center transition-all duration-300 -translate-x-1/2 border opacity-0 text-base-100 bottom-4 left-1/2 border-base-100;
 }
 
 .productPreview__client > li:hover > .productPreview-photo::before {
+  content: '';
+  background: linear-gradient(
+    0deg,
+    rgba(31, 28, 30, 0.65) 0%,
+    rgba(31, 28, 30, 0.065) 100%
+  );
   @apply opacity-100;
 }
 
