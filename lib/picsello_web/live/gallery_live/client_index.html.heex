@@ -1,4 +1,4 @@
-<div {display_cover_photo(@gallery)} 
+<div {cover_photo(@gallery)} 
 class={"flex text-left flex-nowrap gallery__coverImg #{if(@active, do: 'block sm:hidden', else: 'hidden')}"}
 id="gallery-conver-photo"
 phx-hook="ClientGalleryCookie"

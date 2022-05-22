@@ -17,6 +17,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   @per_page 12
   @max_age 7
   @cover_photo_cookie "_picsello_web_gallery"
+  @blank_image "/images/album_placeholder.png"
 
   @impl true
   def mount(_params, _session, socket) do
@@ -316,6 +317,9 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
     socket
   end
+
+  defp cover_photo(%{cover_photo: nil}), do: %{style: "background-image: url('#{@blank_image}')"}
+  defp cover_photo(gallery), do: display_cover_photo(gallery)
 
   defp photos_count(nil), do: "photo"
   defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
