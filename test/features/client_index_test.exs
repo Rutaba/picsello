@@ -7,8 +7,14 @@ defmodule Picsello.ClientIndexTest do
     gallery_url = session |> current_url()
 
     session
-    |> refute_has(css("#gallery-client", count: 1))
+    |> assert_has(css("#gallery-client", count: 0))
     |> assert_has(css("#gallery-conver-photo", count: 1))
+    # iPhone 8+
+    |> resize_window(414, 736)
+    |> assert_has(css("#gallery-client", count: 1))
+    |> refute_has(css("a", text: "View Gallery"))
+    |> assert_has(css("#gallery-conver-photo", count: 1))
+    |> resize_window(1280, 900)
     |> click(css("a", text: "View Gallery"))
     |> assert_has(css("#gallery-client", count: 1))
     |> assert_has(css("#gallery-conver-photo", count: 0))
