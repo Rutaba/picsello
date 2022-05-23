@@ -27,18 +27,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   def handle_event(
         "like",
         %{"id" => id},
-        %{assigns: %{is_client_gallery: is_client_gallery}} = socket
+        socket
       ) do
-    {:ok, photo} = Photos.toggle_liked(id)
-
-    if is_client_gallery do
-      favorites_update =
-        if photo.client_liked,
-          do: :increase_favorites_count,
-          else: :reduce_favorites_count
-
-      send(self(), favorites_update)
-    end
+    {:ok, _} = Photos.toggle_liked(id)
 
     socket |> noreply()
   end

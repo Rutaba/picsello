@@ -277,10 +277,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
               id: photo.id,
               photo: photo,
               photo_width: 300,
-              is_likable: false,
-              is_removable: false,
-              is_viewable: false,
-              is_meatball: false,
               is_gallery_category_page: true,
               component: @myself
           %>

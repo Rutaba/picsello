@@ -78,15 +78,28 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         _,
         %{
           assigns: %{
-            favorites_filter: toggle_state
+            favorites_filter: favorites_filter
           }
         } = socket
       ) do
+    toggle_state = !favorites_filter
+
     socket
     |> assign(:page, 0)
-    |> assign(:update_mode, "replace")
-    |> assign(:favorites_filter, !toggle_state)
+    |> assign(:favorites_filter, toggle_state)
+    |> then(fn socket ->
+      case toggle_state do
+        true ->
+          socket
+          |> assign(:update_mode, "replace")
+
+        _ ->
+          socket
+          |> assign(:update_mode, "append")
+      end
+    end)
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -193,50 +206,4 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> redirect(external: created_editor.url)
     |> noreply()
   end
-
-  @impl true
-  def handle_info(
-        :increase_favorites_count,
-        %{
-          assigns: %{
-            favorites_count: count
-          }
-        } = socket
-      ) do
-    socket
-    |> assign(:count, count + 1)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        :reduce_favorites_count,
-        %{
-          assigns: %{
-            favorites_count: count
-          }
-        } = socket
-      ) do
-    socket
-    |> assign(:count, count - 1)
-    |> noreply()
-  end
-
-  # def handle_info(
-  #       {:add_digital_to_cart, digital},
-  #       %{assigns: %{gallery: gallery}} = socket
-  #     ) do
-  #   order = Cart.place_product(digital, gallery.id)
-
-  #   socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
-  # end
-
-  # def handle_info(
-  #       {:add_bundle_to_cart, bundle_price},
-  #       %{assigns: %{gallery: gallery}} = socket
-  #     ) do
-  #   order = Cart.place_product({:bundle, bundle_price}, gallery.id)
-
-  #   socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
-  # end
 end

@@ -168,21 +168,6 @@ export default {
       this.el.style.marginLeft = offset + 'px';
     }
   },  
-  
-  refresh(id, item_id) {
-    const grid = this.get_grid();
-    const grid_items = grid.getItems();
-    const items = document.querySelectorAll(item_id);
-    if(id == 'photos') {
-      if(grid_items.length != items.length) {
-        grid.remove(grid_items);
-        grid.add(items);  
-      }
-    } else {
-      grid.remove(grid_items);    
-      grid.add(items);    
-    }
-  },
 
   load_more() {
     if((this.el.style.height.slice(0, -2) < screen.height) && this.hasMorePhotoToLoad()){
@@ -194,14 +179,14 @@ export default {
    * Recollects all item elements to apply changes to the DOM to Masonry
    */
   reload_masonry() {
-    const id = this.el.dataset.id;
-    const item_id = '#' + id + " .item";
-    const uploading = this.el.dataset.uploading;
+    const item_id = '#' + this.el.dataset.id + " .item";
     const grid = this.get_grid();
-    if(uploading == 100 || uploading == 0) {
-      this.refresh(id, item_id)
-    }
+    const grid_items = grid.getItems();
+    const items = document.querySelectorAll(item_id);
+    grid.remove(grid_items);
+    grid.add(items);  
     grid.refreshItems();
+    this.grid_alignment();
   },
 
   /**
@@ -321,15 +306,14 @@ export default {
   updated() {
     const grid = this.get_grid();
     this.pending = this.page();
-    this.grid_alignment();
     
     if (this.pending === '0') {
       this.load_more();
-      this.reload_masonry();
     } else {
       this.inject_new_items();
     }
     this.el.style.height = grid['_layout']['styles']['height'];
+    this.grid_alignment();
   },
 };
 
