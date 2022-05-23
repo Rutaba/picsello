@@ -22,4 +22,13 @@ defmodule Picsello.ClientIndexTest do
     |> assert_has(css("#gallery-conver-photo", count: 0))
     |> assert_has(css("#gallery-client", count: 1))
   end
+
+  feature "no orders", %{
+    session: session
+  } do
+    session
+    |> click(css("a", text: "View Gallery"))
+    |> click(link("My orders"))
+    |> assert_text("ordered anything")
+  end
 end

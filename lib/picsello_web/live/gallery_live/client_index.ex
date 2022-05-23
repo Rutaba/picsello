@@ -8,7 +8,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   import PicselloWeb.GalleryLive.Shared
 
-  alias Phoenix.PubSub
   alias Picsello.{Galleries, Albums}
   alias Picsello.GalleryProducts
   alias Picsello.Cart
@@ -60,10 +59,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       ) do
     gallery = Galleries.populate_organization_user(gallery)
 
-    if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-    end
-
     socket
     |> assign(
       creator: Galleries.get_gallery_creator(gallery),
@@ -105,15 +100,28 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         _,
         %{
           assigns: %{
-            favorites_filter: toggle_state
+            favorites_filter: favorites_filter
           }
         } = socket
       ) do
+    toggle_state = !favorites_filter
+
     socket
     |> assign(:page, 0)
-    |> assign(:update_mode, "replace")
-    |> assign(:favorites_filter, !toggle_state)
+    |> assign(:favorites_filter, toggle_state)
+    |> then(fn socket ->
+      case toggle_state do
+        true ->
+          socket
+          |> assign(:update_mode, "replace")
+
+        _ ->
+          socket
+          |> assign(:update_mode, "append")
+      end
+    end)
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -225,34 +233,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  @impl true
-  def handle_info(
-        :increase_favorites_count,
-        %{
-          assigns: %{
-            favorites_count: count
-          }
-        } = socket
-      ) do
-    socket
-    |> assign(:count, count + 1)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        :reduce_favorites_count,
-        %{
-          assigns: %{
-            favorites_count: count
-          }
-        } = socket
-      ) do
-    socket
-    |> assign(:count, count - 1)
-    |> noreply()
-  end
-
   def handle_info(
         {:customize_and_buy_product, whcc_product, photo, size},
         %{
@@ -279,29 +259,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
     socket
     |> redirect(external: created_editor.url)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:photo_processed, _, photo},
-        socket
-      ) do
-    photo_update = Jason.encode!(%{id: photo.id, url: preview_url(photo)})
-
-    socket
-    |> assign(:photo_updates, photo_update)
-    |> noreply()
-  end
-
-  def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
-    socket
-    |> assign(
-      :gallery,
-      gallery.id
-      |> Galleries.get_gallery!()
-      |> Galleries.populate_organization_user()
-    )
     |> noreply()
   end
 

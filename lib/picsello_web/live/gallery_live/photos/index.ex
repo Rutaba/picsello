@@ -194,6 +194,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos(@per_page)
     |> put_flash(:gallery_success, remove_from_album_success_message(selected_photos, album))
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -236,6 +237,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -269,6 +271,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -364,6 +367,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
     |> assign(:selected_photos, [])
+    |> push_event("reload_grid", %{})
     |> noreply
   end
 
@@ -390,6 +394,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("select_mode", %{"mode" => "selected_favorite"})
     |> assign(:select_mode, "selected_favorite")
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply
   end
 
@@ -504,6 +509,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("remove_items", %{"ids" => id})
     |> assign_photos(@per_page)
     |> put_flash(:gallery_success, remove_from_album_success_message(id, album))
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -523,6 +529,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       :gallery_success,
       move_to_album_success_message(selected_photos, album_id, gallery)
     )
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -555,6 +562,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_info(:photo_upload_completed, socket) do
     socket
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -617,6 +625,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "#{total(selected_photos)} #{ngettext("photo", "photos", Enum.count(selected_photos))} deleted successfully"
       )
       |> assign_photos(@per_page)
+      |> push_event("reload_grid", %{})
       |> noreply()
     else
       _ ->
