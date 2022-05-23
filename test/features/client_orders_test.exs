@@ -154,11 +154,11 @@ defmodule Picsello.ClientOrdersTest do
       %Picsello.WHCC.CreatedEditor{url: url}
     end)
     |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
-      %Picsello.WHCC.Editor.Details{
+      build(:whcc_editor_details,
         product_id: whcc_product_id,
         selections: %{"size" => size, "quantity" => 1},
         editor_id: "editor-id"
-      }
+      )
     end)
     |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
       build(:whcc_editor_export, unit_base_price: ~M[300]USD)

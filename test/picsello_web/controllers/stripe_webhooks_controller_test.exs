@@ -142,6 +142,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
     def add_cart_product(order, price),
       do:
         order
+        |> Repo.preload(:products)
         |> Order.update_changeset(
           build(:cart_product,
             shipping_base_charge: ~M[0]USD,
@@ -151,10 +152,12 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
             whcc_product: insert(:product)
           )
         )
+        |> Repo.update!()
         |> Order.whcc_order_changeset(
           build(:whcc_order_created, confirmation_id: "whcc-order-created-id")
         )
         |> Repo.update!()
+        |> Repo.preload(products: :whcc_product)
 
     test "marks order as paid", %{conn: conn, order: order} do
       insert(:digital, order: order, price: ~M[10]USD)

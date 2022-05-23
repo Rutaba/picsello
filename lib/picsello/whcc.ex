@@ -192,16 +192,20 @@ defmodule Picsello.WHCC do
     )
   end
 
-  def price_details(%{category: category} = product, details, %{
+  def price_details(%{category: category, id: whcc_product_id} = product, details, %{
         unit_base_price: unit_price,
         quantity: quantity
       }) do
     %{
       unit_markup: mark_up_price(product, details, unit_price),
-      editor_details: details,
       unit_price: unit_price,
       quantity: quantity
     }
+    |> Map.merge(
+      details
+      |> Map.take([:preview_url, :editor_id, :selections])
+      |> Map.put(:whcc_product_id, whcc_product_id)
+    )
     |> Map.merge(
       category
       |> Map.from_struct()

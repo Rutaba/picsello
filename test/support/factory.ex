@@ -383,9 +383,11 @@ defmodule Picsello.Factory do
   end
 
   def gallery_factory(attrs) do
+    {lead_attrs, attrs} = Map.split(attrs, [:package])
+
     %Gallery{
       name: "Test Client Wedding",
-      job: fn -> build(:lead) end,
+      job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4()
     }
@@ -452,6 +454,7 @@ defmodule Picsello.Factory do
 
     whcc_product =
       product_json
+      |> update_in(["category", "id"], &"#{&1}-#{sequence("whcc_id")}")
       |> Picsello.WHCC.Product.from_map()
       |> Picsello.WHCC.Product.add_details(product_json)
 
@@ -512,8 +515,7 @@ defmodule Picsello.Factory do
   def whcc_editor_details_factory(attrs \\ %{}) do
     %Picsello.WHCC.Editor.Details{
       editor_id: sequence("hkazbRKGjcoWwnEq3"),
-      preview_url:
-        "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
       product_id: fn -> insert(:product).whcc_id end,
       selections: %{
         "display_options" => "no",
@@ -527,21 +529,28 @@ defmodule Picsello.Factory do
   end
 
   def cart_product_factory(attrs \\ %{}) do
-    attrs = Map.put_new(attrs, :product_id, get_in(attrs, [:whcc_product, :whcc_id]))
-
-    %Picsello.Cart.CartProduct{
-      created_at: System.os_time(:millisecond),
-      editor_details:
-        build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity, :editor_id])),
+    %Picsello.Cart.Product{
+      editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
       round_up_to_nearest: 500,
       shipping_base_charge: %Money{amount: 900, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
-      whcc_product: nil
+      whcc_product: fn -> insert(:product) end,
+      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      selections: %{
+        "display_options" => "no",
+        "quantity" => Map.get(attrs, :quantity, 1),
+        "size" => "20x30",
+        "surface" => "1_4in_acrylic_with_styrene_backing"
+      },
+      volume_discount: ~M[0]USD,
+      print_credit_discount: ~M[0]USD,
+      price: ~M[55500]USD
     }
-    |> merge_attributes(Map.drop(attrs, [:product_id, :editor_id]))
+    |> evaluate_lazy_attributes()
+    |> merge_attributes(attrs)
   end
 
   def whcc_order_created_order_factory do
@@ -602,8 +611,7 @@ defmodule Picsello.Factory do
     do:
       %Picsello.Cart.Digital{
         price: ~M[500]USD,
-        photo: fn _ -> build(:photo) end,
-        position: sequence(:position, & &1)
+        photo: fn _ -> build(:photo) end
       }
       |> evaluate_lazy_attributes()
 

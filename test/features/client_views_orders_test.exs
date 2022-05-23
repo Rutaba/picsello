@@ -27,8 +27,7 @@ defmodule Picsello.ClientViewsOrdersTest do
       products:
         build_list(1, :cart_product,
           whcc_product: insert(:product),
-          editor_id: "editor_id",
-          charged_price: ~M[1000]USD
+          editor_id: "editor_id"
         ),
       whcc_order:
         build(:whcc_order_created,

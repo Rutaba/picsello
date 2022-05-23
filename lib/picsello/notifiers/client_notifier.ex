@@ -30,14 +30,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{user: %{time_zone: time_zone}} = Repo.preload(organization, :user)
 
     products =
-      for(
-        %{line_item: product, price: price} <-
-          order |> Cart.preload_products() |> Order.priced_lines()
-      ) do
+      for(product <- Cart.preload_products(order).products) do
         %{
           item_name: Cart.product_name(product),
           item_quantity: Cart.product_quantity(product),
-          item_price: price,
+          item_price: Cart.Product.charged_price(product),
           item_is_digital: false
         }
       end

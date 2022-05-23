@@ -796,15 +796,14 @@ defmodule Picsello.Galleries do
     gallery |> Repo.preload(:package) |> Map.get(:package)
   end
 
-  def do_not_charge_for_download?(%Gallery{} = gallery) do
-    package = get_package(gallery)
-    package && Money.zero?(package.download_each_price)
-  end
+  def do_not_charge_for_download?(%Gallery{} = gallery),
+    do: gallery |> get_package() |> Map.get(:download_each_price) |> Money.zero?()
 
   def min_price(category) do
-    Picsello.WHCC.min_price_details(category)
-    |> Picsello.Cart.CartProduct.new()
-    |> Picsello.Cart.CartProduct.price(shipping_base_charge: true)
+    category
+    |> Picsello.WHCC.min_price_details()
+    |> Picsello.Cart.Product.new()
+    |> Picsello.Cart.Product.example_price()
   end
 
   defp clean_store([]), do: nil
