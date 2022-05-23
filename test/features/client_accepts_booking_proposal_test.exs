@@ -4,6 +4,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
   @send_email_button button("Send Email")
   @invoice_button button("Invoice")
+  @send_proposal_button button("Send proposal", count: 2, at: 1)
 
   setup %{sessions: [photographer_session | _]} do
     user =
@@ -65,7 +66,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       photographer_session
       |> visit("/leads/#{lead.id}")
       |> click(checkbox("Questionnaire included", selected: true))
-      |> click(button("Send proposal", count: 2, at: 1))
+      |> click(@send_proposal_button)
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
       |> assert_value(text_field("Subject line"), "here is what I propose")
@@ -350,7 +351,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Send proposal", count: 2, at: 1))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -409,7 +410,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("Contract Name"), with: "Contract 2")
     |> within_modal(&wait_for_enabled_submit_button/1)
     |> click(button("Save"))
-    |> click(button("Send proposal", count: 2, at: 1))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -431,7 +432,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Send proposal", count: 2, at: 1))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -457,7 +458,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
     |> assert_text("100% discount")
-    |> click(button("Send proposal", count: 2, at: 1))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
