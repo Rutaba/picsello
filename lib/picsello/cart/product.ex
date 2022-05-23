@@ -66,27 +66,43 @@ defmodule Picsello.Cart.Product do
 
   def example_price(product), do: fake_price(product)
 
-  @doc "merges values for price and volume discount"
+  @doc "merges values for price, volume_discount, and print_credit_discount"
   def update_price(%__MODULE__{} = product, opts \\ []) do
-    %{product | price: fake_price(product), volume_discount: volume_discount(product, opts)}
+    credit = get_in(opts, [:credits, :print]) || ~M[0]USD
+    fake_price = fake_price(product)
+    real_price = real_price(product, opts)
+
+    # real_price | credit | credit_used
+    # 10         | 0      | 0
+    # 10         | 1      | 1
+    # 10         | 11     | 10
+
+    %{
+      product
+      | price: fake_price,
+        volume_discount: Money.subtract(fake_price, real_price),
+        print_credit_discount:
+          case Money.cmp(credit, real_price) do
+            :lt -> credit
+            _ -> real_price
+          end
+    }
   end
 
-  defp volume_discount(
+  defp real_price(
          %{round_up_to_nearest: nearest, shipping_base_charge: shipping_base_charge} = product,
          opts
        ) do
-    real_price =
-      price(product)
-      |> Money.subtract(
-        if Keyword.get(opts, :shipping_base_charge) do
-          0
-        else
-          shipping_base_charge
-        end
-      )
-      |> round_up_to_nearest(nearest)
-
-    Money.subtract(fake_price(product), real_price)
+    product
+    |> price()
+    |> Money.subtract(
+      if Keyword.get(opts, :shipping_base_charge) do
+        ~M[0]USD
+      else
+        shipping_base_charge
+      end
+    )
+    |> round_up_to_nearest(nearest)
   end
 
   defp fake_price(%{round_up_to_nearest: nearest} = product) do

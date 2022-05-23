@@ -43,11 +43,9 @@ defmodule Picsello.Cart.Order do
   end
 
   def create_changeset(%Digital{} = digital, attrs, opts) do
-    is_credit = Keyword.get(opts, :digital_credit, 0) > 0
-
     attrs
     |> do_create_changeset()
-    |> put_assoc(:digitals, [%{digital | is_credit: is_credit}])
+    |> put_assoc(:digitals, [%{digital | is_credit: is_credit(opts)}])
   end
 
   def create_changeset({:bundle, price}, attrs, _opts) do
@@ -81,11 +79,9 @@ defmodule Picsello.Cart.Order do
 
   def update_changeset(%__MODULE__{digitals: digitals} = order, %Digital{} = digital, attrs, opts)
       when is_list(digitals) do
-    is_credit = Keyword.get(opts, :digital_credit, 0) > 0
-
     order
     |> cast(attrs, [])
-    |> put_assoc(:digitals, [%{digital | is_credit: is_credit} | digitals])
+    |> put_assoc(:digitals, [%{digital | is_credit: is_credit(opts)} | digitals])
   end
 
   def whcc_order_changeset(%{products: products} = order, params) when is_list(products) do
@@ -191,5 +187,9 @@ defmodule Picsello.Cart.Order do
       cart_products |> Enum.map(& &1.id) |> Enum.max()
     end)
     |> Enum.reverse()
+  end
+
+  defp is_credit(opts) do
+    (get_in(opts, [:credits, :digital]) || 0) > 0
   end
 end

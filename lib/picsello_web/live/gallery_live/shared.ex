@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import PicselloWeb.LiveHelpers
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
   alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent, GalleryMessageComponent}
@@ -518,7 +519,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp bundle_summary(bundle_price), do: {"Bundle - all digital downloads", bundle_price}
 
   defp sum_prices(collection) do
-    Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))
+    Enum.reduce(collection, ~M[0]USD, &Money.add(&2, &1.price))
   end
 
   defdelegate price_display(product), to: Picsello.Cart
@@ -555,5 +556,46 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <% end %>
     </div>
     """
+  end
+
+  def credits_footer(assigns) do
+    ~H"""
+    <%= unless @credits == [] do %>
+      <div class="fixed bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
+        <div class="container flex items-center justify-between h-full mx-auto px-7">
+          <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
+            <%= for {label, value} <- @credits do %>
+              <dl class="flex items-center sm:mr-5" >
+                <dt class="mr-2 font-extrabold">
+                  <%= label %><span class="hidden sm:inline"> available</span>:
+                </dt>
+
+                <dd class="font-semibold"><%= value %></dd>
+              </dl>
+            <% end %>
+          </div>
+
+          <.icon name="gallery-info" class="fill-current text-base-300 w-7 h-7" />
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def credits(%Galleries.Gallery{} = gallery),
+    do: gallery |> Picsello.Cart.credit_remaining() |> credits()
+
+  def credits(credits) do
+    for {label, key, zero} <- [
+          {"Download Credits", :digital, 0},
+          {"Print Credit", :print, ~M[0]USD}
+        ],
+        reduce: [] do
+      acc ->
+        case Map.get(credits, key) do
+          ^zero -> acc
+          value -> [{label, value} | acc]
+        end
+    end
   end
 end

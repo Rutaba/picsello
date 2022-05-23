@@ -571,4 +571,59 @@ defmodule Picsello.CartTest do
       })
     end
   end
+
+  describe "print_credit_used" do
+    def create_gallery(opts \\ []),
+      do: insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
+
+    def create_order(opts \\ []) do
+      {total, opts} = Keyword.pop(opts, :total, ~M[0]USD)
+
+      %{id: gallery_id} = Keyword.get_lazy(opts, :gallery, fn -> create_gallery(opts) end)
+
+      Cart.place_product(
+        build(:cart_product,
+          shipping_base_charge: ~M[0]USD,
+          shipping_upcharge: 0,
+          unit_markup: ~M[0]USD,
+          unit_price: total
+        ),
+        gallery_id
+      )
+    end
+
+    def print_credit_used(%{products: products}),
+      do: Enum.reduce(products, ~M[0]USD, &Money.add(&2, &1.print_credit_discount))
+
+    test "zero when no print credit in package" do
+      assert ~M[0]USD =
+               create_order(print_credits: nil, total: ~M[1000]USD) |> print_credit_used()
+    end
+
+    test "zero when credit is used up" do
+      gallery = create_gallery(print_credits: ~M[500]USD)
+      create_order(gallery: gallery, total: ~M[600]USD)
+      order = create_order(gallery: gallery, total: ~M[1000]USD)
+
+      assert ~M[0]USD = print_credit_used(order)
+    end
+
+    test "order price when more credit than needed" do
+      assert ~M[1000]USD =
+               create_order(print_credits: ~M[1900]USD, total: ~M[1000]USD)
+               |> print_credit_used()
+    end
+
+    test "order price when exactly right credit" do
+      assert ~M[1000]USD =
+               create_order(print_credits: ~M[1000]USD, total: ~M[1000]USD)
+               |> print_credit_used()
+    end
+
+    test "remaining credit when not enough to cover order" do
+      assert ~M[900]USD =
+               create_order(print_credits: ~M[900]USD, total: ~M[1000]USD)
+               |> print_credit_used()
+    end
+  end
 end

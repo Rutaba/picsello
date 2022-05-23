@@ -73,14 +73,17 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product, digital, or bundle in the cart.
   """
-  def place_product(product, gallery_id) do
-    opts = [digital_credit: digital_credit(%{id: gallery_id})]
+  def place_product(product, %Gallery{id: gallery_id} = gallery) do
+    opts = [credits: credit_remaining(gallery)]
 
     case get_unconfirmed_order(gallery_id, preload: [:products, :digitals]) do
       {:ok, order} -> place_product_in_order(order, product, opts)
       {:error, _} -> create_order_with_product(product, %{gallery_id: gallery_id}, opts)
     end
   end
+
+  def place_product(product, gallery_id) when is_integer(gallery_id),
+    do: place_product(product, %Gallery{id: gallery_id})
 
   def bundle_status(gallery) do
     cond do
@@ -101,24 +104,26 @@ defmodule Picsello.Cart do
     end
   end
 
-  def digital_credit(%{id: gallery_id}) do
-    download_count =
-      from(gallery in Gallery,
-        join: job in assoc(gallery, :job),
-        join: package in assoc(job, :package),
-        where: gallery.id == ^gallery_id,
-        select: package.download_count
-      )
-      |> Repo.one()
-
-    digital_count =
-      from(order in Order,
-        join: digital in assoc(order, :digitals),
-        where: order.gallery_id == ^gallery_id and digital.is_credit
-      )
-      |> Repo.aggregate(:count)
-
-    download_count - digital_count
+  def credit_remaining(%Gallery{id: gallery_id}) do
+    from(gallery in Gallery,
+      join: package in assoc(gallery, :package),
+      left_join: orders in assoc(gallery, :orders),
+      left_join: digitals in assoc(orders, :digitals),
+      left_join: products in assoc(orders, :products),
+      where: gallery.id == ^gallery_id,
+      select: %{
+        digital:
+          package.download_count -
+            fragment("count(?) filter (where ?)", digitals.id, digitals.is_credit),
+        print:
+          type(
+            coalesce(package.print_credits, 0) - coalesce(sum(products.print_credit_discount), 0),
+            Money.Ecto.Amount.Type
+          )
+      },
+      group_by: [package.download_count, package.print_credits]
+    )
+    |> Repo.one()
   end
 
   defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}) when is_integer(photo_id),

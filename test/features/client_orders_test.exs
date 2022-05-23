@@ -384,13 +384,14 @@ defmodule Picsello.ClientOrdersTest do
       Repo.update_all(Package, set: [download_count: 2])
 
       session
-      |> click(css("a", text: "View Gallery"))
+      |> visit(current_url(session))
+      |> click(link("View Gallery"))
       |> click_photo(1)
-      |> assert_has(testid("download-credit", text: "Download Credits available: 2"))
+      |> assert_has(definition("Download Credits", text: "2"))
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "1"))
       |> click_photo(2)
-      |> assert_has(testid("download-credit", text: "Download Credits available: 1"))
+      |> assert_has(definition("Download Credits", text: "1"))
       |> click(button("Add to cart"))
       |> click(link("cart", text: "2"))
       |> assert_has(definition("Total", text: "$0.00"))

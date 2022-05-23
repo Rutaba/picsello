@@ -3,19 +3,16 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   use PicselloWeb, :live_component
   alias Picsello.{Cart, Galleries, GalleryProducts}
   alias Cart.Digital
+  import PicselloWeb.GalleryLive.Shared, only: [credits_footer: 1, credits: 1]
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
-    photo = Galleries.get_photo(photo_id)
-
     socket
     |> assign(assigns)
+    |> assign_details(Galleries.get_photo(photo_id))
     |> assign(
       download_each_price: Galleries.download_each_price(gallery),
-      photo: photo,
-      products: GalleryProducts.get_gallery_products(gallery.id),
-      digital_status: Cart.digital_status(gallery, photo),
-      digital_credit: Cart.digital_credit(gallery)
+      products: GalleryProducts.get_gallery_products(gallery.id)
     )
     |> ok()
   end
@@ -61,15 +58,23 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply()
   end
 
-  defp move_carousel(%{assigns: %{gallery: gallery, photo_ids: photo_ids}} = socket, fun) do
+  defp move_carousel(%{assigns: %{photo_ids: photo_ids}} = socket, fun) do
     photo_ids = fun.(photo_ids)
-    photo = photo_ids |> CLL.value() |> Galleries.get_photo()
 
-    assign(socket,
-      photo: photo,
-      photo_ids: photo_ids,
+    socket
+    |> assign(photo_ids: photo_ids)
+    |> assign_details(photo_ids |> CLL.value() |> Galleries.get_photo())
+  end
+
+  defp assign_details(%{assigns: %{gallery: gallery}} = socket, photo) do
+    %{digital: digital_credit} = credits = Cart.credit_remaining(gallery)
+
+    socket
+    |> assign(
       digital_status: Cart.digital_status(gallery, photo),
-      digital_credit: Cart.digital_credit(gallery)
+      digital_credit: digital_credit,
+      photo: photo,
+      credits: credits(credits)
     )
   end
 
