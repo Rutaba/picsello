@@ -3,7 +3,9 @@ defmodule Picsello.ClientViewsOrdersTest do
 
   setup :authenticated_gallery_client
 
-  feature "no orders", %{session: session} do
+  feature "no orders", %{
+    session: session
+  } do
     session
     |> click(css("a", text: "View Gallery"))
     |> click(link("My orders"))
