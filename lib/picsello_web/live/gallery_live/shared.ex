@@ -273,7 +273,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def prepare_gallery(%{id: gallery_id} = gallery) do
     photos = Galleries.get_gallery_photos(gallery_id, limit: 1)
 
-    if total(photos) == 1 do
+    if length(photos) == 1 do
       [photo] = photos
       maybe_set_cover_photo(gallery, photo)
       maybe_set_product_previews(gallery, photo)
@@ -313,21 +313,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
         end
       end)
 
-    case total(previews) > 0 do
-      true ->
-        Enum.each(previews, fn %{category_id: category_id} = product ->
-          product
-          |> Map.drop([:category, :preview_photo])
-          |> GalleryProducts.upsert_gallery_product(%{
-            preview_photo_id: photo.id,
-            category_id: category_id
-          })
-        end)
+    if length(previews) > 0 do
+      Enum.each(previews, fn %{category_id: category_id} = product ->
+        product
+        |> Map.drop([:category, :preview_photo])
+        |> GalleryProducts.upsert_gallery_product(%{
+          preview_photo_id: photo.id,
+          category_id: category_id
+        })
+      end)
 
-        {:ok, photo}
-
-      _ ->
-        {:ok, :already_set}
+      {:ok, photo}
+    else
+      {:ok, :already_set}
     end
   rescue
     _ -> :error
@@ -373,9 +371,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
         socket |> assign(cart_count: 0, order: nil)
     end
   end
-
-  def total(list) when is_list(list), do: list |> length
-  def total(_), do: nil
 
   def actions(assigns) do
     ~H"""

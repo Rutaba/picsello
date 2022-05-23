@@ -105,7 +105,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       event: "delete_album",
       title: "Delete album?",
       subtitle:
-        "Are you sure you wish to delete #{album.name}? Any photos within this album will be moved to your #{ngettext("Photos", "Unsorted photos", total(albums))}.",
+        "Are you sure you wish to delete #{album.name}? Any photos within this album will be moved to your #{ngettext("Photos", "Unsorted photos", length(albums))}.",
       payload: %{album_id: id}
     ]
 
