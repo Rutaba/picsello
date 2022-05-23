@@ -3,7 +3,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   use Phoenix.Component
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.Gettext, only: [ngettext: 3]
   import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
@@ -487,39 +486,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <button {attrs}><%= render_slot(@inner_block) %></button>
     """
-  end
-
-  def summary_counts(order) do
-    [
-      products_summary(order),
-      digitals_summary(Enum.filter(order.digitals, &Money.positive?(&1.price))),
-      digital_credits_summary(Enum.filter(order.digitals, &Money.zero?(&1.price))),
-      bundle_summary(order.bundle_price)
-    ]
-  end
-
-  defp products_summary(%{products: []}), do: nil
-
-  defp products_summary(order),
-    do: {"Products (#{Enum.count(order.products)})", Picsello.Cart.Order.product_total(order)}
-
-  defp digitals_summary([] = _digitals), do: nil
-
-  defp digitals_summary(digitals),
-    do: {"Digitals (#{Enum.count(digitals)})", sum_prices(digitals)}
-
-  defp digital_credits_summary([] = _credits), do: nil
-
-  defp digital_credits_summary(credits),
-    do:
-      {"Digital credits used (#{Enum.count(credits)})",
-       "#{ngettext("%{count} credit", "%{count} credits", Enum.count(credits))} - #{sum_prices(credits)}"}
-
-  defp bundle_summary(nil = _bundle_price), do: nil
-  defp bundle_summary(bundle_price), do: {"Bundle - all digital downloads", bundle_price}
-
-  defp sum_prices(collection) do
-    Enum.reduce(collection, ~M[0]USD, &Money.add(&2, &1.price))
   end
 
   defdelegate price_display(product), to: Picsello.Cart

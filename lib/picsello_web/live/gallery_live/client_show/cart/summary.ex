@@ -34,7 +34,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         <hr class="mb-1 border-base-200">
       </button>
 
-      <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6">
+      <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
         <dl class="text-lg contents">
           <%= for {label, value} <- @charges do %>
             <dt class="hidden toggle lg:block"><%= label %></dt>

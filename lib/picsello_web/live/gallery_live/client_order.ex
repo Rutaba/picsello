@@ -99,5 +99,5 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   defdelegate has_download?(order), to: Cart
   defdelegate product_name(order), to: Cart
   defdelegate quantity(item), to: Cart.Product
-  defdelegate total_cost(order), to: Cart
+  defdelegate summary(assigns), to: PicselloWeb.GalleryLive.ClientShow.Cart.Summary
 end

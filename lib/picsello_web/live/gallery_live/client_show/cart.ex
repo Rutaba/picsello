@@ -138,7 +138,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp continue_summary(assigns) do
     ~H"""
     <.summary order={@order} id={@id}>
-      <button type="button" disabled={zero_subtotal?(@order)} phx-click="continue" class="mx-5 mt-5 text-lg mb-7 btn-primary">
+      <button type="button" disabled={zero_subtotal?(@order)} phx-click="continue" class="mx-5 text-lg mb-7 btn-primary">
         Continue
       </button>
 
