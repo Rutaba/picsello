@@ -10,7 +10,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   use Phoenix.HTML
   import Phoenix.LiveView
   import PicselloWeb.FormHelpers
-  import PicselloWeb.LiveHelpers, only: [testid: 1]
+  import PicselloWeb.LiveHelpers, only: [testid: 1, icon: 1]
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext
   use Phoenix.Component
@@ -19,13 +19,31 @@ defmodule PicselloWeb.PackageLive.Shared do
           package: %Package{}
         }) :: %Phoenix.LiveView.Rendered{}
   def package_card(assigns) do
-    assigns = assigns |> Enum.into(%{class: ""})
+    assigns =
+      assigns
+      |> assign_new(:is_package_description_length_long, fn ->
+        String.length(assigns.package.description) > 100
+      end)
+      |> Enum.into(%{
+        class: ""
+      })
 
     ~H"""
       <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
         <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
 
-        <div class="mb-2 line-clamp-2 raw_html"><%= raw @package.description %></div>
+        <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"}>
+          <div class="line-clamp-2 raw_html raw_html_inline">
+            <%= raw @package.description %>
+          </div>
+          <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-0" data-offset="0" role="tooltip">
+            <div class="line-clamp-6 raw_html"></div>
+            <button class="inline-block text-blue-planning-300">View all</button>
+          </div>
+          <%= if @is_package_description_length_long do %>
+            <button class="inline-block text-blue-planning-300 view_more">View more</button>
+          <% end %>
+        </div>
 
         <dl class="flex flex-row-reverse items-center justify-end mt-auto">
           <%= if Money.zero?(@package.download_each_price) do %>

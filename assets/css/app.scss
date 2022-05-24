@@ -48,6 +48,17 @@ html {
   }
 }
 
+.raw_html_inline {
+  p {
+    display: inline;
+  }
+  ol, ul {
+    li {
+        @apply pb-0;
+      }
+  }
+}
+
 .center-container {
   @apply xl:container xl:mx-auto;
 }
