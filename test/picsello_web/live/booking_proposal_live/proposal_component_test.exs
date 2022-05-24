@@ -12,6 +12,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponentTest do
       id: :test,
       job: job,
       package: package,
+      is_package_description_length_long: String.length(package.description) > 100,
       photographer: user,
       proposal: proposal,
       organization: user.organization,
