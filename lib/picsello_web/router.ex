@@ -174,13 +174,9 @@ defmodule PicselloWeb.Router do
       pipe_through :browser
 
       live "/", PhotographerIndex, :index
-      live "/product/:gallery_product_id", GalleryProduct, :preview, as: :preview
-
       live "/photos", Photos.Index, :index
       live "/product-previews", ProductPreview.Index, :index
-
       live "/orders", PhotographerOrders, :orders
-      live "/upload", Show, :upload
 
       scope "/albums" do
         live "/", Albums.Index, :index

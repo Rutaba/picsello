@@ -32,7 +32,7 @@
               min_price={min_price(category)}
             }>
               <:button
-                phx-click="product_preview_photo_click"
+                phx-click="product_preview_photo_popup"
                 phx-target="*[role=main]"
                 phx-value-template-id={gallery_product_id}
                 phx-value-photo-id={@photo.id}>

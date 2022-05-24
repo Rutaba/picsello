@@ -237,42 +237,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
   @impl true
-  def handle_event(
-        "toggle_favorites",
-        _,
-        %{
-          assigns: %{
-            favorites_filter: favorites_filter
-          }
-        } = socket
-      ) do
-    toggle_state = !favorites_filter
-
+  def handle_event("toggle_favorites", _, socket) do
     socket
-    |> assign(:page, 0)
-    |> assign(:favorites_filter, toggle_state)
-    |> then(fn socket ->
-      case toggle_state do
-        true ->
-          socket
-          |> assign(:update_mode, "replace")
-
-        _ ->
-          socket
-          |> assign(:update_mode, "append")
-      end
-    end)
     |> assign(:selected_photos, [])
     |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
-    |> noreply()
+    |> toggle_favorites(@per_page)
   end
 
   @impl true
