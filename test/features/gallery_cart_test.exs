@@ -2,6 +2,7 @@ defmodule Picsello.GalleryCartTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Cart, Repo}
   alias Cart.Order
+  import Money.Sigils
 
   setup :authenticated_gallery_client
 
@@ -14,11 +15,10 @@ defmodule Picsello.GalleryCartTest do
         ]
       )
 
-    cart_product = build(:cart_product, %{product_id: whcc_product.whcc_id})
+    cart_product = build(:cart_product, whcc_product: whcc_product)
 
     Cart.place_product(cart_product, gallery.id)
-    |> Repo.preload(:digitals)
-    |> Picsello.Cart.preload_products()
+    |> Repo.preload(:digitals, products: :whcc_product)
   end
 
   feature "redirects to gallery if cart is empty", %{session: session, gallery: gallery} do
@@ -28,8 +28,7 @@ defmodule Picsello.GalleryCartTest do
   end
 
   feature "shows cart info", %{session: session, gallery: gallery} do
-    order = fill_gallery_cart(gallery)
-    %{line_item: cart_product, price: price} = order |> Order.priced_lines() |> hd
+    %{products: [%{price: price} = cart_product]} = order = fill_gallery_cart(gallery)
 
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")
@@ -40,14 +39,14 @@ defmodule Picsello.GalleryCartTest do
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
     |> assert_has(definition("Subtotal", text: order |> Order.total_cost() |> to_string()))
-    |> assert_has(testid("product-#{cart_product.editor_details.editor_id}"))
+    |> assert_has(testid("product-#{cart_product.editor_id}"))
   end
 
   feature "continue", %{session: session, gallery: gallery} do
     fill_gallery_cart(gallery)
 
-    Mox.stub(Picsello.MockWHCCClient, :create_order, fn _account_id, _editor_id, _opts ->
-      %Picsello.WHCC.Order.Created{total: "0"}
+    Mox.stub(Picsello.MockWHCCClient, :create_order, fn _account_id, _export ->
+      build(:whcc_order_created, total: ~M[0]USD)
     end)
 
     session

@@ -35,13 +35,12 @@ html {
   * {
     box-sizing: revert;
   }
-  ol {
+  ol, ul {
+    @apply pl-4;
     list-style: revert;
-    padding: revert;
-  }
-  ul {
-    list-style: revert;
-    padding: revert;
+    li {
+      @apply pb-2;
+    }
   }
   a {
     @apply text-blue-planning-300;

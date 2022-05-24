@@ -15,6 +15,10 @@ defmodule PicselloWeb.Helpers do
   def order_url(%{client_link_hash: hash, password: password}, order),
     do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password)
 
+  def ngettext(singular, plural, count) do
+    Gettext.dngettext(PicselloWeb.Gettext, "picsello", singular, plural, count, %{})
+  end
+
   defdelegate strftime(zone, date, format), to: PicselloWeb.LiveHelpers
 
   defdelegate dyn_gettext(key), to: PicselloWeb.Gettext

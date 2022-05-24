@@ -67,8 +67,12 @@
         <p class="pt-4 text-base"><%= @shipping_name %></p>
 
         <p class="text-base pt-2.5"><%= @shipping_address.addr1 %></p>
+        <%= case @shipping_address.addr2 do %>
+          <% nil -> %>
+          <% addr2 -> %> <p class="text-base pt-2.5"><%= addr2 %></p>
+        <% end %>
 
-        <p class="text-base pt-2.5"><%= @shipping_address.city <> ", " <> @shipping_address.state <> " " <> @shipping_address.zip %></p>
+        <p class="text-base pt-2.5"><%= "#{@shipping_address.city}, #{@shipping_address.state} #{@shipping_address.zip}" %></p>
       </div>
     <% end %>
 
@@ -90,27 +94,29 @@
               <img src={item_image_url(item)} class="h-24 mx-auto md:h-40"/>
 
               <div class="flex flex-col px-4 md:px-8 md:pt-4">
-      <span class="text-sm md:text-base md:font-medium"> <%= item |> Cart.product_size() |> Map.get("name") %> <.product_description id={item.editor_details.product_id} /></span>
+                <span class="text-sm md:text-base md:font-medium"> <%= product_name(item) %></span>
 
                 <span class="pt-2 text-xs md:text-sm md:py-5">Quantity: <%= quantity(item) %></span>
               </div>
 
-              <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= item.charged_price %></span>
+              <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= price_display(item) %></span>
             </div>
 
-            <%= if item.whcc_tracking do %>
-              <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
-                <.icon name="order-shipped" class="mr-2 w-7 h-7 md:mr-4"/>
-
-                <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
-                  <.tracking_link info={item.whcc_tracking} />
-                </p>
-              </div>
-            <% else %>
+            <%= case tracking(@order, item) do %>
+            <% nil -> %>
               <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
                 <.icon name="tracking-info" class="mr-2 w-7 h-7 md:mr-4"/>
 
                 <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
+              </div>
+
+            <% tracking -> %>
+              <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
+                <.icon name="order-shipped" class="mr-2 w-7 h-7 md:mr-4"/>
+
+                <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
+                  <.tracking_link info={tracking} />
+                </p>
               </div>
             <% end %>
           </div>
@@ -156,7 +162,7 @@
       <p class="text-xl md:flex md:justify-between md:items-center md:text-2xl text-base-300">
         <span>Total:</span>
 
-    <span class="font-bold md:pr-8"><%= total_cost(@order) %></span>
+        <span class="font-bold md:pr-8"><%= total_cost(@order) %></span>
       </p>
     </div>
   </div>

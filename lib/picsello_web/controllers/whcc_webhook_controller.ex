@@ -8,48 +8,20 @@ defmodule PicselloWeb.WhccWebhookController do
     conn |> ok()
   end
 
-  def webhook(
-        %Plug.Conn{} = conn,
-        %{
-          "EntryId" => entry,
-          "Status" => "Accepted"
-        } = params
-      ) do
-    Picsello.Cart.store_cart_product_processing(params)
-    Logger.info("[whcc] Processed #{entry}")
-
-    conn |> ok()
-  end
-
-  def webhook(
-        %Plug.Conn{} = conn,
-        %{
-          "Event" => "Processed",
-          "Status" => "Rejected",
-          "Errors" => errors,
-          "EntryId" => entry
-        } = params
-      ) do
-    Picsello.Cart.store_cart_product_processing(params)
-    Logger.error("[whcc] Error processing #{entry}: #{inspect(errors)}")
-
-    conn |> ok()
-  end
-
-  def webhook(
-        %Plug.Conn{} = conn,
-        %{
-          "EntryId" => entry,
-          "Event" => "Shipped"
-        } = params
-      ) do
-    Picsello.Cart.store_cart_product_tracking(params)
-    Logger.info("[whcc] Shipped #{entry}")
-    conn |> ok()
-  end
-
   def webhook(%Plug.Conn{} = conn, params) do
-    Logger.warn("[whcc] Unknown webhook: #{inspect(params)}")
+    with {:ok, payload} <- WHCC.Webhooks.parse_payload(params),
+         {:ok, _order} <- Picsello.Cart.update_whcc_order(payload) do
+      case payload do
+        %{status: "Rejected", errors: errors, entry_id: order_number} ->
+          Logger.error("[whcc] Error processing order number #{order_number}: #{inspect(errors)}")
+
+        _ ->
+          Logger.info("[whcc] order updated #{inspect(payload)}")
+      end
+    else
+      error ->
+        Logger.error("[whcc] could not process webhook #{inspect(params)}: #{inspect(error)}")
+    end
 
     conn |> ok()
   end

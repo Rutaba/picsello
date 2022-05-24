@@ -20,7 +20,7 @@ defmodule Picsello.WHCC do
 
   import Ecto.Query, only: [from: 2]
 
-  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor.Params, WHCC.Editor.Details}
+  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor}
 
   def sync() do
     # fetch latest from whcc api
@@ -156,23 +156,33 @@ defmodule Picsello.WHCC do
         opts \\ []
       ) do
     product
-    |> Params.build(photo, opts)
+    |> Editor.Params.build(photo, opts)
     |> Adapter.editor()
+  end
+
+  def create_order(account_id, %{items: items} = export) do
+    %{orders: orders} = created_order = Adapter.create_order(account_id, export)
+
+    orders =
+      for(order <- orders, item <- items, item.order_sequence_number == order.sequence_number) do
+        %{order | editor_id: item.id}
+      end
+
+    %{created_order | orders: orders}
   end
 
   defdelegate get_existing_editor(account_id, editor_id), to: Adapter
   defdelegate editor_details(account_id, editor_id), to: Adapter
-  defdelegate editor_export(account_id, editor_id), to: Adapter
+  defdelegate editors_export(account_id, editor_ids, opts \\ []), to: Adapter
   defdelegate editor_clone(account_id, editor_id), to: Adapter
-  defdelegate create_order(account_id, editor_id, opts), to: Adapter
   defdelegate confirm_order(account_id, confirmation), to: Adapter
   defdelegate webhook_register(url), to: Adapter
   defdelegate webhook_verify(hash), to: Adapter
   defdelegate webhook_validate(data, signature), to: Adapter
 
-  def price_details(editor_id, account_id) do
+  def price_details(account_id, editor_id) do
     details = editor_details(account_id, editor_id)
-    %{items: [item]} = editor_export(account_id, editor_id)
+    %{items: [item]} = editors_export(account_id, [Editor.Export.Editor.new(editor_id)])
 
     details
     |> get_product
@@ -182,16 +192,20 @@ defmodule Picsello.WHCC do
     )
   end
 
-  def price_details(%{category: category} = product, details, %{
+  def price_details(%{category: category, id: whcc_product_id} = product, details, %{
         unit_base_price: unit_price,
         quantity: quantity
       }) do
     %{
       unit_markup: mark_up_price(product, details, unit_price),
-      editor_details: details,
       unit_price: unit_price,
       quantity: quantity
     }
+    |> Map.merge(
+      details
+      |> Map.take([:preview_url, :editor_id, :selections])
+      |> Map.put(:whcc_product_id, whcc_product_id)
+    )
     |> Map.merge(
       category
       |> Map.from_struct()
@@ -199,7 +213,7 @@ defmodule Picsello.WHCC do
     )
   end
 
-  defp get_product(%Details{product_id: product_id}) do
+  defp get_product(%Editor.Details{product_id: product_id}) do
     from(product in Picsello.Product,
       join: category in assoc(product, :category),
       where: product.whcc_id == ^product_id,

@@ -315,6 +315,9 @@ defmodule Picsello.Factory do
 
     insert_list(shoot_count - Enum.count(shoots), :shoot, job: job)
 
+    default_contract = Picsello.Contracts.default_contract(job)
+    insert(:contract, job_id: job.id, contract_template_id: default_contract.id)
+
     job |> Repo.preload(:shoots, force: true)
   end
 
@@ -380,9 +383,11 @@ defmodule Picsello.Factory do
   end
 
   def gallery_factory(attrs) do
+    {lead_attrs, attrs} = Map.split(attrs, [:package])
+
     %Gallery{
       name: "Test Client Wedding",
-      job: fn -> build(:lead) end,
+      job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4()
     }
@@ -441,15 +446,31 @@ defmodule Picsello.Factory do
       hidden: false
     }
 
-  def product_factory,
-    do:
-      %Picsello.Product{
-        whcc_id: sequence("whcc_id"),
-        whcc_name: "polo",
-        position: sequence(:product_position, & &1),
-        category: fn -> build(:category) end
-      }
-      |> evaluate_lazy_attributes()
+  def product_factory do
+    product_json =
+      "test/support/fixtures/whcc/api/v1/products/44oa66BP8N9NtBknE.json"
+      |> File.read!()
+      |> Jason.decode!()
+
+    whcc_product =
+      product_json
+      |> update_in(["category", "id"], &"#{&1}-#{sequence("whcc_id")}")
+      |> Picsello.WHCC.Product.from_map()
+      |> Picsello.WHCC.Product.add_details(product_json)
+
+    %Picsello.Product{
+      whcc_id: sequence("whcc_id"),
+      whcc_name: "polo",
+      position: sequence(:product_position, & &1),
+      attribute_categories: whcc_product.attribute_categories,
+      api: whcc_product.api,
+      category: fn ->
+        %{category: %{id: whcc_id}} = whcc_product
+        Repo.get_by(Picsello.Category, whcc_id: whcc_id) || build(:category, whcc_id: whcc_id)
+      end
+    }
+    |> evaluate_lazy_attributes()
+  end
 
   def design_factory,
     do:
@@ -494,8 +515,7 @@ defmodule Picsello.Factory do
   def whcc_editor_details_factory(attrs \\ %{}) do
     %Picsello.WHCC.Editor.Details{
       editor_id: sequence("hkazbRKGjcoWwnEq3"),
-      preview_url:
-        "https://d3fvjqx1d7l6w5.cloudfront.net/a0e912a6-34ef-4963-b04d-5f4a969e2237.jpeg",
+      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
       product_id: fn -> insert(:product).whcc_id end,
       selections: %{
         "display_options" => "no",
@@ -509,109 +529,59 @@ defmodule Picsello.Factory do
   end
 
   def cart_product_factory(attrs \\ %{}) do
-    attrs = Map.put_new(attrs, :product_id, get_in(attrs, [:whcc_product, :whcc_id]))
-
-    %Picsello.Cart.CartProduct{
-      created_at: System.os_time(:millisecond),
-      editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id, :quantity])),
+    %Picsello.Cart.Product{
+      editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
       round_up_to_nearest: 500,
       shipping_base_charge: %Money{amount: 900, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
-      whcc_confirmation: nil,
-      whcc_order: nil,
-      whcc_processing: nil,
-      whcc_tracking: nil,
-      whcc_product: nil
+      whcc_product: fn -> insert(:product) end,
+      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      selections: %{
+        "display_options" => "no",
+        "quantity" => Map.get(attrs, :quantity, 1),
+        "size" => "20x30",
+        "surface" => "1_4in_acrylic_with_styrene_backing"
+      },
+      volume_discount: ~M[0]USD,
+      print_credit_discount: ~M[0]USD,
+      price: ~M[55500]USD
     }
-    |> merge_attributes(Map.drop(attrs, [:product_id]))
+    |> evaluate_lazy_attributes()
+    |> merge_attributes(attrs)
   end
 
-  def whcc_order_created_factory do
+  def whcc_order_created_order_factory do
+    %Picsello.WHCC.Order.Created.Order{
+      total: ~M[100]USD,
+      sequence_number: sequence(:order_sequence_number, & &1)
+    }
+  end
+
+  def whcc_order_created_factory(attrs) do
     %Picsello.WHCC.Order.Created{
-      confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-      entry: "hkazbRKGjcoWwnEq3",
-      products: [
-        %{
-          "Price" => "176.00",
-          "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
-          "Quantity" => 1
-        },
-        %{
-          "Price" => "8.80",
-          "ProductDescription" => "Peak Season Surcharge",
-          "Quantity" => 1
-        },
-        %{
-          "Price" => "65.60",
-          "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
-          "Quantity" => 1
-        }
-      ],
-      total: "250.40"
-    }
-  end
+      confirmation_id: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
+      entry_id: "hkazbRKGjcoWwnEq3",
+      orders: fn ->
+        case attrs do
+          %{total: total} ->
+            build_list(1, :whcc_order_created_order, total: total)
 
-  def ordered_cart_product_factory(attrs) do
-    cart_product = build(:cart_product)
-
-    %{
-      cart_product
-      | editor_details: build(:whcc_editor_details, Map.take(attrs, [:product_id])),
-        whcc_confirmation: nil,
-        whcc_order: %Picsello.WHCC.Order.Created{
-          confirmation: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
-          entry: "hkazbRKGjcoWwnEq3",
-          products: [
-            %{
-              "Price" => "176.00",
-              "ProductDescription" => "Acrylic Print 1/4\" with Styrene Backing 20x30",
-              "Quantity" => 1
-            },
-            %{
-              "Price" => "8.80",
-              "ProductDescription" => "Peak Season Surcharge",
-              "Quantity" => 1
-            },
-            %{
-              "Price" => "65.60",
-              "ProductDescription" => "Fulfillment Shipping WD - NDS or 2 day",
-              "Quantity" => 1
-            }
-          ],
-          total: "250.40"
-        },
-        whcc_processing: nil,
-        whcc_tracking: nil
+          _ ->
+            []
+        end
+      end
     }
+    |> merge_attributes(Map.drop(attrs, [:total]))
+    |> evaluate_lazy_attributes()
   end
 
   def order_factory,
     do:
       %Picsello.Cart.Order{gallery: fn -> build(:gallery) end}
       |> evaluate_lazy_attributes()
-
-  def confirmed_order_factory(attrs) do
-    %Picsello.Cart.Order{
-      delivery_info: %Picsello.Cart.DeliveryInfo{
-        address: %Picsello.Cart.DeliveryInfo.Address{
-          addr1: "1234 Hogwarts Way",
-          addr2: nil,
-          city: "New York",
-          country: "US",
-          state: "NY",
-          zip: "10001"
-        },
-        email: "hello@gmail.com",
-        name: "Harry Potter"
-      },
-      number: 226_160,
-      placed_at: ~U[2022-01-17 09:42:05Z]
-    }
-    |> merge_attributes(attrs)
-  end
 
   def email_preset_factory,
     do: %Picsello.EmailPreset{
@@ -641,10 +611,33 @@ defmodule Picsello.Factory do
     do:
       %Picsello.Cart.Digital{
         price: ~M[500]USD,
-        photo: fn _ -> build(:photo) end,
-        position: sequence(:position, & &1)
+        photo: fn _ -> build(:photo) end
       }
       |> evaluate_lazy_attributes()
+
+  def contract_template_factory(attrs) do
+    %Picsello.Contract{
+      name: "My custom contract",
+      job_type: "wedding",
+      content: "the greatest contract",
+      organization: fn ->
+        case attrs do
+          %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
+          _ -> build(:organization)
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def contract_factory(attrs) do
+    %Picsello.Contract{
+      name: "My job custom contract",
+      content: "the greatest job contract"
+    }
+    |> merge_attributes(attrs)
+  end
 
   def tax_schedule_factory do
     %{

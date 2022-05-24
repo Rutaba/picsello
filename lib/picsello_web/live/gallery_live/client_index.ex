@@ -89,40 +89,16 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         } = socket
       ) do
     socket
+
+    |> assign(:update_mode, "append")
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
     |> noreply()
   end
 
   @impl true
-  def handle_event(
-        "toggle_favorites",
-        _,
-        %{
-          assigns: %{
-            favorites_filter: favorites_filter
-          }
-        } = socket
-      ) do
-    toggle_state = !favorites_filter
-
-    socket
-    |> assign(:page, 0)
-    |> assign(:favorites_filter, toggle_state)
-    |> then(fn socket ->
-      case toggle_state do
-        true ->
-          socket
-          |> assign(:update_mode, "replace")
-
-        _ ->
-          socket
-          |> assign(:update_mode, "append")
-      end
-    end)
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
-    |> noreply()
+  def handle_event("toggle_favorites", _, socket) do
+    socket |> toggle_favorites(@per_page)
   end
 
   @impl true
@@ -133,85 +109,30 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  def handle_event(
-        "product_preview_photo_click",
-        %{"params" => id},
-        %{
-          assigns: %{
-            products: products
-          }
-        } = socket
-      ) do
-    gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(id) end)
-
-    socket
-    |> open_modal(
-      PicselloWeb.GalleryLive.EditProduct,
-      %{
-        category: gallery_product.category,
-        photo: gallery_product.preview_photo
-      }
-    )
-    |> noreply()
+  @impl true
+  def handle_event("product_preview_photo_popup", %{"params" => product_id}, socket) do
+    socket |> product_preview_photo_popup(product_id)
   end
 
+  @impl true
   def handle_event(
-        "product_preview_photo_click",
+        "product_preview_photo_popup",
         %{"photo-id" => photo_id, "template-id" => template_id},
         socket
       ) do
-    photo = Galleries.get_photo(photo_id)
-
-    template_id = template_id |> to_integer()
-
-    category =
-      GalleryProducts.get(id: template_id)
-      |> then(& &1.category)
-
-    socket
-    |> open_modal(
-      PicselloWeb.GalleryLive.EditProduct,
-      %{
-        category: category,
-        photo: photo
-      }
-    )
-    |> noreply()
+    socket |> product_preview_photo_popup(photo_id, template_id)
   end
 
+  @impl true
   def handle_event("buy-all-digitals", _, socket) do
     socket
     |> open_modal(PicselloWeb.GalleryLive.ChooseBundle, Map.take(socket.assigns, [:gallery]))
     |> noreply()
   end
 
-  def handle_event(
-        "click",
-        %{"preview_photo_id" => photo_id},
-        %{
-          assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites_filter
-          }
-        } = socket
-      ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
-
-    photo_id = to_integer(photo_id)
-
-    socket
-    |> open_modal(
-      PicselloWeb.GalleryLive.ChooseProduct,
-      %{
-        gallery: gallery,
-        photo_id: photo_id,
-        photo_ids:
-          photo_ids
-          |> CLL.init()
-          |> CLL.next(Enum.find_index(photo_ids, &(&1 == photo_id)) || 0)
-      }
-    )
-    |> noreply
+  @impl true
+  def handle_event("click", %{"preview_photo_id" => photo_id}, socket) do
+    socket |> client_photo_click(photo_id)
   end
 
   @impl true
@@ -233,33 +154,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  def handle_info(
-        {:customize_and_buy_product, whcc_product, photo, size},
-        %{
-          assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites
-          }
-        } = socket
-      ) do
-    created_editor =
-      Picsello.WHCC.create_editor(
-        whcc_product,
-        photo,
-        complete_url:
-          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-            "?editorId=%EDITOR_ID%",
-        secondary_url:
-          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-            "?editorId=%EDITOR_ID%&clone=true",
-        cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash),
-        size: size,
-        favorites_only: favorites
-      )
-
-    socket
-    |> redirect(external: created_editor.url)
-    |> noreply()
+  def handle_info({:customize_and_buy_product, whcc_product, photo, size}, socket) do
+    socket |> customize_and_buy_product(whcc_product, photo, size)
   end
 
   def handle_info(

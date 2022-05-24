@@ -11,7 +11,7 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
 
   setup do
     photographer = insert(:user)
-    gallery = insert(:gallery, job: insert(:lead, user: photographer))
+    gallery = insert(:gallery, job: :lead |> insert(user: photographer) |> promote_to_job())
 
     for category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
@@ -46,21 +46,21 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
 
       Picsello.MockWHCCClient
       |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
-        %Picsello.WHCC.Editor.Details{
+        build(:whcc_editor_details,
           product_id: whcc_product_id,
           selections: %{"size" => "6x9"},
           editor_id: "editor-id"
-        }
+        )
       end)
-      |> Mox.stub(:editor_export, fn _wat, "editor-id" ->
+      |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
         build(:whcc_editor_export, unit_base_price: ~M[100]USD)
       end)
       |> Mox.stub(:editor_clone, fn _wat, "editor-id" -> "clone-editor-id" end)
       |> Mox.stub(:get_existing_editor, fn _wat, id ->
         %Picsello.WHCC.CreatedEditor{url: new_editor_url, editor_id: id}
       end)
-      |> Mox.stub(:create_order, fn _account_id, _editor_id, _opts ->
-        %Picsello.WHCC.Order.Created{total: "69"}
+      |> Mox.stub(:create_order, fn _account_id, _export ->
+        build(:whcc_order_created, total: ~M[69]USD)
       end)
 
       assert {:error, _} = Picsello.Cart.get_unconfirmed_order(gallery.id)
@@ -79,7 +79,7 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
 
       {:ok, order} = Picsello.Cart.get_unconfirmed_order(gallery.id)
 
-      assert 1 == order.products |> Enum.count()
+      assert 1 == order |> Ecto.assoc(:products) |> Picsello.Repo.aggregate(:count)
     end
   end
 end

@@ -5,10 +5,115 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
-  alias Picsello.{Repo, Galleries, Messages}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
   alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent, GalleryMessageComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
+
+  def toggle_favorites(%{
+    assigns: %{
+      favorites_filter: favorites_filter
+    }
+  } = socket, per_page) do
+    toggle_state = !favorites_filter
+
+    socket
+    |> assign(:page, 0)
+    |> assign(:favorites_filter, toggle_state)
+    |> assign(:update_mode, "replace")
+    |> assign_photos(per_page)
+    |> push_event("reload_grid", %{})
+    |> noreply()
+  end
+
+  def client_photo_click(%{
+    assigns: %{
+      gallery: gallery,
+      favorites_filter: favorites_filter
+    }
+  } = socket, photo_id) do
+    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
+
+    photo_id = to_integer(photo_id)
+
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.ChooseProduct,
+      %{
+        gallery: gallery,
+        photo_id: photo_id,
+        photo_ids:
+          photo_ids
+          |> CLL.init()
+          |> CLL.next(Enum.find_index(photo_ids, &(&1 == photo_id)) || 0)
+      }
+    )
+    |> noreply
+  end
+
+  def product_preview_photo_popup(%{
+    assigns: %{
+      products: products
+    }
+  } = socket, product_id) do
+    gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(product_id) end)
+
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.EditProduct,
+      %{
+        category: gallery_product.category,
+        photo: gallery_product.preview_photo
+      }
+    )
+    |> noreply()
+  end
+
+  def product_preview_photo_popup(socket, photo_id, template_id) do
+    photo = Galleries.get_photo(photo_id)
+
+    template_id = template_id |> to_integer()
+
+    category =
+      GalleryProducts.get(id: template_id)
+      |> then(& &1.category)
+
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.EditProduct,
+      %{
+        category: category,
+        photo: photo
+      }
+    )
+    |> noreply()
+  end
+
+  def customize_and_buy_product(%{
+    assigns: %{
+      gallery: gallery,
+      favorites_filter: favorites
+    }
+  } = socket, whcc_product, photo, size) do
+    created_editor =
+      Picsello.WHCC.create_editor(
+        whcc_product,
+        photo,
+        complete_url:
+          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+            "?editorId=%EDITOR_ID%",
+        secondary_url:
+          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+            "?editorId=%EDITOR_ID%&clone=true",
+        cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash),
+        size: size,
+        favorites_only: favorites
+      )
+
+    socket
+    |> redirect(external: created_editor.url)
+    |> noreply()
+  end
 
   def expire_soon(gallery) do
     expired_at = get_expiry_date(gallery)
@@ -163,13 +268,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ),
       do: assign(socket, cart_count: 0)
 
-  def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{} = order}} = socket, _) do
+  def assign_cart_count(
+        %{assigns: %{order: %Picsello.Cart.Order{products: products, digitals: digitals} = order}} =
+          socket,
+        _
+      )
+      when is_list(products) and is_list(digitals) do
     socket
     |> assign(cart_count: Picsello.Cart.item_count(order))
   end
 
   def assign_cart_count(socket, gallery) do
-    case Picsello.Cart.get_unconfirmed_order(gallery.id) do
+    case Picsello.Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals]) do
       {:ok, order} ->
         socket |> assign(order: order) |> assign_cart_count(gallery)
 

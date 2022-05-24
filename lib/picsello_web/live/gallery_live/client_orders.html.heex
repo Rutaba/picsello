@@ -43,14 +43,14 @@
             <dd class="font-semibold lg:font-normal"><%= order.number %></dd>
           </dl>
 
-          <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, order.number), class: "text-xl justify-self-end text-base-250 font-extrabold col-start-2 lg:col-start-4 lg:row-span-1 row-span-3 jusify-self-end" do %>
+          <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, Order.number(order)), class: "text-xl justify-self-end text-base-250 font-extrabold col-start-2 lg:col-start-4 lg:row-span-1 row-span-3 jusify-self-end" do %>
             View details
           <% end %>
         </div>
 
         <div class="px-6 py-4 border border-t-0 border-base-225 lg:px-16 divide-y lg:divide-y-0 divide-base-200">
           <%= for item <- order.products do %>
-            <.item_frame item={item} price={item.charged_price} >
+            <.item_frame item={item} price={price_display(item)} >
               <:quantity>
                 <span class="text-sm mt-1.5">Quantity: <%= quantity(item) %></span>
               </:quantity>

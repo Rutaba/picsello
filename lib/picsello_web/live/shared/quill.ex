@@ -15,6 +15,7 @@ defmodule PicselloWeb.Shared.Quill do
         class: nil,
         enable_size: false,
         enable_image: false,
+        track_quill_source: false,
         current_user: nil
       })
 
@@ -28,6 +29,9 @@ defmodule PicselloWeb.Shared.Quill do
       data-target={@myself}>
       <%= if @enable_image do %>
         <input type="file" class="hidden" {testid("quill-image-input")} />
+      <% end %>
+      <%= if @track_quill_source do %>
+        <%= hidden_input @f, :quill_source %>
       <% end %>
       <div id="editor" class="min-h-[8rem]"></div>
       <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: "500" %>

@@ -154,17 +154,17 @@ defmodule Picsello.ClientOrdersTest do
       %Picsello.WHCC.CreatedEditor{url: url}
     end)
     |> Mox.stub(:editor_details, fn _wat, "editor-id" ->
-      %Picsello.WHCC.Editor.Details{
+      build(:whcc_editor_details,
         product_id: whcc_product_id,
         selections: %{"size" => size, "quantity" => 1},
         editor_id: "editor-id"
-      }
+      )
     end)
-    |> Mox.stub(:editor_export, fn _wat, "editor-id" ->
+    |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
       build(:whcc_editor_export, unit_base_price: ~M[300]USD)
     end)
-    |> Mox.stub(:create_order, fn _account_id, _editor_id, _opts ->
-      %Picsello.WHCC.Order.Created{total: "69"}
+    |> Mox.stub(:create_order, fn _account_id, _export ->
+      build(:whcc_order_created, total: ~M[69]USD)
     end)
     |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
       {:ok, :confirmed}
@@ -512,7 +512,7 @@ defmodule Picsello.ClientOrdersTest do
          }}
       )
 
-      assert String.ends_with?(product_image, "/preview.jpg")
+      assert String.ends_with?(product_image, "/watermarked_preview.jpg")
 
       session
       |> assert_has(css("h3", text: "Thank you for your order!"))

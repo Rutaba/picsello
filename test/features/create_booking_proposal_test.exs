@@ -99,7 +99,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(link("Proposal"))
     |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
     |> click(button("Close"))
-    |> click(link("Standard Contract"))
+    |> click(link("Contract"))
     |> assert_disabled(text_field("Type your full legal name"))
     |> click(button("Close"))
     |> click(link("Questionnaire"))
