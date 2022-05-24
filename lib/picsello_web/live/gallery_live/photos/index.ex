@@ -235,6 +235,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
+    |> assign(:update_mode, "append")
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
     |> noreply()
@@ -535,6 +536,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @impl true
   def handle_info(:photo_upload_completed, socket) do
     socket
+    |> assign(:update_mode, "append")
     |> assign_photos(@per_page)
     |> push_event("reload_grid", %{})
     |> noreply()

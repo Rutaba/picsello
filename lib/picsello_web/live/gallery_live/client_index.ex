@@ -89,6 +89,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         } = socket
       ) do
     socket
+    |> assign(:update_mode, "append")
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
     |> noreply()

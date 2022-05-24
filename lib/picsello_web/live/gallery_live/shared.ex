@@ -20,17 +20,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket
     |> assign(:page, 0)
     |> assign(:favorites_filter, toggle_state)
-    |> then(fn socket ->
-      case toggle_state do
-        true ->
-          socket
-          |> assign(:update_mode, "replace")
-
-        _ ->
-          socket
-          |> assign(:update_mode, "append")
-      end
-    end)
+    |> assign(:update_mode, "replace")
     |> assign_photos(per_page)
     |> push_event("reload_grid", %{})
     |> noreply()
