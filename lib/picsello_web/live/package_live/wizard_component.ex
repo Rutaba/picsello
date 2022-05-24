@@ -212,16 +212,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             Clear
           </.icon_button>
         </.input_label>
-        <.quill_input f={@f} html_field={:description} placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
+        <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
       </div>
 
+      <hr class="mt-6" />
+
       <%= if @is_template do %>
-        <div class="flex flex-col mt-4">
+        <div class="flex flex-col mt-6">
           <.input_label form={@f} class="mb-1 text-sm font-semibold" field={:job_type}>
             Type of Photography
           </.input_label>
 
-          <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-3 sm:gap-5">
+          <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>

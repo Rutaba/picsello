@@ -14,8 +14,8 @@ export default {
 
     if (event === 'click') {
       const viewMoreBtn = el.querySelector('.view_more_click');
-      const viewMoreText = viewMoreBtn.querySelector('span');
-      const viewMoreIcon = viewMoreBtn.querySelector('svg');
+      const viewMoreText = viewMoreBtn?.querySelector('span');
+      const viewMoreIcon = viewMoreBtn?.querySelector('svg');
 
       viewMoreBtn?.addEventListener('click', (e) => {
         if (description.classList.contains(classes.lineClamp2)) {
