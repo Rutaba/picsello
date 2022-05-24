@@ -16,7 +16,14 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
         <.close_x />
 
         <.banner title="Invoice" job={@job} package={@package}>
-          <div class="line-clamp-2 raw_html"><%= raw @package.description %></div>
+          <div class="mt-2 mb-4" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="click">
+            <div class="line-clamp-2 raw_html raw_html_inline mb-4">
+              <%= raw @package.description %>
+            </div>
+            <%= if @is_package_description_length_long do %>
+              <button class="flex items-center font-bold text-base-250 view_more_click" type="button"><.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 mr-1 transition-transform" /> <span>See more</span></button>
+            <% end %>
+          </div>
         </.banner>
 
         <.items {assigns}>
@@ -94,7 +101,8 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       organization: organization,
       client: client,
       shoots: shoots,
-      package: package
+      package: package,
+      is_package_description_length_long: String.length(package.description) > 100
     })
   end
 

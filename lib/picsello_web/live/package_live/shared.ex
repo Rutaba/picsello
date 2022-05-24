@@ -10,7 +10,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   use Phoenix.HTML
   import Phoenix.LiveView
   import PicselloWeb.FormHelpers
-  import PicselloWeb.LiveHelpers, only: [testid: 1, icon: 1]
+  import PicselloWeb.LiveHelpers, only: [testid: 1]
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext
   use Phoenix.Component
@@ -32,7 +32,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
         <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
 
-        <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"}>
+        <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
           <div class="line-clamp-2 raw_html raw_html_inline">
             <%= raw @package.description %>
           </div>

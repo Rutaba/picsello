@@ -51,7 +51,8 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
       organization: organization,
       client: client,
       shoots: shoots,
-      package: package
+      package: package,
+      is_package_description_length_long: String.length(package.description) > 100
     })
   end
 end
