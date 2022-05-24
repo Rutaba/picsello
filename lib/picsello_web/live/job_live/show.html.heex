@@ -8,51 +8,59 @@
       <:crumb><%= Job.name @job %></:crumb>
     </.crumbs>
 
-    <.status_badge job_status={@job.job_status} class="inline-block mt-8" />
-
-    <h1 class="flex items-center justify-between text-4xl font-bold lg:justify-start">
-      <%= Job.name @job %>
-
-      <button title="Manage" type="button" phx-click="manage" class="relative inline-block h-5 ml-4 text-2xl font-bold border rounded w-9 leading-3 border-blue-planning-300 text-blue-planning-300">
-        <div class="absolute -top-1.5 left-1.5">&hellip;</div>
-      </button>
-    </h1>
+    <div class="flex flex-col justify-between md:flex-row">
+      <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
+    </div>
   </div>
 </header>
 
-<.subheader package={@package} job={@job} />
+<div class="md:px-6 py-2 center-container" {intro_hints_only("intro_hints_only_cards")}>
+  <.section icon="envelope" title="Details & communications">
+    <div class="flex flex-col md:flex-row md:items-start">
+      <div class="flex-1 grid md:grid-cols-2 gap-5">
+        <.communications_card job={@job} inbox_count={@inbox_count} />
+        <.card title="Finances" class="h-52">
+          <div class="grid grid-cols-2 gap-5">
+            <dl class={classes(%{"col-span-2" => PaymentSchedules.all_paid?(@job)})}>
+              <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Paid</dt>
+              <dd class="font-bold text-green-finances-300 bg-green-finances-100 text-center py-2"><%= PaymentSchedules.paid_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+            </dl>
+            <%= unless PaymentSchedules.all_paid?(@job) do %>
+              <dl>
+                <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Owed</dt>
+                <dd class="font-bold text-red-sales-300 bg-red-sales-100 text-center py-2"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+              </dl>
+            <% end %>
+          </div>
+          <div class="flex justify-end mt-auto">
+            <%= unless PaymentSchedules.all_paid?(@job) do %>
+              <button class="link mr-4" phx-click="open-compose">Send reminder</button>
+            <% end %>
+            <.icon_button phx-click="open-stripe" color="blue-planning-300" icon="money-bags">
+              Go to Stripe
+            </.icon_button>
+          </div>
+        </.card>
+        <.package_details_card package={@package} job={@job} proposal={@proposal} />
+        <.private_notes_card job={@job} class="md:col-span-2 md:h-40" content_class="md:line-clamp-2" />
+      </div>
+      <.history_card job={@job} current_user={@current_user} steps_title="Tips & tricks" steps={["Keep in contact with your client","Remember to remind them about their upcoming shoots"]} />
+    </div>
+  </.section>
 
-<div class="p-6 center-container" {intro_hints_only("intro_hints_only_cards")}>
-  <ul class="grid gap-5 grid-cols-2 lg:grid-cols-4">
-    <.overview_card title="Finances" icon="money-bags-outline" {if PaymentSchedules.all_paid?(@job), do: %{button_text: "Go to Stripe", button_click: "open-stripe"}, else: %{button_text: "Send reminder", button_click: "open-compose"}} hint_content="See the status of payment from your client at a glance. If they're past due or you to need to follow up, send them a reminder message.">
-      <dl class="grid grid-cols-2">
-        <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Paid</dt>
-        <%= if PaymentSchedules.all_paid?(@job) do %>
-          <dd class="font-bold row-start-2 text-green-finances-300"><%= PaymentSchedules.total_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
-        <% else %>
-          <dd class="font-bold row-start-2 text-green-finances-300"><%= PaymentSchedules.paid_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
-          <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase">Owed</dt>
-          <dd class="font-bold row-start-2 text-red-sales-300"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+  <.section icon="camera-check" title="Gallery" class="sm:mt-8">
+    <div class="grid md:grid-cols-2 gap-5">
+      <.card title="Gallery">
+        <%= case gallery_attrs(@job) do %>
+          <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text} -> %>
+            <p><%= text %></p>
+            <button class="btn-primary mt-4 self-end" phx-click={button_click} disabled={button_disabled}><%= button_text %></button>
         <% end %>
-      </dl>
-    </.overview_card>
-    <.overview_card title="Inbox" icon="envelope-outline" button_text="Go to job inbox" button_click="open-inbox" hint_content="Check in on messages from your client, or send them a message">
-      <%= if @inbox_count > 0 do %>
-        <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
-      <% else %>
-        You are free as a bird!
-      <% end %>
-    </.overview_card>
-    <.gallery_overview_card gallery={@job.gallery} title="Gallery" icon="gallery"/>
-  </ul>
+      </.card>
+    </div>
+  </.section>
 
-  <.notes job={@job} />
+  <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} />
 
-  <h2 class="mt-8 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Shoot Details</h2>
-
-  <.shoot_details shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} current_user={@current_user} shoots={@shoots} />
-
-  <h2 class="mt-8 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">Booking Details</h2>
-
-  <.proposal_details job={@job} proposal={@proposal} current_user={@current_user} />
+  <.booking_details_section proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} />
 </div>

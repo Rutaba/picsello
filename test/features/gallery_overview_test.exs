@@ -131,7 +131,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> scroll_into_view(css("#deleteGallery"))
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, delete")))
-    |> assert_has(testid("overview-Gallery", text: "Looks like you need to upload photos."))
+    |> assert_has(testid("card-Gallery", text: "Looks like you need to upload photos."))
 
     assert current_path(session) == "/jobs/#{job.id}"
   end

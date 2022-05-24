@@ -1,7 +1,8 @@
-defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
+defmodule PicselloWeb.JobLive.Shared.HistoryComponentTest do
   use PicselloWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
-  alias PicselloWeb.LeadLive.LeadStatusComponent
+  alias Picsello.{Repo, Job}
+  alias PicselloWeb.JobLive.Shared.HistoryComponent
 
   describe "render" do
     setup do
@@ -9,7 +10,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
     end
 
     test "when status is :not_sent", %{lead: lead, user: user} do
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Lead created"
     end
@@ -17,7 +18,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
     test "when status is :sent", %{lead: lead, user: user} do
       _proposal = insert(:proposal, %{job: lead})
 
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal sent"
       assert component |> Floki.text() =~ "Awaiting acceptance"
@@ -26,7 +27,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
     test "when status is :accepted", %{lead: lead, user: user} do
       _proposal = insert(:proposal, %{job: lead, accepted_at: DateTime.utc_now()})
 
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal accepted"
       assert component |> Floki.text() =~ "Awaiting contract"
@@ -35,7 +36,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
     test "when status is :signed and no questionnaire is present", %{lead: lead, user: user} do
       _proposal = insert(:proposal, %{job: lead, signed_at: DateTime.utc_now()})
 
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal signed"
       assert component |> Floki.text() =~ "Pending payment"
@@ -51,7 +52,7 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
           signed_at: DateTime.utc_now()
         })
 
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Proposal signed"
       assert component |> Floki.text() =~ "Awaiting questionnaire"
@@ -69,20 +70,46 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponentTest do
 
       _answer = insert(:answer, proposal: proposal, questionnaire: questionnaire)
 
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
       assert component |> Floki.text() =~ "Questionnaire answered"
       assert component |> Floki.text() =~ "Pending payment"
+    end
+
+    test "when status is :archived", %{lead: lead, user: user} do
+      lead = lead |> Job.archive_changeset() |> Repo.update!()
+      component = render_component(HistoryComponent, job: lead, current_user: user)
+
+      assert component |> Floki.text() =~ "Lead archived"
     end
 
     test "when status is :deposit_paid", %{lead: lead, user: user} do
       _proposal = insert(:proposal, %{job: lead})
       insert(:payment_schedule, job: lead, paid_at: DateTime.utc_now())
 
-      component = render_component(LeadStatusComponent, job: lead, current_user: user)
+      component = render_component(HistoryComponent, job: lead, current_user: user)
 
-      assert component |> Floki.text() =~ "Payment paid"
-      assert component |> Floki.text() =~ "Job created"
+      assert component |> Floki.text() == "Active"
+    end
+
+    test "when status is :completed", %{lead: lead, user: user} do
+      _proposal = insert(:proposal, %{job: lead})
+      insert(:payment_schedule, job: lead, paid_at: DateTime.utc_now())
+      lead = lead |> Job.complete_changeset() |> Repo.update!()
+
+      component = render_component(HistoryComponent, job: lead, current_user: user)
+
+      assert component |> Floki.text() == "Completed"
+    end
+
+    test "when status is :imported", %{lead: lead, user: user} do
+      _proposal = insert(:proposal, %{job: lead})
+      package = insert(:package, user: user, collected_price: 0)
+      lead = lead |> Job.add_package_changeset(%{package_id: package.id}) |> Repo.update!()
+
+      component = render_component(HistoryComponent, job: lead, current_user: user)
+
+      assert component |> Floki.text() == "Active"
     end
   end
 end
