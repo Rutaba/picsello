@@ -102,10 +102,10 @@ defmodule Picsello.UserManagesContactsTest do
     |> find(css(".modal"), &wait_for_enabled_submit_button/1)
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(testid("subheader", text: "Elizabeth Taylor"))
-    |> assert_has(testid("subheader", text: "elizabeth@example.com"))
-    |> assert_has(testid("subheader", text: "(555) 123-4567"))
-    |> assert_has(testid("notes", text: "things to know about"))
+    |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
+    |> assert_has(testid("card-Communications", text: "elizabeth@example.com"))
+    |> assert_has(testid("card-Communications", text: "(555) 123-4567"))
+    |> assert_has(testid("card-Private notes", text: "things to know about"))
   end
 
   feature "creates lead from contact without phone", %{session: session, user: user} do
@@ -129,10 +129,10 @@ defmodule Picsello.UserManagesContactsTest do
     |> find(css(".modal"), &wait_for_enabled_submit_button/1)
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(testid("subheader", text: "Elizabeth Taylor"))
-    |> assert_has(testid("subheader", text: "elizabeth@example.com"))
-    |> assert_has(testid("subheader", text: "(555) 123-4567"))
-    |> assert_has(testid("notes", text: "things to know about"))
+    |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
+    |> assert_has(testid("card-Communications", text: "elizabeth@example.com"))
+    |> assert_has(testid("card-Communications", text: "(555) 123-4567"))
+    |> assert_has(testid("card-Private notes", text: "things to know about"))
   end
 
   feature "creates lead from contact with existing name and phone", %{
@@ -159,10 +159,10 @@ defmodule Picsello.UserManagesContactsTest do
     |> find(css(".modal"), &wait_for_enabled_submit_button/1)
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(testid("subheader", text: "Elizabeth Taylor"))
-    |> assert_has(testid("subheader", text: "elizabeth@example.com"))
-    |> assert_has(testid("subheader", text: "(555) 123-4567"))
-    |> assert_has(testid("notes", text: "things to know about"))
+    |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
+    |> assert_has(testid("card-Communications", text: "elizabeth@example.com"))
+    |> assert_has(testid("card-Communications", text: "(555) 123-4567"))
+    |> assert_has(testid("card-Private notes", text: "things to know about"))
   end
 
   feature "user archives contact", %{

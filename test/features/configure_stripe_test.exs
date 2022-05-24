@@ -32,7 +32,7 @@ defmodule Picsello.ConfigureStripeTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> find(testid("overview-Finances"), &click(&1, button("Set up Stripe")))
+    |> click(button("Set up Stripe"))
     |> assert_url_contains("stripe.me")
   end
 
@@ -41,7 +41,7 @@ defmodule Picsello.ConfigureStripeTest do
 
     session
     |> visit("/leads/#{lead.id}")
-    |> find(testid("booking-summary"), &click(&1, button("Set up Stripe")))
+    |> click(button("Set up Stripe"))
     |> assert_url_contains("stripe.me")
   end
 end
