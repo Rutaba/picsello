@@ -49,6 +49,7 @@ defmodule Picsello.Profiles do
       field(:job_types, {:array, :string})
       field(:no_website, :boolean, default: false)
       field(:website, :string)
+      field(:website_login, :string)
       field(:description, :string)
       field(:job_types_description, :string)
       embeds_one(:logo, ProfileImage, on_replace: :update)
@@ -59,7 +60,10 @@ defmodule Picsello.Profiles do
 
     def changeset(%__MODULE__{} = profile, attrs) do
       profile
-      |> cast(attrs, ~w[no_website website color job_types description job_types_description]a)
+      |> cast(
+        attrs,
+        ~w[no_website website website_login color job_types description job_types_description]a
+      )
       |> then(
         &if get_field(&1, :no_website),
           do: put_change(&1, :website, nil),
@@ -69,6 +73,7 @@ defmodule Picsello.Profiles do
       |> cast_embed(:main_image)
       |> prepare_changes(&clean_job_types/1)
       |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
+      |> validate_change(:website_login, &for(e <- url_validation_errors(&2), do: {&1, e}))
     end
 
     defp url_validation_errors(url) do
