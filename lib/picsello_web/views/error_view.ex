@@ -14,4 +14,8 @@ defmodule PicselloWeb.ErrorView do
       render("500_page.html", assigns)
     end
   end
+
+  def render("500.json", _assigns) do
+    Jason.encode!(%{code: 500, message: "Something went wrong…"})
+  end
 end

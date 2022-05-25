@@ -246,11 +246,17 @@ defmodule Picsello.Galleries do
   """
   def delete_photos(photo_ids) do
     photos = get_photos_by_ids(photo_ids)
+    [photo | _] = photos
 
     Ecto.Multi.new()
     |> Ecto.Multi.update_all(
       :preview,
       fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.update(
+      :cover_photo,
+      fn _ -> delete_gallery_cover_photo(photo.gallery_id, photos) end,
       []
     )
     |> Ecto.Multi.update_all(
@@ -716,6 +722,26 @@ defmodule Picsello.Galleries do
     |> Repo.update!()
   end
 
+  def delete_gallery_cover_photo(gallery_id, photos) do
+    gallery = get_gallery!(gallery_id)
+
+    case gallery do
+      %{cover_photo: %{id: nil}} ->
+        Gallery.update_changeset(gallery)
+
+      %{cover_photo: %{id: original_url}} ->
+        Enum.filter(photos, &(&1.original_url == original_url))
+        |> Enum.count()
+        |> case do
+          0 -> Gallery.update_changeset(gallery)
+          _ -> Gallery.delete_cover_photo_changeset(gallery)
+        end
+
+      _ ->
+        Gallery.update_changeset(gallery)
+    end
+  end
+
   @doc """
   Creates session token for the gallery client.
   """
@@ -796,15 +822,14 @@ defmodule Picsello.Galleries do
     gallery |> Repo.preload(:package) |> Map.get(:package)
   end
 
-  def do_not_charge_for_download?(%Gallery{} = gallery) do
-    package = get_package(gallery)
-    package && Money.zero?(package.download_each_price)
-  end
+  def do_not_charge_for_download?(%Gallery{} = gallery),
+    do: gallery |> get_package() |> Map.get(:download_each_price) |> Money.zero?()
 
   def min_price(category) do
-    Picsello.WHCC.min_price_details(category)
-    |> Picsello.Cart.CartProduct.new()
-    |> Picsello.Cart.CartProduct.price(shipping_base_charge: true)
+    category
+    |> Picsello.WHCC.min_price_details()
+    |> Picsello.Cart.Product.new()
+    |> Picsello.Cart.Product.example_price()
   end
 
   defp clean_store([]), do: nil

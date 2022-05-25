@@ -176,6 +176,14 @@ defmodule Picsello.FeatureCase do
       session
     end
 
+    def assert_selected_option(session, query, option_text) do
+      actual =
+        session |> find(query) |> find(css("option", selected: true)) |> Wallaby.Element.text()
+
+      assert option_text == actual
+      session
+    end
+
     def assert_path(session, path) do
       retry(fn ->
         if path == current_path(session), do: {:ok, nil}, else: {:error, nil}
@@ -233,7 +241,7 @@ defmodule Picsello.FeatureCase do
       session
       |> find(query, fn el ->
         inner_html = Wallaby.Element.attr(el, "innerHTML")
-        assert inner_html |> Floki.text(deep: true) =~ text
+        assert inner_html |> Floki.text(deep: true) |> String.replace(~r/\s+/, " ") =~ text
       end)
     end
 

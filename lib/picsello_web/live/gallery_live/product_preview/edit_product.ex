@@ -5,9 +5,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
   require Logger
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
-  import Ecto.Changeset
 
-  alias Picsello.Repo
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
 
@@ -93,16 +91,12 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
 
     if result != nil do
       result
-      |> cast(%{preview_photo_id: preview_photo_id, category_id: frame_id}, [
-        :preview_photo_id,
-        :category_id
-      ])
-      |> Repo.insert_or_update()
+      |> GalleryProducts.upsert_gallery_product(%{
+        preview_photo_id: preview_photo_id,
+        category_id: frame_id
+      })
 
-      send(
-        self(),
-        {:save, %{title: title}}
-      )
+      send(self(), {:save, %{title: title}})
     end
 
     socket |> noreply()

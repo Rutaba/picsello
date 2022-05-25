@@ -55,7 +55,8 @@ defmodule Picsello.ViewJobTest do
 
   feature "user views contract", %{session: session} do
     session
-    |> click(css("a[title='Standard Contract']"))
+    |> click(css("a[title='Contract']"))
+    |> assert_text("the greatest job contract")
     |> assert_has(css(".modal", text: "Signed on"))
     |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
@@ -82,8 +83,6 @@ defmodule Picsello.ViewJobTest do
     |> click(button("Save"))
     |> assert_has(definition("Private Notes", text: "here are my private notes"))
     |> find(testid("notes"), &click(&1, button("View")))
-    |> assert_has(css(".modal", text: "here are my private notes"))
-    |> find(css(".modal"), &click(&1, button("Edit")))
     |> assert_value(text_field("Private Notes"), "here are my private notes")
     |> find(css(".modal"), &click(&1, button("Clear")))
     |> assert_value(text_field("Private Notes"), "")

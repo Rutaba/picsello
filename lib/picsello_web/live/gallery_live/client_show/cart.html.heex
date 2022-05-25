@@ -16,7 +16,7 @@
           </div>
 
           <div {testid("line-items")} class="col-span-1 lg:col-span-2">
-            <%= for {product, product_lines} <- priced_lines_by_product(@order) do %>
+            <%= for {product, product_lines} <- lines_by_product(@order) do %>
               <div class="mb-5 border border-base-200 divide-y">
                 <div class="mx-8 mb-5 mt-7">
                   <h1 class="text-lg font-extrabold uppercase"><%= product.whcc_name %></h1>
@@ -24,21 +24,22 @@
                   <p class="mt-1 text-sm">Standard shipping: 5-7 business days</p>
                 </div>
 
-                <%= for %{line_item: line_item, price: price, price_without_discount: price_without_discount} <- product_lines do %>
+                <%= for line_item <- product_lines do %>
                   <div {testid("product-#{item_id(line_item)}")} class="py-8 mx-8">
                     <img class="float-left object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(line_item)}/>
 
                     <div class="py-4 md:py-6">
                       <div class="text-lg"><%= product_name(line_item) %></div>
 
-                      <%= if Money.equals?(price, price_without_discount) do %>
-                        <div class="text-2xl font-extrabold mt-2.5"><%= price %></div>
-                      <% else %>
-                        <div class="flex mt-2.5 items-center flex-wrap">
-                          <div class="mr-3 text-2xl line-through"><%= price_without_discount %></div>
-                          <div class="mr-4 text-2xl font-extrabold"><%= price %></div>
-                          <div class="px-1.5 mb-1 pt-1 pb-0.5 text-xs bg-green-finances-100 text-green-finances-300">Volume Discount</div>
-                        </div>
+                      <%= case line_item.volume_discount do %>
+                        <% ~M[0]USD -> %>
+                          <div class="text-2xl font-extrabold mt-2.5"><%= line_item.price %></div>
+                        <% discount -> %>
+                          <div class="flex mt-2.5 items-center flex-wrap">
+                            <div class="mr-3 text-2xl line-through"><%= line_item.price %></div>
+                            <div class="mr-4 text-2xl font-extrabold"><%= line_item.price |> Money.subtract(discount) %></div>
+                            <div class="px-1.5 mb-1 pt-1 pb-0.5 text-xs bg-green-finances-100 text-green-finances-300">Volume Discount</div>
+                          </div>
                       <% end %>
                     </div>
 
@@ -60,51 +61,53 @@
               </div>
             <% end %>
 
-            <div class={classes("border-base-200", border: Enum.any?(@order.digitals))}>
-              <div class="divide-y divide-base-200">
-                <div class="mx-8 mb-5 mt-7">
-                  <h1 class="text-lg font-extrabold uppercase">Digitals</h1>
+            <%= if digitals?(@order) do %>
+              <div class="border-base-200">
+                <div class="divide-y divide-base-200">
+                  <div class="mx-8 mb-5 mt-7">
+                    <h1 class="text-lg font-extrabold uppercase">Digitals</h1>
+                  </div>
+
+                  <%= if @order.bundle_price do %>
+                    <div {testid("bundle")} class="flex py-8 mx-8 border-t first:border-t-0" >
+                      <div class="float-left w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7">
+                        <.bundle_image url={item_image_url({:bundle, @gallery})} />
+                      </div>
+
+                      <div class="py-0 md:py-7">
+                        <div class="text-lg">Bundle - all digital downloads</div>
+
+                        <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9">
+                          <%= @order.bundle_price %>
+                        </div>
+
+                        <button type="button" phx-click="delete" phx-value-bundle={true} class="text-lg font-semibold text-blue-planning-300">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  <% end %>
+
+                  <%= for digital <- @order.digitals do %>
+                    <div {testid("digital-#{digital.id}")} class="flex py-8 mx-8 border-t first:border-t-0" >
+                      <img class="float-left object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(digital)}/>
+
+                      <div class="py-0 md:py-7">
+                        <div class="text-lg">Digital download</div>
+
+                        <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9">
+                          <%= price_display(digital) %>
+                        </div>
+
+                        <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  <% end %>
                 </div>
-
-                <%= if @order.bundle_price do %>
-                  <div {testid("bundle")} class="flex py-8 mx-8 border-t first:border-t-0" >
-                    <div class="float-left w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7">
-                      <.bundle_image url={item_image_url({:bundle, @gallery})} />
-                    </div>
-
-                    <div class="py-0 md:py-7">
-                      <div class="text-lg">Bundle - all digital downloads</div>
-
-                      <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9">
-                        <%= @order.bundle_price %>
-                      </div>
-
-                      <button type="button" phx-click="delete" phx-value-bundle={true} class="text-lg font-semibold text-blue-planning-300">
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                <% end %>
-
-                <%= for digital <- @order.digitals do %>
-                  <div {testid("digital-#{digital.id}")} class="flex py-8 mx-8 border-t first:border-t-0" >
-                    <img class="float-left object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(digital)}/>
-
-                    <div class="py-0 md:py-7">
-                      <div class="text-lg">Digital download</div>
-
-                      <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9">
-                        <%= price_display(digital) %>
-                      </div>
-
-                      <button type="button" phx-click="delete" phx-value-digital-id={digital.id} class="text-lg font-semibold text-blue-planning-300">
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                <% end %>
               </div>
-            </div>
+            <% end %>
           </div>
 
           <div class="col-span-1">

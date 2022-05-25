@@ -135,4 +135,35 @@ defmodule Picsello.GalleryOverviewTest do
 
     assert current_path(session) == "/jobs/#{job.id}"
   end
+
+  feature "Set first photo of gallery as cover photo", %{
+    session: session,
+    gallery: %{id: gallery_id} = gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/photos")
+    |> assert_has(css("#dragDrop-upload-form span", text: "Drag your images or"))
+    |> visit("/galleries/#{gallery_id}")
+    |> assert_has(css("#dragDrop-form span", text: "Drop image or"))
+
+    assert current_path(session) == "/galleries/#{gallery_id}"
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+
+    session
+    |> visit("/galleries/#{gallery_id}/photos")
+    |> assert_has(css(".item", count: length(photo_ids)))
+    |> visit("/galleries/#{gallery_id}")
+    |> refute_has(css("#dragDrop-form span", text: "Drag image or"))
+  end
+
+  feature "Don't share gallery if photos not uploaded", %{
+    session: session,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> assert_has(css("button", count: 1, text: "Share gallery"))
+    |> click(css("button", text: "Share gallery"))
+    |> assert_has(css("p", text: "Please add photos to gallery before share"))
+  end
 end

@@ -15,7 +15,6 @@ defmodule Picsello.PaymentSchedulesTest do
       price = Money.new(0)
 
       assert %{
-               label: "Payment",
                details: "100% discount",
                payments: [
                  %{
@@ -46,7 +45,6 @@ defmodule Picsello.PaymentSchedulesTest do
         price = Money.new(2000)
 
         assert %{
-                 label: "Payment Due in Full",
                  details: "100% retainer",
                  payments: [
                    %{
@@ -83,7 +81,6 @@ defmodule Picsello.PaymentSchedulesTest do
       price3 = Money.new(600)
 
       assert %{
-               label: "Standard Wedding Payment",
                details:
                  "35% retainer, 35% six months to the wedding, 30% one month before the wedding",
                payments: [
@@ -132,7 +129,6 @@ defmodule Picsello.PaymentSchedulesTest do
       price2 = Money.new(600)
 
       assert %{
-               label: "Advance Wedding Payment",
                details: "70% retainer and 30% one month before shoot",
                payments: [
                  %{
@@ -170,7 +166,6 @@ defmodule Picsello.PaymentSchedulesTest do
         price = Money.new(1000)
 
         assert %{
-                 label: "Standard Payment",
                  details: "50% retainer and 50% on day of shoot",
                  payments: [
                    %{

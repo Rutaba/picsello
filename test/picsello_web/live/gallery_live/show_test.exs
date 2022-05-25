@@ -12,7 +12,10 @@ defmodule PicselloWeb.GalleryLive.ShowTest do
     setup :register_and_log_in_user
 
     setup %{user: user} do
-      [gallery: insert(:gallery, job: insert(:lead, user: user), name: @gallery_name)]
+      [
+        gallery:
+          insert(:gallery, job: promote_to_job(insert(:lead, user: user)), name: @gallery_name)
+      ]
     end
 
     test "connected mount", %{conn: conn, gallery: gallery} do

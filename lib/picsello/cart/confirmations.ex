@@ -1,7 +1,7 @@
 defmodule Picsello.Cart.Confirmations do
   @moduledoc "context module for confirming orders. Should be accessed through Cart."
 
-  alias Picsello.{Galleries, Cart.Order, Payments, Cart.CartProduct, Cart.OrderNumber, WHCC, Repo}
+  alias Picsello.{Galleries, Cart.Order, Payments, Cart.OrderNumber, WHCC, Repo}
   import Ecto.Query, only: [from: 2]
 
   @doc """
@@ -65,10 +65,13 @@ defmodule Picsello.Cart.Confirmations do
     order =
       from(order in Order,
         where: order.id == ^order_id,
-        preload: [digitals: :photo, gallery: [job: [client: :organization]]]
+        preload: [
+          products: :whcc_product,
+          digitals: :photo,
+          gallery: [job: [client: :organization]]
+        ]
       )
       |> repo.one!()
-      |> Picsello.Cart.preload_products()
 
     {:ok, order}
   end
@@ -130,28 +133,32 @@ defmodule Picsello.Cart.Confirmations do
   end
 
   defp confirm_order_changeset(%{
-         order: %Order{gallery: gallery, placed_at: nil} = order
+         order:
+           %Order{
+             gallery: gallery,
+             placed_at: nil,
+             products: [_ | _],
+             whcc_order: %{confirmation_id: confirmation_id}
+           } = order
        }) do
-    confirmed_products =
-      order
-      |> Order.priced_lines()
-      |> Task.async_stream(fn %{
-                                line_item:
-                                  %CartProduct{whcc_order: %{confirmation: confirmation}} =
-                                    product,
-                                price: charged_price
-                              } ->
-        {:ok, confirmation} =
-          gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation)
+    {:ok, confirmation_result} =
+      gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation_id)
 
-        product
-        |> CartProduct.add_confirmation(confirmation)
-        |> Map.put(:charged_price, charged_price)
-      end)
-      |> Enum.map(fn {:ok, product} -> product end)
-
-    Order.confirmation_changeset(order, confirmed_products)
+    Order.confirmation_changeset(order, confirmation_result)
   end
+
+  defp confirm_order_changeset(%{
+         order:
+           %Order{
+             products: [],
+             digitals: digitals,
+             placed_at: nil,
+             whcc_order: nil,
+             bundle_price: bundle_price
+           } = order
+       })
+       when digitals != [] or not is_nil(bundle_price),
+       do: Order.confirmation_changeset(order)
 
   defp capture(_repo, %{intent: %{id: intent_id}, stripe_options: stripe_options}) do
     case Payments.capture_payment_intent(intent_id, stripe_options) do
