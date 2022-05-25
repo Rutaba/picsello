@@ -27,6 +27,7 @@ import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
 import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
+import Flash from './hooks/flash';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
 import HelpScout from './hooks/help-scout';
@@ -46,7 +47,7 @@ import ToggleSiblings from './hooks/toggle-siblings';
 import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
-import PageScroll from "./hooks/page-scroll";
+import PageScroll from './hooks/page-scroll';
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
 
 const Modal = {
@@ -129,6 +130,7 @@ const Hooks = {
   Clipboard,
   DefaultCostTooltip,
   DragDrop,
+  Flash,
   GalleryMobile,
   IFrameAutoHeight,
   HelpScout,
@@ -150,7 +152,7 @@ const Hooks = {
   ToggleContent,
   ToggleSiblings,
   ResumeUpload,
-  GallerySelector
+  GallerySelector,
 };
 
 let Uploaders = {};
