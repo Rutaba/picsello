@@ -590,7 +590,14 @@ defmodule PicselloWeb.JobLive.Shared do
       current_user
       |> Job.for_user()
       |> Job.not_leads()
-      |> Ecto.Query.preload([:client, :package, :job_status, :contract, :gallery])
+      |> Ecto.Query.preload([
+        :client,
+        :package,
+        :job_status,
+        :contract,
+        :gallery,
+        :payment_schedules
+      ])
       |> Repo.get!(job_id)
 
     do_assign_job(socket, job)
