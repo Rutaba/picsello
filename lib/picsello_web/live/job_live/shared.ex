@@ -25,6 +25,23 @@ defmodule PicselloWeb.JobLive.Shared do
   use Phoenix.Component
 
   def handle_event(
+        "toggle-section",
+        %{"section_id" => section_id},
+        %{assigns: %{collapsed_sections: collapsed_sections}} = socket
+      ) do
+    collapsed_sections =
+      if Enum.member?(collapsed_sections, section_id) do
+        Enum.filter(collapsed_sections, &(&1 != section_id))
+      else
+        collapsed_sections ++ [section_id]
+      end
+
+    socket
+    |> assign(:collapsed_sections, collapsed_sections)
+    |> noreply()
+  end
+
+  def handle_event(
         "edit-shoot-details",
         %{"shoot-number" => shoot_number},
         %{assigns: %{shoots: shoots} = assigns} = socket
@@ -227,19 +244,22 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def section(assigns) do
-    assigns =
-      assigns
-      |> assign_new(:class, fn -> "" end)
-
     ~H"""
-    <section class={"sm:border sm:border-base-200 sm:rounded-lg overflow-hidden #{@class}"}>
-      <div class="flex bg-base-200 px-4 py-3 items-center">
+    <section class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
+      <div class="flex bg-base-200 px-4 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={@id}>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
           <.icon name={@icon} class="w-5 h-5" />
         </div>
         <h2 class="text-2xl font-bold ml-3"><%= @title %></h2>
+        <div class="ml-auto">
+          <%= if Enum.member?(@collapsed_sections, @id) do %>
+            <.icon name="down" class="w-5 h-5 stroke-current stroke-2" />
+          <% else %>
+            <.icon name="up" class="w-5 h-5 stroke-current stroke-2" />
+          <% end %>
+        </div>
       </div>
-      <div class="p-6">
+      <div class={classes("p-6", %{"hidden" => Enum.member?(@collapsed_sections, @id)})}>
         <%= render_slot @inner_block %>
       </div>
     </section>
@@ -352,7 +372,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def shoot_details_section(assigns) do
     ~H"""
-    <.section icon="camera-check" title="Shoot details" class="sm:mt-8">
+    <.section id="shoot-details" icon="camera-check" title="Shoot details" collapsed_sections={@collapsed_sections}>
       <%= if is_nil(@package) do %>
         <p>You don’t have any shoots yet! If your client has a date but hasn’t decided on pricing, add a placeholder package for now.</p>
 
@@ -405,7 +425,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def booking_details_section(assigns) do
     ~H"""
-    <.section icon="camera-laptop" title="Booking details" class="sm:mt-8">
+    <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
       <.card title={if @proposal, do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
         <div {testid("contract")} class="grid sm:grid-cols-2 gap-5">
           <div class="flex flex-col border border-base-200 rounded-lg p-4">

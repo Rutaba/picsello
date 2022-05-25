@@ -34,6 +34,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
+    |> assign(:collapsed_sections, [])
     |> ok()
   end
 

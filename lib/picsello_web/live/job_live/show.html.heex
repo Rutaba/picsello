@@ -1,5 +1,5 @@
 <header>
-  <div class="p-6 pb-2 lg:pb-6 center-container">
+  <div class="px-6 pt-6 pb-2 center-container">
     <.crumbs>
       <:crumb to={Routes.job_path(@socket, @live_action)}>
         <%= action_name(@live_action, :plural) %>
@@ -16,7 +16,7 @@
 </header>
 
 <div class="md:px-6 py-2 center-container" {intro_hints_only("intro_hints_only_cards")}>
-  <.section icon="envelope" title="Details & communications">
+  <.section id="details-communications" icon="envelope" title="Details & communications" collapsed_sections={@collapsed_sections}>
     <div class="flex flex-col md:flex-row md:items-start">
       <div class="flex-1 grid md:grid-cols-2 gap-5">
         <.communications_card job={@job} inbox_count={@inbox_count} />
@@ -49,7 +49,7 @@
     </div>
   </.section>
 
-  <.section icon="camera-check" title="Gallery" class="sm:mt-8">
+  <.section id="gallery" icon="camera-check" title="Gallery" collapsed_sections={@collapsed_sections}>
     <div class="grid md:grid-cols-2 gap-5">
       <.card title="Gallery">
         <%= case gallery_attrs(@job) do %>
@@ -61,7 +61,7 @@
     </div>
   </.section>
 
-  <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} />
+  <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
 
-  <.booking_details_section proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} />
+  <.booking_details_section proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} collapsed_sections={@collapsed_sections} />
 </div>
