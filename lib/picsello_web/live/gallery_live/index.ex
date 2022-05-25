@@ -51,6 +51,8 @@ defmodule PicselloWeb.GalleryLive.Index do
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
+    prepare_gallery(gallery)
+
     socket
     |> assign(:gallery, gallery)
     |> noreply()

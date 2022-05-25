@@ -4,10 +4,14 @@ defmodule Picsello.GalleryShareTest do
 
   alias Picsello.Galleries.PhotoProcessing.Waiter
 
-  setup :authenticated
   setup :onboarded
+  setup :authenticated
+  setup :authenticated_gallery
 
-  setup %{user: user} do
+  setup %{gallery: gallery} do
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+
     Mox.verify_on_exit!()
 
     Picsello.Sandbox.allow(
@@ -16,7 +20,7 @@ defmodule Picsello.GalleryShareTest do
       Process.whereis(Picsello.Galleries.PhotoProcessing.Waiter)
     )
 
-    [gallery: insert(:gallery, job: promote_to_job(insert(:lead, user: user)))]
+    [photo_ids: photo_ids]
   end
 
   feature "test `share gallery` gets delayed till processing completed", %{
@@ -38,13 +42,13 @@ defmodule Picsello.GalleryShareTest do
       )
 
     session
-    |> visit("/galleries/#{gallery.id}/")
+    |> visit("/galleries/#{gallery.id}")
     |> assert_has(css("button", count: 1, text: "Share gallery"))
     |> click(css("button", text: "Share gallery"))
     |> assert_has(css("button", text: "Send Email"))
     |> click(css("button", text: "Send Email"))
 
-    assert_enqueued(worker: Picsello.Workers.ScheduleEmail)
+    assert_enqueued([worker: Picsello.Workers.ScheduleEmail], 100)
     refute_receive {:delivered_email, _}
     Waiter.complete_tracking(gallery.id, 1)
     assert_receive {:job_canceled, _}, 500
