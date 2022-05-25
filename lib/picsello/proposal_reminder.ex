@@ -25,7 +25,8 @@ defmodule Picsello.ProposalReminder do
   end
 
   def next_reminder_on(%BookingProposal{id: proposal_id, job_id: job_id}) do
-    with {^proposal_id, %{total_sent: total_sent, last_sent_at: last_sent_at}} <-
+    with true <- automated_emails_enabled?(),
+         {^proposal_id, %{total_sent: total_sent, last_sent_at: last_sent_at}} <-
            from(proposal in BookingProposal, where: proposal.job_id == ^job_id)
            |> next_proposal_info()
            |> Repo.one(),

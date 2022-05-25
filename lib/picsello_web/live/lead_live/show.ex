@@ -7,6 +7,7 @@ defmodule PicselloWeb.LeadLive.Show do
     Job,
     Repo,
     Payments,
+    Package,
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
@@ -18,11 +19,9 @@ defmodule PicselloWeb.LeadLive.Show do
     only: [
       assign_job: 2,
       assign_proposal: 1,
-      subheader: 1,
-      notes: 1,
-      shoot_details: 1,
-      proposal_details: 1,
-      overview_card: 1
+      section: 1,
+      card: 1,
+      shoot_details: 1
     ]
 
   @impl true
@@ -32,6 +31,39 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
     |> ok()
+  end
+
+  def send_proposal_button(assigns) do
+    assigns =
+      assigns
+      |> assign(:disabled_message, proposal_disabled_message(assigns))
+      |> assign_new(:show_message, fn -> true end)
+      |> assign_new(:class, fn -> nil end)
+
+    ~H"""
+    <div class={"flex flex-col items-center #{@class}"}>
+      <button id="finish-proposal" title="finish proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={@disabled_message}>Send proposal</button>
+      <%= if @show_message && @disabled_message do %>
+        <em class="pt-1 text-xs text-red-sales-300"><%= @disabled_message %></em>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp proposal_disabled_message(%{package: package, shoots: shoots, stripe_status: stripe_status}) do
+    cond do
+      !Enum.member?([:charges_enabled, :loading], stripe_status) ->
+        "Set up Stripe"
+
+      package == nil ->
+        "Add a package first"
+
+      package.shoot_count != Enum.count(shoots, &elem(&1, 1)) ->
+        "Add all shoots"
+
+      true ->
+        nil
+    end
   end
 
   @impl true
@@ -59,7 +91,11 @@ defmodule PicselloWeb.LeadLive.Show do
         |> noreply()
 
   @impl true
-  def handle_event("edit-package", %{}, socket), do: socket |> noreply()
+  def handle_event("edit-package", %{}, %{assigns: %{proposal: %BookingProposal{}}} = socket),
+    do:
+      socket
+      |> put_flash(:error, "Package can't be changed")
+      |> noreply()
 
   @impl true
   def handle_event(

@@ -5,7 +5,6 @@ defmodule Picsello.EditLeadPackageTest do
   setup :onboarded
   setup :authenticated
 
-  @edit_package_button button("Package settings")
   @price_text_field text_field("Creative Session Price")
 
   setup %{session: session, user: user} do
@@ -30,10 +29,11 @@ defmodule Picsello.EditLeadPackageTest do
   feature "user edits a package", %{session: session, lead: lead} do
     session
     |> visit("/leads/#{lead.id}")
-    |> click(@edit_package_button)
+    |> find(testid("card-Package details"), &click(&1, button("Edit")))
     |> assert_has(button("Cancel"))
     |> assert_text("Edit Package: Provide Details")
     |> assert_value(text_field("Title"), "My Greatest Package")
+    |> fill_in(text_field("Title"), with: "My updated package")
     |> assert_value(select("# of Shoots"), "2")
     |> click(css("div.ql-editor"))
     |> find(select("# of Shoots"), &click(&1, option("1")))
@@ -46,7 +46,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_has(radio_button("Do not charge for downloads", checked: true))
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
-    |> assert_text("My Greatest Package")
+    |> find(testid("card-Package details"), &assert_text(&1, "My updated package"))
 
     package = lead |> Repo.preload(:package) |> Map.get(:package)
 
@@ -56,7 +56,7 @@ defmodule Picsello.EditLeadPackageTest do
     updated =
       %{
         package
-        | name: "My Greatest Package",
+        | name: "My updated package",
           description: "<p>indescribably great.</p>",
           base_price: %Money{amount: 200},
           download_each_price: %Money{amount: 0},

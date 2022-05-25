@@ -33,7 +33,7 @@ defmodule PicselloWeb.LayoutView do
        "text-green-finances-300", "border-green-finances-300"},
       {:gallery_success, "tick", "bg-green-finances-100", "bg-green-finances-300",
        "text-green-finances-300", "border-green-finances-300"},
-      {:gallery_error, "warning-white", "bg-red-sales-100", "bg-red-sales-300",
+      {:gallery_error, "warning-orange", "bg-red-sales-100", "bg-red-sales-300",
        "text-red-sales-300", "border-red-sales-300"}
     ]
 
@@ -44,7 +44,7 @@ defmodule PicselloWeb.LayoutView do
     <div>
       <%= for {key, icon, bg_light, bg_dark, text_color, border_color} <- flash_styles(), message <- [live_flash(@flash, key)], message do %>
         <%= if(key in [:error, :info, :success])  do %>
-        <div class="center-container">
+        <div class="center-container bg_dark">
           <div class={classes(["mx-6 font-bold rounded-lg cursor-pointer m-4 flex border-2", bg_light, text_color, border_color])} role="alert" phx-click="lv:clear-flash" phx-value-key={key} title={key}>
             <div class={classes(["flex items-center justify-center p-3", bg_dark])}>
               <PicselloWeb.LiveHelpers.icon name={icon} class="w-6 h-6 stroke-current" />

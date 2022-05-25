@@ -241,7 +241,7 @@ defmodule Picsello.FeatureCase do
       session
       |> find(query, fn el ->
         inner_html = Wallaby.Element.attr(el, "innerHTML")
-        assert inner_html |> Floki.text(deep: true) =~ text
+        assert inner_html |> Floki.text(deep: true) |> String.replace(~r/\s+/, " ") =~ text
       end)
     end
 

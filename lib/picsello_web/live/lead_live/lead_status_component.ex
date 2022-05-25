@@ -12,22 +12,25 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
 
   @impl true
   def render(assigns) do
-    ~L"""
-    <div class="flex mt-2" role="status">
+    ~H"""
+    <div class="flex flex-col" role="status">
       <%= if @next_status do %>
-        <div class="p-2 mr-2 font-bold border rounded-lg text-blue-planning-300 border-blue-planning-300">
-          <%= @next_status %>
+        <div class="flex mt-4">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white">
+            <.icon name="info-contained" class="text-blue-planning-300 w-4 h-4" />
+          </div>
+          <span class="ml-4 text-blue-planning-300 font-bold"><%= @next_status %></span>
         </div>
       <% end %>
 
-      <div class="flex overflow-hidden font-bold border rounded-lg text-blue-planning-300 border-blue-planning-300">
-        <div class="flex flex-col items-center justify-center px-2 mr-2 text-xs font-semibold text-white bg-blue-planning-300">
-          <div class="uppercase"><%= @month %></div>
-
-          <div><%= @day %></div>
+      <div class="flex mt-4">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white">
+          <.icon name="info-contained" class="text-blue-planning-300 w-4 h-4" />
         </div>
-
-        <div class="flex items-center pr-2"><%= @current_status %></div>
+        <div class="flex flex-col ml-4">
+          <span class="font-bold"><%= @current_status %></span>
+          <span class="text-base-250"><%= @date %></span>
+        </div>
       </div>
     </div>
     """
@@ -37,11 +40,10 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
     %{job_status: job_status} = job |> Repo.preload(:job_status)
 
     {current_status, next_status} = current_statuses(job_status.current_status)
-    month = strftime(current_user.time_zone, job_status.changed_at, "%b")
-    day = strftime(current_user.time_zone, job_status.changed_at, "%d")
+    date = strftime(current_user.time_zone, job_status.changed_at, "%B %-d, %Y")
 
     socket
-    |> assign(current_status: current_status, next_status: next_status, month: month, day: day)
+    |> assign(current_status: current_status, next_status: next_status, date: date)
   end
 
   defp current_statuses(:archived), do: {"Lead archived", nil}

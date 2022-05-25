@@ -83,8 +83,6 @@ defmodule Picsello.ViewJobTest do
     |> click(button("Save"))
     |> assert_has(definition("Private Notes", text: "here are my private notes"))
     |> find(testid("notes"), &click(&1, button("View")))
-    |> assert_has(css(".modal", text: "here are my private notes"))
-    |> find(css(".modal"), &click(&1, button("Edit")))
     |> assert_value(text_field("Private Notes"), "here are my private notes")
     |> find(css(".modal"), &click(&1, button("Clear")))
     |> assert_value(text_field("Private Notes"), "")
