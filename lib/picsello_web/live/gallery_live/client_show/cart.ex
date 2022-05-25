@@ -3,8 +3,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.{Cart, Payments, WHCC, Galleries}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
-  alias WHCC.Shipping
   import PicselloWeb.GalleryLive.Shared
+  import Money.Sigils
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -54,10 +54,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       %{assigns: %{order: %{products: []}}} = socket ->
         redirect(socket, external: checkout_link(socket))
 
-      %{assigns: %{order: %{products: products}}} = socket ->
+      socket ->
         socket
-        |> assign(:ordering_tasks, %{})
-        |> schedule_products_ordering(products)
+        |> assign(:ordering_task, nil)
+        |> schedule_products_ordering()
     end
     |> noreply()
   end
@@ -126,16 +126,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   @impl true
   @doc "called when Task.async completes"
-  def handle_info({_ref, product}, %{assigns: %{order: order, ordering_tasks: tasks}} = socket) do
-    Task.shutdown(tasks[item_id(product)], :brutal_kill)
-    tasks = Map.drop(tasks, [item_id(product)])
+  def handle_info({_ref, order}, %{assigns: %{ordering_task: task}} = socket) do
+    Task.shutdown(task, :brutal_kill)
 
     socket
-    |> assign(:order, Cart.store_cart_product_checkout(order, product))
-    |> assign(:ordering_tasks, tasks)
-    |> then(fn socket ->
-      if Enum.empty?(tasks), do: socket |> redirect(external: checkout_link(socket)), else: socket
-    end)
+    |> assign(order: order, ordering_task: nil)
+    |> redirect(external: checkout_link(socket))
     |> noreply()
   end
 
@@ -180,105 +176,25 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     checkout_link
   end
 
-  defp schedule_products_ordering(socket, %{}) do
-    socket
-    |> noreply()
-  end
+  defp schedule_products_ordering(%{assigns: %{order: order}} = socket),
+    do: assign(socket, :ordering_task, Task.async(fn -> Cart.create_whcc_order(order) end))
 
-  defp schedule_products_ordering(
-         %{
-           assigns: %{
-             gallery: gallery,
-             order: %{delivery_info: delivery_info},
-             ordering_tasks: ordering_tasks
-           }
-         } = socket,
-         products
-       ) do
-    account_id = Galleries.account_id(gallery)
-
-    tasks =
-      products
-      |> Enum.reduce(ordering_tasks, fn product, tasks ->
-        case ordering_tasks[item_id(product)] do
-          nil -> :ignore
-          task -> Task.shutdown(task, :brutal_kill)
-        end
-
-        Map.put(
-          tasks,
-          item_id(product),
-          Task.async(fn ->
-            try do
-              order_product(product, account_id, delivery_info)
-            rescue
-              _ -> order_product(product, account_id, delivery_info)
-            end
-          end)
-        )
-      end)
-
-    socket
-    |> assign(:ordering_tasks, tasks)
-  end
-
-  defp order_product(product, account_id, delivery_info) do
-    Cart.order_product(product, account_id,
-      ship_to: form_ship_address(delivery_info),
-      return_to: return_to_address(),
-      attributes: Shipping.to_attributes(product)
-    )
-  end
-
-  defp return_to_address() do
-    %{
-      "Name" => "Returns Department",
-      "Addr1" => "3432 Denmark Ave",
-      "Addr2" => "Suite 390",
-      "City" => "Eagan",
-      "State" => "MN",
-      "Zip" => "55123",
-      "Country" => "US",
-      "Phone" => "8002525234"
-    }
-  end
-
-  defp form_ship_address(%{
-         name: name,
-         address: %{
-           addr1: addr1,
-           addr2: addr2,
-           city: city,
-           zip: zip,
-           state: state,
-           country: country
-         }
-       }) do
-    %{
-      "Name" => name,
-      "Addr1" => addr1,
-      "Addr2" => addr2,
-      "City" => city,
-      "State" => state,
-      "Zip" => zip,
-      "Country" => country
-    }
-  end
-
-  defp only_digitals?(%{products: [], digitals: [_ | _]}), do: true
-  defp only_digitals?(%{products: [], digitals: [], bundle_price: %Money{}}), do: true
-  defp only_digitals?(_), do: false
+  defp only_digitals?(%{products: []} = order), do: digitals?(order)
+  defp only_digitals?(%{products: [_ | _]}), do: false
+  defp digitals?(%{digitals: [_ | _]}), do: true
+  defp digitals?(%{digitals: [], bundle_price: %Money{}}), do: true
+  defp digitals?(_), do: false
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
 
   defp zero_subtotal?(order),
     do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
 
+  defp item_id(item), do: item.editor_id
+
   defdelegate cart_count(order), to: Cart, as: :item_count
-  defdelegate item_id(item), to: Cart.CartProduct, as: :id
   defdelegate item_image_url(item), to: Cart
-  defdelegate priced_lines_by_product(order), to: Cart
-  defdelegate product_id(item), to: Cart.CartProduct
+  defdelegate lines_by_product(order), to: Cart
   defdelegate product_name(product), to: Cart
   defdelegate product_quantity(product), to: Cart
   defdelegate summary(assigns), to: __MODULE__.Summary

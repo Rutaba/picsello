@@ -2,7 +2,7 @@ defmodule Picsello.WHCC.Shipping do
   @moduledoc "WHCC shipping options"
 
   @doc "Returns options available for category, size"
-  def options(%{whcc_product: product, editor_details: %{selections: selections}}) do
+  def options(%{whcc_product: product, selections: selections}) do
     %{"height" => height, "width" => width} =
       Picsello.WHCC.Product.selection_details(product, selections)
       |> get_in(["size", "metadata"])
@@ -74,11 +74,9 @@ defmodule Picsello.WHCC.Shipping do
   defp any(_), do: true
 
   @doc "Converts shipping option into order attributes"
-  def to_attributes(%Picsello.Cart.CartProduct{} = product) do
-    product |> options() |> hd() |> to_attributes()
+  def to_attributes(%Picsello.Cart.Product{} = product) do
+    product |> options() |> hd() |> Map.get(:attrs)
   end
-
-  def to_attributes(%{attrs: attrs}), do: attrs |> Enum.map(&%{"AttributeUID" => &1})
 
   defp fits?({a, b}, {x, y}), do: a <= x and b <= y
 end

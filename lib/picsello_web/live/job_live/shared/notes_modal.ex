@@ -29,46 +29,30 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
           <div class="flex items-center justify-between mb-2">
             <%= label_for f, :notes, label: "Private Notes" %>
 
-            <%= if @edit_mode do %>
-              <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-notes" data-input-name={input_name(f,:notes)}>
-                Clear
-              </.icon_button>
-            <% else %>
-              <.icon_button color="blue-planning-300" icon="pencil" phx-click="enable-edit" phx-target={@myself}>
-                Edit
-              </.icon_button>
-            <% end %>
+            <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-notes" data-input-name={input_name(f,:notes)}>
+              Clear
+            </.icon_button>
 
           </div>
 
-          <fieldset disabled={!@edit_mode}>
+          <fieldset>
             <%= input f, :notes, type: :textarea, class: "w-full", phx_hook: "AutoHeight", phx_update: "ignore" %>
           </fieldset>
         </div>
 
         <PicselloWeb.LiveModal.footer>
-          <%= if @edit_mode do %>
-            <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
-              Save
-            </button>
+          <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Saving...">
+            Save
+          </button>
 
-            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-              Cancel
-            </button>
-          <% else %>
-            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-              Close
-            </button>
-          <% end %>
+          <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+            Cancel
+          </button>
         </PicselloWeb.LiveModal.footer>
       </.form>
     </div>
     """
   end
-
-  @impl true
-  def handle_event("enable-edit", %{}, socket),
-    do: socket |> assign(:edit_mode, true) |> noreply()
 
   @impl true
   def handle_event("save", %{"job" => params}, socket) do
@@ -88,6 +72,6 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
   end
 
   def open(%{assigns: %{job: job}} = socket) do
-    socket |> open_modal(__MODULE__, %{edit_mode: !job.notes, job: job})
+    socket |> open_modal(__MODULE__, %{job: job})
   end
 end

@@ -56,7 +56,6 @@ defmodule Picsello.PaymentSchedules do
 
   defp payment_schedules_info(%{price: @zero_price, now: now}) do
     %{
-      label: "Payment",
       details: "100% discount",
       payments: [%{description: "100% discount", due_at: now, price: @zero_price}]
     }
@@ -65,7 +64,6 @@ defmodule Picsello.PaymentSchedules do
   defp payment_schedules_info(%{type: type, price: price, now: now})
        when type in ~w[headshot  mini] do
     %{
-      label: "Payment Due in Full",
       details: "100% retainer",
       payments: [%{description: "100% retainer", due_at: now, price: price}]
     }
@@ -82,7 +80,6 @@ defmodule Picsello.PaymentSchedules do
 
     if :lt == DateTime.compare(seven_months_from_wedding, now) do
       %{
-        label: "Advance Wedding Payment",
         details: "70% retainer and 30% one month before shoot",
         payments: [
           %{description: "70% retainer", due_at: now, price: Money.multiply(price, 0.7)},
@@ -95,7 +92,6 @@ defmodule Picsello.PaymentSchedules do
       }
     else
       %{
-        label: "Standard Wedding Payment",
         details: "35% retainer, 35% six months to the wedding, 30% one month before the wedding",
         payments: [
           %{description: "35% retainer", due_at: now, price: Money.multiply(price, 0.35)},
@@ -116,7 +112,6 @@ defmodule Picsello.PaymentSchedules do
 
   defp payment_schedules_info(%{price: price, now: now, next_shoot: next_shoot}) do
     %{
-      label: "Standard Payment",
       details: "50% retainer and 50% on day of shoot",
       payments: [
         %{description: "50% retainer", due_at: now, price: Money.multiply(price, 0.5)},

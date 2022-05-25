@@ -53,7 +53,7 @@ defmodule Picsello.Photos do
 
     bundle_order =
       from(order in Order,
-        where: not is_nil(order.bundle_price),
+        where: not is_nil(order.bundle_price) and not is_nil(order.placed_at),
         group_by: order.gallery_id,
         select: %{gallery_id: order.gallery_id}
       )

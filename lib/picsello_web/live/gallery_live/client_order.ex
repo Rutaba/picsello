@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Cart, GalleryProducts, Galleries}
+  alias Picsello.{Cart, Galleries}
   import Cart, only: [item_image_url: 1]
 
   def mount(_, _, socket) do
@@ -75,30 +75,29 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> assign_cart_count(gallery)
   end
 
-  defp product_description(%{id: id}) do
-    assigns = %{
-      product: GalleryProducts.get_whcc_product(id)
-    }
-
+  defp tracking_link(assigns) do
     ~H"""
-    <%= @product.whcc_name %>
+    <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- @info.shipping_info do %>
+      <a href={url} target="_blank" class="underline cursor-pointer">
+        <%= carrier %>
+        <%= tracking_number %>
+      </a>
+    <% end %>
     """
   end
 
-  defp tracking_link(%{info: info}) do
-    data = info["ShippingInfo"] |> Enum.at(0)
+  defp tracking(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
+    Enum.find_value(sub_orders, fn
+      %{editor_id: ^editor_id, whcc_tracking: tracking} ->
+        tracking
 
-    assigns = %{
-      url: data["TrackingUrl"],
-      text: [data["Carrier"], data["TrackingNumber"]] |> Enum.join(" ")
-    }
-
-    ~H"""
-      <a href={@url} class="underline cursor-pointer"><%= @text %></a>
-    """
+      _ ->
+        nil
+    end)
   end
 
-  defdelegate quantity(item), to: Cart.CartProduct
-  defdelegate total_cost(order), to: Cart
   defdelegate has_download?(order), to: Cart
+  defdelegate product_name(order), to: Cart
+  defdelegate quantity(item), to: Cart.Product
+  defdelegate total_cost(order), to: Cart
 end

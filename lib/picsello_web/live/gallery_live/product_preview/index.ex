@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id) |> Repo.preload(:albums)
+    prepare_gallery(gallery)
 
     socket
     |> assign(

@@ -39,6 +39,16 @@ defmodule Picsello.PhotosTest do
       assert %{id: ^photo_id, watermarked: false} = Photos.get(photo_id)
     end
 
+    test "watermarked is true if gallery has a watermark and order with bundle is not placed" do
+      gallery = insert(:gallery)
+      %{id: photo_id} = insert(:photo, gallery: gallery)
+      insert(:watermark, gallery: gallery)
+
+      insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: nil)
+
+      assert %{id: ^photo_id, watermarked: true} = Photos.get(photo_id)
+    end
+
     test "watermarked is true if gallery has a watermark but bundle or digital are not purchased" do
       gallery = insert(:gallery)
       %{id: photo_id} = insert(:photo, gallery: gallery)

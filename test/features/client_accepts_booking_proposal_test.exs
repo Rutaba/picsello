@@ -4,6 +4,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
   @send_email_button button("Send Email")
   @invoice_button button("Invoice")
+  @send_proposal_button button("Send proposal", count: 2, at: 1)
 
   setup %{sessions: [photographer_session | _]} do
     user =
@@ -65,7 +66,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       photographer_session
       |> visit("/leads/#{lead.id}")
       |> click(checkbox("Questionnaire included", selected: true))
-      |> click(button("Finish booking proposal"))
+      |> click(@send_proposal_button)
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
       |> assert_value(text_field("Subject line"), "here is what I propose")
@@ -350,7 +351,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Finish booking proposal"))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -389,6 +390,40 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   end
 
   @sessions 2
+  feature "client sees custom contract", %{
+    user: user,
+    sessions: [photographer_session, client_session],
+    lead: lead
+  } do
+    insert(:contract_template,
+      user: user,
+      job_type: "newborn",
+      content: "My custom contract",
+      name: "Contract 1"
+    )
+
+    photographer_session
+    |> visit("/leads/#{lead.id}")
+    |> click(checkbox("Questionnaire included", selected: true))
+    |> click(button("Edit or Select New"))
+    |> find(select("Select a Contract Template"), &click(&1, option("Contract 1")))
+    |> fill_in(text_field("Contract Name"), with: "Contract 2")
+    |> within_modal(&wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> click(@send_proposal_button)
+    |> wait_for_enabled_submit_button()
+    |> click(@send_email_button)
+
+    assert_receive {:delivered_email, email}
+    url = email |> email_substitutions |> Map.get("url")
+
+    client_session
+    |> visit(url)
+    |> click(button("To-Do Read and agree to your contract"))
+    |> assert_text("My custom contract")
+  end
+
+  @sessions 2
   feature "client accesses proposal for archived lead", %{
     sessions: [photographer_session, client_session],
     lead: lead
@@ -397,7 +432,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Finish booking proposal"))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -423,7 +458,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
     |> assert_text("100% discount")
-    |> click(button("Finish booking proposal"))
+    |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)
 
@@ -436,6 +471,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(button("To-Do Review your proposal"))
     |> click(button("Accept Quote"))
     |> click(button("To-Do Read and agree to your contract"))
+    |> assert_text("Retainer and Payment")
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
