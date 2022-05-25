@@ -5,7 +5,10 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   alias Picsello.{Repo, PaymentSchedules, BookingProposal, Job}
   import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
+
+  import PicselloWeb.BookingProposalLive.Shared,
+    only: [banner: 1, items: 1, is_package_description_length_long?: 1]
+
   require Logger
 
   @impl true
@@ -102,7 +105,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       client: client,
       shoots: shoots,
       package: package,
-      is_package_description_length_long: String.length(package.description) > 100
+      is_package_description_length_long: is_package_description_length_long?(package.description)
     })
   end
 

@@ -22,7 +22,11 @@ defmodule PicselloWeb.PackageLive.Shared do
     assigns =
       assigns
       |> assign_new(:is_package_description_length_long, fn ->
-        String.length(assigns.package.description) > 100
+        if assigns.package.description == nil do
+          false
+        else
+          byte_size(assigns.package.description) > 100
+        end
       end)
       |> Enum.into(%{
         class: ""

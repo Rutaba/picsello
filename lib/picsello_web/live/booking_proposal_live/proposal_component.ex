@@ -4,7 +4,9 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Repo, BookingProposal}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1, items: 1]
+
+  import PicselloWeb.BookingProposalLive.Shared,
+    only: [banner: 1, items: 1, is_package_description_length_long?: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -52,7 +54,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
       client: client,
       shoots: shoots,
       package: package,
-      is_package_description_length_long: String.length(package.description) > 100
+      is_package_description_length_long: is_package_description_length_long?(package.description)
     })
   end
 end
