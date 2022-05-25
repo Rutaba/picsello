@@ -90,14 +90,15 @@ defmodule Picsello.Cart.Order do
     |> cast_embed(:whcc_order)
   end
 
+  def placed_changeset(order),
+    do: change(order, %{placed_at: DateTime.utc_now() |> DateTime.truncate(:second)})
+
   def confirmation_changeset(
         %__MODULE__{} = order,
         _confirmation \\ nil
       ) do
-    attrs = %{placed_at: DateTime.utc_now()}
-
     order
-    |> cast(attrs, [:placed_at])
+    |> placed_changeset()
   end
 
   def store_delivery_info(order, delivery_info_changeset) do

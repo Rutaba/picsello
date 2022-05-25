@@ -8,12 +8,13 @@ defmodule Picsello.Cart.Confirmations do
   Confirms the order.
 
   1. query for order and connect account
-  1. make sure the order isn't already confirmed
+  1. make sure the order isn't already paid
   1. maybe fetch the session
-  1. verify the captured amount still matches the cart amount
-  1. confirm the whcc orders
-  1. mark the order as confirmed in our database
-  1. capture the stripe funds
+  1. mark intent as paid
+  1. send confirmation email
+  1. is the order all paid for?
+    1. capture the stripe funds
+    1. confirm in whcc
   """
   def confirm_order(
         %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session,
@@ -35,14 +36,14 @@ defmodule Picsello.Cart.Confirmations do
     |> Ecto.Multi.put(:order_number, order_number)
     |> Ecto.Multi.run(:order, &load_order/2)
     |> Ecto.Multi.run(:stripe_options, &stripe_options/2)
-    |> Ecto.Multi.run(:confirmed, &check_confirmed/2)
+    |> Ecto.Multi.run(:paid, &check_paid/2)
     |> session_fn.()
-    |> Ecto.Multi.run(:intent, &verify_intent/2)
+    |> Ecto.Multi.run(:intent, &update_intent/2)
     |> Ecto.Multi.update(:confirmed_order, &confirm_order_changeset/1)
     |> Ecto.Multi.run(:capture, &capture/2)
     |> Repo.transaction()
     |> case do
-      {:error, :confirmed, true, %{order: order}} ->
+      {:error, :paid, true, %{order: order}} ->
         {:ok, order}
 
       {:ok, %{confirmed_order: order}} ->
@@ -86,13 +87,11 @@ defmodule Picsello.Cart.Confirmations do
     end
   end
 
-  defp check_confirmed(_, %{order: order}) do
-    case order.placed_at do
-      nil ->
-        {:ok, false}
-
-      %DateTime{} ->
-        {:error, true}
+  defp check_paid(_, %{order: order}) do
+    if Picsello.Orders.client_paid?(order) do
+      {:error, true}
+    else
+      {:ok, false}
     end
   end
 
@@ -113,7 +112,7 @@ defmodule Picsello.Cart.Confirmations do
     end
   end
 
-  defp verify_intent(_, %{
+  defp update_intent(_, %{
          session: %{payment_intent: intent_id},
          order: order,
          stripe_options: stripe_options
@@ -122,7 +121,7 @@ defmodule Picsello.Cart.Confirmations do
 
     case Payments.retrieve_payment_intent(intent_id, stripe_options) do
       {:ok, %{amount_capturable: ^total} = intent} ->
-        {:ok, intent}
+        Picsello.Intents.update(intent)
 
       {:ok, intent} ->
         {:error, "cart total does not match payment intent:\n#{inspect(intent)}"}
@@ -136,7 +135,6 @@ defmodule Picsello.Cart.Confirmations do
          order:
            %Order{
              gallery: gallery,
-             placed_at: nil,
              products: [_ | _],
              whcc_order: %{confirmation_id: confirmation_id}
            } = order
@@ -152,7 +150,6 @@ defmodule Picsello.Cart.Confirmations do
            %Order{
              products: [],
              digitals: digitals,
-             placed_at: nil,
              whcc_order: nil,
              bundle_price: bundle_price
            } = order
@@ -160,13 +157,10 @@ defmodule Picsello.Cart.Confirmations do
        when digitals != [] or not is_nil(bundle_price),
        do: Order.confirmation_changeset(order)
 
-  defp capture(_repo, %{intent: %{id: intent_id}, stripe_options: stripe_options}) do
-    case Payments.capture_payment_intent(intent_id, stripe_options) do
-      {:ok, %{status: "succeeded"} = intent} ->
+  defp capture(_repo, %{intent: intent, stripe_options: stripe_options}) do
+    case Picsello.Intents.capture(intent, stripe_options) do
+      {:ok, %{status: :succeeded} = intent} ->
         {:ok, intent}
-
-      {:ok, intent} ->
-        {:error, "unexpected intent status:\n#{inspect(intent)}"}
 
       error ->
         error

@@ -4,8 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Cart, Galleries}
-  import Cart, only: [item_image_url: 1]
+  alias Picsello.{Orders, Cart}
 
   def mount(_, _, socket) do
     socket
@@ -23,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
            session_id,
            PicselloWeb.Helpers
          ) do
-      {:ok, order} -> order
+      {:ok, _order} -> Orders.get!(gallery, order_number)
     end
     |> then(fn order ->
       if connected?(socket) do
@@ -52,23 +51,21 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    order = Cart.get_placed_gallery_order!(gallery, order_number)
+    order = Orders.get!(gallery, order_number)
 
     socket
     |> assign_details(order)
     |> noreply()
   end
 
-  defp assign_details(%{assigns: %{gallery: gallery}} = socket, order) do
-    gallery =
-      gallery
-      |> Galleries.populate_organization_user()
+  defp assign_details(socket, order) do
+    gallery = order.gallery
 
     socket
     |> assign(
       gallery: gallery,
-      order: Cart.preload_products(order),
-      organization_name: gallery.job.client.organization.name,
+      order: order,
+      organization_name: gallery.organization.name,
       shipping_address: order.delivery_info.address,
       shipping_name: order.delivery_info.name
     )
@@ -96,8 +93,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     end)
   end
 
-  defdelegate has_download?(order), to: Cart
+  defdelegate has_download?(order), to: Picsello.Orders
   defdelegate product_name(order), to: Cart
   defdelegate quantity(item), to: Cart.Product
+  defdelegate item_image_url(item), to: Cart
   defdelegate summary(assigns), to: PicselloWeb.GalleryLive.ClientShow.Cart.Summary
 end

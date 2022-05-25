@@ -9,6 +9,7 @@ defmodule Picsello.Factory do
   alias Picsello.{
     BookingProposal,
     Client,
+    Repo,
     Job,
     Organization,
     Package,
@@ -17,7 +18,6 @@ defmodule Picsello.Factory do
     ClientMessage,
     Onboardings,
     PaymentSchedule,
-    Repo,
     Shoot,
     Accounts.User,
     Questionnaire,
@@ -719,5 +719,19 @@ defmodule Picsello.Factory do
     |> Picsello.Repo.insert!()
 
     {:ok, %{}}
+  end
+
+  def intent_factory do
+    %Picsello.Intents.Intent{
+      amount: ~M[100]USD,
+      amount_capturable: ~M[0]USD,
+      amount_received: ~M[0]USD,
+      application_fee_amount: ~M[0]USD,
+      description: "an expression of will",
+      order: fn -> build(:order) end,
+      status: :requires_payment_method,
+      stripe_id: sequence(:payment_intent, &"payment-intent-#{&1}")
+    }
+    |> evaluate_lazy_attributes()
   end
 end

@@ -21,6 +21,11 @@ defmodule Picsello.FeatureCase do
       end
     end
 
+    def run_jobs do
+      ExUnit.CaptureLog.capture_log([level: :warn], fn -> Oban.drain_queue(queue: :default) end)
+      Oban.Job |> Picsello.Repo.all()
+    end
+
     def fill_in_date(session, field, opts \\ []) do
       date = Keyword.get(opts, :with)
       input = find(session, field)

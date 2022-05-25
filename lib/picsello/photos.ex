@@ -4,12 +4,12 @@ defmodule Picsello.Photos do
   import Ecto.Query, only: [from: 2]
 
   alias Picsello.{
-    Repo,
     Cart.Digital,
-    Cart.Order,
-    Galleries.Watermark,
     Galleries.Photo,
-    Galleries.Workers.PhotoStorage
+    Galleries.Watermark,
+    Galleries.Workers.PhotoStorage,
+    Orders,
+    Repo
   }
 
   @gallery_icon "/images/gallery-icon.svg"
@@ -44,16 +44,16 @@ defmodule Picsello.Photos do
 
     digital =
       from(digital in Digital,
-        join: order in assoc(digital, :order),
+        join: order in subquery(Orders.client_paid_query()),
+        on: order.id == digital.order_id,
         join: photo in assoc(digital, :photo),
-        where: not is_nil(order.placed_at),
         group_by: [photo.gallery_id, photo.id],
         select: %{gallery_id: photo.gallery_id, photo_id: photo.id}
       )
 
     bundle_order =
-      from(order in Order,
-        where: not is_nil(order.bundle_price) and not is_nil(order.placed_at),
+      from(order in Orders.client_paid_query(),
+        where: not is_nil(order.bundle_price),
         group_by: order.gallery_id,
         select: %{gallery_id: order.gallery_id}
       )

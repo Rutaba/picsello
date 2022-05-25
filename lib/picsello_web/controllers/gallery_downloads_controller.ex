@@ -1,10 +1,10 @@
 defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
-  alias Picsello.{Cart, Galleries, Galleries.Workers.PhotoStorage}
+  alias Picsello.{Orders, Galleries, Galleries.Workers.PhotoStorage}
 
   def download(conn, %{"hash" => hash, "order_number" => order_number} = _params) do
     %{organization: %{name: org_name}, photos: photos} =
-      Cart.get_purchased_photos!(order_number, %{client_link_hash: hash})
+      Orders.get_purchased_photos!(order_number, %{client_link_hash: hash})
 
     photos
     |> to_entries()
@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
   def download_all(conn, %{"hash" => hash} = _params) do
     gallery = Galleries.get_gallery_by_hash!(hash)
 
-    %{organization: %{name: org_name}, photos: photos} = Cart.get_all_photos!(gallery)
+    %{organization: %{name: org_name}, photos: photos} = Orders.get_all_photos!(gallery)
 
     photos
     |> to_entries()
@@ -25,7 +25,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   def download_photo(conn, %{"hash" => hash, "photo_id" => photo_id} = _params) do
     gallery = Galleries.get_gallery_by_hash!(hash)
-    photo = Cart.get_purchased_photo!(gallery, photo_id)
+    photo = Orders.get_purchased_photo!(gallery, photo_id)
 
     %HTTPoison.AsyncResponse{id: id} =
       photo.original_url |> PhotoStorage.path_to_url() |> HTTPoison.get!(%{}, stream_to: self())

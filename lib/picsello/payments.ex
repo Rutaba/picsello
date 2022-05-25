@@ -104,7 +104,7 @@ defmodule Picsello.Payments do
   @callback create_account_link(create_account_link(), Stripe.options()) ::
               {:ok, Stripe.AccountLink.t()} | {:error, Stripe.Error.t()}
 
-  def checkout_link(params, opts) do
+  def create_session(params, opts) do
     params =
       Enum.into(params, %{
         payment_method_types: ["card"],
@@ -113,17 +113,8 @@ defmodule Picsello.Payments do
       })
 
     case impl().create_session(params, opts) do
-      {:ok, %{url: url}} -> {:ok, url}
-      _error -> checkout_without_taxes(params, opts)
-    end
-  end
-
-  defp checkout_without_taxes(params, opts) do
-    params = Map.drop(params, [:automatic_tax])
-
-    case impl().create_session(params, opts) do
-      {:ok, %{url: url}} -> {:ok, url}
-      error -> error
+      {:ok, _} = session -> session
+      _error -> params |> Map.drop([:automatic_tax]) |> impl().create_session(opts)
     end
   end
 
