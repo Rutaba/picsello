@@ -2,9 +2,6 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponentTest do
   use PicselloWeb.ConnCase
   import Phoenix.LiveViewTest
 
-  import PicselloWeb.BookingProposalLive.Shared,
-    only: [is_package_description_length_long?: 1]
-
   def render_package(attrs) do
     user = insert(:user)
     package = insert(:package, [user: user] ++ attrs)
@@ -15,8 +12,6 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponentTest do
       id: :test,
       job: job,
       package: package,
-      is_package_description_length_long:
-        is_package_description_length_long?(package.description),
       photographer: user,
       proposal: proposal,
       organization: user.organization,
