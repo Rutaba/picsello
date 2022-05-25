@@ -37,7 +37,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             <div class="line-clamp-6 raw_html"></div>
             <button class="inline-block text-blue-planning-300">View all</button>
           </div>
-          <%= if is_package_description_length_long?(@package.description) do %>
+          <%= if package_description_length_long?(@package.description) do %>
             <button class="inline-block text-blue-planning-300 view_more">View more</button>
           <% end %>
         </div>
@@ -149,8 +149,8 @@ defmodule PicselloWeb.PackageLive.Shared do
   def current(%{source: changeset}), do: current(changeset)
   def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 
-  def is_package_description_length_long?(nil), do: false
-  def is_package_description_length_long?(description), do: byte_size(description) > 100
+  def package_description_length_long?(nil), do: false
+  def package_description_length_long?(description), do: byte_size(description) > 100
 
   defp download_price(form),
     do: form |> current() |> Map.get(:download_each_price, Money.new(5000))

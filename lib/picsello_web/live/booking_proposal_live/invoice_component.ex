@@ -7,7 +7,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
-    only: [banner: 1, items: 1, is_package_description_length_long?: 1]
+    only: [banner: 1, items: 1, package_description_length_long?: 1]
 
   require Logger
 
@@ -23,7 +23,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
             <div class="line-clamp-2 raw_html raw_html_inline mb-4">
               <%= raw @package.description %>
             </div>
-            <%= if is_package_description_length_long?(@package.description) do %>
+            <%= if package_description_length_long?(@package.description) do %>
               <button class="flex items-center font-bold text-base-250 view_more_click" type="button"><.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 mr-1 transition-transform" /> <span>See more</span></button>
             <% end %>
           </div>

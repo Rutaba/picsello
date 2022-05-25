@@ -129,6 +129,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     """
   end
 
-  def is_package_description_length_long?(nil), do: false
-  def is_package_description_length_long?(description), do: byte_size(description) > 100
+  def package_description_length_long?(nil), do: false
+  def package_description_length_long?(description), do: byte_size(description) > 100
 end
