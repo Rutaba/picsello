@@ -8,8 +8,13 @@ defmodule Picsello.WHCC.Adapter do
   @callback get_existing_editor(String.t(), String.t()) :: Picsello.WHCC.CreatedEditor.t()
   @callback editor_clone(String.t(), String.t()) :: String.t()
   @callback editor_details(String.t(), String.t()) :: Picsello.WHCC.Editor.Details.t()
-  @callback editor_export(String.t(), String.t()) :: Picsello.WHCC.Editor.Export.t()
-  @callback create_order(String.t(), String.t(), Keyword.t()) :: Picsello.WHCC.Order.Created.t()
+  @callback editors_export(String.t(), [Picsello.WHCC.Editor.Export.Editor.t()],
+              address: Picsello.Cart.DeliveryInfo.t(),
+              entry_id: String.t(),
+              reference: String.t()
+            ) :: Picsello.WHCC.Editor.Export.t()
+  @callback create_order(String.t(), %Picsello.WHCC.Editor.Export{}) ::
+              Picsello.WHCC.Order.Created.t()
   @callback confirm_order(String.t(), String.t()) :: {:ok, atom()} | {:error, any()}
   @callback webhook_register(String.t()) :: any()
   @callback webhook_verify(String.t()) :: any()
@@ -24,10 +29,14 @@ defmodule Picsello.WHCC.Adapter do
   def editor(data), do: impl().editor(data)
   def get_existing_editor(account_id, id), do: impl().get_existing_editor(account_id, id)
   def editor_details(account_id, id), do: impl().editor_details(account_id, id)
-  def editor_export(account_id, id), do: impl().editor_export(account_id, id)
+
+  def editors_export(account_id, editors, opts \\ []),
+    do: impl().editors_export(account_id, editors, opts)
+
   def editor_clone(account_id, id), do: impl().editor_clone(account_id, id)
 
-  def create_order(account_id, id, opts), do: impl().create_order(account_id, id, opts)
+  def create_order(account_id, export),
+    do: impl().create_order(account_id, export)
 
   def confirm_order(account_id, confirmation),
     do: impl().confirm_order(account_id, confirmation)

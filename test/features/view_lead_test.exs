@@ -45,6 +45,7 @@ defmodule Picsello.ViewLeadTest do
     leads: [lead | _]
   } do
     insert(:proposal, job: lead)
+    add_contract(lead)
 
     first_reminder_on =
       DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60) |> Calendar.strftime("%B %d, %Y")
@@ -61,8 +62,8 @@ defmodule Picsello.ViewLeadTest do
   } do
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> find(testid("overview-Inbox"), &assert_text(&1, "View or send messages"))
-    |> find(testid("overview-Inbox"), &click(&1, button("Send message")))
+    |> assert_inner_text(testid("inbox"), "0 new messages")
+    |> find(testid("inbox"), &click(&1, button("Send message")))
     |> within_modal(&assert_text(&1, "Send an email"))
     |> within_modal(&click(&1, button("Cancel")))
     |> click(button("Go to inbox"))
@@ -74,8 +75,8 @@ defmodule Picsello.ViewLeadTest do
   feature "users views questionnaire", %{session: session, leads: [lead | _]} do
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> assert_text("BOOKING SUMMARY")
-    |> click(button("View questionnaire"))
+    |> assert_text("Booking details")
+    |> find(testid("questionnaire"), &click(&1, button("View")))
     |> assert_text("Read-only")
     |> assert_text("What do you like to do as a family?")
   end

@@ -20,7 +20,7 @@ defmodule Picsello.GalleryShareTest do
       Process.whereis(Picsello.Galleries.PhotoProcessing.Waiter)
     )
 
-    [photo_ids: photo_ids]
+    [photo_ids: photo_ids, gallery: insert(:gallery, job: promote_to_job(insert(:lead, user: user)))]
   end
 
   feature "test `share gallery` gets delayed till processing completed", %{

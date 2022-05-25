@@ -41,6 +41,28 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     :ok
   end
 
+  def insert_gallery(opts \\ []) do
+    {charge_for_downloads, opts} = Keyword.pop(opts, :charge_for_downloads, true)
+    download_each_price = if charge_for_downloads, do: ~M[1]USD, else: ~M[0]USD
+
+    org_attrs =
+      case Keyword.get(opts, :organization_name) do
+        nil -> %{}
+        name -> %{name: name}
+      end
+
+    organization = insert(:organization, org_attrs)
+
+    insert(:gallery,
+      job:
+        insert(:lead,
+          client: insert(:client, organization: organization),
+          package:
+            insert(:package, organization: organization, download_each_price: download_each_price)
+        )
+    )
+  end
+
   describe "Get /galleries/:gallery_id/order/:order_id/zip" do
     def get_zip(conn, gallery, order) do
       get(
@@ -63,7 +85,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     end
 
     test "no such order in gallery", %{conn: conn} do
-      gallery = insert(:gallery)
+      gallery = insert_gallery()
       order = add_photos(insert(:order, gallery: gallery), [insert(:photo, gallery: gallery)])
 
       assert_raise(Ecto.NoResultsError, fn ->
@@ -72,7 +94,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     end
 
     test "order has no digitals", %{conn: conn} do
-      gallery = insert(:gallery)
+      gallery = insert_gallery()
       order = insert(:order, gallery: gallery)
 
       assert_raise(Ecto.NoResultsError, fn ->
@@ -84,13 +106,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      gallery =
-        insert(:gallery,
-          job:
-            insert(:lead,
-              client: insert(:client, organization: insert(:organization, name: "org name"))
-            )
-        )
+      gallery = insert_gallery(organization_name: "org name")
 
       order = insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
 
@@ -119,13 +135,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      gallery =
-        insert(:gallery,
-          job:
-            insert(:lead,
-              client: insert(:client, organization: insert(:organization, name: "org name"))
-            )
-        )
+      gallery = insert_gallery(organization_name: "org name")
 
       order =
         insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
@@ -165,13 +175,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      gallery =
-        insert(:gallery,
-          job:
-            insert(:lead,
-              client: insert(:client, organization: insert(:organization, name: "org name"))
-            )
-        )
+      gallery = insert_gallery(organization_name: "org name")
 
       insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
 
@@ -196,17 +200,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      organization = insert(:organization, name: "org name")
-      package = insert(:package, organization: organization, download_each_price: ~M[0]USD)
-
-      gallery =
-        insert(:gallery,
-          job:
-            insert(:lead,
-              client: insert(:client, organization: organization),
-              package: package
-            )
-        )
+      gallery = insert_gallery(organization_name: "org name", charge_for_downloads: false)
 
       insert_list(3, :photo,
         gallery: gallery,
@@ -243,13 +237,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      gallery =
-        insert(:gallery,
-          job:
-            insert(:lead,
-              client: insert(:client, organization: insert(:organization, name: "org name"))
-            )
-        )
+      gallery = insert_gallery(organization_name: "org name")
 
       insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
 
@@ -272,17 +260,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      organization = insert(:organization, name: "org name")
-      package = insert(:package, organization: organization, download_each_price: ~M[0]USD)
-
-      gallery =
-        insert(:gallery,
-          job:
-            insert(:lead,
-              client: insert(:client, organization: organization),
-              package: package
-            )
-        )
+      gallery = insert_gallery(organization_name: "org name", charge_for_downloads: false)
 
       [first_photo | _] =
         insert_list(3, :photo,
@@ -299,8 +277,8 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       assert "original name.jpg" == URI.decode(download_filename)
     end
 
-    test "photo is in gallery's order is placed", %{conn: conn, original_url: original_url} do
-      gallery = insert(:gallery)
+    test "photo is in gallery's placed order", %{conn: conn, original_url: original_url} do
+      gallery = insert_gallery(organization_name: "org name")
 
       photo =
         insert(:photo,
@@ -323,7 +301,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      gallery = insert(:gallery)
+      gallery = insert_gallery()
 
       photo =
         insert(:photo,
@@ -339,7 +317,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     end
 
     test "no such photo in any gallery's order", %{conn: conn, original_url: original_url} do
-      gallery = insert(:gallery)
+      gallery = insert_gallery()
 
       [photo1, photo2] =
         insert_list(2, :photo,

@@ -112,7 +112,7 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: "", disabled: false})
 
     ~H"""
-    <button type="button" class={"flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 text-2m border-#{@color} #{@class}"} disabled={@disabled} {@rest}>
+    <button type="button" class={classes("flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
       <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
       <%= render_block(@inner_block) %>
     </button>

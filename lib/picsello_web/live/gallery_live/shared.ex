@@ -234,13 +234,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ),
       do: assign(socket, cart_count: 0)
 
-  def assign_cart_count(%{assigns: %{order: %Picsello.Cart.Order{} = order}} = socket, _) do
+  def assign_cart_count(
+        %{assigns: %{order: %Picsello.Cart.Order{products: products, digitals: digitals} = order}} =
+          socket,
+        _
+      )
+      when is_list(products) and is_list(digitals) do
     socket
     |> assign(cart_count: Picsello.Cart.item_count(order))
   end
 
   def assign_cart_count(socket, gallery) do
-    case Picsello.Cart.get_unconfirmed_order(gallery.id) do
+    case Picsello.Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals]) do
       {:ok, order} ->
         socket |> assign(order: order) |> assign_cart_count(gallery)
 
