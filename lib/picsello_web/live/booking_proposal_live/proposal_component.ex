@@ -53,8 +53,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
       organization: organization,
       client: client,
       shoots: shoots,
-      package: package,
-      is_package_description_length_long: is_package_description_length_long?(package.description)
+      package: package
     })
   end
 end

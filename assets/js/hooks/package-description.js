@@ -61,7 +61,4 @@ export default {
       );
     }
   },
-  destroyed() {
-    this.popper?.destroy();
-  },
 };
