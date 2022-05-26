@@ -10,6 +10,7 @@
 
     <div class="flex flex-col justify-between md:flex-row">
       <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
+      <button phx-click="open-compose" class="hidden md:block px-8 btn-primary">Create an email</button>
     </div>
   </div>
 </header>
