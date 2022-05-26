@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
       socket
       |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
-      |> put_flash(:gallery_success, message)
+      |> put_flash(:success, message)
       |> noreply()
     end
   end

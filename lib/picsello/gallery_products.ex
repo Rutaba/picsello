@@ -6,6 +6,12 @@ defmodule Picsello.GalleryProducts do
   alias Picsello.Product
   alias Picsello.Galleries.GalleryProduct
 
+  def upsert_gallery_product(gallery_product, attr) do
+    gallery_product
+    |> GalleryProduct.changeset(attr)
+    |> Repo.insert_or_update()
+  end
+
   def get(fields) do
     from(gp in GalleryProduct,
       left_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),

@@ -224,7 +224,7 @@ defmodule PicselloWeb.JobLive.Shared do
           </div>
 
           <%= if Job.lead?(@job) do %>
-            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class={classes("mt-2 lg:mt-0 w-max lg:ml-6", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @proposal != nil})} disabled={@proposal != nil}>
+            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class="mt-2 lg:mt-0 w-max lg:ml-6" disabled={@proposal != nil}>
               Package settings
               <%= unless @proposal do %>
                 <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
@@ -262,6 +262,43 @@ defmodule PicselloWeb.JobLive.Shared do
       </div>
 
       <hr class="hidden border-gray-200 lg:block col-span-2"/>
+    </div>
+    """
+  end
+
+  def section(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:class, fn -> "" end)
+
+    ~H"""
+    <section class={"sm:border sm:border-base-200 sm:rounded-lg overflow-hidden #{@class}"}>
+      <div class="flex bg-base-200 px-4 py-3 items-center">
+        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+          <.icon name={@icon} class="w-5 h-5" />
+        </div>
+        <h2 class="text-2xl font-bold ml-3"><%= @title %></h2>
+      </div>
+      <div class="p-6">
+        <%= render_slot @inner_block %>
+      </div>
+    </section>
+    """
+  end
+
+  def card(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:class, fn -> "" end)
+      |> assign_new(:color, fn -> "blue-planning-300" end)
+
+    ~H"""
+    <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
+      <div class={"w-3 flex-shrink-0 border-r bg-#{@color}"} />
+      <div class="flex flex-col w-full p-4">
+        <h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
+        <%= render_slot(@inner_block) %>
+      </div>
     </div>
     """
   end

@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     gallery = Galleries.get_gallery!(id) |> Repo.preload(:albums)
+    prepare_gallery(gallery)
 
     socket
     |> assign(
@@ -63,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket
     |> close_modal()
     |> assign(products: Galleries.products(gallery))
-    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> put_flash(:success, "#{title} successfully updated")
     |> noreply
   end
 

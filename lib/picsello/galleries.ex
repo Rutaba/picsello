@@ -246,11 +246,17 @@ defmodule Picsello.Galleries do
   """
   def delete_photos(photo_ids) do
     photos = get_photos_by_ids(photo_ids)
+    [photo | _] = photos
 
     Ecto.Multi.new()
     |> Ecto.Multi.update_all(
       :preview,
       fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
+      []
+    )
+    |> Ecto.Multi.update(
+      :cover_photo,
+      fn _ -> delete_gallery_cover_photo(photo.gallery_id, photos) end,
       []
     )
     |> Ecto.Multi.update_all(
@@ -696,6 +702,26 @@ defmodule Picsello.Galleries do
     gallery
     |> Gallery.delete_cover_photo_changeset()
     |> Repo.update!()
+  end
+
+  def delete_gallery_cover_photo(gallery_id, photos) do
+    gallery = get_gallery!(gallery_id)
+
+    case gallery do
+      %{cover_photo: %{id: nil}} ->
+        Gallery.update_changeset(gallery)
+
+      %{cover_photo: %{id: original_url}} ->
+        Enum.filter(photos, &(&1.original_url == original_url))
+        |> Enum.count()
+        |> case do
+          0 -> Gallery.update_changeset(gallery)
+          _ -> Gallery.delete_cover_photo_changeset(gallery)
+        end
+
+      _ ->
+        Gallery.update_changeset(gallery)
+    end
   end
 
   @doc """

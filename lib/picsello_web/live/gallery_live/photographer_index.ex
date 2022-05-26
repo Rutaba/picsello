@@ -51,6 +51,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       PubSub.subscribe(Picsello.PubSub, "photographer-gallery:#{gallery.id}")
     end
 
+    prepare_gallery(gallery)
+
     socket
     |> assign(:gallery, gallery)
     |> noreply()
@@ -246,7 +248,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     socket
     |> assign(:gallery, gallery)
-    |> put_flash(:gallery_success, "The expiration date has been successfully updated")
+    |> put_flash(:success, "The expiration date has been successfully updated")
     |> noreply()
   end
 

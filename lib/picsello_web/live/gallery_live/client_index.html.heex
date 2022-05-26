@@ -1,26 +1,28 @@
-<div {cover_photo(@gallery)} 
-class={"flex text-left flex-nowrap gallery__coverImg #{if(@active, do: 'block sm:hidden', else: 'hidden')}"}
-id="gallery-conver-photo"
-phx-hook="ClientGalleryCookie"
-data-name={cover_photo_cookie(@gallery.id)}
-data-max_age={max_age()}
-data-active={"#{@active}"}
->
-  <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
-    <div class="relative z-10 flex flex-wrap items-end content-center pb-2 md:pb-60 pr-2 pl-2 md:pl-0 mt-auto text-start text-base-100 md:pr-0 md:text-center">
-      <h3 class="w-full text-base font-medium lg:text-2xl">
-        <%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %>
-      </h3>
+<div 
+  class={"w-screen lg:h-screen h-[66vw] #{if(@active, do: 'block sm:hidden', else: 'hidden')}"}
+  id="gallery-conver-photo"
+  phx-hook="ClientGalleryCookie"
+  data-name={cover_photo_cookie(@gallery.id)}
+  data-max_age={max_age()}
+  data-active={"#{@active}"}
+  >
+  <div {cover_photo(@gallery)} class="flex text-left flex-nowrap top-0 left-0 bg-cover h-full">
+    <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
+      <div class="relative z-10 flex flex-wrap items-end content-center pb-2 md:pb-60 pr-2 pl-2 md:pl-0 mt-auto text-start text-base-100 md:pr-0 md:text-center">
+        <h3 class="w-full text-base font-medium lg:text-2xl">
+          <%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %>
+        </h3>
 
-      <h1 class="w-full mb-10 text-2xl font-bold lg:text-6xl">
-        <%= @gallery.name %>
-      </h1>
+        <h1 class="w-full mb-10 text-2xl font-bold lg:text-6xl">
+          <%= @gallery.name %>
+        </h1>
 
-      <p class="w-full text-center hidden sm:block">
-        <a id="view-gallery" phx-click="view_gallery" class="text-center cursor-pointer text-white bg-transparent border-white gallery__button btn-secondary hover:bg-white/10">
-          View Gallery
-        </a>
-      </p>
+        <p class="w-full text-center hidden sm:block">
+          <a id="view-gallery" phx-click="view_gallery" class="text-center cursor-pointer text-white bg-transparent border-white gallery__button btn-secondary hover:bg-white/10">
+            View Gallery
+          </a>
+        </p>
+      </div>
     </div>
   </div>
 </div>

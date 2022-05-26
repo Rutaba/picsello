@@ -10,11 +10,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
 
-  def toggle_favorites(%{
-    assigns: %{
-      favorites_filter: favorites_filter
-    }
-  } = socket, per_page) do
+  def toggle_favorites(
+        %{
+          assigns: %{
+            favorites_filter: favorites_filter
+          }
+        } = socket,
+        per_page
+      ) do
     toggle_state = !favorites_filter
 
     socket
@@ -26,12 +29,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  def client_photo_click(%{
-    assigns: %{
-      gallery: gallery,
-      favorites_filter: favorites_filter
-    }
-  } = socket, photo_id) do
+  def client_photo_click(
+        %{
+          assigns: %{
+            gallery: gallery,
+            favorites_filter: favorites_filter
+          }
+        } = socket,
+        photo_id
+      ) do
     photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
 
     photo_id = to_integer(photo_id)
@@ -51,12 +57,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply
   end
 
-  def product_preview_photo_popup(%{
-    assigns: %{
-      products: products
-    }
-  } = socket, product_id) do
-    gallery_product = Enum.find(products, fn product -> product.id == String.to_integer(product_id) end)
+  def product_preview_photo_popup(
+        %{
+          assigns: %{
+            products: products
+          }
+        } = socket,
+        product_id
+      ) do
+    gallery_product =
+      Enum.find(products, fn product -> product.id == String.to_integer(product_id) end)
 
     socket
     |> open_modal(
@@ -89,12 +99,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  def customize_and_buy_product(%{
-    assigns: %{
-      gallery: gallery,
-      favorites_filter: favorites
-    }
-  } = socket, whcc_product, photo, size) do
+  def customize_and_buy_product(
+        %{
+          assigns: %{
+            gallery: gallery,
+            favorites_filter: favorites
+          }
+        } = socket,
+        whcc_product,
+        photo,
+        size
+      ) do
     created_editor =
       Picsello.WHCC.create_editor(
         whcc_product,
@@ -206,45 +221,116 @@ defmodule PicselloWeb.GalleryLive.Shared do
           }
         } = socket
       ) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
+    case prepare_gallery(gallery) do
+      {:ok, _} ->
+        hash =
+          gallery
+          |> Galleries.set_gallery_hash()
+          |> Map.get(:client_link_hash)
 
-    gallery = Repo.preload(gallery, job: :client)
+        gallery = Repo.preload(gallery, job: :client)
 
-    link = Routes.gallery_client_index_url(socket, :index, hash)
-    client_name = gallery.job.client.name
+        link = Routes.gallery_client_index_url(socket, :index, hash)
+        client_name = gallery.job.client.name
 
-    subject = "#{gallery.name} photos"
+        subject = "#{gallery.name} photos"
 
-    html = """
-    <p>Hi #{client_name},</p>
-    <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
-    <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
-    <p>Happy viewing!</p>
-    """
+        html = """
+        <p>Hi #{client_name},</p>
+        <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
+        <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
+        <p>Happy viewing!</p>
+        """
 
-    text = """
-    Hi #{client_name},
+        text = """
+        Hi #{client_name},
 
-    Your gallery is ready to view! You can view the gallery here: #{link}
+        Your gallery is ready to view! You can view the gallery here: #{link}
 
-    Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
+        Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
 
-    Happy viewing!
-    """
+        Happy viewing!
+        """
 
-    socket
-    |> assign(:job, gallery.job)
-    |> assign(:gallery, gallery)
-    |> GalleryMessageComponent.open(%{
-      body_html: html,
-      body_text: text,
-      subject: subject,
-      modal_title: "Share gallery"
-    })
-    |> noreply()
+        socket
+        |> assign(:job, gallery.job)
+        |> assign(:gallery, gallery)
+        |> GalleryMessageComponent.open(%{
+          body_html: html,
+          body_text: text,
+          subject: subject,
+          modal_title: "Share gallery"
+        })
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Please add photos to gallery before share")
+        |> noreply()
+    end
+  end
+
+  def prepare_gallery(%{id: gallery_id} = gallery) do
+    photos = Galleries.get_gallery_photos(gallery_id, limit: 1)
+
+    if total(photos) == 1 do
+      [photo] = photos
+      maybe_set_cover_photo(gallery, photo)
+      maybe_set_product_previews(gallery, photo)
+    end
+  end
+
+  def maybe_set_cover_photo(gallery, photo) do
+    case gallery.cover_photo do
+      nil ->
+        gallery
+        |> Galleries.save_gallery_cover_photo(%{
+          cover_photo: %{
+            id: photo.original_url,
+            aspect_ratio: photo.aspect_ratio,
+            width: photo.width,
+            height: photo.height
+          }
+        })
+        |> then(fn %{cover_photo: photo} -> {:ok, photo} end)
+
+      _ ->
+        {:ok, :already_set}
+    end
+  rescue
+    _ -> :error
+  end
+
+  def maybe_set_product_previews(gallery, photo) do
+    products = Galleries.products(gallery)
+
+    previews =
+      Enum.filter(products, fn product ->
+        case product.preview_photo do
+          %{id: nil} -> true
+          nil -> true
+          _ -> false
+        end
+      end)
+
+    case total(previews) > 0 do
+      true ->
+        Enum.each(previews, fn %{category_id: category_id} = product ->
+          product
+          |> Map.drop([:category, :preview_photo])
+          |> GalleryProducts.upsert_gallery_product(%{
+            preview_photo_id: photo.id,
+            category_id: category_id
+          })
+        end)
+
+        {:ok, photo}
+
+      _ ->
+        {:ok, :already_set}
+    end
+  rescue
+    _ -> :error
   end
 
   def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset) do
