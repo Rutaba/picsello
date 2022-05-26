@@ -10,7 +10,13 @@ defmodule PicselloWeb.Live.Session.New do
 
     socket
     |> assign_defaults(session)
-    |> assign(:page_title, "Log In")
+    |> assign(%{
+      page_title: "Log In",
+      meta_attrs: %{
+        description:
+          "Log in to your Picsello account to start growing your photography business with our intuitive, all-in-one, photography business management software."
+      }
+    })
     |> assign(changeset: changeset, error_message: nil, trigger_submit: false)
     |> ok()
   end

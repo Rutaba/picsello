@@ -7,7 +7,7 @@ defmodule PicselloWeb.LayoutView do
 
   use Phoenix.Component
 
-  def meta_tags do
+  defp default_meta_tags do
     for(
       {meta_name, config_key} <- %{
         "google-site-verification" => :google_site_verification,
@@ -21,6 +21,14 @@ defmodule PicselloWeb.LayoutView do
           value -> Map.put(acc, meta_name, value)
         end
     end
+  end
+
+  def meta_tags(nil) do
+    meta_tags(%{})
+  end
+
+  def meta_tags(attrs_list) do
+    Map.merge(default_meta_tags(), attrs_list)
   end
 
   defp flash_styles,

@@ -9,7 +9,13 @@ defmodule PicselloWeb.UserRegisterLive do
   def mount(_params, session, socket) do
     socket
     |> assign_defaults(session)
-    |> assign(:page_title, "Sign Up")
+    |> assign(%{
+      page_title: "Sign Up",
+      meta_attrs: %{
+        description:
+          "Let's get started! Get signed up and start growing your business. Register with Picsello and start managing, marketing, and monetizing your photography business today."
+      }
+    })
     |> assign_changeset()
     |> assign_trigger_submit()
     |> ok()
