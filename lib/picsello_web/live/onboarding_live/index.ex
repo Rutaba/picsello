@@ -241,6 +241,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <hr class="my-4" />
     <p class="font-bold">When will I be charged?</p>
     <p>After 6-months, your subscription will be $50/month. (You can change to annual if you prefer in account settings.)</p>
+    <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
       <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">

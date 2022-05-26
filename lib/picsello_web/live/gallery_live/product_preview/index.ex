@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket
     |> close_modal()
     |> assign(products: Galleries.products(gallery))
-    |> put_flash(:gallery_success, "#{title} successfully updated")
+    |> put_flash(:success, "#{title} successfully updated")
     |> noreply
   end
 

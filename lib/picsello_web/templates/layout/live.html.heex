@@ -11,8 +11,8 @@
 
           <nav class="flex flex-col bg-white rounded-lg shadow-md">
             <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket, @current_user), @current_user do %>
-              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="pl-6 flex items-center py-4 pr-28 hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
+              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-6 flex items-center py-4 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
                 <%= title %>
               </.nav_link>
             <% end %>

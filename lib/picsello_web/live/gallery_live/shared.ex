@@ -145,7 +145,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
       _ ->
         socket
-        |> put_flash(:gallery_error, "Please add photos to gallery before share")
+        |> put_flash(:error, "Please add photos to gallery before share")
         |> noreply()
     end
   end

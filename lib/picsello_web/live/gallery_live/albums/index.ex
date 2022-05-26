@@ -175,13 +175,13 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
           |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
         end
         |> close_modal()
-        |> put_flash(:gallery_success, "Album deleted successfully")
+        |> put_flash(:success, "Album deleted successfully")
         |> noreply()
 
       _any ->
         socket
         |> close_modal()
-        |> put_flash(:gallery_success, "Could not delete album")
+        |> put_flash(:success, "Could not delete album")
         |> noreply()
     end
   end
@@ -204,14 +204,14 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
         socket
         |> close_modal()
         |> put_flash(
-          :gallery_success,
+          :success,
           "#{total(photo_ids)} unsorted #{ngettext("photo", "photos", Enum.count(photo_ids))} deleted successfully"
         )
         |> noreply()
 
       _ ->
         socket
-        |> put_flash(:gallery_success, "Could not delete photos")
+        |> put_flash(:success, "Could not delete photos")
         |> close_modal()
         |> noreply()
     end
@@ -222,7 +222,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     socket
     |> close_modal()
     |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id))
-    |> put_flash(:gallery_success, "Album thumbnail successfully updated")
+    |> put_flash(:success, "Album thumbnail successfully updated")
     |> noreply
   end
 
@@ -234,7 +234,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     socket
     |> close_modal()
     |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery.id))
-    |> put_flash(:gallery_success, message)
+    |> put_flash(:success, message)
     |> noreply()
   end
 

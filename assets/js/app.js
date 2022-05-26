@@ -27,6 +27,7 @@ import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
 import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
+import Flash from './hooks/flash';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
 import HelpScout from './hooks/help-scout';
@@ -130,6 +131,7 @@ const Hooks = {
   Clipboard,
   DefaultCostTooltip,
   DragDrop,
+  Flash,
   GalleryMobile,
   IFrameAutoHeight,
   HelpScout,

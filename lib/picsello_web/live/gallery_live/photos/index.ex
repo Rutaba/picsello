@@ -193,7 +193,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos(@per_page)
-    |> put_flash(:gallery_success, remove_from_album_success_message(selected_photos, album))
+    |> put_flash(:success, remove_from_album_success_message(selected_photos, album))
     |> noreply()
   end
 
@@ -423,7 +423,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> close_modal()
     |> assign(:album, album |> Repo.preload(:photos))
-    |> put_flash(:gallery_success, message)
+    |> put_flash(:success, message)
     |> noreply()
   end
 
@@ -476,13 +476,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
         end
         |> close_modal()
-        |> put_flash(:gallery_success, "Album deleted successfully")
+        |> put_flash(:success, "Album deleted successfully")
         |> noreply()
 
       _any ->
         socket
         |> close_modal()
-        |> put_flash(:gallery_success, "Could not delete album")
+        |> put_flash(:success, "Could not delete album")
         |> noreply()
     end
   end
@@ -503,7 +503,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => id})
     |> assign_photos(@per_page)
-    |> put_flash(:gallery_success, remove_from_album_success_message(id, album))
+    |> put_flash(:success, remove_from_album_success_message(id, album))
     |> noreply()
   end
 
@@ -520,7 +520,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos(@per_page)
     |> put_flash(
-      :gallery_success,
+      :success,
       move_to_album_success_message(selected_photos, album_id, gallery)
     )
     |> noreply()
@@ -540,7 +540,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     socket
     |> close_modal()
-    |> put_flash(:gallery_success, "Album thumbnail successfully updated")
+    |> put_flash(:success, "Album thumbnail successfully updated")
     |> noreply()
   end
 
@@ -560,14 +560,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_info({:upload_success_message, success_message}, socket) do
-    socket |> put_flash(:gallery_success, success_message) |> noreply()
+    socket |> put_flash(:success, success_message) |> noreply()
   end
 
   @impl true
   def handle_info({:save, %{message: message}}, socket) do
     socket
     |> close_modal()
-    |> put_flash(:gallery_success, message)
+    |> put_flash(:success, message)
     |> assign_photos(@per_page)
     |> noreply
   end
@@ -613,7 +613,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> push_event("remove_items", %{"ids" => selected_photos})
       |> push_event("select_mode", %{"mode" => "selected_none"})
       |> put_flash(
-        :gallery_success,
+        :success,
         "#{total(selected_photos)} #{ngettext("photo", "photos", Enum.count(selected_photos))} deleted successfully"
       )
       |> assign_photos(@per_page)
@@ -621,7 +621,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     else
       _ ->
         socket
-        |> put_flash(:gallery_success, "Could not delete photos")
+        |> put_flash(:success, "Could not delete photos")
         |> close_modal()
         |> noreply()
     end

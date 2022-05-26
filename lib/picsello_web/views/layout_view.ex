@@ -7,7 +7,7 @@ defmodule PicselloWeb.LayoutView do
 
   use Phoenix.Component
 
-  def meta_tags do
+  defp default_meta_tags do
     for(
       {meta_name, config_key} <- %{
         "google-site-verification" => :google_site_verification,
@@ -23,18 +23,19 @@ defmodule PicselloWeb.LayoutView do
     end
   end
 
+  def meta_tags(nil) do
+    meta_tags(%{})
+  end
+
+  def meta_tags(attrs_list) do
+    Map.merge(default_meta_tags(), attrs_list)
+  end
+
   defp flash_styles,
     do: [
-      {:error, "warning-white", "bg-red-sales-100", "bg-red-sales-300", "text-red-sales-300",
-       "border-red-sales-300"},
-      {:info, "info", "bg-blue-planning-100", "bg-blue-planning-300", "text-blue-planning-300",
-       "border-blue-planning-300"},
-      {:success, "checkmark", "bg-green-finances-100", "bg-green-finances-300",
-       "text-green-finances-300", "border-green-finances-300"},
-      {:gallery_success, "tick", "bg-green-finances-100", "bg-green-finances-300",
-       "text-green-finances-300", "border-green-finances-300"},
-      {:gallery_error, "warning-orange", "bg-red-sales-100", "bg-red-sales-300",
-       "text-red-sales-300", "border-red-sales-300"}
+      {:error, "error", "text-red-sales-300"},
+      {:info, "info", "text-blue-planning-300"},
+      {:success, "tick", "text-green-finances-300"}
     ]
 
   def flash(flash) do
@@ -42,33 +43,21 @@ defmodule PicselloWeb.LayoutView do
 
     ~H"""
     <div>
-      <%= for {key, icon, bg_light, bg_dark, text_color, border_color} <- flash_styles(), message <- [live_flash(@flash, key)], message do %>
+      <%= for {key, icon, text_color} <- flash_styles(), message <- [live_flash(@flash, key)], message do %>
         <%= if(key in [:error, :info, :success])  do %>
-        <div class="center-container bg_dark">
-          <div class={classes(["mx-6 font-bold rounded-lg cursor-pointer m-4 flex border-2", bg_light, text_color, border_color])} role="alert" phx-click="lv:clear-flash" phx-value-key={key} title={key}>
-            <div class={classes(["flex items-center justify-center p-3", bg_dark])}>
-              <PicselloWeb.LiveHelpers.icon name={icon} class="w-6 h-6 stroke-current" />
+        <div phx-hook="Flash" id={"flash-#{DateTime.to_unix(DateTime.utc_now)}"} phx-click="lv:clear-flash" phx-value-key={key} title={key} class="fixed right-10-md right-0 top-1.5 z-30 max-w-lg px-1.5 px-0-md" role="alert">
+          <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
+            <div class={classes(["flex items-center justify-center p-3", text_color])}>
+              <.icon name={icon} class="w-6 h-6 stroke-current" />
             </div>
-
-            <div class="flex-grow p-3"><%= message %></div>
-
-            <div class={classes(["flex items-center justify-center mr-3", text_color])}}>
-              <PicselloWeb.LiveHelpers.icon name="close-x" class="w-3 h-3 stroke-current" />
+            <div class="flex items-center justify-center font-sans flex-grow px-3 py-2 mr-7">
+              <p><%= message %></p>
+            </div>
+            <div class="flex items-center justify-center mr-3">
+              <.icon name="close-x" class="w-3 h-3 stroke-current" />
             </div>
           </div>
         </div>
-        <% else %>
-          <div phx-click="lv:clear-flash" phx-value-key={key} class={"fixed right-10 top-1.5 z-30"}>
-            <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
-              <div class="flex items-center justify-center pl-2 bg-white rounded-lg">
-                <.icon name={icon} class="w-6 h-6 stroke-current text-green-finances-300" />
-              </div>
-              <div class="flex items-center justify-center font-sans flex-grow px-3 py-2"><p><%= message %></p></div>
-              <div class="flex items-center justify-center mr-3">
-                <.icon name="close-x" class="w-3 h-3 stroke-current" />
-              </div>
-            </div>
-          </div>
         <% end %>
       <% end %>
     </div>
@@ -115,7 +104,7 @@ defmodule PicselloWeb.LayoutView do
       </div>
       <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
         <nav class="flex flex-col w-64 ml-8 mr-16 overflow-hidden bg-white rounded-lg shadow-md my-11">
-          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
+          <a href="#" class="flex items-center px-2 py-2 m-4 mb-0 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
             <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
             Help Center
           </a>
@@ -151,7 +140,16 @@ defmodule PicselloWeb.LayoutView do
         path: Routes.finance_settings_path(socket, :index)
       },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
-      %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"}
+      %{
+        title: "Business Coaching",
+        icon: "camera-laptop",
+        path: "#business-coaching"
+      },
+      %{
+        title: "Help",
+        icon: "question-mark",
+        path: "https://support.picsello.com/"
+      }
     ]
     |> Enum.filter(&Map.get(&1, :path))
   end
