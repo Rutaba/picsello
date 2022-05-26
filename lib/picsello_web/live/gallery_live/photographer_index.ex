@@ -48,7 +48,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       |> Galleries.load_watermark_in_gallery()
 
     if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "photographer-gallery:#{gallery.id}")
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
     prepare_gallery(gallery)
