@@ -13,6 +13,7 @@ defmodule PicselloWeb.Shared.Quill do
         text_field: nil,
         placeholder: nil,
         class: nil,
+        editor_class: "min-h-[8rem]",
         enable_size: false,
         enable_image: false,
         track_quill_source: false,
@@ -33,7 +34,7 @@ defmodule PicselloWeb.Shared.Quill do
       <%= if @track_quill_source do %>
         <%= hidden_input @f, :quill_source %>
       <% end %>
-      <div id="editor" class="min-h-[8rem]"></div>
+      <div id="editor" class={@editor_class}></div>
       <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: "500" %>
       <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: "500" %>
     </div>
