@@ -4,7 +4,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   alias Picsello.Onboardings
 
-  import Phoenix.LiveView, only: [assign: 2]
+  import Phoenix.LiveView, only: [assign: 2, assign_new: 3]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
@@ -173,6 +173,15 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def nav_link(assigns) do
+    assigns =
+      assign_new(assigns, :help_scout_or_external_link, fn ->
+        if String.starts_with?(assigns.to, "#business-coaching") do
+          help_scout_output(assigns.current_user, :help_scout_id_business)
+        else
+          %{target: "_blank", rel: "noopener noreferrer"}
+        end
+      end)
+
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
         <%= if String.starts_with?(@to, "/") do %>
@@ -180,7 +189,7 @@ defmodule PicselloWeb.LiveHelpers do
             <%= render_slot(@inner_block, active) %>
           <% end %>
         <% else %>
-          <a href={@to} class={@class} target="_blank" rel="noopener noreferrer">
+          <a href={@to} class={@class} {@help_scout_or_external_link}>
             <%= render_slot(@inner_block, active) %>
           </a>
         <% end %>
