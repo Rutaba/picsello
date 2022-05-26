@@ -21,6 +21,7 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id}, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign(:collapsed_sections, [])
     |> ok()
   end
 
