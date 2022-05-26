@@ -188,7 +188,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     Galleries.remove_photos_from_album(selected_photos)
-        
+
     socket
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
@@ -624,7 +624,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   defp remove_from_album_success_message(selected_photos, album) do
     photos_count = total(selected_photos)
-    IO.inspect("#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}")
 
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"
   end
