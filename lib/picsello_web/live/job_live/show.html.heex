@@ -24,12 +24,12 @@
           <div class="grid grid-cols-2 gap-5">
             <dl class={classes(%{"col-span-2" => PaymentSchedules.all_paid?(@job)})}>
               <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Paid</dt>
-              <dd class="font-bold text-green-finances-300 bg-green-finances-100 text-center py-2"><%= PaymentSchedules.paid_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+              <dd class="font-bold text-green-finances-300 rounded-lg border border-base-200 text-center py-2"><%= PaymentSchedules.paid_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
             </dl>
             <%= unless PaymentSchedules.all_paid?(@job) do %>
               <dl>
                 <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Owed</dt>
-                <dd class="font-bold text-red-sales-300 bg-red-sales-100 text-center py-2"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+                <dd class="font-bold text-red-sales-300 rounded-lg border border-base-200 text-center py-2"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
               </dl>
             <% end %>
           </div>
