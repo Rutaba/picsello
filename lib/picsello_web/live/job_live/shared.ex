@@ -309,10 +309,12 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
         <div class="flex flex-col flex-[0.5]">
           <span class="mb-1 font-bold"><%= @job.client.name %></span>
-          <a href={"tel:#{@job.client.phone}"} class="flex items-center text-xs">
-            <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
-            <span class="text-base-250"><%= @job.client.phone %></span>
-          </a>
+          <%= if @job.client.phone do %>
+            <a href={"tel:#{@job.client.phone}"} class="flex items-center text-xs">
+              <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
+              <span class="text-base-250"><%= @job.client.phone %></span>
+            </a>
+          <% end %>
           <a href="#" phx-click="open-compose" class="flex items-center text-xs mt-2">
             <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
             <span class="text-base-250"><%= @job.client.email %></span>
@@ -559,7 +561,7 @@ defmodule PicselloWeb.JobLive.Shared do
     assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
 
     ~H"""
-    <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="px-1.5 grid grid-cols-1 sm:grid-cols-3 gap-5">
       <%= inputs_for @form, :client, fn client_form -> %>
         <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
         <%= if @name != nil do %>
@@ -569,22 +571,19 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= if @email != nil do %>
           <%= hidden_input client_form, :email %>
         <% end %>
-        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
+        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", label_optional: true, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
         <%= if @phone != nil do %>
           <%= hidden_input client_form, :phone %>
         <% end %>
       <% end %>
 
-      <%= labeled_select @form, :type, for(type <- @job_types, do: {humanize(type), type}), label: "Type of Photography", prompt: "Select below" %>
-
-      <div class="sm:col-span-2">
-        <div class="flex items-center justify-between mb-2">
-          <%= label_for @form, :notes, label: "Private Notes" %>
-          <.icon_button color="red-sales-300" icon="trash" phx-hook="ClearInput" id="clear-notes" data-input-name={input_name(@form,:notes)}>
-            Clear
-          </.icon_button>
+      <div class="sm:col-span-3">
+        <%= label_for @form, :type, label: "Type of Photography" %>
+        <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
+          <%= for job_type <- @job_types do %>
+            <.job_type_option type="radio" name={input_name(@form, :type)} job_type={job_type} checked={input_value(@form, :type) == job_type} />
+          <% end %>
         </div>
-        <%= input @form, :notes, type: :textarea, placeholder: "Optional notes", class: "w-full", phx_hook: "AutoHeight", phx_update: "ignore" %>
       </div>
     </div>
     """
