@@ -49,7 +49,7 @@ defmodule Picsello.Cart.CheckoutsTest do
         build(:whcc_order_created)
       end)
 
-      Checkouts.create_whcc_order(order)
+      Checkouts.create_whcc_order(Picsello.Repo, %{order: order})
     end
   end
 end

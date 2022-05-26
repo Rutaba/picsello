@@ -315,7 +315,14 @@ defmodule Picsello.Cart do
   def checkout(%{id: order_id} = order, opts \\ []) do
     Picsello.Orders.subscribe(order)
 
-    opts |> Enum.into(%{order_id: order_id}) |> Picsello.Workers.Checkout.new() |> Oban.insert()
+    opts
+    |> Enum.into(%{order_id: order_id})
+    |> Picsello.Workers.Checkout.new()
+    |> Oban.insert()
+    |> case do
+      {:ok, _} -> :ok
+      err -> err
+    end
   end
 
   defdelegate confirm_order(order_number, stripe_session_id, helpers),

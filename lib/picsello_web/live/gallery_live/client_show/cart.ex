@@ -50,26 +50,28 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       ) do
     case Cart.store_order_delivery_info(order, delivery_info_changeset) do
       {:ok, %{gallery: gallery} = order} ->
-        {:ok, _job} =
-          Cart.checkout(order,
-            success_url:
-              Enum.join(
-                [
-                  Routes.gallery_client_order_url(
-                    socket,
-                    :paid,
-                    gallery.client_link_hash,
-                    Order.number(order)
-                  ),
-                  "session_id={CHECKOUT_SESSION_ID}"
-                ],
-                "?"
-              ),
-            cancel_url:
-              Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
-          )
-
-        socket |> noreply()
+        order
+        |> Cart.checkout(
+          success_url:
+            Enum.join(
+              [
+                Routes.gallery_client_order_url(
+                  socket,
+                  :paid,
+                  gallery.client_link_hash,
+                  Order.number(order)
+                ),
+                "session_id={CHECKOUT_SESSION_ID}"
+              ],
+              "?"
+            ),
+          cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
+        )
+        |> case do
+          :ok -> socket
+          _error -> socket |> put_flash(:error, "something wen't wrong")
+        end
+        |> noreply()
 
       {:error, changeset} ->
         socket

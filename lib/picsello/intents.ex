@@ -14,7 +14,6 @@ defmodule Picsello.Intents do
       field :amount_capturable, Money.Ecto.Type
       field :amount_received, Money.Ecto.Type
       field :application_fee_amount, Money.Ecto.Type
-      field :description, :string
 
       field :status, Ecto.Enum,
         values:
@@ -28,15 +27,16 @@ defmodule Picsello.Intents do
     end
 
     def changeset(%Stripe.PaymentIntent{id: stripe_id} = params, %Order{id: order_id}) do
-      attrs =
-        ~w[amount amount_received amount_capturable application_fee_amount description status stripe_id order_id]a
+      required_attrs = ~w[amount amount_received amount_capturable status stripe_id order_id]a
 
       cast(
         %__MODULE__{},
-        params |> Map.from_struct() |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
-        attrs
+        params
+        |> Map.from_struct()
+        |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
+        [:application_fee_amount | required_attrs]
       )
-      |> validate_required(attrs)
+      |> validate_required(required_attrs)
     end
 
     def changeset(%__MODULE__{} = invoice, %Stripe.PaymentIntent{} = params) do
@@ -48,9 +48,7 @@ defmodule Picsello.Intents do
 
   alias __MODULE__.Intent
 
-  def create(payment_intent, order) do
-    payment_intent |> Intent.changeset(order) |> Repo.insert()
-  end
+  defdelegate changeset(stripe_intent, order), to: Intent
 
   def update(%Stripe.PaymentIntent{id: "" <> stripe_id} = intent) do
     Intent

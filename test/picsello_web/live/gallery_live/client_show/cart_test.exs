@@ -122,7 +122,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
         build(:whcc_editor_export)
       end)
       |> Mox.expect(:create_order, fn _account_ie, _export ->
-        build(:whcc_order_created)
+        {:ok, build(:whcc_order_created)}
       end)
 
       Picsello.MockPayments

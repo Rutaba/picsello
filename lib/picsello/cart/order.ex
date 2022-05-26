@@ -108,6 +108,7 @@ defmodule Picsello.Cart.Order do
   end
 
   def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
+  def number(id), do: Picsello.Cart.OrderNumber.to_number(id)
 
   def delete_product_changeset(%__MODULE__{} = order, opts) do
     case {opts, order} do

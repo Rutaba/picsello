@@ -1,53 +1,23 @@
 defmodule Picsello.Workers.Checkout do
   @moduledoc "Background job to check out an order"
-  use Oban.Worker, queue: :default
-  alias Picsello.{Repo, Cart.Order, Intents}
-
-  import Ecto.Query, only: [from: 2]
-
-  import Picsello.Cart, only: [preload_digitals: 1]
-
-  import Picsello.Cart.Checkouts, only: [create_session: 2, create_whcc_order: 1]
+  use Oban.Worker, queue: :default, unique: [period: :infinity]
+  alias Picsello.{Orders, Cart.Checkouts}
 
   require Logger
 
   def perform(%Oban.Job{args: args}) do
     {order_id, opts} = Map.pop(args, "order_id")
 
-    order =
-      from(order in Order,
-        preload: [gallery: :organization, products: :whcc_product],
-        where: order.id == ^order_id
-      )
-      |> preload_digitals()
-      |> Repo.one!()
+    case Checkouts.check_out(order_id, opts) do
+      {:ok, %{order: order, session: %{url: url}}} ->
+        Orders.broadcast(order, {:checkout, :due, url})
 
-    message =
-      if order |> Order.total_cost() |> Money.zero?() do
-        {:checkout, :complete, order}
-      else
-        with {:ok, %{payment_intent: payment_intent, url: url}} <-
-               create_session(order, Map.put(opts, :expand, [:payment_intent])),
-             {:ok, _intent} <- Intents.create(payment_intent, order) do
-          {:checkout, :due, url}
-        else
-          error ->
-            Logger.error("cannot check out order #{order.id}.\n#{inspect(error)}")
-            {:checkout, :error, "something wen't wrong"}
-        end
-      end
+      {:ok, %{order: order}} ->
+        Orders.broadcast(order, {:checkout, :complete, order})
 
-    order |> Order.placed_changeset() |> Repo.update!()
-    broadcast(order, message)
-
-    if order.products != [] do
-      order = create_whcc_order(order)
-
-      broadcast(order, {:checkout, :whcc_order_created, order})
+      err ->
+        Logger.error("[Checkout] unexpected response:\n#{inspect(err)}")
+        Orders.broadcast(order_id, {:checkout, :error, "error processing order"})
     end
-
-    :ok
   end
-
-  defdelegate broadcast(order, message), to: Picsello.Orders
 end

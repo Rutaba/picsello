@@ -72,8 +72,8 @@ defmodule Picsello.ClientOrdersTest do
       }) do
     test_pid = self()
 
-    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params,
-                                       %{connect_account: ^connect_account_id} ->
+    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params, opts ->
+      assert {:connect_account, connect_account_id} in opts
       success_url = URI.parse(success_url)
       assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
       send(test_pid, {:checkout_link, params})
@@ -190,7 +190,7 @@ defmodule Picsello.ClientOrdersTest do
       build(:whcc_editor_export, unit_base_price: ~M[300]USD)
     end)
     |> Mox.stub(:create_order, fn _account_id, _export ->
-      build(:whcc_order_created, total: ~M[69]USD)
+      {:ok, build(:whcc_order_created, total: ~M[69]USD)}
     end)
     |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
       {:ok, :confirmed}

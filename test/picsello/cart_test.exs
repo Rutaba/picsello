@@ -441,7 +441,7 @@ defmodule Picsello.CartTest do
 
       order = Cart.place_product(build(:digital), gallery) |> Repo.preload([:products, :digitals])
       assert ~M[0]USD = Order.total_cost(order)
-      {:ok, _job} = Cart.checkout(order)
+      :ok = Cart.checkout(order)
 
       assert [%{errors: []}] = Picsello.FeatureCase.FeatureHelpers.run_jobs()
 
