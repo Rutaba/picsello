@@ -27,7 +27,7 @@ defmodule PicselloWeb.GalleryLive.Shared.FooterComponent do
       |> Map.get(:client_link_hash)
 
     socket
-    |> push_redirect(to: Routes.gallery_client_show_path(socket, :show, hash))
+    |> push_redirect(to: Routes.gallery_client_index_path(socket, :index, hash))
     |> noreply()
   end
 end

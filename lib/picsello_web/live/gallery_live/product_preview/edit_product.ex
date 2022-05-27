@@ -64,6 +64,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
       selected: true,
       photo: Galleries.get_photo(preview_photo_id)
     )
+    |> push_event("reload_grid", %{})
     |> noreply
   end
 

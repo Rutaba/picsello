@@ -64,6 +64,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
       preview_photo_id: preview_photo_id,
       thumbnail: Galleries.get_photo(preview_photo_id)
     )
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -97,7 +98,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
         selected={@selected}
         myself={@myself}
         title={@title}>
-        <div class="flex items-start justify-center row-span-2 previewImg">
+        <div class="flex items-start justify-center row-span-2 previewImg bg-gray-300">
           <.framed_preview photo={@thumbnail} item_id={@album.id} category={%{frame_image: "card_blank.png"}} />
         </div>
       </.preview>

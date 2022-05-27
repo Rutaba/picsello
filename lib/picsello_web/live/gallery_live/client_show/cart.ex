@@ -23,7 +23,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       _ ->
         socket
         |> push_redirect(
-          to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash)
+          to: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
         )
         |> ok()
     end
@@ -101,7 +101,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       {:deleted, _} ->
         socket
         |> push_redirect(
-          to: Routes.gallery_client_show_path(socket, :show, gallery.client_link_hash)
+          to: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
         )
         |> noreply()
 

@@ -50,6 +50,7 @@ import GalleryMobile from './hooks/gallery-mobile';
 import ResumeUpload from './hooks/resume_upload';
 import GallerySelector from './hooks/gallery-selector';
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
+import ClientGalleryCookie from './hooks/client-gallery-cookie';
 
 const Modal = {
   mounted() {
@@ -155,6 +156,7 @@ const Hooks = {
   ToggleSiblings,
   ResumeUpload,
   GallerySelector,
+  ClientGalleryCookie
 };
 
 let Uploaders = {};

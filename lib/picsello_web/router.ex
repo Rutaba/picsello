@@ -173,14 +173,11 @@ defmodule PicselloWeb.Router do
     live_session :gallery_photographer, on_mount: {PicselloWeb.LiveAuth, :gallery_photographer} do
       pipe_through :browser
 
-      live "/", Index, :index
-      live "/product/:gallery_product_id", GalleryProduct, :preview, as: :preview
+      live "/", PhotographerIndex, :index
 
       live "/photos", Photos.Index, :index
       live "/product-previews", ProductPreview.Index, :index
-
       live "/orders", PhotographerOrders, :orders
-      live "/upload", Show, :upload
 
       scope "/albums" do
         live "/", Albums.Index, :index
@@ -195,7 +192,8 @@ defmodule PicselloWeb.Router do
 
       scope "/" do
         pipe_through :param_auth
-        live "/", GalleryLive.ClientShow, :show
+        live "/", GalleryLive.ClientIndex, :index
+        live "/album/:album_id", GalleryLive.ClientAlbum, :album
         get "/zip", GalleryDownloadsController, :download_all
         get "/photos/:photo_id/download", GalleryDownloadsController, :download_photo
       end

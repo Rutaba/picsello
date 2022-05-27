@@ -282,6 +282,22 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  @spec get_albums_photo_count(gallery_id :: integer) :: integer
+  def get_albums_photo_count(gallery_id) do
+    (from p in Photo, select: count(p.id), where: p.gallery_id == ^gallery_id and not is_nil(p.album_id))
+    |> Repo.one()
+  end
+
+  @spec get_album_photo_count(gallery_id :: integer, album_id :: integer, favorites_filter :: boolean) :: integer
+  def get_album_photo_count(gallery_id, album_id, client_liked \\ false) do
+    conditions = dynamic([p], p.gallery_id == ^gallery_id and p.album_id == ^album_id)
+
+    Photo
+    |> where(^if(client_liked, do: dynamic([p], p.client_liked == ^client_liked and ^conditions), else: conditions))
+    |> select([p], count(p.id))
+    |> Repo.one()
+  end
+
   @doc """
   Creates a gallery.
   ## Examples
@@ -493,24 +509,6 @@ defmodule Picsello.Galleries do
       where: p.id in ^selected_photos
     )
     |> Repo.update_all(set: [album_id: album_id])
-  end
-
-  @doc """
-  Marks a photo as liked/unliked.
-
-  ## Examples
-
-      iex> mark_photo_as_liked(%Photo{client_liked: false})
-      {:ok, %Photo{client_liked: true}}
-
-      iex> mark_photo_as_liked(%Photo{client_liked: true})
-      {:ok, %Photo{client_liked: false}}
-
-  """
-  def mark_photo_as_liked(%Photo{client_liked: client_liked} = photo) do
-    photo
-    |> Photo.update_changeset(%{client_liked: !client_liked})
-    |> Repo.update()
   end
 
   @doc """
