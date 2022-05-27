@@ -4,6 +4,8 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
 
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
 
+  alias Picsello.Profiles
+
   @defaults %{
     cart_count: 0,
     cart_route: nil,
@@ -34,7 +36,7 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
       },
       %{
         title: "Help",
-        path: "https://support.picsello.com/category/45-client-experience"
+        path: extract_organization(gallery) |> Profiles.public_url()
       }
     ]
   end
@@ -48,4 +50,6 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
     <% end %>
     """
   end
+
+  defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end

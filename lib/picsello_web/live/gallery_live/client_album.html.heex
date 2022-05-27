@@ -50,30 +50,36 @@
         </div>
       </div>
       <div class="text-sm lg:text-xl text-base-250 mb-8 lg:mb-16"> <%= photos_count(@photos_count) %></div>
-      <!-- images -->
-      <div
-        id="muuri-grid"
-        class="muuri grid"
-        phx-hook="MasonryGrid"
-        phx-update={@update_mode}
-        data-page={@page}
-        data-id="muuri-grid"
-        data-uploading="0"
-        data-total={@gallery.total_count}
-        data-favorites-count={@favorites_count}
-        data-is-favorites-shown={ "#{@favorites_filter}" }
-        data-has-more-photos={ "#{@has_more_photos}" }
-        data-photo-width="300">
-        <%= for photo <- @photos do%>
-        <%= live_component Photo,
-            id: photo.id,
-            photo: photo,
-            photo_width: 300,
-            is_client_gallery: true,
-            is_likable: true
-        %>
+      <%= if(Enum.empty?(@photos) && @favorites_filter) do %>
+        <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
+            Oops, there's no liked photo!
+        </div>
+      <% else %>
+        <!-- images -->
+        <div
+          id="muuri-grid"
+          class="muuri grid"
+          phx-hook="MasonryGrid"
+          phx-update={@update_mode}
+          data-page={@page}
+          data-id="muuri-grid"
+          data-uploading="0"
+          data-total={@gallery.total_count}
+          data-favorites-count={@favorites_count}
+          data-is-favorites-shown={ "#{@favorites_filter}" }
+          data-has-more-photos={ "#{@has_more_photos}" }
+          data-photo-width="300">
+          <%= for %{aspect_ratio: aspect_ratio} = photo when not is_nil(aspect_ratio) <- @photos do%>
+            <%= live_component Photo,
+                id: photo.id,
+                photo: photo,
+                photo_width: 300,
+                is_client_gallery: true,
+                is_likable: true
+            %>
+          <% end %>
+        </div>
       <% end %>
-      </div>
       <div class="hidden">
         <div
           id="photo-update-listener"

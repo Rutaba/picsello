@@ -35,28 +35,20 @@ defmodule PicselloWeb.JobLive.Show do
           text: "Looks like you need to upload photos."
         }
 
-      :upload_in_progress ->
-        %{
-          button_text: "Upload photo",
-          button_click: nil,
-          button_disabled: true,
-          text: "Photos currently uploading"
-        }
-
-      :ready ->
-        %{
-          button_text: "View Gallery",
-          button_click: "view-gallery",
-          button_disabled: false,
-          text: "#{gallery.total_count || 0} photos"
-        }
-
       :deactivated ->
         %{
           button_text: "View Gallery",
           button_click: "view-gallery",
           button_disabled: true,
           text: "Gallery is disabled"
+        }
+
+      _ ->
+        %{
+          button_text: "View Gallery",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "#{gallery.total_count || 0} photos"
         }
     end
   end
