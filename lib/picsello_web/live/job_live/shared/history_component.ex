@@ -1,4 +1,4 @@
-defmodule PicselloWeb.LeadLive.LeadStatusComponent do
+defmodule PicselloWeb.JobLive.Shared.HistoryComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Repo}
@@ -23,15 +23,17 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
         </div>
       <% end %>
 
-      <div class="flex mt-4">
-        <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white">
-          <.icon name="info-contained" class="text-blue-planning-300 w-4 h-4" />
+      <%= if @current_status do %>
+        <div class="flex mt-4">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white">
+            <.icon name="info-contained" class="text-blue-planning-300 w-4 h-4" />
+          </div>
+          <div class="flex flex-col ml-4">
+            <span class="font-bold"><%= @current_status %></span>
+            <span class="text-base-250"><%= @date %></span>
+          </div>
         </div>
-        <div class="flex flex-col ml-4">
-          <span class="font-bold"><%= @current_status %></span>
-          <span class="text-base-250"><%= @date %></span>
-        </div>
-      </div>
+      <% end %>
     </div>
     """
   end
@@ -45,6 +47,10 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
     socket
     |> assign(current_status: current_status, next_status: next_status, date: date)
   end
+
+  defp current_statuses(:completed), do: {nil, "Completed"}
+
+  defp current_statuses(:imported), do: {nil, "Active"}
 
   defp current_statuses(:archived), do: {"Lead archived", nil}
 
@@ -62,5 +68,5 @@ defmodule PicselloWeb.LeadLive.LeadStatusComponent do
 
   defp current_statuses(:answered), do: {"Questionnaire answered", "Pending payment"}
 
-  defp current_statuses(:deposit_paid), do: {"Payment paid", "Job created"}
+  defp current_statuses(:deposit_paid), do: {nil, "Active"}
 end

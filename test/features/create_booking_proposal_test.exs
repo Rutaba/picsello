@@ -7,6 +7,7 @@ defmodule Picsello.CreateBookingProposalTest do
     Repo,
     Organization,
     ClientMessage,
+    Questionnaire,
     PaymentSchedule
   }
 
@@ -76,10 +77,12 @@ defmodule Picsello.CreateBookingProposalTest do
 
     assert [proposal] = Repo.all(BookingProposal)
     assert [client_message] = Repo.all(ClientMessage)
+    assert [questionnaire] = Repo.all(Questionnaire)
     assert client_message.job_id == proposal.job_id
     assert [deposit_payment, remainder_payment] = Repo.all(PaymentSchedule)
     assert deposit_payment.job_id == proposal.job_id
     assert remainder_payment.job_id == proposal.job_id
+    assert questionnaire.id == proposal.questionnaire_id
 
     path =
       email

@@ -73,6 +73,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("#editor", text: "let us party."))
       |> click(@send_email_button)
       |> click(button("Close"))
+      |> find(
+        testid("questionnaire"),
+        &assert_text(&1, "Questionnaire wasn't included in the proposal")
+      )
 
       assert_receive {:delivered_email, email}
       url = email |> email_substitutions |> Map.get("url")

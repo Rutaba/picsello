@@ -36,7 +36,7 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
       },
       %{
         title: "Help",
-        path: extract_gallery(gallery) |> Profiles.public_url()
+        path: extract_organization(gallery) |> Profiles.public_url()
       }
     ]
   end
@@ -51,5 +51,5 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
     """
   end
 
-  defp extract_gallery(%{job: %{client: %{organization: organization}}}), do: organization
+  defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end

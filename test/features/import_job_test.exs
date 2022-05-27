@@ -119,13 +119,15 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Wedding Deluxe")
     |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
     |> assert_has(testid("shoot-card", count: 2, at: 1, text: "Missing information"))
-    |> assert_text("Your job was imported on")
-    |> find(testid("proposal-details"), fn details ->
-      details
-      |> assert_text("Questionnaire\nExternal")
-      |> assert_text("Contract\nExternal")
-    end)
-    |> click(css("a[title='Invoice']"))
+    |> find(
+      testid("contract"),
+      &assert_text(&1, "During your job import, you marked this as an external document")
+    )
+    |> find(
+      testid("questionnaire"),
+      &assert_text(&1, "During your job import, you marked this as an external document")
+    )
+    |> click(button("View invoice"))
     |> assert_has(definition("Previously collected", text: "$200.00"))
     |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
     |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))
@@ -208,7 +210,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
-    |> assert_text("Your job was imported on")
+    |> assert_text("During your job import, you marked this as an external document")
 
     job = Repo.one(Job) |> Repo.preload([:client])
 

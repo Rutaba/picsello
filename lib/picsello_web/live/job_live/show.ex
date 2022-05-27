@@ -6,46 +6,51 @@ defmodule PicselloWeb.JobLive.Show do
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
-      notes: 1,
-      shoot_details: 1,
-      status_badge: 1,
-      subheader: 1,
-      proposal_details: 1,
-      overview_card: 1
+      booking_details_section: 1,
+      card: 1,
+      communications_card: 1,
+      history_card: 1,
+      package_details_card: 1,
+      private_notes_card: 1,
+      section: 1,
+      shoot_details_section: 1,
+      title_header: 1
     ]
 
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign(:collapsed_sections, [])
     |> ok()
   end
 
-  def gallery_overview_card(%{gallery: gallery} = assigns) do
-    attrs =
-      case Picsello.Galleries.gallery_current_status(gallery) do
-        :none_created ->
-          %{
-            button_text: "Upload photo",
-            button_click: "create-gallery",
-            inner_block: fn _, _ -> "Looks like you need to upload photos." end,
-            help_content: "Once your photos are ready, upload them to your client’s gallery."
-          }
+  def gallery_attrs(%Job{gallery: gallery}) do
+    case Picsello.Galleries.gallery_current_status(gallery) do
+      :none_created ->
+        %{
+          button_text: "Upload photo",
+          button_click: "create-gallery",
+          button_disabled: false,
+          text: "Looks like you need to upload photos."
+        }
 
-        :deactivated ->
-          %{}
+      :deactivated ->
+        %{
+          button_text: "View Gallery",
+          button_click: "view-gallery",
+          button_disabled: true,
+          text: "Gallery is disabled"
+        }
 
-        _ ->
-          %{
-            button_text: "View Gallery",
-            button_click: "view-gallery",
-            inner_block: fn _, _ -> "#{gallery.total_count || 0} photos" end
-          }
-      end
-
-    assigns
-    |> Map.merge(attrs)
-    |> overview_card()
+      _ ->
+        %{
+          button_text: "View Gallery",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "#{gallery.total_count || 0} photos"
+        }
+    end
   end
 
   @impl true
