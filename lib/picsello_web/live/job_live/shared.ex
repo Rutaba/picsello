@@ -571,7 +571,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= if @email != nil do %>
           <%= hidden_input client_form, :email %>
         <% end %>
-        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", label_optional: true, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
+        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
         <%= if @phone != nil do %>
           <%= hidden_input client_form, :phone %>
         <% end %>
