@@ -23,8 +23,7 @@ defmodule Picsello.ImportJobTest do
     |> fill_in(text_field("Client Name"), with: @client_name)
     |> fill_in(text_field("Client Email"), with: @client_email)
     |> fill_in(text_field("Client Phone"), with: "(210) 111-1234")
-    |> find(select("Type of Photography"), &click(&1, option("Wedding")))
-    |> fill_in(text_field("Private Notes"), with: "things to know about")
+    |> click(css("label", text: "Wedding"))
   end
 
   def fill_in_package_form(session) do
@@ -142,8 +141,7 @@ defmodule Picsello.ImportJobTest do
       Repo.one(Job) |> Repo.preload([:package, :payment_schedules, :client, :booking_proposals])
 
     assert %Job{
-             type: "wedding",
-             notes: "things to know about"
+             type: "wedding"
            } = job
 
     assert %Package{
@@ -215,8 +213,7 @@ defmodule Picsello.ImportJobTest do
     job = Repo.one(Job) |> Repo.preload([:client])
 
     assert %Job{
-             type: "wedding",
-             notes: "things to know about"
+             type: "wedding"
            } = job
 
     assert %Client{

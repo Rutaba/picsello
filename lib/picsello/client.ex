@@ -20,7 +20,7 @@ defmodule Picsello.Client do
     |> cast(attrs, [:name, :email, :organization_id, :phone])
     |> downcase_email()
     |> User.validate_email_format()
-    |> validate_required([:name, :organization_id, :phone])
+    |> validate_required([:name, :organization_id])
     |> validate_change(:phone, &valid_phone/2)
     |> unique_constraint([:email, :organization_id])
   end

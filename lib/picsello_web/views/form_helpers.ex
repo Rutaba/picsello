@@ -83,7 +83,9 @@ defmodule PicselloWeb.FormHelpers do
       phx_feedback_for,
       class:
         classes(["input-label" | Keyword.get_values(opts, :class)], %{
-          "input-label-invalid" => form.errors[field]
+          "input-label-invalid" => form.errors[field],
+          "after:content-['(optional)'] after:text-xs after:ml-0.5 after:italic after:font-normal" =>
+            Keyword.get(opts, :optional)
         })
     ]
 
@@ -103,13 +105,11 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def labeled_input(form, field, opts \\ []) do
-    label_opts = [label: Keyword.get(opts, :label), class: Keyword.get(opts, :label_class)]
+    {label_opts, opts} = Keyword.split(opts, [:label, :optional, :label_class])
 
     input_opts =
-      [
-        class: opts |> Keyword.get(:input_class) |> classes()
-      ] ++
-        Keyword.drop(opts, [:wrapper_class, :input_class, :label_class, :label])
+      [class: opts |> Keyword.get(:input_class) |> classes()] ++
+        Keyword.drop(opts, [:wrapper_class, :input_class])
 
     content_tag :div,
       class: classes(Keyword.get_values(opts, :wrapper_class) ++ ["flex", "flex-col"]) do
