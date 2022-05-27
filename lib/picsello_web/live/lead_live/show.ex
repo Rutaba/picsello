@@ -7,7 +7,6 @@ defmodule PicselloWeb.LeadLive.Show do
     Job,
     Repo,
     Payments,
-    Package,
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
@@ -19,9 +18,14 @@ defmodule PicselloWeb.LeadLive.Show do
     only: [
       assign_job: 2,
       assign_proposal: 1,
+      booking_details_section: 1,
+      communications_card: 1,
+      history_card: 1,
+      package_details_card: 1,
+      private_notes_card: 1,
       section: 1,
-      card: 1,
-      shoot_details: 1
+      shoot_details_section: 1,
+      title_header: 1
     ]
 
   @impl true
@@ -30,6 +34,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
+    |> assign(:collapsed_sections, [])
     |> ok()
   end
 

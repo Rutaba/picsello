@@ -11,8 +11,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Messages,
     Notifiers.ClientNotifier,
     Package,
-    PaymentSchedules,
-    Accounts.User
+    PaymentSchedules
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -22,7 +21,25 @@ defmodule PicselloWeb.JobLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
+  import PicselloWeb.Gettext, only: [ngettext: 3]
   use Phoenix.Component
+
+  def handle_event(
+        "toggle-section",
+        %{"section_id" => section_id},
+        %{assigns: %{collapsed_sections: collapsed_sections}} = socket
+      ) do
+    collapsed_sections =
+      if Enum.member?(collapsed_sections, section_id) do
+        Enum.filter(collapsed_sections, &(&1 != section_id))
+      else
+        collapsed_sections ++ [section_id]
+      end
+
+    socket
+    |> assign(:collapsed_sections, collapsed_sections)
+    |> noreply()
+  end
 
   def handle_event(
         "edit-shoot-details",
@@ -209,77 +226,40 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), :blue}
 
-  @spec subheader(%{package: %Picsello.Package{}, job: %Picsello.Job{}}) ::
-          %Phoenix.LiveView.Rendered{}
-  def subheader(assigns) do
+  def title_header(assigns) do
     ~H"""
-    <div {testid("subheader")} class="p-6 pt-2 lg:pt-6 lg:pb-0 grid center-container bg-blue-planning-100 gap-5 lg:grid-cols-2 lg:bg-white" {intro_hints_only("intro_hints_only")}>
-      <hr class="hidden border-gray-200 lg:block col-span-2"/>
-
-      <div class="flex flex-col lg:items-center lg:flex-row">
-        <%= if @package do %>
-          <div class="flex justify-between min-w-0 lg:flex-row lg:justify-start">
-            <div class="flex min-w-0"><span class="font-bold truncate" ><%= @package.name %></span>—<span class="flex-shrink-0"><%= @job.type |> Phoenix.Naming.humanize() %></span></div>
-            <span class="ml-2 font-bold lg:ml-6"><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
-          </div>
-
-          <%= if Job.lead?(@job) do %>
-            <.icon_button title="Package settings" color="blue-planning-300" icon="gear" phx-click="edit-package" class="mt-2 lg:mt-0 w-max lg:ml-6" disabled={@proposal != nil}>
-              Package settings
-              <%= unless @proposal do %>
-                <.intro_hint content="You can change your package settings here. If you want, you can make changes specific to this lead, and they won’t change the package template." class="ml-1" />
-              <% end %>
-            </.icon_button>
-          <% end %>
-          <% else %>
-          <button type="button" class="w-full btn-primary w-max p-2 text-sm" phx-click="add-package" >Add a package</button>
-        <% end %>
+    <h1 class="flex items-center justify-between mt-4 text-4xl font-bold md:justify-start">
+      <div class="flex items-center">
+        <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
+          <.icon name="back" class="w-4 h-4 stroke-2"/>
+        </.live_link>
+        <%= Job.name @job %>
       </div>
 
-      <hr class="border-white lg:hidden lg:col-span-2"/>
-
-      <div class="flex flex-col min-w-0 lg:flex-row lg:justify-end items-center">
-        <span class="mb-3 mr-6 font-bold lg:mb-0 whitespace-nowrap"><%= @job.client.name %></span>
-
-        <div class="flex">
-          <a href={"tel:#{@job.client.phone}"} class="flex items-center mr-4 text-xs whitespace-nowrap lg:text-blue-planning-300">
-            <.circle radius="7" class="mr-2">
-              <.icon name="phone-outline" class="text-white stroke-current" width="12" height="10" />
-            </.circle>
-
-            <%= @job.client.phone %>
-          </a>
-
-          <a href="#" phx-click="open-compose" class="flex items-center min-w-0 text-xs lg:text-blue-planning-300">
-            <span class="flex-shrink-0">
-              <.circle radius="7" class="mr-2">
-              <.icon name="envelope-outline" class="text-white stroke-current" width="12" height="10" />
-              </.circle>
-            </span>
-            <span class="truncate"><%= @job.client.email %></span>
-          </a>
-        </div>
-      </div>
-
-      <hr class="hidden border-gray-200 lg:block col-span-2"/>
-    </div>
+      <button title="Manage" type="button" phx-click="manage" class="relative flex items-center justify-center pb-4 h-5 ml-4 mt-2 text-2xl font-bold leading-3 border rounded w-9 border-blue-planning-300 text-blue-planning-300">
+        &hellip;
+      </button>
+    </h1>
     """
   end
 
   def section(assigns) do
-    assigns =
-      assigns
-      |> assign_new(:class, fn -> "" end)
-
     ~H"""
-    <section class={"sm:border sm:border-base-200 sm:rounded-lg overflow-hidden #{@class}"}>
-      <div class="flex bg-base-200 px-4 py-3 items-center">
+    <section class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
+      <div class="flex bg-base-200 px-4 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={@id}>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
           <.icon name={@icon} class="w-5 h-5" />
         </div>
         <h2 class="text-2xl font-bold ml-3"><%= @title %></h2>
+        <div class="ml-auto">
+          <%= if Enum.member?(@collapsed_sections, @id) do %>
+            <.icon name="down" class="w-5 h-5 stroke-current stroke-2" />
+          <% else %>
+            <.icon name="up" class="w-5 h-5 stroke-current stroke-2" />
+          <% end %>
+        </div>
       </div>
-      <div class="p-6">
+      <div class={classes("p-6", %{"hidden" => Enum.member?(@collapsed_sections, @id)})}>
         <%= render_slot @inner_block %>
       </div>
     </section>
@@ -303,47 +283,262 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def overview_card(assigns) do
-    assigns = assigns |> Enum.into(%{button_text: nil, button_click: nil, hint_content: nil})
-
+  def communications_card(assigns) do
     ~H"""
-      <li {testid("overview-#{@title}")} class="flex flex-col justify-between p-4 border rounded-lg">
-        <div>
-          <div class="mb-4 font-bold">
-            <.icon name={@icon} class="inline w-5 h-6 mr-2 stroke-current" />
-            <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
+    <.card color="orange-inbox-300" title="Communications" class="md:col-span-2">
+      <div {testid("inbox")} class="flex flex-col lg:flex-row">
+        <div class="flex-1 text-base-250">
+          Inbox
+          <div class="flex border border-base-200 rounded-lg p-8 mt-4 justify-center">
+            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => @inbox_count > 0,"bg-base-250" => @inbox_count <= 0})}>
+              <%= @inbox_count %>
+            </span>
+            <span class={if @inbox_count > 0, do: "text-orange-inbox-300", else: "text-base-250"}>
+              <%= ngettext "new message", "new messages", @inbox_count %>
+            </span>
           </div>
-
-          <%= render_block(@inner_block) %>
+          <div class="flex flex-col-reverse sm:flex-row justify-end mt-4">
+            <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
+              Go to inbox
+            </button>
+            <button type="button" class="btn-primary px-8" phx-click="open-compose">
+              Send message
+            </button>
+          </div>
         </div>
-
-        <%= if @button_text do %>
-          <button
-            type="button"
-            class="w-full p-2 mt-4 text-sm text-center border rounded-lg border-base-300"
-            phx-click={@button_click}
-          >
-            <%= @button_text %>
-          </button>
-        <% end %>
-      </li>
+        <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
+        <div class="flex flex-col flex-[0.5]">
+          <span class="mb-1 font-bold"><%= @job.client.name %></span>
+          <a href={"tel:#{@job.client.phone}"} class="flex items-center text-xs">
+            <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
+            <span class="text-base-250"><%= @job.client.phone %></span>
+          </a>
+          <a href="#" phx-click="open-compose" class="flex items-center text-xs mt-2">
+            <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
+            <span class="text-base-250"><%= @job.client.email %></span>
+          </a>
+        </div>
+      </div>
+    </.card>
     """
   end
 
-  def circle(assigns) do
-    radiuses = %{"7" => "w-7 h-7", "8" => "w-8 h-8"}
+  def package_details_card(assigns) do
+    ~H"""
+    <.card title="Package details" class="h-52">
+      <%= if @package do %>
+        <p class="font-bold"><%= @package.name %></p>
+        <p><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></p>
+        <%= if @package.download_count > 0 do %>
+          <p><%= ngettext "%{count} image", "%{count} images", @package.download_count %></p>
+        <% end %>
+        <%= unless @package |> Package.print_credits() |> Money.zero?() do %>
+          <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
+        <% end %>
+        <%= if Job.lead?(@job) && !@proposal do %>
+          <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-package" class="mt-auto self-end">
+            Edit
+          </.icon_button>
+        <% end %>
+      <% else %>
+        <p class="text-base-250">Click edit to add a package. You can come back to this later if your client isn’t ready for pricing quite yet.</p>
+        <.icon_button color="blue-planning-300" icon="pencil" phx-click="add-package" class="mt-auto self-end">
+          Edit
+        </.icon_button>
+      <% end %>
+    </.card>
+    """
+  end
 
+  def private_notes_card(assigns) do
     assigns =
       assigns
-      |> Enum.into(%{
-        class: nil,
-        radius_class: Map.get(radiuses, assigns.radius)
-      })
+      |> assign_new(:class, fn -> "" end)
+      |> assign_new(:content_class, fn -> "line-clamp-4" end)
 
     ~H"""
-      <div class={"flex items-center justify-center rounded-full bg-blue-planning-300 #{@radius_class} #{@class}"}>
-        <%= render_block(@inner_block) %>
-      </div>
+    <.card title="Private notes" class={"h-52 #{@class}"}>
+      <%= if @job.notes do %>
+        <p class={"whitespace-pre-line #{@content_class}"}><%= @job.notes %></p>
+      <% else %>
+        <p class={"text-base-250 #{@content_class}"}>Click edit to add a note about your client and any details you want to remember.</p>
+      <% end %>
+      <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes" class="mt-auto self-end">
+        Edit
+      </.icon_button>
+    </.card>
+    """
+  end
+
+  def shoot_details_section(assigns) do
+    ~H"""
+    <.section id="shoot-details" icon="camera-check" title="Shoot details" collapsed_sections={@collapsed_sections}>
+      <%= if is_nil(@package) do %>
+        <p>You don’t have any shoots yet! If your client has a date but hasn’t decided on pricing, add a placeholder package for now.</p>
+
+        <button {testid("add-package-from-shoot")} type="button" phx-click="add-package" class="mt-2 text-center btn-primary intro-add-package">
+          Add a package
+        </button>
+
+      <% else %>
+        <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
+          <%= for {shoot_number, shoot} <- @shoots do %>
+            <li {testid("shoot-card")} class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
+              <%= if shoot do %>
+                <%= live_redirect to: @shoot_path.(shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
+                  <div class="flex items-center justify-between text-xl font-semibold">
+                    <div>
+                      <%= shoot.name %>
+                    </div>
+
+                    <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
+                  </div>
+
+                  <div class="font-semibold text-blue-planning-300"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
+
+                  <hr class="my-3 border-top">
+
+                  <span class="text-gray-400">
+                    <%= shoot_location(shoot) %>
+                  </span>
+                <% end %>
+              <% else %>
+                <button title="Add shoot details" class="flex flex-col w-full h-full p-4 text-left" type="button" phx-click="edit-shoot-details" phx-value-shoot-number={shoot_number}>
+                  <.badge color={:red}>Missing information</.badge>
+
+                  <div class="flex items-center justify-between w-full mt-1 text-xl font-semibold">
+                    <div>
+                      Shoot <%= shoot_number %>
+                    </div>
+
+                    <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
+                  </div>
+                </button>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </.section>
+    """
+  end
+
+  def booking_details_section(assigns) do
+    ~H"""
+    <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
+      <.card title={if @proposal, do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
+        <div {testid("contract")} class="grid sm:grid-cols-2 gap-5">
+          <div class="flex flex-col border border-base-200 rounded-lg p-4">
+            <h3 class="font-bold">Contract:</h3>
+            <%= cond do %>
+              <% !@proposal -> %>
+                <p class="mt-2">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
+                <div class="border rounded-lg px-4 py-2 mt-4">
+                  <span class="font-bold">Selected contract:</span> <%= if @job.contract, do: @job.contract.name, else: "Picsello Default Contract" %>
+                </div>
+                <button phx-click="edit-contract" class="mt-4 btn-primary self-end">
+                  Edit or Select New
+                </button>
+              <% @package && @package.collected_price -> %>
+                <p class="mt-2">During your job import, you marked this as an external document.</p>
+              <% @job.contract -> %>
+                <p class="mt-2">You sent the <%= @job.contract.name %> to your client.</p>
+                <button {testid("view-contract")} phx-click="open-proposal" phx-value-action="contract" class="mt-4 btn-primary self-end">
+                  View
+                </button>
+              <% true -> %>
+            <% end %>
+          </div>
+          <div {testid("questionnaire")} class="flex flex-col border border-base-200 rounded-lg p-4">
+            <h3 class="font-bold">Questionnaire:</h3>
+            <%= cond do %>
+              <% !@proposal -> %>
+                <p class="mt-2">We’ve created a questionnaire for you to start with. Soon you’ll be able to include your own custom questionnaire whether it be a link or PDF. If you don’t want to use ours, uncheck the box below.</p>
+                <label class="flex mt-4">
+                  <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
+                  <p class="ml-3">Questionnaire included</p>
+                </label>
+                <button {testid("view-questionnaire")} phx-click="open-questionnaire" class="mt-auto btn-primary self-end">
+                  View
+                </button>
+              <% @package && @package.collected_price -> %>
+                <p class="mt-2">During your job import, you marked this as an external document.</p>
+              <% @proposal.questionnaire_id -> %>
+                <p class="mt-2">You sent the Picsello Default Questionnaire to your client.</p>
+                <button {testid("view-questionnaire")} phx-click="open-proposal" phx-value-action="questionnaire" class="mt-4 btn-primary self-end">
+                  View
+                </button>
+              <% true -> %>
+                <p class="mt-2">Questionnaire wasn't included in the proposal</p>
+            <% end %>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-3 mt-8">
+          <dl class="flex flex-col">
+            <dt class="font-bold">Payment schedule:</dt>
+            <dd>
+              <%= @job |> PaymentSchedules.build_payment_schedules_for_lead() |> Map.get(:details) %>
+              <%= if @proposal do %>
+                <button phx-click="open-proposal" phx-value-action="invoice" class="block link mt-2">View invoice</button>
+              <% end %>
+            </dd>
+          </dl>
+          <dl class="flex flex-col">
+            <dt class="font-bold">Shoots:</dt>
+            <dd>
+              <%= cond do %>
+                <% !@package -> %>
+                  <.badge color={:red}>You haven’t selected a package yet</.badge>
+                <% !Enum.all?(@shoots, &elem(&1, 1)) -> %>
+                  <.badge color={:red}>Missing information in shoot details</.badge>
+                <% true -> %>
+                  <%= for {_, %{name: name, starts_at: starts_at}} <- @shoots do %>
+                    <p><%= "#{name}—#{strftime(@current_user.time_zone, starts_at, "%m/%d/%Y")}" %></p>
+                  <% end %>
+              <% end %>
+            </dd>
+          </dl>
+          <dl class="flex flex-col">
+            <dt class="font-bold">Package:</dt>
+            <dd>
+              <%= if @package do %>
+                <%= @package.name %>
+              <% else %>
+                <.badge color={:red}>You haven’t selected a package yet</.badge>
+              <% end %>
+            </dd>
+          </dl>
+        </div>
+        <div class="flex justify-end items-center mt-8">
+          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-hook="Clipboard" disabled={!@proposal}>
+            <span>Copy client link</span>
+            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+              Copied!
+            </div>
+          </.icon_button>
+          <%= if @proposal do %>
+            <button class="btn-primary" phx-click="open-proposal" phx-value-action="details">View proposal</button>
+          <% else %>
+            <%= render_slot(@send_proposal_button) %>
+          <% end %>
+        </div>
+      </.card>
+    </.section>
+    """
+  end
+
+  def history_card(assigns) do
+    ~H"""
+    <div {testid("history")} class="bg-base-200 p-4 px-8 rounded-lg mt-4 md:mt-0 md:ml-6 md:w-72">
+      <h3 class="mb-2 text-xl font-bold"><%= @steps_title %></h3>
+      <ul class="list-disc">
+        <%= for item <- @steps do %>
+          <li class="ml-4"><%= item %></li>
+        <% end %>
+      </ul>
+      <h3 class="mt-4 text-xl font-bold">History</h3>
+      <%= live_component PicselloWeb.JobLive.Shared.HistoryComponent, job: @job, current_user: @current_user %>
+    </div>
     """
   end
 
@@ -356,156 +551,7 @@ defmodule PicselloWeb.JobLive.Shared do
         }) :: %Phoenix.LiveView.Rendered{}
   def shoot_details(assigns) do
     ~H"""
-    <ul class="text-left grid gap-5 lg:grid-cols-2 grid-cols-1">
-    <%= for {shoot_number, shoot} <- @shoots do %>
-      <li {testid("shoot-card")} class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
-        <%= if shoot do %>
-          <%= live_redirect to: @shoot_path.(shoot_number), title: "shoot #{shoot_number}", class: "block w-full p-4 text-left" do %>
-            <div class="flex items-center justify-between text-xl font-semibold">
-              <div>
-                <%= shoot.name %>
-              </div>
 
-              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
-            </div>
-
-            <div class="font-semibold text-blue-planning-300"> On <%= strftime(@current_user.time_zone, shoot.starts_at, "%B %d, %Y @ %I:%M %p") %> </div>
-
-            <hr class="my-3 border-top">
-
-            <span class="text-gray-400">
-              <%= shoot_location(shoot) %>
-            </span>
-          <% end %>
-        <% else %>
-          <button title="Add shoot details" class="flex flex-col w-full h-full p-4 text-left" type="button" phx-click="edit-shoot-details" phx-value-shoot-number={shoot_number}>
-            <.badge color={:red}>Missing information</.badge>
-
-            <div class="flex items-center justify-between w-full mt-1 text-xl font-semibold">
-              <div>
-                Shoot <%= shoot_number %>
-              </div>
-
-              <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
-            </div>
-          </button>
-        <% end %>
-      </li>
-    <% end %>
-    </ul>
-    """
-  end
-
-  @spec notes(%{job: %Picsello.Job{}}) :: %Phoenix.LiveView.Rendered{}
-  def notes(assigns) do
-    ~H"""
-      <div {testid("notes")} class="flex items-baseline justify-between p-4 my-8 border rounded-lg border-base-200" {testid("notes")}>
-        <dl class="min-w-0">
-          <dt class="font-bold">Private Notes</dt>
-            <%= case @job.notes do %>
-            <% nil -> %>
-              <dd class="text-base-250"> Click edit to add a note </dd>
-            <% notes -> %>
-              <dd class="truncate"><%= String.split(notes, "\n") |> hd %></dd>
-            <% end %>
-        </dl>
-
-
-        <%= case @job.notes do %>
-        <% nil -> %>
-          <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes">Edit</.icon_button>
-        <% _notes -> %>
-          <button class="px-2 py-1 text-sm border rounded-lg border-blue-planning-300" type="button" phx-click="open-notes">
-            View
-          </button>
-        <% end %>
-      </div>
-    """
-  end
-
-  @spec proposal_details(%{
-          proposal: %BookingProposal{},
-          current_user: %User{}
-        }) :: %Phoenix.LiveView.Rendered{}
-  def proposal_details(assigns) do
-    ~H"""
-    <div {testid("proposal-details")} class="p-2 border rounded-lg">
-      <div class="flex items-start justify-between p-2">
-        <%= if Job.imported?(@job) do %>
-          <p>Your job was imported on <%= strftime(@current_user.time_zone, @job.inserted_at, "%B %d, %Y") %>.</p>
-        <% else %>
-          <p>The following details were included in the booking proposal sent on <%= strftime(@current_user.time_zone, @proposal.inserted_at, "%B %d, %Y") %>.</p>
-        <% end %>
-        <%= if PaymentSchedules.has_payments?(@job) do %>
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 ml-2 transition-colors" id="copy-client-link" data-clipboard-text={BookingProposal.url(@proposal.id)} phx-hook="Clipboard">
-            <span>Client Link</span>
-            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-              Copied!
-            </div>
-          </.icon_button>
-        <% end %>
-      </div>
-      <div class={classes("mt-2 grid gap-5", %{"lg:grid-cols-4" => (Job.imported?(@job) && PaymentSchedules.has_payments?(@job)) || @proposal.questionnaire_id, "lg:grid-cols-3" => !@proposal.questionnaire_id})}>
-        <%= if Job.imported?(@job) do %>
-          <.proposal_details_item title="Proposal" icon="document" pending_status={nil} current_user={@current_user} action="details" />
-          <.proposal_details_item title="Contract" icon="document" status="External" />
-          <.proposal_details_item title="Questionnaire" icon="document" status="External" />
-        <% else %>
-          <.proposal_details_item title="Proposal" icon="document" status="Accepted" date={@proposal.accepted_at} current_user={@current_user} action="details" />
-          <.proposal_details_item title="Contract" icon="document" status="Signed" date={@proposal.signed_at} current_user={@current_user} action="contract" />
-          <%= if @proposal.questionnaire_id do %>
-            <.proposal_details_item title="Questionnaire" icon="document" status="Completed" date={if @proposal.answer, do: @proposal.answer.inserted_at} current_user={@current_user} action="questionnaire" />
-          <% end %>
-        <% end %>
-        <%= if PaymentSchedules.has_payments?(@job) do %>
-          <.proposal_details_item title="Invoice" icon="document" status="Completed" pending_status={if Job.imported?(@job), do: nil, else: "Pending"} date={PaymentSchedules.remainder_paid_at(@job)} current_user={@current_user} action="invoice" />
-        <% end %>
-      </div>
-    </div>
-    """
-  end
-
-  defp proposal_details_item(assigns) do
-    assigns = assigns |> Enum.into(%{action: nil, date: nil, pending_status: "Pending"})
-
-    ~H"""
-    <.proposal_details_item_wrapper action={@action} title={@title}>
-      <.circle radius="8" class="flex-shrink-0">
-        <.icon name={@icon} width="14" height="14" />
-      </.circle>
-      <div class="ml-2">
-        <div class="flex items-center font-bold">
-          <%= @title %>
-          <%= if @action do %>
-            <.icon name="forth" class="w-3 h-3 ml-2 stroke-current stroke-2 text-base-300" />
-          <% end %>
-        </div>
-        <div class="text-xs text-gray-500">
-          <%= cond do %>
-            <% @date != nil -> %>
-              <%= @status %> — <span class="whitespace-nowrap"><%= strftime(@current_user.time_zone, @date, "%B %d, %Y") %></span>
-            <% @action == nil -> %>
-              <%= @status %>
-            <% true -> %>
-              <%= @pending_status %>
-          <% end %>
-        </div>
-      </div>
-    </.proposal_details_item_wrapper>
-    """
-  end
-
-  defp proposal_details_item_wrapper(%{action: nil} = assigns) do
-    ~H"""
-    <div class="flex items-center p-2 rounded" title={@title}><%= render_slot(@inner_block) %></div>
-    """
-  end
-
-  defp proposal_details_item_wrapper(assigns) do
-    ~H"""
-    <a class="flex items-center p-2 rounded cursor-pointer hover:bg-blue-planning-100" href="#" title={@title} phx-click="open-proposal" phx-value-action={@action}>
-      <%= render_slot(@inner_block) %>
-    </a>
     """
   end
 
@@ -564,7 +610,14 @@ defmodule PicselloWeb.JobLive.Shared do
       current_user
       |> Job.for_user()
       |> Job.not_leads()
-      |> Ecto.Query.preload([:client, :package, :job_status, :gallery])
+      |> Ecto.Query.preload([
+        :client,
+        :package,
+        :job_status,
+        :contract,
+        :gallery,
+        :payment_schedules
+      ])
       |> Repo.get!(job_id)
 
     do_assign_job(socket, job)
