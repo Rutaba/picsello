@@ -74,6 +74,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       update_mode: "append"
     )
     |> assign_cart_count(gallery)
+    |> assign_photo_count()
     |> assign_photos(@per_page)
     |> noreply()
   end
@@ -97,7 +98,13 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   @impl true
   def handle_event("toggle_favorites", _, socket) do
-    socket |> toggle_favorites(@per_page)
+    socket
+    |> case do
+      %{assigns: %{favorites_filter: false, favorites_count: favorites_count}} = socket ->
+        assign(socket, photos_count: favorites_count)
+        socket -> assign_photo_count(socket)
+      end
+    |> toggle_favorites(@per_page)
   end
 
   @impl true
@@ -200,4 +207,24 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   defp thumbnail_url(%{thumbnail_photo: nil}), do: @blank_image
   defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
+
+  defp assign_photo_count(
+    %{
+    assigns: %{
+      gallery: %{
+        id: id,
+        total_count: total_count
+      },
+      albums: albums
+    }
+  } = socket) do
+    photos_count =
+    case Enum.count(albums) do
+      0 -> total_count
+      _ -> Galleries.get_albums_photo_count(id)
+    end
+
+    socket
+    |> assign(photos_count: photos_count)
+  end
 end

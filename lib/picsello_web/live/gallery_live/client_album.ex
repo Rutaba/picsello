@@ -42,6 +42,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       favorites_filter: false,
       gallery: gallery,
       album: album,
+      photos_count: Galleries.get_album_photo_count(gallery.id, album.id),
       page: 0,
       page_title: "Show Album",
       download_all_visible: Cart.can_download_all?(gallery),
@@ -71,8 +72,14 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   @impl true
-  def handle_event("toggle_favorites", _, socket) do
-    socket |> toggle_favorites(@per_page)
+  def handle_event("toggle_favorites", _, %{assigns: %{gallery: gallery, album: album}} = socket) do
+    socket
+    |> case do
+      %{assigns: %{favorites_filter: false}} = socket ->
+        assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id, true))
+      socket -> assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id))
+      end
+    |> toggle_favorites(@per_page)
   end
 
   @impl true
@@ -115,4 +122,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
     socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
   end
+
+  defp photos_count(nil), do: "photo"
+  defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
 end
