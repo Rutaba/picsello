@@ -77,8 +77,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> case do
       %{assigns: %{favorites_filter: false}} = socket ->
         assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id, true))
-      socket -> assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id))
-      end
+
+      socket ->
+        assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id))
+    end
     |> toggle_favorites(@per_page)
   end
 

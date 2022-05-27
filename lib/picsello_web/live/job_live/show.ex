@@ -32,21 +32,15 @@ defmodule PicselloWeb.JobLive.Show do
             help_content: "Once your photos are ready, upload them to your client’s gallery."
           }
 
-        :upload_in_progress ->
-          %{
-            button_text: false,
-            inner_block: fn _, _ -> "Photos currently uploading" end
-          }
+        :deactivated ->
+          %{}
 
-        :ready ->
+        _ ->
           %{
             button_text: "View Gallery",
             button_click: "view-gallery",
             inner_block: fn _, _ -> "#{gallery.total_count || 0} photos" end
           }
-
-        :deactivated ->
-          %{}
       end
 
     assigns

@@ -110,49 +110,51 @@
         </div>
       </div>
       <%= if(Enum.count(@albums) > 0) do %>
-      <!-- albums -->
-      <div class="grid lg:grid-cols-3 grid-cols-1 gap-6">
-      <%= for album <- @albums do %>
-        <a class="albumPreview" phx-click="go_to_album" phx-value-album={album.id}>
-          <div class="flex flex-col h-72 albumPreview-photo">
-            <img class="object-cover w-full h-full" src={thumbnail_url(album)} />
-            <span class="font-sans absolute bottom-4 left-4 font-bold text-white text-1xl"><%= album.name %></span>
-          </div>
-        </a>
-        <% end %>      
-         </div>    
+        <!-- albums -->
+        <div class="grid lg:grid-cols-3 grid-cols-1 gap-6">
+        <%= for album <- @albums do %>
+          <a class="albumPreview" phx-click="go_to_album" phx-value-album={album.id}>
+            <div class="flex flex-col h-72 albumPreview-photo">
+              <img class="object-cover w-full h-full" src={thumbnail_url(album)} />
+              <span class="font-sans absolute bottom-4 left-4 font-bold text-white text-1xl"><%= album.name %></span>
+            </div>
+          </a>
+          <% end %>      
+          </div>    
       <% else %>
-      <!-- images -->
-      <div
-        id="muuri-grid"
-        class="muuri grid"
-        phx-hook="MasonryGrid"
-        phx-update={@update_mode}
-        data-page={@page}
-        data-id="muuri-grid"
-        data-uploading="0"
-        data-total={@gallery.total_count}
-        data-favorites-count={@favorites_count}
-        data-is-favorites-shown={ "#{@favorites_filter}" }
-        data-has-more-photos={ "#{@has_more_photos}" }
-        data-photo-width="300">
-        <%= for photo <- @photos do%>
-        <%= live_component Photo,
-            id: photo.id,
-            photo: photo,
-            photo_width: 300,
-            is_client_gallery: true,
-            is_likable: true
-        %>
-      <% end %>
-      </div>
-      <div class="hidden">
-        <div
-          id="photo-update-listener"
-          phx-hook="PhotoUpdate"
-          data-photo-updates={@photo_updates}
-        ></div>
-      </div>
+        <%= if(Enum.count(@photos) == 0 && @favorites_filter) do %>
+          <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
+              Oops, there's no liked photo!
+          </div>
+        <% else %>
+          <!-- images -->
+          <div
+            id="muuri-grid"
+            class="muuri grid"
+            phx-hook="MasonryGrid"
+            phx-update={@update_mode}
+            data-page={@page}
+            data-id="muuri-grid"
+            data-uploading="0"
+            data-total={@gallery.total_count}
+            data-favorites-count={@favorites_count}
+            data-is-favorites-shown={ "#{@favorites_filter}" }
+            data-has-more-photos={ "#{@has_more_photos}" }
+            data-photo-width="300">
+            <%= for %{aspect_ratio: aspect_ratio} = photo when not is_nil(aspect_ratio) <- @photos do%>
+              <%= live_component Photo,
+                  id: photo.id,
+                  photo: photo,
+                  photo_width: 300,
+                  is_client_gallery: true,
+                  is_likable: true
+              %>
+            <% end %>
+          </div>
+        <% end %>
+        <div class="hidden">
+          <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
+        </div>
       <% end %>
     </div>
   </div>

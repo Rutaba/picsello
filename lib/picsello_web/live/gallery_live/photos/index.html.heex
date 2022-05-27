@@ -1,7 +1,7 @@
 <div class="flex flex-col h-screen photographer-gallery">
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
-    <div class="w-full h-full bg-gray-100 pl-96 ">
+    <div class="w-full h-full bg-gray-100 pl-96">
       <div id="page-scroll" phx-hook="PageScroll" class="fixed top-0 right-0 z-20 pt-14 pl-10 pr-10 bg-gray-100 left-96">
         <div class="flex flex-col md:flex-row">
               <div class="flex items-center font-sans lg:justify-start">
@@ -107,14 +107,19 @@
       </div>
 
       <div class= "pt-16 pb-10 pl-10 pr-8">
-        <%= if total(@photos) == 0 && !@favorites_filter do %>
-        <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-            Oops, there's nothing here - upload photos now to get started!
-        </div>
-        <div class="relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
-        <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
-        </div>
-        <% else %>
+        <%= case total(@photos) == 0 do %>
+        <% true when not @favorites_filter -> %>
+          <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
+              Oops, there's nothing here - upload photos now to get started!
+          </div>
+          <div class="relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
+            <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
+          </div>
+        <% true when @favorites_filter -> %>
+          <div class="relative justify-between mt-52 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
+              Oops, there's no liked photo!
+          </div>
+        <% false -> %>
         <div class="px-0 pt-40 pb-16 mx-0 gallery__container" id="gallery">
           <div
             phx-hook="MasonryGrid"

@@ -66,7 +66,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
-      albums: Albums.get_albums_by_gallery_id(gallery.id),
+      albums: get_albums(gallery.id),
       page: 0,
       page_title: "Show Gallery",
       download_all_visible: Cart.can_download_all?(gallery),
@@ -102,8 +102,10 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> case do
       %{assigns: %{favorites_filter: false, favorites_count: favorites_count}} = socket ->
         assign(socket, photos_count: favorites_count)
-        socket -> assign_photo_count(socket)
-      end
+
+      socket ->
+        assign_photo_count(socket)
+    end
     |> toggle_favorites(@per_page)
   end
 
@@ -209,22 +211,28 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
 
   defp assign_photo_count(
-    %{
-    assigns: %{
-      gallery: %{
-        id: id,
-        total_count: total_count
-      },
-      albums: albums
-    }
-  } = socket) do
+         %{
+           assigns: %{
+             gallery: %{
+               id: id,
+               total_count: total_count
+             },
+             albums: albums
+           }
+         } = socket
+       ) do
     photos_count =
-    case Enum.count(albums) do
-      0 -> total_count
-      _ -> Galleries.get_albums_photo_count(id)
-    end
+      case Enum.count(albums) do
+        0 -> total_count
+        _ -> Galleries.get_albums_photo_count(id)
+      end
 
     socket
     |> assign(photos_count: photos_count)
+  end
+
+  defp get_albums(id) do
+    Albums.get_albums_by_gallery_id(id)
+    |> Enum.filter(&(Galleries.get_album_photo_count(id, &1.id) > 0))
   end
 end
