@@ -31,8 +31,8 @@
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
             </div>
           </div>
-          <span class="flex items-center font-sans text-2xl font-bold"><%= extract_album(@album, :name, "Photos") %></span>
-        <div class="flex items-center hidden mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-100" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
+          <span class="flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
+        <div class="flex items-center mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-400" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
           <div class="flex justify-center pb-1 pl-5">
             <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
           </div>

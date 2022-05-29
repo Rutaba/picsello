@@ -12,7 +12,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias Phoenix.PubSub
   alias Picsello.{Repo, Galleries, Albums}
   alias Picsello.Galleries.Workers.PositionNormalizer
-  alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView}
+  alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
   @per_page 100
@@ -117,7 +117,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @impl true
   def handle_event("upload-failed", _, socket) do
     socket
-    |> open_modal(UploadComponent, socket.assigns)
+    |> open_modal(UploadError, socket.assigns)
     |> noreply
   end
 

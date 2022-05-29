@@ -133,7 +133,9 @@
 }
 
 .uploadEntry .error {
-    @apply bg-red-sales-100
+    @apply bg-orange-inbox-400 
+    text-red-sales-300
+    font-bold
     cursor-default
 }
 
@@ -143,6 +145,7 @@
     border-blue-planning-300
     bg-base-100
     text-base-300
+    font-bold
 }
 
 .sk-circle {
