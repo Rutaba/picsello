@@ -417,10 +417,13 @@ defmodule PicselloWeb.Live.Profile do
     assign_organization(socket, organization)
   end
 
-  defp assign_job_type_packages(%{assigns: %{organization: organization}} = socket) do
-    packages =
+  defp assign_job_type_packages(
+         %{assigns: %{organization: organization, job_types: job_types}} = socket
+       ) do
+    {packages, _} =
       Packages.templates_for_organization(organization)
       |> Enum.group_by(& &1.job_type)
+      |> Map.split(job_types)
 
     socket |> assign(:job_type_packages, packages) |> assign(:job_type, nil)
   end
