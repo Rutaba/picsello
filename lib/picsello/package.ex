@@ -167,6 +167,7 @@ defmodule Picsello.Package do
       field, %Money{amount: amount} ->
         {%{field => nil}, %{field => :integer}}
         |> change(%{field => amount})
+        |> validate_inclusion(field, -2_147_483_648..2_147_483_647)
         |> validate_number(field, validate_number_opts)
         |> Map.get(:errors)
         |> Keyword.take([field])
