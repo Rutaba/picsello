@@ -592,6 +592,7 @@ defmodule Picsello.Factory do
       subject_template: "Subjectively speaking",
       body_template: "this is my body",
       name: "use this email preset!",
+      type: :job,
       position: 0
     }
 

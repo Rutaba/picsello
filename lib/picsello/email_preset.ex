@@ -5,10 +5,12 @@ defmodule Picsello.EmailPreset do
   import Ecto.Query, only: [from: 2]
   import Picsello.Repo.CustomMacros
 
+  @types ~w(job)a
   @job_states ~w(post_shoot booking_proposal job lead)a
 
   schema "email_presets" do
     field :body_template, :string
+    field :type, Ecto.Enum, values: @types
     field :job_state, Ecto.Enum, values: @job_states
     field :job_type, :string
     field :name, :string
@@ -34,6 +36,7 @@ defmodule Picsello.EmailPreset do
           )
         ),
       on: true,
+      where: preset.type == :job,
       where:
         (status.is_lead and preset.job_state == :lead) or
           (not status.is_lead and
