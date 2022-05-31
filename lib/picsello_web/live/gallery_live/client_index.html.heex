@@ -27,7 +27,7 @@
   </div>
 </div>
 
-<div id="gallery-client" class={classes(%{"block sm:hidden" => !@active})}>
+<div {testid("gallery-client")} class={classes(%{"block sm:hidden" => !@active})}>
   <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
   </div>
