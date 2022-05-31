@@ -24,7 +24,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
       type_ranges
       |> Enum.map(&fetch_sheet(&1, connection, config))
       |> Enum.concat()
-      |> Enum.map(&Map.merge(&1, %{updated_at: now, inserted_at: now}))
+      |> Enum.map(&Map.merge(&1, %{updated_at: now, inserted_at: now, type: :job}))
 
     Repo.transaction(fn ->
       job_types = Picsello.JobType.all()

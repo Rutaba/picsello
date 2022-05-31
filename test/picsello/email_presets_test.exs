@@ -1,9 +1,9 @@
-defmodule Picsello.EmailPresetTest do
+defmodule Picsello.EmailPresetsTest do
   use Picsello.DataCase, async: true
-  alias Picsello.EmailPreset
+  alias Picsello.{EmailPresets, EmailPreset}
   import Money.Sigils
 
-  describe "for_job" do
+  describe "for %Job{}" do
     test "post_shoot" do
       organization = insert(:organization)
       package = insert(:package, organization: organization, shoot_count: 3)
@@ -14,27 +14,71 @@ defmodule Picsello.EmailPresetTest do
       insert(:shoot, job: lead, starts_at: DateTime.utc_now() |> DateTime.add(100))
       job = promote_to_job(lead)
 
-      %{id: post_shoot_wedding_id} =
-        insert(:email_preset, job_state: :post_shoot, job_type: "wedding")
+      %{id: expected_id} = insert(:email_preset, job_state: :post_shoot, job_type: "wedding")
 
       insert(:email_preset, job_state: :lead, job_type: "wedding")
       insert(:email_preset, job_state: :job, job_type: "wedding")
 
       insert(:email_preset, job_state: :post_shoot, job_type: "event")
 
-      assert [%EmailPreset{id: ^post_shoot_wedding_id}] = EmailPreset.for_job(job)
+      assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(job)
+    end
+
+    test "job" do
+      organization = insert(:organization)
+      package = insert(:package, organization: organization, shoot_count: 1)
+      client = insert(:client, organization: organization)
+      lead = insert(:lead, package: package, client: client, type: "wedding")
+      insert(:shoot, job: lead, starts_at: DateTime.utc_now() |> DateTime.add(100))
+      job = promote_to_job(lead)
+
+      insert(:email_preset, job_state: :post_shoot, job_type: "wedding")
+
+      insert(:email_preset, job_state: :lead, job_type: "wedding")
+      %{id: expected_id} = insert(:email_preset, job_state: :job, job_type: "wedding")
+
+      insert(:email_preset, job_state: :job, job_type: "event")
+
+      assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(job)
+    end
+
+    test "lead" do
+      lead = insert(:lead, type: "wedding")
+      %{id: expected_id} = insert(:email_preset, job_state: :lead, job_type: "wedding")
+      insert(:email_preset, job_state: :job, job_type: "wedding")
+      insert(:email_preset, job_state: :lead, job_type: "event")
+
+      assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(lead)
+    end
+  end
+
+  describe "for {:booking_proposal, job_type}" do
+    test "wedding" do
+      organization = insert(:organization)
+      package = insert(:package, organization: organization)
+      client = insert(:client, organization: organization)
+      lead = insert(:lead, package: package, client: client, type: "wedding")
+      promote_to_job(lead)
+
+      %{id: preset_wedding_id} =
+        insert(:email_preset, job_state: :booking_proposal, job_type: "wedding")
+
+      insert(:email_preset, job_state: :booking_proposal, job_type: "event")
+
+      assert [%EmailPreset{id: ^preset_wedding_id}] =
+               EmailPresets.for({:booking_proposal, "wedding"})
     end
   end
 
   describe "resolve_variables" do
     def resolve_variables(subject, body, job) do
-      EmailPreset.resolve_variables(
+      EmailPresets.resolve_variables(
         %EmailPreset{
           subject_template: subject,
           body_template: body
         },
         job,
-        PicselloWeb.ClientMessageComponent.PresetHelper
+        PicselloWeb.Helpers
       )
     end
 

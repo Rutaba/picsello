@@ -1,4 +1,4 @@
-defmodule Picsello.EmailPresetsTest do
+defmodule Picsello.ChooseEmailPresetsTest do
   use Picsello.FeatureCase, async: true
   require Ecto.Query
   import Money.Sigils
