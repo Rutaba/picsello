@@ -8,9 +8,14 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Galleries, Albums}
-  alias Picsello.GalleryProducts
-  alias Picsello.Cart
+  alias Picsello.{
+    Galleries,
+    Albums,
+    Cart,
+    GalleryProducts,
+    Orders
+  }
+
   alias PicselloWeb.GalleryLive.Photos.Photo
 
   @per_page 12
@@ -69,7 +74,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       albums: get_albums(gallery.id),
       page: 0,
       page_title: "Show Gallery",
-      download_all_visible: Cart.can_download_all?(gallery),
+      download_all_visible: Orders.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id),
       update_mode: "append"
     )
