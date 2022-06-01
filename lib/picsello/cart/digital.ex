@@ -13,6 +13,16 @@ defmodule Picsello.Cart.Digital do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{
+          photo: Ecto.Association.NotLoaded.t() | Picsello.Galleries.Photo.t(),
+          order: Ecto.Association.NotLoaded.t() | Picsello.Cart.Order.t(),
+          price: Money.t(),
+          is_credit: boolean(),
+          preview_url: nil | String.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   def charged_price(%__MODULE__{is_credit: true}), do: ~M[0]USD
   def charged_price(%__MODULE__{is_credit: false, price: price}), do: price
 end

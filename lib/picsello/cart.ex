@@ -25,6 +25,8 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product, digital, or bundle in the cart.
   """
+  @spec place_product({:bundle, Money.t()} | CartProduct.t() | Digital.t(), Gallery.t()) ::
+          Order.t()
   def place_product(product, %Gallery{id: gallery_id} = gallery) do
     opts = [credits: credit_remaining(gallery)]
 

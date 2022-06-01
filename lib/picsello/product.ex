@@ -84,6 +84,8 @@ defmodule Picsello.Product do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{}
+
   def active, do: from(product in __MODULE__, where: is_nil(product.deleted_at))
 
   def whcc_category(%__MODULE__{api: %{"category" => category}}),
