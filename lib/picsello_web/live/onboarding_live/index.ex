@@ -241,6 +241,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <hr class="my-4" />
     <p class="font-bold">When will I be charged?</p>
     <p><%= trial_info().description_prefix %>. (You can change to annual if you prefer in account settings.)</p>
+    <hr class="my-4" />
+    <p class="italic text-sm text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
@@ -350,8 +352,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </a>
         </div>
 
-        <h1 class="text-3xl font-bold sm:text-5xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
-        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-2xl"><%= @subtitle %></h2>
+        <h1 class="text-3xl font-bold sm:text-4xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
+        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-xl"><%= @subtitle %></h2>
         <%= render_block(@inner_block) %>
        </div>
     </div>
