@@ -34,7 +34,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
       {_count, presets} =
         Repo.insert_all(EmailPreset, rows,
           on_conflict: {:replace, ~w[subject_template body_template]a},
-          conflict_target: ~w[job_state job_type name]a,
+          conflict_target: ~w[state job_type name]a,
           returning: [:id]
         )
 
@@ -71,7 +71,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
             |> Map.put(:position, index)
             |> Map.update!(:name, &Regex.replace(~r/^DEFAULT\s*-\s*/, &1, ""))
             |> Map.update!(
-              :job_state,
+              :state,
               &(&1
                 |> String.downcase()
                 |> String.replace(~r/\s+/, "_")

@@ -49,11 +49,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         ]
       })
 
-    insert(:email_preset, job_type: lead.type, job_state: :lead)
+    insert(:email_preset, job_type: lead.type, state: :lead)
 
     insert(:email_preset,
       job_type: lead.type,
-      job_state: :booking_proposal,
+      state: :booking_proposal,
       subject_template: "here is what I propose",
       body_template: "let us party."
     )

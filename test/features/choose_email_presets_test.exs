@@ -32,7 +32,7 @@ defmodule Picsello.ChooseEmailPresetsTest do
         column_map: %{
           "copy" => :body_template,
           "email template name" => :name,
-          "state" => :job_state,
+          "state" => :state,
           "subject lines" => :subject_template
         },
         sheet_id: "whatever",

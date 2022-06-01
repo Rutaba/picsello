@@ -39,7 +39,7 @@ defmodule Picsello.CreateBookingProposalTest do
         }
       })
 
-    insert(:email_preset, job_type: lead.type, job_state: :booking_proposal)
+    insert(:email_preset, job_type: lead.type, state: :booking_proposal)
 
     [lead: lead]
   end

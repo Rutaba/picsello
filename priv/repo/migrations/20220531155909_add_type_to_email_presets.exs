@@ -11,7 +11,6 @@ defmodule Picsello.Repo.Migrations.AddTypeToEmailPresets do
     alter table(:email_presets) do
       modify(:type, :string, null: false)
       modify(:job_type, :string, null: true)
-      modify(:job_state, :string, null: true)
     end
 
     create(
@@ -20,21 +19,17 @@ defmodule Picsello.Repo.Migrations.AddTypeToEmailPresets do
       )
     )
 
-    create(
-      constraint(:email_presets, "job_must_have_job_state",
-        check: "((type = 'job')::integer + (job_state is not null)::integer) % 2 = 0"
-      )
-    )
+    rename table(:email_presets), :job_state, to: :state
   end
 
   def down do
-    drop constraint(:email_presets, "job_must_have_job_state")
     drop constraint(:email_presets, "job_must_have_job_type")
 
     alter table(:email_presets) do
       remove(:type, :string)
       modify(:job_type, :string, null: false)
-      modify(:job_state, :text, null: false)
     end
+
+    rename table(:email_presets), :state, to: :job_state
   end
 end

@@ -3,12 +3,12 @@ defmodule Picsello.EmailPreset do
   use Ecto.Schema
 
   @types ~w(job)a
-  @job_states ~w(post_shoot booking_proposal job lead)a
+  @states ~w(post_shoot booking_proposal job lead)a
 
   schema "email_presets" do
     field :body_template, :string
     field :type, Ecto.Enum, values: @types
-    field :job_state, Ecto.Enum, values: @job_states
+    field :state, Ecto.Enum, values: @states
     field :job_type, :string
     field :name, :string
     field :subject_template, :string
@@ -17,5 +17,5 @@ defmodule Picsello.EmailPreset do
     timestamps type: :utc_datetime
   end
 
-  def job_states(), do: @job_states
+  def states(), do: @states
 end

@@ -9,7 +9,7 @@ defmodule Picsello.EmailPresets do
 
   def for({:booking_proposal, job_type}) do
     from(preset in job_presets(),
-      where: preset.job_type == ^job_type and preset.job_state == :booking_proposal
+      where: preset.job_type == ^job_type and preset.state == :booking_proposal
     )
     |> Repo.all()
   end
@@ -27,7 +27,7 @@ defmodule Picsello.EmailPresets do
   end
 
   defp for_job(query, %Job{job_status: %{is_lead: true}}) do
-    query |> where([preset], preset.job_state == :lead)
+    query |> where([preset], preset.state == :lead)
   end
 
   defp for_job(query, %Job{job_status: %{is_lead: false}, id: job_id}) do
@@ -44,8 +44,8 @@ defmodule Picsello.EmailPresets do
         ),
       on: true,
       where:
-        (preset.job_state == :job and shoot.past_count == 0) or
-          (preset.job_state == :post_shoot and shoot.past_count > 0)
+        (preset.state == :job and shoot.past_count == 0) or
+          (preset.state == :post_shoot and shoot.past_count > 0)
     )
   end
 

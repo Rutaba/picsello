@@ -14,12 +14,12 @@ defmodule Picsello.EmailPresetsTest do
       insert(:shoot, job: lead, starts_at: DateTime.utc_now() |> DateTime.add(100))
       job = promote_to_job(lead)
 
-      %{id: expected_id} = insert(:email_preset, job_state: :post_shoot, job_type: "wedding")
+      %{id: expected_id} = insert(:email_preset, state: :post_shoot, job_type: "wedding")
 
-      insert(:email_preset, job_state: :lead, job_type: "wedding")
-      insert(:email_preset, job_state: :job, job_type: "wedding")
+      insert(:email_preset, state: :lead, job_type: "wedding")
+      insert(:email_preset, state: :job, job_type: "wedding")
 
-      insert(:email_preset, job_state: :post_shoot, job_type: "event")
+      insert(:email_preset, state: :post_shoot, job_type: "event")
 
       assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(job)
     end
@@ -32,21 +32,21 @@ defmodule Picsello.EmailPresetsTest do
       insert(:shoot, job: lead, starts_at: DateTime.utc_now() |> DateTime.add(100))
       job = promote_to_job(lead)
 
-      insert(:email_preset, job_state: :post_shoot, job_type: "wedding")
+      insert(:email_preset, state: :post_shoot, job_type: "wedding")
 
-      insert(:email_preset, job_state: :lead, job_type: "wedding")
-      %{id: expected_id} = insert(:email_preset, job_state: :job, job_type: "wedding")
+      insert(:email_preset, state: :lead, job_type: "wedding")
+      %{id: expected_id} = insert(:email_preset, state: :job, job_type: "wedding")
 
-      insert(:email_preset, job_state: :job, job_type: "event")
+      insert(:email_preset, state: :job, job_type: "event")
 
       assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(job)
     end
 
     test "lead" do
       lead = insert(:lead, type: "wedding")
-      %{id: expected_id} = insert(:email_preset, job_state: :lead, job_type: "wedding")
-      insert(:email_preset, job_state: :job, job_type: "wedding")
-      insert(:email_preset, job_state: :lead, job_type: "event")
+      %{id: expected_id} = insert(:email_preset, state: :lead, job_type: "wedding")
+      insert(:email_preset, state: :job, job_type: "wedding")
+      insert(:email_preset, state: :lead, job_type: "event")
 
       assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(lead)
     end
@@ -61,9 +61,9 @@ defmodule Picsello.EmailPresetsTest do
       promote_to_job(lead)
 
       %{id: preset_wedding_id} =
-        insert(:email_preset, job_state: :booking_proposal, job_type: "wedding")
+        insert(:email_preset, state: :booking_proposal, job_type: "wedding")
 
-      insert(:email_preset, job_state: :booking_proposal, job_type: "event")
+      insert(:email_preset, state: :booking_proposal, job_type: "event")
 
       assert [%EmailPreset{id: ^preset_wedding_id}] =
                EmailPresets.for({:booking_proposal, "wedding"})
