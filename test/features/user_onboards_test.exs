@@ -113,7 +113,7 @@ defmodule Picsello.UserOnboardsTest do
       assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
     end)
     |> click(css("button[type='submit']", text: "Next"))
-    |> assert_text("Start your 6-month free trial")
+    |> assert_text("Start your 1-month free trial")
     |> click(button("Start Trial"))
     |> assert_url_contains("stripe-checkout")
 
@@ -121,7 +121,7 @@ defmodule Picsello.UserOnboardsTest do
 
     session
     |> visit(stripe_success_url)
-    |> assert_text("Your 6-month free trial has started!")
+    |> assert_text("Your 1-month free trial has started!")
     |> click(button("Go to my dashboard"))
     |> assert_path(home_path)
 
