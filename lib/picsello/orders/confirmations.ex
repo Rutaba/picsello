@@ -1,29 +1,31 @@
-defmodule Picsello.Cart.Confirmations do
+defmodule Picsello.Orders.Confirmations do
   @moduledoc "context module for confirming orders. Should be accessed through Cart."
 
-  alias Picsello.{Galleries, Cart.Order, Payments, Cart.OrderNumber, WHCC, Repo}
+  alias Picsello.{Invoices.Invoice, Galleries, Cart.Order, Payments, Cart.OrderNumber, WHCC, Repo}
   import Ecto.Query, only: [from: 2]
+  import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3]
 
   @doc """
-  Confirms the order.
+  Handles a stripe session.
 
   1. query for order and connect account
   1. make sure the order isn't already paid
   1. maybe fetch the session
-  1. mark intent as paid
-  1. send confirmation email
-  1. is the order all paid for?
-    1. capture the stripe funds
-    1. confirm in whcc
+  1. update intent
+  1. is client paid up?
+    1. send confirmation email
+    1. is the order all paid for?
+      1. capture the stripe funds
+      1. confirm with whcc
   """
-  def confirm_order(
+  def handle_session(
         %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session,
         helpers
       ) do
     do_confirm_order(order_number, &Ecto.Multi.put(&1, :session, session), helpers)
   end
 
-  def confirm_order(order_number, stripe_session_id, helpers) do
+  def handle_session(order_number, stripe_session_id, helpers) do
     do_confirm_order(
       order_number,
       &Ecto.Multi.run(&1, :session, __MODULE__, :fetch_session, [stripe_session_id]),
@@ -31,16 +33,33 @@ defmodule Picsello.Cart.Confirmations do
     )
   end
 
+  @doc """
+  Handles a stripe invoice.
+
+  1. query for existing invoice
+  1. updates existing invoice with stripe info
+  1. is order all paid for?
+      1. capture client funds
+      1. confirm with whcc
+  """
+  def handle_invoice(invoice) do
+    new()
+    |> put(:stripe_invoice, invoice)
+    |> run(:invoice, &load_invoice/2)
+    |> update(:updated_invoice, &update_invoice_changeset/1)
+    |> Repo.transaction()
+  end
+
   defp do_confirm_order(order_number, session_fn, helpers) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.put(:order_number, order_number)
-    |> Ecto.Multi.run(:order, &load_order/2)
-    |> Ecto.Multi.run(:stripe_options, &stripe_options/2)
-    |> Ecto.Multi.run(:paid, &check_paid/2)
+    new()
+    |> put(:order_number, order_number)
+    |> run(:order, &load_order/2)
+    |> run(:stripe_options, &stripe_options/2)
+    |> run(:paid, &check_paid/2)
     |> session_fn.()
-    |> Ecto.Multi.run(:intent, &update_intent/2)
-    |> Ecto.Multi.update(:confirmed_order, &confirm_order_changeset/1)
-    |> Ecto.Multi.run(:capture, &capture/2)
+    |> run(:intent, &update_intent/2)
+    |> update(:confirmed_order, &confirm_order_changeset/1)
+    |> run(:capture, &capture/2)
     |> Repo.transaction()
     |> case do
       {:error, :paid, true, %{order: order}} ->
@@ -169,5 +188,18 @@ defmodule Picsello.Cart.Confirmations do
 
   defp send_confirmation_email(order, helpers) do
     Picsello.Notifiers.ClientNotifier.deliver_order_confirmation(order, helpers)
+  end
+
+  defp load_invoice(repo, %{stripe_invoice: %Stripe.Invoice{id: stripe_id}}) do
+    Invoice
+    |> repo.get_by(stripe_id: stripe_id)
+    |> case do
+      nil -> {:error, "no invoice"}
+      invoice -> {:ok, invoice}
+    end
+  end
+
+  defp update_invoice_changeset(%{stripe_invoice: stripe_invoice, invoice: invoice}) do
+    Invoice.changeset(invoice, stripe_invoice)
   end
 end

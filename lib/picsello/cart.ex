@@ -327,10 +327,6 @@ defmodule Picsello.Cart do
     end
   end
 
-  defdelegate confirm_order(order_number, stripe_session_id, helpers),
-    to: __MODULE__.Confirmations
-
-  defdelegate confirm_order(session, helpers), to: __MODULE__.Confirmations
   defdelegate lines_by_product(order), to: Order
   defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
   defdelegate total_cost(order), to: Order

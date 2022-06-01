@@ -338,48 +338,6 @@ defmodule Picsello.CartTest do
     end
   end
 
-  describe "confirm_order" do
-    def confirm_order(session) do
-      Cart.confirm_order(
-        session,
-        PicselloWeb.Helpers
-      )
-    end
-
-    test "raises if order does not exist" do
-      assert_raise(Ecto.NoResultsError, fn ->
-        confirm_order(%Stripe.Session{
-          client_reference_id: "order_number_404"
-        })
-      end)
-    end
-
-    test "is successful when order is already paid for" do
-      order = insert(:order, placed_at: DateTime.utc_now())
-
-      assert {:ok, _} =
-               confirm_order(%Stripe.Session{
-                 client_reference_id: "order_number_#{Order.number(order)}"
-               })
-    end
-
-    test "cancels payment intent on failure" do
-      order = insert(:order, placed_at: DateTime.utc_now()) |> Repo.preload(:digitals)
-      insert(:intent, order: order)
-
-      Picsello.MockPayments
-      |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
-        {:ok, %{amount_capturable: Order.total_cost(Repo.preload(order, :products)).amount + 1}}
-      end)
-      |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
-
-      confirm_order(%Stripe.Session{
-        client_reference_id: "order_number_#{Order.number(order)}",
-        payment_intent: "intent-id"
-      })
-    end
-  end
-
   def create_gallery(opts \\ []),
     do: insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
 
