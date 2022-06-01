@@ -63,6 +63,10 @@ defmodule Picsello.Subscriptions do
     Repo.all(from(s in SubscriptionPlan, where: s.active == true, order_by: s.price))
   end
 
+  def all_subscription_plans() do
+    Repo.all(from(s in SubscriptionPlan, order_by: s.price))
+  end
+
   def checkout_link(%User{} = user, recurring_interval, opts) do
     subscription_plan =
       Repo.get_by!(SubscriptionPlan, %{recurring_interval: recurring_interval, active: true})

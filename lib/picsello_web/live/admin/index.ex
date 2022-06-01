@@ -17,6 +17,8 @@ defmodule PicselloWeb.Live.Admin.Index do
         <li><%= live_redirect "Run Jobs", to: Routes.admin_workers_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8 font-bold text-blue-planning-300" %></li>
 
         <li><%= live_redirect "Pricing Calculator Configuration", to: Routes.admin_pricing_calculator_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8 font-bold text-blue-planning-300" %></li>
+
+        <li><%= live_redirect "Subscription Pricing", to: Routes.admin_subscription_pricing_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8 font-bold text-blue-planning-300" %></li>
       </ul>
     </div>
     """
