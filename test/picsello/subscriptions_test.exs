@@ -12,16 +12,25 @@ defmodule Picsello.SubscriptionsTest do
                id: "p1",
                unit_amount: 500,
                type: "recurring",
-               recurring: %{interval: "month"}
+               recurring: %{interval: "month"},
+               active: true
              },
              %Stripe.Price{
                id: "p2",
-               unit_amount: 5_000,
+               unit_amount: 200,
                type: "recurring",
-               recurring: %{interval: "year"}
+               recurring: %{interval: "month"},
+               active: false
              },
              %Stripe.Price{
                id: "p3",
+               unit_amount: 5_000,
+               type: "recurring",
+               recurring: %{interval: "year"},
+               active: true
+             },
+             %Stripe.Price{
+               id: "p4",
                unit_amount: 50_000,
                type: "one_time"
              }
@@ -35,12 +44,14 @@ defmodule Picsello.SubscriptionsTest do
                %SubscriptionPlan{
                  stripe_price_id: "p1",
                  price: %Money{amount: 500, currency: :USD},
-                 recurring_interval: "month"
+                 recurring_interval: "month",
+                 active: true
                },
                %SubscriptionPlan{
-                 stripe_price_id: "p2",
+                 stripe_price_id: "p3",
                  price: %Money{amount: 5_000, currency: :USD},
-                 recurring_interval: "year"
+                 recurring_interval: "year",
+                 active: true
                }
              ] = Subscriptions.subscription_plans()
     end

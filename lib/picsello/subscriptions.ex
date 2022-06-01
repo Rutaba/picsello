@@ -19,7 +19,8 @@ defmodule Picsello.Subscriptions do
       %{
         stripe_price_id: price.id,
         price: price.unit_amount,
-        recurring_interval: price.recurring.interval
+        recurring_interval: price.recurring.interval,
+        active: price.active
       }
       |> SubscriptionPlan.changeset()
       |> Repo.insert!(
@@ -59,11 +60,13 @@ defmodule Picsello.Subscriptions do
     do: subscription && !subscription.active
 
   def subscription_plans() do
-    Repo.all(from(s in SubscriptionPlan, order_by: s.price))
+    Repo.all(from(s in SubscriptionPlan, where: s.active == true, order_by: s.price))
   end
 
   def checkout_link(%User{} = user, recurring_interval, opts) do
-    subscription_plan = Repo.get_by!(SubscriptionPlan, recurring_interval: recurring_interval)
+    subscription_plan =
+      Repo.get_by!(SubscriptionPlan, %{recurring_interval: recurring_interval, active: true})
+
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)
     trial_days = opts |> Keyword.get(:trial_days)
