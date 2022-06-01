@@ -240,7 +240,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
     <hr class="my-4" />
     <p class="font-bold">When will I be charged?</p>
-    <p><%= trial_info().description_prefix %> $50/month. (You can change to annual if you prefer in account settings.)</p>
+    <p><%= trial_info().description_prefix %>. (You can change to annual if you prefer in account settings.)</p>
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
@@ -416,10 +416,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp trial_info do
+    %{recurring_interval: recurring_interval, price: price} =
+      Subscriptions.get_subscription_plan("month")
+
     %{
       length: 30,
       title_prefix: "Start your 30-day free trial",
-      description_prefix: "After 30 days, your subscription will be",
+      description_prefix:
+        "After 30 days, your subscription will be #{price}/#{recurring_interval}",
       success_prefix: "Your 30-day free trial"
     }
   end
