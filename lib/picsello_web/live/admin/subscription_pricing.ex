@@ -24,22 +24,22 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
         <div class="col-start-3 font-bold">Interval</div>
         <div class="col-start-4 font-bold">Active</div>
         <%= for(%{price: %{stripe_price_id: stripe_price_id}, changeset: changeset} <- @pricing_rows) do %>
-        <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{stripe_price_id}"}>
-          <%= hidden_input f, :id %>
-          <div class="col-start-1">
-            <%= input f, :stripe_price_id, phx_debounce: 200, disabled: true, class: "w-full" %>
-          </div>
-          <div class="col-start-2">
-            <%= input f, :price, phx_debounce: 200, disabled: true, class: "w-full" %>
-          </div>
-          <div class="col-start-3">
-            <%= input f, :recurring_interval, phx_debounce: 200, disabled: true, class: "w-full" %>
-          </div>
-          <div class="col-start-4">
-            <%= select f, :active, [true, false], phx_debounce: 200, class: "select py-3 w-full" %>
-          </div>
-        </.form>
-      <% end %>
+          <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{stripe_price_id}"}>
+            <%= hidden_input f, :id %>
+            <div class="col-start-1">
+              <%= input f, :stripe_price_id, phx_debounce: 200, disabled: true, class: "w-full" %>
+            </div>
+            <div class="col-start-2">
+              <%= input f, :price, phx_debounce: 200, disabled: true, class: "w-full" %>
+            </div>
+            <div class="col-start-3">
+              <%= input f, :recurring_interval, phx_debounce: 200, disabled: true, class: "w-full" %>
+            </div>
+            <div class="col-start-4">
+              <%= select f, :active, [true, false], phx_debounce: 200, class: "select py-3 w-full" %>
+            </div>
+          </.form>
+        <% end %>
       </div>
     </div>
     """
