@@ -187,10 +187,10 @@ defmodule Picsello.ClientOrdersTest do
       )
     end)
     |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
-      build(:whcc_editor_export, unit_base_price: ~M[300]USD)
+      build(:whcc_editor_export, unit_base_price: ~M[300]USD, order_sequence_number: 1)
     end)
     |> Mox.stub(:create_order, fn _account_id, _export ->
-      {:ok, build(:whcc_order_created, total: ~M[69]USD)}
+      {:ok, build(:whcc_order_created, total: ~M[69]USD, sequence_number: 1)}
     end)
     |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
       {:ok, :confirmed}
