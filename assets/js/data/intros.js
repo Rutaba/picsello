@@ -8,10 +8,11 @@ export default {
   intro_dashboard: (el) => ({
     steps: [
       {
-        title: 'Welcome to Picsello!',
-        intro: 'Let’s get started with the basics.',
-        position: 'bottom-middle-aligned',
         element: el.querySelector('h1'),
+        title: 'Welcome to Picsello!',
+        intro:
+          'We are so happy to have you here! We have a quick tour of your home screen to show you.',
+        position: 'bottom-middle-aligned',
       },
       {
         element: el.querySelector('.intro-next-up'),
@@ -28,11 +29,11 @@ export default {
         position: 'bottom-middle-aligned',
       },
       {
-        title: 'Create your first lead',
-        element: el.querySelector('.intro-first-lead'),
+        title: 'Getting started guide',
         intro:
-          'Next up, you’ll need to create your first lead. Once you get to this step, we’ll guide you through how.',
+          'Reminder: you can always open this guide to see how to start running your business with Picsello.',
         position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-help-scout'),
       },
       {
         title: 'Connect to Stripe',
@@ -41,6 +42,14 @@ export default {
           'Once you’ve created your first lead, you’ll need to connect your Stripe account so you can send proposals, sign contracts, and get paid for your jobs.',
         position: 'bottom-middle-aligned',
       },
+      {
+        title: 'Create your first lead',
+        element: el.querySelector('.intro-first-lead'),
+        intro:
+          'Next up, you’ll need to create your first lead. Once you get to this step, we’ll guide you through how.',
+        position: 'bottom-middle-aligned',
+      },
+
       {
         title: 'Packages',
         element: '',

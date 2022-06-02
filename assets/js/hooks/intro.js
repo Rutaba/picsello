@@ -1,7 +1,29 @@
 import introJs from 'intro.js';
 
+import { loadHelpScout, initHelpScout, toggleMenu } from './help-scout';
+
 import intros from '../data/intros';
 import isMobile from '../utils/isMobile';
+
+function startIntroJsTour(component, introSteps, introId) {
+  introJs()
+    .setOptions(introSteps)
+    .onexit(() => {
+      // if user clicks 'x' or the overlay
+      component.pushEvent('intro_js', {
+        action: 'dismissed',
+        intro_id: introId,
+      });
+    })
+    .onbeforeexit(() => {
+      // if user has completed the entire tour
+      component.pushEvent('intro_js', {
+        action: 'completed',
+        intro_id: introId,
+      });
+    })
+    .start();
+}
 
 export default {
   mounted() {
@@ -25,25 +47,29 @@ export default {
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
 
+      if (introId === 'intro_dashboard') {
+        loadHelpScout();
+        initHelpScout(
+          el.dataset.id,
+          el.dataset.email,
+          el.dataset.name,
+          '',
+          '',
+          '',
+          ''
+        );
+        toggleMenu();
+        window?.Beacon('article', el.dataset.article);
+
+        window.Beacon('on', 'close', () =>
+          startIntroJsTour(this, introSteps, introId)
+        );
+        return;
+      }
+
       if (!introSteps) return;
 
-      introJs()
-        .setOptions(introSteps)
-        .onexit(() => {
-          // if user clicks 'x' or the overlay
-          this.pushEvent('intro_js', {
-            action: 'dismissed',
-            intro_id: introId,
-          });
-        })
-        .onbeforeexit(() => {
-          // if user has completed the entire tour
-          this.pushEvent('intro_js', {
-            action: 'completed',
-            intro_id: introId,
-          });
-        })
-        .start();
+      startIntroJsTour(this, introSteps, introId);
     }
 
     // no api for triggering hints on hover so we make our own

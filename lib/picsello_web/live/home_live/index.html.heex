@@ -1,4 +1,4 @@
-<div {intro(@current_user, "intro_dashboard")}>
+<div {intro(@current_user, "intro_dashboard")} {help_scout_output(@current_user, :help_scout_id)} data-article="6297fdaaa2c316231c2021cd">
   <header class="bg-gray-100">
     <div class="pt-10 pb-8 center-container">
       <h1 class="px-6 text-4xl font-bold">
@@ -13,11 +13,11 @@
             <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class} <- items do %>
             <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
               <div>
-                <h1 class="text-lg font-bold">
-                  <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
-                  <%= title %>
-                </h1>
-
+                <div class="flex">
+                  <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
+                  <h1 class="text-lg font-bold"><%= title %></h1>
+                </div>
+                
                 <p class="my-2 text-sm"><%= body %></p>
               </div>
 
@@ -34,7 +34,7 @@
                     <%= button_label %>
                   </a>
                 <% "help-scout-modal" -> %>
-                  <a href="javascript:void(0)" {help_scout_output(@current_user, :help_scout_id)} data-modal="6297fdaaa2c316231c2021cd" class={"#{button_class} text-center text-sm w-full py-2 mt-2"}>
+                  <a href="https://support.picsello.com/article/117-getting-started-with-picsello-guide" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
                     <%= button_label %>
                   </a>
                 <% _ -> %>
