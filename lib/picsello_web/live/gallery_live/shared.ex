@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
-  alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent, GalleryMessageComponent}
+  alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -255,11 +255,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
         socket
         |> assign(:job, gallery.job)
         |> assign(:gallery, gallery)
-        |> GalleryMessageComponent.open(%{
+        |> PicselloWeb.ClientMessageComponent.open(%{
           body_html: html,
-          body_text: text,
           subject: subject,
-          modal_title: "Share gallery"
+          modal_title: "Share gallery",
+          presets: [],
+          enable_image: true,
+          enable_size: true
         })
         |> noreply()
 

@@ -1,6 +1,7 @@
 defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   alias Picsello.{Job}
@@ -43,7 +44,8 @@ defmodule PicselloWeb.ClientMessageComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
-    <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
+      <.close_x />
+      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
       <%= if @show_client_email do %>
         <div class="pt-5 input-label">
           Client's email
@@ -60,15 +62,15 @@ defmodule PicselloWeb.ClientMessageComponent do
 
         <label class="block mt-4 input-label" for="editor">Message</label>
         <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
-        <PicselloWeb.LiveModal.footer>
-          <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+        <.footer>
+          <button class="btn-primary px-11" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
           </button>
-        </PicselloWeb.LiveModal.footer>
+        </.footer>
       </.form>
     </div>
     """
