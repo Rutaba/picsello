@@ -5,12 +5,15 @@ defmodule Picsello.EmailPresets do
   import Ecto.Query
   import Picsello.Repo.CustomMacros
 
-  alias Picsello.{Repo, Job, Shoot, EmailPreset, EmailPresets.JobResolver}
+  alias Picsello.{Repo, Job, Shoot, EmailPreset, Galleries.Gallery}
 
-  def for({:booking_proposal, job_type}) do
-    from(preset in job_presets(),
-      where: preset.job_type == ^job_type and preset.state == :booking_proposal
-    )
+  def for(%Gallery{}, state) do
+    from(preset in gallery_presets(), where: preset.state == ^state)
+    |> Repo.all()
+  end
+
+  def for(%Job{type: job_type}, state) do
+    from(preset in job_presets(), where: preset.job_type == ^job_type and preset.state == ^state)
     |> Repo.all()
   end
 
@@ -19,8 +22,7 @@ defmodule Picsello.EmailPresets do
 
     from(
       preset in job_presets(),
-      where: preset.job_type == ^job_type,
-      order_by: :position
+      where: preset.job_type == ^job_type
     )
     |> for_job(job)
     |> Repo.all()
@@ -49,10 +51,25 @@ defmodule Picsello.EmailPresets do
     )
   end
 
-  defp job_presets(), do: from(preset in EmailPreset, where: preset.type == :job)
+  defp job_presets(),
+    do: from(preset in EmailPreset, where: preset.type == :job, order_by: :position)
 
-  def resolve_variables(%EmailPreset{} = preset, %Job{} = job, helpers) do
-    data = job |> JobResolver.new(helpers) |> JobResolver.to_map()
+  defp gallery_presets(),
+    do: from(preset in EmailPreset, where: preset.type == :gallery, order_by: :position)
+
+  def resolve_variables(%EmailPreset{} = preset, schemas, helpers) do
+    resolver_module =
+      case preset.type do
+        :job -> Picsello.EmailPresets.JobResolver
+        :gallery -> Picsello.EmailPresets.GalleryResolver
+      end
+
+    resolver = schemas |> resolver_module.new(helpers)
+
+    data =
+      for {key, func} <- resolver_module.vars(), into: %{} do
+        {key, func.(resolver)}
+      end
 
     %{
       preset

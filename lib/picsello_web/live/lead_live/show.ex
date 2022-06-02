@@ -109,11 +109,11 @@ defmodule PicselloWeb.LeadLive.Show do
         %{assigns: %{job: job, current_user: current_user}} = socket
       ) do
     %{body_template: body_html, subject_template: subject} =
-      case Picsello.EmailPresets.for({:booking_proposal, job.type}) do
+      case Picsello.EmailPresets.for(job, :booking_proposal) do
         [preset | _] ->
           Picsello.EmailPresets.resolve_variables(
             preset,
-            job,
+            {job},
             PicselloWeb.Helpers
           )
 

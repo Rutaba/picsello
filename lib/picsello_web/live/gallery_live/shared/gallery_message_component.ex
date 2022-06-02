@@ -93,7 +93,7 @@ defmodule PicselloWeb.GalleryLive.Shared.GalleryMessageComponent do
         {preset_id, _} ->
           presets
           |> Enum.find(&(Map.get(&1, :id) == preset_id))
-          |> Picsello.EmailPresets.resolve_variables(job, PicselloWeb.Helpers)
+          |> Picsello.EmailPresets.resolve_variables({job}, PicselloWeb.Helpers)
       end
 
     socket

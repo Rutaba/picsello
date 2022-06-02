@@ -52,7 +52,7 @@ defmodule Picsello.EmailPresetsTest do
     end
   end
 
-  describe "for {:booking_proposal, job_type}" do
+  describe "for job, :booking_proposal" do
     test "wedding" do
       organization = insert(:organization)
       package = insert(:package, organization: organization)
@@ -65,19 +65,19 @@ defmodule Picsello.EmailPresetsTest do
 
       insert(:email_preset, state: :booking_proposal, job_type: "event")
 
-      assert [%EmailPreset{id: ^preset_wedding_id}] =
-               EmailPresets.for({:booking_proposal, "wedding"})
+      assert [%EmailPreset{id: ^preset_wedding_id}] = EmailPresets.for(lead, :booking_proposal)
     end
   end
 
   describe "resolve_variables" do
-    def resolve_variables(subject, body, job) do
+    def resolve_variables(subject, body, type, schemas) do
       EmailPresets.resolve_variables(
         %EmailPreset{
           subject_template: subject,
-          body_template: body
+          body_template: body,
+          type: type
         },
-        job,
+        schemas,
         PicselloWeb.Helpers
       )
     end
@@ -89,7 +89,7 @@ defmodule Picsello.EmailPresetsTest do
                Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: 100)
     end
 
-    test "resolve strings" do
+    test "resolve job strings" do
       next_year = Map.get(Date.utc_today(), :year) + 1
       shoot_starts_at = ~U[2022-02-09 17:00:00Z] |> Map.put(:year, next_year)
 
@@ -161,7 +161,8 @@ defmodule Picsello.EmailPresetsTest do
                  "wedding_questionnaire_2_link": "{{wedding_questionnaire_2_link}}"
                  }
                  """,
-                 job
+                 :job,
+                 {job}
                )
                |> Map.get(:body_template)
                |> Jason.decode!()
@@ -169,6 +170,87 @@ defmodule Picsello.EmailPresetsTest do
       assert String.ends_with?(pricing_guide_link, "/photographer/kloster-oberzell#wedding")
 
       assert_proposal_link(proposal_link, proposal_id)
+    end
+
+    test "resolve gallery strings" do
+      organization = insert(:organization)
+      insert(:user, organization: organization, name: "Jane Doe")
+
+      job =
+        insert(:lead,
+          type: "wedding",
+          client: insert(:client, name: "Johann Zahn", organization: organization)
+        )
+        |> promote_to_job()
+
+      gallery = insert(:gallery, %{name: "Test Client Wedding", job: job})
+
+      assert %{
+               "client_first_name" => "Johann",
+               "photographer_first_name" => "Jane",
+               "gallery_name" => "Test Client Wedding",
+               "order_full_name" => ""
+             } =
+               resolve_variables(
+                 "hi",
+                 """
+                 {
+                 "client_first_name": "{{client_first_name}}",
+                 "photographer_first_name": "{{photographer_first_name}}",
+                 "gallery_name": "{{gallery_name}}",
+                 "order_full_name": "{{order_full_name}}"
+                 }
+                 """,
+                 :gallery,
+                 {gallery}
+               )
+               |> Map.get(:body_template)
+               |> Jason.decode!()
+    end
+
+    test "resolve gallery order strings" do
+      organization = insert(:organization)
+      insert(:user, organization: organization, name: "Jane Doe")
+
+      job =
+        insert(:lead,
+          type: "wedding",
+          client: insert(:client, name: "Johann Zahn", organization: organization)
+        )
+        |> promote_to_job()
+
+      gallery = insert(:gallery, %{name: "Test Client Wedding", job: job})
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          placed_at: DateTime.utc_now(),
+          delivery_info: %Picsello.Cart.DeliveryInfo{
+            name: "John Jack"
+          }
+        )
+
+      assert %{
+               "client_first_name" => "Johann",
+               "photographer_first_name" => "Jane",
+               "gallery_name" => "Test Client Wedding",
+               "order_full_name" => "John Jack"
+             } =
+               resolve_variables(
+                 "hi",
+                 """
+                 {
+                 "client_first_name": "{{client_first_name}}",
+                 "photographer_first_name": "{{photographer_first_name}}",
+                 "gallery_name": "{{gallery_name}}",
+                 "order_full_name": "{{order_full_name}}"
+                 }
+                 """,
+                 :gallery,
+                 {gallery, order}
+               )
+               |> Map.get(:body_template)
+               |> Jason.decode!()
     end
 
     def href(string),
@@ -183,7 +265,7 @@ defmodule Picsello.EmailPresetsTest do
       %{id: proposal_id} = insert(:proposal, job: job)
 
       %{body_template: view_proposal_button} =
-        resolve_variables("hi", "{{{view_proposal_button}}}", job)
+        resolve_variables("hi", "{{{view_proposal_button}}}", :job, {job})
 
       view_proposal_button |> href() |> assert_proposal_link(proposal_id)
     end
@@ -197,7 +279,8 @@ defmodule Picsello.EmailPresetsTest do
                  """
                  invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
                  """,
-                 job
+                 :job,
+                 {job}
                )
 
       %{id: proposal_id} = insert(:proposal, job: job)
@@ -208,7 +291,8 @@ defmodule Picsello.EmailPresetsTest do
           """
           invariant.{{#invoice_link}}the <a href="{{.}}">link</a>.{{/invoice_link}}
           """,
-          job
+          :job,
+          {job}
         )
 
       proposal_link |> href() |> assert_proposal_link(proposal_id)

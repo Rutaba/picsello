@@ -2,7 +2,7 @@ defmodule Picsello.EmailPreset do
   @moduledoc "options for pre-written emails"
   use Ecto.Schema
 
-  @types ~w(job)a
+  @types ~w(job gallery)a
   @states ~w(post_shoot booking_proposal job lead)a
 
   schema "email_presets" do

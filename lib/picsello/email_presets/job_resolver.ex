@@ -1,26 +1,19 @@
 defmodule Picsello.EmailPresets.JobResolver do
-  @moduledoc "resolves mustache variables"
+  @moduledoc "resolves job/lead mustache variables"
 
   defstruct [:job, :helpers]
 
-  def new(job, helpers), do: %__MODULE__{job: job, helpers: helpers}
-
-  def to_map(%__MODULE__{job: job} = resolver) do
-    resolver = %{
-      resolver
-      | job:
-          Picsello.Repo.preload(job, [
-            :booking_proposals,
-            :package,
-            :shoots,
-            client: [organization: :user]
-          ])
+  def new({%Picsello.Job{} = job}, helpers),
+    do: %__MODULE__{
+      job:
+        Picsello.Repo.preload(job, [
+          :booking_proposals,
+          :package,
+          :shoots,
+          client: [organization: :user]
+        ]),
+      helpers: helpers
     }
-
-    for {key, func} <- vars(), into: %{} do
-      {key, func.(resolver)}
-    end
-  end
 
   defp client(%__MODULE__{job: job}), do: Picsello.Repo.preload(job, :client).client
 
