@@ -69,6 +69,15 @@ defmodule PicselloWeb.HomeLive.Index do
     end
   end
 
+  # @impl true
+  # def handle_event(
+  #       "help-scout-modal",
+  #       %{},
+  #       socket
+  #     ) do
+  #   socket |> noreply()
+  # end
+
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
@@ -184,6 +193,18 @@ defmodule PicselloWeb.HomeLive.Index do
              button_class: "btn-primary",
              color: "red-sales-300",
              class: "intro-confirmation border-red-sales-300"
+           }},
+          {Application.get_env(:picsello, :help_scout_id) != nil,
+           %{
+             action: "help-scout-modal",
+             title: "Getting Started with Picsello Guide",
+             body:
+               "Check out our guide on how best to start running your business with Picsello.",
+             icon: "question-mark",
+             button_label: "Open guide",
+             button_class: "btn-secondary",
+             color: "blue-planning-300",
+             class: "intro-resources"
            }},
           {leads_empty?,
            %{

@@ -33,6 +33,10 @@
                   <a href="https://support.picsello.com/" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
                     <%= button_label %>
                   </a>
+                <% "help-scout-modal" -> %>
+                  <a href="javascript:void(0)" {help_scout_output(@current_user, :help_scout_id)} data-modal="6297fdaaa2c316231c2021cd" class={"#{button_class} text-center text-sm w-full py-2 mt-2"}>
+                    <%= button_label %>
+                  </a>
                 <% _ -> %>
                   <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
               <% end %>
