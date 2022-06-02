@@ -47,7 +47,7 @@ export default {
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
 
-      if (introId === 'intro_dashboard') {
+      if (introId === 'intro_dashboard' && window?.Beacon) {
         loadHelpScout();
         initHelpScout(
           el.dataset.id,
@@ -60,7 +60,7 @@ export default {
         toggleMenu();
         window?.Beacon('article', el.dataset.article);
 
-        window.Beacon('on', 'close', () =>
+        window?.Beacon('on', 'close', () =>
           startIntroJsTour(this, introSteps, introId)
         );
         return;
