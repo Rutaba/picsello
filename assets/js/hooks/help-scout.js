@@ -34,7 +34,6 @@ export const initHelpScout = (
   helpScoutId,
   currentUserEmail,
   currentUserName,
-  modal,
   article,
   subject,
   text
@@ -52,11 +51,6 @@ export const initHelpScout = (
       name: currentUserName,
       email: currentUserEmail,
     });
-
-    if (modal) {
-      window?.Beacon('article', modal, { type: 'modal' });
-      return;
-    }
 
     if (article) {
       window?.Beacon('config', { mode: 'neutral' });
@@ -86,7 +80,6 @@ export default {
     const currentUserEmail = el.dataset.email;
     const currentUserName = el.dataset.name;
     const article = el.dataset.article;
-    const modal = el.dataset.modal;
     const subject = el.dataset.subject;
     const text = el.dataset.text;
     const beaconIsOpen =
@@ -106,7 +99,6 @@ export default {
         helpScoutId,
         currentUserEmail,
         currentUserName,
-        modal,
         article,
         subject,
         text

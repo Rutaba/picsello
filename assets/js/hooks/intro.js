@@ -55,7 +55,6 @@ export default {
           el.dataset.name,
           '',
           '',
-          '',
           ''
         );
         toggleMenu();
