@@ -124,7 +124,7 @@ defmodule Picsello.Factory do
 
   def package_factory(attrs) do
     %Package{
-      base_price: 1000,
+      base_price: Map.get(attrs, :base_price, 1000),
       buy_all: 5000,
       print_credits: 200,
       download_count: 0,
