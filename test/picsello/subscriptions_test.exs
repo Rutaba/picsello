@@ -32,7 +32,8 @@ defmodule Picsello.SubscriptionsTest do
              %Stripe.Price{
                id: "p4",
                unit_amount: 50_000,
-               type: "one_time"
+               type: "one_time",
+               active: false
              }
            ]
          }}
@@ -40,20 +41,28 @@ defmodule Picsello.SubscriptionsTest do
 
       Subscriptions.sync_subscription_plans()
 
+      assert [] = Subscriptions.subscription_plans()
+
       assert [
                %SubscriptionPlan{
-                 stripe_price_id: "p1",
-                 price: %Money{amount: 500, currency: :USD},
+                 active: false,
+                 price: %Money{amount: 200, currency: :USD},
                  recurring_interval: "month",
-                 active: true
+                 stripe_price_id: "p2"
                },
                %SubscriptionPlan{
-                 stripe_price_id: "p3",
-                 price: %Money{amount: 5_000, currency: :USD},
+                 active: false,
+                 price: %Money{amount: 500, currency: :USD},
+                 recurring_interval: "month",
+                 stripe_price_id: "p1"
+               },
+               %SubscriptionPlan{
+                 active: false,
+                 price: %Money{amount: 5000, currency: :USD},
                  recurring_interval: "year",
-                 active: true
+                 stripe_price_id: "p3"
                }
-             ] = Subscriptions.subscription_plans()
+             ] = Subscriptions.all_subscription_plans()
     end
   end
 end

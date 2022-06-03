@@ -6,7 +6,16 @@ defmodule PicselloWeb.LiveAuthTest do
   alias Picsello.Galleries
 
   setup do
-    [user: insert(:user)]
+    plan = insert(:subscription_plan)
+
+    insert(:subscription_plan,
+      recurring_interval: "year",
+      stripe_price_id: "price_987",
+      price: 50_000,
+      active: true
+    )
+
+    [user: insert(:user), plan: plan]
   end
 
   @expired -7 * 24 * 60 * 60
@@ -45,9 +54,9 @@ defmodule PicselloWeb.LiveAuthTest do
 
     test "redirects to home if user is authenticated, onboarded and subscription is expired", %{
       user: user,
+      plan: plan,
       conn: conn
     } do
-      plan = insert(:subscription_plan)
       insert(:subscription_event, user: user, subscription_plan: plan, status: "canceled")
 
       assert {:error, {:live_redirect, %{to: @home_path}}} =
@@ -97,9 +106,9 @@ defmodule PicselloWeb.LiveAuthTest do
 
     test "/gallery/:hash authenticate subscription is expired", %{
       user: user,
+      plan: plan,
       conn: conn
     } do
-      plan = insert(:subscription_plan)
       insert(:subscription_event, user: user, subscription_plan: plan, status: "canceled")
       gallery = insert(:gallery, job: insert(:lead, user: user))
 

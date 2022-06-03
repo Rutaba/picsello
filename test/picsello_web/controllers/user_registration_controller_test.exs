@@ -1,6 +1,19 @@
 defmodule PicselloWeb.UserRegistrationControllerTest do
   use PicselloWeb.ConnCase, async: true
 
+  setup do
+    insert(:subscription_plan)
+
+    insert(:subscription_plan,
+      recurring_interval: "year",
+      stripe_price_id: "price_987",
+      price: 50_000,
+      active: true
+    )
+
+    :ok
+  end
+
   describe "GET /users/register" do
     test "renders registration page", %{conn: conn} do
       conn = get(conn, Routes.user_registration_path(conn, :new))
