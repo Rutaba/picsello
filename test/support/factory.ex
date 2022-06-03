@@ -599,7 +599,7 @@ defmodule Picsello.Factory do
 
   def subscription_plan_factory,
     do: %Picsello.SubscriptionPlan{
-      stripe_price_id: "price_1234",
+      stripe_price_id: "price_123",
       recurring_interval: "month",
       active: true,
       price: 2000

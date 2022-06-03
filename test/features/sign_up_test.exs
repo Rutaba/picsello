@@ -6,6 +6,15 @@ defmodule Picsello.SignUpTest do
   setup do
     test_pid = self()
 
+    insert(:subscription_plan)
+
+    insert(:subscription_plan,
+      recurring_interval: "year",
+      stripe_price_id: "price_987",
+      price: 50_000,
+      active: true
+    )
+
     Tesla.Mock.mock_global(fn %{method: :put} = request ->
       send(test_pid, {:sendgrid_request, request})
 
