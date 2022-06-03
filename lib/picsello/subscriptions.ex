@@ -20,7 +20,8 @@ defmodule Picsello.Subscriptions do
         stripe_price_id: price.id,
         price: price.unit_amount,
         recurring_interval: price.recurring.interval,
-        active: price.active
+        # setting active to false to avoid conflicting prices on sync
+        active: false
       }
       |> SubscriptionPlan.changeset()
       |> Repo.insert!(
@@ -145,6 +146,21 @@ defmodule Picsello.Subscriptions do
     if Picsello.Subscriptions.subscription_expired?(user) do
       raise Ecto.NoResultsError, queryable: Picsello.Organization
     end
+  end
+
+  def subscription_content(%{recurring_interval: recurring_interval, price: price}) do
+    price = price |> Money.to_string(fractional_unit: false)
+
+    %{
+      length: 30,
+      title_prefix: "Start your 30-day free trial",
+      description_prefix:
+        "After 30 days, your subscription will be #{price}/#{recurring_interval}",
+      success_prefix: "Your 30-day free trial",
+      onboarding_offer_prefix:
+        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of",
+      onboarding_offer: "#{price} a #{recurring_interval}"
+    }
   end
 
   defp user_customer_id(%User{stripe_customer_id: nil} = user) do

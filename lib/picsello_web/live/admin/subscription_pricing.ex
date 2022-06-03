@@ -22,9 +22,9 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
         <div class="col-start-1 font-bold">Stripe Price Id</div>
         <div class="col-start-2 font-bold">Price</div>
         <div class="col-start-3 font-bold">Interval</div>
-        <div class="col-start-4 font-bold">Active</div>
-        <%= for(%{price: %{stripe_price_id: stripe_price_id}, changeset: changeset} <- @pricing_rows) do %>
-          <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{stripe_price_id}"}>
+        <div class="col-start-4 font-bold">Set price active?</div>
+        <%= for(%{price: %{stripe_price_id: stripe_price_id, active: active, id: id, recurring_interval: recurring_interval}, changeset: changeset} <- @pricing_rows) do %>
+          <.form let={f} for={changeset} class="contents" id={"form-#{stripe_price_id}"}>
             <%= hidden_input f, :id %>
             <div class="col-start-1">
               <%= input f, :stripe_price_id, phx_debounce: 200, disabled: true, class: "w-full" %>
@@ -36,7 +36,11 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
               <%= input f, :recurring_interval, phx_debounce: 200, disabled: true, class: "w-full" %>
             </div>
             <div class="col-start-4">
-              <%= select f, :active, [true, false], phx_debounce: 200, class: "select py-3 w-full" %>
+              <%= if !active do %>
+              <button class="flex-1 py-2 text-sm btn-secondary" type="button" phx-click="save" phx-value-recurring-interval={recurring_interval} phx-value-id={id} phx-value-active={"#{active}"}>Set active</button>
+              <% else %>
+              <.badge color={:green}>Current price</.badge>
+              <% end %>
             </div>
           </.form>
         <% end %>
@@ -46,7 +50,11 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
   end
 
   @impl true
-  def handle_event("save", params, socket) do
+  def handle_event(
+        "save",
+        params,
+        socket
+      ) do
     socket
     |> update_pricing_row(params, fn price, params ->
       case price |> SubscriptionPlan.changeset(params) |> Repo.update() do
@@ -62,7 +70,7 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
 
   defp update_pricing_row(
          %{assigns: %{pricing_rows: pricing_rows}} = socket,
-         %{"subscription_plan" => %{"id" => id} = params},
+         %{"id" => id, "recurring-interval" => recurring_interval} = params,
          f
        ) do
     id = String.to_integer(id)
@@ -71,8 +79,18 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
     |> assign(
       pricing_rows:
         Enum.map(pricing_rows, fn
-          %{price: %{id: ^id} = price} -> f.(price, Map.drop(params, ["id"]))
-          pricing_row -> pricing_row
+          %{price: %{recurring_interval: ^recurring_interval} = price} ->
+            f.(
+              price,
+              if price.id === id do
+                Map.replace(params, "active", "true")
+              else
+                Map.replace(params, "active", "false")
+              end
+            )
+
+          pricing_row ->
+            pricing_row
         end)
     )
   end
