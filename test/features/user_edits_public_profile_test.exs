@@ -56,6 +56,8 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(testid("job-type", count: 2))
     |> assert_has(testid("job-type", text: "Portrait"))
     |> assert_has(testid("job-type", text: "Event"))
+    |> assert_has(css("#portrait", text: "Portrait"))
+    |> refute_has(css("#family", text: "Family"))
     |> scroll_into_view(testid("edit-photography-types-button"))
     |> click(button("Edit Photography Types"))
     |> within_modal(&click(&1, css("label", text: "Event")))
@@ -64,6 +66,8 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(testid("job-type", count: 2))
     |> assert_has(testid("job-type", text: "Portrait"))
     |> assert_has(testid("job-type", text: "Family"))
+    |> scroll_into_view(css("#portrait"))
+    |> assert_has(css("#portrait", text: "Portrait"))
   end
 
   feature "user edits website", %{session: session} do
