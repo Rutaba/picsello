@@ -2,6 +2,19 @@ defmodule Picsello.SignInTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.Accounts.User
 
+  setup do
+    insert(:subscription_plan)
+
+    insert(:subscription_plan,
+      recurring_interval: "year",
+      stripe_price_id: "price_987",
+      price: 50_000,
+      active: true
+    )
+
+    :ok
+  end
+
   feature "user views log in button", %{session: session} do
     session
     |> visit("/")
