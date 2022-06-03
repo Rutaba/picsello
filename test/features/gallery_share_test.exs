@@ -20,6 +20,8 @@ defmodule Picsello.GalleryShareTest do
       Process.whereis(Picsello.Galleries.PhotoProcessing.Waiter)
     )
 
+    insert(:email_preset, type: :gallery, state: :gallery_send_link)
+
     [photo_ids: photo_ids]
   end
 

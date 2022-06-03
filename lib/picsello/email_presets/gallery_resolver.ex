@@ -44,6 +44,10 @@ defmodule Picsello.EmailPresets.GalleryResolver do
   def vars,
     do: %{
       "client_first_name" => &(&1 |> client() |> Map.get(:name) |> String.split() |> hd),
+      "password" => &(&1 |> gallery() |> Map.get(:password)),
+      "gallery_link" => fn resolver ->
+        helpers(resolver).gallery_url(gallery(resolver).client_link_hash)
+      end,
       "photographer_first_name" =>
         &(&1 |> photographer() |> Map.get(:name) |> String.split() |> hd),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
