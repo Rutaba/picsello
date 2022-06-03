@@ -13,6 +13,15 @@ defmodule Picsello.GalleryOverviewTest do
     [job: gallery.job]
   end
 
+  feature "Validate preview gallery button", %{
+    session: session,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
+  end
+
   feature "Validate and update gallery name", %{
     session: session,
     gallery: gallery

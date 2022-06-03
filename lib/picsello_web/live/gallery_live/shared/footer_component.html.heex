@@ -2,9 +2,9 @@
   <div class="fixed opacity-100 bottomBar_gallery">
   <div class="flex items-center justify-end gallery__container">
     <div class="flex">
-      <button class="mr-3" phx-click="preview_gallery" phx-target={@myself}>
-      <span class="pl-3 mr-3 text-white">Preview gallery</span>
-      </button>
+      <a href={@url} target="_blank" class="flex mr-3 items-center">
+        <span class="pl-3 mr-3 text-white">Preview Gallery</span>
+      </a>
       <button class="bottomBar_gallery__btn" phx-click="client-link">Share gallery</button>
     </div>
   </div>
