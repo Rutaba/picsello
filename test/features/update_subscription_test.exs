@@ -58,7 +58,8 @@ defmodule Picsello.SubscriptionChangesTest do
       insert(:subscription_plan,
         recurring_interval: "year",
         stripe_price_id: "price_987",
-        price: 50_000
+        price: 50_000,
+        active: true
       )
 
     test_pid = self()
