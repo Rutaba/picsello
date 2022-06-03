@@ -47,7 +47,7 @@ export default {
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
 
-      if (introId === 'intro_dashboard' && window?.Beacon) {
+      if (introId === 'intro_dashboard' && el?.dataset?.id) {
         loadHelpScout();
         initHelpScout(
           el.dataset.id,
@@ -57,12 +57,18 @@ export default {
           '',
           ''
         );
-        toggleMenu();
-        window?.Beacon('article', el.dataset.article);
 
-        window?.Beacon('on', 'close', () =>
-          startIntroJsTour(this, introSteps, introId)
-        );
+        if (window?.Beacon) {
+          toggleMenu();
+          window?.Beacon('article', el.dataset.article);
+
+          window?.Beacon('on', 'close', () =>
+            startIntroJsTour(this, introSteps, introId)
+          );
+        } else {
+          startIntroJsTour(this, introSteps, introId);
+        }
+
         return;
       }
 
