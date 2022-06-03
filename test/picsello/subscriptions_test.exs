@@ -12,18 +12,28 @@ defmodule Picsello.SubscriptionsTest do
                id: "p1",
                unit_amount: 500,
                type: "recurring",
-               recurring: %{interval: "month"}
+               recurring: %{interval: "month"},
+               active: true
              },
              %Stripe.Price{
                id: "p2",
-               unit_amount: 5_000,
+               unit_amount: 200,
                type: "recurring",
-               recurring: %{interval: "year"}
+               recurring: %{interval: "month"},
+               active: false
              },
              %Stripe.Price{
                id: "p3",
+               unit_amount: 5_000,
+               type: "recurring",
+               recurring: %{interval: "year"},
+               active: true
+             },
+             %Stripe.Price{
+               id: "p4",
                unit_amount: 50_000,
-               type: "one_time"
+               type: "one_time",
+               active: false
              }
            ]
          }}
@@ -31,18 +41,28 @@ defmodule Picsello.SubscriptionsTest do
 
       Subscriptions.sync_subscription_plans()
 
+      assert [] = Subscriptions.subscription_plans()
+
       assert [
                %SubscriptionPlan{
-                 stripe_price_id: "p1",
-                 price: %Money{amount: 500, currency: :USD},
-                 recurring_interval: "month"
+                 active: false,
+                 price: %Money{amount: 200, currency: :USD},
+                 recurring_interval: "month",
+                 stripe_price_id: "p2"
                },
                %SubscriptionPlan{
-                 stripe_price_id: "p2",
-                 price: %Money{amount: 5_000, currency: :USD},
-                 recurring_interval: "year"
+                 active: false,
+                 price: %Money{amount: 500, currency: :USD},
+                 recurring_interval: "month",
+                 stripe_price_id: "p1"
+               },
+               %SubscriptionPlan{
+                 active: false,
+                 price: %Money{amount: 5000, currency: :USD},
+                 recurring_interval: "year",
+                 stripe_price_id: "p3"
                }
-             ] = Subscriptions.subscription_plans()
+             ] = Subscriptions.all_subscription_plans()
     end
   end
 end

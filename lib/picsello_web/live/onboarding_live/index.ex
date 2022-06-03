@@ -9,6 +9,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
     |> assign_step(2)
     |> assign(:loading_stripe, false)
+    |> assign(:subscription_plan, Subscriptions.get_subscription_plan("month"))
     |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
     |> maybe_show_trial(params)
@@ -41,7 +42,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
            success_url:
              "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
-           trial_days: trial_info().length
+           trial_days: Subscriptions.subscription_content(socket.assigns.subscription_plan).length
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
@@ -240,7 +241,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
     <hr class="my-4" />
     <p class="font-bold">When will I be charged?</p>
-    <p><%= trial_info().description_prefix %> $50/month. (You can change to annual if you prefer in account settings.)</p>
+    <p><%= Subscriptions.subscription_content(@subscription_plan).description_prefix %>. (You can change to annual if you prefer in account settings.)</p>
+    <hr class="my-4" />
+    <p class="italic text-sm text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
@@ -248,7 +251,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <div class="dialog rounded-lg">
           <.icon name="confetti" class="w-11 h-11" />
 
-          <h1 class="text-3xl font-semibold"><%= trial_info().success_prefix %> has started!</h1>
+          <h1 class="text-3xl font-semibold"><%= Subscriptions.subscription_content(@subscription_plan).success_prefix %> has started!</h1>
           <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
 
           <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
@@ -312,7 +315,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 6,
       color_class: "bg-blue-gallery-200",
-      step_title: trial_info().title_prefix,
+      step_title:
+        Subscriptions.subscription_content(socket.assigns.subscription_plan).title_prefix,
       subtitle:
         "Explore and learn Picsello at your own pace. Pricing simplified. One plan, all features.",
       page_title: "Onboarding Step 6"
@@ -350,8 +354,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </a>
         </div>
 
-        <h1 class="text-3xl font-bold sm:text-5xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
-        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-2xl"><%= @subtitle %></h2>
+        <h1 class="text-3xl font-bold sm:text-4xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
+        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-xl"><%= @subtitle %></h2>
         <%= render_block(@inner_block) %>
        </div>
     </div>
@@ -413,15 +417,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> SendgridClient.add_contacts()
 
     socket
-  end
-
-  defp trial_info do
-    %{
-      length: 30,
-      title_prefix: "Start your 30-day free trial",
-      description_prefix: "After 30 days, your subscription will be",
-      success_prefix: "Your 30-day free trial"
-    }
   end
 
   defdelegate job_types(), to: JobType, as: :all

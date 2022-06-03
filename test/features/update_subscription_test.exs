@@ -24,7 +24,7 @@ defmodule Picsello.SubscriptionChangesTest do
     |> click(link("Settings"))
     |> assert_text("Current Plan")
     |> assert_text("1 day left in your trial")
-    |> assert_text("$50/month")
+    |> assert_text("$20/month")
   end
 
   feature "when subscription will cancel", %{session: session, user: user, plan: plan} do
@@ -39,7 +39,7 @@ defmodule Picsello.SubscriptionChangesTest do
     |> click(link("Settings"))
     |> assert_text("Subscribe now")
     |> assert_text("1 day left until your subscription ends")
-    |> assert_text("$50/month")
+    |> assert_text("$20/month")
   end
 
   feature "when subscription is active", %{session: session, user: user, plan: plan} do
@@ -48,7 +48,7 @@ defmodule Picsello.SubscriptionChangesTest do
     session
     |> click(link("Settings"))
     |> assert_text("Current Plan")
-    |> assert_text("$50/month")
+    |> assert_text("$20/month")
   end
 
   feature "when subscription is canceled", %{session: session, user: user, plan: plan} do
@@ -58,7 +58,8 @@ defmodule Picsello.SubscriptionChangesTest do
       insert(:subscription_plan,
         recurring_interval: "year",
         stripe_price_id: "price_987",
-        price: 50_000
+        price: 50_000,
+        active: true
       )
 
     test_pid = self()

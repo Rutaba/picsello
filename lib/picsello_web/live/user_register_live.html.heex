@@ -1,4 +1,4 @@
-<.container step={1} color_class="bg-blue-planning-200" title="Let's get started!" subtitle="Get signed up and start growing your business.">
+<.container step={1} color_class="bg-blue-planning-200" title="Let's get started!" subtitle={"#{subscription_content(@subscription_plan_month).onboarding_offer_prefix} #{subscription_content(@subscription_plan_month).onboarding_offer} OR #{subscription_content(@subscription_plan_year).onboarding_offer}"}>
   <div id="tz-cookie" phx-hook="TZCookie"></div>
 
   <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-secondary">

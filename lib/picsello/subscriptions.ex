@@ -19,7 +19,9 @@ defmodule Picsello.Subscriptions do
       %{
         stripe_price_id: price.id,
         price: price.unit_amount,
-        recurring_interval: price.recurring.interval
+        recurring_interval: price.recurring.interval,
+        # setting active to false to avoid conflicting prices on sync
+        active: false
       }
       |> SubscriptionPlan.changeset()
       |> Repo.insert!(
@@ -59,11 +61,19 @@ defmodule Picsello.Subscriptions do
     do: subscription && !subscription.active
 
   def subscription_plans() do
+    Repo.all(from(s in SubscriptionPlan, where: s.active == true, order_by: s.price))
+  end
+
+  def all_subscription_plans() do
     Repo.all(from(s in SubscriptionPlan, order_by: s.price))
   end
 
+  def get_subscription_plan(recurring_interval \\ "month"),
+    do: Repo.get_by!(SubscriptionPlan, %{recurring_interval: recurring_interval, active: true})
+
   def checkout_link(%User{} = user, recurring_interval, opts) do
-    subscription_plan = Repo.get_by!(SubscriptionPlan, recurring_interval: recurring_interval)
+    subscription_plan = get_subscription_plan(recurring_interval)
+
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)
     trial_days = opts |> Keyword.get(:trial_days)
@@ -136,6 +146,21 @@ defmodule Picsello.Subscriptions do
     if Picsello.Subscriptions.subscription_expired?(user) do
       raise Ecto.NoResultsError, queryable: Picsello.Organization
     end
+  end
+
+  def subscription_content(%{recurring_interval: recurring_interval, price: price}) do
+    price = price |> Money.to_string(fractional_unit: false)
+
+    %{
+      length: 30,
+      title_prefix: "Start your 30-day free trial",
+      description_prefix:
+        "After 30 days, your subscription will be #{price}/#{recurring_interval}",
+      success_prefix: "Your 30-day free trial",
+      onboarding_offer_prefix:
+        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of",
+      onboarding_offer: "#{price} a #{recurring_interval}"
+    }
   end
 
   defp user_customer_id(%User{stripe_customer_id: nil} = user) do

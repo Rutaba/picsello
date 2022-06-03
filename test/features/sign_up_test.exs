@@ -6,6 +6,8 @@ defmodule Picsello.SignUpTest do
   setup do
     test_pid = self()
 
+    insert_subscription_plans!()
+
     Tesla.Mock.mock_global(fn %{method: :put} = request ->
       send(test_pid, {:sendgrid_request, request})
 

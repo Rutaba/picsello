@@ -34,6 +34,12 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 2. Run `make console`
 3. Run `Picsello.Workers.SyncTiers.perform(nil)`
 
+#### Subscriptions from Stripe
+(this can also be done from the admin panel at `/admin/workers`)
+1. Have the following `ENV` vars setup `STRIPE_SECRET`
+2. Run `make console`
+3. Run `Picsello.Subscriptions.sync_subscription_plans()`
+
 ## Sendgrid inbound parse for development
 
 1. Start ngrok: `ngrok http 4000`

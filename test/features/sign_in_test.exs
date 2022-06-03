@@ -2,6 +2,12 @@ defmodule Picsello.SignInTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.Accounts.User
 
+  setup do
+    insert_subscription_plans!()
+
+    :ok
+  end
+
   feature "user views log in button", %{session: session} do
     session
     |> visit("/")
