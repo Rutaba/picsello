@@ -82,11 +82,7 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
           %{price: %{recurring_interval: ^recurring_interval} = price} ->
             f.(
               price,
-              if price.id === id do
-                Map.replace(params, "active", "true")
-              else
-                Map.replace(params, "active", "false")
-              end
+              Map.replace(params, "active", price.id === id)
             )
 
           pricing_row ->

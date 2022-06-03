@@ -3,14 +3,7 @@ defmodule Picsello.SignInTest do
   alias Picsello.Accounts.User
 
   setup do
-    insert(:subscription_plan)
-
-    insert(:subscription_plan,
-      recurring_interval: "year",
-      stripe_price_id: "price_987",
-      price: 50_000,
-      active: true
-    )
+    insert_subscription_plans!()
 
     :ok
   end

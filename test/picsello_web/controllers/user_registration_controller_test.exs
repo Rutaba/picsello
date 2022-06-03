@@ -2,14 +2,7 @@ defmodule PicselloWeb.UserRegistrationControllerTest do
   use PicselloWeb.ConnCase, async: true
 
   setup do
-    insert(:subscription_plan)
-
-    insert(:subscription_plan,
-      recurring_interval: "year",
-      stripe_price_id: "price_987",
-      price: 50_000,
-      active: true
-    )
+    insert_subscription_plans!()
 
     :ok
   end

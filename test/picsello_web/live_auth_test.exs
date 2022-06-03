@@ -6,14 +6,7 @@ defmodule PicselloWeb.LiveAuthTest do
   alias Picsello.Galleries
 
   setup do
-    plan = insert(:subscription_plan)
-
-    insert(:subscription_plan,
-      recurring_interval: "year",
-      stripe_price_id: "price_987",
-      price: 50_000,
-      active: true
-    )
+    [plan | _] = insert_subscription_plans!()
 
     [user: insert(:user), plan: plan]
   end

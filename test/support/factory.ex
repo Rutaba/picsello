@@ -605,6 +605,18 @@ defmodule Picsello.Factory do
       price: 2000
     }
 
+  def insert_subscription_plans!() do
+    [
+      insert(:subscription_plan),
+      insert(:subscription_plan,
+        recurring_interval: "year",
+        stripe_price_id: "price_987",
+        price: 50_000,
+        active: true
+      )
+    ]
+  end
+
   def subscription_event_factory,
     do: %Picsello.SubscriptionEvent{
       stripe_subscription_id: "sub_123",
