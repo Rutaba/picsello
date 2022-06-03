@@ -1,4 +1,4 @@
-const loadHelpScout = () => {
+export const loadHelpScout = () => {
   // If no Beacon, please load script
   if (!window?.Beacon) {
     !(function (e, t, n) {
@@ -26,11 +26,11 @@ const loadHelpScout = () => {
   }
 };
 
-const toggleMenu = (state = 'none') => {
+export const toggleMenu = (state = 'none') => {
   document.querySelector('#float-menu-help').style.display = state;
 };
 
-const initHelpScout = (
+export const initHelpScout = (
   helpScoutId,
   currentUserEmail,
   currentUserName,

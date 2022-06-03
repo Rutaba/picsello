@@ -185,16 +185,17 @@ defmodule PicselloWeb.HomeLive.Index do
              color: "red-sales-300",
              class: "intro-confirmation border-red-sales-300"
            }},
-          {leads_empty?,
+          {Application.get_env(:picsello, :help_scout_id) != nil,
            %{
-             action: "create-lead",
-             title: "Create your first lead",
-             body: "Leads are the first step to getting started with Picsello.",
-             icon: "three-people",
-             button_label: "Create your first lead",
+             action: "help-scout-modal",
+             title: "Getting started with Picsello guide",
+             body:
+               "Check out our guide on how best to start running your business with Picsello.",
+             icon: "question-mark",
+             button_label: "Open guide",
              button_class: "btn-secondary",
-             color: "",
-             class: "intro-first-lead"
+             color: "blue-planning-300",
+             class: "intro-help-scout"
            }},
           {stripe_status != :charges_enabled,
            %{
@@ -206,6 +207,17 @@ defmodule PicselloWeb.HomeLive.Index do
              button_class: "btn-secondary",
              color: "blue-planning-300",
              class: "intro-stripe"
+           }},
+          {leads_empty?,
+           %{
+             action: "create-lead",
+             title: "Create your first lead",
+             body: "Leads are the first step to getting started with Picsello.",
+             icon: "three-people",
+             button_label: "Create your first lead",
+             button_class: "btn-secondary",
+             color: "",
+             class: "intro-first-lead"
            }},
           {true,
            %{
