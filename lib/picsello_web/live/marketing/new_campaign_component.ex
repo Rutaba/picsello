@@ -53,8 +53,8 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
 
           <%= label_for f, :segment_type, label: "Contact List", class: "block mt-4 pb-2" %>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <.segment_type_option name={input_name(f, :segment_type)} icon="three-people" value="new" checked={input_value(f, :segment_type) == "new"} title={"No active leads (#{@segments_count["new"]})"} subtitle="Contacts who aren’t leads or don’t have a current job" />
-            <.segment_type_option name={input_name(f, :segment_type)} icon="notebook" value="all" checked={input_value(f, :segment_type) == "all"} title={"All (#{@segments_count["all"]})"} subtitle="All contacts in your list" />
+            <.segment_type_option name={input_name(f, :segment_type)} icon="three-people" value="new" checked={input_value(f, :segment_type) == "new"} title={"Unassigned contacts (#{@segments_count["new"]})"} subtitle="Contacts who aren't assigned to a lead or a job" />
+            <.segment_type_option name={input_name(f, :segment_type)} icon="notebook" value="all" checked={input_value(f, :segment_type) == "all"} title={"All contacts (#{@segments_count["all"]})"} subtitle="All contacts in your list" />
           </div>
 
           <label class="block mt-4 input-label" for="editor">Message</label>
