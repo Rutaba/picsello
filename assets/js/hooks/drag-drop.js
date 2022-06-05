@@ -25,10 +25,14 @@ export default {
     updated() {
         const errorElements = document.querySelectorAll('.photoUploadingIsFailed');
         const errorElementsArray = Array.from(errorElements);
-
+        
         if (errorElementsArray.length) {
-            errorElementsArray.forEach(el => document.getElementById(el.dataset.name)
-                .querySelector('progress').style.display = 'none');
+            errorElementsArray.forEach(el => {
+                const tagName = document.getElementById(el.dataset.name)
+                if(tagName){
+                    tagName.querySelector('progress').style.display = 'none';
+                }
+            });
         }
     },
 };

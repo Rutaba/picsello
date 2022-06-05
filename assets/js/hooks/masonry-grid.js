@@ -314,7 +314,10 @@ export default {
     } else {
       this.inject_new_items();
     }
-    this.el.style.height = grid['_layout']['styles']['height'];
+
+    if(grid['_layout']['items'].length > 0) {
+      this.el.style.height = grid['_layout']['styles']['height'];
+    }
     this.grid_alignment();
   },
 };

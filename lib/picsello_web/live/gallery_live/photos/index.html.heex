@@ -1,46 +1,49 @@
 <div class="flex flex-col h-screen photographer-gallery">
   <div class="flex root">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
     <div class="w-full h-full bg-gray-100 pl-96">
       <div id="page-scroll" phx-hook="PageScroll" class="fixed top-0 right-0 z-20 pl-10 pr-10 bg-gray-100 pt-14 left-96">
         <div class="flex flex-col md:flex-row">
-              <div class="flex items-center font-sans lg:justify-start">
-             <%= if length(@gallery.albums) > 0 do %>
-              <.crumbs class="mt-2 font-sans text-xs text-base-250">
-                <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
-                <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
-              </.crumbs>
+          <div class="flex items-center font-sans lg:justify-start">
+            <%= if length(@gallery.albums) > 0 do %>
+            <.crumbs class="mt-2 font-sans text-xs text-base-250">
+              <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
+              <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
+            </.crumbs>
+            <% end %>
+          </div>
+          <div class="flex ml-auto shrink-0">
+            <%= if @album do %>
+              <.icon_button {testid("edit-album-settings")} class="ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
+                Album settings
+              </.icon_button>
+              <%= if Enum.any?(@photos) do %>
+                <.icon_button {testid("edit-album-thumbnail")} class="ml-5 bg-white shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                  Edit thumbnail
+                </.icon_button>
               <% end %>
-            </div>
-            <div class="flex ml-auto shrink-0">
-              <%= if @album do %>
-                  <.icon_button {testid("edit-album-settings")} class="ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
-                    Album settings
-                  </.icon_button>
-                  <%= if Enum.any?(@photos) do %>
-                  <.icon_button {testid("edit-album-thumbnail")} class="ml-5 bg-white shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
-                    Edit thumbnail
-                  </.icon_button>
-                  <% end %>
-              <% end %>
-              <%= if length(@gallery.albums) == 0 do %>
+            <% end %>
+            <%= if length(@gallery.albums) == 0 do %>
               <.icon_button {testid("add-album")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
                 Add Album
               </.icon_button>
-              <% end %>
-              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
-            </div>
+            <% end %>
+            <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
           </div>
-          <span class="flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
-        <div class="flex items-center mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-400" role="alert" phx-click="lv:clear-flash" phx-value-key="success" title="success">
-          <div class="flex justify-center pb-1 pl-5">
+        </div>
+        <span class="flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
+        <div class={"#{@photos_error_count == 0 && 'hidden'} flex items-center mt-4 rounded-lg shadow-lg bg-orange-inbox-400"}>
+          <div class="flex justify-center pl-5">
             <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
           </div>
           <div class="flex-grow p-4 font-sans">
-            2 photos failed to upload.
+            <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed to upload.
             <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
             to resolve errors.
           </div>
+            <span phx-click="ignore_all_photos" class="border-2 border-solid border-[#faceb6] text-base-300 font-bold text-xs text-center rounded py-2 px-4 mr-6 cursor-pointer items-center">
+                Ignore all?
+            </span>
         </div>
         <%= if Enum.any?(@photos) || @favorites_filter do %>
         <div class="pt-8 grid lg:grid-cols-2">
@@ -136,21 +139,20 @@
                 data-has-more-photos={ "#{@has_more_photos}" }
                 data-photo-width="300">
                 <%= for photo <- @photos do%>
-                <%= live_component Photo,
-                    id: photo.id,
-                    photo: photo,
-                    album: @album,
-                    photo_width: 300,
-                    is_likable: true,
-                    is_removable: true,
-                    is_viewable: true,
-                    is_meatball: true,
-                    is_gallery_category_page: false,
-                    component: false
-                %>
-              <% end %>
+                  <%= live_component Photo,
+                      id: photo.id,
+                      photo: photo,
+                      album: @album,
+                      photo_width: 300,
+                      is_likable: true,
+                      is_removable: true,
+                      is_viewable: true,
+                      is_meatball: true,
+                      is_gallery_category_page: false,
+                      component: false
+                  %>
+                <% end %>
               </div>
-
 
               <div style="display: none">
                 <div id="selected-mode" class={@select_mode}></div>

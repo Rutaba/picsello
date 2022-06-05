@@ -132,6 +132,10 @@
     cursor-pointer;
 }
 
+.uploadEntry .too-large {
+    @apply cursor-default;
+}
+
 .uploadEntry .error {
     @apply bg-orange-inbox-400 
     text-red-sales-300

@@ -5,9 +5,9 @@
         <div class="dragDrop" id="addPhoto" phx-hook="DragDrop" phx-drop-target={@uploads.photo.ref}>
             <label class="flex flex-col items-center justify-center float-right cursor-pointer">
                 <div class="max-w-xs mx-auto">
-                    <div class="dragDrop__content">
+                    <div class="dragDrop__content" id="resume-upload" phx-hook="ResumeUpload">
                         <p class="text-center">
-                            <div class="flex items-center bg-white ml-5 lg:justify-end uploadBtn">
+                            <div class={"#{length(@pending_photos) > 0 && 'hidden'} flex items-center bg-white ml-5 lg:justify-end uploadBtn"}>
                                 <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
                                 Add photos
                             </div>

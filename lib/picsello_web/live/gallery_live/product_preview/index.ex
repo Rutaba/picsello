@@ -15,6 +15,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign(total_progress: 0)
+    |> assign(:photos_error_count, 0)
     |> ok()
   end
 
@@ -71,6 +72,13 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   @impl true
   def handle_info({:total_progress, total_progress}, socket) do
     socket |> assign(:total_progress, total_progress) |> noreply()
+  end
+
+  @impl true
+  def handle_info({:photos_error, _, _, photos_error_count}, socket) do
+    socket
+    |> assign(:photos_error_count, photos_error_count)
+    |> noreply()
   end
 
   defp page_title(:index), do: "Product Previews"

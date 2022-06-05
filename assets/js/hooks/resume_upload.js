@@ -1,8 +1,7 @@
 export default {
   mounted() {
     this.handleEvent('resume_upload', ({id}) => {
-      const el = document.getElementById('dragDrop-form');
-      const dropTarget = el.querySelector('.dragDropInput');
+      const dropTarget = document.getElementById(id);
       dropTarget.dispatchEvent(new Event('input', { bubbles: true }));
     });
   }

@@ -35,6 +35,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     socket
     |> assign(:upload_bucket, @bucket)
     |> assign(:total_progress, 0)
+    |> assign(:photos_error_count, 0)
     |> assign(:cover_photo_processing, false)
     |> allow_upload(:cover_photo, @upload_options)
     |> assign(:password_toggle, false)
@@ -222,6 +223,13 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @impl true
   def handle_info({:total_progress, total_progress}, socket) do
     socket |> assign(:total_progress, total_progress) |> noreply()
+  end
+
+  @impl true
+  def handle_info({:photos_error, _, _, photos_error_count}, socket) do
+    socket
+    |> assign(:photos_error_count, photos_error_count)
+    |> noreply()
   end
 
   @impl true

@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
-  @per_page 100
+  @per_page 2
   @string_length 20
 
   @impl true
@@ -25,6 +25,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       total_progress: 0,
       favorites_filter: false,
       page: 0,
+      photos_error_count: 0,
+      invalid_photos: [],
+      pending_photos: [],
       photo_updates: "false",
       select_mode: "selected_none",
       update_mode: "append",
@@ -409,6 +412,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_event("ignore_all_photos", _, socket) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "delete_photos",
+      {:delete_photos, %{index: [], delete_from: "delete_all"}}
+    )
+
+    socket
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:photo_processed, _, photo}, socket) do
     photo_update =
       %{
@@ -529,8 +544,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_info({:total_progress, total_progress}, socket) do
+    socket |> assign(:total_progress, total_progress) |> noreply()
+  end
+
+  @impl true
+  def handle_info({:photos_error, invalid_photos, pending_photos, photos_error_count}, socket) do
+    pending_photos = List.flatten(pending_photos)
     socket
-    |> assign(:total_progress, total_progress)
+    |> assign(:invalid_photos, invalid_photos)
+    |> assign(:pending_photos, pending_photos)
+    |> assign(:photos_error_count, photos_error_count)
     |> noreply()
   end
 
@@ -646,9 +669,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp truncate(string) do
     case get_class(string) do
       "tooltip" ->
-        {string, _} = String.split_at(string, @string_length)
-        string <> "..."
-
+        String.slice(string, 0..@string_length) <> "..."
       _ ->
         string
     end

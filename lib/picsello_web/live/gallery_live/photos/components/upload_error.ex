@@ -2,165 +2,92 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  import Picsello.Galleries.PhotoProcessing.GalleryUploadProgress, only: [progress_for_entry: 2]
-
-  alias Picsello.Galleries
-  alias Picsello.Galleries.Photo
-  alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Galleries.Workers.PhotoStorage
-
-  @upload_options [
-    accept: ~w(.jpg .jpeg .png image/jpeg image/png),
-    max_entries: 1500,
-    max_file_size: 104_857_600,
-    auto_upload: true,
-    external: &__MODULE__.presign_entry/2,
-    progress: &__MODULE__.handle_progress/3
-  ]
-  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+  @string_length 50
 
   @impl true
   def mount(socket) do
-    IO.inspect("reached")
-    {:ok,
-     socket
-     |> assign(:upload_bucket, @bucket)
-     |> assign(:toggle, "show")
-     |> assign(:overall_progress, 0)
-     |> assign(:estimate, "n/a")
-     |> assign(:uploaded_files, 0)
-     |> assign(:progress, %GalleryUploadProgress{})
-     |> assign(:update_mode, "prepend")
-     |> allow_upload(:photo, @upload_options)}
+    socket
+    |> ok()
   end
 
   @impl true
-  def handle_event("start", _params, %{assigns: %{gallery: gallery}} = socket) do
-    gallery = Galleries.load_watermark_in_gallery(gallery)
+  def handle_event("delete_photo", %{"index" => index, "delete_from" => delete_from}, %{assigns: assigns} = socket) do
+    delete_from = String.to_atom(delete_from)
+    index = String.to_integer(index)
+    {_, pending_photos} = assigns[delete_from] |> List.pop_at(index)
 
-    socket =
-      Enum.reduce(socket.assigns.uploads.photo.entries, socket, fn
-        %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
-        _, socket -> socket
-      end)
+    delete_broadcast(index, delete_from)
 
     socket
-    |> assign(
-      :progress,
-      Enum.reduce(
-        socket.assigns.uploads.photo.entries,
-        socket.assigns.progress,
-        fn entry, progress -> GalleryUploadProgress.add_entry(progress, entry) end
-      )
-    )
-    |> assign(:update_mode, "prepend")
-    |> assign(:gallery, gallery)
+    |> assign(delete_from, pending_photos)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("delete_all_photos", _, socket) do
+    delete_broadcast([], "delete_all")
+
+    socket
+    |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("upload_pending_photos", %{"index" => index}, %{assigns: %{invalid_photos: invalid_photos, pending_photos: pending_photos}} = socket) do
+    index = String.to_integer(index)
+    {_, pending_entries} = pending_photos |> List.pop_at(index)
+
+    upload_broadcast(index)
+
+    if Enum.empty?(pending_entries ++ invalid_photos)  do
+      delete_broadcast([], nil)
+      socket
+      |> close_modal()
+    else
+      socket
+    end
+    |> assign(:pending_photos, pending_entries)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("upload_all_pending_photos", _, socket) do
+    upload_broadcast([])
+
+    socket
+    |> close_modal()
     |> noreply()
   end
 
   @impl true
   def handle_event("close", _, socket) do
-    send(self(), :close_upload_popup)
-
-    socket |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "cancel-upload",
-        %{"ref" => ref},
-        %{assigns: %{uploads: %{photo: %{entries: entries}}}} = socket
-      ) do
-    entry =
-      entries
-      |> Enum.find(&(&1.ref == ref))
-
+    delete_broadcast([], nil)
     socket
-    |> assign(:update_mode, "replace")
-    |> assign(:progress, GalleryUploadProgress.remove_entry(socket.assigns.progress, entry))
-    |> cancel_upload(:photo, ref)
+    |> close_modal()
     |> noreply()
   end
 
-  def handle_progress(
-        :photo,
-        entry,
-        %{assigns: %{gallery: gallery, uploaded_files: uploaded_files, progress: progress}} =
-          socket
-      ) do
-    if entry.done? do
-      {:ok, photo} = create_photo(gallery, entry)
+  defp upload_broadcast(index) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "upload_pending_photos",
+      {:upload_pending_photos, %{index: index}}
+    )
+  end
 
-      start_photo_processing(photo, gallery.watermark)
+  defp delete_broadcast(index, delete_from) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "delete_photos",
+      {:delete_photos, %{index: index, delete_from: delete_from}}
+    )
+  end
 
-      socket
-      |> assign(uploaded_files: uploaded_files + 1)
-      |> assign(
-        progress:
-          progress
-          |> GalleryUploadProgress.complete_upload(entry)
-      )
-      |> assign_overall_progress()
-      |> noreply()
+  defp truncate_name(%{client_name: client_name, client_type: client_type}) do
+    if String.length(client_name) > @string_length do
+      String.slice(client_name, 0..@string_length) <> "..." <> String.slice(client_type, 6..15)
     else
-      socket
-      |> assign(
-        progress:
-          progress
-          |> GalleryUploadProgress.track_progress(entry)
-      )
-      |> assign_overall_progress()
-      |> noreply()
+      client_name
     end
-  end
-
-  def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
-    key = Photo.original_path(entry.client_name, gallery.id, entry.uuid)
-
-    sign_opts = [
-      expires_in: 144_000,
-      bucket: socket.assigns.upload_bucket,
-      key: key,
-      fields: %{
-        "content-type" => entry.client_type,
-        "cache-control" => "public, max-age=@upload_options"
-      },
-      conditions: [["content-length-range", 0, 104_857_600]]
-    ]
-
-    params = PhotoStorage.params_for_upload(sign_opts)
-    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-
-    {:ok, meta, socket}
-  end
-
-  defp total(list) when is_list(list), do: list |> length
-  defp total(_), do: nil
-
-  defp assign_overall_progress(%{assigns: %{progress: progress}} = socket) do
-    total_progress = GalleryUploadProgress.total_progress(progress)
-    estimate = GalleryUploadProgress.estimate_remaining(progress, DateTime.utc_now())
-
-    if total_progress == 100 do
-      send(self(), {:photo_upload_completed, socket.assigns.uploaded_files})
-    end
-
-    socket
-    |> assign(:overall_progress, total_progress)
-    |> assign(:estimate, estimate)
-  end
-
-  defp create_photo(gallery, entry) do
-    Galleries.create_photo(%{
-      gallery_id: gallery.id,
-      name: entry.client_name,
-      original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
-      position: (gallery.total_count || 0) + 100
-    })
-  end
-
-  defp start_photo_processing(photo, watermark) do
-    ProcessingManager.start(photo, watermark)
   end
 end

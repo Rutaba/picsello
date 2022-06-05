@@ -59,7 +59,12 @@
                   </div>
              </div>
             <div class="flex px-2 items-center ml-auto">
-             <%= if @total_progress > 0 && @total_progress < 100 do %>
+              <%= if @photos_error_count > 0 do %>
+                <div class="flex">
+                  <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+                </div>
+              <% end %>
+              <%= if @total_progress > 0 && @total_progress < 100 do %>
                 <div class="flex sk-circle">
                     <div class="sk-circle1 sk-child"></div>
                     <div class="sk-circle2 sk-child"></div>
@@ -77,7 +82,7 @@
                 <div class="flex items-center font-normal text-gray-400">
                     <%= @total_progress %>%
                 </div>
-                <% end %>
+              <% end %>
             </div>
             <%= if length(@albums) >= 1 do %>
                 <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300">

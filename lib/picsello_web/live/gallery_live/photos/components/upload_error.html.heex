@@ -10,8 +10,8 @@
                 <div class="flex justify-center items-center mx-4">
                     <.icon name="warning-orange", class="w-12 h-12" />
                     <div class="pl-4">
-                        <b class="font-bold">Note: </b>It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to 
-                        <b class="font-bold">100MB </b>
+                        <span class="font-bold">Note: </span>It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to 
+                        <span class="font-bold">100MB </span>
                         in size. Please reduce the file size of these photos and reupload.<br>
                         <br>
                         You can retry uploading the rest of the photos in the queue.
@@ -20,86 +20,61 @@
             </div>
         </div>
         
-        <div class="dragDrop__wrapper overflow-hidden">
-            <form id="dragDrop-form" phx-submit="save" phx-hook="ResumeUpload" phx-change="start" phx-target={@myself}>
-                <div class="dragDrop"
-                    id="dropzone"
-                    phx-hook="DragDrop"
-                    phx-drop-target={@uploads.photo.ref}
-                >
-                <label class="w-full h-full flex flex-col items-center justify-center gap-8 cursor-pointer">
-                    <div class="mx-auto max-w-xs">
-                        <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
-                        <div class="dragDrop__content">
-                            <p class="text-center">
-                                <span class="font-bold">Drop images or </span>
-                                <span class="font-bold primary cursor-pointer">Browse</span>
-                                    <%= live_file_input @uploads.photo, class: "dragDropInput" %>
-                            </p>
-                            <p class="text-center gray">Supports JPEG or PNG</p>
-                        </div>
-                    </div>
-            </label>
-                </div>
-            </form>
-        </div>
-
         <div class="uploadEntry grid grid-cols-5 w-full px-12">
             <div class="grid-cols-1 col-span-3">
                 <span class="error text-s text-center rounded py-2 px-3 items-center cursor-default">                    
-                2 photos failed
+                    <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed
                 </span>
             </div>
             <div class="grid-cols-2">
-                <span class="retry text-s text-center rounded py-2 px-6 cursor-pointer items-center">
+                <span phx-target={@myself} phx-click="upload_all_pending_photos" class="retry text-s text-center rounded py-2 px-6 cursor-pointer items-center">
                 Retry all?
+                </span>
+            </div>
+            <div class="grid-cols-3 justify-self-end">
+                <span phx-target={@myself} phx-click="delete_all_photos" class="border-2 border-solid border-base-250 text-base-250 font-bold text-s text-center rounded py-2 px-6 cursor-pointer items-center">
+                    Ignore all?
                 </span>
             </div>
         </div>  
 
         <%# use phx-drop-target with the upload ref to enable file drag and drop %>
-        <div phx-drop-target={@uploads.photo.ref} class="uploadingList__wrapper px-4" id="UploadEntries" phx-update={@update_mode}>
-                <%= for entry <- @uploads.photo.entries do %>
-                <div
-                    id={entry.uuid}
-                    class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"hidden" => progress_for_entry(@progress, entry) == 100 })}
-                >        
-                    <p class="col-span-3 max-w-md overflow-ellipsis overflow-hidden whitespace-nowrap"><%= entry.client_name %></p>
+        <div class="uploadingList__wrapper px-4">
+            <%= Enum.with_index(@invalid_photos, fn entry, index -> %>
+                <div class="uploadEntry grid grid-cols-5 pb-4 items-center">                    
+                    <p class="col-span-3 max-w-md">
+                    <%= truncate_name(entry) %> 
+                    </p>                                    
+                    <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center" data-name={entry.uuid}>
+                        <p class="error btn items-center">Failed</p>
+                        <p class="border-2 border-solid border-base-250 text-base-250 font-bold btn too-large">File too large</p>
+                    </div>
 
-                    <%# entry.progress will update automatically for in-flight entries %>
-                    <%= if progress_for_entry(@progress, entry) == 100 do%>
-                        <p class="grid-cols-1"><%= filesize(entry.client_size) %></p>
-                    <% else %>
-                        <progress class="grid-cols-1" value={progress_for_entry(@progress, entry)} max="100">
-                            <%= progress_for_entry(@progress, entry) %>%
-                        </progress>
-                    <% end %>
-
-                    <%# Phoenix.LiveView.Helpers.upload_errors/2 returns a list of error atoms %>
-                    <%= for _err <- upload_errors(@uploads.photo, entry) do %>
-                        <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center" data-name={entry.uuid}>
-                                        <p class="error btn items-center cursor-default">Failed</p>
-                                        <p id="resume-upload" class="retry btn" phx-value-ref={entry.ref} phx-target={@myself} phx-click="resume_upload">Retry?</p>
-                        </div>
-                    <% end %>
-
-                    <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
-                    <button phx-target={@myself} phx-click="cancel-upload" phx-value-ref={entry.ref}
-                            aria-label="cancel" class="justify-self-end grid-cols-1 cursor-pointer">
+                    <button phx-target={@myself} phx-click="delete_photo" phx-value-index={index} phx-value-delete_from="invalid_photos"
+                            aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer">
                         <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
                     </button>
                 </div>
-                <% end %>
-            
+            <% end) %>
+            <%= Enum.with_index(@pending_photos, fn entry, index -> %>
+                <div class="uploadEntry grid grid-cols-5 pb-4 items-center">                    
+                    <p class="col-span-3 max-w-md">
+                    <%= truncate_name(entry) %> 
+                    </p>                                    
+                    <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center">
+                        <p class="error btn items-center cursor-default">Failed</p>
+                        <p class="retry btn" phx-value-index={index} phx-target={@myself} phx-click="upload_pending_photos">Retry?</p>
+                    </div>
+
+                    <button phx-target={@myself} phx-click="delete_photo" phx-value-index={index} phx-value-delete_from="pending_photos"
+                            aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer">
+                        <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+                    </button>
+                </div>
+            <% end) %>            
         </div>
     </div>
-
-    <button phx-click="next" aria-label="next" class="mr-10 py-2 px-6 float-right rounded bg-black text-white">
-        Next
-    </button>
-
-    <button phx-click="cancel" aria-label="canncel" class="mr-2 py-2 px-3 float-right rounded border border-black bg-white border-black-1">
+    <button phx-click="close" phx-target={@myself} aria-label="canncel" class="mr-12 mt-5 py-2 px-3 float-right rounded border border-black bg-white border-black-1">
         Cancel
     </button>
-
 </div>

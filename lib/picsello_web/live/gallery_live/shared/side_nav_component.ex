@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         %{
           id: id,
           total_progress: total_progress,
+          photos_error_count: photos_error_count,
           gallery: gallery,
           arrow_show: arrow_show,
           album_dropdown_show: album_dropdown_show
@@ -21,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery_progress:#{gallery.id}")
+      PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")
     end
 
     album = Map.get(params, :selected_album, nil)
@@ -32,17 +34,19 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       {:upload_update, %{album_id: album_id}}
     )
 
-    {:ok,
-     socket
-     |> assign(:id, id)
-     |> assign(:total_progress, total_progress || 0)
-     |> assign(:gallery, gallery)
-     |> assign(:edit_name, true)
-     |> assign(:albums, albums)
-     |> assign(:arrow_show, arrow_show)
-     |> assign(:album_dropdown_show, album_dropdown_show)
-     |> assign(:selected_album, album)
-     |> assign_gallery_changeset()}
+  IO.inspect(photos_error_count)
+  socket
+  |> assign(:id, id)
+  |> assign(:total_progress, total_progress)
+  |> assign(:photos_error_count, photos_error_count)
+  |> assign(:gallery, gallery)
+  |> assign(:edit_name, true)
+  |> assign(:albums, albums)
+  |> assign(:arrow_show, arrow_show)
+  |> assign(:album_dropdown_show, album_dropdown_show)
+  |> assign(:selected_album, album)
+  |> assign_gallery_changeset()
+  |> ok()
   end
 
   @impl true
