@@ -29,7 +29,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
           status: :open,
           stripe_id: "invoice-stripe-id"
         ),
-      order: Repo.preload(order, [:products, :digitals]),
+      order: Repo.preload(order, [:gallery, :products, :digitals]),
       stripe_invoice: build(:stripe_invoice, status: "paid", id: "invoice-stripe-id")
     ]
   end
@@ -98,24 +98,18 @@ defmodule Picsello.Orders.ConfirmationsTest do
   end
 
   describe "handle_session - paid, unpaid invoice" do
-    setup %{order: order} do
+    setup %{order: %{gallery: gallery} = order} do
+      insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
+
+      order = Repo.preload(order, [:digitals], force: true)
+
       refute Picsello.Orders.photographer_paid?(order)
 
-      [
-        intent:
-          insert(:intent,
-            stripe_id: "payment-intent-id",
-            order: order,
-            amount: Order.total_cost(order)
-          )
-      ]
-    end
-
-    test "updates intent", %{intent: intent, order: order} do
-      session =
-        build(:stripe_session,
-          payment_intent: intent.stripe_id,
-          client_reference_id: "order_number_#{Order.number(order)}"
+      intent =
+        insert(:intent,
+          stripe_id: "payment-intent-id",
+          order: order,
+          amount: Order.total_cost(order)
         )
 
       stripe_intent =
@@ -129,9 +123,29 @@ defmodule Picsello.Orders.ConfirmationsTest do
          %{stripe_intent | status: "requires_capture", amount_capturable: stripe_intent.amount}}
       end)
 
+      [
+        intent: intent,
+        session:
+          build(:stripe_session,
+            payment_intent: intent.stripe_id,
+            client_reference_id: "order_number_#{Order.number(order)}"
+          )
+      ]
+    end
+
+    test "updates intent", %{intent: intent, session: session} do
       handle_session(session)
 
       assert %{status: :requires_capture} = Repo.reload!(intent)
+    end
+
+    test "makes digitals available", %{
+      order: %{gallery: gallery} = order,
+      session: session
+    } do
+      handle_session(session)
+
+      Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
     end
   end
 

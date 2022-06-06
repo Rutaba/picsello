@@ -146,7 +146,7 @@ defmodule Picsello.Orders.Confirmations do
     photographer_paid = Picsello.Orders.photographer_paid?(order)
 
     if Picsello.Orders.client_paid?(order) do
-      {:error, %{clint: true, photographer: photographer_paid}}
+      {:error, %{client: true, photographer: photographer_paid}}
     else
       {:ok, %{client: false, photographer: photographer_paid}}
     end
