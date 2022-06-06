@@ -405,18 +405,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event("ignore_all_photos", _, socket) do
-    Phoenix.PubSub.broadcast(
-      Picsello.PubSub,
-      "delete_photos",
-      {:delete_photos, %{index: [], delete_from: "delete_all"}}
-    )
-
-    socket
-    |> noreply()
-  end
-
-  @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do
     socket
     |> close_modal()

@@ -41,9 +41,6 @@
             <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
             to resolve errors<%= if length(@pending_photos) > 0, do: " before uploading more photos"%>.
           </div>
-            <span phx-click="ignore_all_photos" class="border-2 border-solid border-[#faceb6] text-base-300 font-bold text-xs text-center rounded py-2 px-4 mr-6 cursor-pointer items-center">
-                Ignore all?
-            </span>
         </div>
         <%= if Enum.any?(@photos) || @favorites_filter do %>
         <div class="pt-8 grid lg:grid-cols-2">

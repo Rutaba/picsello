@@ -63,6 +63,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     gallery = Galleries.load_watermark_in_gallery(gallery)
 
     if Enum.empty?(inprogress_photos) do
+      
       socket
       |> assign(:persisted_album_id, album_id)
     else
