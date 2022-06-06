@@ -15,15 +15,16 @@ defmodule Picsello.GalleryAlbumsTest do
 
   test "Albums, render albums", %{
     session: session,
-    gallery: %{id: gallery_id}
+    gallery: %{id: gallery_id},
+    album: album
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
     |> assert_has(css("#albums .album", count: 2))
     |> click(css("#unsorted_actions"))
     |> assert_has(css("#unsorted_actions ul li", count: 2))
-    |> click(css("#actions"))
-    |> assert_has(css("#actions ul li", count: 4))
+    |> click(css("#actions-#{album.id}"))
+    |> assert_has(css("#actions-#{album.id} ul li", count: 4))
   end
 
   test "Albums, create album", %{
@@ -76,7 +77,7 @@ defmodule Picsello.GalleryAlbumsTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
-    |> click(css("#actions"))
+    |> click(css("#actions-#{album.id}"))
     |> click(css("*[phx-click='go_to_album']", text: "Go to album"))
     |> find(css("#page-scroll span span", text: "#{album.name}"))
   end
@@ -88,7 +89,7 @@ defmodule Picsello.GalleryAlbumsTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
-    |> click(css("#actions"))
+    |> click(css("#actions-#{album.id}"))
     |> click(css("button", text: "Go to album settings"))
     |> click(css("span", text: "Off"))
     |> fill_in(css("#album_name"), with: "Test album 2")
@@ -115,21 +116,22 @@ defmodule Picsello.GalleryAlbumsTest do
     session
     |> visit("/galleries/#{gallery.id}/albums")
     |> assert_has(css(placeholder_background_image(), count: 2))
-    |> click(css("#actions"))
+    |> click(css("#actions-#{album.id}"))
     |> click(css("button", text: "Edit album thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))
-    |> click(css("#actions"))
+    |> click(css("#actions-#{album.id}"))
     |> assert_has(css(placeholder_background_image(), count: 1))
   end
 
   test "Albums, album action dropdown, delete album", %{
     session: session,
-    gallery: %{id: gallery_id}
+    gallery: %{id: gallery_id},
+    album: album
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
-    |> click(css("#actions"))
+    |> click(css("#actions-#{album.id}"))
     |> click(button("Delete Album"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(css("p", text: "Album deleted successfully"))

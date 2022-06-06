@@ -7,10 +7,10 @@
                 <div class="max-w-xs mx-auto">
                     <div class="dragDrop__content" id="resume-upload" phx-hook="ResumeUpload">
                         <p class="text-center">
-                            <div class={"#{length(@pending_photos) > 0 && 'hidden'} flex items-center bg-white ml-5 lg:justify-end uploadBtn"}>
+                            <.add_photo_button pending_photos={Enum.empty?(@pending_photos)} class="flex items-center bg-white ml-5 lg:justify-end uploadBtn"> 
                                 <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
                                 Add photos
-                            </div>
+                            </.add_photo_button>
                             <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                         </p>
                     </div>

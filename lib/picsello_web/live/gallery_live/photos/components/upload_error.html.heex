@@ -9,13 +9,7 @@
             <div class="bg-orange-inbox-400 rounded-lg mx-12 py-2">
                 <div class="flex justify-center items-center mx-4">
                     <.icon name="warning-orange", class="w-12 h-12" />
-                    <div class="pl-4">
-                        <span class="font-bold">Note: </span>It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to 
-                        <span class="font-bold">100MB </span>
-                        in size. Please reduce the file size of these photos and reupload.<br>
-                        <br>
-                        You can retry uploading the rest of the photos in the queue.
-                    </div>
+                    <.error_type id="error_type" invalid_count={length(@invalid_photos)}, pending_count={length(@pending_photos)}/>
                 </div>
             </div>
         </div>
@@ -23,16 +17,16 @@
         <div class="uploadEntry grid grid-cols-5 w-full px-12">
             <div class="grid-cols-1 col-span-3">
                 <span class="error text-s text-center rounded py-2 px-3 items-center cursor-default">                    
-                    <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed
+                    <%= length(@invalid_photos ++ @pending_photos) %> <%= ngettext("photo", "photos", length(@invalid_photos ++ @pending_photos)) %> failed
                 </span>
             </div>
             <div class="grid-cols-2">
-                <span phx-target={@myself} phx-click="upload_all_pending_photos" class="retry text-s text-center rounded py-2 px-6 cursor-pointer items-center">
+                <span phx-target={@myself} phx-click="upload_all_pending_photos" class={"retry text-s text-center rounded py-2 px-6 cursor-pointer items-center #{length(@pending_photos) < 2 && 'hidden'}"}>
                 Retry all?
                 </span>
             </div>
             <div class="grid-cols-3 justify-self-end">
-                <span phx-target={@myself} phx-click="delete_all_photos" class="border-2 border-solid border-base-250 text-base-250 font-bold text-s text-center rounded py-2 px-6 cursor-pointer items-center">
+                <span phx-target={@myself} phx-click="delete_all_photos" class={"retry text-s text-center rounded py-2 px-6 cursor-pointer items-center #{length(@pending_photos ++ @invalid_photos) < 2 && 'hidden'}"}>
                     Ignore all?
                 </span>
             </div>

@@ -75,7 +75,12 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
-  def handle_info({:photos_error, _, _, photos_error_count}, socket) do
+  def handle_info(
+        {:photos_error, %{photos_error_count: photos_error_count, entries: entries}},
+        socket
+      ) do
+    if length(entries) > 0, do: inprogress_upload_broadcast(entries)
+
     socket
     |> assign(:photos_error_count, photos_error_count)
     |> noreply()

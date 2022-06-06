@@ -1,7 +1,7 @@
 <div class="flex flex-col photographer-gallery">
   <div class="flex flex-row bg-base-200">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "photos", album_dropdown_show: true %>
-    <div class="w-full h-full pb-16 bg-gray-100 pl-96">
+    <div class="w-full h-full -mb-64 bg-gray-100 pl-96">
       <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pb-5 pl-10 pr-10 bg-gray-100 pt-14">
         <div class="flex justify-between">
           <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
@@ -12,7 +12,7 @@
         <p class="mt-4 font-sans text-gray-400"><%= length(@albums) %> albums</p>
       </div>
       <div>
-        <div id="albums" class="relative flex flex-col w-full min-h-screen">
+        <div id="albums" class="relative flex flex-col w-full">
           <div class="pl-10 grid grid-cols-2 pr-7 sm:gap-2 md:gap-2">
              <div class="flex flex-col mb-2 mr-2 album">
               <.thumbnail event="go_to_unsorted_photos" album={%{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}}/>
@@ -34,7 +34,7 @@
               <.thumbnail event="go_to_album" album={album}/>
               <div class="cursor-pointer actionBlock">
                 <.actions
-                id="actions"
+                id={"actions-#{album.id}"}
                 class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
                 delete_event="delete_album_popup"
                 delete_title="Delete Album"

@@ -34,19 +34,18 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       {:upload_update, %{album_id: album_id}}
     )
 
-  IO.inspect(photos_error_count)
-  socket
-  |> assign(:id, id)
-  |> assign(:total_progress, total_progress)
-  |> assign(:photos_error_count, photos_error_count)
-  |> assign(:gallery, gallery)
-  |> assign(:edit_name, true)
-  |> assign(:albums, albums)
-  |> assign(:arrow_show, arrow_show)
-  |> assign(:album_dropdown_show, album_dropdown_show)
-  |> assign(:selected_album, album)
-  |> assign_gallery_changeset()
-  |> ok()
+    socket
+    |> assign(:id, id)
+    |> assign(:total_progress, total_progress)
+    |> assign(:photos_error_count, photos_error_count)
+    |> assign(:gallery, gallery)
+    |> assign(:edit_name, true)
+    |> assign(:albums, albums)
+    |> assign(:arrow_show, arrow_show)
+    |> assign(:album_dropdown_show, album_dropdown_show)
+    |> assign(:selected_album, album)
+    |> assign_gallery_changeset()
+    |> ok()
   end
 
   @impl true

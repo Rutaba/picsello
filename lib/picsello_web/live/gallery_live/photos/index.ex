@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
-  @per_page 2
+  @per_page 100
   @string_length 20
 
   @impl true
@@ -118,7 +118,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event("upload-failed", _, socket) do
+  def handle_event("upload-failed", _, %{assigns: %{entries: entries}} = socket) do
+    if length(entries) > 0, do: inprogress_upload_broadcast(entries)
+
     socket
     |> open_modal(UploadError, socket.assigns)
     |> noreply
@@ -403,15 +405,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:album_settings, %{message: message, album: album}}, socket) do
-    socket
-    |> close_modal()
-    |> assign(:album, album |> Repo.preload(:photos))
-    |> put_flash(:success, message)
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("ignore_all_photos", _, socket) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
@@ -420,6 +413,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
 
     socket
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:album_settings, %{message: message, album: album}}, socket) do
+    socket
+    |> close_modal()
+    |> assign(:album, album |> Repo.preload(:photos))
+    |> put_flash(:success, message)
     |> noreply()
   end
 
@@ -548,9 +550,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:photos_error, invalid_photos, pending_photos, photos_error_count}, socket) do
-    pending_photos = List.flatten(pending_photos)
+  def handle_info(
+        {:photos_error,
+         %{
+           invalid_photos: invalid_photos,
+           pending_photos: pending_photos,
+           photos_error_count: photos_error_count,
+           entries: entries
+         }},
+        socket
+      ) do
     socket
+    |> assign(:entries, if(length(entries) > 0, do: entries, else: []))
     |> assign(:invalid_photos, invalid_photos)
     |> assign(:pending_photos, pending_photos)
     |> assign(:photos_error_count, photos_error_count)
@@ -670,6 +681,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     case get_class(string) do
       "tooltip" ->
         String.slice(string, 0..@string_length) <> "..."
+
       _ ->
         string
     end

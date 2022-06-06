@@ -372,6 +372,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def inprogress_upload_broadcast(entries) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "inprogress_upload_update",
+      {:inprogress_upload_update, %{entries: entries}}
+    )
+  end
+
   def actions(assigns) do
     ~H"""
     <div id={@id} class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">

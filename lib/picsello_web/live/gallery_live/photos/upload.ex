@@ -14,7 +14,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 2,
-    max_file_size: 104_857_600,
+    max_file_size: 104_857,
     auto_upload: true,
     external: &__MODULE__.presign_entry/2,
     progress: &__MODULE__.handle_progress/3
@@ -30,6 +30,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "upload_update")
       PubSub.subscribe(Picsello.PubSub, "upload_pending_photos")
+      PubSub.subscribe(Picsello.PubSub, "inprogress_upload_update")
       PubSub.subscribe(Picsello.PubSub, "delete_photos")
     end
 
@@ -42,6 +43,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      |> assign(:invalid_photos, [])
      |> assign(:pending_photos, [])
      |> assign(:inprogress_photos, [])
+     |> assign(:entries, [])
      |> assign(:photos_error_count, 0)
      |> assign(:overall_progress, 0)
      |> assign(:uploaded_files, 0)
@@ -52,14 +54,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   @impl true
-  def handle_event("start", _params, %{assigns: %{gallery: gallery, inprogress_photos: inprogress_photos, album_id: album_id}} = socket) do
+  def handle_event(
+        "start",
+        _params,
+        %{assigns: %{gallery: gallery, inprogress_photos: inprogress_photos, album_id: album_id}} =
+          socket
+      ) do
     gallery = Galleries.load_watermark_in_gallery(gallery)
 
     if Enum.empty?(inprogress_photos) do
       socket
       |> assign(:persisted_album_id, album_id)
     else
-       socket
+      socket
     end
     |> apply_limits()
     |> update_uploader()
@@ -67,6 +74,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> update_progress()
     |> assign(:update_mode, "append")
     |> assign(:gallery, gallery)
+    |> then(fn %{assigns: %{inprogress_photos: inprogress_photos}} = socket ->
+      if Enum.empty?(inprogress_photos) do
+        socket
+      else
+        socket
+        |> photos_error_broadcast()
+      end
+    end)
     |> noreply()
   end
 
@@ -107,38 +122,44 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   @impl true
+  def handle_info({:inprogress_upload_update, %{entries: entries}}, socket) do
+    socket |> apply_limits(entries) |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:delete_photos, %{index: index, delete_from: delete_from}},
         %{assigns: %{photos_error_count: photos_error_count} = assigns} = socket
       ) do
+    if is_list(index) do
+      socket
+      |> assign(:invalid_photos, [])
+      |> assign(:pending_photos, [])
+      |> assign(:inprogress_photos, [])
+      |> assign(:entries, [])
+      |> assign(:photos_error_count, 0)
+    else
+      {_, pending_entries} = assigns[delete_from] |> List.pop_at(index)
 
-    cond do
-      is_nil(delete_from) ->
-        socket |> photos_error_broadcast()
-      is_list(index) ->
-        socket
-        |> assign(:invalid_photos, [])
-        |> assign(:pending_photos, [])
-        |> assign(:inprogress_photos, [])
-        |> assign(:entries, [])
-        |> assign(:photos_error_count, 0)
-        |> then(&photos_error_broadcast(&1))
-      true ->
-        {_, pending_entries} = assigns[delete_from] |> List.pop_at(index)
-
-        socket
-        |> assign(delete_from, pending_entries)
-        |> assign(:photos_error_count, photos_error_count - 1)
+      socket
+      |> assign(delete_from, pending_entries)
+      |> assign(:photos_error_count, photos_error_count - 1)
     end
+    |> photos_error_broadcast()
     |> noreply()
   end
 
   @impl true
   def handle_info(
         {:upload_pending_photos, %{index: index}},
-        %{assigns: %{gallery: gallery, pending_photos: pending_photos, photos_error_count: photos_error_count}} = socket
+        %{
+          assigns: %{
+            gallery: gallery,
+            pending_photos: pending_photos,
+            photos_error_count: photos_error_count
+          }
+        } = socket
       ) do
-    IO.inspect(pending_photos)
     gallery = Galleries.load_watermark_in_gallery(gallery)
 
     if is_list(index) do
@@ -152,7 +173,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       |> assign(:pending_photos, List.flatten(pending_entries))
       |> assign(:photos_error_count, photos_error_count - length(valid_entries))
       |> assign(:inprogress_photos, valid_entries)
-      |> then(&photos_error_broadcast(&1))
     else
       {valid_entry, pending_entries} = pending_photos |> List.pop_at(index)
 
@@ -200,17 +220,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
           |> GalleryUploadProgress.complete_upload(entry)
       )
       |> assign_overall_progress()
-      |> noreply()
     else
       socket
-      |> assign(
-        progress:
-          progress
-          |> GalleryUploadProgress.track_progress(entry)
-      )
-      |> assign_overall_progress()
-      |> noreply()
+      |> inprogress_photos_errors(entry)
     end
+    |> noreply()
   end
 
   def presign_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
@@ -224,7 +238,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
         "content-type" => entry.client_type,
         "cache-control" => "public, max-age=@upload_options"
       },
-      conditions: [["content-length-range", 0, 104_857_600]]
+      conditions: [["content-length-range", 0, @upload_options[:max_file_size]]]
     ]
 
     params = PhotoStorage.params_for_upload(sign_opts)
@@ -236,7 +250,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp assign_overall_progress(%{assigns: %{progress: progress, gallery: gallery}} = socket) do
+  defp assign_overall_progress(
+         %{assigns: %{pending_photos: pending_photos, progress: progress, gallery: gallery}} =
+           socket
+       ) do
     total_progress = GalleryUploadProgress.total_progress(progress)
 
     gallery_progress_broadcast(socket, total_progress)
@@ -253,22 +270,46 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       Galleries.normalize_gallery_photo_positions(gallery.id)
     end
 
-    socket
+    if total_progress == 100 && Enum.empty?(pending_photos) do
+      socket
+      |> assign(:inprogress_photos, [])
+    else
+      socket
+    end
     |> assign(:overall_progress, total_progress)
     |> assign(:estimate, estimate)
   end
 
-  defp photos_error_broadcast(%{assigns: %{gallery: gallery, photos_error_count: photos_error_count, invalid_photos: invalid_photos, pending_photos: pending_photos}} = socket) do
+  defp photos_error_broadcast(
+         %{
+           assigns: %{
+             gallery: gallery,
+             photos_error_count: photos_error_count,
+             invalid_photos: invalid_photos,
+             pending_photos: pending_photos
+           }
+         } = socket,
+         entries \\ []
+       ) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
       "photos_error:#{gallery.id}",
-      {:photos_error, invalid_photos, pending_photos, photos_error_count}
+      {:photos_error,
+       %{
+         photos_error_count: photos_error_count,
+         invalid_photos: invalid_photos,
+         pending_photos: pending_photos,
+         entries: entries
+       }}
     )
+
     socket
   end
 
-  defp gallery_progress_broadcast(%{assigns: %{gallery: gallery, pending_photos: pending_photos}}, total_progress) do
-    IO.inspect(length(pending_photos))
+  defp gallery_progress_broadcast(
+         %{assigns: %{gallery: gallery}},
+         total_progress
+       ) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
       "gallery_progress:#{gallery.id}",
@@ -286,7 +327,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     })
   end
 
-  defp upload_success_message(%{assigns: %{entries: entries, inprogress_photos: inprogress_photos}}) do
+  defp upload_success_message(%{
+         assigns: %{entries: entries, inprogress_photos: inprogress_photos}
+       }) do
     uploaded = length(inprogress_photos)
     "#{uploaded}/#{total(entries)} #{ngettext("photo", "photos", uploaded)} uploaded successfully"
   end
@@ -295,29 +338,39 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     ProcessingManager.start(photo, watermark)
   end
 
-  defp apply_limits(%{assigns: %{pending_photos: pending_photos}} = socket) do
-    IO.inspect(pending_photos)
-    if(Enum.empty?(pending_photos)) do
-      entries =
-        socket.assigns.uploads.photo.entries
-        |> Enum.filter(& !&1.done?)
-
+  defp apply_limits(
+         %{assigns: %{pending_photos: pending_photos, invalid_photos: invalid_photos} = assigns} =
+           socket
+       ) do
+    if Enum.empty?(pending_photos) do
+      entries = assigns.uploads.photo.entries |> Enum.filter(&(!&1.done?))
       {valid, invalid} = max_size_limit(entries)
       {valid_entries, pending_entries} = max_entries_limit(valid)
       pending_entries = List.flatten(pending_entries)
-      IO.inspect(entries)
-      IO.inspect(invalid)
-      IO.inspect(pending_entries)
-      IO.inspect(valid_entries)
+      invalid = invalid ++ invalid_photos
+
       socket
       |> assign(:invalid_photos, invalid)
       |> assign(:pending_photos, pending_entries)
-      |> assign(:photos_error_count, length(pending_entries) + length(invalid))
+      |> assign(:photos_error_count, length(pending_entries ++ invalid))
       |> assign(:inprogress_photos, valid_entries || [])
       |> assign(:entries, entries)
     else
       socket
     end
+  end
+
+  defp apply_limits(%{assigns: %{uploads: uploads}} = socket, entries) do
+    {pending_photos, invalid} = max_size_limit(entries)
+
+    socket
+    |> assign(:invalid_photos, invalid)
+    |> assign(
+      :pending_photos,
+      Enum.map(pending_photos, &Map.put(&1, :upload_ref, uploads.photo.ref))
+    )
+    |> assign(:photos_error_count, length(entries))
+    |> assign(:entries, entries)
   end
 
   defp max_entries_limit(entries) do
@@ -335,7 +388,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     end)
   end
 
-  defp update_uploader(%{assigns: %{inprogress_photos: inprogress_photos, uploads: uploads}} = socket) do
+  defp update_uploader(
+         %{assigns: %{inprogress_photos: inprogress_photos, uploads: uploads}} = socket
+       ) do
     upload_config = Map.fetch!(uploads || %{}, :photo)
 
     photo = %UploadConfig{
@@ -348,8 +403,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> assign(:uploads, put_in(socket.assigns.uploads, [:photo], photo))
   end
 
-  defp update_progress(%{assigns: %{inprogress_photos: inprogress_photos}} = socket) do
-    Enum.empty?(inprogress_photos) && photos_error_broadcast(socket)
+  defp update_progress(
+         %{assigns: %{inprogress_photos: inprogress_photos, entries: entries}} = socket
+       ) do
+    Enum.empty?(inprogress_photos) && !Enum.empty?(entries) && photos_error_broadcast(socket)
 
     socket
     |> assign(
@@ -367,5 +424,51 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       %{valid?: false, ref: ref}, socket -> cancel_upload(socket, :photo, ref)
       _, socket -> socket
     end)
+  end
+
+  defp inprogress_photos_errors(
+         %{
+           assigns: %{
+             entries: entries,
+             inprogress_photos: inprogress_photos,
+             photos_error_count: photos_error_count,
+             pending_photos: pending_photos,
+             progress: progress
+           }
+         } = socket,
+         entry
+       ) do
+    photo = socket.assigns.uploads.photo
+
+    if length(upload_errors(photo, entry)) > 0 do
+      cancel_upload(socket, :photo, entry.ref)
+      inprogress_photos = inprogress_photos |> Enum.filter(&(!&1.done?))
+
+      socket
+      |> assign(:pending_photos, inprogress_photos ++ pending_photos)
+      |> assign(:photos_error_count, photos_error_count + length(inprogress_photos))
+      |> photos_error_broadcast(entries |> Enum.filter(&(!&1.done?)))
+      |> gallery_progress_broadcast(0)
+    else
+      socket
+      |> assign(
+        progress:
+          progress
+          |> GalleryUploadProgress.track_progress(entry)
+      )
+      |> assign_overall_progress()
+    end
+  end
+
+  defp add_photo_button(assigns) do
+    ~H"""
+    <%= if @pending_photos do %>
+      <div class={@class}><%= render_block(@inner_block) %></div>
+    <% else %>
+      <button disabled="disabled" class={"#{@class} disabled:opacity-50 disabled:cursor-not-allowed"}>
+        <%= render_block(@inner_block) %>
+      </button>
+    <% end %>
+    """
   end
 end

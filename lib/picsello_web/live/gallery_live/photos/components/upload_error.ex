@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  @string_length 50
+  @string_length 35
 
   @impl true
   def mount(socket) do
@@ -11,7 +11,11 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   end
 
   @impl true
-  def handle_event("delete_photo", %{"index" => index, "delete_from" => delete_from}, %{assigns: assigns} = socket) do
+  def handle_event(
+        "delete_photo",
+        %{"index" => index, "delete_from" => delete_from},
+        %{assigns: assigns} = socket
+      ) do
     delete_from = String.to_atom(delete_from)
     index = String.to_integer(index)
     {_, pending_photos} = assigns[delete_from] |> List.pop_at(index)
@@ -20,6 +24,14 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
 
     socket
     |> assign(delete_from, pending_photos)
+    |> then(fn %{assigns: %{invalid_photos: invalid_photos, pending_photos: pending_photos}} =
+                 socket ->
+      if Enum.empty?(pending_photos ++ invalid_photos) do
+        socket |> close_modal()
+      else
+        socket
+      end
+    end)
     |> noreply()
   end
 
@@ -33,16 +45,18 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   end
 
   @impl true
-  def handle_event("upload_pending_photos", %{"index" => index}, %{assigns: %{invalid_photos: invalid_photos, pending_photos: pending_photos}} = socket) do
+  def handle_event(
+        "upload_pending_photos",
+        %{"index" => index},
+        %{assigns: %{invalid_photos: invalid_photos, pending_photos: pending_photos}} = socket
+      ) do
     index = String.to_integer(index)
     {_, pending_entries} = pending_photos |> List.pop_at(index)
 
     upload_broadcast(index)
 
-    if Enum.empty?(pending_entries ++ invalid_photos)  do
-      delete_broadcast([], nil)
-      socket
-      |> close_modal()
+    if Enum.empty?(pending_entries ++ invalid_photos) do
+      socket |> close_modal()
     else
       socket
     end
@@ -61,7 +75,6 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
 
   @impl true
   def handle_event("close", _, socket) do
-    delete_broadcast([], nil)
     socket
     |> close_modal()
     |> noreply()
@@ -89,5 +102,31 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     else
       client_name
     end
+  end
+
+  defp error_type(assigns) do
+    ~H"""
+    <div class="pl-4">
+      <%= cond do %>
+      <%= @invalid_count > 0 && @pending_count == 0 -> %>
+        It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to
+        <span class="font-bold">100MB </span>
+        in size. Please reduce the file size of these photos and reupload.
+
+      <% @invalid_count == 0 && @pending_count > 0 -> %>
+        We can only upload
+        <span class="font-bold">1,500 photos at a time</span>
+        , so some of your photos are still in the upload queue. You can retry uploading these photos below.
+
+      <% true -> %>
+        It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to
+        <span class="font-bold">100MB </span>in size. Please reduce the file size of these photos and reupload.<br>
+        <br>
+        We can only upload
+        <span class="font-bold">1,500 photos at a time</span>
+        , so some of your photos are still in the upload queue. You can retry uploading these photos below.
+      <% end %>
+    </div>
+    """
   end
 end

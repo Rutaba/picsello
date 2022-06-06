@@ -39,7 +39,7 @@
           <div class="flex-grow p-4 font-sans">
             <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed to upload.
             <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
-            to resolve errors.
+            to resolve errors<%= if length(@pending_photos) > 0, do: " before uploading more photos"%>.
           </div>
             <span phx-click="ignore_all_photos" class="border-2 border-solid border-[#faceb6] text-base-300 font-bold text-xs text-center rounded py-2 px-4 mr-6 cursor-pointer items-center">
                 Ignore all?
