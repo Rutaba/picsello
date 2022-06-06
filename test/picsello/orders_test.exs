@@ -174,46 +174,4 @@ defmodule Picsello.OrdersTest do
              } = email |> email_substitutions()
     end
   end
-
-  describe "handle_session" do
-    def handle_session(session) do
-      Orders.handle_session(
-        session,
-        PicselloWeb.Helpers
-      )
-    end
-
-    test "raises if order does not exist" do
-      assert_raise(Ecto.NoResultsError, fn ->
-        handle_session(%Stripe.Session{
-          client_reference_id: "order_number_404"
-        })
-      end)
-    end
-
-    test "is successful when order is already paid for" do
-      order = insert(:order, placed_at: DateTime.utc_now())
-
-      assert {:ok, _} =
-               handle_session(%Stripe.Session{
-                 client_reference_id: "order_number_#{Order.number(order)}"
-               })
-    end
-
-    test "cancels payment intent on failure" do
-      order = insert(:order, placed_at: DateTime.utc_now()) |> Repo.preload(:digitals)
-      insert(:intent, order: order)
-
-      Picsello.MockPayments
-      |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
-        {:ok, %{amount_capturable: Order.total_cost(Repo.preload(order, :products)).amount + 1}}
-      end)
-      |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
-
-      handle_session(%Stripe.Session{
-        client_reference_id: "order_number_#{Order.number(order)}",
-        payment_intent: "intent-id"
-      })
-    end
-  end
 end

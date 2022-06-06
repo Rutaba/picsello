@@ -13,6 +13,8 @@ defmodule Picsello.Cart.Order do
     belongs_to(:gallery, Gallery)
 
     has_one :package, through: [:gallery, :package]
+    has_one :invoice, Picsello.Invoices.Invoice
+    has_one :intent, Picsello.Intents.Intent
 
     has_many :digitals, Digital,
       on_replace: :delete,
@@ -93,12 +95,10 @@ defmodule Picsello.Cart.Order do
   def placed_changeset(order),
     do: change(order, %{placed_at: DateTime.utc_now() |> DateTime.truncate(:second)})
 
-  def confirmation_changeset(
-        %__MODULE__{} = order,
-        _confirmation \\ nil
-      ) do
+  def whcc_confirmation_changeset(%__MODULE__{} = order) do
     order
-    |> placed_changeset()
+    |> cast(%{whcc_order: %{confirmed_at: DateTime.utc_now()}}, [])
+    |> cast_embed(:whcc_order)
   end
 
   def store_delivery_info(order, delivery_info_changeset) do

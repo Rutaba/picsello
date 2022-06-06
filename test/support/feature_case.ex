@@ -10,6 +10,9 @@ defmodule Picsello.FeatureCase do
 
     alias Picsello.Galleries.Photo
 
+    def scroll_to_bottom(session),
+      do: execute_script(session, "window.scrollTo(0, document.body.clientHeight)")
+
     def scroll_into_view(session, query) do
       case Wallaby.Query.compile(query) do
         {:css, css_selector} ->

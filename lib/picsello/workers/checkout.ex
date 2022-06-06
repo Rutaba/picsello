@@ -17,7 +17,7 @@ defmodule Picsello.Workers.Checkout do
 
       err ->
         Logger.error("[Checkout] unexpected response:\n#{inspect(err)}")
-        Orders.broadcast(order_id, {:checkout, :error, "error processing order"})
+        Orders.broadcast(order_id, {:checkout, :error, err})
     end
   end
 end

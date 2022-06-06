@@ -755,4 +755,42 @@ defmodule Picsello.Factory do
     }
     |> evaluate_lazy_attributes()
   end
+
+  def invoice_factory do
+    %Picsello.Invoices.Invoice{
+      amount_due: ~M[0]USD,
+      amount_paid: ~M[0]USD,
+      amount_remaining: ~M[0]USD,
+      order: fn -> build(:order) end,
+      description: "an invoice",
+      status: :draft,
+      stripe_id: sequence(:invoice, &"invoice-#{&1}")
+    }
+    |> evaluate_lazy_attributes()
+  end
+
+  def stripe_payment_intent_factory() do
+    %Stripe.PaymentIntent{
+      amount: ~M[0]USD,
+      amount_received: ~M[0]USD,
+      amount_capturable: ~M[0]USD,
+      status: "requires_payment_method",
+      id: sequence(:payment_intent_stripe_id, &"payment-intent-stripe-id-#{&1}")
+    }
+  end
+
+  def stripe_session_factory do
+    %Stripe.Session{payment_intent: build(:stripe_payment_intent)}
+  end
+
+  def stripe_invoice_factory() do
+    %Stripe.Invoice{
+      amount_due: ~M[0]USD,
+      amount_paid: ~M[0]USD,
+      amount_remaining: ~M[0]USD,
+      description: "invoice description",
+      status: "draft",
+      id: sequence(:invoice_stripe_id, &"invoice-stripe-id-#{&1}")
+    }
+  end
 end

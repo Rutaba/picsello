@@ -1,9 +1,15 @@
 defmodule Picsello.Orders.Confirmations do
-  @moduledoc "context module for confirming orders. Should be accessed through Cart."
+  @moduledoc """
+    Context module for handling order payments.
+
+    These are the steps that occur when we hear from stripe about an order payment from a photographer or their client.
+
+    See also Picsello.Cart.Checkouts for the steps that come before this in the ordering process.
+  """
 
   alias Picsello.{Invoices.Invoice, Galleries, Cart.Order, Payments, Cart.OrderNumber, WHCC, Repo}
   import Ecto.Query, only: [from: 2]
-  import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3]
+  import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2]
 
   @doc """
   Handles a stripe session.
@@ -47,7 +53,23 @@ defmodule Picsello.Orders.Confirmations do
     |> put(:stripe_invoice, invoice)
     |> run(:invoice, &load_invoice/2)
     |> update(:updated_invoice, &update_invoice_changeset/1)
+    |> merge(fn
+      %{updated_invoice: %{order: %{intent: intent} = order, status: :paid}} ->
+        new()
+        |> run(:confirm_order, fn _, _ -> confirm_order(order) end)
+        |> update(:order, Order.whcc_confirmation_changeset(order))
+        |> append(handle_capture(intent, order))
+
+      _ ->
+        new()
+    end)
     |> Repo.transaction()
+  end
+
+  defp handle_capture(nil, _), do: new()
+
+  defp handle_capture(intent, order) do
+    new() |> run(:capture, fn _, _ -> capture(intent, stripe_options(order)) end)
   end
 
   defp do_confirm_order(order_number, session_fn, helpers) do
@@ -55,17 +77,28 @@ defmodule Picsello.Orders.Confirmations do
     |> put(:order_number, order_number)
     |> run(:order, &load_order/2)
     |> run(:stripe_options, &stripe_options/2)
-    |> run(:paid, &check_paid/2)
     |> session_fn.()
+    |> run(:paid, &check_paid/2)
     |> run(:intent, &update_intent/2)
-    |> update(:confirmed_order, &confirm_order_changeset/1)
-    |> run(:capture, &capture/2)
+    |> merge(fn
+      %{order: %{products: [_ | _]} = order, paid: %{photographer: true}} = multi ->
+        new()
+        |> run(:confirm_order, fn _, _ -> confirm_order(order) end)
+        |> update(:confirmed_order, Order.whcc_confirmation_changeset(order))
+        |> run(:capture, fn _, _ -> capture(multi) end)
+
+      %{paid: %{photographer: false}} ->
+        new()
+
+      %{order: %{products: []}} = multi ->
+        run(new(), :capture, fn _, _ -> capture(multi) end)
+    end)
     |> Repo.transaction()
     |> case do
-      {:error, :paid, true, %{order: order}} ->
+      {:error, :paid, _, %{order: order}} ->
         {:ok, order}
 
-      {:ok, %{confirmed_order: order}} ->
+      {:ok, %{order: order}} ->
         send_confirmation_email(order, helpers)
         {:ok, order}
 
@@ -106,11 +139,16 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
+  defp stripe_options(%{gallery: %{organization: %{stripe_account_id: stripe_account_id}}}),
+    do: [connect_account: stripe_account_id]
+
   defp check_paid(_, %{order: order}) do
+    photographer_paid = Picsello.Orders.photographer_paid?(order)
+
     if Picsello.Orders.client_paid?(order) do
-      {:error, true}
+      {:error, %{clint: true, photographer: photographer_paid}}
     else
-      {:ok, false}
+      {:ok, %{client: false, photographer: photographer_paid}}
     end
   end
 
@@ -150,34 +188,19 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp confirm_order_changeset(%{
-         order:
-           %Order{
-             gallery: gallery,
-             products: [_ | _],
-             whcc_order: %{confirmation_id: confirmation_id}
-           } = order
+  defp confirm_order(%Order{
+         gallery_id: gallery_id,
+         whcc_order: %{confirmation_id: confirmation_id}
        }) do
-    {:ok, confirmation_result} =
-      gallery |> Galleries.account_id() |> WHCC.confirm_order(confirmation_id)
-
-    Order.confirmation_changeset(order, confirmation_result)
+    gallery_id |> Galleries.account_id() |> WHCC.confirm_order(confirmation_id)
   end
 
-  defp confirm_order_changeset(%{
-         order:
-           %Order{
-             products: [],
-             digitals: digitals,
-             whcc_order: nil,
-             bundle_price: bundle_price
-           } = order
-       })
-       when digitals != [] or not is_nil(bundle_price),
-       do: Order.confirmation_changeset(order)
+  defp capture(%{intent: intent, stripe_options: stripe_options}) do
+    capture(intent, stripe_options)
+  end
 
-  defp capture(_repo, %{intent: intent, stripe_options: stripe_options}) do
-    case Picsello.Intents.capture(intent, stripe_options) do
+  defp capture(intent, options) do
+    case Picsello.Intents.capture(intent, options) do
       {:ok, %{status: :succeeded} = intent} ->
         {:ok, intent}
 
@@ -195,7 +218,7 @@ defmodule Picsello.Orders.Confirmations do
     |> repo.get_by(stripe_id: stripe_id)
     |> case do
       nil -> {:error, "no invoice"}
-      invoice -> {:ok, invoice}
+      invoice -> {:ok, repo.preload(invoice, order: [:intent, gallery: :organization])}
     end
   end
 

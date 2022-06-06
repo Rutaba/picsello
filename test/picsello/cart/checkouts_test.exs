@@ -39,9 +39,16 @@ defmodule Picsello.Cart.CheckoutsTest do
     :ok
   end
 
+  def stub_create_order(_),
+    do: stub_create_order(%{whcc_order: build(:whcc_order_created, total: ~M[1000]USD)})
+
   def stub_create_session(_) do
-    Mox.stub(MockPayments, :create_session, fn _, _ ->
-      {:ok, build(:stripe_session)}
+    Mox.stub(MockPayments, :create_session, fn params, _ ->
+      {:ok,
+       build(
+         :stripe_session,
+         payment_intent: build(:stripe_payment_intent, Map.get(params, :payment_intent_data, %{}))
+       )}
     end)
 
     :ok
@@ -75,10 +82,12 @@ defmodule Picsello.Cart.CheckoutsTest do
   end
 
   def creates_a_session_and_saves_the_intent(%{order: order}) do
-    Mox.expect(MockPayments, :create_session, fn _params, _opts ->
+    Mox.expect(MockPayments, :create_session, fn %{payment_intent_data: payment_intent_data},
+                                                 _opts ->
       {:ok,
        build(:stripe_session,
-         payment_intent: build(:stripe_payment_intent, id: "intent-stripe-id")
+         payment_intent:
+           build(:stripe_payment_intent, Map.put(payment_intent_data, :id, "intent-stripe-id"))
        )}
     end)
 
@@ -95,15 +104,6 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     assert [%{whcc_order: %Picsello.WHCC.Order.Created{entry_id: "whcc-entry-id"}}] =
              Repo.all(Order)
-  end
-
-  def creates_invoice(%{order: order}) do
-    Mox.expect(MockPayments, :create_invoice, fn _params, _opts ->
-      {:ok, build(:stripe_invoice, id: "invoice-stripe-id")}
-    end)
-
-    assert {:ok, _} = check_out(order)
-    assert [%Invoice{stripe_id: "invoice-stripe-id"}] = Repo.all(Invoice)
   end
 
   describe "check_out - client owes, whcc outstanding" do
@@ -129,7 +129,14 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     test("creates whcc order", context, do: creates_whcc_order(context))
 
-    test("creates invoice", context, do: creates_invoice(context))
+    test("creates invoice", %{order: order}) do
+      Mox.expect(MockPayments, :create_invoice, fn _params, _opts ->
+        {:ok, build(:stripe_invoice, id: "invoice-stripe-id")}
+      end)
+
+      assert {:ok, _} = check_out(order)
+      assert [%Invoice{stripe_id: "invoice-stripe-id"}] = Repo.all(Invoice)
+    end
   end
 
   describe "check_out - client owes, no products" do
@@ -198,9 +205,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     test("creates whcc order", context, do: creates_whcc_order(context))
 
-    test("creates invoice", context, do: creates_invoice(context))
-
-    test "finalizes invoice", %{order: order} do
+    test "creates finalized invoice", %{order: order} do
       Mox.expect(MockPayments, :finalize_invoice, fn _, _, _ ->
         {:ok, build(:stripe_invoice, status: "open")}
       end)
@@ -228,8 +233,88 @@ defmodule Picsello.Cart.CheckoutsTest do
     end
   end
 
+  describe "stripe session params" do
+    setup [:stub_create_order, :stub_create_invoice]
+
+    test "returns correct line items", %{gallery: gallery} do
+      Mox.expect(Picsello.PhotoStorageMock, :path_to_url, fn "digital.jpg" ->
+        "https://example.com/digital.jpg"
+      end)
+
+      test_pid = self()
+
+      Mox.expect(Picsello.MockPayments, :create_session, fn params, _opts ->
+        send(test_pid, {:create_session, params})
+
+        {:ok,
+         build(:stripe_session,
+           payment_intent: build(:stripe_payment_intent, application_fee_amount: ~M[10]USD)
+         )}
+      end)
+
+      whcc_product = insert(:product)
+
+      cart_product = build(:cart_product, whcc_product: whcc_product)
+
+      order =
+        for product <-
+              [
+                cart_product,
+                build(:digital,
+                  price: ~M[500]USD,
+                  photo:
+                    insert(:photo, gallery: gallery, preview_url: "digital.jpg")
+                    |> Map.put(:watermarked, false)
+                )
+              ],
+            reduce: nil do
+          _ ->
+            Picsello.Cart.place_product(product, gallery.id)
+        end
+
+      check_out(order)
+
+      quantity = cart_product.selections["quantity"]
+
+      assert_receive({:create_session, checkout_params})
+
+      assert [
+               %{
+                 price_data: %{
+                   currency: :USD,
+                   product_data: %{
+                     images: [cart_product.preview_url],
+                     tax_code: "txcd_99999999",
+                     name: "20×30 #{whcc_product.whcc_name} (Qty #{quantity})"
+                   },
+                   unit_amount:
+                     cart_product
+                     |> Cart.Product.update_price(shipping_base_charge: true)
+                     |> Cart.Product.charged_price()
+                     |> Map.get(:amount),
+                   tax_behavior: "exclusive"
+                 },
+                 quantity: quantity
+               },
+               %{
+                 price_data: %{
+                   currency: :USD,
+                   product_data: %{
+                     images: ["https://example.com/digital.jpg"],
+                     name: "Digital image",
+                     tax_code: "txcd_10501000"
+                   },
+                   unit_amount: 500,
+                   tax_behavior: "exclusive"
+                 },
+                 quantity: 1
+               }
+             ] == checkout_params.line_items
+    end
+  end
+
   describe "create_whcc_order" do
-    setup do
+    setup %{gallery: gallery, order: order} do
       cart_products =
         for {product, index} <-
               Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
@@ -239,18 +324,20 @@ defmodule Picsello.Cart.CheckoutsTest do
           )
         end
 
-      gallery = insert(:gallery)
-      order = insert(:order, products: cart_products, gallery: gallery)
+      order =
+        for product <- cart_products, reduce: order do
+          _order -> Cart.place_product(product, gallery)
+        end
 
       [
         cart_products: cart_products,
-        order:
-          order
-          |> Repo.preload([:package, :digitals, products: :whcc_product], force: true),
+        order: order,
         account_id: Galleries.account_id(gallery),
         order_number: Order.number(order)
       ]
     end
+
+    setup [:stub_create_session]
 
     test "exports editors, providing shipping information", %{
       order: order,
@@ -268,10 +355,10 @@ defmodule Picsello.Cart.CheckoutsTest do
         %Export{}
       end)
       |> Mox.expect(:create_order, fn ^account_id, _export ->
-        build(:whcc_order_created)
+        {:ok, build(:whcc_order_created)}
       end)
 
-      Checkouts.create_whcc_order(Picsello.Repo, %{product_order: order})
+      check_out(order)
     end
   end
 end

@@ -58,6 +58,7 @@ defmodule Picsello.WHCC.Order.Created do
   @primary_key {:entry_id, :string, autogenerate: false}
   embedded_schema do
     field :confirmation_id, :string
+    field :confirmed_at, :utc_datetime
     embeds_many :orders, Order, on_replace: :delete
   end
 
@@ -93,10 +94,14 @@ defmodule Picsello.WHCC.Order.Created do
     |> cast_embed(:orders)
   end
 
-  def changeset(created, payload) do
+  def changeset(created, payload) when is_struct(payload) do
     created
     |> cast(Map.from_struct(payload), [:entry_id, :confirmation_id])
     |> cast_embed(:orders)
+  end
+
+  def changeset(created, attrs) do
+    cast(created, attrs, [:confirmed_at])
   end
 
   def total(%__MODULE__{orders: orders}),

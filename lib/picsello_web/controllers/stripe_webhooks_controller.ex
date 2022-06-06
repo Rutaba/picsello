@@ -36,6 +36,15 @@ defmodule PicselloWeb.StripeWebhooksController do
     :ok
   end
 
+  def handle_webhook(:app, %{type: type, data: %{object: invoice}})
+      when type in [
+             "invoice.payment_succeeded",
+             "invoice.payment_failed"
+           ] do
+    {:ok, _} = Orders.handle_invoice(invoice)
+    :ok
+  end
+
   defp success_response(conn) do
     conn
     |> put_resp_content_type("text/plain")
