@@ -299,14 +299,8 @@ defmodule Picsello.Cart do
     |> set_order_number()
   end
 
-  defp place_product_in_order(%Order{} = order, %CartProduct{whcc_product: nil} = product, opts),
-    do: place_product_in_order(order, Repo.preload(product, :whcc_product), opts)
-
-  defp place_product_in_order(%Order{} = order, product, opts) do
-    order
-    |> Order.update_changeset(product, %{}, opts)
-    |> Repo.update!()
-  end
+  defp place_product_in_order(order, product, opts),
+    do: order |> Order.update_changeset(product, %{}, opts) |> Repo.update!()
 
   def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
   def price_display(%Digital{price: price}), do: price

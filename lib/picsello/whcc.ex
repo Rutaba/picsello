@@ -217,13 +217,13 @@ defmodule Picsello.WHCC do
     |> Map.merge(
       details
       |> Map.take([:preview_url, :editor_id, :selections])
-      |> Map.put(:whcc_product_id, whcc_product_id)
     )
     |> Map.merge(
       category
       |> Map.from_struct()
       |> Map.take([:shipping_upcharge, :shipping_base_charge])
     )
+    |> Map.merge(%{whcc_product: product, whcc_product_id: whcc_product_id})
   end
 
   defp get_product(%Editor.Details{product_id: product_id}) do
