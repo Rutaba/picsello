@@ -26,7 +26,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> assert_text("Deluxe Template")
-    |> assert_text("Unlimited Complimentary Downloads")
+    |> assert_text("All digital images included")
   end
 
   feature "view list with download price", %{session: session, user: user} do
@@ -43,7 +43,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> assert_text("Super Deluxe Template")
-    |> assert_has(definition("Complimentary Downloads", text: "5"))
+    |> assert_has(definition("Digital images included", text: "5"))
     |> assert_text("$0.20/each")
   end
 
