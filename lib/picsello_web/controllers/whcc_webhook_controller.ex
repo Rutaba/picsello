@@ -1,7 +1,7 @@
 defmodule PicselloWeb.WhccWebhookController do
   use PicselloWeb, :controller
   require Logger
-  alias Picsello.WHCC
+  alias Picsello.{WHCC, Orders}
 
   def webhook(%Plug.Conn{} = conn, %{"verifier" => hash}) do
     WHCC.WebhookKeeper.finish_verification(hash)
@@ -10,7 +10,7 @@ defmodule PicselloWeb.WhccWebhookController do
 
   def webhook(%Plug.Conn{} = conn, params) do
     with {:ok, payload} <- WHCC.Webhooks.parse_payload(params),
-         {:ok, _order} <- Picsello.Cart.update_whcc_order(payload) do
+         {:ok, _order} <- Orders.update_whcc_order(payload) do
       case payload do
         %{status: "Rejected", errors: errors, entry_id: order_number} ->
           Logger.error("[whcc] Error processing order number #{order_number}: #{inspect(errors)}")

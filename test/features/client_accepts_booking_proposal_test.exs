@@ -90,9 +90,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         )
 
         {:ok,
-         PicselloWeb.Endpoint.struct_url()
-         |> Map.put(:fragment, "stripe-checkout")
-         |> URI.to_string()}
+         %{
+           url:
+             PicselloWeb.Endpoint.struct_url()
+             |> Map.put(:fragment, "stripe-checkout")
+             |> URI.to_string()
+         }}
       end)
 
       proposal = BookingProposal.last_for_job(lead.id)

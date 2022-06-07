@@ -69,9 +69,6 @@
       </div>
     </div>
   </div>
-  <%= if @digital_credit > 0 do %>
-    <div {testid("download-credit")} class="absolute bottom-0 left-0 right-0 flex items-center h-20 pl-16 bg-white shadow-top">
-      <p><span class="font-bold">Download Credits available: </span><%= @digital_credit %></p>
-    </div>
-  <% end %>
+  <.credits_footer credits={@credits}/>
 </div>
+

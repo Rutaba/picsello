@@ -3,16 +3,15 @@ defmodule Picsello.Cart do
   Context for cart and order related functions
   """
 
-  import Ecto.Query
+  import Ecto.Query, only: [from: 2, preload: 2]
 
   alias Picsello.{
     Cart.DeliveryInfo,
     Cart.Digital,
     Cart.Order,
-    Cart.OrderNumber,
     Galleries,
     Galleries.Gallery,
-    Galleries.Photo,
+    Orders,
     Repo,
     WHCC
   }
@@ -24,57 +23,10 @@ defmodule Picsello.Cart do
   end
 
   @doc """
-  Creates order on WHCC side
-  """
-  def create_whcc_order(
-        %Order{
-          products: products,
-          delivery_info: delivery_info,
-          gallery_id: gallery_id
-        } = order
-      ) do
-    editors =
-      for product <- products do
-        WHCC.Editor.Export.Editor.new(product.editor_id,
-          order_attributes: Picsello.WHCC.Shipping.to_attributes(product)
-        )
-      end
-
-    account_id = Galleries.account_id(gallery_id)
-
-    export =
-      WHCC.editors_export(account_id, editors,
-        entry_id: order |> Order.number() |> to_string(),
-        address: delivery_info
-      )
-
-    order
-    |> Order.whcc_order_changeset(WHCC.create_order(account_id, export))
-    |> Repo.update!()
-  end
-
-  @doc "stores processing info in order it finds"
-  def update_whcc_order(%{entry_id: entry_id} = payload) do
-    case from(order in Order,
-           where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id),
-           preload: [products: :whcc_product]
-         )
-         |> Repo.one() do
-      nil ->
-        {:error, "order not found"}
-
-      order ->
-        order
-        |> Order.whcc_order_changeset(payload)
-        |> Repo.update()
-    end
-  end
-
-  @doc """
   Puts the product, digital, or bundle in the cart.
   """
-  def place_product(product, gallery_id) do
-    opts = [digital_credit: digital_credit(%{id: gallery_id})]
+  def place_product(product, %Gallery{id: gallery_id} = gallery) do
+    opts = [credits: credit_remaining(gallery)]
 
     case get_unconfirmed_order(gallery_id, preload: [:products, :digitals]) do
       {:ok, order} -> place_product_in_order(order, product, opts)
@@ -82,9 +34,12 @@ defmodule Picsello.Cart do
     end
   end
 
+  def place_product(product, gallery_id) when is_integer(gallery_id),
+    do: place_product(product, %Gallery{id: gallery_id})
+
   def bundle_status(gallery) do
     cond do
-      bundle_purchased?(gallery) -> :purchased
+      Orders.bundle_purchased?(gallery) -> :purchased
       contains_bundle?(gallery) -> :in_cart
       true -> :available
     end
@@ -92,7 +47,7 @@ defmodule Picsello.Cart do
 
   def digital_status(gallery, photo) do
     cond do
-      bundle_purchased?(gallery) -> :purchased
+      Orders.bundle_purchased?(gallery) -> :purchased
       digital_purchased?(gallery, photo) -> :purchased
       Galleries.do_not_charge_for_download?(gallery) -> :purchased
       contains_bundle?(gallery) -> :in_cart
@@ -101,24 +56,26 @@ defmodule Picsello.Cart do
     end
   end
 
-  def digital_credit(%{id: gallery_id}) do
-    download_count =
-      from(gallery in Gallery,
-        join: job in assoc(gallery, :job),
-        join: package in assoc(job, :package),
-        where: gallery.id == ^gallery_id,
-        select: package.download_count
-      )
-      |> Repo.one()
-
-    digital_count =
-      from(order in Order,
-        join: digital in assoc(order, :digitals),
-        where: order.gallery_id == ^gallery_id and digital.is_credit
-      )
-      |> Repo.aggregate(:count)
-
-    download_count - digital_count
+  def credit_remaining(%Gallery{id: gallery_id}) do
+    from(gallery in Gallery,
+      join: package in assoc(gallery, :package),
+      left_join: orders in assoc(gallery, :orders),
+      left_join: digitals in assoc(orders, :digitals),
+      left_join: products in assoc(orders, :products),
+      where: gallery.id == ^gallery_id,
+      select: %{
+        digital:
+          package.download_count -
+            fragment("count(?) filter (where ?)", digitals.id, digitals.is_credit),
+        print:
+          type(
+            coalesce(package.print_credits, 0) - coalesce(sum(products.print_credit_discount), 0),
+            Money.Ecto.Amount.Type
+          )
+      },
+      group_by: [package.download_count, package.print_credits]
+    )
+    |> Repo.one()
   end
 
   defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}) when is_integer(photo_id),
@@ -153,15 +110,6 @@ defmodule Picsello.Cart do
       where:
         order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and
           digital.photo_id == ^photo_id
-    )
-    |> Repo.exists?()
-  end
-
-  defp bundle_purchased?(%{id: gallery_id}) do
-    from(order in Order,
-      where:
-        order.gallery_id == ^gallery_id and not is_nil(order.placed_at) and
-          not is_nil(order.bundle_price)
     )
     |> Repo.exists?()
   end
@@ -225,115 +173,13 @@ defmodule Picsello.Cart do
 
   def preload_products(order), do: Repo.preload(order, products: :whcc_product)
 
-  def get_placed_gallery_order!(gallery, order_number) do
-    gallery
-    |> placed_order_query(order_number)
-    |> preload_digitals()
-    |> Repo.one!()
-  end
-
-  defp preload_digitals(order_query) do
+  def preload_digitals(order_query) do
     photo_query = Picsello.Photos.watermarked_query()
 
     from(order in order_query,
       left_join: digital in assoc(order, :digitals),
       preload: [digitals: {digital, photo: ^photo_query}]
     )
-  end
-
-  @spec get_purchased_photos!(String.t(), %{client_link_hash: String.t()}) ::
-          %{organization: %Picsello.Organization{}, photos: [%Photo{}]}
-  def get_purchased_photos!(order_number, %{client_link_hash: gallery_hash} = gallery) do
-    order = gallery |> placed_order_query(order_number) |> Repo.one!()
-
-    %{
-      organization: get_organization!(gallery_hash),
-      photos: get_order_photos!(order)
-    }
-  end
-
-  def get_purchased_photo!(gallery, photo_id) do
-    if can_download_all?(gallery) do
-      from(photo in Photo, where: photo.gallery_id == ^gallery.id and photo.id == ^photo_id)
-      |> Repo.one!()
-    else
-      from(digital in Digital,
-        join: order in assoc(digital, :order),
-        join: photo in assoc(digital, :photo),
-        where:
-          order.gallery_id == ^gallery.id and digital.photo_id == ^photo_id and
-            not is_nil(order.placed_at),
-        select: photo
-      )
-      |> Repo.one!()
-    end
-  end
-
-  def get_all_photos!(%{client_link_hash: gallery_hash} = gallery) do
-    if can_download_all?(gallery) do
-      %{
-        organization: get_organization!(gallery_hash),
-        photos: from(photo in Photo, where: photo.gallery_id == ^gallery.id) |> some!()
-      }
-    else
-      raise Ecto.NoResultsError, queryable: Gallery
-    end
-  end
-
-  defp get_organization!(gallery_hash) do
-    from(gallery in Gallery,
-      join: org in assoc(gallery, :organization),
-      where: gallery.client_link_hash == ^gallery_hash,
-      select: org
-    )
-    |> Repo.one!()
-  end
-
-  defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
-    from(photo in Photo, where: photo.gallery_id == ^order.gallery_id)
-    |> some!()
-  end
-
-  defp get_order_photos!(%Order{id: order_id}) do
-    from(order in Order,
-      join: digital in assoc(order, :digitals),
-      join: photo in assoc(digital, :photo),
-      where: order.id == ^order_id,
-      select: photo
-    )
-    |> some!()
-  end
-
-  defp some!(query),
-    do:
-      query
-      |> Repo.all()
-      |> (case do
-            [] -> raise Ecto.NoResultsError, queryable: query
-            some -> some
-          end)
-
-  defp placed_order_query(%{client_link_hash: gallery_hash}, order_number) do
-    order_id = OrderNumber.from_number(order_number)
-
-    from(order in Order,
-      as: :order,
-      join: gallery in assoc(order, :gallery),
-      as: :gallery,
-      where:
-        gallery.client_link_hash == ^gallery_hash and not is_nil(order.placed_at) and
-          order.id == ^order_id
-    )
-  end
-
-  def get_orders(gallery_id) do
-    from(order in Order,
-      where: order.gallery_id == ^gallery_id and not is_nil(order.placed_at),
-      order_by: [desc: order.placed_at]
-    )
-    |> preload_digitals()
-    |> preload(products: :whcc_product)
-    |> Repo.all()
   end
 
   def order_with_editor(editor_id) do
@@ -366,19 +212,28 @@ defmodule Picsello.Cart do
   def store_order_delivery_info(order, delivery_info_change) do
     order
     |> Order.store_delivery_info(delivery_info_change)
-    |> update_order_preserving_lines!()
+    |> update_order_preserving_lines()
   end
 
-  def set_order_number(order) do
+  defp set_order_number(order) do
+    {:ok, order} =
+      order
+      |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
+      |> update_order_preserving_lines()
+
     order
-    |> Ecto.Changeset.change(number: order.id |> Picsello.Cart.OrderNumber.to_number())
-    |> update_order_preserving_lines!()
   end
 
-  defp update_order_preserving_lines!(%{data: order} = changeset) do
+  defp update_order_preserving_lines(%{data: original_order} = changeset) do
     changeset
-    |> Repo.update!()
-    |> then(&Map.merge(&1, Map.take(order, [:products, :digitals])))
+    |> Repo.update()
+    |> case do
+      {:ok, updated_order} ->
+        {:ok, Map.merge(updated_order, Map.take(original_order, [:products, :digitals]))}
+
+      err ->
+        err
+    end
   end
 
   def item_count(%{products: products, bundle_price: bundle_price} = order),
@@ -392,76 +247,6 @@ defmodule Picsello.Cart do
       ]
       |> Enum.map(&Enum.count/1)
       |> Enum.sum()
-
-  def checkout_params(%Order{digitals: digitals, products: products} = order) do
-    product_line_items =
-      for line_item <- products do
-        price = CartProduct.charged_price(line_item)
-
-        %{
-          price_data: %{
-            currency: price.currency,
-            unit_amount: price.amount,
-            product_data: %{
-              name: "#{product_name(line_item)} (Qty #{product_quantity(line_item)})",
-              images: [item_image_url(line_item)],
-              tax_code: Picsello.Payments.tax_code(:product)
-            },
-            tax_behavior: "exclusive"
-          },
-          quantity: 1
-        }
-      end
-
-    digital_line_items =
-      Enum.map(digitals, fn digital ->
-        price = Digital.charged_price(digital)
-
-        %{
-          price_data: %{
-            currency: price.currency,
-            unit_amount: price.amount,
-            product_data: %{
-              name: "Digital image",
-              images: [item_image_url(digital)],
-              tax_code: Picsello.Payments.tax_code(:digital)
-            },
-            tax_behavior: "exclusive"
-          },
-          quantity: 1
-        }
-      end)
-
-    bundle_line_items =
-      if order.bundle_price do
-        gallery = order |> Repo.preload(:gallery) |> Map.get(:gallery)
-
-        [
-          %{
-            price_data: %{
-              currency: order.bundle_price.currency,
-              unit_amount: order.bundle_price.amount,
-              product_data: %{
-                name: "Bundle - all digital downloads",
-                images: [item_image_url({:bundle, gallery})],
-                tax_code: Picsello.Payments.tax_code(:digital)
-              },
-              tax_behavior: "exclusive"
-            },
-            quantity: 1
-          }
-        ]
-      else
-        []
-      end
-
-    %{
-      line_items: product_line_items ++ digital_line_items ++ bundle_line_items,
-      customer_email: order.delivery_info.email,
-      client_reference_id: "order_number_#{Order.number(order)}",
-      payment_intent_data: %{capture_method: :manual}
-    }
-  end
 
   def product_name(
         %CartProduct{
@@ -487,7 +272,8 @@ defmodule Picsello.Cart do
 
   def item_image_url(%CartProduct{preview_url: url}), do: url
 
-  def item_image_url(%Digital{photo: photo}), do: Picsello.Photos.preview_url(photo)
+  def item_image_url(%Digital{photo: photo}),
+    do: Picsello.Photos.preview_url(photo)
 
   def item_image_url({:bundle, %Order{} = order}) do
     gallery = order |> Repo.preload(:gallery) |> Map.get(:gallery)
@@ -504,11 +290,6 @@ defmodule Picsello.Cart do
     item_image_url(%Digital{photo: photo})
   end
 
-  defdelegate confirm_order(session, helpers), to: __MODULE__.Confirmations
-
-  defdelegate confirm_order(order_number, stripe_session_id, helpers),
-    to: __MODULE__.Confirmations
-
   defp create_order_with_product(product, attrs, opts) do
     product
     |> Order.create_changeset(attrs, opts)
@@ -516,15 +297,14 @@ defmodule Picsello.Cart do
     |> set_order_number()
   end
 
+  defp place_product_in_order(%Order{} = order, %CartProduct{whcc_product: nil} = product, opts),
+    do: place_product_in_order(order, Repo.preload(product, :whcc_product), opts)
+
   defp place_product_in_order(%Order{} = order, product, opts) do
     order
     |> Order.update_changeset(product, %{}, opts)
     |> Repo.update!()
   end
-
-  defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
-  defdelegate total_cost(order), to: Order
-  defdelegate lines_by_product(order), to: Order
 
   def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
   def price_display(%Digital{price: price}), do: price
@@ -532,10 +312,24 @@ defmodule Picsello.Cart do
   def price_display({:bundle, %Order{bundle_price: price}}), do: price
   def price_display(product), do: Money.subtract(product.price, product.volume_discount)
 
-  def has_download?(%Order{bundle_price: bundle_price, digitals: digitals}),
-    do: bundle_price != nil || digitals != []
+  def checkout(%{id: order_id} = order, opts \\ []) do
+    Picsello.Orders.subscribe(order)
 
-  def can_download_all?(%Gallery{} = gallery) do
-    Galleries.do_not_charge_for_download?(gallery) || bundle_purchased?(gallery)
+    opts
+    |> Enum.into(%{order_id: order_id})
+    |> Picsello.Workers.Checkout.new()
+    |> Oban.insert()
+    |> case do
+      {:ok, _} -> :ok
+      err -> err
+    end
   end
+
+  defdelegate confirm_order(order_number, stripe_session_id, helpers),
+    to: __MODULE__.Confirmations
+
+  defdelegate confirm_order(session, helpers), to: __MODULE__.Confirmations
+  defdelegate lines_by_product(order), to: Order
+  defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
+  defdelegate total_cost(order), to: Order
 end

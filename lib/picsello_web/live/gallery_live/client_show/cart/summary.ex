@@ -13,6 +13,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     |> then(fn %{assigns: %{id: id, order: order}} = socket ->
       socket
       |> assign_new(:class, fn -> id end)
+      |> assign_new(:inner_block, fn -> [] end)
       |> assign(details(order))
     end)
     |> ok()
@@ -33,7 +34,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         <hr class="mb-1 border-base-200">
       </button>
 
-      <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6">
+      <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
         <dl class="text-lg contents">
           <%= for {label, value} <- @charges do %>
             <dt class="hidden toggle lg:block"><%= label %></dt>
@@ -111,7 +112,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp discounts(order),
     do:
       Enum.flat_map(
-        [&product_discount_lines/1, &digital_discount_lines/1],
+        [&product_discount_lines/1, &print_credit_lines/1, &digital_discount_lines/1],
         & &1.(order)
       )
 
@@ -142,11 +143,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp product_discount_lines(%{products: products}) do
     for %{volume_discount: discount} <- products, reduce: ~M[0]USD do
-      acc -> Money.add(acc, discount)
+      acc -> Money.subtract(acc, discount)
     end
     |> case do
       ~M[0]USD -> []
-      sum -> [{"Volume discount", Money.neg(sum)}]
+      discount -> [{"Volume discount", discount}]
     end
   end
 
@@ -158,8 +159,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       credited ->
         [
           {"Digital download credit (#{length(credited)})",
-           credited |> Enum.reduce(~M[0]USD, &Money.add(&2, &1.price)) |> Money.neg()}
+           credited |> Enum.reduce(~M[0]USD, &Money.subtract(&2, &1.price))}
         ]
+    end
+  end
+
+  defp print_credit_lines(%{products: products}) do
+    products
+    |> Enum.reduce(~M[0]USD, &Money.add(&2, &1.print_credit_discount))
+    |> case do
+      ~M[0]USD -> []
+      credit -> [{"Print credits used", Money.neg(credit)}]
     end
   end
 end

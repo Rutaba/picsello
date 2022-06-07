@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   use Phoenix.Component
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.Gettext, only: [ngettext: 3]
+  import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
   alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent, GalleryMessageComponent}
@@ -273,7 +273,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def prepare_gallery(%{id: gallery_id} = gallery) do
     photos = Galleries.get_gallery_photos(gallery_id, limit: 1)
 
-    if total(photos) == 1 do
+    if length(photos) == 1 do
       [photo] = photos
       maybe_set_cover_photo(gallery, photo)
       maybe_set_product_previews(gallery, photo)
@@ -313,21 +313,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
         end
       end)
 
-    case total(previews) > 0 do
-      true ->
-        Enum.each(previews, fn %{category_id: category_id} = product ->
-          product
-          |> Map.drop([:category, :preview_photo])
-          |> GalleryProducts.upsert_gallery_product(%{
-            preview_photo_id: photo.id,
-            category_id: category_id
-          })
-        end)
+    if length(previews) > 0 do
+      Enum.each(previews, fn %{category_id: category_id} = product ->
+        product
+        |> Map.drop([:category, :preview_photo])
+        |> GalleryProducts.upsert_gallery_product(%{
+          preview_photo_id: photo.id,
+          category_id: category_id
+        })
+      end)
 
-        {:ok, photo}
-
-      _ ->
-        {:ok, :already_set}
+      {:ok, photo}
+    else
+      {:ok, :already_set}
     end
   rescue
     _ -> :error
@@ -373,9 +371,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
         socket |> assign(cart_count: 0, order: nil)
     end
   end
-
-  def total(list) when is_list(list), do: list |> length
-  def total(_), do: nil
 
   def actions(assigns) do
     ~H"""
@@ -493,39 +488,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     """
   end
 
-  def summary_counts(order) do
-    [
-      products_summary(order),
-      digitals_summary(Enum.filter(order.digitals, &Money.positive?(&1.price))),
-      digital_credits_summary(Enum.filter(order.digitals, &Money.zero?(&1.price))),
-      bundle_summary(order.bundle_price)
-    ]
-  end
-
-  defp products_summary(%{products: []}), do: nil
-
-  defp products_summary(order),
-    do: {"Products (#{Enum.count(order.products)})", Picsello.Cart.Order.product_total(order)}
-
-  defp digitals_summary([] = _digitals), do: nil
-
-  defp digitals_summary(digitals),
-    do: {"Digitals (#{Enum.count(digitals)})", sum_prices(digitals)}
-
-  defp digital_credits_summary([] = _credits), do: nil
-
-  defp digital_credits_summary(credits),
-    do:
-      {"Digital credits used (#{Enum.count(credits)})",
-       "#{ngettext("%{count} credit", "%{count} credits", Enum.count(credits))} - #{sum_prices(credits)}"}
-
-  defp bundle_summary(nil = _bundle_price), do: nil
-  defp bundle_summary(bundle_price), do: {"Bundle - all digital downloads", bundle_price}
-
-  defp sum_prices(collection) do
-    Enum.reduce(collection, Money.new(0), &Money.add(&2, &1.price))
-  end
-
   defdelegate price_display(product), to: Picsello.Cart
 
   def product_option(assigns) do
@@ -560,5 +522,46 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <% end %>
     </div>
     """
+  end
+
+  def credits_footer(assigns) do
+    ~H"""
+    <%= unless @credits == [] do %>
+      <div class="fixed bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
+        <div class="container flex items-center justify-between h-full mx-auto px-7">
+          <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
+            <%= for {label, value} <- @credits do %>
+              <dl class="flex items-center sm:mr-5" >
+                <dt class="mr-2 font-extrabold">
+                  <%= label %><span class="hidden sm:inline"> available</span>:
+                </dt>
+
+                <dd class="font-semibold"><%= value %></dd>
+              </dl>
+            <% end %>
+          </div>
+
+          <.icon name="gallery-info" class="fill-current text-base-300 w-7 h-7" />
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def credits(%Galleries.Gallery{} = gallery),
+    do: gallery |> Picsello.Cart.credit_remaining() |> credits()
+
+  def credits(credits) do
+    for {label, key, zero} <- [
+          {"Download Credits", :digital, 0},
+          {"Print Credit", :print, ~M[0]USD}
+        ],
+        reduce: [] do
+      acc ->
+        case Map.get(credits, key) do
+          ^zero -> acc
+          value -> [{label, value} | acc]
+        end
+    end
   end
 end

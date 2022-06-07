@@ -96,6 +96,15 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
   end
 
   describe "orders" do
+    def intent,
+      do: %Stripe.PaymentIntent{
+        amount: 0,
+        amount_capturable: 0,
+        amount_received: 0,
+        id: "order-payment-intent-id",
+        status: "requires_capture"
+      }
+
     setup do
       organization = insert(:organization, stripe_account_id: "connect-account-id")
       _photographer = insert(:user, organization: organization)
@@ -107,8 +116,11 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       order =
         insert(:order,
           gallery: gallery,
-          delivery_info: %{email: "client@example.com"}
+          delivery_info: %{email: "client@example.com"},
+          placed_at: DateTime.utc_now()
         )
+
+      insert(:intent, order: order, stripe_id: intent().id)
 
       stub_event(
         client_reference_id: "order_number_#{Order.number(order)}",
@@ -125,7 +137,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
           Picsello.MockPayments,
           :capture_payment_intent,
           fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-            {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
+            {:ok, %{intent() | status: "succeeded"}}
           end
         )
 
@@ -135,7 +147,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
           Picsello.MockPayments,
           :retrieve_payment_intent,
           fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-            {:ok, %Stripe.PaymentIntent{amount_capturable: amount, id: "order-payment-intent-id"}}
+            {:ok, %{intent() | amount: amount, amount_capturable: amount}}
           end
         )
 
@@ -165,9 +177,11 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       expect_capture()
 
+      refute Picsello.Orders.client_paid?(order)
+
       make_request(conn)
 
-      assert %{placed_at: %DateTime{}} = Repo.reload!(order)
+      assert Picsello.Orders.client_paid?(order)
     end
 
     test "tells WHCC", %{conn: conn, order: order, gallery: gallery} do

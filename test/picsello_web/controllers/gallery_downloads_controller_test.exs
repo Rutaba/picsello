@@ -297,7 +297,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       assert "original name.jpg" == URI.decode(download_filename)
     end
 
-    test "photo is in gallery's order that is not placed", %{
+    test "photo is in gallery's order that is not paid for", %{
       conn: conn,
       original_url: original_url
     } do
@@ -309,7 +309,10 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
           original_url: original_url
         )
 
-      add_photos(insert(:order, gallery: gallery), [photo])
+      order = insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
+      insert(:intent, order: order)
+      refute Picsello.Orders.client_paid?(order)
+      add_photos(order, [photo])
 
       assert_raise(Ecto.NoResultsError, fn ->
         get_photo(conn, gallery, photo.id)

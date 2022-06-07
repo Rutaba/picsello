@@ -161,14 +161,22 @@ defmodule Picsello.WHCC do
   end
 
   def create_order(account_id, %{items: items} = export) do
-    %{orders: orders} = created_order = Adapter.create_order(account_id, export)
+    case Adapter.create_order(account_id, export) do
+      {:ok, %{orders: orders} = created_order} ->
+        orders =
+          for(
+            order <- orders,
+            item <- items,
+            item.order_sequence_number == order.sequence_number
+          ) do
+            %{order | editor_id: item.id}
+          end
 
-    orders =
-      for(order <- orders, item <- items, item.order_sequence_number == order.sequence_number) do
-        %{order | editor_id: item.id}
-      end
+        {:ok, %{created_order | orders: orders}}
 
-    %{created_order | orders: orders}
+      err ->
+        err
+    end
   end
 
   defdelegate get_existing_editor(account_id, editor_id), to: Adapter

@@ -256,155 +256,17 @@ defmodule Picsello.CartTest do
     end
   end
 
-  describe "get_orders" do
-    def order_with_product(gallery, opts) do
-      whcc_id = Keyword.get(opts, :whcc_id)
-      placed_at = Keyword.get(opts, :placed_at, DateTime.utc_now())
-
-      insert(:order,
-        gallery: gallery,
-        placed_at: placed_at,
-        products: build_list(1, :cart_product, whcc_product: build(:product, whcc_id: whcc_id))
-      )
-    end
-
-    test "preloads products" do
-      gallery = insert(:gallery)
-
-      order_with_product(gallery, whcc_id: "123")
-
-      order_with_product(gallery,
-        whcc_id: "abc",
-        placed_at: DateTime.utc_now() |> DateTime.add(-100)
-      )
-
-      assert [
-               %{products: [%{whcc_product: %{whcc_id: "123"}}]},
-               %{products: [%{whcc_product: %{whcc_id: "abc"}}]}
-             ] = Cart.get_orders(gallery.id)
-    end
-  end
-
-  describe "cart product updates" do
-    setup do
-      gallery = insert(:gallery)
-      cart_product = build(:cart_product)
-
-      order = Cart.place_product(cart_product, gallery.id)
-
-      entry_id =
-        order
-        |> Order.number()
-        |> to_string()
-
-      [
-        order:
-          order
-          |> Order.whcc_order_changeset(
-            build(:whcc_order_created, entry_id: entry_id, total: ~M[100]USD)
-          )
-          |> Repo.update!(),
-        entry_id: entry_id
-      ]
-    end
-
-    def processing_status(entry_id, sequence_number),
-      do: %Picsello.WHCC.Webhooks.Status{
-        entry_id: entry_id,
-        event: "Processed",
-        sequence_number: sequence_number,
-        status: "Accepted"
-      }
-
-    def processing_event(entry_id, sequence_number),
-      do: %Picsello.WHCC.Webhooks.Event{
-        entry_id: entry_id,
-        event: "Shipped",
-        sequence_number: sequence_number,
-        shipping_info: [
-          %Picsello.WHCC.Webhooks.ShippingInfo{
-            carrier: "FedEx",
-            ship_date: ~U[2018-12-31 12:18:38Z],
-            tracking_number: "512376671311227",
-            tracking_url: "http://www.fedex.com/Tracking?tracknumbers=512376671311227",
-            weight: 0.35
-          }
-        ]
-      }
-
-    test "find and save processing status", %{order: order} do
-      assert %{
-               whcc_order: %{
-                 entry_id: entry_id,
-                 orders: [%{whcc_processing: nil, sequence_number: sequence_number}]
-               }
-             } = order
-
-      Cart.update_whcc_order(processing_status(entry_id, sequence_number))
-
-      assert %{whcc_order: %{orders: [%{whcc_processing: %{status: "Accepted"}}]}} =
-               Repo.reload!(order)
-    end
-
-    test "updates correct sub-order", %{order: order, entry_id: entry_id} do
-      order =
-        order
-        |> Order.whcc_order_changeset(
-          build(:whcc_order_created,
-            entry_id: entry_id,
-            orders: build_list(2, :whcc_order_created_order)
-          )
-        )
-        |> Repo.update!()
-
-      assert %{
-               whcc_order: %{
-                 entry_id: entry_id,
-                 orders: [%{}, %{whcc_processing: nil, sequence_number: sequence_number}]
-               }
-             } = order
-
-      Cart.update_whcc_order(processing_status(entry_id, sequence_number))
-
-      assert %{
-               whcc_order: %{
-                 orders: [%{whcc_processing: nil}, %{whcc_processing: %{status: "Accepted"}}]
-               }
-             } = Repo.reload!(order)
-    end
-
-    test "works with shipping updates too", %{order: order, entry_id: entry_id} do
-      order =
-        order
-        |> Order.whcc_order_changeset(
-          build(:whcc_order_created,
-            entry_id: entry_id,
-            orders: build_list(2, :whcc_order_created_order)
-          )
-        )
-        |> Repo.update!()
-
-      assert %{
-               whcc_order: %{
-                 entry_id: entry_id,
-                 orders: [%{}, %{whcc_processing: nil, sequence_number: sequence_number}]
-               }
-             } = order
-
-      Cart.update_whcc_order(processing_event(entry_id, sequence_number))
-
-      assert %{
-               whcc_order: %{
-                 orders: [%{whcc_tracking: nil}, %{whcc_tracking: %{event: "Shipped"}}]
-               }
-             } = Repo.reload!(order)
-    end
-  end
-
   describe "checkout_params" do
     test "returns correct line items" do
       Mox.stub(Picsello.PhotoStorageMock, :path_to_url, fn "digital.jpg" ->
         "https://example.com/digital.jpg"
+      end)
+
+      test_pid = self()
+
+      Mox.stub(Picsello.MockPayments, :create_session, fn params, _opts ->
+        send(test_pid, {:create_session, params})
+        {:ok, %{url: "https://example.com"}}
       end)
 
       gallery = insert(:gallery)
@@ -428,29 +290,18 @@ defmodule Picsello.CartTest do
             Picsello.Cart.place_product(product, gallery.id)
         end
 
-      checkout_params =
-        Cart.checkout_params(%{
-          order
-          | delivery_info: %{email: "customer@example.com"},
-            products:
-              Enum.map(
-                order.products,
-                &%{
-                  &1
-                  | whcc_product:
-                      insert(:product,
-                        attribute_categories: [
-                          %{
-                            "_id" => "size",
-                            "attributes" => [%{"id" => "20x30", "name" => "20 by 30"}]
-                          }
-                        ]
-                      )
-                }
-              )
-        })
+      Cart.store_order_delivery_info(
+        order,
+        Cart.delivery_info_change(%{name: "customer", email: "customer@example.com"})
+      )
+
+      Cart.checkout(order, %{"cancel_url" => "", "success_url" => ""})
+
+      Picsello.FeatureCase.FeatureHelpers.run_jobs()
 
       quantity = cart_product.selections["quantity"]
+
+      assert_receive({:create_session, checkout_params})
 
       assert [
                %{
@@ -459,7 +310,7 @@ defmodule Picsello.CartTest do
                    product_data: %{
                      images: [cart_product.preview_url],
                      tax_code: "txcd_99999999",
-                     name: "20 by 30 #{whcc_product.whcc_name} (Qty #{quantity})"
+                     name: "20×30 #{whcc_product.whcc_name} (Qty #{quantity})"
                    },
                    unit_amount:
                      cart_product
@@ -487,50 +338,6 @@ defmodule Picsello.CartTest do
     end
   end
 
-  describe "create_whcc_order" do
-    setup do
-      cart_products =
-        for {product, index} <-
-              Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
-          build(:cart_product,
-            whcc_product: product,
-            inserted_at: DateTime.utc_now() |> DateTime.add(index)
-          )
-        end
-
-      %{gallery_id: gallery_id} = order = insert(:order, products: cart_products)
-
-      [
-        cart_products: cart_products,
-        order: Cart.preload_products(order),
-        account_id: Picsello.Galleries.account_id(gallery_id),
-        order_number: Cart.Order.number(order)
-      ]
-    end
-
-    test "exports editors, providing shipping information", %{
-      order: order,
-      account_id: account_id,
-      order_number: order_number,
-      cart_products: cart_products
-    } do
-      Picsello.MockWHCCClient
-      |> Mox.expect(:editors_export, fn ^account_id, editors, opts ->
-        assert cart_products |> Enum.map(& &1.editor_id) |> MapSet.new() ==
-                 editors |> Enum.map(& &1.id) |> MapSet.new()
-
-        assert to_string(order_number) == Keyword.get(opts, :entry_id)
-
-        %Picsello.WHCC.Editor.Export{}
-      end)
-      |> Mox.expect(:create_order, fn ^account_id, _export ->
-        build(:whcc_order_created)
-      end)
-
-      Cart.create_whcc_order(order)
-    end
-  end
-
   describe "confirm_order" do
     def confirm_order(session) do
       Cart.confirm_order(
@@ -547,7 +354,7 @@ defmodule Picsello.CartTest do
       end)
     end
 
-    test "is successful when order is already confirmed" do
+    test "is successful when order is already paid for" do
       order = insert(:order, placed_at: DateTime.utc_now())
 
       assert {:ok, _} =
@@ -557,7 +364,8 @@ defmodule Picsello.CartTest do
     end
 
     test "cancels payment intent on failure" do
-      order = insert(:order) |> Repo.preload(:digitals)
+      order = insert(:order, placed_at: DateTime.utc_now()) |> Repo.preload(:digitals)
+      insert(:intent, order: order)
 
       Picsello.MockPayments
       |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
@@ -569,6 +377,75 @@ defmodule Picsello.CartTest do
         client_reference_id: "order_number_#{Order.number(order)}",
         payment_intent: "intent-id"
       })
+    end
+  end
+
+  def create_gallery(opts \\ []),
+    do: insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
+
+  describe "print_credit_used" do
+    def create_order(opts \\ []) do
+      {total, opts} = Keyword.pop(opts, :total, ~M[0]USD)
+
+      %{id: gallery_id} = Keyword.get_lazy(opts, :gallery, fn -> create_gallery(opts) end)
+
+      Cart.place_product(
+        build(:cart_product,
+          shipping_base_charge: ~M[0]USD,
+          shipping_upcharge: 0,
+          unit_markup: ~M[0]USD,
+          unit_price: total
+        ),
+        gallery_id
+      )
+    end
+
+    def print_credit_used(%{products: products}),
+      do: Enum.reduce(products, ~M[0]USD, &Money.add(&2, &1.print_credit_discount))
+
+    test "zero when no print credit in package" do
+      assert ~M[0]USD =
+               create_order(print_credits: nil, total: ~M[1000]USD) |> print_credit_used()
+    end
+
+    test "zero when credit is used up" do
+      gallery = create_gallery(print_credits: ~M[500]USD)
+      create_order(gallery: gallery, total: ~M[600]USD)
+      order = create_order(gallery: gallery, total: ~M[1000]USD)
+
+      assert ~M[0]USD = print_credit_used(order)
+    end
+
+    test "order price when more credit than needed" do
+      assert ~M[1000]USD =
+               create_order(print_credits: ~M[1900]USD, total: ~M[1000]USD)
+               |> print_credit_used()
+    end
+
+    test "order price when exactly right credit" do
+      assert ~M[1000]USD =
+               create_order(print_credits: ~M[1000]USD, total: ~M[1000]USD)
+               |> print_credit_used()
+    end
+
+    test "remaining credit when not enough to cover order" do
+      assert ~M[900]USD =
+               create_order(print_credits: ~M[900]USD, total: ~M[1000]USD)
+               |> print_credit_used()
+    end
+  end
+
+  describe "checkout" do
+    test "when no money due from client sends complete" do
+      gallery = create_gallery(download_count: 1)
+
+      order = Cart.place_product(build(:digital), gallery) |> Repo.preload([:products, :digitals])
+      assert ~M[0]USD = Order.total_cost(order)
+      :ok = Cart.checkout(order)
+
+      assert [%{errors: []}] = Picsello.FeatureCase.FeatureHelpers.run_jobs()
+
+      assert_receive({:checkout, :complete, _order})
     end
   end
 end

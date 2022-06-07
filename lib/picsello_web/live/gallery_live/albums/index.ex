@@ -123,7 +123,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
       event: "delete_album",
       title: "Delete album?",
       subtitle:
-        "Are you sure you wish to delete #{album.name}? Any photos within this album will be moved to your #{ngettext("Photos", "Unsorted photos", total(albums))}.",
+        "Are you sure you wish to delete #{album.name}? Any photos within this album will be moved to your #{ngettext("Photos", "Unsorted photos", length(albums))}.",
       payload: %{album_id: id}
     ]
 
@@ -205,7 +205,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
         |> close_modal()
         |> put_flash(
           :success,
-          "#{total(photo_ids)} unsorted #{ngettext("photo", "photos", Enum.count(photo_ids))} deleted successfully"
+          "#{length(photo_ids)} unsorted #{ngettext("photo", "photos", Enum.count(photo_ids))} deleted successfully"
         )
         |> noreply()
 
@@ -250,7 +250,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   def thumbnail(%{album: %{thumbnail_photo: nil}} = assigns) do
     ~H"""
-    <a class="mt-4 albumBlock md:w-full h-72 cursor-pointer" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click={@event} phx-value-album={@album.id}>
+    <a class="mt-4 cursor-pointer albumBlock md:w-full h-72" style={"background-image: url('#{thumbnail_url(@album)}')"} phx-click={@event} phx-value-album={@album.id}>
       <div class="flex flex-row items-end justify-start h-full gap-2">
         <span class="font-sans font-bold text-white text-1xl"><%= @album.name %></span>
       </div>
@@ -260,9 +260,9 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   def thumbnail(assigns) do
     ~H"""
-    <a class="mt-4 relative albumBlock h-72 cursor-pointer p-0 bg-gray-200" phx-click={@event} phx-value-album={@album.id}>
-      <img class="h-72 object-contain m-auto" src={thumbnail_url(@album)} />
-      <span class="font-sans absolute bottom-4 left-4 font-bold text-white text-1xl"><%= @album.name %></span>
+    <a class="relative p-0 mt-4 bg-gray-200 cursor-pointer albumBlock h-72" phx-click={@event} phx-value-album={@album.id}>
+      <img class="object-contain m-auto h-72" src={thumbnail_url(@album)} />
+      <span class="absolute font-sans font-bold text-white bottom-4 left-4 text-1xl"><%= @album.name %></span>
     </a>
     """
   end

@@ -142,12 +142,13 @@ defmodule Picsello.WHCC.Client do
 
   @impl WHCC.Adapter
   def create_order(account_id, %WHCC.Editor.Export{order: order}) do
-    {:ok, %{body: body}} =
-      account_id
-      |> new()
-      |> post("/oas/orders/create", order)
-
-    WHCC.Order.Created.new(body)
+    account_id
+    |> new()
+    |> post("/oas/orders/create", order)
+    |> case do
+      {:ok, %{body: body}} -> {:ok, WHCC.Order.Created.new(body)}
+      err -> err
+    end
   end
 
   @impl WHCC.Adapter

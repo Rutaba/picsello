@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.{Cart, Payments, WHCC, Galleries}
+  alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   import PicselloWeb.GalleryLive.Shared
   import Money.Sigils
@@ -48,18 +48,36 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           }
         } = socket
       ) do
-    socket
-    |> assign(order: Cart.store_order_delivery_info(order, delivery_info_changeset))
-    |> case do
-      %{assigns: %{order: %{products: []}}} = socket ->
-        redirect(socket, external: checkout_link(socket))
+    case Cart.store_order_delivery_info(order, delivery_info_changeset) do
+      {:ok, %{gallery: gallery} = order} ->
+        order
+        |> Cart.checkout(
+          success_url:
+            Enum.join(
+              [
+                Routes.gallery_client_order_url(
+                  socket,
+                  :paid,
+                  gallery.client_link_hash,
+                  Order.number(order)
+                ),
+                "session_id={CHECKOUT_SESSION_ID}"
+              ],
+              "?"
+            ),
+          cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
+        )
+        |> case do
+          :ok -> socket
+          _error -> socket |> put_flash(:error, "something wen't wrong")
+        end
+        |> noreply()
 
-      socket ->
+      {:error, changeset} ->
         socket
-        |> assign(:ordering_task, nil)
-        |> schedule_products_ordering()
+        |> assign(:delivery_info_changeset, changeset)
+        |> noreply()
     end
-    |> noreply()
   end
 
   def handle_event(
@@ -125,59 +143,38 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   @impl true
-  @doc "called when Task.async completes"
-  def handle_info({_ref, order}, %{assigns: %{ordering_task: task}} = socket) do
-    Task.shutdown(task, :brutal_kill)
-
+  @doc "called when checkout completes"
+  def handle_info(
+        {:checkout, :complete, %Order{} = order},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     socket
-    |> assign(order: order, ordering_task: nil)
-    |> redirect(external: checkout_link(socket))
+    |> redirect(
+      to:
+        Routes.gallery_client_order_path(
+          socket,
+          :show,
+          gallery.client_link_hash,
+          Order.number(order)
+        )
+    )
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:checkout, :due, stripe_url}, socket) do
+    socket |> redirect(external: stripe_url) |> noreply()
   end
 
   defp continue_summary(assigns) do
     ~H"""
     <.summary order={@order} id={@id}>
-      <button type="button" disabled={zero_subtotal?(@order)} phx-click="continue" class="mx-5 mt-5 text-lg mb-7 btn-primary">
+      <button type="button" phx-click="continue" class="mx-5 text-lg mb-7 btn-primary">
         Continue
       </button>
-
-      <%= if zero_subtotal?(@order) do %>
-        <em class="block pt-1 text-xs text-center">Minimum amount is $1</em>
-      <% end %>
     </.summary>
     """
   end
-
-  defp checkout_link(%{assigns: %{order: order, gallery: gallery}} = socket) do
-    {:ok, checkout_link} =
-      order
-      |> Cart.checkout_params()
-      |> Enum.into(%{
-        success_url:
-          Enum.join(
-            [
-              Routes.gallery_client_order_url(
-                socket,
-                :paid,
-                gallery.client_link_hash,
-                order.number
-              ),
-              "session_id={CHECKOUT_SESSION_ID}"
-            ],
-            "?"
-          ),
-        cancel_url: Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash)
-      })
-      |> Payments.checkout_link(
-        connect_account: gallery.job.client.organization.stripe_account_id
-      )
-
-    checkout_link
-  end
-
-  defp schedule_products_ordering(%{assigns: %{order: order}} = socket),
-    do: assign(socket, :ordering_task, Task.async(fn -> Cart.create_whcc_order(order) end))
 
   defp only_digitals?(%{products: []} = order), do: digitals?(order)
   defp only_digitals?(%{products: [_ | _]}), do: false
@@ -187,9 +184,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp show_cart?(:product_list), do: true
   defp show_cart?(_), do: false
 
-  defp zero_subtotal?(order),
-    do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
-
   defp item_id(item), do: item.editor_id
 
   defdelegate cart_count(order), to: Cart, as: :item_count
@@ -198,8 +192,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate product_name(product), to: Cart
   defdelegate product_quantity(product), to: Cart
   defdelegate summary(assigns), to: __MODULE__.Summary
-  defdelegate total_cost(order), to: Cart
 
   defp zero_total?(order),
-    do: only_digitals?(order) && order |> total_cost() |> Money.zero?()
+    do: order |> Cart.total_cost() |> Money.zero?()
 end

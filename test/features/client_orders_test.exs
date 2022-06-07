@@ -54,19 +54,38 @@ defmodule Picsello.ClientOrdersTest do
 
   setup :authenticated_gallery_client
 
-  def stub_create_session(mock, %{connect_account: connect_account_id, session: session_id}) do
+  def payment_intent,
+    do: %Stripe.PaymentIntent{
+      status: "requires_payment_method",
+      amount: 0,
+      amount_capturable: 0,
+      amount_received: 0,
+      description: "something",
+      application_fee_amount: 0
+    }
+
+  def stub_create_session(mock, %{
+        connect_account: connect_account_id,
+        session: session_id,
+        payment_intent: payment_intent_id,
+        amount: amount
+      }) do
     test_pid = self()
 
-    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params,
-                                       connect_account: ^connect_account_id ->
+    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params, opts ->
+      assert {:connect_account, connect_account_id} in opts
       success_url = URI.parse(success_url)
       assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
       send(test_pid, {:checkout_link, params})
 
       {:ok,
-       success_url
-       |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
-       |> URI.to_string()}
+       %{
+         url:
+           success_url
+           |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
+           |> URI.to_string(),
+         payment_intent: %{payment_intent() | id: payment_intent_id, amount: amount}
+       }}
     end)
   end
 
@@ -90,15 +109,22 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   def stub_retrieve_payment_intent(mock, %{
-        payment_intent: intent_id,
+        payment_intent: payment_intent_id,
         connect_account: account_id,
         amount: amount
       }) do
     Mox.expect(
       mock,
       :retrieve_payment_intent,
-      fn ^intent_id, connect_account: ^account_id ->
-        {:ok, %Stripe.PaymentIntent{id: intent_id, amount_capturable: amount}}
+      fn ^payment_intent_id, connect_account: ^account_id ->
+        {:ok,
+         %{
+           payment_intent()
+           | id: payment_intent_id,
+             status: "requires_capture",
+             amount_capturable: amount,
+             amount: amount
+         }}
       end
     )
   end
@@ -108,7 +134,7 @@ defmodule Picsello.ClientOrdersTest do
       mock,
       :capture_payment_intent,
       fn ^intent_id, connect_account: ^connect ->
-        {:ok, %Stripe.PaymentIntent{status: "succeeded"}}
+        {:ok, %{payment_intent() | id: intent_id, status: "succeeded"}}
       end
     )
   end
@@ -164,7 +190,7 @@ defmodule Picsello.ClientOrdersTest do
       build(:whcc_editor_export, unit_base_price: ~M[300]USD)
     end)
     |> Mox.stub(:create_order, fn _account_id, _export ->
-      build(:whcc_order_created, total: ~M[69]USD)
+      {:ok, build(:whcc_order_created, total: ~M[69]USD)}
     end)
     |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
       {:ok, :confirmed}
@@ -173,7 +199,12 @@ defmodule Picsello.ClientOrdersTest do
     %{stripe_account_id: connect_account_id} = organization
 
     Picsello.MockPayments
-    |> stub_create_session(%{connect_account: connect_account_id, session: "stripe-session"})
+    |> stub_create_session(%{
+      connect_account: connect_account_id,
+      session: "stripe-session",
+      payment_intent: "payment-intent-id",
+      amount: 1000
+    })
     |> stub_retrieve_session(%{
       connect_account: connect_account_id,
       session: "stripe-session",
@@ -229,6 +260,8 @@ defmodule Picsello.ClientOrdersTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Check out with Stripe"))
 
+    assert [%{errors: []}] = run_jobs()
+
     assert_receive(
       {:checkout_link,
        %{
@@ -258,7 +291,12 @@ defmodule Picsello.ClientOrdersTest do
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
-      |> stub_create_session(%{connect_account: connect_account_id, session: "session-id"})
+      |> stub_create_session(%{
+        connect_account: connect_account_id,
+        session: "session-id",
+        payment_intent: "payment-intent-id",
+        amount: 2500
+      })
       |> stub_retrieve_session(%{
         connect_account: connect_account_id,
         session: "session-id",
@@ -328,6 +366,8 @@ defmodule Picsello.ClientOrdersTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Check out with Stripe"))
 
+      assert [%{errors: []}] = run_jobs()
+
       order_number = Order |> Repo.one!() |> Order.number() |> to_string()
 
       assert_receive(
@@ -384,18 +424,17 @@ defmodule Picsello.ClientOrdersTest do
       Repo.update_all(Package, set: [download_count: 2])
 
       session
-      |> click(css("a", text: "View Gallery"))
+      |> visit(current_url(session))
+      |> click(link("View Gallery"))
       |> click_photo(1)
-      |> assert_has(testid("download-credit", text: "Download Credits available: 2"))
+      |> assert_has(definition("Download Credits", text: "2"))
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "1"))
       |> click_photo(2)
-      |> assert_has(testid("download-credit", text: "Download Credits available: 1"))
+      |> assert_has(definition("Download Credits", text: "1"))
       |> click(button("Add to cart"))
       |> click(link("cart", text: "2"))
       |> assert_has(definition("Total", text: "$0.00"))
-      |> assert_text("Minimum amount is $1")
-      |> assert_disabled(button("Continue"))
       |> click(link("Home"))
       |> click_photo(3)
       |> refute_has(testid("download-credit"))
@@ -430,11 +469,17 @@ defmodule Picsello.ClientOrdersTest do
       assert ~M[5000]USD = package.buy_all
 
       Picsello.MockPayments
-      |> stub_create_session(%{connect_account: connect_account_id, session: "session-id"})
+      |> stub_create_session(%{
+        connect_account: connect_account_id,
+        session: "session-id",
+        payment_intent: "payment-intent-id",
+        amount: 5000
+      })
       |> stub_retrieve_session(%{
         connect_account: connect_account_id,
         session: "session-id",
-        payment_intent: "payment-intent-id"
+        payment_intent: "payment-intent-id",
+        amount: 5000
       })
       |> stub_retrieve_payment_intent(%{
         connect_account: connect_account_id,
@@ -492,6 +537,8 @@ defmodule Picsello.ClientOrdersTest do
       |> fill_in(text_field("Name"), with: "Zach")
       |> wait_for_enabled_submit_button()
       |> click(button("Check out with Stripe"))
+
+      assert [%{errors: []}] = run_jobs()
 
       order_number = Order |> Repo.one!() |> Order.number() |> to_string()
 

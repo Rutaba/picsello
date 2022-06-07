@@ -150,20 +150,6 @@
       </div>
     </div>
 
-    <div class="p-5 my-5 border border-base-225">
-      <%= for {label, subtotal} <- summary_counts(@order) do %>
-        <p class="flex justify-between text-lg">
-          <span><%= label %>:</span><span class="font-semibold text-base-300 md:pr-8"><%= subtotal %></span>
-        </p>
-      <% end %>
-
-      <hr class="my-4">
-
-      <p class="text-xl md:flex md:justify-between md:items-center md:text-2xl text-base-300">
-        <span>Total:</span>
-
-        <span class="font-bold md:pr-8"><%= total_cost(@order) %></span>
-      </p>
-    </div>
+    <div class="py-7"><.summary order={@order} /></div>
   </div>
 </div>

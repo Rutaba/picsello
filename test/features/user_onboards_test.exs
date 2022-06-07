@@ -52,7 +52,7 @@ defmodule Picsello.UserOnboardsTest do
         {:checkout_linked, opts |> Enum.into(params)}
       )
 
-      {:ok, "https://example.com/stripe-checkout"}
+      {:ok, %Stripe.Session{url: "https://example.com/stripe-checkout"}}
     end)
     |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
       {:ok, %Stripe.Session{subscription: "sub_123"}}

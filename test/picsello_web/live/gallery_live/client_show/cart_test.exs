@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
   use PicselloWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
+  import Ecto.Query, only: [from: 2]
 
   setup %{conn: conn} do
     Mox.verify_on_exit!()
@@ -19,18 +20,63 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     ]
   end
 
+  describe "with credit - only digitals" do
+    test "does not go to stripe", %{
+      conn: conn,
+      cart_path: cart_path,
+      gallery: %{id: gallery_id} = gallery
+    } do
+      from(package in Picsello.Package,
+        join: jobs in assoc(package, :jobs),
+        join: g in assoc(jobs, :gallery),
+        where: g.id == ^gallery_id
+      )
+      |> Picsello.Repo.update_all(set: [download_count: 1])
+
+      order = Picsello.Cart.place_product(build(:digital), gallery)
+
+      {:ok, view, _html} = live(conn, cart_path)
+
+      view |> element(".block button", "Continue") |> render_click()
+
+      view
+      |> form("form")
+      |> render_change(%{"delivery_info" => %{"email" => "brian@example.com", "name" => "Brian"}})
+
+      view |> form("form") |> render_submit()
+
+      assert [%{errors: []}] = Picsello.FeatureCase.FeatureHelpers.run_jobs()
+
+      view
+      |> assert_redirect(
+        Routes.gallery_client_order_path(
+          conn,
+          :show,
+          gallery.client_link_hash,
+          Picsello.Cart.Order.number(order)
+        )
+      )
+    end
+  end
+
   describe "with multiple products" do
     setup %{gallery: gallery} do
-      cart_products =
+      order =
         for {product, index} <-
-              Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
-          build(:cart_product,
-            whcc_product: product,
-            inserted_at: DateTime.utc_now() |> DateTime.add(index)
-          )
+              Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]),
+            reduce: nil do
+          _order ->
+            Picsello.Cart.place_product(
+              build(:cart_product,
+                whcc_product: product,
+                inserted_at:
+                  DateTime.utc_now() |> DateTime.add(index) |> DateTime.truncate(:second)
+              ),
+              gallery
+            )
         end
 
-      [order: insert(:order, gallery: gallery, products: cart_products)]
+      [order: order]
     end
 
     test "groups by product", %{conn: conn, cart_path: cart_path} do
@@ -76,11 +122,25 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
         build(:whcc_editor_export)
       end)
       |> Mox.expect(:create_order, fn _account_ie, _export ->
-        build(:whcc_order_created)
+        {:ok, build(:whcc_order_created)}
       end)
 
       Picsello.MockPayments
-      |> Mox.expect(:create_session, fn _params, _opts -> {:ok, %{url: "https://stripe.com"}} end)
+      |> Mox.expect(:create_session, fn _params, _opts ->
+        {:ok,
+         %{
+           url: "https://stripe.com",
+           payment_intent: %Stripe.PaymentIntent{
+             amount: 100,
+             amount_capturable: 0,
+             amount_received: 0,
+             application_fee_amount: 0,
+             description: "i dont know what this will be",
+             id: "payment-intent-id",
+             status: "requires_payment_method"
+           }
+         }}
+      end)
 
       {:ok, view, _html} = live(conn, cart_path)
       view |> element(".block button", "Continue") |> render_click()
@@ -101,6 +161,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
       })
 
       view |> form("form") |> render_submit()
+
+      assert [%{errors: []}] = Picsello.FeatureCase.FeatureHelpers.run_jobs()
 
       assert_redirect(view, "https://stripe.com")
     end

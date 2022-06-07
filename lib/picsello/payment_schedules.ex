@@ -242,7 +242,7 @@ defmodule Picsello.PaymentSchedules do
       metadata: Keyword.get(opts, :metadata, %{})
     }
 
-    Payments.checkout_link(stripe_params, connect_account: organization.stripe_account_id)
+    Payments.create_session(stripe_params, connect_account: organization.stripe_account_id)
   end
 
   defp customer_id(%Client{stripe_customer_id: nil} = client) do

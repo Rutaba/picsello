@@ -3,7 +3,7 @@ defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album}
-  alias Picsello.Job
+  alias Picsello.{Job, Cart.Order}
 
   @status_options [
     values: ~w(draft active expired),
@@ -22,6 +22,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:photos, Photo)
     has_many(:gallery_products, GalleryProduct)
     has_many(:albums, Album)
+    has_many(:orders, Order)
     has_one(:watermark, Watermark)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])

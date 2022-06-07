@@ -96,7 +96,10 @@ defmodule Picsello.Subscriptions do
       }
       |> Map.merge(subscription_data)
 
-    Payments.checkout_link(stripe_params, opts)
+    case Payments.create_session(stripe_params, opts) do
+      {:ok, %{url: url}} -> {:ok, url}
+      err -> err
+    end
   end
 
   def handle_stripe_subscription(%Stripe.Subscription{} = subscription) do

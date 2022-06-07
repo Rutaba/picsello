@@ -1,32 +1,32 @@
 <div class={classes("flex w-full items-center py-2", %{"justify-between" => @cart, "justify-start" => !@cart})}>
   <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
-    <div class="fixed left-0 top-0 w-3/4 bottom-0 z-10 flex flex-col items-start hidden cursor-default toggle-content bg-white py-6 px-10">
+    <div class="fixed top-0 bottom-0 left-0 z-10 flex flex-col items-start hidden w-3/4 px-10 py-6 bg-white cursor-default toggle-content">
       <div class="cursor-pointer text-base-300">
         <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
       </div>
 
       <nav class="flex flex-col pt-1">
         <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
-          <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center text-lg pt-6 font-medium" active_class="bg-blue-planning-100 font-bold">
+          <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center pt-6 text-lg font-medium" active_class="bg-blue-planning-100 font-bold">
             <%= title %>
           </.nav_link>
         <% end %>
       </nav>
     </div>
 
-    <.icon name="hamburger" class="h-4 text-base-300 w-6" />
+    <.icon name="hamburger" class="w-6 h-4 text-base-300" />
   </div>
 
-  <div class="px-6 sm:pl-0 sm:pr-9">
-    <div class="flex justify-center md:justify-start">
-        <.photographer_logo {assigns} />
-     </div>
+  <div class="px-6 py-2 sm:pl-0 sm:pr-9">
+    <div class="flex justify-center md:justify-start md:py-14">
+      <.photographer_logo {assigns} />
+    </div>
   </div>
 
-  <ul class="sm:flex items-center pt-4 hidden">
+  <ul class="items-center hidden pt-4 sm:flex">
     <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
       <li>
-        <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center font-semibold text-lg mr-6 text-base" active_class="bg-blue-planning-100 font-extrabold">
+        <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center mr-6 text-base text-lg font-semibold" active_class="bg-blue-planning-100 font-extrabold">
           <%= title %>
         </.nav_link>
       </li>
@@ -36,7 +36,7 @@
   <%= if @cart do %>
     <div class="relative sm:ml-auto">
       <.cart_wrapper route={@cart_route} count={@cart_count} >
-        <.icon name="shopping-cart" class="h-8 w-8 text-base-300" />
+        <.icon name="shopping-cart" class="w-8 h-8 text-base-300" />
 
         <span class="absolute -top-1 -left-1.5 border-base-300 border-2 bg-base-100 text-base-300 font-bold rounded-full flex items-center justify-center w-5 h-5 pt-0.5 text-[12px]">
           <%= @cart_count %>

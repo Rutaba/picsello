@@ -82,7 +82,7 @@ defmodule Picsello.PaymentsTest do
     end
   end
 
-  describe "checkout_link" do
+  describe "create_session" do
     test "returns url when 1st attempt with automatic tax enabled succeeds" do
       Picsello.MockPayments
       |> Mox.expect(:create_session, 1, fn params, opts ->
@@ -97,8 +97,8 @@ defmodule Picsello.PaymentsTest do
         {:ok, %Stripe.Session{url: "<NEW_URL>"}}
       end)
 
-      assert {:ok, "<NEW_URL>"} =
-               Payments.checkout_link(%{success_url: "<URL>"}, connect_account: "123")
+      assert {:ok, %{url: "<NEW_URL>"}} =
+               Payments.create_session(%{success_url: "<URL>"}, connect_account: "123")
     end
 
     test "returns url when 2nd attempt with automatic tax disabled succeeds" do
@@ -125,8 +125,8 @@ defmodule Picsello.PaymentsTest do
         {:ok, %Stripe.Session{url: "<NEW_URL>"}}
       end)
 
-      assert {:ok, "<NEW_URL>"} =
-               Payments.checkout_link(%{success_url: "<URL>"}, connect_account: "123")
+      assert {:ok, %{url: "<NEW_URL>"}} =
+               Payments.create_session(%{success_url: "<URL>"}, connect_account: "123")
     end
 
     test "returns error when 2nd attempt with automatic tax disabled fails" do
@@ -154,7 +154,7 @@ defmodule Picsello.PaymentsTest do
       end)
 
       assert {:error, "ERROR"} =
-               Payments.checkout_link(%{success_url: "<URL>"}, connect_account: "123")
+               Payments.create_session(%{success_url: "<URL>"}, connect_account: "123")
     end
   end
 end

@@ -2,14 +2,14 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   @moduledoc false
 
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.{Cart, Galleries}
+  alias Picsello.{Cart, Orders, Galleries}
   alias Cart.Order
 
   import PicselloWeb.GalleryLive.Shared,
     only: [assign_cart_count: 2, price_display: 1, bundle_image: 1]
 
   def handle_params(_, _, %{assigns: %{gallery: gallery}} = socket) do
-    orders = Cart.get_orders(gallery.id)
+    orders = Orders.all(gallery.id)
 
     gallery = Galleries.populate_organization_user(gallery)
 
@@ -64,11 +64,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     """
   end
 
-  defdelegate has_download?(order), to: Cart
+  defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
+  defp product_name({:bundle, _}), do: "All digital downloads"
+  defp product_name(item), do: Cart.product_name(item)
+
+  defdelegate has_download?(order), to: Orders
   defdelegate item_image_url(item), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate total_cost(order), to: Cart
-  defp product_name({:bundle, _}), do: "All digital downloads"
-  defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
-  defp product_name(item), do: Cart.product_name(item)
 end

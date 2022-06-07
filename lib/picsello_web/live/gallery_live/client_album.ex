@@ -8,7 +8,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Cart}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Cart, Orders}
   alias PicselloWeb.GalleryLive.Photos.Photo
 
   @per_page 12
@@ -45,7 +45,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       photos_count: Galleries.get_album_photo_count(gallery.id, album.id),
       page: 0,
       page_title: "Show Album",
-      download_all_visible: Cart.can_download_all?(gallery),
+      download_all_visible: Orders.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id),
       update_mode: "append"
     )

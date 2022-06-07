@@ -14,7 +14,7 @@ defmodule Picsello.WHCC.Adapter do
               reference: String.t()
             ) :: Picsello.WHCC.Editor.Export.t()
   @callback create_order(String.t(), %Picsello.WHCC.Editor.Export{}) ::
-              Picsello.WHCC.Order.Created.t()
+              {:ok, Picsello.WHCC.Order.Created.t()} | {:error, any()}
   @callback confirm_order(String.t(), String.t()) :: {:ok, atom()} | {:error, any()}
   @callback webhook_register(String.t()) :: any()
   @callback webhook_verify(String.t()) :: any()

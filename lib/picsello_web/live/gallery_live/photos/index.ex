@@ -589,7 +589,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     with {:ok, _} <- Galleries.delete_photos(selected_photos),
          {:ok, gallery} <-
            Galleries.update_gallery(gallery, %{
-             total_count: gallery.total_count - total(selected_photos)
+             total_count: gallery.total_count - length(selected_photos)
            }) do
       socket
       |> assign(:gallery, gallery)
@@ -599,7 +599,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> push_event("select_mode", %{"mode" => "selected_none"})
       |> put_flash(
         :success,
-        "#{total(selected_photos)} #{ngettext("photo", "photos", Enum.count(selected_photos))} deleted successfully"
+        "#{length(selected_photos)} #{ngettext("photo", "photos", length(selected_photos))} deleted successfully"
       )
       |> assign_photos(@per_page)
       |> push_event("reload_grid", %{})
@@ -617,13 +617,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     [album | _] =
       gallery.albums |> Enum.filter(fn %{id: id} -> id == String.to_integer(album_id) end)
 
-    photos_count = total(selected_photos)
+    photos_count = length(selected_photos)
 
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully moved to #{album.name}"
   end
 
   defp remove_from_album_success_message(selected_photos, album) do
-    photos_count = total(selected_photos)
+    photos_count = length(selected_photos)
 
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"
   end
@@ -664,7 +664,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       <%= if @exclude_album_id != album.id do %>
       <li class={"relative #{get_class(album.name)}"}>
         <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
-        <div class="tooltiptext cursor-default">Move to <%= album.name %></div>
+        <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
       </li>
       <% end %>
     <% end %>

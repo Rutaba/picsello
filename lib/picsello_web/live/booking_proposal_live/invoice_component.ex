@@ -132,7 +132,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
            cancel_url: BookingProposal.url(proposal.id),
            metadata: %{"paying_for" => payment.id}
          ) do
-      {:ok, url} ->
+      {:ok, %{url: url}} ->
         socket |> redirect(external: url) |> noreply()
 
       {:error, error} ->

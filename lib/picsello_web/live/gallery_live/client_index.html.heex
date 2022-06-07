@@ -1,14 +1,14 @@
 <div 
-  class={"w-screen lg:h-screen h-[66vw] #{if(@active, do: 'block sm:hidden', else: 'hidden')}"}
+  class={classes("w-screen lg:h-screen h-[66vw]", %{"block sm:hidden" => @active, "hidden" => !@active})}
   id="gallery-conver-photo"
   phx-hook="ClientGalleryCookie"
   data-name={cover_photo_cookie(@gallery.id)}
   data-max_age={max_age()}
   data-active={"#{@active}"}
   >
-  <div {cover_photo(@gallery)} class="flex text-left flex-nowrap top-0 left-0 bg-cover h-full">
+  <div {cover_photo(@gallery)} class="top-0 left-0 flex h-full text-left bg-cover flex-nowrap">
     <div class="flex flex-col justify-center w-full h-full gallery__container lg:flex-row">
-      <div class="relative z-10 flex flex-wrap items-end content-center pb-2 md:pb-60 pr-2 pl-2 md:pl-0 mt-auto text-start text-base-100 md:pr-0 md:text-center">
+      <div class="relative z-10 flex flex-wrap items-end content-center pb-2 pl-2 pr-2 mt-auto md:pb-60 md:pl-0 text-start text-base-100 md:pr-0 md:text-center">
         <h3 class="w-full text-base font-medium lg:text-2xl">
           <%= @gallery.inserted_at |> Calendar.strftime("%B %d, %Y") %>
         </h3>
@@ -17,8 +17,8 @@
           <%= @gallery.name %>
         </h1>
 
-        <p class="w-full text-center hidden sm:block">
-          <a id="view-gallery" phx-click="view_gallery" class="text-center cursor-pointer text-white bg-transparent border-white gallery__button btn-secondary hover:bg-white/10">
+        <p class="hidden w-full text-center sm:block">
+          <a id="view-gallery" href="#" phx-click="view_gallery" class="text-center text-white bg-transparent border-white cursor-pointer gallery__button btn-secondary hover:bg-white/10">
             View Gallery
           </a>
         </p>
@@ -26,15 +26,16 @@
     </div>
   </div>
 </div>
-<div id="gallery-client" class={"#{!@active && 'block sm:hidden'}"}>
-  <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+
+<div id="gallery-client" class={classes(%{"block sm:hidden" => !@active})}>
+  <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
   </div>
 
   <hr>
 
   <%= unless Enum.empty?(@products) do %>
-    <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+    <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
       <div class="pt-8 lg:pt-14">
         <div class="text-base font-bold lg:text-3xl">
           Order custom products with <%= @creator.name %>
@@ -64,12 +65,12 @@
   <% end %>
 
   <!-- Content -->
-  <hr class="lg:mx-16 mt-8 mx-8">
-  <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+  <hr class="mx-8 mt-8 lg:mx-16">
+  <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
     <div class="pt-5 lg:pt-16" id="gallery">
       <div class="flex flex-col mb-8 sm:flex-row sm:justify-between sm:items-end lg:mb-16">
         <div>
-          <div class="text-lg font-bold lg:text-3xl"> 
+          <div class="text-lg font-bold lg:text-3xl">
           <%= if(Enum.count(@albums) > 0, do: "Your curated albums", else: "#{@gallery.name} Gallery") %>
           </div>
 
@@ -89,8 +90,8 @@
           </div>
         </div>
 
-        <div class={Enum.count(@albums) > 0 && "hidden"}>
-          <label class="flex items-center cursor-pointer mt-4">
+        <div class={classes(hidden: length(@albums) > 0)}>
+          <label class="flex items-center mt-4 cursor-pointer">
             <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
 
             <div class="relative ml-3">
@@ -116,11 +117,11 @@
           <a class="albumPreview" phx-click="go_to_album" phx-value-album={album.id}>
             <div class="flex flex-col h-72 albumPreview-photo">
               <img class="object-cover w-full h-full" src={thumbnail_url(album)} />
-              <span class="font-sans absolute bottom-4 left-4 font-bold text-white text-1xl"><%= album.name %></span>
+              <span class="absolute font-sans font-bold text-white bottom-4 left-4 text-1xl"><%= album.name %></span>
             </div>
           </a>
-          <% end %>      
-          </div>    
+          <% end %>
+          </div>
       <% else %>
         <%= if(Enum.empty?(@photos) && @favorites_filter) do %>
           <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
