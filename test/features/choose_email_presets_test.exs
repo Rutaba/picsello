@@ -79,7 +79,7 @@ defmodule Picsello.ChooseEmailPresetsTest do
     assert_receive {:delivered_email,
                     %{
                       private: %{
-                        send_grid_template: %{dynamic_template_data: %{"body_html" => html}}
+                        send_grid_template: %{dynamic_template_data: %{"body" => html}}
                       }
                     }}
 

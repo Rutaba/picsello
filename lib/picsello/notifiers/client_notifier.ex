@@ -11,13 +11,18 @@ defmodule Picsello.Notifiers.ClientNotifier do
     proposal = BookingProposal.last_for_job(message.job_id)
 
     message
-    |> client_message_to_email(:booking_proposal_template, url: BookingProposal.url(proposal.id))
+    |> client_message_to_email(:client_transactional_template,
+      button: %{url: BookingProposal.url(proposal.id), text: "View booking proposal"}
+    )
     |> to(to_email)
     |> deliver_later()
   end
 
   def deliver_email(message, to_email) do
-    message |> client_message_to_email(:email_template) |> to(to_email) |> deliver_later()
+    message
+    |> client_message_to_email(:client_transactional_template)
+    |> to(to_email)
+    |> deliver_later()
   end
 
   def deliver_order_confirmation(
@@ -80,10 +85,10 @@ defmodule Picsello.Notifiers.ClientNotifier do
       Keyword.merge(
         [
           subject: message.subject,
-          body_html: message |> body_html,
-          body_text: message.body_text,
-          email_signature: email_signature(organization),
-          color: organization.profile.color
+          headline: message.subject,
+          logo_url: if(organization.profile.logo, do: organization.profile.logo.url),
+          body: message |> body_html,
+          email_signature: email_signature(organization)
         ],
         opts
       )

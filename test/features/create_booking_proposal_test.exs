@@ -87,7 +87,8 @@ defmodule Picsello.CreateBookingProposalTest do
     path =
       email
       |> email_substitutions
-      |> Map.get("url")
+      |> Map.get("button")
+      |> Map.get(:url)
       |> URI.parse()
       |> Map.get(:path)
 
