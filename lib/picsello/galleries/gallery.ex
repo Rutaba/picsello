@@ -83,7 +83,6 @@ defmodule Picsello.Galleries.Gallery do
   def expire_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, [:expired_at])
-    |> validate_required([:expired_at])
   end
 
   def client_link_changeset(gallery, attrs \\ %{}) do

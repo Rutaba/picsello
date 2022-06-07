@@ -22,7 +22,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>Your gallery is ready!</p>
         <p>Your photos are password-protected, so you will need to use this password to view: <b>{{password}}</b></p>
-        <p>You can log into your private gallery to see all of your images at <a href="{{gallery_link}}">{{gallery_link}}</a>.</p>
+        <p>You can log into your private gallery to see all of your images at <a href="{{gallery_link}}">{{gallery_link}}</a>.{{#gallery_expiration_date}} Your gallery expires on {{gallery_expiration_date}}, please make your selections before then.{{/gallery_expiration_date}}</p>
         <p>It’s been a delight working with you and I can’t wait to hear what you think!</p>
         """
       }

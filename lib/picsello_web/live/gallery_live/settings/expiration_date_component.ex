@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     |> assign(assigns)
     |> assign_controls()
     |> assign_options()
-    |> assign_valid()
     |> ok
   end
 
@@ -23,39 +22,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     socket
     |> assign(is_never_expires: !is_never_expires)
     |> react_form()
-  end
-
-  @impl true
-  def handle_event(
-        "update-options",
-        %{"date" => %{"month" => ""}, "_target" => ["date", "month"]},
-        socket
-      ) do
-    socket
-    |> assign(:is_valid, false)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "update-options",
-        %{"date" => %{"day" => ""}, "_target" => ["date", "day"]},
-        socket
-      ) do
-    socket
-    |> assign(:is_valid, false)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "update-options",
-        %{"date" => %{"year" => ""}, "_target" => ["date", "year"]},
-        socket
-      ) do
-    socket
-    |> assign(:is_valid, false)
-    |> noreply()
   end
 
   @impl true
@@ -110,7 +76,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
       ) do
     datetime =
       if is_never_expires do
-        never_date()
+        nil
       else
         {:ok, date} = Date.new(year, month, day)
         DateTime.new!(date, ~T[12:00:00], "Etc/UTC")
@@ -130,15 +96,11 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     do:
       socket
       |> assign_options()
-      |> assign_valid()
       |> noreply()
 
   defp assign_controls(%{assigns: %{gallery: %{expired_at: expires}}} = socket) do
-    is_set = !is_nil(expires)
-    is_never_expires = is_set && DateTime.compare(expires, never_date()) == :eq
-
     {year, month, day} =
-      if is_set and !is_never_expires do
+      if expires do
         expires
         |> DateTime.to_date()
         |> split_date()
@@ -148,7 +110,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
 
     socket
     |> assign(
-      is_never_expires: is_never_expires,
+      is_never_expires: is_nil(expires),
       year: year,
       month: month,
       day: day
@@ -210,31 +172,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     end
   end
 
-  defp assign_valid(
-         %{
-           assigns: %{
-             is_never_expires: is_never_expires,
-             year: year,
-             month: month,
-             day: day,
-             gallery: %{expired_at: expires}
-           }
-         } = socket
-       ) do
-    is_valid =
-      valid_checkbox?(is_never_expires, expires) or
-        valid_date_controls?([year, month, day], expires)
-
-    socket
-    |> assign(:is_valid, is_valid)
-  end
-
-  defp valid_checkbox?(false, _), do: false
-  defp valid_checkbox?(true, nil), do: true
-
-  defp valid_checkbox?(true, expires),
-    do: :eq != Date.compare(DateTime.to_date(never_date()), DateTime.to_date(expires))
-
   defp valid_date_controls?([year, month, day] = date, expires),
     do:
       Enum.all?(date) and
@@ -262,16 +199,9 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
 
   defp split_date(%Date{} = date), do: date |> Date.to_erl()
 
-  @doc """
-  This is hardcoded date of `never`
-
-  It is need to mark `never expires` state for gallery.
-  Nil is used to mark not set yet date.
-  This way `never expires` date is just a date in far future, at least 100+ years ahead
-  """
-  def never_date() do
-    {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
-    date
+  def save_disabled?(year, month, day, is_never_expires, gallery) do
+    (!is_never_expires && !valid_date_controls?([year, month, day], gallery.expired_at)) ||
+      (is_never_expires && is_nil(gallery.expired_at))
   end
 
   @impl true
@@ -281,14 +211,14 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
       <h3>Expiration date</h3>
       <.form let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
         <div class="flex justify-between">
-          <%= select_field f, :month, @month_options, prompt: "Month", value: @month, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
-          <%= select_field f, :day, @day_options, prompt: "Day", value: @day, class: "border-blue-planning-300 mx-2 md:mx-3 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
-          <%= select_field f, :year, @year_options, prompt: "Year", value: @year, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :month, @month_options, id: "month-#{@is_never_expires}", prompt: "Month", value: @month, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :day, @day_options, id: "day-#{@is_never_expires}", prompt: "Day", value: @day, class: "border-blue-planning-300 mx-2 md:mx-3 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
+          <%= select_field f, :year, @year_options, id: "year-#{@is_never_expires}", prompt: "Year", value: @year, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
         </div>
         <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
-            <%= submit "Save", class: "btn-settings w-32 px-11", disabled: !@is_valid, phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
+            <%= submit "Save", class: "btn-settings w-32 px-11", disabled: save_disabled?(@year, @month, @day, @is_never_expires, @gallery), phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
             <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself} id="updateGalleryNeverExpire">
-                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp cursor-pointer"  checked={@is_never_expires} />
+                <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp cursor-pointer" checked={@is_never_expires} />
                 <label class="cursor-pointer">
                     Never expires
                 </label>

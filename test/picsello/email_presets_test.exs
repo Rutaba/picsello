@@ -183,12 +183,18 @@ defmodule Picsello.EmailPresetsTest do
         )
         |> promote_to_job()
 
-      gallery = insert(:gallery, %{name: "Test Client Wedding", job: job})
+      gallery =
+        insert(:gallery, %{
+          name: "Test Client Wedding",
+          job: job,
+          expired_at: ~U[2023-02-01 12:00:00Z]
+        })
 
       assert %{
                "client_first_name" => "Johann",
                "photographer_first_name" => "Jane",
                "gallery_name" => "Test Client Wedding",
+               "gallery_expiration_date" => "date: February 1, 2023",
                "order_full_name" => ""
              } =
                resolve_variables(
@@ -198,7 +204,26 @@ defmodule Picsello.EmailPresetsTest do
                  "client_first_name": "{{client_first_name}}",
                  "photographer_first_name": "{{photographer_first_name}}",
                  "gallery_name": "{{gallery_name}}",
+                 "gallery_expiration_date": "{{#gallery_expiration_date}}date: {{gallery_expiration_date}}{{/gallery_expiration_date}}",
                  "order_full_name": "{{order_full_name}}"
+                 }
+                 """,
+                 :gallery,
+                 {gallery}
+               )
+               |> Map.get(:body_template)
+               |> Jason.decode!()
+
+      gallery = %{gallery | expired_at: nil}
+
+      assert %{
+               "gallery_expiration_date" => ""
+             } =
+               resolve_variables(
+                 "hi",
+                 """
+                 {
+                 "gallery_expiration_date": "{{#gallery_expiration_date}}date: {{gallery_expiration_date}}{{/gallery_expiration_date}}"
                  }
                  """,
                  :gallery,

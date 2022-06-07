@@ -39,6 +39,10 @@ defmodule Picsello.EmailPresets.GalleryResolver do
   defp photographer(%__MODULE__{} = resolver),
     do: resolver |> organization() |> Picsello.Repo.preload(:user) |> Map.get(:user)
 
+  defp strftime(%__MODULE__{helpers: helpers} = resolver, date, format) do
+    resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
+  end
+
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
   def vars,
@@ -51,6 +55,11 @@ defmodule Picsello.EmailPresets.GalleryResolver do
       "photographer_first_name" =>
         &(&1 |> photographer() |> Map.get(:name) |> String.split() |> hd),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
+      "gallery_expiration_date" =>
+        &with(
+          %DateTime{} = expired_at <- &1 |> gallery() |> Map.get(:expired_at),
+          do: strftime(&1, expired_at, "%B %-d, %Y")
+        ),
       "order_full_name" =>
         &with(
           %Order{delivery_info: %{name: name}} <- order(&1),
