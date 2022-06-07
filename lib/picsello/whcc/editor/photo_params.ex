@@ -15,9 +15,11 @@ defmodule Picsello.WHCC.Editor.PhotoParams do
     |> Enum.map(&make_photo/1)
   end
 
+  def id(%{id: photo_id}), do: "photo-#{photo_id}"
+
   defp make_photo(photo) do
     %{
-      "id" => "photo-#{photo.id}",
+      "id" => id(photo),
       "name" => photo.name,
       "url" => Photos.preview_url(photo),
       "printUrl" => Photos.original_url(photo),
