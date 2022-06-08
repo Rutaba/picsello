@@ -18,8 +18,19 @@ defmodule PicselloWeb.StripeWebhooksController do
 
     {:ok, _} =
       case session.client_reference_id do
-        "order_number_" <> _ -> Orders.handle_session(session, PicselloWeb.Helpers)
-        "proposal_" <> _ -> PaymentSchedules.handle_payment(session, PicselloWeb.Helpers)
+        "order_number_" <> _ ->
+          session
+          |> Orders.handle_session()
+          |> case do
+            {:ok, order, :confirmed} ->
+              Picsello.Notifiers.OrderNotifier.deliver_order_emails(order, PicselloWeb.Helpers)
+
+            err ->
+              err
+          end
+
+        "proposal_" <> _ ->
+          PaymentSchedules.handle_payment(session, PicselloWeb.Helpers)
       end
 
     Logger.info("handled webhook")

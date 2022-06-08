@@ -161,10 +161,10 @@ defmodule Picsello.Orders do
     |> Repo.exists?()
   end
 
-  defdelegate handle_session(order_number, stripe_session_id, helpers),
+  defdelegate handle_session(order_number, stripe_session_id),
     to: __MODULE__.Confirmations
 
-  defdelegate handle_session(session, helpers), to: __MODULE__.Confirmations
+  defdelegate handle_session(session), to: __MODULE__.Confirmations
   defdelegate handle_invoice(invoice), to: __MODULE__.Confirmations
 
   defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do

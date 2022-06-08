@@ -19,10 +19,15 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       ) do
     case Orders.handle_session(
            order_number,
-           session_id,
-           PicselloWeb.Helpers
+           session_id
          ) do
-      {:ok, _order} -> Orders.get!(gallery, order_number)
+      {:ok, _order, :already_confirmed} ->
+        Orders.get!(gallery, order_number)
+
+      {:ok, _order, :confirmed} ->
+        order = Orders.get!(gallery, order_number)
+        Picsello.Notifiers.OrderNotifier.deliver_order_emails(order, PicselloWeb.Helpers)
+        order
     end
     |> then(fn order ->
       if connected?(socket) do

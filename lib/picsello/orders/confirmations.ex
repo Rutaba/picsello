@@ -24,18 +24,20 @@ defmodule Picsello.Orders.Confirmations do
       1. capture the stripe funds
       1. confirm with whcc
   """
+  @spec handle_session(Stripe.Session.t()) ::
+          {:ok, Order.t(), :confirmed | :already_confirmed} | {:error, any()}
   def handle_session(
-        %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session,
-        helpers
+        %Stripe.Session{client_reference_id: "order_number_" <> order_number} = session
       ) do
-    do_confirm_order(order_number, &Ecto.Multi.put(&1, :session, session), helpers)
+    do_confirm_order(order_number, &Ecto.Multi.put(&1, :session, session))
   end
 
-  def handle_session(order_number, stripe_session_id, helpers) do
+  @spec handle_session(String.t(), String.t()) ::
+          {:ok, Order.t(), :confirmed | :already_confirmed} | {:error, any()}
+  def handle_session(order_number, stripe_session_id) do
     do_confirm_order(
       order_number,
-      &Ecto.Multi.run(&1, :session, __MODULE__, :fetch_session, [stripe_session_id]),
-      helpers
+      &Ecto.Multi.run(&1, :session, __MODULE__, :fetch_session, [stripe_session_id])
     )
   end
 
@@ -72,7 +74,7 @@ defmodule Picsello.Orders.Confirmations do
     new() |> run(:capture, fn _, _ -> capture(intent, stripe_options(order)) end)
   end
 
-  defp do_confirm_order(order_number, session_fn, helpers) do
+  defp do_confirm_order(order_number, session_fn) do
     new()
     |> put(:order_number, order_number)
     |> run(:order, &load_order/2)
@@ -96,11 +98,10 @@ defmodule Picsello.Orders.Confirmations do
     |> Repo.transaction()
     |> case do
       {:error, :paid, _, %{order: order}} ->
-        {:ok, order}
+        {:ok, order, :already_confirmed}
 
       {:ok, %{order: order}} ->
-        send_confirmation_email(order, helpers)
-        {:ok, order}
+        {:ok, order, :confirmed}
 
       {:error, _, _, %{session: %{payment_intent: intent_id}, stripe_options: stripe_options}} =
           error ->
@@ -207,10 +208,6 @@ defmodule Picsello.Orders.Confirmations do
       error ->
         error
     end
-  end
-
-  defp send_confirmation_email(order, helpers) do
-    Picsello.Notifiers.ClientNotifier.deliver_order_confirmation(order, helpers)
   end
 
   defp load_invoice(repo, %{stripe_invoice: %Stripe.Invoice{id: stripe_id}}) do

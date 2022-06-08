@@ -64,7 +64,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
     assert [%{whcc_order: %{confirmed_at: %DateTime{}}}] = Repo.all(Order)
   end
 
-  def handle_session(session), do: Confirmations.handle_session(session, PicselloWeb.Helpers)
+  def handle_session(session), do: Confirmations.handle_session(session)
 
   describe "handle_invoice - paid, no intent" do
     setup :stub_confirm_order
@@ -166,7 +166,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
       assert Picsello.Orders.photographer_paid?(order)
       assert Picsello.Orders.client_paid?(order)
 
-      assert {:ok, _} =
+      assert {:ok, _, :already_confirmed} =
                build(:stripe_session, client_reference_id: "order_number_#{Order.number(order)}")
                |> handle_session()
     end

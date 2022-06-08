@@ -313,11 +313,13 @@ defmodule Picsello.CartTest do
 
   describe "checkout" do
     test "when no money due from client sends complete" do
+      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
       gallery = create_gallery(download_count: 1)
+      insert(:order, delivery_info: %{email: "client@example.com"}, gallery: gallery)
 
       order = Cart.place_product(build(:digital), gallery) |> Repo.preload([:products, :digitals])
       assert ~M[0]USD = Order.total_cost(order)
-      :ok = Cart.checkout(order)
+      :ok = Cart.checkout(order, helpers: PicselloWeb.Helpers)
 
       assert [%{errors: []}] = Picsello.FeatureCase.FeatureHelpers.run_jobs()
 

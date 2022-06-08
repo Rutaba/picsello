@@ -284,6 +284,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       assert [%{errors: []}] = run_jobs()
 
+      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
+
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
