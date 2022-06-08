@@ -36,7 +36,7 @@ defmodule Picsello.OrdersTest do
     setup do
       Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
-      user = insert(:user) |> onboard!()
+      user = insert(:user, email: "photographer@example.com") |> onboard!()
       job = insert(:lead, user: user) |> promote_to_job()
       gallery = insert(:gallery, job: job)
       cart_product = build(:cart_product)
@@ -128,6 +128,7 @@ defmodule Picsello.OrdersTest do
 
     test "works with shipping updates too", %{order: order, entry_id: entry_id} do
       insert(:email_preset, type: :gallery, state: :gallery_shipping_to_client)
+      insert(:email_preset, type: :gallery, state: :gallery_shipping_to_photographer)
 
       order =
         order
@@ -155,6 +156,15 @@ defmodule Picsello.OrdersTest do
              } = Repo.reload!(order)
 
       assert_receive {:delivered_email, %{to: [nil: "customer@example.com"]} = email}
+
+      assert %{
+               "button" => %{
+                 text: "Track shipping",
+                 url: "http://www.fedex.com/Tracking?tracknumbers=512376671311227"
+               }
+             } = email |> email_substitutions()
+
+      assert_receive {:delivered_email, %{to: [nil: "photographer@example.com"]} = email}
 
       assert %{
                "button" => %{

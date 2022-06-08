@@ -37,6 +37,18 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>The photography products you ordered from {{photography_company_s_name}} are now on their way to you!</p>
         <p>We can’t wait for you to have your images in your hands!</p>
         """
+      },
+      %{
+        type: "gallery",
+        state: "gallery_shipping_to_photographer",
+        position: 0,
+        name: "Your order has shipped - photographer",
+        subject_template: "New shipping info for {{order_first_name}} order.",
+        body_template: """
+        <p>Hello {{photographer_first_name}},</p>
+        <p>Your client {{order_full_name}}’s order has shipped!</p>
+        <p>Cheers!</p>
+        """
       }
     ]
     |> Enum.each(fn attrs ->

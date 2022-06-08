@@ -144,6 +144,7 @@ defmodule Picsello.Orders do
          helpers
        ) do
     Picsello.Notifiers.ClientNotifier.deliver_shipping_notification(event, order, helpers)
+    Picsello.Notifiers.UserNotifier.deliver_shipping_notification(event, order, helpers)
   end
 
   defp maybe_send_shipping_notification(_payload, _order, _helpers), do: nil
