@@ -129,4 +129,21 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     </div>
     """
   end
+
+  defp errors(assigns) do
+    ~H"""
+      <div class="uploadEntry px-14 grid grid-cols-5 pb-4 items-center">
+        <p class="col-span-3 max-w-md">
+        <%= truncate_name(@entry) %>
+        </p>
+        <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center">
+          <%= render_slot(@inner_block) %>
+        </div>
+        <button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from}
+              aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer">
+          <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+        </button>
+      </div>
+    """
+  end
 end

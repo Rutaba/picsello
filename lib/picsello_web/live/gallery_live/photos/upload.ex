@@ -40,11 +40,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      |> assign(:view, Map.get(session, "view", "add_button"))
      |> assign(:album_id, Map.get(session, "album_id", nil))
      |> assign(:gallery, gallery)
-     |> assign(:invalid_photos, [])
-     |> assign(:pending_photos, [])
-     |> assign(:inprogress_photos, [])
-     |> assign(:entries, [])
-     |> assign(:photos_error_count, 0)
+     |> assigns()
      |> assign(:overall_progress, 0)
      |> assign(:uploaded_files, 0)
      |> assign(:estimate, "n/a")
@@ -63,7 +59,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     gallery = Galleries.load_watermark_in_gallery(gallery)
 
     if Enum.empty?(inprogress_photos) do
-      
       socket
       |> assign(:persisted_album_id, album_id)
     else
@@ -133,12 +128,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
         %{assigns: %{photos_error_count: photos_error_count} = assigns} = socket
       ) do
     if is_list(index) do
-      socket
-      |> assign(:invalid_photos, [])
-      |> assign(:pending_photos, [])
-      |> assign(:inprogress_photos, [])
-      |> assign(:entries, [])
-      |> assign(:photos_error_count, 0)
+      socket |> assigns()
     else
       {_, pending_entries} = assigns[delete_from] |> List.pop_at(index)
 
@@ -459,6 +449,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       )
       |> assign_overall_progress()
     end
+  end
+
+  defp assigns(socket) do
+    socket
+    |> assign(:invalid_photos, [])
+    |> assign(:pending_photos, [])
+    |> assign(:inprogress_photos, [])
+    |> assign(:entries, [])
+    |> assign(:photos_error_count, 0)
   end
 
   defp add_photo_button(assigns) do
