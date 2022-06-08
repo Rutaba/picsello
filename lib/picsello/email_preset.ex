@@ -6,7 +6,7 @@ defmodule Picsello.EmailPreset do
   @types ~w(job gallery)a
   @states_by_type %{
     job: ~w(post_shoot booking_proposal job lead)a,
-    gallery: ~w[gallery_send_link]a
+    gallery: ~w[gallery_send_link gallery_shipping_to_client]a
   }
   @states @states_by_type |> Map.values() |> List.flatten()
 

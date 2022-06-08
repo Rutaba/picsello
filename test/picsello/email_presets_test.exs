@@ -234,7 +234,7 @@ defmodule Picsello.EmailPresetsTest do
     end
 
     test "resolve gallery order strings" do
-      organization = insert(:organization)
+      organization = insert(:organization, name: "Jane Photography")
       insert(:user, organization: organization, name: "Jane Doe")
 
       job =
@@ -259,7 +259,9 @@ defmodule Picsello.EmailPresetsTest do
                "client_first_name" => "Johann",
                "photographer_first_name" => "Jane",
                "gallery_name" => "Test Client Wedding",
-               "order_full_name" => "John Jack"
+               "order_first_name" => "John",
+               "order_full_name" => "John Jack",
+               "photography_company_s_name" => "Jane Photography"
              } =
                resolve_variables(
                  "hi",
@@ -268,7 +270,9 @@ defmodule Picsello.EmailPresetsTest do
                  "client_first_name": "{{client_first_name}}",
                  "photographer_first_name": "{{photographer_first_name}}",
                  "gallery_name": "{{gallery_name}}",
-                 "order_full_name": "{{order_full_name}}"
+                 "order_first_name": "{{order_first_name}}",
+                 "order_full_name": "{{order_full_name}}",
+                 "photography_company_s_name": "{{photography_company_s_name}}"
                  }
                  """,
                  :gallery,

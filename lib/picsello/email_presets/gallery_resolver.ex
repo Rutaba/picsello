@@ -52,6 +52,7 @@ defmodule Picsello.EmailPresets.GalleryResolver do
       "gallery_link" => fn resolver ->
         helpers(resolver).gallery_url(gallery(resolver).client_link_hash)
       end,
+      "photography_company_s_name" => &organization(&1).name,
       "photographer_first_name" =>
         &(&1 |> photographer() |> Map.get(:name) |> String.split() |> hd),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
@@ -60,9 +61,14 @@ defmodule Picsello.EmailPresets.GalleryResolver do
           %DateTime{} = expired_at <- &1 |> gallery() |> Map.get(:expired_at),
           do: strftime(&1, expired_at, "%B %-d, %Y")
         ),
+      "order_first_name" =>
+        &with(
+          %Order{delivery_info: %{name: "" <> name}} <- order(&1),
+          do: name |> String.split() |> hd
+        ),
       "order_full_name" =>
         &with(
-          %Order{delivery_info: %{name: name}} <- order(&1),
+          %Order{delivery_info: %{name: "" <> name}} <- order(&1),
           do: name
         )
     }

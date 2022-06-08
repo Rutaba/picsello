@@ -34,7 +34,11 @@ defmodule Picsello.OrdersTest do
 
   describe "whcc updates" do
     setup do
-      gallery = insert(:gallery)
+      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
+      user = insert(:user) |> onboard!()
+      job = insert(:lead, user: user) |> promote_to_job()
+      gallery = insert(:gallery, job: job)
       cart_product = build(:cart_product)
 
       order = Cart.place_product(cart_product, gallery.id)
@@ -47,6 +51,8 @@ defmodule Picsello.OrdersTest do
       [
         order:
           order
+          |> Order.store_delivery_info(%{email: "customer@example.com", name: "John Customer"})
+          |> Repo.update!()
           |> Order.whcc_order_changeset(
             build(:whcc_order_created, entry_id: entry_id, total: ~M[100]USD)
           )
@@ -87,7 +93,7 @@ defmodule Picsello.OrdersTest do
                }
              } = order
 
-      Orders.update_whcc_order(processing_status(entry_id, sequence_number))
+      Orders.update_whcc_order(processing_status(entry_id, sequence_number), PicselloWeb.Helpers)
 
       assert %{whcc_order: %{orders: [%{whcc_processing: %{status: "Accepted"}}]}} =
                Repo.reload!(order)
@@ -111,7 +117,7 @@ defmodule Picsello.OrdersTest do
                }
              } = order
 
-      Orders.update_whcc_order(processing_status(entry_id, sequence_number))
+      Orders.update_whcc_order(processing_status(entry_id, sequence_number), PicselloWeb.Helpers)
 
       assert %{
                whcc_order: %{
@@ -121,6 +127,8 @@ defmodule Picsello.OrdersTest do
     end
 
     test "works with shipping updates too", %{order: order, entry_id: entry_id} do
+      insert(:email_preset, type: :gallery, state: :gallery_shipping_to_client)
+
       order =
         order
         |> Order.whcc_order_changeset(
@@ -138,13 +146,22 @@ defmodule Picsello.OrdersTest do
                }
              } = order
 
-      Orders.update_whcc_order(processing_event(entry_id, sequence_number))
+      Orders.update_whcc_order(processing_event(entry_id, sequence_number), PicselloWeb.Helpers)
 
       assert %{
                whcc_order: %{
                  orders: [%{whcc_tracking: nil}, %{whcc_tracking: %{event: "Shipped"}}]
                }
              } = Repo.reload!(order)
+
+      assert_receive {:delivered_email, %{to: [nil: "customer@example.com"]} = email}
+
+      assert %{
+               "button" => %{
+                 text: "Track shipping",
+                 url: "http://www.fedex.com/Tracking?tracknumbers=512376671311227"
+               }
+             } = email |> email_substitutions()
     end
   end
 end

@@ -25,6 +25,18 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>You can log into your private gallery to see all of your images at <a href="{{gallery_link}}">{{gallery_link}}</a>.{{#gallery_expiration_date}} Your gallery expires on {{gallery_expiration_date}}, please make your selections before then.{{/gallery_expiration_date}}</p>
         <p>It’s been a delight working with you and I can’t wait to hear what you think!</p>
         """
+      },
+      %{
+        type: "gallery",
+        state: "gallery_shipping_to_client",
+        position: 0,
+        name: "Your order has shipped - client",
+        subject_template: "Your order from {{photography_company_s_name}} has shipped!",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The photography products you ordered from {{photography_company_s_name}} are now on their way to you!</p>
+        <p>We can’t wait for you to have your images in your hands!</p>
+        """
       }
     ]
     |> Enum.each(fn attrs ->
