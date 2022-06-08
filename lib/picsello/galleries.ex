@@ -9,6 +9,7 @@ defmodule Picsello.Galleries do
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  alias Picsello.Cart.{Digital, Order}
   import Repo.CustomMacros
 
   @doc """
@@ -264,6 +265,7 @@ defmodule Picsello.Galleries do
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
+    |> Ecto.Multi.delete_all(:digital_line_items, from(d in Digital, where: d.photo_id in ^photo_ids))
     |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
     |> Repo.transaction()
     |> then(fn
@@ -415,15 +417,18 @@ defmodule Picsello.Galleries do
   """
   def delete_gallery(%Gallery{} = gallery) do
     gallery = gallery |> Repo.preload(:photos)
+    photo_ids = Enum.map(gallery.photos, & &1.id)
 
     Ecto.Multi.new()
     |> Ecto.Multi.update_all(
       :thumbnail,
-      fn _ -> Albums.remove_album_thumbnail(Enum.map(gallery.photos, & &1.id)) end,
+      fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
     |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
     |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
+    |> Ecto.Multi.delete_all(:digital_line_items, from(d in Digital, where: d.photo_id in ^photo_ids))
+    |> Ecto.Multi.delete_all(:gallery_orders, from(o in Order, where: o.gallery_id == ^gallery.id))
     |> Ecto.Multi.delete_all(:delete_photos, Ecto.assoc(gallery, :photos))
     |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
     |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
