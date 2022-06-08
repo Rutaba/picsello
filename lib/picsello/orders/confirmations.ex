@@ -23,6 +23,8 @@ defmodule Picsello.Orders.Confirmations do
     1. is the order all paid for?
       1. capture the stripe funds
       1. confirm with whcc
+    1. photographer still owes?
+      1. finalize photographer invoice
   """
   @spec handle_session(Stripe.Session.t()) ::
           {:ok, Order.t(), :confirmed | :already_confirmed} | {:error, any()}
@@ -89,8 +91,11 @@ defmodule Picsello.Orders.Confirmations do
         |> update(:confirmed_order, Order.whcc_confirmation_changeset(order))
         |> run(:capture, fn _, _ -> capture(multi) end)
 
-      %{paid: %{photographer: false}} ->
+      %{paid: %{photographer: false}, order: order} ->
         new()
+        |> run(:invoice, fn repo, _ -> load_invoice(repo, order) end)
+        |> run(:stripe_invoice, &finalize_invoice/2)
+        |> update(:updated_invoice, &update_invoice_changeset/1)
 
       %{order: %{products: []}} = multi ->
         run(new(), :capture, fn _, _ -> capture(multi) end)
@@ -217,6 +222,19 @@ defmodule Picsello.Orders.Confirmations do
       nil -> {:error, "no invoice"}
       invoice -> {:ok, repo.preload(invoice, order: [:intent, gallery: :organization])}
     end
+  end
+
+  defp load_invoice(repo, %Order{id: order_id}) do
+    Invoice
+    |> repo.get_by(order_id: order_id)
+    |> case do
+      nil -> {:error, "no invoice"}
+      invoice -> {:ok, invoice}
+    end
+  end
+
+  defp finalize_invoice(_repo, %{invoice: %{stripe_id: stripe_invoice_id}}) do
+    Payments.finalize_invoice(stripe_invoice_id, %{auto_advance: true})
   end
 
   defp update_invoice_changeset(%{stripe_invoice: stripe_invoice, invoice: invoice}) do

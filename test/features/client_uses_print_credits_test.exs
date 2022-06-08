@@ -11,7 +11,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     insert(:user,
       organization: organization,
-      stripe_customer_id: "photographer-stripe-customer-id"
+      stripe_customer_id: "photographer-stripe-customer-id",
+      email: "photographer@example.com"
     )
 
     package =
@@ -437,15 +438,23 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
   describe "client charge partially covers print cost" do
     setup do
+      stripe_invoice =
+        build(:stripe_invoice,
+          id: "stripe-invoice-id",
+          description: "stripe invoice!",
+          amount_due: 3000,
+          amount_remaining: 3000,
+          status: "draft"
+        )
+
+      Mox.expect(Picsello.MockPayments, :finalize_invoice, fn "stripe-invoice-id",
+                                                              _params,
+                                                              _opts ->
+        {:ok, %{stripe_invoice | status: "open"}}
+      end)
+
       [
-        stripe_invoice:
-          build(:stripe_invoice,
-            id: "stripe-invoice-id",
-            description: "stripe invoice!",
-            amount_due: 3000,
-            amount_remaining: 3000,
-            status: :draft
-          ),
+        stripe_invoice: stripe_invoice,
         whcc_unit_base_price: ~M[5300]USD,
         whcc_total: ~M[5000]USD,
         stripe_checkout: %{application_fee_amount: ~M[2000]USD, amount: ~M[2000]USD}

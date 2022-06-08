@@ -118,9 +118,13 @@ defmodule Picsello.Orders.ConfirmationsTest do
           amount: Order.total_cost(order).amount
         )
 
-      Mox.expect(MockPayments, :retrieve_payment_intent, fn _params, _opts ->
+      MockPayments
+      |> Mox.expect(:retrieve_payment_intent, fn _params, _opts ->
         {:ok,
          %{stripe_intent | status: "requires_capture", amount_capturable: stripe_intent.amount}}
+      end)
+      |> Mox.stub(:finalize_invoice, fn invoice_id, _params, _opts ->
+        {:ok, build(:stripe_invoice, id: invoice_id, status: "open")}
       end)
 
       [
@@ -146,6 +150,16 @@ defmodule Picsello.Orders.ConfirmationsTest do
       handle_session(session)
 
       Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
+    end
+
+    test "finalizes invoice", %{invoice: %{stripe_id: invoice_id}, session: session} do
+      Mox.expect(MockPayments, :finalize_invoice, fn ^invoice_id, _params, _opts ->
+        {:ok, build(:stripe_invoice, id: invoice_id, status: "open")}
+      end)
+
+      handle_session(session)
+
+      assert [%{status: :open}] = Repo.all(Invoice)
     end
   end
 
