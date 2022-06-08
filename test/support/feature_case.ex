@@ -136,7 +136,7 @@ defmodule Picsello.FeatureCase do
       |> then(&wait_for_path_to_change_from(&1, @sign_in_path))
     end
 
-    defp wait_for_path_to_change_from(session, path) do
+    def wait_for_path_to_change_from(session, path) do
       retry(fn ->
         if current_path(session) == path do
           {:error, "not redirected after sign in."}
