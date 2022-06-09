@@ -294,21 +294,7 @@ defmodule PicselloWeb.Live.Marketing do
         icon: "bullhorn",
         button_label: "Check out our blog",
         button_class: "btn-secondary",
-        external_link:
-          "https://www.picsello.com/post/best-business-resources-for-new-photographers",
-        color: "purple-marketing-300",
-        class: "border-purple-marketing-300"
-      },
-      %{
-        action: "external-link",
-        title: "Marketing tip: SEO",
-        body:
-          "Setup Google My Business if you haven’t already and ask for more reviews—they really help your search results!",
-        icon: "bullhorn",
-        button_label: "Check out our blog",
-        button_class: "btn-secondary",
-        external_link:
-          "https://www.picsello.com/post/best-business-resources-for-new-photographers",
+        external_link: "https://www.picsello.com/post/top-10-tips-seo-for-photographers",
         color: "purple-marketing-300",
         class: "border-purple-marketing-300"
       }
