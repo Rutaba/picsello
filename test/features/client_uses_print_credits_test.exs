@@ -286,6 +286,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       assert [%{errors: []}] = run_jobs()
 
       assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
+      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
 
       session
       |> assert_url_contains("orders")
@@ -351,6 +352,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(button("Check out"))
 
       assert [%{errors: []}] = run_jobs()
+
+      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
+      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
 
       session
       |> assert_url_contains("orders")
@@ -424,6 +428,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(link("Home"))
       |> refute_has(definition("Print Credit"))
 
+      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
+      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
+
       assert_receive({:order_confirmed, _order})
     end
   end
@@ -489,6 +496,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(link("Home"))
       |> refute_has(definition("Print Credit"))
 
+      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
+      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
       refute_receive({:order_confirmed, _order})
       refute_receive({:capture_payment_intent, _intent_id})
 
