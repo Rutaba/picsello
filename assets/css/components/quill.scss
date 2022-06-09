@@ -146,4 +146,8 @@
       @apply pb-2;
     }
   }
+
+  p:not(:last-child) {
+    @apply mb-4;
+  }
 }
