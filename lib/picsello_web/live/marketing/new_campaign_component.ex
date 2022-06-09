@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         <p>You don’t have to overthink it, sometimes just a friendly reminder that you exist and are booking shoots is the only push it takes to get some people to book. Other times it’s helpful to incentivize clients to book sooner rather than later. This can be a special offer like mini sessions, or just a reminder that they’ll need to book ahead to be sure you can accommodate them at their preferred time of year.</p>
         <p>Remember, the only marketing email guaranteed to not get you business is the one you don’t send.</p>
         <p>You can send this email with the intent of  promoting upcoming sessions, bringing attention to products you offer, or simply ask for referrals and reviews!</p>
-        <p>You can customize your email by changing the font size, using the bold, underline or italics to emphasize a point.</p>
+        <p>You can customize your email by changing the <span style="font-size: 18px;">font size</span>, using the <strong>bold</strong>, <u>underline</u> or <em>italics</em> to emphasize a point.</p>
         <p>Bring your email to life by adding an image or a graphic that showcases what you are promoting!</p>
         <p>If you have a scheduler consider hyperlinking your scheduling link here in your email (ours will be coming this summer!)</p>
         <p>Remember you can always review the email before you send it - your email signature will be added so no need to add a signature!</p>
