@@ -32,7 +32,6 @@
             </div>
         </div>  
 
-        <%# use phx-drop-target with the upload ref to enable file drag and drop %>
         <div class="uploadingList__wrapper bg-base-200/30">
             <%= Enum.with_index(@invalid_photos, fn entry, index -> %>
                 <.errors target={@myself} delete_from="invalid_photos" entry={entry} index={index}>

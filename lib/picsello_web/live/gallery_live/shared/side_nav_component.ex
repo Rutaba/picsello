@@ -30,7 +30,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
-      "upload_update",
+      "upload_update:#{gallery.id}",
       {:upload_update, %{album_id: album_id}}
     )
 

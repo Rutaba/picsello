@@ -13,8 +13,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
-    max_entries: 2,
-    max_file_size: 104_857,
+    max_entries: 1500,
+    max_file_size: 104_857_600,
     auto_upload: true,
     external: &__MODULE__.presign_entry/2,
     progress: &__MODULE__.handle_progress/3
@@ -28,10 +28,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       |> Galleries.load_watermark_in_gallery()
 
     if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "upload_update")
-      PubSub.subscribe(Picsello.PubSub, "upload_pending_photos")
-      PubSub.subscribe(Picsello.PubSub, "inprogress_upload_update")
-      PubSub.subscribe(Picsello.PubSub, "delete_photos")
+      PubSub.subscribe(Picsello.PubSub, "upload_update:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "upload_pending_photos:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "inprogress_upload_update:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "delete_photos:#{gallery_id}")
     end
 
     {:ok,
@@ -130,11 +130,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     if is_list(index) do
       socket |> assigns()
     else
-      {_, pending_entries} = assigns[delete_from] |> List.pop_at(index)
+      {entry, pending_entries} = assigns[delete_from] |> List.pop_at(index)
 
       socket
       |> assign(delete_from, pending_entries)
-      |> assign(:photos_error_count, photos_error_count - 1)
+      |> assign(:photos_error_count, photos_error_count - if(is_nil(entry), do: 0, else: 1))
     end
     |> photos_error_broadcast()
     |> noreply()
@@ -166,11 +166,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       |> assign(:inprogress_photos, valid_entries)
     else
       {valid_entry, pending_entries} = pending_photos |> List.pop_at(index)
+      valid_entry = if(is_nil(valid_entry), do: [], else: [valid_entry])
 
       socket
       |> assign(:pending_photos, pending_entries)
-      |> assign(:photos_error_count, photos_error_count - 1)
-      |> assign(:inprogress_photos, if(is_nil(valid_entry), do: [], else: [valid_entry]))
+      |> assign(:photos_error_count, photos_error_count - length(valid_entry))
+      |> assign(:inprogress_photos, valid_entry)
     end
     |> update_uploader()
     |> cancel_unknown_entries()

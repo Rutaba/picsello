@@ -118,8 +118,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event("upload-failed", _, %{assigns: %{entries: entries}} = socket) do
-    if length(entries) > 0, do: inprogress_upload_broadcast(entries)
+  def handle_event("upload-failed", _, %{assigns: %{gallery: gallery, entries: entries}} = socket) do
+    if length(entries) > 0, do: inprogress_upload_broadcast(gallery.id, entries)
 
     socket
     |> open_modal(UploadError, socket.assigns)
@@ -549,7 +549,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         socket
       ) do
     socket
-    |> assign(:entries, if(length(entries) > 0, do: entries, else: []))
+    |> assign(:entries, entries)
     |> assign(:invalid_photos, invalid_photos)
     |> assign(:pending_photos, pending_photos)
     |> assign(:photos_error_count, photos_error_count)

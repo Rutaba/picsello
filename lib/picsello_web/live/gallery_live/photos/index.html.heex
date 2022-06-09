@@ -5,7 +5,7 @@
       <div id="page-scroll" phx-hook="PageScroll" class="fixed top-0 right-0 z-20 pl-10 pr-10 bg-gray-100 pt-14 left-96">
         <div class="flex flex-col md:flex-row">
           <div class="flex items-center font-sans lg:justify-start">
-            <%= if length(@gallery.albums) > 0 do %>
+            <%= if Enum.any?(@gallery.albums) do %>
             <.crumbs class="mt-2 font-sans text-xs text-base-250">
               <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
               <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
@@ -23,7 +23,7 @@
                 </.icon_button>
               <% end %>
             <% end %>
-            <%= if length(@gallery.albums) == 0 do %>
+            <%= if @gallery.albums == [] do %>
               <.icon_button {testid("add-album")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
                 Add Album
               </.icon_button>
@@ -39,7 +39,7 @@
           <div class="flex-grow p-4 font-sans">
             <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed to upload.
             <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
-            to resolve errors<%= if length(@pending_photos) > 0, do: " before uploading more photos"%>.
+            to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
           </div>
         </div>
         <%= if Enum.any?(@photos) || @favorites_filter do %>
@@ -109,18 +109,18 @@
       <div class= "pt-16 pb-10 pl-10 pr-8">
         <%= case @photos == [] do %>
           <% true when not @favorites_filter -> %>
-            <div class="relative justify-between mt-20 mb-12 font-sans text-2xl font-bold text-center text-blue-planning-300">
+            <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 Oops, there's nothing here - upload photos now to get started!
             </div>
             <div class="relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
             </div>
           <% true when @favorites_filter -> %>
-            <div class="relative justify-between mb-12 font-sans text-2xl font-bold text-center mt-52 text-blue-planning-300">
+            <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 Oops, there's no liked photo!
             </div>
           <% false -> %>
-            <div class="px-0 pt-40 pb-16 mx-0 gallery__container" id="gallery">
+            <div class={"px-0 pt-40 pb-16 mx-0 gallery__container #{@photos_error_count > 0 && 'pt-56'}"} id="gallery">
               <div
                 phx-hook="MasonryGrid"
                 phx-update={@update_mode}
@@ -149,13 +149,13 @@
                       component: false
                   %>
                 <% end %>
-              </div>
-
-              <div style="display: none">
-                <div id="selected-mode" class={@select_mode}></div>
-                <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
-              </div>
             </div>
+
+            <div style="display: none">
+              <div id="selected-mode" class={@select_mode}></div>
+              <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
+            </div>
+          </div>
         <% end %>
       </div>
     </div>

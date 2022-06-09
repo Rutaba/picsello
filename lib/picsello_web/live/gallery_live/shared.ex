@@ -372,10 +372,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  def inprogress_upload_broadcast(entries) do
+  def inprogress_upload_broadcast(gallery_id, entries) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
-      "inprogress_upload_update",
+      "inprogress_upload_update:#{gallery_id}",
       {:inprogress_upload_update, %{entries: entries}}
     )
   end

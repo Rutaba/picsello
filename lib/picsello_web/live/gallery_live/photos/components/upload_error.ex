@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     index = String.to_integer(index)
     {_, pending_photos} = assigns[delete_from] |> List.pop_at(index)
 
-    delete_broadcast(index, delete_from)
+    delete_broadcast(assigns.gallery.id, index, delete_from)
 
     socket
     |> assign(delete_from, pending_photos)
@@ -36,8 +36,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   end
 
   @impl true
-  def handle_event("delete_all_photos", _, socket) do
-    delete_broadcast([], "delete_all")
+  def handle_event("delete_all_photos", _, %{assigns: %{gallery: gallery}} = socket) do
+    delete_broadcast(gallery.id, [], "delete_all")
 
     socket
     |> close_modal()
@@ -48,12 +48,18 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   def handle_event(
         "upload_pending_photos",
         %{"index" => index},
-        %{assigns: %{invalid_photos: invalid_photos, pending_photos: pending_photos}} = socket
+        %{
+          assigns: %{
+            gallery: gallery,
+            invalid_photos: invalid_photos,
+            pending_photos: pending_photos
+          }
+        } = socket
       ) do
     index = String.to_integer(index)
     {_, pending_entries} = pending_photos |> List.pop_at(index)
 
-    upload_broadcast(index)
+    upload_broadcast(gallery.id, index)
 
     if Enum.empty?(pending_entries ++ invalid_photos) do
       socket |> close_modal()
@@ -65,8 +71,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   end
 
   @impl true
-  def handle_event("upload_all_pending_photos", _, socket) do
-    upload_broadcast([])
+  def handle_event("upload_all_pending_photos", _, %{assigns: %{gallery: gallery}} = socket) do
+    upload_broadcast(gallery.id, [])
 
     socket
     |> close_modal()
@@ -80,18 +86,18 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     |> noreply()
   end
 
-  defp upload_broadcast(index) do
+  defp upload_broadcast(gallery_id, index) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
-      "upload_pending_photos",
+      "upload_pending_photos:#{gallery_id}",
       {:upload_pending_photos, %{index: index}}
     )
   end
 
-  defp delete_broadcast(index, delete_from) do
+  defp delete_broadcast(gallery_id, index, delete_from) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
-      "delete_photos",
+      "delete_photos:#{gallery_id}",
       {:delete_photos, %{index: index, delete_from: delete_from}}
     )
   end
