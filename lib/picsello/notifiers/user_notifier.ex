@@ -118,6 +118,8 @@ defmodule Picsello.Notifiers.UserNotifier do
     end
   end
 
+  @spec deliver_order_confirmation(Picsello.Cart.Order.t(), module()) ::
+          {:ok, Bamboo.Email.t()} | {:error, any()}
   def deliver_order_confirmation(
         %{gallery: %{job: %{client: %{organization: %{user: user}}}}} = order,
         helpers
@@ -144,38 +146,32 @@ defmodule Picsello.Notifiers.UserNotifier do
         }
   def order_confirmation_params(
         %{
-          gallery: %{job: %{client: %{organization: %{user: user}}} = job} = gallery,
+          gallery: %{job: job} = gallery,
           intent: intent
         } = order,
         helpers
       ) do
-    params =
-      for(
-        fun <- [
-          &print_credit/1,
-          &print_cost/1,
-          &photographer_charge/1,
-          &photographer_payment/1
-        ],
-        reduce: %{
-          gallery_name: gallery.name,
-          job_name: Job.name(job),
-          client_charge:
-            case intent do
-              %{amount: amount} -> amount
-              nil -> ~M[0]USD
-            end,
-          client_order_url: helpers.order_url(gallery, order)
-        }
-      ) do
-        params ->
-          Map.merge(params, fun.(order))
-      end
-
-    sendgrid_template(:photographer_order_confirmation_template, params)
-    |> to({User.first_name(user), user.email})
-    |> from("noreply@picsello.com")
-    |> deliver_later()
+    for(
+      fun <- [
+        &print_credit/1,
+        &print_cost/1,
+        &photographer_charge/1,
+        &photographer_payment/1
+      ],
+      reduce: %{
+        gallery_name: gallery.name,
+        job_name: Job.name(job),
+        client_charge:
+          case intent do
+            %{amount: amount} -> amount
+            nil -> ~M[0]USD
+          end,
+        client_order_url: helpers.order_url(gallery, order)
+      }
+    ) do
+      params ->
+        Map.merge(params, fun.(order))
+    end
   end
 
   defp print_credit(%{products: products, gallery: gallery}) do
