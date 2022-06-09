@@ -238,8 +238,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <div class="">
           <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
             <label for={input_id(@f, :base_price)}>
-              <h2 class="mb-1 text-xl font-bold">Creative Session Price</h2>
-              Your cost in labor, travel, etc including download and print credits
+              <h2 class="mb-1 text-xl font-bold">Package Price</h2>
+              Includes creative session fee, professional print credits, and any digital downloads you decide to include.
             </label>
 
             <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
@@ -285,14 +285,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <label class="flex items-center">
               <%= checkbox(p, :is_enabled, class: "w-5 h-5 mr-2.5 checkbox") %>
 
-              Add
+              Include
             </label>
 
             <%= if p |> current() |> Map.get(:is_enabled) do %>
               <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
 
               <div class="flex items-center">
-                <%= label_for @f, :print_credits, label: "Gallery store credit", class: "font-normal" %>
+                <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
               </div>
             <% end %>
           </div>
