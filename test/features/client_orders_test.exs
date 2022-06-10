@@ -164,7 +164,7 @@ defmodule Picsello.ClientOrdersTest do
     Picsello.MockWHCCClient
     |> Mox.stub(:editor, fn args ->
       assert %{
-               "photos" => [%{"url" => preview_url, "printUrl" => print_url}],
+               "photos" => [%{"url" => preview_url, "printUrl" => print_url} | _],
                "redirects" => %{"complete" => %{"url" => complete_url}}
              } = args
 

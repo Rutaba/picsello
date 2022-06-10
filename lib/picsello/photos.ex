@@ -1,7 +1,7 @@
 defmodule Picsello.Photos do
   @moduledoc "context module for uploaded photos"
 
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [from: 2, where: 3, order_by: 3]
 
   alias Picsello.{
     Cart.Digital,
@@ -100,6 +100,34 @@ defmodule Picsello.Photos do
       |> Repo.update_all([])
 
     {:ok, photo}
+  end
+
+  @spec get_related(Photo.t(), favorites_only: boolean()) :: [Photo.t()]
+  def get_related(%{gallery_id: gallery_id, id: photo_id} = photo, opts \\ []) do
+    order_by =
+      case photo.album_id do
+        nil ->
+          &order_by(&1, [photo], asc_nulls_first: photo.album_id, asc: photo.position)
+
+        album_id ->
+          &order_by(&1, [photo],
+            desc_nulls_last: photo.album_id == ^album_id,
+            asc: photo.album_id,
+            asc: photo.position
+          )
+      end
+
+    query =
+      from(photo in watermarked_query(),
+        where: photo.gallery_id == ^gallery_id and photo.id != ^photo_id
+      )
+      |> order_by.()
+
+    case Keyword.get(opts, :favorites_only) do
+      true -> where(query, [photo], photo.client_liked == true)
+      _ -> query
+    end
+    |> Repo.all()
   end
 
   defdelegate path_to_url(path), to: PhotoStorage

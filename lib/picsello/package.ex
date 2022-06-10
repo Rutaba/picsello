@@ -167,7 +167,10 @@ defmodule Picsello.Package do
       field, %Money{amount: amount} ->
         {%{field => nil}, %{field => :integer}}
         |> change(%{field => amount})
-        |> validate_number(field, Keyword.put_new(validate_number_opts, :less_than_or_equal_to, 142_857_000))
+        |> validate_number(
+          field,
+          Keyword.put_new(validate_number_opts, :less_than_or_equal_to, 142_857_000)
+        )
         |> Map.get(:errors)
         |> Keyword.take([field])
     end)
