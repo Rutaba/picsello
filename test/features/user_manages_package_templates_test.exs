@@ -65,7 +65,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> fill_in(text_field("Creative Session Price"), with: "$100")
+    |> fill_in(text_field("Package Price"), with: "$100")
     |> click(checkbox("Apply a discount or surcharge"))
     |> click(option("30%"))
     |> assert_text("-$30.00")
