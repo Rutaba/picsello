@@ -58,7 +58,7 @@ defmodule Picsello.Photos do
         select: %{gallery_id: order.gallery_id}
       )
 
-    from(photo in Photo,
+    from(photo in active_photos(),
       left_join: watermarked in subquery(watermark),
       on: watermarked.gallery_id == photo.gallery_id,
       left_join: digital in subquery(digital),
@@ -129,6 +129,8 @@ defmodule Picsello.Photos do
     end
     |> Repo.all()
   end
+
+  def active_photos, do: from(p in Photo, where: p.active == true)
 
   defdelegate path_to_url(path), to: PhotoStorage
 end

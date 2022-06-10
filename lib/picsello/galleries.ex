@@ -5,11 +5,10 @@ defmodule Picsello.Galleries do
 
   import Ecto.Query, warn: false
 
-  alias Picsello.{Repo, GalleryProducts, Category, Galleries, Albums}
+  alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums}
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
-  alias Picsello.Cart.{Digital, Order}
   import Repo.CustomMacros
 
   @doc """
@@ -35,7 +34,8 @@ defmodule Picsello.Galleries do
 
   """
   def list_expired_galleries do
-    Gallery |> where(status: "expired") |> Repo.all()
+    from(g in active_galleries(), where: g.status == "expired")
+    |> Repo.all()
   end
 
   @doc """
@@ -48,8 +48,7 @@ defmodule Picsello.Galleries do
 
   """
   def list_soon_to_be_expired_galleries(date) do
-    Gallery
-    |> where([g], g.expired_at <= ^date)
+    from(g in active_galleries(), where: g.expired_at <= ^date)
     |> Repo.all()
   end
 
@@ -67,7 +66,24 @@ defmodule Picsello.Galleries do
       ** (Ecto.NoResultsError)
 
   """
-  def get_gallery!(id), do: Repo.get!(Gallery, id)
+  def get_gallery!(id), do: Repo.get_by!(active_galleries(), id: id)
+
+  @doc """
+  Gets a single gallery by job id parameter.
+
+  Returns nil if the Gallery does not exist.
+
+  ## Examples
+
+      iex> get_gallery_by_job_id(job_id)
+      %Gallery{}
+
+      iex> get_gallery_by_job_id(job_id)
+      nil
+
+  """
+  @spec get_gallery_by_job_id(job_id :: integer) :: %Gallery{} | nil
+  def get_gallery_by_job_id(job_id), do: Repo.get_by(active_galleries(), job_id: job_id)
 
   @doc """
   Gets a single gallery by hash parameter.
@@ -84,10 +100,10 @@ defmodule Picsello.Galleries do
 
   """
   @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
-  def get_gallery_by_hash(hash), do: Repo.get_by(Gallery, client_link_hash: hash)
+  def get_gallery_by_hash(hash), do: Repo.get_by(active_galleries(), client_link_hash: hash)
 
   @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
-  def get_gallery_by_hash!(hash), do: Repo.get_by!(Gallery, client_link_hash: hash)
+  def get_gallery_by_hash!(hash), do: Repo.get_by!(active_galleries(), client_link_hash: hash)
 
   @doc """
   Gets single gallery by hash, with relations populated (cover_photo)
@@ -115,7 +131,7 @@ defmodule Picsello.Galleries do
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
   def get_gallery_photos(id, opts \\ []) do
-    from(photo in Picsello.Photos.watermarked_query())
+    from(photo in Photos.watermarked_query())
     |> where(^conditions(id, opts))
     |> order_by(asc: :position)
     |> then(
@@ -138,7 +154,7 @@ defmodule Picsello.Galleries do
   """
   @spec get_gallery_photo_ids(id :: integer, opts :: keyword) :: list(integer)
   def get_gallery_photo_ids(id, opts) do
-    Photo
+    Photos.active_photos()
     |> where(^conditions(id, opts))
     |> order_by(asc: :position)
     |> select([photo], photo.id)
@@ -176,7 +192,7 @@ defmodule Picsello.Galleries do
         ) ::
           list(Photo)
   def get_all_album_photos(id, album_id) do
-    Photo
+    Photos.active_photos()
     |> where([p], p.gallery_id == ^id and p.album_id == ^album_id)
     |> order_by(asc: :position)
     |> Repo.all()
@@ -184,7 +200,7 @@ defmodule Picsello.Galleries do
 
   @spec get_all_unsorted_photos(id :: integer) :: list(Photo)
   def get_all_unsorted_photos(id) do
-    Photo
+    Photos.active_photos()
     |> where([p], p.gallery_id == ^id and is_nil(p.album_id))
     |> order_by(asc: :position)
     |> Repo.all()
@@ -243,7 +259,7 @@ defmodule Picsello.Galleries do
   ## Examples
 
       iex> delete_photos(photo_ids)
-      {:ok, [%photo{}]}
+      {non_neg_integer(), nil | [%photo{}]}
   """
   def delete_photos(photo_ids) do
     photos = get_photos_by_ids(photo_ids)
@@ -265,28 +281,27 @@ defmodule Picsello.Galleries do
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.delete_all(:digital_line_items, from(d in Digital, where: d.photo_id in ^photo_ids))
-    |> Ecto.Multi.delete_all(:photos, from(p in Photo, where: p.id in ^photo_ids))
+    |> Ecto.Multi.update_all(
+      :photos,
+      fn _ -> from(p in Photo, where: p.id in ^photo_ids, update: [set: [active: false]]) end,
+      []
+    )
     |> Repo.transaction()
     |> then(fn
-      {:ok, _} ->
-        clean_store(photos)
-        {:ok, photos}
-
-      {:error, reason} ->
-        reason
+      {:ok, %{photos: photos}} -> {:ok, photos}
+      {:error, reason} -> reason
     end)
   end
 
   @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)
   def get_photos_by_ids(photo_ids) do
-    from(p in Photo, where: p.id in ^photo_ids)
+    from(p in Photos.active_photos(), where: p.id in ^photo_ids)
     |> Repo.all()
   end
 
   @spec get_albums_photo_count(gallery_id :: integer) :: integer
   def get_albums_photo_count(gallery_id) do
-    from(p in Photo,
+    from(p in Photos.active_photos(),
       select: count(p.id),
       where: p.gallery_id == ^gallery_id and not is_nil(p.album_id)
     )
@@ -301,7 +316,7 @@ defmodule Picsello.Galleries do
   def get_album_photo_count(gallery_id, album_id, client_liked \\ false) do
     conditions = dynamic([p], p.gallery_id == ^gallery_id and p.album_id == ^album_id)
 
-    Photo
+    Photos.active_photos()
     |> where(
       ^if(client_liked,
         do: dynamic([p], p.client_liked == ^client_liked and ^conditions),
@@ -416,36 +431,7 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
-    gallery = gallery |> Repo.preload(:photos)
-    photo_ids = Enum.map(gallery.photos, & &1.id)
-
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
-      :thumbnail,
-      fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
-      []
-    )
-    |> Ecto.Multi.delete_all(:gallery_products, gallery_products_query(gallery))
-    |> Ecto.Multi.delete_all(:watermark, Ecto.assoc(gallery, :watermark))
-    |> Ecto.Multi.delete_all(:digital_line_items, from(d in Digital, where: d.photo_id in ^photo_ids))
-    |> Ecto.Multi.delete_all(:gallery_orders, from(o in Order, where: o.gallery_id == ^gallery.id))
-    |> Ecto.Multi.delete_all(:delete_photos, Ecto.assoc(gallery, :photos))
-    |> Ecto.Multi.delete_all(:albums, Ecto.assoc(gallery, :albums))
-    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
-    |> Ecto.Multi.delete(:gallery, gallery)
-    |> Repo.transaction()
-    |> then(fn
-      {:ok, _} ->
-        clean_store(gallery.photos)
-        {:ok, gallery}
-
-      {:error, reason} ->
-        reason
-    end)
-  end
-
-  defp gallery_products_query(gallery) do
-    from(gp in GalleryProduct, where: gp.gallery_id == ^gallery.id)
+    update_gallery(gallery, %{active: false})
   end
 
   @doc """
@@ -847,24 +833,7 @@ defmodule Picsello.Galleries do
     |> Picsello.Cart.Product.example_price()
   end
 
-  defp clean_store([]), do: nil
-
-  defp clean_store(photos) when is_list(photos),
-    do: Enum.each(photos, fn photo -> clean_store(photo) end)
-
-  defp clean_store(photo) do
-    [
-      photo.original_url,
-      photo.preview_url,
-      photo.watermarked_url,
-      photo.watermarked_preview_url
-    ]
-    |> Enum.each(fn path ->
-      %{path: path}
-      |> CleanStore.new()
-      |> Oban.insert()
-    end)
-  end
+  defp active_galleries, do: from(g in Gallery, where: g.active == true)
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
 end
