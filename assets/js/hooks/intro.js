@@ -23,6 +23,17 @@ function startIntroJsTour(component, introSteps, introId) {
       });
     })
     .start();
+
+  // Hide introJs if element is clicked underneath it
+  document
+    .querySelector('.introjs-showElement')
+    .addEventListener('click', () => {
+      introJs().exit();
+      component.pushEvent('intro_js', {
+        action: 'dismissed',
+        intro_id: introId,
+      });
+    });
 }
 
 export default {
