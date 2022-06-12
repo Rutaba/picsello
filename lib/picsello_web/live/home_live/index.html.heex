@@ -9,12 +9,12 @@
         <% [] -> %>
         <% items -> %>
           <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
-          <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-next-up">
-            <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class} <- items do %>
-            <li {testid("attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
+          <ul class={classes("flex px-6 pb-4 overflow-auto lg:pb-0 intro-next-up", %{"lg:overflow-none" => !@should_attention_items_overflow })}>
+            <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} <- items do %>
+            <li {testid("attention-item")} class={classes("flex-shrink-0 flex flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"lg:flex-1" => !@should_attention_items_overflow})}>
               <div>
                 <div class="flex">
-                  <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
+                  <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
                   <h1 class="text-lg font-bold"><%= title %></h1>
                 </div>
                 
@@ -29,14 +29,19 @@
                     current_user: @current_user,
                     return_url: Routes.home_url(@socket, :index),
                     stripe_status: @stripe_status %>
-                <% "help-link" -> %>
-                  <a href="https://support.picsello.com/" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                <% "external-link" -> %>
+                  <a href={external_link} class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
                     <%= button_label %>
                   </a>
-                <% "help-scout-modal" -> %>
-                  <a href="https://support.picsello.com/article/117-getting-started-with-picsello-guide" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
-                    <%= button_label %>
-                  </a>
+                <% "gallery-links" -> %>
+                  <div class="flex gap-4">
+                    <a href="https://www.figma.com/proto/JcNTIrljRRJ0gMRTaI4Jes/Client-facing-gallery?page-id=4310%3A2230&node-id=5010%3A4765&viewport=1294%2C981%2C0.1&scaling=scale-down-width&starting-point-node-id=5010%3A4765" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                      <%= button_label %>
+                    </a>
+                    <a href="https://www.figma.com/proto/x5u7Fod9H9BsUOvYYutNLb/Photographer-facing-gallery?page-id=661%3A3370&node-id=1825%3A22729&viewport=183%2C1589%2C0.11&scaling=scale-down-width&starting-point-node-id=1825%3A22729" class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                      Preview yours
+                    </a>
+                  </div>
                 <% _ -> %>
                   <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
               <% end %>
