@@ -16,6 +16,8 @@ defmodule Picsello.PricingCalculations do
 
   import Picsello.Repo.CustomMacros
 
+  @zipcode_regex ~r/^\d{5}([-]|\s*)?(\d{4})?$/
+
   defmodule LineItem do
     @moduledoc false
     use Ecto.Schema
@@ -100,7 +102,8 @@ defmodule Picsello.PricingCalculations do
       :tax_bracket,
       :take_home
     ])
-    |> validate_required([:zipcode, :job_types, :state])
+    |> validate_required([:zipcode, :job_types, :state, :min_years_experience])
+    |> validate_format(:zipcode, @zipcode_regex, message: "is invalid")
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
     |> cast_embed(:pricing_suggestions, with: &pricing_suggestions_changeset(&1, &2))
   end
