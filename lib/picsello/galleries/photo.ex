@@ -25,6 +25,13 @@ defmodule Picsello.Galleries.Photo do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{
+          gallery_id: integer(),
+          id: integer(),
+          album_id: integer() | nil,
+          gallery: Gallery.t()
+        }
+
   @create_attrs [
     :name,
     :position,

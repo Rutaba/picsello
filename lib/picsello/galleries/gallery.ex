@@ -31,6 +31,11 @@ defmodule Picsello.Galleries.Gallery do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{
+          organization: Picsello.Organization.t(),
+          name: String.t()
+        }
+
   @create_attrs [
     :name,
     :job_id,

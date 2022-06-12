@@ -24,10 +24,14 @@ defmodule Picsello.PackageTest do
         insert(:lead, %{package: %{}, shoots: [%{}, %{}]}) |> Repo.preload(:package)
 
       assert %{errors: []} =
-        Package.changeset(package, %{base_price: trunc(max_price)}, validate_shoot_count: false)
+               Package.changeset(package, %{base_price: trunc(max_price)},
+                 validate_shoot_count: false
+               )
 
       assert %{errors: [{:base_price, _}]} =
-        Package.changeset(package, %{base_price: trunc(max_price) + 1}, validate_shoot_count: false)
+               Package.changeset(package, %{base_price: trunc(max_price) + 1},
+                 validate_shoot_count: false
+               )
     end
   end
 end

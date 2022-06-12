@@ -79,6 +79,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   @impl true
+  def handle_event("step", %{"id" => step}, socket) do
+    socket
+    |> assign_step(String.to_integer(step))
+    |> assign_changeset()
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("update", %{"pricing_calculations" => params}, socket) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, pricing_calculations} ->
@@ -144,7 +152,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <% input_name = input_name(@f, :job_types) <> "[]" %>
         <div class="flex flex-col pb-1">
           <p class="py-2 font-extrabold">
-            What’s your speciality?
+            What types of photography do you do?
             <i class="italic font-light">(Select one or more)</i>
           </p>
 
@@ -203,7 +211,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
-        <p class="py-2 font-extrabold">What does your average weekly dedication look like for your photography business? <span class="italic font-normal text-base-250">(include all marketing, client communications, shoots, editing, travel, weekends, prep, etc)</span></p>
+        <p class="py-2 font-extrabold">How much time do you spend on your photography business per week? <span class="italic font-normal text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
         <div class="flex flex-wrap w-full sm:mb-8 mt-4">
           <div class="sm:w-1/3 w-full">
             <label class="flex flex-col sm:border-r-2">
@@ -227,10 +235,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </label>
           </div>
         </div>
-        <p class="py-2 font-extrabold">How much do you want to take home a year after taxes? <span class="italic font-normal text-base-250">(including healthcare costs)</span></p>
+        <p class="py-2 font-extrabold">Let’s see how much you need to make before taxes! <span class="italic font-normal text-base-250">(Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!).</span></p>
         <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
           <label class="flex flex-wrap items-center justify-between mt-4">
-            <p class="font-extrabold">Annual Desired Salary</p>
+            <p class="font-extrabold">Gross Salary Needed:</p>
             <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask" %>
             <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm" %>
           </label>
@@ -253,7 +261,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <hr class="mt-4 mb-4 sm:block hidden" />
           <div class="flex flex-wrap items-center justify-between">
-            <p class="font-extrabold py-2">Approximate After Income Tax</p>
+            <p class="font-extrabold py-2">Approximate After Income Tax<br>and SE Tax ‘aka your take home pay’</p>
             <%= hidden_input(@f, :take_home, value: take_home ) %>
             <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= take_home %></p>
           </div>
@@ -269,9 +277,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 4} = assigns) do
     ~H"""
       <.container {assigns}>
-        <h4 class="text-2xl font-bold">All businesses have costs.</h4>
-        <p class="italic">(We’ll provide you a rough estimate on what these should cost you by what you’ve answered so far. You can go in tweak what you need.)</p>
-        <.financial_review take_home={@pricing_calculations.take_home} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
+        <h4 class="text-2xl font-bold">Let’s figure out how much you spend on your business.</h4>
+        <p class="italic">(We provide you a rough estimate on what your costs should be based on industry standards and by what you’ve answered so far. You can go in and tweak based on your actual costs.)</p>
+        <.financial_review desired_salary={@pricing_calculations.desired_salary} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
         <h4 class="text-2xl font-bold mb-4">Cost categories</h4>
         <ul>
           <%= inputs_for @f, :business_costs, fn fp -> %>
@@ -307,7 +315,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <% end %>
         </div>
         <h4 class="text-2xl font-bold mb-4">Financial Summary</h4>
-        <.financial_review take_home={@pricing_calculations.take_home} costs={@costs} />
+        <.financial_review desired_salary={@pricing_calculations.desired_salary} costs={@costs} />
         <div class="flex justify-end mt-8">
           <button type="button" class="btn-secondary mr-4" phx-click="previous">Back</button>
           <button type="submit" class="btn-primary">Email results</button>
@@ -365,7 +373,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 mb-10" />
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
         <h1 class="md:text-6xl text-4xl font-bold mb-10">Pricing <span class="md:border-b-8 border-b-4 border-blue-planning-300">Calculator</span></h1>
-        <p class="text-xl mb-4">You probably aren’t charging enough and we’d like to help. We have 4 sections for you to fill out to calculate what you should be charging</p>
+        <p class="text-xl mb-4">Really easy to use and backed by 3 years of industry research our calculator helps you set your prices so your business can be profitable. We have 4 quick sections for you to fill out so let’s go!</p>
         <ul class="flex flex-wrap columns-2">
           <li class="flex items-center mb-2 md:w-1/2 w-full"><span class="bg-blue-planning-300 text-white w-8 h-8 block flex items-center justify-center mr-2 rounded-full font-bold"><span class="-mt-1">1</span></span>Information about your business</li>
           <li class="flex items-center mb-2 md:w-1/2 w-full"><span class="bg-blue-planning-300 text-white w-8 h-8 block flex items-center justify-center mr-2 rounded-full font-bold"><span class="-mt-1">2</span></span>Financial & time goals</li>
@@ -555,7 +563,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <div class="bg-gray-100 flex flex-wrap justify-between items-center p-8 my-6 rounded-lg" {intro_hints_only("intro_hints_only")}>
         <div class="sm:w-auto w-full">
-          <h5 class="text-center font-bold text-4xl mb-2"><%= @take_home %></h5>
+          <h5 class="text-center font-bold text-4xl mb-2"><%= @desired_salary %></h5>
           <p class="italic text-center">Desired Take Home</p>
         </div>
         <p class="text-center font-bold text-5xl sm:mb-8 sm:w-auto w-full">+</p>
@@ -565,7 +573,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <p class="text-center font-bold text-5xl sm:mb-8 sm:w-auto w-full">=</p>
         <div class="sm:w-auto w-full">
-          <h5 class="text-center font-bold text-4xl mb-2"><%= PricingCalculations.calculate_revenue(@take_home, @costs) %></h5>
+          <h5 class="text-center font-bold text-4xl mb-2"><%= PricingCalculations.calculate_revenue(@desired_salary, @costs) %></h5>
           <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
         </div>
       </div>
@@ -621,7 +629,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def sidebar_nav(assigns) do
     ~H"""
-    <nav class="bg-gray-100 p-4 mt-8 rounded-lg lg:block hidden">
+    <nav class="bg-gray-100 px-4 pt-4 mt-4 rounded-lg lg:block hidden">
       <ul>
         <.sidebar_step current_step={@step} step={1} title="Information about your business" />
         <.sidebar_step current_step={@step} step={2} title="Financial & time goals" />
@@ -663,10 +671,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <div class="flex w-screen min-h-screen bg-gray-100 relative">
         <div class="bg-white lg:w-1/4 w-full lg:px-12 lg:py-12 px-8 py-8 lg:h-screen flex flex-col fixed">
           <div class="flex justify-between lg:block">
-            <.icon name="logo" class="ml-16 lg:ml-0 w-32 h-7 lg:h-11 lg:w-48 lg:mb-10" />
-            <h3 class="lg:text-4xl text-xl font-bold lg:mb-4">Pricing Calculator</h3>
+            <.icon name="logo" class="ml-16 lg:ml-0 w-32 h-7 lg:h-11 lg:w-48 lg:mb-4" />
+            <h3 class="lg:text-4xl text-xl font-bold lg:mb-4">Smart Profit Pricing Calculator </h3>
           </div>
-          <p class="text-2xl mb-4 lg:block hidden">You probably aren't charging enough and we'd like to help</p>
+          <p class="text-2xl lg:block hidden">Let’s figure out your prices so your business can be a profitable one!</p>
           <.sidebar_nav step={@step} />
           <div class="circleBtn lg:bottom-8 lg:left-8 lg:top-auto bottom-auto top-5 left-5 absolute">
             <ul>
