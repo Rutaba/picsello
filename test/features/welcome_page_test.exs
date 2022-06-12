@@ -57,7 +57,7 @@ defmodule Picsello.WelcomePageTest do
       session
       |> visit(email |> email_substitutions |> Map.get("url"))
       |> assert_flash(:info, text: "Your email has been confirmed")
-      |> assert_has(testid("attention-item", count: 3))
+      |> assert_has(testid("attention-item", count: 4))
     end
 
     feature "user sees attention card to create new lead", %{session: session, user: user} do
@@ -73,7 +73,7 @@ defmodule Picsello.WelcomePageTest do
 
       session
       |> visit("/")
-      |> assert_has(testid("attention-item", count: 3))
+      |> assert_has(testid("attention-item", count: 4))
     end
 
     feature "user opens lead creation from floating menu", %{session: session} do
