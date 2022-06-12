@@ -138,6 +138,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
       <div class="relative flex py-10 font-sans bg-white">
           <div id="product-preview" class="items-center grid grid-cols-3 gap-4">
               <%= for product <- @updated_products do %>
+              <%= if product.category.coming_soon == false do %>
               <div class="items-center">
                 <div
                 id={"product-#{product.id}"}
@@ -146,13 +147,14 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
                 phx-value-product={product.id}
                 >
                   <div class="flex justify-center row-span-2 previewImg">
-                    <.framed_preview  item_id={product.category.id} category={product.category} photo={product.preview_photo} />
+                    <.framed_preview  item_id={product.category.id} category={product.category} photo={product.preview_photo} width={if product.category.id == 1, do: "198", else: "300"} />
                   </div>
                 </div>
                 <div class="flex items-center pt-4 font-sans fomt-bold">
                   <%= product.category.name %>
                 </div>
               </div>
+              <% end %>
               <% end %>
           </div>
       </div>

@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
   alias Picsello.{Photos, Category, Galleries.Photo}
 
   @defaults %{
-    width: 300,
     height: 255,
     preview: nil
   }
@@ -26,7 +25,7 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
       height={@height}
       id={@id}
       phx-hook="Preview"
-      width={@width}>
+      width={Map.get(assigns, :width, 300)}>
     </canvas>
     """
   end
