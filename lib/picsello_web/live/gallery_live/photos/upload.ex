@@ -13,8 +13,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
-    max_entries: 1500,
-    max_file_size: 104_857_600,
+    max_entries: String.to_integer(Application.compile_env(:picsello, :photos_max_entries)),
+    max_file_size: String.to_integer(Application.compile_env(:picsello, :photo_max_file_size)),
     auto_upload: true,
     external: &__MODULE__.presign_entry/2,
     progress: &__MODULE__.handle_progress/3
@@ -196,6 +196,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     if entry.done? do
       {:ok, photo} = create_photo(gallery, entry, persisted_album_id)
       uploaded_files = uploaded_files + 1
+      {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count + 1})
       start_photo_processing(photo, gallery.watermark)
 
       Phoenix.PubSub.broadcast(
@@ -205,11 +206,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       )
 
       socket
-      |> assign(uploaded_files: uploaded_files)
       |> assign(
-        progress:
-          progress
-          |> GalleryUploadProgress.complete_upload(entry)
+        uploaded_files: uploaded_files,
+        gallery: gallery,
+        progress: GalleryUploadProgress.complete_upload(progress, entry)
       )
       |> assign_overall_progress()
     else
