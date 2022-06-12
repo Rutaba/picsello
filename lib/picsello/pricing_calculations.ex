@@ -284,10 +284,10 @@ defmodule Picsello.PricingCalculations do
   end
 
   def calculate_revenue(
-        take_home,
+        desired_salary,
         costs
       ),
-      do: Money.add(take_home, costs)
+      do: Money.add(desired_salary, costs)
 
   def calculate_all_costs(business_costs) do
     business_costs
