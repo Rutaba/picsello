@@ -211,7 +211,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
-        <p class="py-2 font-extrabold">How much time do you spend on your photography business per week? <span class="italic font-normal text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <p class="py-2 font-extrabold">How much time do you spend on your photography business per week? <span class="italic font-normal font-xs text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
         <div class="flex flex-wrap w-full sm:mb-8 mt-4">
           <div class="sm:w-1/3 w-full">
             <label class="flex flex-col sm:border-r-2">
@@ -235,7 +235,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </label>
           </div>
         </div>
-        <p class="py-2 font-extrabold">Let’s see how much you need to make before taxes! <span class="italic font-normal text-base-250">(Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!).</span></p>
+        <p class="py-2 font-extrabold">Let’s see how much you need to make before taxes! <span class="italic font-normal font-xs text-base-250">(Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!).</span></p>
         <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
           <label class="flex flex-wrap items-center justify-between mt-4">
             <p class="font-extrabold">Gross Salary Needed:</p>
