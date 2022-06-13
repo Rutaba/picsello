@@ -129,7 +129,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
           optional(:subject) => String.t(),
-          optional(:presets) => [%Picsello.EmailPreset{}],
+          optional(:presets) => [%Picsello.EmailPresets.EmailPreset{}],
           optional(:current_user) => %Picsello.Accounts.User{},
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean

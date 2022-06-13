@@ -5,7 +5,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
   use Oban.Worker, queue: :default
 
   alias GoogleApi.Sheets.V4, as: Sheets
-  alias Picsello.{Repo, EmailPreset}
+  alias Picsello.{Repo, EmailPresets.EmailPreset}
   import Ecto.Query, only: [from: 2]
 
   def perform(), do: perform(%{args: config()})

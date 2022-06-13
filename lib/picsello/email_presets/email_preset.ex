@@ -1,4 +1,4 @@
-defmodule Picsello.EmailPreset do
+defmodule Picsello.EmailPresets.EmailPreset do
   @moduledoc "options for pre-written emails"
   use Ecto.Schema
   import Ecto.Changeset

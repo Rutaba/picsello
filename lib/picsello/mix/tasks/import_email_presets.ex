@@ -3,7 +3,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
 
   use Mix.Task
 
-  alias Picsello.{Repo, EmailPreset}
+  alias Picsello.{Repo, EmailPresets.EmailPreset}
 
   @shortdoc "import email presets"
   def run(_) do

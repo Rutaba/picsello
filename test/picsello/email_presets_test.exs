@@ -1,6 +1,6 @@
 defmodule Picsello.EmailPresetsTest do
   use Picsello.DataCase, async: true
-  alias Picsello.{EmailPresets, EmailPreset}
+  alias Picsello.{EmailPresets, EmailPresets.EmailPreset}
   import Money.Sigils
 
   describe "for %Job{}" do

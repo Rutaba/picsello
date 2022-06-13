@@ -53,8 +53,7 @@ defmodule Picsello.EmailPresets.GalleryResolver do
         helpers(resolver).gallery_url(gallery(resolver).client_link_hash)
       end,
       "photography_company_s_name" => &organization(&1).name,
-      "photographer_first_name" =>
-        &(&1 |> photographer() |> Map.get(:name) |> String.split() |> hd),
+      "photographer_first_name" => &(&1 |> photographer() |> Picsello.Accounts.User.first_name()),
       "gallery_name" => &(&1 |> gallery() |> Map.get(:name)),
       "gallery_expiration_date" =>
         &with(

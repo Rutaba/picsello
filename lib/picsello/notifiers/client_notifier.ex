@@ -136,6 +136,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       Map.merge(
         %{
           logo_url: if(organization.profile.logo, do: organization.profile.logo.url),
+          organization_name: organization.name,
           email_signature: email_signature(organization)
         },
         params
