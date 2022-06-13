@@ -25,7 +25,10 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product, digital, or bundle in the cart.
   """
-  @spec place_product({:bundle, Money.t()} | CartProduct.t() | Digital.t(), Gallery.t()) ::
+  @spec place_product(
+          {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
+          %Gallery{id: integer()} | integer()
+        ) ::
           Order.t()
   def place_product(product, %Gallery{id: gallery_id} = gallery) do
     opts = [credits: credit_remaining(gallery)]
@@ -120,7 +123,7 @@ defmodule Picsello.Cart do
   Deletes the product from order. Deletes order if order has only the one product.
   """
   def delete_product(%Order{} = order, opts) do
-    order = Repo.preload(order, [:digitals, :products])
+    %{gallery: gallery} = order = Repo.preload(order, [:gallery, :digitals, :products])
 
     order
     |> item_count()
@@ -130,7 +133,7 @@ defmodule Picsello.Cart do
 
       _ ->
         order
-        |> Order.delete_product_changeset(opts)
+        |> Order.delete_product_changeset(Keyword.put(opts, :credits, credit_remaining(gallery)))
         |> Repo.update()
     end
     |> case do

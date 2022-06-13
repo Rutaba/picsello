@@ -124,6 +124,36 @@ defmodule Picsello.CartTest do
       assert Order.total_cost(order) == ~M[200]USD
     end
 
+    test "with an editor id and multiple products and print credits reassigns print credits" do
+      order =
+        insert(:order,
+          gallery:
+            insert(:gallery,
+              job:
+                insert(:lead,
+                  package: insert(:package, print_credits: ~M[100]USD)
+                )
+            )
+        )
+
+      order =
+        order
+        |> Repo.preload(:products)
+        |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
+        |> Repo.update!()
+        |> Repo.preload([products: :whcc_product], force: true)
+        |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
+        |> Repo.update!()
+        |> Repo.preload([:digitals, products: :whcc_product], force: true)
+
+      assert {:loaded,
+              %Order{
+                products: [%{editor_id: "123", print_credit_discount: ~M[100]USD}]
+              } = order} = Cart.delete_product(order, editor_id: "abc")
+
+      assert Order.total_cost(order) == ~M[100]USD
+    end
+
     test "with an editor id and some digitals removes the product", %{order: order} do
       digital = %Digital{
         photo_id: insert(:photo).id,

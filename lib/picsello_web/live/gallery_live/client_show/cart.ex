@@ -114,7 +114,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       case params do
         %{"editor-id" => editor_id} -> [editor_id: editor_id]
         %{"digital-id" => digital_id} -> [digital_id: String.to_integer(digital_id)]
-        %{"bundle" => _} -> :bundle
+        %{"bundle" => _} -> [bundle: true]
       end
 
     case Cart.delete_product(order, item) do

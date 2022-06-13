@@ -110,20 +110,28 @@ defmodule Picsello.Cart.Order do
   def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
   def number(id), do: Picsello.Cart.OrderNumber.to_number(id)
 
+  @spec delete_product_changeset(t(),
+          bundle: true,
+          editor_id: String.t(),
+          digital_id: integer(),
+          credits: %{digital: integer(), print: Money.t()}
+        ) :: Ecto.Changeset.t()
   def delete_product_changeset(%__MODULE__{} = order, opts) do
-    case {opts, order} do
-      {:bundle, _} ->
+    case {Keyword.take(opts, [:bundle, :editor_id, :digital_id]), order} do
+      {[bundle: true], _} ->
         order
         |> change()
         |> put_change(:bundle_price, nil)
 
       {[editor_id: editor_id], %{products: products}} when is_list(products) ->
         order
-        |> change()
-        |> put_assoc(
-          :products,
-          products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
+        |> cast(
+          %{
+            products: products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
+          },
+          []
         )
+        |> cast_assoc(:products)
 
       {[digital_id: digital_id], %{digitals: digitals}} when is_list(digitals) ->
         order_credit_count = Enum.count(digitals, & &1.is_credit)
