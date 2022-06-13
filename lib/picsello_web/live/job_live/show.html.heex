@@ -15,7 +15,7 @@
   </div>
 </header>
 
-<div class="md:px-6 py-2 center-container" {intro_hints_only("intro_hints_only_cards")}>
+<div class="md:px-6 py-2 center-container" {intro(@current_user, "intro_jobs")}>
   <.section id="details-communications" icon="envelope" title="Details & communications" collapsed_sections={@collapsed_sections}>
     <div class="flex flex-col md:flex-row md:items-start">
       <div class="flex-1 grid md:grid-cols-2 gap-5">
@@ -55,7 +55,7 @@
         <%= case gallery_attrs(@job) do %>
           <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text} -> %>
             <p><%= text %></p>
-            <button class="btn-primary mt-4 self-end" phx-click={button_click} disabled={button_disabled}><%= button_text %></button>
+            <button class="btn-primary mt-4 self-end intro-gallery" phx-click={button_click} disabled={button_disabled}><%= button_text %></button>
         <% end %>
       </.card>
     </div>

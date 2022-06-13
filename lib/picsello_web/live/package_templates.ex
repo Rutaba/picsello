@@ -50,7 +50,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
               (A package is a reusable template to use when creating a potential photoshoot.)
               Go ahead and create your first one! If you need help with calculating your pricing, we have a handy calculator for you to <%= link("use here", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300") %>!
             <% else %>
-              Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= link("Check out our helpful calculator!", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300") %>
+              Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= link("Check out our helpful calculator!", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300 intro-calculator") %>
             <% end %>
           </p>
         </div>
