@@ -192,7 +192,7 @@ defmodule Picsello.ClientOrdersTest do
         editor_id: "editor-id"
       )
     end)
-    |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
+    |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id", quantity: nil}], _opts ->
       build(:whcc_editor_export, unit_base_price: ~M[300]USD, order_sequence_number: 1)
     end)
     |> Mox.expect(:create_order, fn _account_id, _export ->

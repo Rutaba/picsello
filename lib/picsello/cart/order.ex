@@ -75,7 +75,17 @@ defmodule Picsello.Cart.Order do
   def update_changeset(%{products: products} = cart, %Product{} = product, attrs, opts)
       when is_list(products) do
     cart
-    |> cast(Map.put(attrs, :products, update_prices([product | products], opts)), [])
+    |> cast(
+      Map.put(
+        attrs,
+        :products,
+        update_prices(
+          [product | remove_product_with_editor_id(products, product.editor_id)],
+          opts
+        )
+      ),
+      []
+    )
     |> cast_assoc(:products)
   end
 
@@ -127,7 +137,7 @@ defmodule Picsello.Cart.Order do
         order
         |> cast(
           %{
-            products: products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
+            products: products |> remove_product_with_editor_id(editor_id) |> update_prices(opts)
           },
           []
         )
@@ -169,6 +179,9 @@ defmodule Picsello.Cart.Order do
   def total_cost(%__MODULE__{} = order) do
     Money.add(digital_total(order), product_total(order))
   end
+
+  defp remove_product_with_editor_id(products, editor_id),
+    do: Enum.reject(products, &(&1.editor_id == editor_id))
 
   defp update_prices(products, opts) do
     for {_, line_items} <- sort_products(products), reduce: [] do
