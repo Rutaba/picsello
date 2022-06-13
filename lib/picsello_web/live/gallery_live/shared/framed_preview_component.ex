@@ -16,6 +16,7 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
     assigns =
       assigns
       |> assign(@defaults)
+      |> assign_new(:width, fn -> "300" end)
       |> assign(:config, config)
       |> assign_new(:id, fn -> to_id(config) end)
 
@@ -25,7 +26,7 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
       height={@height}
       id={@id}
       phx-hook="Preview"
-      width={Map.get(assigns, :width, 300)}>
+      width={@width}>
     </canvas>
     """
   end

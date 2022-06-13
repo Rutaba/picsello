@@ -39,7 +39,6 @@ defmodule PicselloWeb.Live.Admin.Categories do
             <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{whcc_id}"}>
               <%= hidden_input f, :id %>
               <%= checkbox f, :coming_soon, class: "checkbox", phx_debounce: 200 %>
-              <%= hidden_input f, :id %>
               <%= checkbox f, :hidden, class: "checkbox", phx_debounce: 200 %>
               <div>
                 <.icon name={icon} class="w-4 h-4" />
