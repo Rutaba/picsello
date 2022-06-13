@@ -39,7 +39,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def handle_event("previous", _, %{assigns: %{step: step}} = socket) do
     socket
-    |> assign_step(step - 1)
+    |> assign_step(if(step == 6, do: 4, else: step - 1))
     |> assign_changeset()
     |> noreply()
   end
@@ -68,9 +68,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   @impl true
   def handle_event("validate", %{"pricing_calculations" => params}, socket) do
-    socket
-    |> assign_changeset(params)
-    |> noreply()
+    socket |> assign_changeset(params) |> noreply()
   end
 
   @impl true
@@ -642,6 +640,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def sidebar_step(%{step: step, current_step: current_step} = assigns) do
     next_step = step + 1
+    current_step = if(current_step == 6, do: 4, else: current_step)
 
     assigns =
       Enum.into(assigns, %{
@@ -689,7 +688,18 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <div class="lg:w-3/4 w-full flex flex-col sm:pb-32 pb-12 ml-auto px-4 sm:px-16">
           <div class="max-w-5xl w-full mx-auto sm:mt-40 mt-32">
-            <h1 class="sm:text-4xl text-2xl font-bold mb-12 flex items-center lg:-ml-14"><%= if @step == 6 do %><button type="submit" disabled={!@changeset.valid?} class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none"><.icon name="back" class="w-4 h-4 stroke-current" /></button><% else %><span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl"><span class="-mt-1"><%= @step - 1 %></span></span><% end %><%= @step_title %></h1>
+            <h1 class="sm:text-4xl text-2xl font-bold mb-12 flex items-center lg:-ml-14">
+              <%= if @step == 6 do %>
+                <div phx-click="previous" class="cursor-pointer bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none">
+                  <.icon name="back" class="w-4 h-4 stroke-current" />
+                </div>
+              <% else %>
+                <span class="bg-blue-planning-300 text-white w-12 h-12 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-xl">
+                  <span class="-mt-1"><%= @step - 1 %></span>
+                </span>
+              <% end %>
+              <%= @step_title %>
+            </h1>
           </div>
           <div class="max-w-5xl w-full mx-auto bg-blue-planning-300 rounded-lg overflow-hidden">
             <div class="bg-white ml-3 px-6 pt-8 pb-6 sm:p-14">
