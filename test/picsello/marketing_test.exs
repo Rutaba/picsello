@@ -31,6 +31,8 @@ defmodule Picsello.MarketingTest do
                      "to" => [%{"email" => "client@example.com"}],
                      "dynamic_template_data" => %{
                        "initials" => "JJ",
+                       "organization_name" => "Photo 1",
+                       "logo_url" => nil,
                        "color" => ^color,
                        "content" => "<p>body</p>"
                      }
