@@ -209,7 +209,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <.container {assigns}>
         <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
-        <p class="py-2 font-extrabold">How much time do you spend on your photography business per week? <span class="italic font-normal">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <p class="py-2 font-extrabold">How much time do you spend on your photography business per week? <span class="italic font-normal font-xs text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
         <div class="flex flex-wrap w-full sm:mb-8 mt-4">
           <div class="sm:w-1/3 w-full">
             <label class="flex flex-col sm:border-r-2">
@@ -233,7 +233,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </label>
           </div>
         </div>
-        <p class="py-2 font-extrabold">Let’s see how much you need to make before taxes! <span class="italic font-normal">(Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!).</span></p>
+        <p class="py-2 font-extrabold">Let’s see how much you need to make before taxes! <span class="italic font-normal font-xs text-base-250">(Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!).</span></p>
         <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
           <label class="flex flex-wrap items-center justify-between mt-4">
             <p class="font-extrabold">Gross Salary Needed:</p>
@@ -242,19 +242,19 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </label>
           <hr class="mt-4 mb-4 sm:block hidden"/>
           <div class="flex flex-wrap items-center justify-between">
-            <p class="font-extrabold">Approximate Tax Bracket <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
+            <p class="font-extrabold">Approximate Tax Bracket <br /> <span class="font-normal italic font-xs text-base-250">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
             <%= hidden_input(@f, :tax_bracket, value: tax_bracket.percentage ) %>
             <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= tax_bracket.percentage %>%</p>
           </div>
           <hr class="mt-4 mb-4 sm:block hidden" />
           <div class="flex flex-wrap items-center justify-between">
-            <p class="font-extrabold py-2">Approximate After Income Tax <br /> <span class="font-normal italic">How did you calculate this? <.intro_hint content="Using the formula found here. We calculated the amount of income you would receive after taxes." class="ml-1" /></span></p>
+            <p class="font-extrabold py-2">Approximate After Income Tax <br /> <span class="font-normal italic font-xs text-base-250"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/122-how-federal-tax-brackets-work">Learn more</a> about this calculation</span></p>
             <%= hidden_input(@f, :after_income_tax, value: after_tax_income ) %>
             <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= after_tax_income %></p>
           </div>
           <hr class="mt-4 mb-4 sm:block hidden" />
           <div class="flex flex-wrap items-center justify-between">
-            <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage this is calculate after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
+            <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic font-xs text-base-250">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage this is calculate after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
             <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
           </div>
           <hr class="mt-4 mb-4 sm:block hidden" />
