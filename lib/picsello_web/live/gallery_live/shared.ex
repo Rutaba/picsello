@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
-  alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent, GalleryMessageComponent}
+  alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -223,43 +223,27 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ) do
     case prepare_gallery(gallery) do
       {:ok, _} ->
-        hash =
-          gallery
-          |> Galleries.set_gallery_hash()
-          |> Map.get(:client_link_hash)
+        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
 
-        gallery = Repo.preload(gallery, job: :client)
-
-        link = Routes.gallery_client_index_url(socket, :index, hash)
-        client_name = gallery.job.client.name
-
-        subject = "#{gallery.name} photos"
-
-        html = """
-        <p>Hi #{client_name},</p>
-        <p>Your gallery is ready to view! You can view the gallery here: <a href="#{link}">#{link}</a></p>
-        <p>Your photos are password-protected, so you’ll also need to use this password to get in: <b>#{gallery.password}</b></p>
-        <p>Happy viewing!</p>
-        """
-
-        text = """
-        Hi #{client_name},
-
-        Your gallery is ready to view! You can view the gallery here: #{link}
-
-        Your photos are password-protected, so you’ll also need to use this password to get in: #{gallery.password}
-
-        Happy viewing!
-        """
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery},
+              PicselloWeb.Helpers
+            )
+          end
 
         socket
         |> assign(:job, gallery.job)
         |> assign(:gallery, gallery)
-        |> GalleryMessageComponent.open(%{
-          body_html: html,
-          body_text: text,
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          body_html: body_html,
           subject: subject,
-          modal_title: "Share gallery"
+          modal_title: "Share gallery",
+          presets: [],
+          enable_image: true,
+          enable_size: true
         })
         |> noreply()
 

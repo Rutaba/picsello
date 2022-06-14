@@ -39,7 +39,7 @@ defmodule Picsello.CreateBookingProposalTest do
         }
       })
 
-    insert(:email_preset, job_type: lead.type, job_state: :booking_proposal)
+    insert(:email_preset, job_type: lead.type, state: :booking_proposal)
 
     [lead: lead]
   end
@@ -87,7 +87,8 @@ defmodule Picsello.CreateBookingProposalTest do
     path =
       email
       |> email_substitutions
-      |> Map.get("url")
+      |> Map.get("button")
+      |> Map.get(:url)
       |> URI.parse()
       |> Map.get(:path)
 

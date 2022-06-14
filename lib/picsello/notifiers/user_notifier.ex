@@ -96,6 +96,26 @@ defmodule Picsello.Notifiers.UserNotifier do
     |> deliver_transactional_email(user)
   end
 
+  def deliver_shipping_notification(event, order, helpers) do
+    with %{gallery: gallery} <- order |> Repo.preload(:gallery),
+         [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_shipping_to_photographer),
+         %{shipping_info: [%{tracking_url: tracking_url} | _]} <- event,
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {gallery, order}, helpers) do
+      deliver_transactional_email(
+        %{
+          subject: subject,
+          body: body,
+          button: %{
+            text: "Track shipping",
+            url: tracking_url
+          }
+        },
+        Picsello.Galleries.gallery_photographer(gallery)
+      )
+    end
+  end
+
   defp deliver_transactional_email(params, user) do
     sendgrid_template(:generic_transactional_template, params)
     |> to(user.email)

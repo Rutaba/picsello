@@ -587,13 +587,16 @@ defmodule Picsello.Factory do
       %Picsello.Cart.Order{gallery: fn -> build(:gallery) end}
       |> evaluate_lazy_attributes()
 
-  def email_preset_factory,
-    do: %Picsello.EmailPreset{
-      subject_template: "Subjectively speaking",
-      body_template: "this is my body",
-      name: "use this email preset!",
-      position: 0
-    }
+  def email_preset_factory(attrs),
+    do:
+      %Picsello.EmailPresets.EmailPreset{
+        subject_template: "Subjectively speaking",
+        body_template: "this is my body",
+        name: "use this email preset!",
+        type: :job,
+        position: 0
+      }
+      |> merge_attributes(attrs)
 
   def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
 

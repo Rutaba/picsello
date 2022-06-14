@@ -1,4 +1,4 @@
-defmodule Picsello.EmailPresetsTest do
+defmodule Picsello.ChooseEmailPresetsTest do
   use Picsello.FeatureCase, async: true
   require Ecto.Query
   import Money.Sigils
@@ -32,7 +32,7 @@ defmodule Picsello.EmailPresetsTest do
         column_map: %{
           "copy" => :body_template,
           "email template name" => :name,
-          "state" => :job_state,
+          "state" => :state,
           "subject lines" => :subject_template
         },
         sheet_id: "whatever",
@@ -79,7 +79,7 @@ defmodule Picsello.EmailPresetsTest do
     assert_receive {:delivered_email,
                     %{
                       private: %{
-                        send_grid_template: %{dynamic_template_data: %{"body_html" => html}}
+                        send_grid_template: %{dynamic_template_data: %{"body" => html}}
                       }
                     }}
 

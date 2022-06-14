@@ -2,7 +2,6 @@ defmodule Picsello.GalleryOverviewTest do
   use Picsello.FeatureCase, async: false
 
   alias Picsello.Galleries
-  alias PicselloWeb.GalleryLive.Settings.ExpirationDateComponent
 
   setup :onboarded
   setup :authenticated
@@ -85,18 +84,18 @@ defmodule Picsello.GalleryOverviewTest do
     |> click(css("#saveGalleryExpiration"))
 
     updated_gallery = Galleries.get_gallery!(gallery.id)
-    never_date = ExpirationDateComponent.never_date()
 
-    assert never_date == updated_gallery.expired_at
+    assert nil == updated_gallery.expired_at
   end
 
   feature "Expiration date, set gallery expiry", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
     |> scroll_into_view(css("#expiration_component"))
-    |> find(css("#updateGalleryExpirationForm_month"), &click(&1, option("January")))
-    |> find(css("#updateGalleryExpirationForm_day"), &click(&1, option("2")))
-    |> find(css("#updateGalleryExpirationForm_year"), &click(&1, option("2023")))
+    |> click(css("#updateGalleryNeverExpire"))
+    |> find(select("date[month]"), &click(&1, option("January")))
+    |> find(select("date[day]"), &click(&1, option("2")))
+    |> find(select("date[year]"), &click(&1, option("2023")))
     |> click(css("#saveGalleryExpiration"))
 
     updated_gallery = Galleries.get_gallery!(gallery.id)

@@ -114,7 +114,7 @@ defmodule Picsello.Orders do
   end
 
   @doc "stores processing info in order it finds"
-  def update_whcc_order(%{entry_id: entry_id} = payload) do
+  def update_whcc_order(%{entry_id: entry_id} = payload, helpers) do
     case from(order in Order,
            where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id),
            preload: [products: :whcc_product]
@@ -127,8 +127,27 @@ defmodule Picsello.Orders do
         order
         |> Order.whcc_order_changeset(payload)
         |> Repo.update()
+        |> case do
+          {:ok, updated_order} ->
+            maybe_send_shipping_notification(payload, updated_order, helpers)
+            {:ok, updated_order}
+
+          error ->
+            error
+        end
     end
   end
+
+  defp maybe_send_shipping_notification(
+         %Picsello.WHCC.Webhooks.Event{event: "Shipped"} = event,
+         order,
+         helpers
+       ) do
+    Picsello.Notifiers.ClientNotifier.deliver_shipping_notification(event, order, helpers)
+    Picsello.Notifiers.UserNotifier.deliver_shipping_notification(event, order, helpers)
+  end
+
+  defp maybe_send_shipping_notification(_payload, _order, _helpers), do: nil
 
   def can_download_all?(%Gallery{} = gallery) do
     Galleries.do_not_charge_for_download?(gallery) || bundle_purchased?(gallery)

@@ -125,10 +125,12 @@ defmodule Picsello.Marketing do
   end
 
   defp template_variables(user, body_html) do
-    %{profile: profile} = Profiles.find_organization_by(user: user)
+    %{profile: profile, name: name} = Profiles.find_organization_by(user: user)
 
     %{
       initials: User.initials(user),
+      logo_url: if(profile.logo, do: profile.logo.url),
+      organization_name: name,
       color: profile.color,
       content: body_html
     }
