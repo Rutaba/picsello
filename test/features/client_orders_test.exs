@@ -72,7 +72,11 @@ defmodule Picsello.ClientOrdersTest do
       }) do
     test_pid = self()
 
-    Mox.stub(mock, :create_session, fn %{success_url: success_url} = params, opts ->
+    Mox.stub(mock, :create_session, fn %{
+                                         success_url: success_url,
+                                         payment_intent_data: payment_intent_data
+                                       } = params,
+                                       opts ->
       assert {:connect_account, connect_account_id} in opts
       success_url = URI.parse(success_url)
       assert %{"session_id" => "{CHECKOUT_SESSION_ID}"} = URI.decode_query(success_url.query)
@@ -84,7 +88,9 @@ defmodule Picsello.ClientOrdersTest do
            success_url
            |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
            |> URI.to_string(),
-         payment_intent: %{payment_intent() | id: payment_intent_id, amount: amount}
+         payment_intent:
+           %{payment_intent() | id: payment_intent_id, amount: amount}
+           |> Map.merge(payment_intent_data)
        }}
     end)
   end
@@ -94,8 +100,8 @@ defmodule Picsello.ClientOrdersTest do
         session: stripe_session_id,
         payment_intent: payment_intent_id
       }) do
-    Mox.expect(mock, :retrieve_session, fn ^stripe_session_id,
-                                           connect_account: ^connect_account_id ->
+    Mox.stub(mock, :retrieve_session, fn ^stripe_session_id,
+                                         connect_account: ^connect_account_id ->
       order_number = Order |> Repo.one!() |> Order.number()
 
       {:ok,
@@ -186,11 +192,11 @@ defmodule Picsello.ClientOrdersTest do
         editor_id: "editor-id"
       )
     end)
-    |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id"}], _opts ->
-      build(:whcc_editor_export, unit_base_price: ~M[300]USD)
+    |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id", quantity: nil}], _opts ->
+      build(:whcc_editor_export, unit_base_price: ~M[300]USD, order_sequence_number: 1)
     end)
-    |> Mox.stub(:create_order, fn _account_id, _export ->
-      {:ok, build(:whcc_order_created, total: ~M[69]USD)}
+    |> Mox.expect(:create_order, fn _account_id, _export ->
+      {:ok, build(:whcc_order_created, total: ~M[69]USD, sequence_number: 1)}
     end)
     |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
       {:ok, :confirmed}

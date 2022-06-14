@@ -25,6 +25,11 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product, digital, or bundle in the cart.
   """
+  @spec place_product(
+          {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
+          %Gallery{id: integer()} | integer()
+        ) ::
+          Order.t()
   def place_product(product, %Gallery{id: gallery_id} = gallery) do
     opts = [credits: credit_remaining(gallery)]
 
@@ -118,7 +123,8 @@ defmodule Picsello.Cart do
   Deletes the product from order. Deletes order if order has only the one product.
   """
   def delete_product(%Order{} = order, opts) do
-    order = Repo.preload(order, [:digitals, :products])
+    %{gallery: gallery} =
+      order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
 
     order
     |> item_count()
@@ -128,7 +134,7 @@ defmodule Picsello.Cart do
 
       _ ->
         order
-        |> Order.delete_product_changeset(opts)
+        |> Order.delete_product_changeset(Keyword.put(opts, :credits, credit_remaining(gallery)))
         |> Repo.update()
     end
     |> case do
@@ -297,14 +303,8 @@ defmodule Picsello.Cart do
     |> set_order_number()
   end
 
-  defp place_product_in_order(%Order{} = order, %CartProduct{whcc_product: nil} = product, opts),
-    do: place_product_in_order(order, Repo.preload(product, :whcc_product), opts)
-
-  defp place_product_in_order(%Order{} = order, product, opts) do
-    order
-    |> Order.update_changeset(product, %{}, opts)
-    |> Repo.update!()
-  end
+  defp place_product_in_order(order, product, opts),
+    do: order |> Order.update_changeset(product, %{}, opts) |> Repo.update!()
 
   def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
   def price_display(%Digital{price: price}), do: price
@@ -325,10 +325,6 @@ defmodule Picsello.Cart do
     end
   end
 
-  defdelegate confirm_order(order_number, stripe_session_id, helpers),
-    to: __MODULE__.Confirmations
-
-  defdelegate confirm_order(session, helpers), to: __MODULE__.Confirmations
   defdelegate lines_by_product(order), to: Order
   defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
   defdelegate total_cost(order), to: Order

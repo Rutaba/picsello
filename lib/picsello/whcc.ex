@@ -163,16 +163,21 @@ defmodule Picsello.WHCC do
   def create_order(account_id, %{items: items} = export) do
     case Adapter.create_order(account_id, export) do
       {:ok, %{orders: orders} = created_order} ->
-        orders =
-          for(
-            order <- orders,
-            item <- items,
-            item.order_sequence_number == order.sequence_number
-          ) do
-            %{order | editor_id: item.id}
-          end
+        for(
+          order <- orders,
+          item <- items,
+          item.order_sequence_number == order.sequence_number
+        ) do
+          %{order | editor_id: item.id}
+        end
+        |> case do
+          matched_orders when length(orders) == length(matched_orders) ->
+            {:ok, %{created_order | orders: matched_orders}}
 
-        {:ok, %{created_order | orders: orders}}
+          _ ->
+            {:error,
+             "order missing some items. sub-orders:#{inspect(orders)}\nitems:#{inspect(items)}"}
+        end
 
       err ->
         err
@@ -212,13 +217,13 @@ defmodule Picsello.WHCC do
     |> Map.merge(
       details
       |> Map.take([:preview_url, :editor_id, :selections])
-      |> Map.put(:whcc_product_id, whcc_product_id)
     )
     |> Map.merge(
       category
       |> Map.from_struct()
       |> Map.take([:shipping_upcharge, :shipping_base_charge])
     )
+    |> Map.merge(%{whcc_product: product, whcc_product_id: whcc_product_id})
   end
 
   defp get_product(%Editor.Details{product_id: product_id}) do

@@ -423,12 +423,19 @@ defmodule Picsello.Factory do
   end
 
   def whcc_editor_export_factory(attrs) do
-    unit_base_price = Map.get(attrs, :unit_base_price, ~M[1]USD)
-    quantity = Map.get(attrs, :quantity, 1)
+    {unit_base_price, attrs} = Map.pop(attrs, :unit_base_price, ~M[1]USD)
+    {quantity, attrs} = Map.pop(attrs, :quantity, 1)
+
+    {order_sequence_number, attrs} =
+      Map.pop_lazy(attrs, :order_sequence_number, fn -> sequence(:order_sequence_number, & &1) end)
 
     %Picsello.WHCC.Editor.Export{
       items: [
-        %Picsello.WHCC.Editor.Export.Item{quantity: quantity, unit_base_price: unit_base_price}
+        %Picsello.WHCC.Editor.Export.Item{
+          quantity: quantity,
+          unit_base_price: unit_base_price,
+          order_sequence_number: order_sequence_number
+        }
       ],
       order: %{},
       pricing: %{
@@ -436,7 +443,7 @@ defmodule Picsello.Factory do
         "code" => "USD"
       }
     }
-    |> merge_attributes(Map.drop(attrs, [:quantity, :unit_base_price]))
+    |> merge_attributes(attrs)
   end
 
   def category_factory(attr \\ %{}),
@@ -564,25 +571,33 @@ defmodule Picsello.Factory do
   def whcc_order_created_order_factory do
     %Picsello.WHCC.Order.Created.Order{
       total: ~M[100]USD,
-      sequence_number: sequence(:order_sequence_number, & &1)
+      sequence_number: sequence(:sequence_number, & &1)
     }
   end
 
   def whcc_order_created_factory(attrs) do
+    {total, attrs} = Map.pop(attrs, :total)
+
+    {sequence_number, attrs} =
+      Map.pop_lazy(attrs, :sequence_number, fn -> sequence(:sequence_number, & &1) end)
+
     %Picsello.WHCC.Order.Created{
       confirmation_id: "a1f5cf28-b96e-49b5-884d-04b6fb4700e3",
       entry_id: "hkazbRKGjcoWwnEq3",
       orders: fn ->
-        case attrs do
-          %{total: total} ->
-            build_list(1, :whcc_order_created_order, total: total)
-
-          _ ->
+        case total do
+          nil ->
             []
+
+          total ->
+            build_list(1, :whcc_order_created_order,
+              total: total,
+              sequence_number: sequence_number
+            )
         end
       end
     }
-    |> merge_attributes(Map.drop(attrs, [:total]))
+    |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
 
@@ -739,5 +754,43 @@ defmodule Picsello.Factory do
       stripe_id: sequence(:payment_intent, &"payment-intent-#{&1}")
     }
     |> evaluate_lazy_attributes()
+  end
+
+  def invoice_factory do
+    %Picsello.Invoices.Invoice{
+      amount_due: ~M[0]USD,
+      amount_paid: ~M[0]USD,
+      amount_remaining: ~M[0]USD,
+      order: fn -> build(:order) end,
+      description: "an invoice",
+      status: :draft,
+      stripe_id: sequence(:invoice, &"invoice-#{&1}")
+    }
+    |> evaluate_lazy_attributes()
+  end
+
+  def stripe_payment_intent_factory() do
+    %Stripe.PaymentIntent{
+      amount: ~M[0]USD,
+      amount_received: ~M[0]USD,
+      amount_capturable: ~M[0]USD,
+      status: "requires_payment_method",
+      id: sequence(:payment_intent_stripe_id, &"payment-intent-stripe-id-#{&1}")
+    }
+  end
+
+  def stripe_session_factory do
+    %Stripe.Session{payment_intent: build(:stripe_payment_intent)}
+  end
+
+  def stripe_invoice_factory() do
+    %Stripe.Invoice{
+      amount_due: ~M[0]USD,
+      amount_paid: ~M[0]USD,
+      amount_remaining: ~M[0]USD,
+      description: "invoice description",
+      status: "draft",
+      id: sequence(:invoice_stripe_id, &"invoice-stripe-id-#{&1}")
+    }
   end
 end

@@ -1,26 +1,65 @@
 defmodule Picsello.CartTest do
   use Picsello.DataCase, async: true
   import Money.Sigils
-  alias Picsello.{Cart, Repo}
+  alias Picsello.Cart
   alias Cart.{Order, Digital}
+  alias Cart.Product, as: CartProduct
 
   defp cart_product(opts) do
     build(:cart_product,
       editor_id: Keyword.get(opts, :editor_id),
       round_up_to_nearest: 100,
-      shipping_base_charge: ~M[0]USD,
+      shipping_base_charge: ~M[1000]USD,
       shipping_upcharge: Decimal.new(0),
       unit_markup: ~M[0]USD,
       unit_price: Keyword.get(opts, :price, ~M[100]USD),
-      whcc_product: insert(:product)
+      whcc_product: Keyword.get_lazy(opts, :whcc_product, fn -> insert(:product) end)
     )
+  end
+
+  defp insert_gallery(%{package: package}) do
+    [gallery: insert(:gallery, job: insert(:lead, package: package))]
+  end
+
+  defp insert_order(%{gallery: gallery}) do
+    [order: insert(:order, gallery: gallery)]
   end
 
   setup do
     Mox.verify_on_exit!()
   end
 
-  describe "place_product" do
+  describe "place_product - whcc" do
+    setup do
+      [package: insert(:package, print_credits: ~M[100000]USD)]
+    end
+
+    setup :insert_gallery
+
+    test "second product also uses print credits", %{gallery: gallery} do
+      for product <- build_list(2, :cart_product) do
+        Cart.place_product(product, gallery)
+      end
+
+      assert [
+               %{print_credit_discount: ~M[55500]USD},
+               %{print_credit_discount: ~M[44500]USD}
+             ] = Repo.all(CartProduct)
+    end
+
+    test "updated product reclaims credits", %{gallery: gallery} do
+      for quantity <- [1, 2] do
+        build(:cart_product, quantity: quantity, editor_id: "editor-id")
+        |> Cart.place_product(gallery)
+      end
+
+      assert [
+               %{print_credit_discount: ~M[100000]USD}
+             ] = Repo.all(CartProduct)
+    end
+  end
+
+  describe "place_product - digital" do
     setup do
       photo = insert(:photo)
 
@@ -30,8 +69,10 @@ defmodule Picsello.CartTest do
         preview_url: ""
       }
 
-      [gallery: insert(:gallery), photo: photo, digital: digital]
+      [package: insert(:package), photo: photo, digital: digital]
     end
+
+    setup :insert_gallery
 
     test "creates an order and adds the digital", %{gallery: %{id: gallery_id}, digital: digital} do
       assert %Order{
@@ -100,28 +141,64 @@ defmodule Picsello.CartTest do
     end
   end
 
-  describe "delete_product" do
+  describe "delete_product - editor id and multiple products" do
     setup do
-      [order: insert(:order)]
+      [package: insert(:package, print_credits: ~M[10000]USD)]
     end
 
-    test "with an editor id and multiple products removes the product", %{order: order} do
+    setup :insert_gallery
+
+    test "with an editor id and multiple products and print credits reassigns print credits", %{
+      gallery: gallery
+    } do
+      assert %{print: ~M[10000]USD} = Cart.credit_remaining(gallery)
+      whcc_product = insert(:product)
+
       order =
-        order
-        |> Repo.preload(:products)
-        |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
-        |> Repo.update!()
-        |> Repo.preload([products: :whcc_product], force: true)
-        |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
-        |> Repo.update!()
-        |> Repo.preload([:digitals, products: :whcc_product], force: true)
+        for opts <- [
+              [editor_id: "123", price: ~M[6500]USD],
+              [editor_id: "abc", price: ~M[6500]USD]
+            ],
+            reduce: nil do
+          _ ->
+            opts
+            |> Keyword.put(:whcc_product, whcc_product)
+            |> cart_product()
+            |> Cart.place_product(gallery)
+        end
+
+      assert Order.total_cost(order) == ~M[4000]USD
+
+      assert {:loaded,
+              %Order{
+                products: [%{editor_id: "123", print_credit_discount: ~M[7500]USD}]
+              }} = Cart.delete_product(order, editor_id: "abc")
+    end
+  end
+
+  describe "delete_product" do
+    setup do
+      [package: insert(:package)]
+    end
+
+    setup [:insert_gallery, :insert_order]
+
+    test "with an editor id and multiple products removes the product", %{order: order} do
+      order
+      |> Repo.preload(:products)
+      |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
+      |> Repo.update!()
+      |> Repo.preload([products: :whcc_product], force: true)
+      |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
+      |> Repo.update!()
+      |> Repo.preload([:digitals, products: :whcc_product], force: true)
 
       assert {:loaded,
               %Order{
                 products: [%{editor_id: "123"}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.total_cost(order) == ~M[200]USD
+      assert Order.total_cost(order) == ~M[1200]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
@@ -223,7 +300,7 @@ defmodule Picsello.CartTest do
 
       assert {:loaded, order} = Cart.delete_product(order, digital_id: digital_id)
       assert [%{editor_id: "abc"}] = order |> Ecto.assoc(:products) |> Repo.all()
-      assert Order.total_cost(order) == ~M[300]USD
+      assert Order.total_cost(order) == ~M[1300]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do
@@ -253,130 +330,6 @@ defmodule Picsello.CartTest do
 
       assert {:ok, %{products: [%{whcc_product: %{whcc_id: "abc"}}]}} =
                Cart.get_unconfirmed_order(gallery_id, preload: [:products])
-    end
-  end
-
-  describe "checkout_params" do
-    test "returns correct line items" do
-      Mox.stub(Picsello.PhotoStorageMock, :path_to_url, fn "digital.jpg" ->
-        "https://example.com/digital.jpg"
-      end)
-
-      test_pid = self()
-
-      Mox.stub(Picsello.MockPayments, :create_session, fn params, _opts ->
-        send(test_pid, {:create_session, params})
-        {:ok, %{url: "https://example.com"}}
-      end)
-
-      gallery = insert(:gallery)
-      whcc_product = insert(:product)
-
-      cart_product = build(:cart_product, whcc_product: whcc_product)
-
-      order =
-        for product <-
-              [
-                cart_product,
-                build(:digital,
-                  price: ~M[500]USD,
-                  photo:
-                    insert(:photo, gallery: gallery, preview_url: "digital.jpg")
-                    |> Map.put(:watermarked, false)
-                )
-              ],
-            reduce: nil do
-          _ ->
-            Picsello.Cart.place_product(product, gallery.id)
-        end
-
-      Cart.store_order_delivery_info(
-        order,
-        Cart.delivery_info_change(%{name: "customer", email: "customer@example.com"})
-      )
-
-      Cart.checkout(order, %{"cancel_url" => "", "success_url" => ""})
-
-      Picsello.FeatureCase.FeatureHelpers.run_jobs()
-
-      quantity = cart_product.selections["quantity"]
-
-      assert_receive({:create_session, checkout_params})
-
-      assert [
-               %{
-                 price_data: %{
-                   currency: :USD,
-                   product_data: %{
-                     images: [cart_product.preview_url],
-                     tax_code: "txcd_99999999",
-                     name: "20×30 #{whcc_product.whcc_name} (Qty #{quantity})"
-                   },
-                   unit_amount:
-                     cart_product
-                     |> Cart.Product.update_price(shipping_base_charge: true)
-                     |> Cart.Product.charged_price()
-                     |> Map.get(:amount),
-                   tax_behavior: "exclusive"
-                 },
-                 quantity: quantity
-               },
-               %{
-                 price_data: %{
-                   currency: :USD,
-                   product_data: %{
-                     images: ["https://example.com/digital.jpg"],
-                     name: "Digital image",
-                     tax_code: "txcd_10501000"
-                   },
-                   unit_amount: 500,
-                   tax_behavior: "exclusive"
-                 },
-                 quantity: 1
-               }
-             ] == checkout_params.line_items
-    end
-  end
-
-  describe "confirm_order" do
-    def confirm_order(session) do
-      Cart.confirm_order(
-        session,
-        PicselloWeb.Helpers
-      )
-    end
-
-    test "raises if order does not exist" do
-      assert_raise(Ecto.NoResultsError, fn ->
-        confirm_order(%Stripe.Session{
-          client_reference_id: "order_number_404"
-        })
-      end)
-    end
-
-    test "is successful when order is already paid for" do
-      order = insert(:order, placed_at: DateTime.utc_now())
-
-      assert {:ok, _} =
-               confirm_order(%Stripe.Session{
-                 client_reference_id: "order_number_#{Order.number(order)}"
-               })
-    end
-
-    test "cancels payment intent on failure" do
-      order = insert(:order, placed_at: DateTime.utc_now()) |> Repo.preload(:digitals)
-      insert(:intent, order: order)
-
-      Picsello.MockPayments
-      |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
-        {:ok, %{amount_capturable: Order.total_cost(Repo.preload(order, :products)).amount + 1}}
-      end)
-      |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
-
-      confirm_order(%Stripe.Session{
-        client_reference_id: "order_number_#{Order.number(order)}",
-        payment_intent: "intent-id"
-      })
     end
   end
 
@@ -410,7 +363,12 @@ defmodule Picsello.CartTest do
 
     test "zero when credit is used up" do
       gallery = create_gallery(print_credits: ~M[500]USD)
+
       create_order(gallery: gallery, total: ~M[600]USD)
+      |> Order.placed_changeset()
+      |> Repo.update!()
+
+      assert %{print: ~M[0]USD} = Cart.credit_remaining(gallery)
       order = create_order(gallery: gallery, total: ~M[1000]USD)
 
       assert ~M[0]USD = print_credit_used(order)
@@ -437,11 +395,13 @@ defmodule Picsello.CartTest do
 
   describe "checkout" do
     test "when no money due from client sends complete" do
+      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
       gallery = create_gallery(download_count: 1)
+      insert(:order, delivery_info: %{email: "client@example.com"}, gallery: gallery)
 
       order = Cart.place_product(build(:digital), gallery) |> Repo.preload([:products, :digitals])
       assert ~M[0]USD = Order.total_cost(order)
-      :ok = Cart.checkout(order)
+      :ok = Cart.checkout(order, helpers: PicselloWeb.Helpers)
 
       assert [%{errors: []}] = Picsello.FeatureCase.FeatureHelpers.run_jobs()
 

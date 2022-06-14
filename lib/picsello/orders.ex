@@ -8,6 +8,7 @@ defmodule Picsello.Orders do
     Galleries.Gallery,
     Galleries.Photo,
     Intents,
+    Invoices,
     Repo
   }
 
@@ -34,21 +35,11 @@ defmodule Picsello.Orders do
   def has_download?(%Order{bundle_price: bundle_price, digitals: digitals}),
     do: bundle_price != nil || digitals != []
 
-  def paid?(%{id: order_id}),
-    do:
-      from(order in orders(),
-        as: :order,
-        where:
-          not exists(
-            from intents in Intents.unpaid_query(),
-              where: intents.order_id == parent_as(:order).id
-          ) and
-            order.id == ^order_id
-      )
-      |> Repo.exists?()
-
   def client_paid?(%{id: order_id}),
     do: Repo.exists?(from orders in client_paid_query(), where: orders.id == ^order_id)
+
+  def photographer_paid?(%{id: order_id}),
+    do: Repo.exists?(from orders in photographer_paid_query(Order), where: orders.id == ^order_id)
 
   def client_paid_query, do: client_paid_query(orders())
 
@@ -58,6 +49,14 @@ defmodule Picsello.Orders do
         left_join: intents in subquery(Intents.unpaid_query()),
         on: intents.order_id == orders.id,
         where: is_nil(intents.id)
+      )
+
+  def photographer_paid_query(source),
+    do:
+      from(orders in source,
+        left_join: invoices in subquery(Invoices.unpaid_query()),
+        on: invoices.order_id == orders.id,
+        where: is_nil(invoices.id)
       )
 
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
@@ -159,6 +158,12 @@ defmodule Picsello.Orders do
     )
     |> Repo.exists?()
   end
+
+  defdelegate handle_session(order_number, stripe_session_id),
+    to: __MODULE__.Confirmations
+
+  defdelegate handle_session(session), to: __MODULE__.Confirmations
+  defdelegate handle_invoice(invoice), to: __MODULE__.Confirmations
 
   defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
     from(photo in Photo, where: photo.gallery_id == ^order.gallery_id)

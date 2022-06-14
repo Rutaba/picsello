@@ -108,8 +108,9 @@ defmodule Picsello.Marketing do
 
   defp clients_query("all", organization_id) do
     from(c in Client,
-      where: c.organization_id == ^organization_id and
-      is_nil(c.archived_at),
+      where:
+        c.organization_id == ^organization_id and
+          is_nil(c.archived_at),
       select: %{id: c.id, email: c.email}
     )
   end

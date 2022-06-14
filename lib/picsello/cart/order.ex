@@ -13,6 +13,8 @@ defmodule Picsello.Cart.Order do
     belongs_to(:gallery, Gallery)
 
     has_one :package, through: [:gallery, :package]
+    has_one :invoice, Picsello.Invoices.Invoice
+    has_one :intent, Picsello.Intents.Intent
 
     has_many :digitals, Digital,
       on_replace: :delete,
@@ -38,7 +40,10 @@ defmodule Picsello.Cart.Order do
     attrs
     |> do_create_changeset()
     |> put_assoc(:products, [
-      Product.update_price(product, Keyword.put(opts, :shipping_base_charge, true))
+      Product.update_price(product,
+        shipping_base_charge: true,
+        credits: get_in(opts, [:credits, :print]) || Money.new(0)
+      )
     ])
   end
 
@@ -72,6 +77,8 @@ defmodule Picsello.Cart.Order do
 
   def update_changeset(%{products: products} = cart, %Product{} = product, attrs, opts)
       when is_list(products) do
+    {products, opts} = remaining_products(products, product.editor_id, opts)
+
     cart
     |> cast(Map.put(attrs, :products, update_prices([product | products], opts)), [])
     |> cast_assoc(:products)
@@ -93,12 +100,10 @@ defmodule Picsello.Cart.Order do
   def placed_changeset(order),
     do: change(order, %{placed_at: DateTime.utc_now() |> DateTime.truncate(:second)})
 
-  def confirmation_changeset(
-        %__MODULE__{} = order,
-        _confirmation \\ nil
-      ) do
+  def whcc_confirmation_changeset(%__MODULE__{} = order) do
     order
-    |> placed_changeset()
+    |> cast(%{whcc_order: %{confirmed_at: DateTime.utc_now()}}, [])
+    |> cast_embed(:whcc_order)
   end
 
   def store_delivery_info(order, delivery_info_changeset) do
@@ -110,20 +115,30 @@ defmodule Picsello.Cart.Order do
   def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
   def number(id), do: Picsello.Cart.OrderNumber.to_number(id)
 
+  @spec delete_product_changeset(t(),
+          bundle: true,
+          editor_id: String.t(),
+          digital_id: integer(),
+          credits: %{digital: integer(), print: Money.t()}
+        ) :: Ecto.Changeset.t()
   def delete_product_changeset(%__MODULE__{} = order, opts) do
-    case {opts, order} do
-      {:bundle, _} ->
+    case {Keyword.take(opts, [:bundle, :editor_id, :digital_id]), order} do
+      {[bundle: true], _} ->
         order
         |> change()
         |> put_change(:bundle_price, nil)
 
       {[editor_id: editor_id], %{products: products}} when is_list(products) ->
+        {products, opts} = remaining_products(products, editor_id, opts)
+
         order
-        |> change()
-        |> put_assoc(
-          :products,
-          products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
+        |> cast(
+          %{
+            products: update_prices(products, opts)
+          },
+          []
         )
+        |> cast_assoc(:products)
 
       {[digital_id: digital_id], %{digitals: digitals}} when is_list(digitals) ->
         order_credit_count = Enum.count(digitals, & &1.is_credit)
@@ -162,18 +177,44 @@ defmodule Picsello.Cart.Order do
     Money.add(digital_total(order), product_total(order))
   end
 
-  defp update_prices(products, opts) do
-    for {_, line_items} <- sort_products(products), reduce: [] do
-      products ->
-        for {product, index} <- Enum.with_index(line_items), reduce: products do
-          products ->
-            [
-              Product.update_price(product, Keyword.put(opts, :shipping_base_charge, index == 0))
-              | products
-            ]
-        end
+  defp remaining_products(products, editor_id, opts) do
+    case Enum.split_with(products, &(&1.editor_id == editor_id)) do
+      {[], products} ->
+        {products, opts}
+
+      {[%{print_credit_discount: unused_discount}], products} ->
+        {products, update_in(opts, [:credits, :print], &Money.add(&1, unused_discount))}
     end
-    |> Enum.reverse()
+  end
+
+  defp update_prices(products, opts) do
+    available_credit =
+      Enum.reduce(
+        products,
+        get_in(opts, [:credits, :print]) || Money.new(0),
+        &Money.add(&1.print_credit_discount, &2)
+      )
+
+    {_credits, products} =
+      for {_, line_items} <- sort_products(products),
+          reduce: {available_credit, []} do
+        acc ->
+          for {product, index} <-
+                Enum.with_index(line_items),
+              reduce: acc do
+            {credit_remaining, products} ->
+              %{print_credit_discount: credit_used} =
+                product =
+                Product.update_price(product,
+                  shipping_base_charge: index == 0,
+                  credits: credit_remaining
+                )
+
+              {Money.subtract(credit_remaining, credit_used), [product | products]}
+          end
+      end
+
+    Enum.reverse(products)
   end
 
   def lines_by_product(%__MODULE__{products: products}), do: products |> sort_products()

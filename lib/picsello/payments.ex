@@ -104,6 +104,53 @@ defmodule Picsello.Payments do
   @callback create_account_link(create_account_link(), Stripe.options()) ::
               {:ok, Stripe.AccountLink.t()} | {:error, Stripe.Error.t()}
 
+  @callback create_invoice(params, Stripe.options()) ::
+              {:ok, Stripe.Invoice.t()} | {:error, Stripe.Error.t()}
+            when params:
+                   %{
+                     optional(:application_fee_amount) => integer(),
+                     optional(:auto_advance) => boolean(),
+                     optional(:collection_method) => String.t(),
+                     :customer => Stripe.id() | Stripe.Customer.t(),
+                     optional(:custom_fields) => Stripe.Invoice.custom_fields(),
+                     optional(:days_until_due) => integer(),
+                     optional(:default_payment_method) => String.t(),
+                     optional(:default_source) => String.t(),
+                     optional(:default_tax_rates) => [Stripe.id()],
+                     optional(:description) => String.t(),
+                     optional(:due_date) => Stripe.timestamp(),
+                     optional(:footer) => String.t(),
+                     optional(:metadata) => Stripe.Types.metadata(),
+                     optional(:statement_descriptor) => String.t(),
+                     optional(:subscription) => Stripe.id() | Stripe.Subscription.t(),
+                     optional(:tax_percent) => number()
+                   }
+                   | %{}
+
+  @callback finalize_invoice(Stripe.id() | Stripe.Invoice.t(), params, Stripe.options()) ::
+              {:ok, Stripe.Invoice.t()} | {:error, Stripe.Error.t()}
+            when params: %{:id => String.t(), optional(:auto_advance) => boolean()} | %{}
+
+  @callback create_invoice_item(params, Stripe.options()) ::
+              {:ok, Stripe.Invoiceitem.t()} | {:error, Stripe.Error.t()}
+            when params:
+                   %{
+                     optional(:amount) => integer(),
+                     :currency => String.t(),
+                     :customer => Stripe.id() | Stripe.Customer.t(),
+                     optional(:description) => String.t(),
+                     optional(:discountable) => boolean(),
+                     optional(:invoice) => Stripe.id() | Stripe.Invoice.t(),
+                     optional(:metadata) => Stripe.Types.metadata(),
+                     optional(:price) => Stripe.id() | Stripe.Price.t(),
+                     optional(:quantity) => integer(),
+                     optional(:subscription) => Stripe.id() | Stripe.Subscription.t(),
+                     optional(:tax_rates) => [String.t()],
+                     optional(:unit_amount) => integer(),
+                     optional(:unit_amount_decimal) => String.t()
+                   }
+                   | %{}
+
   def create_session(params, opts) do
     params =
       Enum.into(params, %{
@@ -129,6 +176,9 @@ defmodule Picsello.Payments do
   def retrieve_payment_intent(id, opts), do: impl().retrieve_payment_intent(id, opts)
   def capture_payment_intent(id, opts), do: impl().capture_payment_intent(id, opts)
   def cancel_payment_intent(id, opts), do: impl().cancel_payment_intent(id, opts)
+  def create_invoice(params, opts \\ []), do: impl().create_invoice(params, opts)
+  def finalize_invoice(id, params, opts \\ []), do: impl().finalize_invoice(id, params, opts)
+  def create_invoice_item(params, opts \\ []), do: impl().create_invoice_item(params, opts)
 
   def construct_event(body, signature, secret),
     do: impl().construct_event(body, signature, secret)

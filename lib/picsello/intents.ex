@@ -64,5 +64,6 @@ defmodule Picsello.Intents do
     end
   end
 
-  def unpaid_query(), do: from(intents in Intent, where: intents.status != :succeeded)
+  def unpaid_query(),
+    do: from(intents in Intent, where: intents.status not in [:succeeded, :requires_capture])
 end
