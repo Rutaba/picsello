@@ -33,7 +33,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           <div class="line-clamp-2 raw_html raw_html_inline">
             <%= raw @package.description %>
           </div>
-          <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-0" data-offset="0" role="tooltip">
+          <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
             <div class="line-clamp-6 raw_html"></div>
             <button class="inline-block text-blue-planning-300">View all</button>
           </div>
