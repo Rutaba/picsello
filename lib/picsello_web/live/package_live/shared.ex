@@ -43,14 +43,7 @@ defmodule PicselloWeb.PackageLive.Shared do
         </div>
 
         <dl class="flex flex-row-reverse items-center justify-end mt-auto">
-          <%= if Money.zero?(@package.download_each_price) do %>
-            <dt class="text-gray-500">Unlimited Complimentary Downloads</dt>
-          <% else %>
-            <dt class="text-gray-500">Complimentary Downloads</dt>
-            <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-              <%= @package.download_count %>
-            </dd>
-          <% end %>
+          <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
         </dl>
 
         <hr class="my-4" />
@@ -151,6 +144,22 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def package_description_length_long?(nil), do: false
   def package_description_length_long?(description), do: byte_size(description) > 100
+
+  defp digital_detail(assigns) do
+  ~H"""
+    <%= cond do %>
+      <%= Money.zero?(@download_each_price) -> %>
+      <dt class="text-gray-500">All digital images included</dt>
+      <% @download_count == 0 -> %>
+      <dt class="text-gray-500">No digital images included</dt>
+      <% true -> %>
+      <dt class="text-gray-500">Digital images included</dt>
+      <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+      <%= @download_count %>
+      </dd>
+    <% end %>
+  """
+  end
 
   defp download_price(form),
     do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
