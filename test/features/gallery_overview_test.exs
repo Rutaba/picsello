@@ -172,6 +172,6 @@ defmodule Picsello.GalleryOverviewTest do
     |> visit("/galleries/#{gallery.id}/")
     |> assert_has(css("button", count: 1, text: "Share gallery"))
     |> click(css("button", text: "Share gallery"))
-    |> assert_has(css("p", text: "Please add photos to gallery before share"))
+    |> assert_has(css("p", text: "Please add photos to the gallery before sharing"))
   end
 end

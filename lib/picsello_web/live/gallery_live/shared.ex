@@ -249,7 +249,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
       _ ->
         socket
-        |> put_flash(:error, "Please add photos to gallery before share")
+        |> put_flash(:error, "Please add photos to the gallery before sharing")
         |> noreply()
     end
   end
@@ -320,6 +320,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
       |> close_modal()
+      |> put_flash(:success, "Gallery shared!")
       |> noreply()
     else
       _error ->

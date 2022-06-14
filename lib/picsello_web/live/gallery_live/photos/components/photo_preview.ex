@@ -127,7 +127,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col p-10 bg-white rounded-lg">
+    <div class="flex flex-col p-10 bg-white rounded-lg mb-4">
       <div class="flex items-start justify-between flex-shrink-0">
           <h1 class="font-sans text-3xl font-bold">
             Set as preview for which products?
@@ -137,7 +137,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
           </button>
       </div>
       <div class="relative flex py-10 font-sans bg-white">
-          <div id="product-preview" class="items-center grid grid-cols-3 gap-4">
+          <div id="product-preview" class="items-center grid lg:grid-cols-3 grid-cols-1 gap-4">
               <%= for product <- @updated_products do %>
                 <%= unless product.category.coming_soon do %>
                   <div class="items-center">
@@ -159,23 +159,23 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
               <% end %>
           </div>
       </div>
-      <div class="flex flex-row items-center justify-end w-full font-sans lg:items-start">
-          <button
-          phx-click="modal"
-          phx-value-action="close"
-          title="close modal"
-          class="float-right px-6 py-2 mr-3 bg-white border border-black rounded-lg"
-          >
-            Cancel
-          </button>
+      <div class="flex flex-col gap-2 py-6 lg:flex-row-reverse">
           <button
           phx-click="save"
           disabled={Enum.empty?(@selected)}
           phx-target={@myself}
           aria-label="save"
-          class="btn-settings float-right px-6 py-2"
+          class="btn-primary"
           >
             Save changes
+          </button>
+          <button
+          phx-click="modal"
+          phx-value-action="close"
+          title="close modal"
+          class="btn-secondary"
+          >
+            Cancel
           </button>
       </div>
     </div>
