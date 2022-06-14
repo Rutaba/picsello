@@ -77,20 +77,10 @@ defmodule Picsello.Cart.Order do
 
   def update_changeset(%{products: products} = cart, %Product{} = product, attrs, opts)
       when is_list(products) do
-    products =
-      case Enum.split_with(products, &(&1.editor_id == product.editor_id)) do
-        {[], products} ->
-          update_prices([product | products], opts)
-
-        {[%{print_credit_discount: unused_discount}], products} ->
-          update_prices(
-            [product | products],
-            update_in(opts, [:credits, :print], &Money.add(&1, unused_discount))
-          )
-      end
+    {products, opts} = remaining_products(products, product.editor_id, opts)
 
     cart
-    |> cast(Map.put(attrs, :products, products), [])
+    |> cast(Map.put(attrs, :products, update_prices([product | products], opts)), [])
     |> cast_assoc(:products)
   end
 
@@ -139,10 +129,12 @@ defmodule Picsello.Cart.Order do
         |> put_change(:bundle_price, nil)
 
       {[editor_id: editor_id], %{products: products}} when is_list(products) ->
+        {products, opts} = remaining_products(products, editor_id, opts)
+
         order
         |> cast(
           %{
-            products: products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
+            products: update_prices(products, opts)
           },
           []
         )
@@ -183,6 +175,16 @@ defmodule Picsello.Cart.Order do
 
   def total_cost(%__MODULE__{} = order) do
     Money.add(digital_total(order), product_total(order))
+  end
+
+  defp remaining_products(products, editor_id, opts) do
+    case Enum.split_with(products, &(&1.editor_id == editor_id)) do
+      {[], products} ->
+        {products, opts}
+
+      {[%{print_credit_discount: unused_discount}], products} ->
+        {products, update_in(opts, [:credits, :print], &Money.add(&1, unused_discount))}
+    end
   end
 
   defp update_prices(products, opts) do

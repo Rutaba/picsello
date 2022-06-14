@@ -9,11 +9,11 @@ defmodule Picsello.CartTest do
     build(:cart_product,
       editor_id: Keyword.get(opts, :editor_id),
       round_up_to_nearest: 100,
-      shipping_base_charge: ~M[0]USD,
+      shipping_base_charge: ~M[1000]USD,
       shipping_upcharge: Decimal.new(0),
       unit_markup: ~M[0]USD,
       unit_price: Keyword.get(opts, :price, ~M[100]USD),
-      whcc_product: insert(:product)
+      whcc_product: Keyword.get_lazy(opts, :whcc_product, fn -> insert(:product) end)
     )
   end
 
@@ -143,30 +143,36 @@ defmodule Picsello.CartTest do
 
   describe "delete_product - editor id and multiple products" do
     setup do
-      [package: insert(:package, print_credits: ~M[100]USD)]
+      [package: insert(:package, print_credits: ~M[10000]USD)]
     end
 
-    setup [:insert_gallery, :insert_order]
+    setup :insert_gallery
 
     test "with an editor id and multiple products and print credits reassigns print credits", %{
-      order: order
+      gallery: gallery
     } do
+      assert %{print: ~M[10000]USD} = Cart.credit_remaining(gallery)
+      whcc_product = insert(:product)
+
       order =
-        order
-        |> Repo.preload(:products)
-        |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
-        |> Repo.update!()
-        |> Repo.preload([products: :whcc_product], force: true)
-        |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
-        |> Repo.update!()
-        |> Repo.preload([:digitals, products: :whcc_product], force: true)
+        for opts <- [
+              [editor_id: "123", price: ~M[6500]USD],
+              [editor_id: "abc", price: ~M[6500]USD]
+            ],
+            reduce: nil do
+          _ ->
+            opts
+            |> Keyword.put(:whcc_product, whcc_product)
+            |> cart_product()
+            |> Cart.place_product(gallery)
+        end
+
+      assert Order.total_cost(order) == ~M[4000]USD
 
       assert {:loaded,
               %Order{
-                products: [%{editor_id: "123", print_credit_discount: ~M[100]USD}]
-              } = order} = Cart.delete_product(order, editor_id: "abc")
-
-      assert Order.total_cost(order) == ~M[100]USD
+                products: [%{editor_id: "123", print_credit_discount: ~M[7500]USD}]
+              }} = Cart.delete_product(order, editor_id: "abc")
     end
   end
 
@@ -192,7 +198,7 @@ defmodule Picsello.CartTest do
                 products: [%{editor_id: "123"}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.total_cost(order) == ~M[200]USD
+      assert Order.total_cost(order) == ~M[1200]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
@@ -294,7 +300,7 @@ defmodule Picsello.CartTest do
 
       assert {:loaded, order} = Cart.delete_product(order, digital_id: digital_id)
       assert [%{editor_id: "abc"}] = order |> Ecto.assoc(:products) |> Repo.all()
-      assert Order.total_cost(order) == ~M[300]USD
+      assert Order.total_cost(order) == ~M[1300]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do
