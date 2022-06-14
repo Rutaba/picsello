@@ -54,7 +54,8 @@ export const initHelpScout = (
 
     if (article) {
       window?.Beacon('config', { mode: 'neutral' });
-      window?.Beacon('suggest', [article]);
+      window?.Beacon('article', article);
+      window?.Beacon('navigate', '/ask/message/');
       window?.Beacon('prefill', {
         subject,
         text,
