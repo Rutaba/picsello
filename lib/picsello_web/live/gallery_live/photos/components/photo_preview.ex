@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   require Logger
   import Ecto.Changeset
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
 
   alias Picsello.{Repo, Galleries, GalleryProducts}
 
@@ -138,21 +139,23 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
       <div class="relative flex py-10 font-sans bg-white">
           <div id="product-preview" class="items-center grid grid-cols-3 gap-4">
               <%= for product <- @updated_products do %>
-              <div class="items-center">
-                <div
-                id={"product-#{product.id}"}
-                class={"flex p-6 font-sans text-black bg-gray-100 h-52 w-52 cursor-pointer #{Map.get(product.preview_photo, :selected, false) && 'preview-border'}"}
-                phx-click="click" phx-target={@myself}
-                phx-value-product={product.id}
-                >
-                  <div class="flex justify-center row-span-2 previewImg">
-                    <.framed_preview  item_id={product.category.id} category={product.category} photo={product.preview_photo} />
+                <%= unless product.category.coming_soon do %>
+                  <div class="items-center">
+                    <div
+                    id={"product-#{product.id}"}
+                    class={"flex p-6 font-sans text-black bg-gray-100 h-52 w-52 cursor-pointer #{Map.get(product.preview_photo, :selected, false) && 'preview-border'}"}
+                    phx-click="click" phx-target={@myself}
+                    phx-value-product={product.id}
+                    >
+                      <div class="flex justify-center row-span-2 previewImg">
+                        <.framed_preview  item_id={product.category.id} category={product.category} photo={product.preview_photo} width={cards_width(product.category.frame_image)} />
+                      </div>
+                    </div>
+                    <div class="flex items-center pt-4 font-sans fomt-bold">
+                      <%= product.category.name %>
+                    </div>
                   </div>
-                </div>
-                <div class="flex items-center pt-4 font-sans fomt-bold">
-                  <%= product.category.name %>
-                </div>
-              </div>
+                <% end %>
               <% end %>
           </div>
       </div>

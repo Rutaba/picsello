@@ -439,7 +439,7 @@ defmodule Picsello.Factory do
     |> merge_attributes(Map.drop(attrs, [:quantity, :unit_base_price]))
   end
 
-  def category_factory,
+  def category_factory(attr \\ %{}),
     do: %Picsello.Category{
       whcc_id: sequence("whcc_id"),
       whcc_name: "shirts",
@@ -449,8 +449,10 @@ defmodule Picsello.Factory do
       shipping_upcharge: Decimal.new("0.09"),
       icon: "book",
       default_markup: 1.0,
-      hidden: false
+      hidden: false,
+      coming_soon: false
     }
+    |> merge_attributes(attr)
 
   def product_factory do
     product_json =

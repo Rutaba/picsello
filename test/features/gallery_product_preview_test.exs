@@ -8,21 +8,22 @@ defmodule Picsello.GalleryProductPreviewTest do
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
-    products =
-      Enum.map(Picsello.Category.frame_images(), fn frame_image ->
-        :category
-        |> insert(frame_image: frame_image)
-        |> Kernel.then(fn category ->
-          insert(:product, category: category)
+    [products: products(gallery)]
+  end
 
-          insert(:gallery_product,
-            category: category,
-            gallery: gallery
-          )
-        end)
+  def products(gallery, coming_soon \\ false) do
+    Enum.map(Picsello.Category.frame_images(), fn frame_image ->
+      :category
+      |> insert(frame_image: frame_image, coming_soon: coming_soon)
+      |> Kernel.then(fn category ->
+        insert(:product, category: category)
+
+        insert(:gallery_product,
+          category: category,
+          gallery: gallery
+        )
       end)
-
-    [products: products]
+    end)
   end
 
   test "Product Preview render", %{
@@ -33,6 +34,17 @@ defmodule Picsello.GalleryProductPreviewTest do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images']", count: length(products)))
+  end
+
+  test "Product Preview render with coming soon", %{
+    session: session,
+    gallery: gallery
+  } do
+    products(gallery, true)
+    session
+    |> visit("/galleries/#{gallery.id}/product-previews")
+    |> assert_has(css("button", text: "Edit this", count: 4))
+    |> assert_has(css("button:disabled", text: "Coming soon!", count: 4))
   end
 
   test "Product Preview, edit product", %{

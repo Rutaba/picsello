@@ -73,5 +73,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket |> assign(:total_progress, total_progress) |> noreply()
   end
 
+  def cards_width(frame_image) do
+    if frame_image == "card.png", do: "198"
+  end
+
   defp page_title(:index), do: "Product Previews"
 end
