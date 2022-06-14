@@ -13,15 +13,20 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
       socket
       |> assign_new(:changeset, fn ->
         body = """
-        <p>We hope this email finds you well! We are getting a lot of inquiries for fall photoshoots already so we wanted to send you a reminder so you can book a shoot!</p>
-        <p>You are on the VIP list so you do get first dibs on the dates! We will be sending out another email blast next week so let us know today!</p>
-        <p>Any questions, just reply to this email, we are happy to help!</p>
-        <p>Can’t wait to photograph your family again soon!</p>
+        <p>Sometimes your previous and potential clients are just an email away from booking their next session. Reminding them of why they might want new photography and keeping your brand fresh in their mind is a great regular practice to keep your calendar full.</p>
+        <p>You don’t have to overthink it, sometimes just a friendly reminder that you exist and are booking shoots is the only push it takes to get some people to book. Other times it’s helpful to incentivize clients to book sooner rather than later. This can be a special offer like mini sessions, or just a reminder that they’ll need to book ahead to be sure you can accommodate them at their preferred time of year.</p>
+        <p>Remember, the only marketing email guaranteed to not get you business is the one you don’t send.</p>
+        <p>You can send this email with the intent of  promoting upcoming sessions, bringing attention to products you offer, or simply ask for referrals and reviews!</p>
+        <p>You can customize your email by changing the <span style="font-size: 18px;">font size</span>, using the <strong>bold</strong>, <u>underline</u> or <em>italics</em> to emphasize a point.</p>
+        <p>Bring your email to life by adding an image or a graphic that showcases what you are promoting!</p>
+        <p>If you have a scheduler consider hyperlinking your scheduling link here in your email (ours will be coming this summer!)</p>
+        <p>Remember you can always review the email before you send it - your email signature will be added so no need to add a signature!</p>
+        <p>We hope you have a successful marketing campaign!</p>
         """
 
         Marketing.new_campaign_changeset(
           %{
-            "subject" => "It’s here! Our fall calendar is open!",
+            "subject" => "Write a subject line that puts photography on your contacts’ minds.",
             "body_text" => body,
             "body_html" => body,
             "segment_type" => "new"
