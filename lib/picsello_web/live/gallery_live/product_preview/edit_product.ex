@@ -5,7 +5,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
   require Logger
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
-  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
 
   alias Picsello.Galleries
   alias Picsello.GalleryProducts

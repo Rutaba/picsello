@@ -549,4 +549,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         end
     end
   end
+
+  def cards_width(frame_image) do
+    if frame_image == "card.png", do: "198"
+  end
 end

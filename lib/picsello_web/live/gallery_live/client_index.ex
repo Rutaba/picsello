@@ -75,7 +75,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       page: 0,
       page_title: "Show Gallery",
       download_all_visible: Orders.can_download_all?(gallery),
-      products: GalleryProducts.get_gallery_products(gallery.id),
+      products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
       update_mode: "append"
     )
     |> assign_cart_count(gallery)
