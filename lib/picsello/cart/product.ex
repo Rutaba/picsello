@@ -87,7 +87,7 @@ defmodule Picsello.Cart.Product do
 
   @doc "merges values for price, volume_discount, and print_credit_discount"
   def update_price(%__MODULE__{} = product, opts \\ []) do
-    credit = get_in(opts, [:credits, :print]) || ~M[0]USD
+    {credit, opts} = Keyword.pop(opts, :credits, ~M[0]USD)
     fake_price = fake_price(product)
     real_price = real_price(product, opts)
 

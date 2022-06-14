@@ -40,7 +40,10 @@ defmodule Picsello.Cart.Order do
     attrs
     |> do_create_changeset()
     |> put_assoc(:products, [
-      Product.update_price(product, Keyword.put(opts, :shipping_base_charge, true))
+      Product.update_price(product,
+        shipping_base_charge: true,
+        credits: get_in(opts, [:credits, :print]) || Money.new(0)
+      )
     ])
   end
 
@@ -74,18 +77,20 @@ defmodule Picsello.Cart.Order do
 
   def update_changeset(%{products: products} = cart, %Product{} = product, attrs, opts)
       when is_list(products) do
+    products =
+      case Enum.split_with(products, &(&1.editor_id == product.editor_id)) do
+        {[], products} ->
+          update_prices([product | products], opts)
+
+        {[%{print_credit_discount: unused_discount}], products} ->
+          update_prices(
+            [product | products],
+            update_in(opts, [:credits, :print], &Money.add(&1, unused_discount))
+          )
+      end
+
     cart
-    |> cast(
-      Map.put(
-        attrs,
-        :products,
-        update_prices(
-          [product | remove_product_with_editor_id(products, product.editor_id)],
-          opts
-        )
-      ),
-      []
-    )
+    |> cast(Map.put(attrs, :products, products), [])
     |> cast_assoc(:products)
   end
 
@@ -137,7 +142,7 @@ defmodule Picsello.Cart.Order do
         order
         |> cast(
           %{
-            products: products |> remove_product_with_editor_id(editor_id) |> update_prices(opts)
+            products: products |> Enum.reject(&(&1.editor_id == editor_id)) |> update_prices(opts)
           },
           []
         )
@@ -180,21 +185,34 @@ defmodule Picsello.Cart.Order do
     Money.add(digital_total(order), product_total(order))
   end
 
-  defp remove_product_with_editor_id(products, editor_id),
-    do: Enum.reject(products, &(&1.editor_id == editor_id))
-
   defp update_prices(products, opts) do
-    for {_, line_items} <- sort_products(products), reduce: [] do
-      products ->
-        for {product, index} <- Enum.with_index(line_items), reduce: products do
-          products ->
-            [
-              Product.update_price(product, Keyword.put(opts, :shipping_base_charge, index == 0))
-              | products
-            ]
-        end
-    end
-    |> Enum.reverse()
+    available_credit =
+      Enum.reduce(
+        products,
+        get_in(opts, [:credits, :print]) || Money.new(0),
+        &Money.add(&1.print_credit_discount, &2)
+      )
+
+    {_credits, products} =
+      for {_, line_items} <- sort_products(products),
+          reduce: {available_credit, []} do
+        acc ->
+          for {product, index} <-
+                Enum.with_index(line_items),
+              reduce: acc do
+            {credit_remaining, products} ->
+              %{print_credit_discount: credit_used} =
+                product =
+                Product.update_price(product,
+                  shipping_base_charge: index == 0,
+                  credits: credit_remaining
+                )
+
+              {Money.subtract(credit_remaining, credit_used), [product | products]}
+          end
+      end
+
+    Enum.reverse(products)
   end
 
   def lines_by_product(%__MODULE__{products: products}), do: products |> sort_products()

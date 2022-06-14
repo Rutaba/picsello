@@ -123,7 +123,8 @@ defmodule Picsello.Cart do
   Deletes the product from order. Deletes order if order has only the one product.
   """
   def delete_product(%Order{} = order, opts) do
-    %{gallery: gallery} = order = Repo.preload(order, [:gallery, :digitals, :products])
+    %{gallery: gallery} =
+      order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
 
     order
     |> item_count()
