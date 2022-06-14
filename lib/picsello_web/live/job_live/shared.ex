@@ -99,6 +99,9 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
   def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
 
   def handle_info(
@@ -302,7 +305,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
               Go to inbox
             </button>
-            <button type="button" class="btn-primary px-8" phx-click="open-compose">
+            <button type="button" class="btn-primary px-8 intro-message" phx-click="open-compose">
               Send message
             </button>
           </div>

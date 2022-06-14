@@ -17,89 +17,91 @@ defmodule PicselloWeb.Live.Marketing do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="bg-gray-100">
-      <div class="pt-10 pb-8 center-container">
-        <h1 class="px-6 text-4xl font-bold">Marketing</h1>
-        <%= case @attention_items do %>
-          <% [] -> %>
-          <% items -> %>
-            <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
-            <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-next-up">
-              <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} <- items do %>
-              <li {testid("marketing-attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
-                <div>
-                  <h3 class="text-lg font-bold">
-                    <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
-                    <%= title %>
-                  </h3>
-                  <p class="my-2 text-sm"><%= body %></p>
-                  <%= case action do %>
-                    <% "public-profile" -> %>
-                      <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
-                    <% _ -> %>
-                      <a href={external_link} class={"#{button_class} text-center text-sm w-full py-2 mt-2 inline-block"} target="_blank" rel="noopener noreferrer">
-                        <%= button_label %>
-                      </a>
-                  <% end %>
-                </div>
-              </li>
-              <% end %>
-            </ul>
-        <% end %>
-      </div>
-    </header>
-    <div class="px-6 center-container" {intro(@current_user, "intro_marketing")}>
-      <div class="my-12">
-        <.card title="Brand links" class="relative">
-          <p class="mb-8">Links to common web platforms so you can quickly access them.</p>
-          <div class="grid gap-5 lg:grid-cols-4 md:grid-cols-2 grid-cols-1">
-            <%= case @links do %>
-              <% [] -> %>
-              <% links -> %>
-              <%= for %{title: title, icon: icon, action: action, link: link, link_id: link_id, can_edit?: can_edit?} <- links do %>
-                <div {testid("marketing-links")} class="flex items-center mb-4">
-                  <div class="flex items-center justify-center w-20 h-20 ml-1 mr-3 rounded-full flex-shrink-0 bg-base-200 p-6">
-                    <.icon name={icon} />
-                  </div>
+    <div {intro(@current_user, "intro_marketing")}>
+      <header class="bg-gray-100">
+        <div class="pt-10 pb-8 center-container">
+          <h1 class="px-6 text-4xl font-bold">Marketing</h1>
+          <%= case @attention_items do %>
+            <% [] -> %>
+            <% items -> %>
+              <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
+              <ul class="flex px-6 pb-4 overflow-auto lg:pb-0 lg:overflow-none intro-next-up">
+                <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} <- items do %>
+                <li {testid("marketing-attention-item")} class={"flex-shrink-0 flex lg:flex-1 flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250"}>
                   <div>
-                    <h4 class="text-xl font-bold mb-2"><a href={link} target="_blank" rel="noopener noreferrer"><%= title %></a></h4>
-                    <div class="flex">
-                      <%= if link do %>
-                        <a href={link} target="_blank" rel="noopener noreferrer" class="px-1 pb-1 font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300 hover:bg-blue-planning-100">Open</a>
-                      <% else %>
-                        <.badge color={:red}>Missing link</.badge>
-                      <% end %>
-                      <%= if can_edit? do %>
-                        <button phx-click={action} phx-value-link-id={link_id} class="ml-2 text-blue-planning-300 underline">Edit</button>
-                      <% end %>
+                    <h3 class="text-lg font-bold">
+                      <.icon name={icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current bg-blue-planning-100 text-#{color}"} />
+                      <%= title %>
+                    </h3>
+                    <p class="my-2 text-sm"><%= body %></p>
+                    <%= case action do %>
+                      <% "public-profile" -> %>
+                        <button type="button" phx-click={action} class={"#{button_class} text-sm w-full py-2 mt-2"}><%= button_label %></button>
+                      <% _ -> %>
+                        <a href={external_link} class={"#{button_class} text-center text-sm w-full py-2 mt-2 inline-block"} target="_blank" rel="noopener noreferrer">
+                          <%= button_label %>
+                        </a>
+                    <% end %>
+                  </div>
+                </li>
+                <% end %>
+              </ul>
+          <% end %>
+        </div>
+      </header>
+      <div class="px-6 center-container">
+        <div class="my-12">
+          <.card title="Brand links" class="relative intro-brand-links">
+            <p class="mb-8">Links to common web platforms so you can quickly access them.</p>
+            <div class="grid gap-5 lg:grid-cols-4 md:grid-cols-2 grid-cols-1">
+              <%= case @links do %>
+                <% [] -> %>
+                <% links -> %>
+                <%= for %{title: title, icon: icon, action: action, link: link, link_id: link_id, can_edit?: can_edit?} <- links do %>
+                  <div {testid("marketing-links")} class="flex items-center mb-4">
+                    <div class="flex items-center justify-center w-20 h-20 ml-1 mr-3 rounded-full flex-shrink-0 bg-base-200 p-6">
+                      <.icon name={icon} />
+                    </div>
+                    <div>
+                      <h4 class="text-xl font-bold mb-2"><a href={link} target="_blank" rel="noopener noreferrer"><%= title %></a></h4>
+                      <div class="flex">
+                        <%= if link do %>
+                          <a href={link} target="_blank" rel="noopener noreferrer" class="px-1 pb-1 font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300 hover:bg-blue-planning-100">Open</a>
+                        <% else %>
+                          <.badge color={:red}>Missing link</.badge>
+                        <% end %>
+                        <%= if can_edit? do %>
+                          <button phx-click={action} phx-value-link-id={link_id} class="ml-2 text-blue-planning-300 underline">Edit</button>
+                        <% end %>
+                      </div>
                     </div>
                   </div>
-                </div>
+                <% end %>
               <% end %>
+            </div>
+          </.card>
+        </div>
+        <.card title="Marketing Emails" class={classes("relative", %{"sm:col-span-2" => Enum.any?(@campaigns)})}>
+          <p class="mb-8">Send marketing campaigns to your current/past clients and new contacts.</p>
+          <div class="p-4 border rounded">
+            <header class="flex items-center flex-wrap justify-between">
+              <div class="flex items-center lg:mb-0 mb-4">
+                <.icon name="camera-check" class="text-purple-marketing-300 w-12 h-12 mr-4" />
+                <h3 class="text-xl font-bold intro-promotional">Promote your business</h3>
+              </div>
+              <button type="button" phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
+            </header>
+            <%= unless Enum.empty?(@campaigns) do %>
+              <h2 class="mt-4 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Most Recent</h2>
+              <ul class="text-left grid gap-5 lg:grid-cols-3 md:grid-cols-2 grid-cols-1">
+                <%= for campaign <- @campaigns do %>
+                  <.campaign_item id={campaign.id} subject={campaign.subject} date={strftime(@current_user.time_zone, campaign.inserted_at, "%B %d, %Y")} clients_count={campaign.clients_count} />
+                <% end %>
+              </ul>
             <% end %>
           </div>
         </.card>
       </div>
-      <.card title="Marketing Emails" class={classes("relative intro-promotional", %{"sm:col-span-2" => Enum.any?(@campaigns)})}>
-        <p class="mb-8">Send marketing campaigns to your current/past clients and new contacts.</p>
-        <div class="p-4 border rounded">
-          <header class="flex items-center flex-wrap justify-between">
-            <div class="flex items-center lg:mb-0 mb-4">
-              <.icon name="camera-check" class="text-purple-marketing-300 w-12 h-12 mr-4" />
-              <h3 class="text-xl font-bold">Promote your business</h3>
-            </div>
-            <button type="button" phx-click="new-campaign" class="w-full sm:w-auto text-center btn-primary">Create an email</button>
-          </header>
-          <%= unless Enum.empty?(@campaigns) do %>
-            <h2 class="mt-4 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Most Recent</h2>
-            <ul class="text-left grid gap-5 lg:grid-cols-3 md:grid-cols-2 grid-cols-1">
-              <%= for campaign <- @campaigns do %>
-                <.campaign_item id={campaign.id} subject={campaign.subject} date={strftime(@current_user.time_zone, campaign.inserted_at, "%B %d, %Y")} clients_count={campaign.clients_count} />
-              <% end %>
-            </ul>
-          <% end %>
-        </div>
-      </.card>
     </div>
     """
   end

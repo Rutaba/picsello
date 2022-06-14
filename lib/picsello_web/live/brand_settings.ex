@@ -12,7 +12,7 @@ defmodule PicselloWeb.Live.BrandSettings do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} intro_id="intro_settings_brand">
       <div class="flex flex-col justify-between flex-1 flex-grow-0 mt-5 sm:flex-row">
         <div>
           <h1 class="text-2xl font-bold">Brand</h1>
@@ -31,7 +31,7 @@ defmodule PicselloWeb.Live.BrandSettings do
             <div>
               Here’s the email signature that we’ve generated for you that will be included on all <.live_link class="link" to={Routes.inbox_path(@socket, :index)}>Inbox</.live_link> emails. To change your info, you’ll have to upload a logo <.live_link class="link" to={Routes.profile_settings_path(@socket, :edit)}>here</.live_link>, update your <.live_link class="link" to={Routes.user_settings_path(@socket, :edit)}>business name</.live_link> and modify your phone number.
             </div>
-            <button phx-click="edit-signature" class="hidden mt-6 sm:block btn-primary">Change signature</button>
+            <button phx-click="edit-signature" class="hidden mt-6 sm:block btn-primary intro-signature">Change signature</button>
           </div>
           <div {testid("signature-preview")} class="flex flex-col">
             <.email_signature_preview organization={@organization} user={@current_user} />
@@ -49,6 +49,10 @@ defmodule PicselloWeb.Live.BrandSettings do
       socket
       |> PicselloWeb.Live.Brand.EditSignatureComponent.open(organization)
       |> noreply()
+
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   def handle_info({:update, organization}, socket) do
