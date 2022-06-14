@@ -83,6 +83,57 @@ defmodule Picsello.EditLeadContractTest do
     end)
   end
 
+  feature "user selects different contract without editing it", %{
+    session: session,
+    user: user,
+    lead: lead
+  } do
+    insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+
+    session
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> click(@edit_contract_button)
+    |> assert_text("Add Custom Wedding Contract")
+    |> find(select("Select a Contract Template"), fn element ->
+      element |> click(option("Contract 1"))
+    end)
+    |> click(button("Save"))
+    |> assert_flash(:success, text: "New contract added successfully")
+    |> find(testid("contract"), fn element ->
+      element
+      |> assert_text("Contract 1")
+    end)
+  end
+
+  feature "user selects different contract and edits it", %{
+    session: session,
+    user: user,
+    lead: lead
+  } do
+    insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+
+    session
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> click(@edit_contract_button)
+    |> assert_text("Add Custom Wedding Contract")
+    |> find(select("Select a Contract Template"), fn element ->
+      element |> click(option("Contract 1"))
+    end)
+    |> click(css("div.ql-editor[data-placeholder='Paste contract text here']"))
+    |> send_keys(["this is the content of my new contract"])
+    |> assert_disabled_submit()
+    |> fill_in(text_field("Contract Name"), with: " ")
+    |> assert_text("Contract Name can't be blank")
+    |> fill_in(text_field("Contract Name"), with: "Contract 2")
+    |> within_modal(&wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> assert_flash(:success, text: "New contract added successfully")
+    |> find(testid("contract"), fn element ->
+      element
+      |> assert_text("Contract 2")
+    end)
+  end
+
   feature "only displays templates from the same job type", %{
     session: session,
     lead: lead,

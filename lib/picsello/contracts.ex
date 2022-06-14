@@ -27,13 +27,15 @@ defmodule Picsello.Contracts do
     )
   end
 
-  def save_contract(organization, job, params) do
+  def save_template_and_contract(job, params) do
+    %{organization_id: organization_id} = job |> Repo.preload(:client) |> Map.get(:client)
+
     result =
       Ecto.Multi.new()
       |> Ecto.Multi.insert(
         :contract_template,
         params
-        |> Map.put("organization_id", organization.id)
+        |> Map.put("organization_id", organization_id)
         |> Map.put("job_type", job.type)
         |> Contract.template_changeset()
       )
@@ -43,6 +45,36 @@ defmodule Picsello.Contracts do
           params
           |> Map.put("job_id", job.id)
           |> Map.put("contract_template_id", changes.contract_template.id)
+          |> Contract.changeset()
+        end,
+        on_conflict: :replace_all,
+        conflict_target: ~w[job_id]a
+      )
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{contract: contract}} -> {:ok, contract}
+      {:error, :contract, changeset, _} -> {:error, changeset}
+      _ -> {:error}
+    end
+  end
+
+  def save_contract(job, params) do
+    template_id = Map.get(params, "contract_template_id")
+
+    result =
+      Ecto.Multi.new()
+      |> Ecto.Multi.put(
+        :contract_template,
+        job |> for_job_query() |> where([contract], contract.id == ^template_id) |> Repo.one!()
+      )
+      |> Ecto.Multi.insert(
+        :contract,
+        fn changes ->
+          params
+          |> Map.put("job_id", job.id)
+          |> Map.put("contract_template_id", changes.contract_template.id)
+          |> Map.put("name", changes.contract_template.name)
           |> Contract.changeset()
         end,
         on_conflict: :replace_all,
