@@ -166,7 +166,7 @@ defmodule Picsello.Subscriptions do
     }
   end
 
-  defp user_customer_id(%User{stripe_customer_id: nil} = user) do
+  def user_customer_id(%User{stripe_customer_id: nil} = user) do
     params = %{name: user.name, email: user.email}
 
     with {:ok, %{id: customer_id}} <- Payments.create_customer(params, []),
@@ -181,7 +181,7 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  defp user_customer_id(%User{stripe_customer_id: customer_id}), do: customer_id
+  def user_customer_id(%User{stripe_customer_id: customer_id}), do: customer_id
 
   defp to_datetime(nil), do: nil
   defp to_datetime(unix_date), do: DateTime.from_unix!(unix_date)

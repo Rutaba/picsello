@@ -57,4 +57,15 @@ defmodule Picsello.Invoices do
       where: invoices.status != :paid
     )
   end
+
+  def pending_invoices?(organization_id) do
+    from(
+      invoice in unpaid_query(),
+      join: order in assoc(invoice, :order),
+      join: gallery in assoc(order, :gallery),
+      join: organization in assoc(gallery, :organization),
+      where: organization.id == ^organization_id
+    )
+    |> Picsello.Repo.exists?()
+  end
 end

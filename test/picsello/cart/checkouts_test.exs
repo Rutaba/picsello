@@ -56,6 +56,9 @@ defmodule Picsello.Cart.CheckoutsTest do
 
   def stub_create_invoice(_) do
     MockPayments
+    |> Mox.stub(:create_customer, fn %{}, _opts ->
+      {:ok, %Stripe.Customer{id: "cus_123"}}
+    end)
     |> Mox.stub(:create_invoice_item, fn _, _ ->
       {:ok, %Stripe.Invoiceitem{}}
     end)

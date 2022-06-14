@@ -184,10 +184,11 @@ defmodule Picsello.Cart.Checkouts do
        do: create_stripe_invoice(order, WHCCOrder.total(whcc_order))
 
   defp create_stripe_invoice(
-         %{gallery: %{organization: %{user: %{stripe_customer_id: customer}}}} = invoice_order,
+         %{gallery: %{organization: %{user: user}}} = invoice_order,
          %{amount: outstanding_cents}
        ) do
-    with {:ok, _invoice_item} <-
+    with "" <> customer <- Picsello.Subscriptions.user_customer_id(user),
+         {:ok, _invoice_item} <-
            Payments.create_invoice_item(%{
              customer: customer,
              amount: outstanding_cents,

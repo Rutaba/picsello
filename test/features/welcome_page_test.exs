@@ -86,6 +86,40 @@ defmodule Picsello.WelcomePageTest do
       |> click(link("Add a lead"))
       |> assert_has(text_field("Client Name"))
     end
+
+    feature "user open billing portal", %{session: session, user: user} do
+      order =
+        insert(:order,
+          gallery:
+            insert(:gallery,
+              job: insert(:lead, user: user) |> promote_to_job()
+            )
+        )
+
+      insert(:invoice,
+        order: order,
+        status: :open,
+        stripe_id: "invoice-stripe-id"
+      )
+
+      Mox.stub(Picsello.MockPayments, :create_billing_portal_session, fn _ ->
+        {:ok,
+         %{
+           url:
+             PicselloWeb.Endpoint.struct_url()
+             |> Map.put(:fragment, "stripe-billing-portal")
+             |> URI.to_string()
+         }}
+      end)
+
+      session
+      |> visit("/")
+      |> find(
+        testid("attention-item", text: "Balance(s) Due"),
+        &click(&1, button("Open Billing Portal"))
+      )
+      |> assert_url_contains("stripe-billing-portal")
+    end
   end
 
   def lead_counts(session) do

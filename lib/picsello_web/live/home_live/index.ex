@@ -70,6 +70,17 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_event("open-billing-portal", %{}, socket) do
+    {:ok, url} =
+      Picsello.Subscriptions.billing_portal_link(
+        socket.assigns.current_user,
+        Routes.home_url(socket, :index)
+      )
+
+    socket |> redirect(external: url) |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
@@ -211,6 +222,19 @@ defmodule PicselloWeb.HomeLive.Index do
              external_link: "",
              color: "blue-planning-300",
              class: "intro-stripe"
+           }},
+          {Picsello.Invoices.pending_invoices?(current_user.organization_id),
+           %{
+             action: "open-billing-portal",
+             title: "Balance(s) Due",
+             body:
+               "There is an unpaid balance that needs your attention. Please open the Billing Portal to resolve this issue.",
+             icon: "money-bags",
+             button_label: "Open Billing Portal",
+             button_class: "btn-primary",
+             external_link: "",
+             color: "red-sales-300",
+             class: "border-red-sales-300"
            }},
           {true,
            %{
