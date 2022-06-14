@@ -1,6 +1,7 @@
 .photographer-gallery {
-  @apply before:content-[""] before:fixed before:left-96 before:top-0 before:right-0 before:bottom-0 before:bg-gray-100;
+  @apply before:content-[""] before:fixed before:left-96 before:top-0 before:right-0 before:bottom-0 before:bg-white;
 }
+
 .gallery__coverImg {
   height: calc((4 / 6) * 100vw);
   @apply relative bg-center bg-cover bg-base-200;
@@ -19,7 +20,7 @@
 }
 
 .album-select {
-  @apply items-center flex w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md whitespace-nowrap;
+  @apply items-center flex lg:w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md whitespace-nowrap;
 }
 .album-actions {
   @apply flex items-center w-64 h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md whitespace-nowrap hover:bg-blue-planning-100;
@@ -279,36 +280,22 @@
   max-width: 500px;
 }
 
-.bottomBar {
-  @apply fixed bottom-0 left-0 right-0 z-10 w-full h-32 bg-base-300 opacity-95;
-  box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.15);
-}
-
 .bottomBar_gallery {
-  @apply fixed bottom-0 left-0 right-0 z-10 w-full h-20 bg-base-300 opacity-95;
-  box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.15);
+  @apply bottom-0 left-0 right-0 z-10 lg:bg-base-300 bg-base-100 opacity-95;
 }
 
-.bottomBar__btn {
-  @apply flex items-center px-6 py-4 text-lg font-semibold text-center border border-solid rounded-lg cursor-pointer text-base-100 border-base-100;
+.footerBtn-primary {
+  @apply px-6 py-4 lg:text-lg font-semibold rounded-lg cursor-pointer lg:text-base-100 text-base-300;
 }
 
-.bottomBar_gallery__btn {
-  @apply flex items-center px-6 py-3 text-lg font-semibold text-center border-solid rounded-lg cursor-pointer text-base-350 bg-base-100 border-base-100;
+.footerBtn-secondary {
+  @apply px-6 py-4 lg:text-lg font-semibold border-solid rounded-lg cursor-pointer lg:text-base-350 lg:bg-base-100 border-base-100 bg-base-300 text-base-100 border border-base-100;
 }
 
 .navBar__btn {
     @apply flex items-center px-2 py-2 text-sm font-semibold text-center border border-solid rounded-lg shadow-xl cursor-pointer text-base-300 border-base-100;
     border-color: #4daac6
   }
-
-.bottomBar__btn.btn-secondary {
-  @apply border-base-100;
-}
-
-.bottomBar__btn.btn-secondary:hover {
-  @apply text-base-100;
-}
 
 .galleryItem .likeBtn {
   @apply absolute opacity-0;
@@ -621,10 +608,6 @@
       rgba(0, 0, 0, 0.6) 99.72%,
       rgba(0, 0, 0, 0.732) 99.72%
     );
-  }
-
-  .uploadBtn {
-    @apply px-4 py-2 border font-sans rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75;
   }
 
   .dropdown {

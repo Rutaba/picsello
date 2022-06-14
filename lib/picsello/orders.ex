@@ -8,6 +8,7 @@ defmodule Picsello.Orders do
     Galleries.Gallery,
     Galleries.Photo,
     Intents,
+    Invoices,
     Repo
   }
 
@@ -34,21 +35,11 @@ defmodule Picsello.Orders do
   def has_download?(%Order{bundle_price: bundle_price, digitals: digitals}),
     do: bundle_price != nil || digitals != []
 
-  def paid?(%{id: order_id}),
-    do:
-      from(order in orders(),
-        as: :order,
-        where:
-          not exists(
-            from intents in Intents.unpaid_query(),
-              where: intents.order_id == parent_as(:order).id
-          ) and
-            order.id == ^order_id
-      )
-      |> Repo.exists?()
-
   def client_paid?(%{id: order_id}),
     do: Repo.exists?(from orders in client_paid_query(), where: orders.id == ^order_id)
+
+  def photographer_paid?(%{id: order_id}),
+    do: Repo.exists?(from orders in photographer_paid_query(Order), where: orders.id == ^order_id)
 
   def client_paid_query, do: client_paid_query(orders())
 
@@ -58,6 +49,14 @@ defmodule Picsello.Orders do
         left_join: intents in subquery(Intents.unpaid_query()),
         on: intents.order_id == orders.id,
         where: is_nil(intents.id)
+      )
+
+  def photographer_paid_query(source),
+    do:
+      from(orders in source,
+        left_join: invoices in subquery(Invoices.unpaid_query()),
+        on: invoices.order_id == orders.id,
+        where: is_nil(invoices.id)
       )
 
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
@@ -114,7 +113,7 @@ defmodule Picsello.Orders do
   end
 
   @doc "stores processing info in order it finds"
-  def update_whcc_order(%{entry_id: entry_id} = payload) do
+  def update_whcc_order(%{entry_id: entry_id} = payload, helpers) do
     case from(order in Order,
            where: fragment("? ->> 'entry_id' = ?", order.whcc_order, ^entry_id),
            preload: [products: :whcc_product]
@@ -127,8 +126,27 @@ defmodule Picsello.Orders do
         order
         |> Order.whcc_order_changeset(payload)
         |> Repo.update()
+        |> case do
+          {:ok, updated_order} ->
+            maybe_send_shipping_notification(payload, updated_order, helpers)
+            {:ok, updated_order}
+
+          error ->
+            error
+        end
     end
   end
+
+  defp maybe_send_shipping_notification(
+         %Picsello.WHCC.Webhooks.Event{event: "Shipped"} = event,
+         order,
+         helpers
+       ) do
+    Picsello.Notifiers.ClientNotifier.deliver_shipping_notification(event, order, helpers)
+    Picsello.Notifiers.UserNotifier.deliver_shipping_notification(event, order, helpers)
+  end
+
+  defp maybe_send_shipping_notification(_payload, _order, _helpers), do: nil
 
   def can_download_all?(%Gallery{} = gallery) do
     Galleries.do_not_charge_for_download?(gallery) || bundle_purchased?(gallery)
@@ -140,6 +158,12 @@ defmodule Picsello.Orders do
     )
     |> Repo.exists?()
   end
+
+  defdelegate handle_session(order_number, stripe_session_id),
+    to: __MODULE__.Confirmations
+
+  defdelegate handle_session(session), to: __MODULE__.Confirmations
+  defdelegate handle_invoice(invoice), to: __MODULE__.Confirmations
 
   defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
     from(photo in Photo, where: photo.gallery_id == ^order.gallery_id)

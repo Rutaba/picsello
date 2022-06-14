@@ -44,7 +44,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       subject: "#{client.name} just completed their booking proposal!",
       body: """
       <p>Hello #{User.first_name(user)},</p>
-      <p>Yey! You have a new job!</p>
+      <p>Yay! You have a new job!</p>
       <p>#{client.name} completed their proposal. We have moved them from a lead to a job. Congratulations!</p>
       <p>Click <a href="#{helpers.job_url(job.id)}">here</a> to view and access your job on Picsello.</p>
       <p>Cheers!</p>
@@ -64,7 +64,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       subject: "You have a new lead from #{client.name}",
       body: """
       <p>Hello #{User.first_name(user)},</p>
-      <p>Yey! You have a new lead!</p>
+      <p>Yay! You have a new lead!</p>
       <p>#{client.name} just submitted a contact form with the following information:</p>
       <p>Email: #{client.email}</p>
       <p>Phone: #{client.phone}</p>
@@ -94,6 +94,26 @@ defmodule Picsello.Notifiers.UserNotifier do
       """
     }
     |> deliver_transactional_email(user)
+  end
+
+  def deliver_shipping_notification(event, order, helpers) do
+    with %{gallery: gallery} <- order |> Repo.preload(:gallery),
+         [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_shipping_to_photographer),
+         %{shipping_info: [%{tracking_url: tracking_url} | _]} <- event,
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {gallery, order}, helpers) do
+      deliver_transactional_email(
+        %{
+          subject: subject,
+          body: body,
+          button: %{
+            text: "Track shipping",
+            url: tracking_url
+          }
+        },
+        Picsello.Galleries.gallery_photographer(gallery)
+      )
+    end
   end
 
   defp deliver_transactional_email(params, user) do

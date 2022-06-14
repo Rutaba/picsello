@@ -162,7 +162,16 @@ defmodule Picsello.Package do
     from(template in templates_for_user(user), where: template.job_type == ^type)
   end
 
-  def validate_money(changeset, field, validate_number_opts \\ [greater_than_or_equal_to: 0]) do
+  def validate_money(changeset, fields, validate_number_opts \\ [greater_than_or_equal_to: 0])
+
+  def validate_money(changeset, [_ | _] = fields, validate_number_opts) do
+    for field <- fields, reduce: changeset do
+      changeset ->
+        validate_money(changeset, field, validate_number_opts)
+    end
+  end
+
+  def validate_money(changeset, field, validate_number_opts) do
     validate_change(changeset, field, fn
       field, %Money{amount: amount} ->
         {%{field => nil}, %{field => :integer}}

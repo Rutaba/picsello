@@ -85,21 +85,94 @@ export default {
       },
     ].filter((obj) => obj?.element),
   }),
+  intro_jobs_stripe: (el) => ({
+    showBullets: false,
+    steps: [
+      {
+        title: 'Set up Stripe',
+        intro:
+          'Connect a Stripe account or create one to make it easy for your clients to pay you. You will also need it to import a job.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.btn-primary'),
+      },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_jobs_empty: (el) => ({
+    showBullets: true,
+    steps: [
+      {
+        title: 'Importing an existing job',
+        intro:
+          'When you first begin using Picsello, you may have some outstanding jobs created outside of Picsello. You can import these job details to accurately track and schedule these jobs. You may also use this method for custom payment schedules.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('a:first-child'),
+      },
+      {
+        title: 'Create a lead instead',
+        intro:
+          'If you don’t have all of the payment, contract, info, or specified session details, we suggest creating a lead instead of importing a job.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('a:last-child'),
+      },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_jobs: (el) => ({
+    showBullets: true,
+    steps: [
+      {
+        title: 'Communication',
+        intro:
+          'Just like leads you can communicate with your client in this section and we’ll track all of your email correspondence in the thread. Head on over to your inbox to see the full conversation.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-message'),
+      },
+      {
+        title: 'Uploading your gallery',
+        intro:
+          'You can create your gallery and start uploading photos here as your sessions are completed.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-gallery'),
+      },
+      {
+        title: 'Shoot details',
+        intro:
+          'Here you can see all of the info that you previously entered from the lead process. Note, if you imported a job, you will need to finish filling this information out.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('[phx-value-section_id="shoot-details"] h2'),
+      },
+      {
+        title: 'Booking details',
+        intro:
+          'If you ever need to refer back to any of the accepted documents from your client, you can always revisit this section.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector(
+          '[phx-value-section_id="booking-details"] h2'
+        ),
+      },
+    ].filter((obj) => obj?.element),
+  }),
   intro_marketing: (el) => ({
     steps: [
+      {
+        title: 'Next Up',
+        intro:
+          'Similar to your home screen, the “Next Up” section will guide you through which steps you should focus on next. It will also contain useful tips & tricks for marketing your business.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-next-up'),
+      },
+      {
+        title: 'Brand links',
+        intro:
+          'Here we have included quick links to some of the most used social platforms. We also have a spot for you to input your website and where you log in to manage it.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('.intro-brand-links'),
+      },
       {
         title: 'Promotional emails',
         intro:
           'Picsello makes it easy to reach out to your customers at any time. You can create custom messages and send them to either all of your contacts, or only those that are not currently leads.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('.intro-promotional'),
-      },
-      {
-        title: 'Your Public Profile',
-        intro:
-          'This is your custom, Picsello-hosted site that clients will be able to use to find and contact you.',
-        position: 'bottom-middle-aligned',
-        element: el.querySelector('.intro-profile'),
       },
     ].filter((obj) => obj?.element),
   }),
@@ -159,13 +232,20 @@ export default {
     ].filter((obj) => obj?.element),
   }),
   intro_settings_packages: (el) => ({
-    showBullets: false,
+    showBullets: true,
     steps: [
       {
         title: 'Package Templates',
         intro: 'View preset packages or create your own.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_packages h1'),
+      },
+      {
+        title: 'Need help with pricing?',
+        intro:
+          'We’ve created a handy pricing calculator to help you charge more and factor in business costs you may not think you have.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('#intro_settings_packages .intro-calculator'),
       },
     ].filter((obj) => obj?.element),
   }),
@@ -182,7 +262,7 @@ export default {
     ].filter((obj) => obj?.element),
   }),
   intro_settings_public_profile: (el) => ({
-    showBullets: false,
+    showBullets: true,
     steps: [
       {
         title: 'Public Profile',
@@ -190,6 +270,15 @@ export default {
           'We offer a Public Profile page that will allow potential clients to contact you directly through a website that we host.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_public_profile h1'),
+      },
+      {
+        title: 'Embed your lead form',
+        intro:
+          'If you don’t want to use your Public Profile page to accept inquiries. We have embeddable code you can add to your website to allow leads to contact you through Picsello.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector(
+          '#intro_settings_public_profile .intro-lead-form'
+        ),
       },
     ].filter((obj) => obj?.element),
   }),
@@ -202,6 +291,37 @@ export default {
           'If someone isn’t a lead yet, but you want to keep track of their contact information, you can add them as a contact here. You can also convert them into a lead later.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_contacts h1'),
+      },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_settings_brand: (el) => ({
+    showBullets: false,
+    steps: [
+      {
+        title: 'Setup your signature',
+        intro:
+          'Configure the information you’d like to include in your email signature.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('#intro_settings_brand .intro-signature'),
+      },
+    ].filter((obj) => obj?.element),
+  }),
+  intro_settings_finances: (el) => ({
+    showBullets: false,
+    steps: [
+      {
+        title: 'Tax settings',
+        intro:
+          'Picsello relies on your tax settings set up in Stripe to determine how to charge your clients. Until you complete all tax steps within Stripe, Picsello will not charge any tax when your clients pay you. You will need to work with your certified CPA to understand how you will report products and services in your state.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('#intro_settings_finances .intro-taxes'),
+      },
+      {
+        title: 'Viewing Stripe',
+        intro:
+          'Since we leverage Stripe as our payment partner, you can go there for the most complete view of your financial state within Picsello.',
+        position: 'bottom-middle-aligned',
+        element: el.querySelector('#intro_settings_finances .intro-stripe'),
       },
     ].filter((obj) => obj?.element),
   }),

@@ -31,6 +31,25 @@ defmodule Picsello.Cart.Product do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{
+          editor_id: String.t(),
+          preview_url: String.t(),
+          quantity: integer(),
+          round_up_to_nearest: integer(),
+          selections: %{String.t() => any()},
+          shipping_base_charge: Money.t(),
+          shipping_upcharge: Decimal.t(),
+          unit_markup: Money.t(),
+          unit_price: Money.t(),
+          print_credit_discount: Money.t(),
+          volume_discount: Money.t(),
+          price: Money.t(),
+          order: Ecto.Association.NotLoaded.t() | Picsello.Cart.Order.t(),
+          whcc_product: Ecto.Association.NotLoaded.t() | Picsello.Product.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   def changeset(
         product,
         %__MODULE__{whcc_product_id: nil, whcc_product: %{id: whcc_product_id}} = attrs
@@ -68,7 +87,7 @@ defmodule Picsello.Cart.Product do
 
   @doc "merges values for price, volume_discount, and print_credit_discount"
   def update_price(%__MODULE__{} = product, opts \\ []) do
-    credit = get_in(opts, [:credits, :print]) || ~M[0]USD
+    {credit, opts} = Keyword.pop(opts, :credits, ~M[0]USD)
     fake_price = fake_price(product)
     real_price = real_price(product, opts)
 

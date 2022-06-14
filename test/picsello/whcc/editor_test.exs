@@ -9,11 +9,22 @@ defmodule Picsello.WHCC.EditorTest do
 
   describe "Picsello.WHCC.Editor.Export.Editor" do
     test "serializes to correct json payload" do
-      assert %{"orderAttributes" => [123], "editorId" => "foo", "quantity" => 2} =
+      assert %{"orderAttributes" => [123], "editorId" => "foo", "quantity" => 2} ==
                %Picsello.WHCC.Editor.Export.Editor{
                  id: "foo",
                  order_attributes: [123],
                  quantity: 2
+               }
+               |> Jason.encode!()
+               |> Jason.decode!()
+    end
+
+    test "skips quantity when nil" do
+      assert %{"orderAttributes" => [123], "editorId" => "foo"} ==
+               %Picsello.WHCC.Editor.Export.Editor{
+                 id: "foo",
+                 order_attributes: [123],
+                 quantity: nil
                }
                |> Jason.encode!()
                |> Jason.decode!()

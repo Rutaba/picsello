@@ -36,6 +36,8 @@ defmodule Picsello.Organization do
     timestamps()
   end
 
+  @type t :: %__MODULE__{name: String.t()}
+
   def email_signature_changeset(organization, attrs) do
     organization
     |> cast(attrs, [])

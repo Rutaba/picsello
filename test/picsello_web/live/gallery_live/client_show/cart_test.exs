@@ -8,6 +8,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
   setup %{conn: conn} do
     Mox.verify_on_exit!()
 
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
     gallery = insert(:gallery)
 
     {:ok, session_token} =

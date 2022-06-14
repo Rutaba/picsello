@@ -28,12 +28,10 @@ defmodule Picsello.ProposalReminderTest do
 
       assert_receive {:delivered_email, email}
 
-      assert %{"body_html" => body_html, "body_text" => body_text, "subject" => subject} =
-               email |> email_substitutions()
+      assert %{"body" => body, "subject" => subject} = email |> email_substitutions()
 
       assert "Proposal reminder" == subject
-      assert String.starts_with?(body_html, "<p>Hi Mary Jane,</p>")
-      assert String.starts_with?(body_text, "Hi Mary Jane,\n")
+      assert String.starts_with?(body, "<p>Hi Mary Jane,</p>")
     end
 
     test "delivers no emails before the message delay", %{now: now} do

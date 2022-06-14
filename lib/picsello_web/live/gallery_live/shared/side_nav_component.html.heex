@@ -1,6 +1,7 @@
-<div class="fixed top-0 bottom-0 left-0 flex flex-col h-screen px-5 pb-6 pt-2 overflow-y-auto bg-white z-1 shrink-0 w-[384px]">
+<div class="fixed top-0 lg:bottom-0 left-0 flex flex-col lg:h-screen h-16 px-5 pb-6 pt-2 lg:bg-white lg:z-10 z-40 shrink-0 lg:w-[384px] w-screen bg-base-200">
     <div class="fixed">
-      <div class="circleBtn">
+    <div class="flex">
+      <span class="flex-col circleBtn">
         <ul>
             <li>
               <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
@@ -9,8 +10,10 @@
               <% end %>
             </li>
         </ul>
+      </span>
+      <span class="text-2xl font-bold flex-col pl-8 pt-2 text-base-300 lg:hidden"> Gallery Overview </span>
       </div>
-      <div class="mt-2 gallery-name-edit">
+      <div class="mt-2 gallery-name-edit hidden lg:block">
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
           <div class={if(!@edit_name, do: "hidden")}>
             <p class="w-[370px] text-3xl font-bold text-base-300"><%= @gallery.name %> </p>
@@ -27,7 +30,7 @@
           </div>
         </.form>
       </div>
-      <div class="grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-lg grid-container w-80 gap-y-1">
+      <div class="lg:grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-lg grid-container hidden w-80 gap-y-1">
         <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
             <div phx-click="select_overview" phx-target={@myself} class="flex items-center h-12 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
               <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">

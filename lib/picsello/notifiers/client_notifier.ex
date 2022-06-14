@@ -10,14 +10,40 @@ defmodule Picsello.Notifiers.ClientNotifier do
   def deliver_booking_proposal(message, to_email) do
     proposal = BookingProposal.last_for_job(message.job_id)
 
-    message
-    |> client_message_to_email(:booking_proposal_template, url: BookingProposal.url(proposal.id))
-    |> to(to_email)
-    |> deliver_later()
+    deliver_email(message, to_email, %{
+      button: %{url: BookingProposal.url(proposal.id), text: "View booking proposal"}
+    })
   end
 
-  def deliver_email(message, to_email) do
-    message |> client_message_to_email(:email_template) |> to(to_email) |> deliver_later()
+  def deliver_email(message, to_email, params \\ %{}) do
+    job = message |> Repo.preload(:job) |> Map.get(:job)
+
+    message
+    |> message_params()
+    |> Map.merge(params)
+    |> deliver_transactional_email(to_email, job)
+  end
+
+  def deliver_shipping_notification(event, order, helpers) do
+    with %{gallery: gallery} <- order |> Repo.preload(gallery: :job),
+         [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_shipping_to_client),
+         %{shipping_info: [%{tracking_url: tracking_url} | _]} <- event,
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {gallery, order}, helpers) do
+      deliver_transactional_email(
+        %{
+          subject: subject,
+          headline: subject,
+          body: body,
+          button: %{
+            text: "Track shipping",
+            url: tracking_url
+          }
+        },
+        order.delivery_info.email,
+        gallery.job
+      )
+    end
   end
 
   def deliver_order_confirmation(
@@ -72,30 +98,12 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> deliver_later()
   end
 
-  defp client_message_to_email(message, template_name, opts \\ []) do
-    job = message |> Repo.preload(job: [client: [organization: :user]]) |> Map.get(:job)
-    %{organization: organization} = job.client
-
-    opts =
-      Keyword.merge(
-        [
-          subject: message.subject,
-          body_html: message |> body_html,
-          body_text: message.body_text,
-          email_signature: email_signature(organization),
-          color: organization.profile.color
-        ],
-        opts
-      )
-
-    reply_to = Job.email_address(job)
-    from_display = job.client.organization.name
-
-    template_name
-    |> sendgrid_template(opts)
-    |> cc(message.cc_email)
-    |> put_header("reply-to", "#{from_display} <#{reply_to}>")
-    |> from({from_display, "noreply@picsello.com"})
+  defp message_params(message) do
+    %{
+      subject: message.subject,
+      headline: message.subject,
+      body: message |> body_html
+    }
   end
 
   defp body_html(%{body_html: nil, body_text: body_text}),
@@ -119,4 +127,29 @@ defmodule Picsello.Notifiers.ClientNotifier do
         into: "",
         do: "<p>#{line}</p>"
       )
+
+  defp deliver_transactional_email(params, to_email, job) do
+    job = job |> Repo.preload(client: [organization: :user])
+    %{organization: organization} = job.client
+
+    params =
+      Map.merge(
+        %{
+          logo_url: if(organization.profile.logo, do: organization.profile.logo.url),
+          organization_name: organization.name,
+          email_signature: email_signature(organization)
+        },
+        params
+      )
+
+    reply_to = Job.email_address(job)
+    from_display = organization.name
+
+    :client_transactional_template
+    |> sendgrid_template(params)
+    |> put_header("reply-to", "#{from_display} <#{reply_to}>")
+    |> from({from_display, "noreply@picsello.com"})
+    |> to(to_email)
+    |> deliver_later()
+  end
 end

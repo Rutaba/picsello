@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} intro_id="intro_settings_finances">
       <div class="flex flex-col justify-between flex-1 flex-grow-0 mt-5 sm:flex-row">
         <div>
           <h1 class="text-2xl font-bold">Finances</h1>
@@ -24,7 +24,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       </div>
       <hr class="my-4 sm:my-10" />
       <div class="grid gap-6 sm:grid-cols-2">
-        <.card title="Tax info">
+        <.card title="Tax info" class="intro-taxes">
           <p class="mt-2">Stripe can easily manage your tax settings to simplify filing.</p>
           <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id)} data-article="625878185d0b9565e1733f7e">Do I need this?</a>
           <div class="flex mt-6 justify-end">
@@ -40,7 +40,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
             <% end %>
           </div>
         </.card>
-        <.card title="Stripe account">
+        <.card title="Stripe account" class="intro-stripe">
           <p class="mt-2">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
           <div class="flex mt-6 justify-end">
             <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
@@ -56,6 +56,10 @@ defmodule PicselloWeb.Live.FinanceSettings do
     </.settings_nav>
     """
   end
+
+  @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   def handle_info({:stripe_status, status}, socket) do
     socket |> assign(stripe_status: status) |> noreply()

@@ -7,17 +7,23 @@ defmodule Picsello.Workers.Checkout do
 
   def perform(%Oban.Job{args: args}) do
     {order_id, opts} = Map.pop(args, "order_id")
+    {helpers_module, opts} = Map.pop(opts, "helpers")
 
     case Checkouts.check_out(order_id, opts) do
-      {:ok, %{order: order, session: %{url: url}}} ->
-        Orders.broadcast(order, {:checkout, :due, url})
+      {:ok, %{cart: cart, session: %{url: url}}} ->
+        Orders.broadcast(cart, {:checkout, :due, url})
 
       {:ok, %{order: order}} ->
         Orders.broadcast(order, {:checkout, :complete, order})
 
+        Picsello.Notifiers.OrderNotifier.deliver_order_emails(
+          order,
+          String.to_existing_atom(helpers_module)
+        )
+
       err ->
         Logger.error("[Checkout] unexpected response:\n#{inspect(err)}")
-        Orders.broadcast(order_id, {:checkout, :error, "error processing order"})
+        Orders.broadcast(order_id, {:checkout, :error, err})
     end
   end
 end

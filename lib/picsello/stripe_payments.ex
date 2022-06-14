@@ -46,4 +46,13 @@ defmodule Picsello.StripePayments do
 
   @impl Payments
   defdelegate create_account_link(params, opts), to: Stripe.AccountLink, as: :create
+
+  @impl Payments
+  defdelegate create_invoice(params, opts), to: Stripe.Invoice, as: :create
+
+  @impl Payments
+  defdelegate finalize_invoice(id, params, opts), to: Stripe.Invoice, as: :finalize
+
+  @impl Payments
+  defdelegate create_invoice_item(params, opts), to: Stripe.Invoiceitem, as: :create
 end

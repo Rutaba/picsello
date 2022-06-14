@@ -5,7 +5,7 @@ defmodule Picsello.EditLeadPackageTest do
   setup :onboarded
   setup :authenticated
 
-  @price_text_field text_field("Creative Session Price")
+  @price_text_field css("#form-pricing_base_price")
 
   setup %{session: session, user: user} do
     lead =

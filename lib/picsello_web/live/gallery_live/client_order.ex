@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   use PicselloWeb, live_view: [layout: "live_client"]
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Orders, Cart}
+  alias Picsello.{Cart, Orders}
 
   def mount(_, _, socket) do
     socket
@@ -17,12 +17,17 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery, live_action: :paid}} = socket
       ) do
-    case Cart.confirm_order(
+    case Orders.handle_session(
            order_number,
-           session_id,
-           PicselloWeb.Helpers
+           session_id
          ) do
-      {:ok, _order} -> Orders.get!(gallery, order_number)
+      {:ok, _order, :already_confirmed} ->
+        Orders.get!(gallery, order_number)
+
+      {:ok, _order, :confirmed} ->
+        order = Orders.get!(gallery, order_number)
+        Picsello.Notifiers.OrderNotifier.deliver_order_emails(order, PicselloWeb.Helpers)
+        order
     end
     |> then(fn order ->
       if connected?(socket) do

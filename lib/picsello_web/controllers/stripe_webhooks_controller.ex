@@ -1,7 +1,7 @@
 defmodule PicselloWeb.StripeWebhooksController do
   use PicselloWeb, :controller
   require Logger
-  alias Picsello.{Cart, PaymentSchedules}
+  alias Picsello.{Orders, PaymentSchedules}
 
   def connect_webhooks(%Plug.Conn{assigns: %{stripe_event: stripe_event}} = conn, _params) do
     :ok = handle_webhook(:connect, stripe_event)
@@ -18,8 +18,19 @@ defmodule PicselloWeb.StripeWebhooksController do
 
     {:ok, _} =
       case session.client_reference_id do
-        "order_number_" <> _ -> Cart.confirm_order(session, PicselloWeb.Helpers)
-        "proposal_" <> _ -> PaymentSchedules.handle_payment(session, PicselloWeb.Helpers)
+        "order_number_" <> _ ->
+          session
+          |> Orders.handle_session()
+          |> case do
+            {:ok, order, :confirmed} ->
+              Picsello.Notifiers.OrderNotifier.deliver_order_emails(order, PicselloWeb.Helpers)
+
+            err ->
+              err
+          end
+
+        "proposal_" <> _ ->
+          PaymentSchedules.handle_payment(session, PicselloWeb.Helpers)
       end
 
     Logger.info("handled webhook")
@@ -33,6 +44,15 @@ defmodule PicselloWeb.StripeWebhooksController do
              "customer.subscription.deleted"
            ] do
     {:ok, _} = Picsello.Subscriptions.handle_stripe_subscription(subscription)
+    :ok
+  end
+
+  def handle_webhook(:app, %{type: type, data: %{object: invoice}})
+      when type in [
+             "invoice.payment_succeeded",
+             "invoice.payment_failed"
+           ] do
+    {:ok, _} = Orders.handle_invoice(invoice)
     :ok
   end
 

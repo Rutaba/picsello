@@ -108,7 +108,9 @@ defmodule Picsello.Marketing do
 
   defp clients_query("all", organization_id) do
     from(c in Client,
-      where: c.organization_id == ^organization_id,
+      where:
+        c.organization_id == ^organization_id and
+          is_nil(c.archived_at),
       select: %{id: c.id, email: c.email}
     )
   end
@@ -124,10 +126,12 @@ defmodule Picsello.Marketing do
   end
 
   defp template_variables(user, body_html) do
-    %{profile: profile} = Profiles.find_organization_by(user: user)
+    %{profile: profile, name: name} = Profiles.find_organization_by(user: user)
 
     %{
       initials: User.initials(user),
+      logo_url: if(profile.logo, do: profile.logo.url),
+      organization_name: name,
       color: profile.color,
       content: body_html
     }

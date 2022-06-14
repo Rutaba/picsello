@@ -52,12 +52,10 @@ defmodule Picsello.GalleryExpirationReminderTest do
 
       assert_receive {:delivered_email, email}
 
-      assert %{"body_html" => body_html, "body_text" => body_text, "subject" => subject} =
-               email |> email_substitutions()
+      assert %{"body" => body, "subject" => subject} = email |> email_substitutions()
 
       assert "Gallery Expiration Reminder" == subject
-      assert String.starts_with?(body_html, "<p>Hello Johann Zahn,</p>")
-      assert String.starts_with?(body_text, "Hello Johann Zahn,\n")
+      assert String.starts_with?(body, "<p>Hello Johann Zahn,</p>")
     end
 
     test "delivers no emails before the expiration date", %{now: now} do

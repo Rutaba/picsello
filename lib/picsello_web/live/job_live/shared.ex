@@ -3,6 +3,7 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
   alias Picsello.{
+    Galleries,
     Job,
     Shoot,
     ClientMessage,
@@ -97,6 +98,9 @@ defmodule PicselloWeb.JobLive.Shared do
     |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
     |> noreply()
   end
+
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
 
@@ -301,7 +305,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
               Go to inbox
             </button>
-            <button type="button" class="btn-primary px-8" phx-click="open-compose">
+            <button type="button" class="btn-primary px-8 intro-message" phx-click="open-compose">
               Send message
             </button>
           </div>
@@ -593,12 +597,12 @@ defmodule PicselloWeb.JobLive.Shared do
     job =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload([:client, :package, :job_status, :gallery, :contract])
+      |> Ecto.Query.preload([:client, :package, :job_status, :contract])
       |> Repo.get!(job_id)
 
     if job.job_status.is_lead do
       socket
-      |> do_assign_job(job)
+      |> do_assign_job(Map.put(job, :gallery, Galleries.get_gallery_by_job_id(job_id)))
     else
       push_redirect(socket, to: Routes.job_path(socket, :jobs, job_id))
     end
@@ -614,12 +618,11 @@ defmodule PicselloWeb.JobLive.Shared do
         :package,
         :job_status,
         :contract,
-        :gallery,
         :payment_schedules
       ])
       |> Repo.get!(job_id)
 
-    do_assign_job(socket, job)
+    do_assign_job(socket, Map.put(job, :gallery, Galleries.get_gallery_by_job_id(job_id)))
   end
 
   defp do_assign_job(socket, job) do

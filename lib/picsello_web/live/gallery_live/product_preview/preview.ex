@@ -3,28 +3,37 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
   use PicselloWeb, :live_component
 
+  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
+
   def render(assigns) do
     ~H"""
     <div class="flex flex-col justify-between">
       <div class="items-center mt-8">
-        <div class="flex items-center pt-4 font-sans text-lg font-bold">
+        <div class={classes("flex items-center pt-4 font-sans text-lg font-bold", %{"text-gray-400" => @category.coming_soon})}>
           <%= @category.name %>
         </div>
+        <div class={classes("mt-4 pb-14 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
 
-        <div class="mt-4 pb-14 bg-gray-200">
           <div class="flex justify-start pt-4 pl-4">
-            <button
+            <%= if @category.coming_soon do %>
+              <button class="text-blue-planning-300 bg-blue-planning-100 rounded-lg font-bold p-2" disabled>
+              Coming soon!
+              </button>
+            <% else %>
+              <button
               class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
               id={"product-id-#{@product_id}"}
               phx-click="edit"
               phx-value-product_id={@product_id}>
                 <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
-
                 <span>Edit this</span>
-            </button>
+              </button>
+            <% end %>
           </div>
 
-          <div class="flex items-center justify-center mt-4"><.framed_preview category={@category} photo={@photo}/></div>
+          <div class="flex items-center justify-center mt-4">
+            <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)}/>
+          </div>
         </div>
       </div>
     </div>

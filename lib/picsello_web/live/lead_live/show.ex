@@ -109,17 +109,17 @@ defmodule PicselloWeb.LeadLive.Show do
         %{assigns: %{job: job, current_user: current_user}} = socket
       ) do
     %{body_template: body_html, subject_template: subject} =
-      case Repo.get_by(Picsello.EmailPreset, job_type: job.type, job_state: :booking_proposal) do
-        nil ->
+      case Picsello.EmailPresets.for(job, :booking_proposal) do
+        [preset | _] ->
+          Picsello.EmailPresets.resolve_variables(
+            preset,
+            {job},
+            PicselloWeb.Helpers
+          )
+
+        _ ->
           Logger.warn("No booking proposal email preset for #{job.type}")
           %{body_template: "", subject_template: ""}
-
-        preset ->
-          Picsello.EmailPreset.resolve_variables(
-            preset,
-            job,
-            PicselloWeb.ClientMessageComponent.PresetHelper
-          )
       end
 
     socket

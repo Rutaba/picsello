@@ -95,8 +95,8 @@ defmodule PicselloWeb.ContractFormComponent do
   @impl true
   def handle_event("validate", %{"contract" => params}, socket) do
     socket
-    |> assign_changeset(:validate, params)
     |> assign(:content_edited, Map.get(params, "quill_source") == "user")
+    |> assign_changeset(:validate, params)
     |> noreply()
   end
 
@@ -104,9 +104,14 @@ defmodule PicselloWeb.ContractFormComponent do
   def handle_event(
         "save",
         %{"contract" => params},
-        %{assigns: %{job: job, current_user: current_user}} = socket
+        %{assigns: %{job: job}} = socket
       ) do
-    case Contracts.save_contract(current_user.organization, job, params) do
+    save_fn =
+      if template_edit?(socket, params),
+        do: &Contracts.save_template_and_contract/2,
+        else: &Contracts.save_contract/2
+
+    case save_fn.(job, params) do
       {:ok, contract} ->
         send(
           socket.parent_pid,
@@ -143,12 +148,22 @@ defmodule PicselloWeb.ContractFormComponent do
     changeset =
       contract
       |> Contract.changeset(attrs,
-        validate_unique_name_on_organization: current_user.organization_id
+        validate_unique_name_on_organization:
+          if(template_edit?(socket, params), do: current_user.organization_id)
       )
       |> Map.put(:action, action)
 
     socket
     |> assign(changeset: changeset)
+  end
+
+  defp template_edit?(%{assigns: %{content_edited: content_edited}}, params) do
+    content_edited || name_present?(params)
+  end
+
+  defp name_present?(params) do
+    name = Map.get(params, "name") || ""
+    String.trim(name) != ""
   end
 
   defp assign_options(%{assigns: %{job: job}} = socket) do

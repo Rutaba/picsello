@@ -1,8 +1,8 @@
-<div class="flex flex-col h-screen photographer-gallery">
+<div class="flex flex-col h-screen photographer-gallery lg:before:bg-gray-100">
   <div class="flex root">
     <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "product_previews", album_dropdown_show: false %>
 
-    <div class="w-full h-full bg-base-100 pl-96 pt-16">
+    <div class="w-full h-full lg:bg-base-100 bg-white lg:pl-96 pt-16">
       <div class="relative items-center justify-between px-16 pb-10 md:flex-row">
         <span class="font-sans text-2xl font-bold font-black" {intro_hints_only("intro_hints_only_product_preview")}>
           Product Previews
@@ -13,7 +13,7 @@
           <p>Showcase products your clients will love.</p>
         </div>
 
-        <div class="grid-cols-2 gap-7 grid">
+        <div class="lg:grid-cols-2 grid-cols-1 gap-7 grid">
           <%= for product <- @products do %>
             <.live_component id={product.id} category={product.category} product_id={product.id} module={Preview} photo={product.preview_photo} />
           <% end %>

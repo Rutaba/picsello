@@ -18,8 +18,10 @@ defmodule Picsello.ManageLeadShootTest do
   end
 
   feature "user adds shoot details and updates it", %{session: session, lead: lead} do
+    lead_path = "/leads/#{lead.id}"
+
     session
-    |> visit("/leads/#{lead.id}")
+    |> visit(lead_path)
     |> scroll_into_view(testid("booking-summary"))
     |> assert_text("70% retainer and 30% one month before shoot")
     |> click(button("Add shoot details", count: 2, at: 1))
@@ -36,6 +38,7 @@ defmodule Picsello.ManageLeadShootTest do
       "35% retainer, 35% six months to the wedding, 30% one month before the wedding"
     )
     |> click(link("chute"))
+    |> wait_for_path_to_change_from(lead_path)
     |> click(button("Edit"))
     |> assert_value(text_field("Shoot Title"), "chute")
     |> assert_value(text_field("Shoot Date"), "2040-04-05T12:00")
@@ -52,7 +55,9 @@ defmodule Picsello.ManageLeadShootTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> click(link("Go back to #{Job.name(lead)}"))
+    |> assert_path(lead_path)
     |> click(link("updated chute"))
+    |> wait_for_path_to_change_from(lead_path)
     |> click(button("Edit"))
     |> assert_value(text_field("Shoot Date"), "2040-05-05T12:00")
     |> assert_value(select("Shoot Duration"), "120")

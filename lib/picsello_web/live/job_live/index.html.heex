@@ -44,7 +44,7 @@
             <strong>You don't have any jobs at the moment.</strong> You can either import a job you have in-progress from another platform or create a lead for something that isn’t quite ready to book yet.
           </p>
         </div>
-        <div class="lg:inline-flex">
+        <div class="lg:inline-flex" {intro(@current_user, "intro_jobs_empty")}>
           <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary" phx-click="import-job">
             Import existing job
           </a>
@@ -60,7 +60,7 @@
             <strong>A Stripe account is required for job import.</strong> This allows your clients to pay you securely. After your Stripe account has been created, we’ll send you back to this page.
           </p>
         </div>
-        <div class="lg:inline-flex">
+        <div class="lg:inline-flex" {intro(@current_user, "intro_jobs_stripe")}>
           <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
                 current_user: @current_user,
                 class: "w-full mt-6 btn-primary",

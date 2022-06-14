@@ -1,6 +1,7 @@
 defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   alias Picsello.{Job}
@@ -17,33 +18,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     enable_image: false
   }
 
-  defmodule PresetHelper do
-    @moduledoc """
-      functions only available in the PicselloWeb module needed to resolve mustache variables.
-      here to avoid calling PicselloWeb from Picsello.
-    """
-
-    require PicselloWeb.Gettext
-
-    def ngettext(singular, plural, count) do
-      Gettext.dngettext(PicselloWeb.Gettext, "picsello", singular, plural, count, %{})
-    end
-
-    defdelegate strftime(zone, date, format), to: PicselloWeb.LiveHelpers
-    defdelegate shoot_location(shoot), to: PicselloWeb.LiveHelpers
-
-    def profile_pricing_job_type_url(slug, type),
-      do:
-        PicselloWeb.Endpoint
-        |> PicselloWeb.Router.Helpers.profile_url(
-          :index,
-          slug
-        )
-        |> URI.parse()
-        |> Map.put(:fragment, type)
-        |> URI.to_string()
-  end
-
   @impl true
   def update(assigns, socket) do
     socket
@@ -54,7 +28,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Picsello.ClientMessage.create_outbound_changeset()
     end)
     |> then(fn %{assigns: %{job: job}} = socket ->
-      assign_new(socket, :presets, fn -> Picsello.EmailPreset.for_job(job) end)
+      assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
     end)
     |> then(fn
       %{assigns: %{presets: [_ | _] = presets}} = socket ->
@@ -70,7 +44,8 @@ defmodule PicselloWeb.ClientMessageComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
-    <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
+      <.close_x />
+      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
       <%= if @show_client_email do %>
         <div class="pt-5 input-label">
           Client's email
@@ -87,15 +62,15 @@ defmodule PicselloWeb.ClientMessageComponent do
 
         <label class="block mt-4 input-label" for="editor">Message</label>
         <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
-        <PicselloWeb.LiveModal.footer>
-          <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+        <.footer>
+          <button class="btn-primary px-11" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
           </button>
-        </PicselloWeb.LiveModal.footer>
+        </.footer>
       </.form>
     </div>
     """
@@ -118,7 +93,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         {preset_id, _} ->
           presets
           |> Enum.find(&(Map.get(&1, :id) == preset_id))
-          |> Picsello.EmailPreset.resolve_variables(job, PresetHelper)
+          |> Picsello.EmailPresets.resolve_variables({job}, PicselloWeb.Helpers)
       end
 
     socket
@@ -154,7 +129,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
           optional(:subject) => String.t(),
-          optional(:presets) => [%Picsello.EmailPreset{}],
+          optional(:presets) => [%Picsello.EmailPresets.EmailPreset{}],
           optional(:current_user) => %Picsello.Accounts.User{},
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean

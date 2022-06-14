@@ -49,11 +49,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         ]
       })
 
-    insert(:email_preset, job_type: lead.type, job_state: :lead)
+    insert(:email_preset, job_type: lead.type, state: :lead)
 
     insert(:email_preset,
       job_type: lead.type,
-      job_state: :booking_proposal,
+      state: :booking_proposal,
       subject_template: "here is what I propose",
       body_template: "let us party."
     )
@@ -79,7 +79,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       )
 
       assert_receive {:delivered_email, email}
-      url = email |> email_substitutions |> Map.get("url")
+      url = email |> email_substitutions |> Map.get("button") |> Map.get(:url)
 
       test_pid = self()
 
@@ -363,7 +363,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
-    url = email |> email_substitutions |> Map.get("url")
+    url = email |> email_substitutions |> Map.get("button") |> Map.get(:url)
 
     client_session
     |> visit(url)
@@ -422,7 +422,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
-    url = email |> email_substitutions |> Map.get("url")
+    url = email |> email_substitutions |> Map.get("button") |> Map.get(:url)
 
     client_session
     |> visit(url)
@@ -444,7 +444,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
-    url = email |> email_substitutions |> Map.get("url")
+    url = email |> email_substitutions |> Map.get("button") |> Map.get(:url)
 
     lead |> Job.archive_changeset() |> Repo.update!()
 
@@ -470,7 +470,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(@send_email_button)
 
     assert_receive {:delivered_email, email}
-    url = email |> email_substitutions |> Map.get("url")
+    url = email |> email_substitutions |> Map.get("button") |> Map.get(:url)
 
     client_session
     |> visit(url)

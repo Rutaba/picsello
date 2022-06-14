@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
   require Logger
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
 
   alias Picsello.Galleries
   alias Picsello.GalleryProducts
@@ -120,7 +121,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
         myself={@myself}
         title={@title}>
         <div class="flex items-start justify-center row-span-2 previewImg">
-          <.framed_preview category={@category} photo={@photo} id="framed-edit-preview" />
+          <.framed_preview category={@category} photo={@photo} id="framed-edit-preview" width={cards_width(@category.frame_image)} />
         </div>
       </.preview>
     </div>

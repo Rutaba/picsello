@@ -10,6 +10,9 @@ defmodule Picsello.FeatureCase do
 
     alias Picsello.Galleries.Photo
 
+    def scroll_to_bottom(session),
+      do: execute_script(session, "window.scrollTo(0, document.body.clientHeight)")
+
     def scroll_into_view(session, query) do
       case Wallaby.Query.compile(query) do
         {:css, css_selector} ->
@@ -133,7 +136,7 @@ defmodule Picsello.FeatureCase do
       |> then(&wait_for_path_to_change_from(&1, @sign_in_path))
     end
 
-    defp wait_for_path_to_change_from(session, path) do
+    def wait_for_path_to_change_from(session, path) do
       retry(fn ->
         if current_path(session) == path do
           {:error, "not redirected after sign in."}

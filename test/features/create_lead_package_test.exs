@@ -6,7 +6,7 @@ defmodule Picsello.CreateLeadPackageTest do
   setup :authenticated
 
   @add_package_button testid("add-package-from-shoot")
-  @price_text_field text_field("Creative Session Price")
+  @price_text_field text_field("Package Price")
 
   def fill_in_package_form(session) do
     session

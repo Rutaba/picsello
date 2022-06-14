@@ -182,6 +182,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     socket
     |> close_modal()
+    |> put_flash(:success, "Gallery shared!")
     |> noreply()
   end
 

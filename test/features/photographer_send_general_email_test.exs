@@ -35,11 +35,8 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
     assert "Check this out" = email |> email_substitutions |> Map.get("subject")
 
-    assert "This is 1st line\n2nd line\n" =
-             email |> email_substitutions |> Map.get("body_text") |> String.replace(~r/\r/, "")
-
     assert "<p>This is 1st line</p><p>2nd line</p>" =
-             email |> email_substitutions |> Map.get("body_html")
+             email |> email_substitutions |> Map.get("body")
 
     assert [client_message] = Repo.all(ClientMessage)
     assert client_message.job_id == job.id
@@ -100,6 +97,6 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
     assert """
            <p>This is 1st line</p><p>2nd line</p><img src="http://localhost:#{port}/image.png" style="max-width: 100%; margin-left: auto; margin-right: auto;"><p><br></p><p><br></p>
-           """ =~ email |> email_substitutions |> Map.get("body_html")
+           """ =~ email |> email_substitutions |> Map.get("body")
   end
 end

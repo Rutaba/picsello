@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
   alias Picsello.{Photos, Category, Galleries.Photo}
 
   @defaults %{
-    width: 300,
     height: 255,
     preview: nil
   }
@@ -17,6 +16,7 @@ defmodule PicselloWeb.GalleryLive.FramedPreviewComponent do
     assigns =
       assigns
       |> assign(@defaults)
+      |> assign_new(:width, fn -> "300" end)
       |> assign(:config, config)
       |> assign_new(:id, fn -> to_id(config) end)
 

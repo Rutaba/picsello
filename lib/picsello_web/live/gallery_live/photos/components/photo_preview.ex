@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   require Logger
   import Ecto.Changeset
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
 
   alias Picsello.{Repo, Galleries, GalleryProducts}
 
@@ -126,7 +127,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col p-10 bg-white rounded-lg">
+    <div class="flex flex-col p-10 bg-white rounded-lg mb-4">
       <div class="flex items-start justify-between flex-shrink-0">
           <h1 class="font-sans text-3xl font-bold">
             Set as preview for which products?
@@ -136,43 +137,45 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
           </button>
       </div>
       <div class="relative flex py-10 font-sans bg-white">
-          <div id="product-preview" class="items-center grid grid-cols-3 gap-4">
+          <div id="product-preview" class="items-center grid lg:grid-cols-3 grid-cols-1 gap-4">
               <%= for product <- @updated_products do %>
-              <div class="items-center">
-                <div
-                id={"product-#{product.id}"}
-                class={"flex p-6 font-sans text-black bg-gray-100 h-52 w-52 cursor-pointer #{Map.get(product.preview_photo, :selected, false) && 'preview-border'}"}
-                phx-click="click" phx-target={@myself}
-                phx-value-product={product.id}
-                >
-                  <div class="flex justify-center row-span-2 previewImg">
-                    <.framed_preview  item_id={product.category.id} category={product.category} photo={product.preview_photo} />
+                <%= unless product.category.coming_soon do %>
+                  <div class="items-center">
+                    <div
+                    id={"product-#{product.id}"}
+                    class={"flex p-6 font-sans text-black bg-gray-100 h-52 w-52 cursor-pointer #{Map.get(product.preview_photo, :selected, false) && 'preview-border'}"}
+                    phx-click="click" phx-target={@myself}
+                    phx-value-product={product.id}
+                    >
+                      <div class="flex justify-center row-span-2 previewImg">
+                        <.framed_preview  item_id={product.category.id} category={product.category} photo={product.preview_photo} width={cards_width(product.category.frame_image)} />
+                      </div>
+                    </div>
+                    <div class="flex items-center pt-4 font-sans fomt-bold">
+                      <%= product.category.name %>
+                    </div>
                   </div>
-                </div>
-                <div class="flex items-center pt-4 font-sans fomt-bold">
-                  <%= product.category.name %>
-                </div>
-              </div>
+                <% end %>
               <% end %>
           </div>
       </div>
-      <div class="flex flex-row items-center justify-end w-full font-sans lg:items-start">
-          <button
-          phx-click="modal"
-          phx-value-action="close"
-          title="close modal"
-          class="float-right px-6 py-2 mr-3 bg-white border border-black rounded-lg"
-          >
-            Cancel
-          </button>
+      <div class="flex flex-col gap-2 py-6 lg:flex-row-reverse">
           <button
           phx-click="save"
           disabled={Enum.empty?(@selected)}
           phx-target={@myself}
           aria-label="save"
-          class="btn-settings float-right px-6 py-2"
+          class="btn-primary"
           >
             Save changes
+          </button>
+          <button
+          phx-click="modal"
+          phx-value-action="close"
+          title="close modal"
+          class="btn-secondary"
+          >
+            Cancel
           </button>
       </div>
     </div>

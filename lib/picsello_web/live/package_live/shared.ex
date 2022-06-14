@@ -33,7 +33,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           <div class="line-clamp-2 raw_html raw_html_inline">
             <%= raw @package.description %>
           </div>
-          <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-0" data-offset="0" role="tooltip">
+          <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
             <div class="line-clamp-6 raw_html"></div>
             <button class="inline-block text-blue-planning-300">View all</button>
           </div>
@@ -43,14 +43,7 @@ defmodule PicselloWeb.PackageLive.Shared do
         </div>
 
         <dl class="flex flex-row-reverse items-center justify-end mt-auto">
-          <%= if Money.zero?(@package.download_each_price) do %>
-            <dt class="text-gray-500">Unlimited Complimentary Downloads</dt>
-          <% else %>
-            <dt class="text-gray-500">Complimentary Downloads</dt>
-            <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-              <%= @package.download_count %>
-            </dd>
-          <% end %>
+          <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
         </dl>
 
         <hr class="my-4" />
@@ -151,6 +144,22 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def package_description_length_long?(nil), do: false
   def package_description_length_long?(description), do: byte_size(description) > 100
+
+  defp digital_detail(assigns) do
+  ~H"""
+    <%= cond do %>
+      <%= Money.zero?(@download_each_price) -> %>
+      <dt class="text-gray-500">All digital images included</dt>
+      <% @download_count == 0 -> %>
+      <dt class="text-gray-500">No digital images included</dt>
+      <% true -> %>
+      <dt class="text-gray-500">Digital images included</dt>
+      <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+      <%= @download_count %>
+      </dd>
+    <% end %>
+  """
+  end
 
   defp download_price(form),
     do: form |> current() |> Map.get(:download_each_price, Money.new(5000))

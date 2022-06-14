@@ -1,30 +1,16 @@
 defmodule Picsello.WHCC.Editor.Params do
   @moduledoc "Editor creation params builder"
-  alias Picsello.Repo
-  alias Picsello.Product
-  alias Picsello.Galleries
-  alias Picsello.WHCC.Editor.PhotoParams
-
-  @multi_photo_categories ["Press Printed Cards", "Albums", "Books"]
+  alias Picsello.{Repo, Product, Galleries, Photos, WHCC.Editor.PhotoParams}
 
   def build(%Product{} = product, photo, opts) do
     product = product |> Repo.preload(:category)
 
-    favorites_only = Keyword.get(opts, :favorites_only, false)
+    {favorites_only, opts} = Keyword.pop(opts, :favorites_only, false)
 
-    gallery =
-      photo.gallery_id
-      |> Galleries.get_gallery!()
-      |> Galleries.populate_organization()
+    %{gallery: %{organization: organization} = gallery} =
+      photo = Repo.preload(photo, gallery: :organization)
 
-    gallery_photos =
-      if product.category.whcc_name in @multi_photo_categories do
-        Galleries.get_gallery_photos(gallery.id, favorites_filter: favorites_only)
-      else
-        []
-      end
-
-    organization = gallery.job.client.organization
+    gallery_photos = Photos.get_related(photo, favorites_only: favorites_only)
 
     color = Picsello.Profiles.color(organization)
 
@@ -34,7 +20,7 @@ defmodule Picsello.WHCC.Editor.Params do
       "photos" => PhotoParams.from(photo, gallery_photos),
       "redirects" => redirects(opts),
       "settings" => settings(organization.name, color),
-      "selections" => selections(opts)
+      "selections" => selections(photo, opts)
     }
     |> add_design(Keyword.get(opts, :design))
   end
@@ -42,19 +28,22 @@ defmodule Picsello.WHCC.Editor.Params do
   defp add_design(selected_params, nil), do: selected_params
   defp add_design(selected_params, id), do: Map.put(selected_params, "designId", id)
 
-  defp selections(opts), do: selections(%{}, opts)
+  defp selections(photo, opts) do
+    selections = %{
+      "photo" => %{
+        "galleryId" => PhotoParams.id(photo),
+        "height" => photo.height,
+        "width" => photo.width,
+        "x" => 0,
+        "y" => 0
+      }
+    }
 
-  defp selections(_, [{:selections, selected_params} | rest]),
-    do: selections(selected_params, rest)
-
-  defp selections(selected_params, [{:size, size} | rest]),
-    do:
-      selected_params
-      |> put_in(["size"], size)
-      |> selections(rest)
-
-  defp selections(selected_params, []), do: selected_params
-  defp selections(selected_params, [_ | rest]), do: selections(selected_params, rest)
+    case Keyword.get(opts, :size) do
+      nil -> selections
+      size -> Map.put(selections, "size", size)
+    end
+  end
 
   defp settings(name, color) do
     %{

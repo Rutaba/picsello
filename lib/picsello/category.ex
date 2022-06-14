@@ -8,12 +8,14 @@ defmodule Picsello.Category do
   @preview_templates %{
     "album_transparency.png" => [800, 715, 1720, 715, 800, 1620, 1720, 1620],
     "frame_transparency.png" => [550, 550, 2110, 550, 550, 1600, 2110, 1600],
-    "card_blank.png" => [0, 0, 1120, 0, 0, 1100, 1120, 1100]
+    "card_blank.png" => [0, 0, 1120, 0, 0, 1100, 1120, 1100],
+    "card.png" => [800, 715, 1720, 715, 800, 1620, 1720, 1620]
   }
 
   schema "categories" do
     field :deleted_at, :utc_datetime
     field :hidden, :boolean
+    field :coming_soon, :boolean, default: false
     field :icon, :string
     field :name, :string
     field :position, :integer
@@ -43,6 +45,7 @@ defmodule Picsello.Category do
     category
     |> cast(attrs, [
       :default_markup,
+      :coming_soon,
       :frame_image,
       :hidden,
       :icon,

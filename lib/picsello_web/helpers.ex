@@ -9,11 +9,22 @@ defmodule PicselloWeb.Helpers do
   def lead_url(id), do: Routes.job_url(Endpoint, :leads, id)
   def inbox_thread_url(id), do: Routes.inbox_url(Endpoint, :show, id)
 
+  def gallery_url("" <> hash),
+    do: Routes.gallery_client_index_url(Endpoint, :index, hash)
+
   def gallery_url(%{client_link_hash: hash, password: password}),
     do: Routes.gallery_client_index_url(Endpoint, :index, hash, pw: password)
 
   def order_url(%{client_link_hash: hash, password: password}, order),
     do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password)
+
+  def profile_pricing_job_type_url(slug, type),
+    do:
+      Endpoint
+      |> Routes.profile_url(:index, slug)
+      |> URI.parse()
+      |> Map.put(:fragment, type)
+      |> URI.to_string()
 
   def ngettext(singular, plural, count) do
     Gettext.dngettext(PicselloWeb.Gettext, "picsello", singular, plural, count, %{})
@@ -22,4 +33,6 @@ defmodule PicselloWeb.Helpers do
   defdelegate strftime(zone, date, format), to: PicselloWeb.LiveHelpers
 
   defdelegate dyn_gettext(key), to: PicselloWeb.Gettext
+
+  defdelegate shoot_location(shoot), to: PicselloWeb.LiveHelpers
 end

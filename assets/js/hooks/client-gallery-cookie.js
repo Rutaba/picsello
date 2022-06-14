@@ -15,6 +15,8 @@ export default {
     const { el } = this;
     if(el.dataset.active == 'true') {
       Cookies.set(el.dataset.name, true, { expires: Number(el.dataset.max_age), path: '/' })
+    } else {
+      el.classList.remove('hidden');
     }
   },
 };

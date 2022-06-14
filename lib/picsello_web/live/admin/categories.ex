@@ -22,6 +22,7 @@ defmodule PicselloWeb.Live.Admin.Categories do
       <div class="items-center mt-4 grid gap-2 grid-cols-[repeat(10,min-content)]">
         <div class="font-bold">WHCC Name</div>
         <div class="font-bold">WHCC ID</div>
+        <div class="font-bold">Coming Soon?</div>
         <div class="font-bold">hidden</div>
         <div class="font-bold">icon</div>
         <div class="font-bold">name</div>
@@ -37,6 +38,7 @@ defmodule PicselloWeb.Live.Admin.Categories do
 
             <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{whcc_id}"}>
               <%= hidden_input f, :id %>
+              <%= checkbox f, :coming_soon, class: "checkbox", phx_debounce: 200 %>
               <%= checkbox f, :hidden, class: "checkbox", phx_debounce: 200 %>
               <div>
                 <.icon name={icon} class="w-4 h-4" />

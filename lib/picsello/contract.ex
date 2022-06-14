@@ -21,10 +21,11 @@ defmodule Picsello.Contract do
 
     contract
     |> cast(attrs, [:name, :content, :job_id, :contract_template_id])
-    |> validate_required([:name, :content, :job_id])
+    |> validate_required([:content, :job_id])
     |> then(fn changeset ->
       if validate_unique_name_on_organization do
         changeset
+        |> validate_required([:name])
         |> put_change(:organization_id, validate_unique_name_on_organization)
         |> unsafe_validate_unique([:name, :organization_id], Picsello.Repo)
       else

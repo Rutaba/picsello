@@ -280,6 +280,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       add_cart_product(order, ~M[1000]USD)
 
       Mox.expect(Picsello.MockWHCCClient, :confirm_order, fn _, _ -> {:error, "oops"} end)
+      Mox.expect(Picsello.MockPayments, :cancel_payment_intent, fn _, _ -> {:ok, nil} end)
 
       expect_retrieve(~M[1000]USD)
 

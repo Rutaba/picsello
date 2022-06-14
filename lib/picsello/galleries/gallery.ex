@@ -16,7 +16,8 @@ defmodule Picsello.Galleries.Gallery do
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
-    field :total_count, :integer
+    field :total_count, :integer, default: 0
+    field :active, :boolean, default: true
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
@@ -31,13 +32,19 @@ defmodule Picsello.Galleries.Gallery do
     timestamps(type: :utc_datetime)
   end
 
+  @type t :: %__MODULE__{
+          organization: Picsello.Organization.t(),
+          name: String.t()
+        }
+
   @create_attrs [
     :name,
     :job_id,
     :status,
     :expired_at,
     :client_link_hash,
-    :total_count
+    :total_count,
+    :active
   ]
   @update_attrs [
     :name,
@@ -45,7 +52,8 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :password,
     :client_link_hash,
-    :total_count
+    :total_count,
+    :active
   ]
   @required_attrs [:name, :job_id, :status, :password]
 
@@ -78,7 +86,6 @@ defmodule Picsello.Galleries.Gallery do
   def expire_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, [:expired_at])
-    |> validate_required([:expired_at])
   end
 
   def client_link_changeset(gallery, attrs \\ %{}) do

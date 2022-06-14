@@ -47,7 +47,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
           </fieldset>
         </.card>
 
-        <.card title="Embed your lead form">
+        <.card title="Embed your lead form" class="intro-lead-form">
           <p class="mt-4">Have your own website? No worries, we have a form for you to embed on your site. </p>
             <button button type="button" class="self-auto w-auto py-3 mt-4 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36" phx-click="open-embed">
               Preview form

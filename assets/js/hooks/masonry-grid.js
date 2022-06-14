@@ -64,15 +64,15 @@ const positionChange = (movedId, order) => {
 /**
  * Injects bydefault selected photos if selected all enabled
  */
- const maybeSelectedOnScroll = (items) => {
+const maybeSelectedOnScroll = (items) => {
   const element = document.querySelector('#selected-mode');
   if (element && !element.classList.contains('selected_none')) {
-    items.forEach(item => {
+    items.forEach((item) => {
       const e = item.querySelector('.toggle-it');
       e && e.classList.add('item-border');
     });
   }
-  return items
+  return items;
 };
 
 export default {
@@ -99,7 +99,7 @@ export default {
           layoutOnResize: true,
           layoutDuration: 0,
           layoutEasing: 'ease-in',
-          rounding: false
+          rounding: false,
         },
         dragEnabled: true,
         dragStartPredicate: (item, e) => {
@@ -155,24 +155,23 @@ export default {
 
     grid_items.some((item, index) => {
       const iw_total = iw + item['_width'];
-      if(w > iw_total){
+      if (w > iw_total) {
         iw = iw_total;
-      }else{
-        count += index; 
+      } else {
+        count += index;
         return true;
       }
-
     });
-    const offset = (w - iw - (count * 12))/2;
-    if(offset > 0){
+    const offset = (w - iw - count * 12) / 2;
+    if (offset > 0) {
       this.el.style.marginLeft = offset + 'px';
-    }else{
+    } else {
       this.el.style.marginLeft = '10px';
     }
-  },  
+  },
 
   load_more() {
-    if((this.el.style.height.slice(0, -2) < screen.height) && this.hasMorePhotoToLoad()){
+    if (this.hasMorePhotoToLoad()) {
       this.pushEvent('load-more', {});
     }
   },
@@ -181,12 +180,12 @@ export default {
    * Recollects all item elements to apply changes to the DOM to Masonry
    */
   reload_masonry() {
-    const item_id = '#' + this.el.dataset.id + " .item";
+    const item_id = '#' + this.el.dataset.id + ' .item';
     const grid = this.get_grid();
     const grid_items = grid.getItems();
     const items = document.querySelectorAll(item_id);
     grid.remove(grid_items);
-    grid.add(items);  
+    grid.add(items);
     grid.refreshItems();
     this.grid_alignment();
   },
@@ -196,14 +195,14 @@ export default {
    */
   inject_new_items() {
     const grid = this.grid;
-    const grid_id = '#' + this.el.dataset.id + " .item";
+    const grid_id = '#' + this.el.dataset.id + ' .item';
     const addedItemsIds = grid.getItems().map((x) => x.getElement().id);
     const allItems = document.querySelectorAll(grid_id);
     const itemsToInject = Array.from(allItems).filter(
       (x) => !addedItemsIds.includes(x.id)
     );
-    if(itemsToInject.length > 0) {
-      const items = maybeSelectedOnScroll(itemsToInject)
+    if (itemsToInject.length > 0) {
+      const items = maybeSelectedOnScroll(itemsToInject);
       grid.add(items);
       grid.refreshItems();
     }
@@ -227,7 +226,7 @@ export default {
   remove_item(id) {
     const grid = this.get_grid();
     const itemElement = document.getElementById(`photo-item-${id}`);
-    if(itemElement) {
+    if (itemElement) {
       const item = grid.getItem(itemElement);
       grid.remove([item], { removeElements: true });
     }
@@ -236,31 +235,31 @@ export default {
   remove_items(ids) {
     const grid = this.get_grid();
     let items = [];
-    ids.forEach(id => {
+    ids.forEach((id) => {
       const itemElement = document.getElementById(`photo-item-${id}`);
-      if(itemElement) {
-        items.push(grid.getItem(itemElement))
+      if (itemElement) {
+        items.push(grid.getItem(itemElement));
       }
     });
-    if(items.length > 0) {
+    if (items.length > 0) {
       grid.remove(items, { removeElements: true });
     }
   },
 
   select_mode(mode) {
     const items = document.querySelectorAll('.galleryItem > .toggle-it');
-    switch(mode){
+    switch (mode) {
       case 'selected_none':
-        items.forEach(item => {
+        items.forEach((item) => {
           item.classList.remove('item-border');
         });
         break;
       default:
-        items.forEach(item => {
+        items.forEach((item) => {
           item.classList.add('item-border');
         });
         break;
-      }
+    }
   },
 
   /**
@@ -278,7 +277,7 @@ export default {
    */
   mounted() {
     this.pending = this.page();
-    window.addEventListener('scroll', (e) => {
+    window.addEventListener('scroll', (_e) => {
       if (
         this.pending === this.page() &&
         isScrolledOver(90, 1.5) &&
@@ -306,9 +305,8 @@ export default {
    * Updated callback
    */
   updated() {
-    const grid = this.get_grid();
     this.pending = this.page();
-    
+
     if (this.pending === '0') {
       this.load_more();
     } else {
@@ -321,4 +319,3 @@ export default {
     this.grid_alignment();
   },
 };
-

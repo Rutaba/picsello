@@ -201,18 +201,18 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
       |> Enum.map(& &1.id)
 
     case Galleries.delete_photos(photo_ids) do
-      {:ok, _} ->
+      {:ok, {count, _}} ->
         socket
         |> close_modal()
         |> put_flash(
           :success,
-          "#{length(photo_ids)} unsorted #{ngettext("photo", "photos", Enum.count(photo_ids))} deleted successfully"
+          "#{count} unsorted #{ngettext("photo", "photos", count)} deleted successfully"
         )
         |> noreply()
 
       _ ->
         socket
-        |> put_flash(:success, "Could not delete photos")
+        |> put_flash(:error, "Could not delete photos")
         |> close_modal()
         |> noreply()
     end
