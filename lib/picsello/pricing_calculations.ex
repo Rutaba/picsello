@@ -104,6 +104,11 @@ defmodule Picsello.PricingCalculations do
     ])
     |> validate_required([:zipcode, :job_types, :state, :min_years_experience])
     |> validate_format(:zipcode, @zipcode_regex, message: "is invalid")
+    |> validate_number(:average_time_per_week, less_than_or_equal_to: 168, message: "There are not that many hours in a week")
+    |>  Picsello.Package.validate_money(:desired_salary,
+        greater_than_or_equal_to: 0,
+        less_than_or_equal_to: 2_147_483_647,
+        message: "Salary cannot be that high")
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
     |> cast_embed(:pricing_suggestions, with: &pricing_suggestions_changeset(&1, &2))
   end

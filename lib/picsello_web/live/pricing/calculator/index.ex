@@ -254,7 +254,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <hr class="mt-4 mb-4 sm:block hidden" />
           <div class="flex flex-wrap items-center justify-between">
-            <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic font-xs text-base-250">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage this is calculate after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
+            <p class="font-extrabold py-2">Self-employment tax <br /> <span class="font-normal italic font-xs text-base-250">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage, this is calculated after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
             <p class="sm:w-40 w-full text-center font-bold sm:bg-transparent bg-gray-100 sm:mb-0 mb-6 sm:mt-0 mt-4 p-4 sm:p-0"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
           </div>
           <hr class="mt-4 mb-4 sm:block hidden" />
