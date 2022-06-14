@@ -33,7 +33,8 @@ defmodule Picsello.Cart.Checkouts do
   1. client owes?
     1. create checkout session (with fee amount)
     1. insert intent
-  1. place picsello order
+  1. client does not owe?
+    1. place picsello order
   """
 
   @spec check_out(integer(), map()) ::
@@ -43,8 +44,8 @@ defmodule Picsello.Cart.Checkouts do
     |> run(:cart, :load_cart, [order_id])
     |> run(:client_total, &client_total/2)
     |> merge(fn
-      %{client_total: ~M[0]USD, cart: %{products: []}} ->
-        new()
+      %{client_total: ~M[0]USD, cart: %{products: []} = cart} ->
+        update(new(), :order, place_order(cart))
 
       %{cart: %{products: []} = cart} ->
         create_session(cart, opts)
@@ -55,6 +56,7 @@ defmodule Picsello.Cart.Checkouts do
         |> run(:stripe_invoice, &create_stripe_invoice/2)
         |> run(:finalize_invoice, &finalize_invoice/2)
         |> insert(:invoice, &insert_invoice/1)
+        |> update(:order, place_order(cart))
 
       %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
         new()
@@ -67,7 +69,6 @@ defmodule Picsello.Cart.Checkouts do
         )
         |> merge(&handle_invoice/1)
     end)
-    |> update(:order, &place_order/1)
     |> Repo.transaction()
   end
 
@@ -212,7 +213,7 @@ defmodule Picsello.Cart.Checkouts do
   defp finalize_invoice(_repo, %{stripe_invoice: stripe_invoice}),
     do: Picsello.Payments.finalize_invoice(stripe_invoice, %{auto_advance: true})
 
-  defp place_order(%{cart: order}), do: Order.placed_changeset(order)
+  defp place_order(cart), do: Order.placed_changeset(cart)
   defp client_total(_repo, %{cart: cart}), do: {:ok, Order.total_cost(cart)}
 
   defp build_line_items(%Order{digitals: digitals, products: products} = order) do

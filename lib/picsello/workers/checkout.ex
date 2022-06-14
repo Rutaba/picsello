@@ -10,8 +10,8 @@ defmodule Picsello.Workers.Checkout do
     {helpers_module, opts} = Map.pop(opts, "helpers")
 
     case Checkouts.check_out(order_id, opts) do
-      {:ok, %{order: order, session: %{url: url}}} ->
-        Orders.broadcast(order, {:checkout, :due, url})
+      {:ok, %{cart: cart, session: %{url: url}}} ->
+        Orders.broadcast(cart, {:checkout, :due, url})
 
       {:ok, %{order: order}} ->
         Orders.broadcast(order, {:checkout, :complete, order})

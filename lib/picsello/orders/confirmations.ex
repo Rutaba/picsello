@@ -83,6 +83,7 @@ defmodule Picsello.Orders.Confirmations do
     |> run(:stripe_options, &stripe_options/2)
     |> session_fn.()
     |> run(:paid, &check_paid/2)
+    |> update(:place_order, &place_order/1)
     |> run(:intent, &update_intent/2)
     |> merge(fn
       %{order: %{products: [_ | _]} = order, paid: %{photographer: true}} = multi ->
@@ -117,6 +118,8 @@ defmodule Picsello.Orders.Confirmations do
         other
     end
   end
+
+  defp place_order(%{order: order}), do: Order.placed_changeset(order)
 
   defp load_order(repo, %{order_number: order_number}) do
     order_id = OrderNumber.from_number(order_number)
@@ -187,7 +190,8 @@ defmodule Picsello.Orders.Confirmations do
         Picsello.Intents.update(intent)
 
       {:ok, intent} ->
-        {:error, "cart total does not match payment intent:\n#{inspect(intent)}"}
+        {:error,
+         "cart total (#{Money.new(total)}) does not match payment intent:\n#{inspect(intent)}"}
 
       error ->
         error

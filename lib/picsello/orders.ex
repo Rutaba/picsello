@@ -39,7 +39,7 @@ defmodule Picsello.Orders do
     do: Repo.exists?(from orders in client_paid_query(), where: orders.id == ^order_id)
 
   def photographer_paid?(%{id: order_id}),
-    do: Repo.exists?(from orders in photographer_paid_query(), where: orders.id == ^order_id)
+    do: Repo.exists?(from orders in photographer_paid_query(Order), where: orders.id == ^order_id)
 
   def client_paid_query, do: client_paid_query(orders())
 
@@ -50,8 +50,6 @@ defmodule Picsello.Orders do
         on: intents.order_id == orders.id,
         where: is_nil(intents.id)
       )
-
-  def photographer_paid_query, do: photographer_paid_query(orders())
 
   def photographer_paid_query(source),
     do:
