@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   require Logger
   import Ecto.Changeset
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [cards_width: 1]
 
   alias Picsello.{Repo, Galleries, GalleryProducts}
 
