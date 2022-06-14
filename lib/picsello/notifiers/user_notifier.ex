@@ -44,7 +44,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       subject: "#{client.name} just completed their booking proposal!",
       body: """
       <p>Hello #{User.first_name(user)},</p>
-      <p>Yey! You have a new job!</p>
+      <p>Yay! You have a new job!</p>
       <p>#{client.name} completed their proposal. We have moved them from a lead to a job. Congratulations!</p>
       <p>Click <a href="#{helpers.job_url(job.id)}">here</a> to view and access your job on Picsello.</p>
       <p>Cheers!</p>
@@ -64,7 +64,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       subject: "You have a new lead from #{client.name}",
       body: """
       <p>Hello #{User.first_name(user)},</p>
-      <p>Yey! You have a new lead!</p>
+      <p>Yay! You have a new lead!</p>
       <p>#{client.name} just submitted a contact form with the following information:</p>
       <p>Email: #{client.email}</p>
       <p>Phone: #{client.phone}</p>
