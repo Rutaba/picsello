@@ -182,18 +182,21 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "envelope",
              button_label: "Resend email",
              button_class: "btn-primary",
+             external_link: "",
              color: "red-sales-300",
              class: "intro-confirmation border-red-sales-300"
            }},
           {Application.get_env(:picsello, :help_scout_id) != nil,
            %{
-             action: "help-scout-modal",
+             action: "external-link",
              title: "Getting started with Picsello guide",
              body:
                "Check out our guide on how best to start running your business with Picsello.",
              icon: "question-mark",
              button_label: "Open guide",
              button_class: "btn-secondary",
+             external_link:
+               "https://support.picsello.com/article/117-getting-started-with-picsello-guide",
              color: "blue-planning-300",
              class: "intro-help-scout"
            }},
@@ -205,8 +208,22 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "money-bags",
              button_label: "Setup your Stripe Account",
              button_class: "btn-secondary",
+             external_link: "",
              color: "blue-planning-300",
              class: "intro-stripe"
+           }},
+          {true,
+           %{
+             action: "gallery-links",
+             title: "Preview the gallery experience",
+             body:
+               "We’ve created some clickable previews to see what you and your clients will use without having to book a job first!",
+             icon: "add-photos",
+             button_label: "Preview client",
+             button_class: "btn-secondary",
+             external_link: "",
+             color: "blue-planning-300",
+             class: "intro-resources"
            }},
           {leads_empty?,
            %{
@@ -216,17 +233,19 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "three-people",
              button_label: "Create your first lead",
              button_class: "btn-secondary",
-             color: "",
+             external_link: "",
+             color: "blue-planning-300",
              class: "intro-first-lead"
            }},
           {true,
            %{
-             action: "help-link",
+             action: "external-link",
              title: "Helpful resources",
              body: "Stuck? We have a variety of resources to help you out.",
              icon: "question-mark",
              button_label: "See available resources",
              button_class: "btn-secondary",
+             external_link: "https://support.picsello.com/",
              color: "blue-planning-300",
              class: "intro-resources"
            }}
@@ -234,7 +253,8 @@ defmodule PicselloWeb.HomeLive.Index do
         do: item
       )
 
-    socket |> assign(:attention_items, items)
+    socket
+    |> assign(attention_items: items, should_attention_items_overflow: Enum.count(items) > 4)
   end
 
   def card(assigns) do
