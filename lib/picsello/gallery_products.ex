@@ -48,9 +48,15 @@ defmodule Picsello.GalleryProducts do
     |> where([preview_photo: preview_photo], not is_nil(preview_photo.id))
   end
 
+  defp gallery_products_query(gallery_id, :coming_soon_false) do
+    gallery_products_query(gallery_id, :with_previews)
+    |> where([category: category], not category.coming_soon)
+  end
+
   defp gallery_products_query(gallery_id, :with_or_without_previews) do
     from(product in GalleryProduct,
       inner_join: category in assoc(product, :category),
+      as: :category,
       left_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),
       on: preview_photo.id == product.preview_photo_id,
       as: :preview_photo,

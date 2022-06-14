@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
   use PicselloWeb, :live_component
 
-  import PicselloWeb.GalleryLive.ProductPreview.Index, only: [cards_width: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [cards_width: 1]
 
   def render(assigns) do
     ~H"""

@@ -12,7 +12,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign_details(Galleries.get_photo(photo_id))
     |> assign(
       download_each_price: Galleries.download_each_price(gallery),
-      products: GalleryProducts.get_gallery_products(gallery.id)
+      products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false)
     )
     |> ok()
   end
