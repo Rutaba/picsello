@@ -393,7 +393,8 @@ defmodule Picsello.Factory do
       name: "Test Client Wedding",
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
-      client_link_hash: UUID.uuid4()
+      client_link_hash: UUID.uuid4(),
+      active: true
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -414,7 +415,8 @@ defmodule Picsello.Factory do
       name: "name.jpg",
       position: 1.0,
       aspect_ratio: 1.0,
-      original_url: Photo.original_path("name", 333, "4444")
+      original_url: Photo.original_path("name", 333, "4444"),
+      active: true
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

@@ -586,10 +586,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp delete_photos(%{assigns: %{gallery: gallery}} = socket, selected_photos) do
-    with {:ok, _} <- Galleries.delete_photos(selected_photos),
+    with {:ok, {count, _}} <- Galleries.delete_photos(selected_photos),
          {:ok, gallery} <-
            Galleries.update_gallery(gallery, %{
-             total_count: gallery.total_count - length(selected_photos)
+             total_count: gallery.total_count - count
            }) do
       socket
       |> assign(:gallery, gallery)
@@ -599,7 +599,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> push_event("select_mode", %{"mode" => "selected_none"})
       |> put_flash(
         :success,
-        "#{length(selected_photos)} #{ngettext("photo", "photos", length(selected_photos))} deleted successfully"
+        "#{count} #{ngettext("photo", "photos", count)} deleted successfully"
       )
       |> assign_photos(@per_page)
       |> push_event("reload_grid", %{})
@@ -607,7 +607,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     else
       _ ->
         socket
-        |> put_flash(:success, "Could not delete photos")
+        |> put_flash(:error, "Could not delete photos")
         |> close_modal()
         |> noreply()
     end
