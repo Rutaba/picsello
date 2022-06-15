@@ -40,7 +40,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
 
       ids = Enum.map(presets, &Map.get(&1, :id))
 
-      from(preset in EmailPreset, where: preset.id not in ^ids)
+      from(preset in EmailPreset, where: preset.id not in ^ids and preset.type == :job)
       |> Repo.delete_all()
     end)
   end
