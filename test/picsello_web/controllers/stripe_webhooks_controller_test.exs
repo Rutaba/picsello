@@ -293,4 +293,58 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       end)
     end
   end
+
+  describe "invoices" do
+    def stub_invoice_event(invoice) do
+      Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
+        {:ok,
+         %{
+           type: "invoice.payment_succeeded",
+           data: %{
+             object: invoice
+           }
+         }}
+      end)
+    end
+
+    def make_app_request(conn) do
+      conn
+      |> put_req_header("stripe-signature", "love, stripe")
+      |> post(Routes.stripe_webhooks_path(conn, :app_webhooks), %{})
+    end
+
+    test "ignores subscription invoices", %{conn: conn} do
+      stub_invoice_event(%Stripe.Invoice{
+        subscription: "sub_123"
+      })
+
+      make_app_request(conn)
+    end
+
+    test "handles order invoices", %{conn: conn} do
+      Mox.stub(Picsello.MockWHCCClient, :confirm_order, fn _, _ ->
+        {:ok, :confirmed}
+      end)
+
+      order =
+        insert(:order,
+          delivery_info: %{email: "client@example.com"},
+          whcc_order: build(:whcc_order_created),
+          placed_at: DateTime.utc_now()
+        )
+
+      invoice =
+        insert(:invoice,
+          order: order,
+          status: :open,
+          stripe_id: "invoice-stripe-id"
+        )
+
+      stub_invoice_event(build(:stripe_invoice, status: "paid", id: "invoice-stripe-id"))
+
+      make_app_request(conn)
+
+      assert %{status: :paid} = invoice |> Repo.reload()
+    end
+  end
 end
