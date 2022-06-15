@@ -5,12 +5,12 @@
         <div class="dragDrop" id="addPhoto" phx-hook="DragDrop" phx-drop-target={@uploads.photo.ref}>
             <label class="flex flex-col items-center justify-center float-right cursor-pointer">
                 <div class="max-w-xs mx-auto">
-                    <div class="dragDrop__content">
+                    <div class="dragDrop__content" id="resume-upload" phx-hook="ResumeUpload">
                         <p class="text-center">
-                            <div class="flex items-center bg-white ml-5 lg:justify-end px-4 py-2 border font-sans rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75">
+                            <.add_photo_button pending_photos={Enum.empty?(@pending_photos)} class="flex items-center bg-white ml-5 lg:justify-end px-4 py-2 border font-sans rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75"> 
                                 <.icon name="plus" class="w-4 h-4 mr-1 text-blue-planning-300" />
                                 Add photos
-                            </div>
+                            </.add_photo_button>
                             <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                         </p>
                     </div>

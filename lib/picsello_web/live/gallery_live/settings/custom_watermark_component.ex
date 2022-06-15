@@ -8,7 +8,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   @upload_options [
     accept: ~w(.png image/png),
     max_entries: 1,
-    max_file_size: 104_857_600,
+    max_file_size: String.to_integer(Application.compile_env(:picsello, :photo_max_file_size)),
     auto_upload: true,
     external: &__MODULE__.presign_image/2,
     progress: &__MODULE__.handle_image_progress/3
@@ -101,7 +101,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
         "content-type" => image.client_type,
         "cache-control" => "public, max-age=@upload_options"
       },
-      conditions: [["content-length-range", 0, 104_857_600]]
+      conditions: [["content-length-range", 0, String.to_integer(Application.get_env(:picsello, :photo_max_file_size))]]
     ]
 
     params = PhotoStorage.params_for_upload(sign_opts)

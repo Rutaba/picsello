@@ -1,6 +1,6 @@
 <div class="flex flex-col photographer-gallery lg:before:bg-gray-100">
   <div class="flex flex-row bg-base-200">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress,  arrow_show: "photos", album_dropdown_show: true %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "photos", album_dropdown_show: true %>
     <div class="w-full h-full pb-16 lg:bg-gray-100 bg-white lg:pl-96">
       <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pb-5 pl-10 pr-10 bg-gray-100 lg:pt-14 pt-20">
         <div class="flex justify-between">
@@ -34,7 +34,7 @@
               <.thumbnail event="go_to_album" album={album}/>
               <div class="cursor-pointer actionBlock">
                 <.actions
-                id="actions"
+                id={"actions-#{album.id}"}
                 class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
                 delete_event="delete_album_popup"
                 delete_title="Delete Album"

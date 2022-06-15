@@ -91,7 +91,7 @@
 }
 
 .uploadingList__wrapper {
-    width: 951px;
+    width: 100%;
     @apply my-0
     mx-auto
     overflow-scroll
@@ -132,17 +132,24 @@
     cursor-pointer;
 }
 
+.uploadEntry .too-large {
+    @apply cursor-default;
+}
+
 .uploadEntry .error {
-    @apply bg-red-sales-100
+    @apply bg-orange-inbox-400 
+    text-red-sales-300
+    font-bold
     cursor-default
 }
 
 .uploadEntry .retry {
-    @apply border-2
+    @apply border
     border-solid
     border-blue-planning-300
     bg-base-100
     text-base-300
+    font-bold
 }
 
 .sk-circle {

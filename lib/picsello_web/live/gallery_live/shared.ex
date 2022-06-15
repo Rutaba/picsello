@@ -357,6 +357,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def inprogress_upload_broadcast(gallery_id, entries) do
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "inprogress_upload_update:#{gallery_id}",
+      {:inprogress_upload_update, %{entries: entries}}
+    )
+  end
+
   def actions(assigns) do
     ~H"""
     <div id={@id} class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
@@ -550,7 +558,5 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  def cards_width(frame_image) do
-    if frame_image == "card.png", do: "198"
-  end
+  def cards_width(frame_image), do: if(frame_image == "card.png", do: "198")
 end

@@ -1,0 +1,53 @@
+<div class={"uploadPopup {@toggle}"} id="photo-upload-component">
+    <div class="flex flex-col items-center justify-center gap-8 UploadOverallStatus">
+        <div class="w-full">
+            <div class="flex items-center justify-between w-full px-12 pb-4">
+            <p class="font-bold text-2xl">Retry Upload</p>
+            <a phx-click="close" phx-target={@myself} class="cursor-pointer"><.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/></a>
+            </div>
+
+            <div class="bg-orange-inbox-400 rounded-lg mx-12 py-2">
+                <div class="flex justify-center items-center mx-4">
+                    <.icon name="warning-orange", class="w-10 h-10 stroke-[4px]" />
+                    <.error_type id="error_type" invalid_count={length(@invalid_photos)}, pending_count={length(@pending_photos)}/>
+                </div>
+            </div>
+        </div>
+        
+        <div class="uploadEntry grid grid-cols-5 w-full px-12">
+            <div class="grid-cols-1 col-span-3">
+                <span class="error text-xs text-center rounded py-1 px-2 items-center cursor-default">                    
+                    <%= length(@invalid_photos ++ @pending_photos) %> <%= ngettext("photo", "photos", length(@invalid_photos ++ @pending_photos)) %> failed
+                </span>
+            </div>
+            <div class="grid-cols-2">
+                <span phx-target={@myself} phx-click="upload_all_pending_photos" class={"retry text-xs text-center rounded py-1 px-7 cursor-pointer items-center #{length(@pending_photos) < 2 && 'hidden'}"}>
+                    Retry all?
+                </span>
+            </div>
+            <div class="grid-cols-3 justify-self-end">
+                <span phx-target={@myself} phx-click="delete_all_photos" class={"border-solid border border-base-250 text-base-300 font-bold text-xs text-center rounded py-1 px-6 cursor-pointer items-center #{length(@pending_photos ++ @invalid_photos) < 2 && 'hidden'}"}>
+                    Delete all?
+                </span>
+            </div>
+        </div>  
+
+        <div class="uploadingList__wrapper bg-base-200/30">
+            <%= Enum.with_index(@invalid_photos, fn entry, index -> %>
+                <.errors target={@myself} delete_from="invalid_photos" entry={entry} index={index}>
+                    <p class="error btn items-center">Failed</p>
+                    <p class="border border-solid border-base-250 text-base-250 font-bold btn too-large">File too large</p>
+                </.errors>
+            <% end) %>
+            <%= Enum.with_index(@pending_photos, fn entry, index -> %>
+                <.errors target={@myself} delete_from="pending_photos" entry={entry} index={index}>
+                    <p class="error btn items-center cursor-default">Failed</p>
+                    <p class="retry btn" phx-value-index={index} phx-target={@myself} phx-click="upload_pending_photos">Retry?</p>
+                </.errors>
+            <% end) %>            
+        </div>
+    </div>
+    <button phx-click="close" phx-target={@myself} aria-label="canncel" class="bg-black text-white mr-12 mt-5 py-3 px-8 float-right rounded-lg border">
+        Close
+    </button>
+</div>

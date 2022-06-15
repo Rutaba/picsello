@@ -23,7 +23,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
     max_entries: 1,
-    max_file_size: 104_857_600,
+    max_file_size: String.to_integer(Application.compile_env(:picsello, :photo_max_file_size)),
     auto_upload: true,
     external: &__MODULE__.presign_cover_entry/2,
     progress: &__MODULE__.handle_cover_progress/3
@@ -35,6 +35,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     socket
     |> assign(:upload_bucket, @bucket)
     |> assign(:total_progress, 0)
+    |> assign(:photos_error_count, 0)
     |> assign(:cover_photo_processing, false)
     |> allow_upload(:cover_photo, @upload_options)
     |> assign(:password_toggle, false)
@@ -226,6 +227,18 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
+  def handle_info(
+        {:photos_error, %{photos_error_count: photos_error_count, entries: entries}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    if length(entries) > 0, do: inprogress_upload_broadcast(gallery.id, entries)
+
+    socket
+    |> assign(:photos_error_count, photos_error_count)
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(:close_watermark_popup, socket) do
     socket |> close_modal() |> noreply()
   end
@@ -313,7 +326,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         "content-type" => entry.client_type,
         "cache-control" => "public, max-age=@upload_options"
       },
-      conditions: [["content-length-range", 0, 104_857_600]]
+      conditions: [["content-length-range", 0, String.to_integer(Application.get_env(:picsello, :photo_max_file_size))]]
     ]
 
     params = PhotoStorage.params_for_upload(sign_opts)
