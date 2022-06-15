@@ -355,7 +355,13 @@ defmodule Picsello.Profiles do
             "content-type" => image.client_type,
             "cache-control" => "public, max-age=@upload_options"
           }),
-        conditions: [["content-length-range", 0, String.to_integer(Application.get_env(:picsello, :photo_max_file_size))]]
+        conditions: [
+          [
+            "content-length-range",
+            0,
+            String.to_integer(Application.get_env(:picsello, :photo_max_file_size))
+          ]
+        ]
       )
 
     meta = params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
