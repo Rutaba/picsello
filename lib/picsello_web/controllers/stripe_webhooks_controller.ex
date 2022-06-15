@@ -47,6 +47,14 @@ defmodule PicselloWeb.StripeWebhooksController do
     :ok
   end
 
+  def handle_webhook(:app, %{type: type, data: %{object: %Stripe.Invoice{subscription: "" <> _}}})
+      when type in [
+             "invoice.payment_succeeded",
+             "invoice.payment_failed"
+           ] do
+    :ok
+  end
+
   def handle_webhook(:app, %{type: type, data: %{object: invoice}})
       when type in [
              "invoice.payment_succeeded",
