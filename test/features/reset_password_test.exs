@@ -42,4 +42,25 @@ defmodule Picsello.ResetPasswordTest do
     |> sign_in(user, "ThisIsAStrongP@ssw0rd")
     |> assert_has(css("h1", text: "#{User.first_name(user)}!"))
   end
+
+  feature "google auth user tries to reset password", %{session: session} do
+    user = insert(:user, sign_up_auth_provider: :google) |> onboard!()
+
+    session
+    |> navigate_to_forgot_password()
+    |> fill_in(text_field("Email"), with: user.email)
+    |> wait_for_enabled_submit_button()
+    |> click(button("Reset Password"))
+
+    assert_receive {:delivered_email, email}
+
+    assert %{path: "/auth/google"} =
+             email
+             |> email_substitutions()
+             |> Map.get("body")
+             |> Floki.parse_fragment!()
+             |> Floki.attribute("a", "href")
+             |> hd
+             |> URI.parse()
+  end
 end

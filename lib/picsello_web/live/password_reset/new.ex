@@ -59,13 +59,21 @@ defmodule PicselloWeb.Live.PasswordReset.New do
   @impl true
   def handle_event("submit", %{"user" => user_params}, socket) do
     result =
-      if user = Accounts.get_user_by_email(user_params["email"]) do
-        Accounts.deliver_user_reset_password_instructions(
-          user,
-          &Routes.user_reset_password_url(socket, :edit, &1)
-        )
-      else
-        {:ok, :user_not_found}
+      case Accounts.get_user_by_email(user_params["email"]) do
+        %{sign_up_auth_provider: :password} = user ->
+          Accounts.deliver_user_reset_password_instructions(
+            user,
+            &Routes.user_reset_password_url(socket, :edit, &1)
+          )
+
+        %{sign_up_auth_provider: provider} = user ->
+          Accounts.deliver_provider_auth_instructions(
+            user,
+            Routes.auth_url(socket, :request, provider)
+          )
+
+        _ ->
+          {:ok, :user_not_found}
       end
 
     case result do
