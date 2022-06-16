@@ -5,6 +5,8 @@ defmodule Picsello.Onboardings do
   import Picsello.Accounts.User, only: [put_new_attr: 3, update_attr_in: 3]
   import Ecto.Query, only: [from: 2]
 
+  @non_us_state "Non-US"
+
   defmodule Onboarding do
     @moduledoc "Container for user specific onboarding info. Embedded in users table."
 
@@ -91,7 +93,10 @@ defmodule Picsello.Onboardings do
     do:
       from(adjustment in Picsello.Packages.CostOfLivingAdjustment,
         select: adjustment.state,
-        order_by: adjustment.state
+        order_by: [
+          desc: fragment("case when ? = ? then 1 else 0 end", adjustment.state, @non_us_state),
+          asc: adjustment.state
+        ]
       )
       |> Repo.all()
       |> Enum.map(&{&1, &1})
