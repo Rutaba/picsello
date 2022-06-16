@@ -28,7 +28,12 @@
   .text-input,
   .select,
   .checkbox {
-    @apply rounded-none focus:border-black focus:ring-black;
+    @apply rounded-none;
+  }
+
+  .text-input,
+  .checkbox {
+    @apply focus:border-black focus:ring-black;
   }
 
   .checkbox,

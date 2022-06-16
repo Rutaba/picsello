@@ -150,15 +150,18 @@
                     <div class="flex pt-4">
                       <div class="w-1/2 mr-4">
                         <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                        <%= error_tag fp, :city %>
                       </div>
 
                       <div class="w-1/2">
                         <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                        <%= error_tag fp, :zip %>
                       </div>
                     </div>
 
-                    <div class="mt-4 cursor-pointer customSelect">
-                      <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 focus:outline-none h-12 px-3"  %>
+                    <div class="mt-4 cursor-pointer">
+                      <%= select fp, :state, Cart.delivery_info_address_states(), prompt: "State", class: "select w-full focus:outline-none focus:border-blue-planning-300 px-3" %>
+                      <%= error_tag fp, :state %>
                     </div>
                   <% end %>
                 </div>

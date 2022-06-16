@@ -48,7 +48,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           }
         } = socket
       ) do
-    case Cart.store_order_delivery_info(order, delivery_info_changeset) do
+    case Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil)) do
       {:ok, %{gallery: gallery} = order} ->
         order
         |> Cart.checkout(
@@ -140,7 +140,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{assigns: %{step: :delivery_info}} = socket
       ) do
     socket
-    |> assign(:delivery_info_changeset, Cart.delivery_info_change(params))
+    |> assign(
+      :delivery_info_changeset,
+      params |> Cart.delivery_info_change() |> Map.put(:action, :validate)
+    )
     |> noreply()
   end
 
