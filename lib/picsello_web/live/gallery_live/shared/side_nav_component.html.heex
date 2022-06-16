@@ -23,7 +23,7 @@
           </div>
           <div class={if(@edit_name, do: "hidden")}>
             <.input_label form={f} class="input-label pb-2" field={:name}>
-              <div>Gallery name <%= error_tag(f, :name) %></div>
+              <div class="py-1">Gallery name <%= error_tag(f, :name) %></div>
             </.input_label>
             <%= input f, :name, value: @gallery.name, class: "w-full text-input" %>
             <%= submit "Save", disabled: !@changeset.valid?, class: "btn-save-side-nav" %>

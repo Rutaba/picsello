@@ -48,12 +48,12 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
           <% end %>
         </a>
       </div>
-      <div class="flex items-center justify-between w-full mt-5 lg:items-start">
+      <div class="flex items-center justify-between w-full mt-3 lg:items-start">
         <button phx-click="regenerate" phx-target={@myself} class="p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0" id="regeneratePasswordButton">
             Re-generate
         </button>
         <button id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
-        class="py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36">
+        class="py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 mt-2">
         <div class="hidden p-1 text-sm rounded bg-white font-sans shadow" role="tooltip">
             Copied!
         </div>
