@@ -134,10 +134,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
         </label>
 
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">What's your phone number?</p>
+        <label class={classes("flex flex-col mt-4", %{"opacity-50" => onboarding |> input_value(:state) |> Onboardings.non_us_state?()})}>
+          <p class="py-2 font-extrabold">What's your phone number? <em class="text-xs italic font-normal">(optional)</em></p>
 
-          <%= input onboarding, :phone, type: :telephone_input, phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
+          <%= input onboarding, :phone, type: :telephone_input, disabled: onboarding |> input_value(:state) |> Onboardings.non_us_state?(), phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
           <%= error_tag onboarding, :phone, class: "text-red-sales-300 text-sm", prefix: "Phone number" %>
         </label>
       <% end %>

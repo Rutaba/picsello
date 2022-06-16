@@ -13,12 +13,11 @@ defmodule Picsello.OnboardingsTest do
       end)
     end
 
-    test "step 2 requires org name, schedule, photographer years, state, and phone" do
+    test "step 2 requires org name, schedule, photographer years, and state" do
       user = insert(:user)
 
       assert %{
                onboarding: %{
-                 phone: [:required],
                  photographer_years: [:required],
                  schedule: [:required],
                  state: [:required]
@@ -39,7 +38,6 @@ defmodule Picsello.OnboardingsTest do
 
       assert %{
                onboarding: %{
-                 phone: [:required],
                  photographer_years: [:required],
                  schedule: [:required],
                  state: [:required]
@@ -69,7 +67,6 @@ defmodule Picsello.OnboardingsTest do
 
       assert %{
                onboarding: %{
-                 phone: [:required],
                  photographer_years: [:required],
                  schedule: [:required],
                  state: [:required]
@@ -98,7 +95,6 @@ defmodule Picsello.OnboardingsTest do
 
       assert %{
                onboarding: %{
-                 phone: [:required],
                  photographer_years: [:required],
                  schedule: [:required],
                  state: [:required],

@@ -18,6 +18,8 @@ defmodule Picsello.UserOnboardsTest do
     end)
 
     insert(:cost_of_living_adjustment)
+    insert(:cost_of_living_adjustment, state: "Non-US")
+
     insert(:package_tier)
     insert(:package_base_price, base_price: 300)
     subscription_plan = insert(:subscription_plan)
@@ -25,6 +27,7 @@ defmodule Picsello.UserOnboardsTest do
   end
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
+  @org_name_field text_field("onboarding-step-2_organization_name")
   @phone_field text_field("onboarding-step-2_onboarding_phone")
   @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
   @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
@@ -40,7 +43,6 @@ defmodule Picsello.UserOnboardsTest do
   feature "user onboards", %{session: session, user: user, subscription_plan: subscription_plan} do
     user = Repo.preload(user, :organization)
 
-    org_name_field = text_field("onboarding-step-2_organization_name")
     home_path = Routes.home_path(PicselloWeb.Endpoint, :index)
 
     test_pid = self()
@@ -75,10 +77,10 @@ defmodule Picsello.UserOnboardsTest do
     session
     |> assert_path(@onboarding_path)
     |> assert_disabled_submit()
-    |> assert_value(org_name_field, user.organization.name)
-    |> fill_in(org_name_field, with: "")
+    |> assert_value(@org_name_field, user.organization.name)
+    |> fill_in(@org_name_field, with: "")
     |> assert_has(css("span.invalid-feedback", text: "Photography business name can't be blank"))
-    |> fill_in(org_name_field, with: "Photogenious")
+    |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@photographer_years_field, with: "5")
     |> click(option("OK"))
     |> fill_in(@phone_field, with: "123")
@@ -228,6 +230,21 @@ defmodule Picsello.UserOnboardsTest do
                }
              }
            } = user
+  end
+
+  feature "user selects Non-US state", %{session: session, user: user} do
+    session
+    |> assert_path(@onboarding_path)
+    |> fill_in(@org_name_field, with: "Photogenious")
+    |> fill_in(@photographer_years_field, with: "5")
+    |> click(option("Non-US"))
+    |> assert_disabled(@phone_field)
+    |> click(button("Next"))
+    |> assert_text("speciality")
+
+    user = user |> Repo.reload()
+
+    assert %User{onboarding: %{state: "Non-US"}} = user
   end
 
   feature "user is redirected to onboarding", %{session: session} do

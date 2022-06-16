@@ -56,7 +56,7 @@ defmodule Picsello.Onboardings do
         :switching_from_softwares,
         :state
       ])
-      |> validate_required([:state, :photographer_years, :schedule, :phone])
+      |> validate_required([:state, :photographer_years, :schedule])
       |> validate_change(:phone, &valid_phone/2)
     end
 
@@ -100,6 +100,8 @@ defmodule Picsello.Onboardings do
       )
       |> Repo.all()
       |> Enum.map(&{&1, &1})
+
+  def non_us_state?(state), do: state == @non_us_state
 
   def complete!(user),
     do:

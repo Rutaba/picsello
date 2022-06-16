@@ -510,8 +510,10 @@ defmodule Picsello.Factory do
 
   def valid_gallery_password(), do: "123456"
 
-  def cost_of_living_adjustment_factory(),
-    do: %Picsello.Packages.CostOfLivingAdjustment{state: "OK", multiplier: 1.0}
+  def cost_of_living_adjustment_factory(attrs \\ %{}),
+    do:
+      %Picsello.Packages.CostOfLivingAdjustment{state: "OK", multiplier: 1.0}
+      |> merge_attributes(attrs)
 
   def package_tier_factory(),
     do: %Picsello.Packages.Tier{name: "mid", position: 1}
