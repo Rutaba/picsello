@@ -126,40 +126,40 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
   def step(%{step: :get_started} = assigns) do
     ~H"""
-    <div {testid("import-job-card")} class="flex overflow-hidden border border-base-200 rounded-lg mt-8">
+    <div {testid("import-job-card")} class="flex mt-8 overflow-hidden border rounded-lg border-base-200">
       <div class="w-4 border-r border-base-200 bg-blue-planning-300" />
 
-      <div class="flex flex-col sm:flex-row p-6 items-start w-full">
+      <div class="flex flex-col items-start w-full p-6 sm:flex-row">
         <div class="flex">
-          <.icon name="camera-check" class="w-12 h-12 text-blue-planning-300 mt-2" />
-          <h1 class="font-bold sm:hidden text-2xl ml-4 mt-2">Import a job</h1>
+          <.icon name="camera-check" class="w-12 h-12 mt-2 text-blue-planning-300" />
+          <h1 class="mt-2 ml-4 text-2xl font-bold sm:hidden">Import a job</h1>
         </div>
         <div class="flex flex-col sm:ml-4">
-          <h1 class="font-bold text-2xl hidden sm:block">Import a job</h1>
+          <h1 class="hidden text-2xl font-bold sm:block">Import a job</h1>
 
-          <p class="mt-1 mr-2 max-w-xl">
+          <p class="max-w-xl mt-1 mr-2">
             Use this option if you have shoot dates confirmed, have partial/scheduled payment, client contact info, and a form of a contract or questionnaire.
           </p>
         </div>
-        <button type="button" class="btn-primary self-center w-full sm:w-auto mt-6 sm:mt-0 ml-auto px-8" phx-click="go-job-details" phx-target={@myself}>Next</button>
+        <button type="button" class="self-center w-full px-8 mt-6 ml-auto btn-primary sm:w-auto sm:mt-0" phx-click="go-job-details" phx-target={@myself}>Next</button>
       </div>
     </div>
-    <div class="flex overflow-hidden border border-base-200 rounded-lg mt-6">
+    <div class="flex mt-6 overflow-hidden border rounded-lg border-base-200">
       <div class="w-4 border-r border-base-200 bg-base-200" />
 
-      <div class="flex p-6 flex-col sm:flex-row items-start w-full">
+      <div class="flex flex-col items-start w-full p-6 sm:flex-row">
         <div class="flex">
-          <.icon name="three-people" class="w-12 h-12 text-blue-planning-300 mt-2" />
-          <h1 class="font-bold sm:hidden text-2xl ml-4 mt-2">Create a lead</h1>
+          <.icon name="three-people" class="w-12 h-12 mt-2 text-blue-planning-300" />
+          <h1 class="mt-2 ml-4 text-2xl font-bold sm:hidden">Create a lead</h1>
         </div>
         <div class="flex flex-col sm:ml-4">
-          <h1 class="font-bold text-2xl hidden sm:block">Create a lead</h1>
+          <h1 class="hidden text-2xl font-bold sm:block">Create a lead</h1>
 
-          <p class="mt-1 mr-2 max-w-xl">
+          <p class="max-w-xl mt-1 mr-2">
             Use this option if you have client contact info, are trying to book this person for a session/job but haven’t confirmed yet, and/or you aren’t ready to charge.
           </p>
         </div>
-        <button type="button" class="btn-secondary self-center w-full sm:w-auto mt-6 sm:mt-0 ml-auto px-8" phx-click="create-lead" phx-target={@myself}>Next</button>
+        <button type="button" class="self-center w-full px-8 mt-6 ml-auto btn-secondary sm:w-auto sm:mt-0" phx-click="create-lead" phx-target={@myself}>Next</button>
       </div>
     </div>
     """
@@ -171,7 +171,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       <.job_form_fields form={f} job_types={@current_user.organization.profile.job_types} />
 
       <.footer>
-        <button class="btn-primary px-8" title="Next" type="submit" disabled={!@job_changeset.valid?} phx-disable-with="Next">
+        <button class="px-8 btn-primary" title="Next" type="submit" disabled={!@job_changeset.valid?} phx-disable-with="Next">
           Next
         </button>
         <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
@@ -195,36 +195,36 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         <label for={input_id(f, :base_price)}>
           The amount you’ve charged for your job <p>(including download credits)</p>
         </label>
-        <div class="w-full sm:w-auto flex items-center justify-end mt-6">
-          <span class="text-base-250 font-bold text-2xl mx-3">+</span>
+        <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
+          <span class="mx-3 text-2xl font-bold text-base-250">+</span>
           <%= input f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
-      <div class="mt-4 flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
+      <div class="flex flex-col items-start justify-between w-full mt-4 sm:items-center sm:flex-row sm:w-auto">
         <label for={input_id(f, :print_credits)}>
           How much of the creative session fee is for print credits?
         </label>
-        <div class="w-full sm:w-auto flex items-center justify-end mt-6">
-          <span class="text-base-250 font-bold text-2xl mx-4">&nbsp;</span>
+        <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
+          <span class="mx-4 text-2xl font-bold text-base-250">&nbsp;</span>
           <%= input f, :print_credits, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
 
-      <hr class="mt-4 hidden sm:block border-gray-100">
+      <hr class="hidden mt-4 border-gray-100 sm:block">
 
-      <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto mt-4 sm:mt-0">
+      <div class="flex flex-col items-start justify-between w-full mt-4 sm:items-center sm:flex-row sm:w-auto sm:mt-0">
         <label for={input_id(f, :collected_price)}>
           The amount you’ve already collected
         </label>
-        <div class="w-full sm:w-auto flex items-center justify-end mt-6">
-          <span class="text-base-250 font-bold text-2xl mx-3">-</span>
+        <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
+          <span class="mx-3 text-2xl font-bold text-base-250">-</span>
           <%= input f, :collected_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
 
-      <dl class="flex flex-col sm:flex-row justify-between mt-4 font-bold text-lg">
+      <dl class="flex flex-col justify-between mt-4 text-lg font-bold sm:flex-row">
         <dt>Remaining balance to collect with Picsello</dt>
-        <dd class="sm:w-32 w-full text-center text-green-finances-300 bg-green-finances-100 bg-opacity-30 p-6 py-2 rounded-lg mt-2 sm:mt-0"><%= total_remaining_amount(@package_changeset) %></dd>
+        <dd class="w-full p-6 py-2 mt-2 text-center rounded-lg sm:w-32 text-green-finances-300 bg-green-finances-100/30 sm:mt-0"><%= total_remaining_amount(@package_changeset) %></dd>
       </dl>
 
       <hr class="mt-4 border-gray-100">
@@ -232,7 +232,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       <.digital_download_fields package_form={f} download={@download_changeset} package_pricing={@package_pricing_changeset} />
 
       <.footer>
-        <button class="btn-primary px-8" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
+        <button class="px-8 btn-primary" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
           <%= if need_to_specify_payments?(@package_changeset), do: "Next", else: "Save" %>
         </button>
         <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>
@@ -250,7 +250,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
       <%= inputs_for f, :payment_schedules, fn p -> %>
         <div {testid("payment-#{p.index + 1}")}>
-          <div class="mt-4 flex items-center">
+          <div class="flex items-center mt-4">
             <div class="mb-2 text-xl font-bold">Payment <%= p.index + 1 %></div>
 
             <%= if p.index > 0 do %>
@@ -260,11 +260,11 @@ defmodule PicselloWeb.JobLive.ImportWizard do
             <% end %>
           </div>
 
-          <div class="flex flex-wrap mb-8 w-full">
+          <div class="flex flex-wrap w-full mb-8">
             <div class="w-full sm:w-auto">
               <%= labeled_input p, :due_date, label: "Due", type: :date_input, placeholder: "mm/dd/yyyy", class: "sm:w-64 w-full px-4 text-lg" %>
             </div>
-            <div class="sm:ml-16 w-full sm:w-auto">
+            <div class="w-full sm:ml-16 sm:w-auto">
               <%= labeled_input p, :price, label: "Payment amount", placeholder: "$0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
             </div>
           </div>
@@ -272,7 +272,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       <% end %>
 
       <%= if f |> current() |> Map.get(:payment_schedules) |> Enum.count == 1 do %>
-        <button type="button" title="add" phx-click="add-payment" phx-target={@myself} class="btn-secondary px-2 py-1 mb-8">
+        <button type="button" title="add" phx-click="add-payment" phx-target={@myself} class="px-2 py-1 mb-8 btn-secondary">
           Add new payment
         </button>
       <% end %>
@@ -288,10 +288,10 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           <% end %>
         <% end %>
       </div>
-      <p class="italic font-light text-sm mb-2">limit two payments</p>
+      <p class="mb-2 text-sm italic font-light">limit two payments</p>
 
       <.footer>
-        <button class="btn-primary px-8" title="Next" type="submit" disabled={!@payments_changeset.valid?} phx-disable-with="Next">
+        <button class="px-8 btn-primary" title="Next" type="submit" disabled={!@payments_changeset.valid?} phx-disable-with="Next">
           Save
         </button>
         <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>

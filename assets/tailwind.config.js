@@ -30,21 +30,20 @@ const combineValues = (values, prefix, cssProperty) =>
 
 module.exports = {
   mode: 'jit',
-  purge: {
-    content: [
-      '../**/*.html.eex',
-      '../**/*.html.leex',
-      '../**/*.html.heex',
-      '../**/views/**/*.ex',
-      '../**/live/**/*.ex',
-      './js/**/*.js',
-    ],
-    safelist,
-  },
-  darkMode: false, // or 'media' or 'class'
+  content: [
+    '../**/*.html.eex',
+    '../**/*.html.leex',
+    '../**/*.html.heex',
+    '../**/views/**/*.ex',
+    '../**/live/**/*.ex',
+    './js/**/*.js',
+  ],
+  safelist,
   theme: {
     extend: {
       colors: {
+        current: 'currentColor',
+        gray: { 700: '#374151' },
         base: {
           350: '#231F20',
           300: '#1F1C1E',
@@ -63,9 +62,14 @@ module.exports = {
         'blue-planning': { 300: '#4DAAC6', 200: '#86C3CC', 100: '#F2FDFB' },
         'yellow-files': { 300: '#F7CB45', 200: '#FAE46B', 100: '#FEF9E2' },
         'purple-marketing': { 300: '#585DF6', 200: '#7F82E6', 100: '#F8F4FE' },
-        'orange-inbox': { 400: '#FCF0EA', 300: '#F19D4A', 200: '#F5BD7F', 100: '#FDF4E9' },
+        'orange-inbox': {
+          400: '#FCF0EA',
+          300: '#F19D4A',
+          200: '#F5BD7F',
+          100: '#FDF4E9',
+        },
         'green-finances': { 300: '#429467', 200: '#81CF67', 100: '#CFE7CD' },
-        'red-error' : {300: '#F60000'},
+        'red-error': { 300: '#F60000' },
       },
       fontFamily: {
         sans: ['Be Vietnam', ...defaultTheme.fontFamily.sans],
@@ -77,27 +81,24 @@ module.exports = {
       fontSize: {
         '13px': '13px',
         '16px': '16px',
-        '15px': '15px'
+        '15px': '15px',
       },
       boxShadow: {
         md: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
         lg: '0px 4px 14px 0px rgba(0, 0, 0, 0.15)',
         xl: '0px 14px 14px 0px rgba(0, 0, 0, 0.20)',
-        top: '0px -14px 34px rgba(0, 0, 0, 0.15)'
+        top: '0px -14px 34px rgba(0, 0, 0, 0.15)',
       },
       zIndex: { '-10': '-10' },
-      strokeWidth: {'3':'3', '4':'4'},
+      strokeWidth: { 3: '3', 4: '4' },
       gridTemplateColumns: {
-        'cart': '110px minmax(80px, 1fr) auto',
-        'cartWide': '16rem 1fr auto'
+        cart: '110px minmax(80px, 1fr) auto',
+        cartWide: '16rem 1fr auto',
       },
       gridTemplateRows: {
-        'preview': '50px auto'
-      }
+        preview: '50px auto',
+      },
     },
-  },
-  variants: {
-    extend: {},
   },
   plugins: [
     require('@tailwindcss/aspect-ratio'),
@@ -106,10 +107,22 @@ module.exports = {
       strategy: 'class',
     }),
     plugin(({ addUtilities, theme }) => {
-      addUtilities(combineValues(theme('colors'), '.text-decoration', 'textDecorationColor'));
+      addUtilities(
+        combineValues(
+          theme('colors'),
+          '.text-decoration',
+          'textDecorationColor'
+        )
+      );
     }),
     plugin(({ addUtilities, theme }) => {
-      addUtilities(combineValues(theme('spacing'), '.underline-offset', 'textUnderlineOffset'));
+      addUtilities(
+        combineValues(
+          theme('spacing'),
+          '.underline-offset',
+          'textUnderlineOffset'
+        )
+      );
     }),
     plugin(({ addBase }) => {
       addBase({
