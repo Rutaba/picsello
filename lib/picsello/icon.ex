@@ -12,5 +12,6 @@ defmodule Picsello.Icon do
 
   def names, do: @names
 
-  def public_path(id) when id in @names, do: "/#{@svg_file}##{id}"
+  def public_path(id, conn, static_path) when id in @names,
+    do: static_path.(conn, "/#{@svg_file}") <> "##{id}"
 end

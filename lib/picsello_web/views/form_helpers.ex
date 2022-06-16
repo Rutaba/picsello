@@ -1,5 +1,4 @@
 defmodule PicselloWeb.FormHelpers do
-  alias PicselloWeb.Router.Helpers, as: Routes
   use Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [classes: 1, classes: 2]
 
@@ -189,12 +188,6 @@ defmodule PicselloWeb.FormHelpers do
       Gettext.dngettext(PicselloWeb.Gettext, "errors", msg, msg, count, opts)
     else
       Gettext.dgettext(PicselloWeb.Gettext, "errors", msg, opts)
-    end
-  end
-
-  def icon_tag(conn, name, opts \\ []) do
-    content_tag(:svg, opts) do
-      tag(:use, "xlink:href": Routes.static_path(conn, "/images/icons.svg#" <> name))
     end
   end
 

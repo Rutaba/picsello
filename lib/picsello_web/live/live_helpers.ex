@@ -92,10 +92,7 @@ defmodule PicselloWeb.LiveHelpers do
         height: nil,
         class: nil,
         style: nil,
-        path:
-          assigns
-          |> Map.get(:socket, PicselloWeb.Endpoint)
-          |> static_path(Picsello.Icon.public_path(name))
+        path: Picsello.Icon.public_path(name, PicselloWeb.Endpoint, &static_path/2)
       })
 
     ~H"""
