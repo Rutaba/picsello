@@ -309,6 +309,8 @@ defmodule Picsello.Accounts do
     UserNotifier.deliver_reset_password_instructions(user, reset_password_url_fun.(encoded_token))
   end
 
+  defdelegate deliver_provider_auth_instructions(user, path), to: UserNotifier
+
   @doc """
   Gets the user by reset password token.
 

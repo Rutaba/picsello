@@ -23,6 +23,19 @@ defmodule Picsello.Notifiers.UserNotifier do
     |> deliver_later()
   end
 
+  def deliver_provider_auth_instructions(%{sign_up_auth_provider: provider} = user, url) do
+    %{
+      subject: "Sign into your Picsello account",
+      body: """
+      <p>Hello #{User.first_name(user)},</p>
+      <p>You signed up for picsello using #{provider}.</p>
+      <p><a href="#{url}">Click here</a> to sign into Picsello via #{provider}.</p>
+      <p>Cheers!</p>
+      """
+    }
+    |> deliver_transactional_email(user)
+  end
+
   @doc """
   Deliver instructions to update a user email.
   """
