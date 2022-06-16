@@ -102,8 +102,8 @@ defmodule Picsello.PricingCalculations do
       :tax_bracket,
       :take_home
     ])
-    |> validate_required([:zipcode, :job_types, :state, :min_years_experience])
-    |> validate_format(:zipcode, @zipcode_regex, message: "is invalid")
+    |> validate_required([:job_types, :state, :min_years_experience])
+    |> maybe_validate_zipcode()
     |> validate_number(:average_time_per_week,
       less_than_or_equal_to: 168,
       message: "There are not that many hours in a week"
@@ -115,6 +115,18 @@ defmodule Picsello.PricingCalculations do
     )
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
     |> cast_embed(:pricing_suggestions, with: &pricing_suggestions_changeset(&1, &2))
+  end
+
+  defp maybe_validate_zipcode(changeset) do
+    state = get_field(changeset, :state)
+
+    if Picsello.Onboardings.non_us_state?(state) do
+      changeset
+    else
+      changeset
+      |> validate_required([:zipcode])
+      |> validate_format(:zipcode, @zipcode_regex, message: "is invalid")
+    end
   end
 
   defp business_cost_changeset(business_cost, attrs) do
