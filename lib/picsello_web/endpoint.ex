@@ -29,8 +29,8 @@ defmodule PicselloWeb.Endpoint do
     at: "/",
     from: :picsello,
     gzip: false,
-    only: ~w(css fonts images js robots.txt manifest.json),
-    only_matching: ~w(favicon apple-touch-icon mstile)
+    only: ~w(css fonts images js robots.txt),
+    only_matching: ~w(favicon apple-touch-icon mstile manifest)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
