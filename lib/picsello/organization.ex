@@ -59,9 +59,12 @@ defmodule Picsello.Organization do
     |> cast(attrs, [:name, :slug])
     |> validate_required([:name])
     |> prepare_changes(fn changeset ->
-      case get_field(changeset, :slug) do
-        nil -> put_change(changeset, :slug, changeset |> get_field(:name) |> build_slug())
-        _ -> changeset
+      case get_change(changeset, :slug) do
+        nil ->
+          change_slug(changeset)
+
+        _ ->
+          changeset
       end
     end)
     |> unique_constraint(:slug)
@@ -71,11 +74,7 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [:name])
     |> validate_required([:name])
-    |> prepare_changes(fn changeset ->
-      changeset
-      |> put_change(:previous_slug, changeset |> get_field(:slug))
-      |> put_change(:slug, changeset |> get_field(:name) |> build_slug())
-    end)
+    |> prepare_changes(&change_slug/1)
     |> unique_constraint(:slug)
   end
 
@@ -107,4 +106,10 @@ defmodule Picsello.Organization do
       n -> "#{slug}-#{n + 1}"
     end
   end
+
+  defp change_slug(changeset),
+    do:
+      changeset
+      |> put_change(:previous_slug, get_field(changeset, :slug))
+      |> put_change(:slug, changeset |> get_field(:name) |> build_slug())
 end

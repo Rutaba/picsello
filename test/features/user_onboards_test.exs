@@ -142,6 +142,7 @@ defmodule Picsello.UserOnboardsTest do
              },
              organization: %{
                name: "Photogenious",
+               slug: "photogenious" <> _,
                package_templates: [
                  %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
                ],

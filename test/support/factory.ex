@@ -447,19 +447,20 @@ defmodule Picsello.Factory do
   end
 
   def category_factory(attr \\ %{}),
-    do: %Picsello.Category{
-      whcc_id: sequence("whcc_id"),
-      whcc_name: "shirts",
-      name: "cool shirts",
-      position: sequence(:category_position, & &1),
-      shipping_base_charge: ~M[900]USD,
-      shipping_upcharge: Decimal.new("0.09"),
-      icon: "book",
-      default_markup: 1.0,
-      hidden: false,
-      coming_soon: false
-    }
-    |> merge_attributes(attr)
+    do:
+      %Picsello.Category{
+        whcc_id: sequence("whcc_id"),
+        whcc_name: "shirts",
+        name: "cool shirts",
+        position: sequence(:category_position, & &1),
+        shipping_base_charge: ~M[900]USD,
+        shipping_upcharge: Decimal.new("0.09"),
+        icon: "book",
+        default_markup: 1.0,
+        hidden: false,
+        coming_soon: false
+      }
+      |> merge_attributes(attr)
 
   def product_factory do
     product_json =
