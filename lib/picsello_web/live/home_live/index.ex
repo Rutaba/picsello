@@ -228,7 +228,7 @@ defmodule PicselloWeb.HomeLive.Index do
              action: "open-billing-portal",
              title: "Balance(s) Due",
              body:
-               "Oh no! We don’t have an updated credit card on file for you! Please visit the Billing Portal to update it so we can make sure your account isn’t interrupted and also get your clients products!",
+               "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
              icon: "money-bags",
              button_label: "Open Billing Portal",
              button_class: "btn-primary",
