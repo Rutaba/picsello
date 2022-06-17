@@ -27,7 +27,10 @@ export const loadHelpScout = () => {
 };
 
 export const toggleMenu = (state = 'none') => {
-  document.querySelector('#float-menu-help').style.display = state;
+  const menu = document.querySelector('#float-menu-help');
+  if (menu) {
+    menu.style.display = state;
+  }
 };
 
 export const initHelpScout = (
@@ -35,6 +38,7 @@ export const initHelpScout = (
   currentUserEmail,
   currentUserName,
   article,
+  ask,
   subject,
   text
 ) => {
@@ -52,7 +56,9 @@ export const initHelpScout = (
       email: currentUserEmail,
     });
 
-    if (article) {
+    if (ask !== undefined) {
+      window?.Beacon('navigate', '/ask/message/');
+    } else if (article) {
       window?.Beacon('config', { mode: 'neutral' });
       window?.Beacon('article', article);
       window?.Beacon('navigate', '/ask/message/');
@@ -80,6 +86,7 @@ export default {
     const helpScoutId = el.dataset.id;
     const currentUserEmail = el.dataset.email;
     const currentUserName = el.dataset.name;
+    const ask = el.dataset.ask;
     const article = el.dataset.article;
     const subject = el.dataset.subject;
     const text = el.dataset.text;
@@ -101,6 +108,7 @@ export default {
         currentUserEmail,
         currentUserName,
         article,
+        ask,
         subject,
         text
       );

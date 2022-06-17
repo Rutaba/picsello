@@ -28,6 +28,7 @@ defmodule Picsello.Galleries.Gallery do
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])
     has_one(:package, through: [:job, :package])
+    has_one(:photographer, through: [:job, :client, :organization, :user])
 
     timestamps(type: :utc_datetime)
   end

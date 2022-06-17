@@ -36,6 +36,25 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> find(css("*[id^='/images']", count: length(products)))
   end
 
+  test "Product Preview for Non-US photographer", %{
+    session: session,
+    gallery: gallery
+  } do
+    Picsello.Repo.update_all(Picsello.Accounts.User,
+      set: [
+        onboarding: %Picsello.Onboardings.Onboarding{
+          state: "Non-US",
+          completed_at: DateTime.utc_now()
+        }
+      ]
+    )
+
+    session
+    |> visit("/galleries/#{gallery.id}/product-previews")
+    |> assert_text("Product ordering is not available in your country yet.")
+    |> find(css("*[id^='/images']", count: 0))
+  end
+
   test "Product Preview render with coming soon", %{
     session: session,
     gallery: gallery

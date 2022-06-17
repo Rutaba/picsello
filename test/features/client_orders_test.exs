@@ -11,7 +11,7 @@ defmodule Picsello.ClientOrdersTest do
 
   setup do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
-    _photographer = insert(:user, organization: organization)
+    _photographer = insert(:user, organization: organization) |> onboard!()
 
     package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
 
@@ -231,6 +231,7 @@ defmodule Picsello.ClientOrdersTest do
     session
     |> assert_text(gallery.name)
     |> click(css("a", text: "View Gallery"))
+    |> assert_has(css("*[data-testid='products'] li", count: 7))
     |> click_photo(1)
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
@@ -290,6 +291,38 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_has(css("h3", text: "Thank you for your order!"))
     |> click(link("My orders"))
     |> find(definition("Order total:"), &assert(Element.text(&1) == "$10.00"))
+  end
+
+  feature "client doesn't see products for non-US photographer", %{
+    session: session,
+    gallery: gallery
+  } do
+    Picsello.Repo.update_all(Picsello.Accounts.User,
+      set: [
+        onboarding: %Picsello.Onboardings.Onboarding{
+          state: "Non-US",
+          completed_at: DateTime.utc_now()
+        }
+      ]
+    )
+
+    session
+    |> visit(current_url(session))
+    |> assert_text(gallery.name)
+    |> click(css("a", text: "View Gallery"))
+    |> assert_has(css("*[data-testid='products'] li", count: 0))
+    |> click_photo(1)
+    |> assert_text("Select an option")
+    |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
+      assert [{"Digital Download", "$25.00"}] =
+               options
+               |> Enum.map(fn option ->
+                 option
+                 |> find(css("p", count: 2))
+                 |> Enum.map(&Element.text/1)
+                 |> List.to_tuple()
+               end)
+    end)
   end
 
   describe "digital downloads" do

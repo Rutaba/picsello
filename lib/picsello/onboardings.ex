@@ -101,6 +101,9 @@ defmodule Picsello.Onboardings do
       |> Repo.all()
       |> Enum.map(&{&1, &1})
 
+  def non_us_state(), do: @non_us_state
+
+  def non_us_state?(%User{onboarding: %{state: state}}), do: non_us_state?(state)
   def non_us_state?(state), do: state == @non_us_state
 
   def complete!(user),
