@@ -121,7 +121,7 @@
   </div>
    <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
    <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
-   <div class="relative bottom-0 left-0 right-0 z-30">
+   <div class="relative bottom-0 left-0 right-0 z-30 lg:h-14">
       <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent, id: "footer-#{@gallery.id}", gallery: @gallery %>
   </div>
 </div>

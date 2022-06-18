@@ -8,7 +8,7 @@ export default {
     const openIcon = el.querySelector('.open-icon');
     const closeIcon = el.querySelector('.close-icon');
     const {
-      dataset: { offsetY, placement = 'bottom-start' },
+      dataset: { offsetY, offsetX, placement = 'bottom-start' },
     } = el;
 
     let popper;
@@ -30,7 +30,7 @@ export default {
         modifiers: [
           {
             name: 'offset',
-            options: { offset: [0, parseInt(offsetY || "0")] },
+            options: { offset: [parseInt(offsetX || "0"), parseInt(offsetY || "0")] },
           },
         ],
       });

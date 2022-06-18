@@ -51,9 +51,10 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                     <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
                 <% end %>
                 <%= if @is_meatball do %>
-                    <div id={"meatball-photo-#{@id}"} phx-hook="ToggleContent">
-                        <button class="absolute meatballs">
-                        <.icon name="meatballs" class="text-gray-200 w-7 h-7" />
+                    <div id={"meatball-photo-#{@id}"} data-offset-y="-100" data-offset-x="20" phx-hook="Select">
+                        <button class="absolute right-3 top-2 z-10">
+                            <.icon name="meatballs" class="text-gray-200 w-7 h-7 meatballs open-icon" />
+                            <.icon name="close-x" class="hidden absolute right-2 top-1 w-4 h-4 text-white stroke-current stroke-2 close-icon opacity-100"/>
                         </button>
                         <.ul id={@id} entries={meatball(@album, @id)} />
                     </div>

@@ -15,17 +15,17 @@
           </div>
           <div class="flex ml-auto shrink-0">
             <%= if @album do %>
-              <.icon_button {testid("edit-album-settings")} class="ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
+              <.icon_button {testid("edit-album-settings")} class="text-sm ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
                 Album settings
               </.icon_button>
               <%= if Enum.any?(@photos) do %>
-                <.icon_button {testid("edit-album-thumbnail")} class="ml-5 bg-white shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 bg-white shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
                   Edit thumbnail
                 </.icon_button>
               <% end %>
             <% end %>
             <%= if @gallery.albums == [] do %>
-              <.icon_button {testid("add-album")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
+              <.icon_button {testid("add-album")} class="ml-2.5 text-sm bg-white shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
                 Add Album
               </.icon_button>
             <% end %>
@@ -45,7 +45,7 @@
         </div>
         <%= if Enum.any?(@photos) || @favorites_filter do %>
         <div class="pt-8 grid lg:grid-cols-2">
-          <div class="flex flex-col justify-start md:flex-row">
+          <div class="flex flex-col text-sm justify-start md:flex-row">
             <div class="h-10 lg:mx-0 mx-5 lg:w-32 w-full mb-4 font-sans bg-white cursor-pointer rounded-md">
               <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
                 <div class="flex items-center dropdown text-ellipsis">
@@ -55,10 +55,10 @@
                     <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
                     <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
                 </div>
-                <ul class="absolute z-30 hidden lg:w-32 w-full mt-2 bg-white toggle rounded-md popover-content">
+                <ul class="absolute z-30 hidden lg:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
                 <%= for option <- options(:select) do %>
                 <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-                class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
+                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
                   <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
                   <.icon name="tick" class="hidden w-6 h-5 mr-3 toggle-it" />
                 </li>
@@ -66,13 +66,13 @@
                 </ul>
               </div>
             </div>
-            <div class="h-10 mx-5 mb-4 w-full lg:w-64 font-sans bg-white cursor-pointer rounded-md">
+            <div class="h-10 mx-2.5 mb-4 w-full lg:w-72 font-sans bg-white cursor-pointer rounded-md">
               <.actions id="actions" class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                 <%= if(is_nil(@album)) do %>
                   <.album_actions albums={@gallery.albums} />
                 <% else %>
                   <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
-                  <li class="relative">
+                  <li class="relative py-1.5 hover:bg-blue-planning-100">
                       <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
                   </li>
                 <% end %>
@@ -83,13 +83,13 @@
             </div>
           </div>
           <div class="flex flex-col items-start min-w-0 lg:flex-row">
-            <div id="selected-photos-count" class="flex lg:mb-0 mb-4 lg:mx-0 mx-5 items-end pt-[0.40rem] font-sans text-sm text-base-250 lg:justify-start">
+            <div id="selected-photos-count" class="flex lg:mb-0 mb-4 lg:mx-0 mx-5 items-end pt-[0.40rem] font-sans text-xs text-base-250 lg:justify-start">
               <%= if Enum.any?(@selected_photos) do %>
                 <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected
               <% end %>
             </div>
             <label id="toggle_favorites" class="flex items-center lg:mx-0 mx-5 lg:mb-0 mb-4 lg:ml-auto cursor-pointer">
-              <div class="font-sans text-sm lg:text-lg">Show favorites only
+              <div class="font-sans text-sm">Show favorites only
               </div>
               <div class="relative ml-3">
                 <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
@@ -161,7 +161,7 @@
       </div>
     </div>
   </div>
-  <div class="fixed bottom-0 left-0 right-0 z-30">
+  <div class="fixed bottom-0 left-0 right-0 z-30 lg:h-14">
     <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>
 </div>

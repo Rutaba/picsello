@@ -375,10 +375,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
           <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
           <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md popover-content">
+      <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md popover-content border border-base-200">
         <%= render_slot(@inner_block) %>
-        <li class="flex items-center bg-gray-200 rounded-b-md hover:bg-gray-300">
-          <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-4 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis">
+        <li class="flex items-center py-1.5 bg-base-200 rounded-b-md hover:opacity-75">
+          <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
           </button>
           <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
@@ -425,7 +425,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         <div class="flex items-center mx-24 mt-5 font-sans text-2xl font-bold text-base-300 lg:justify-start">
             <p><%= @page_title %></p>
         </div>
-        <h1 class={classes("text-md mt-4 mx-24 font-sans", %{ "text-base-300" => !@selected, "text-orange-inbox-300" => @selected})}>
+        <h1 class="text-md mt-4 mx-24 font-sans text-base-300">
             <%= @title %>
         </h1>
         <div class="flex pt-6 pb-6 mx-24 grid grid-cols-3 grid-rows-preview">

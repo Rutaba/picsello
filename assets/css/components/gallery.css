@@ -16,14 +16,14 @@
 }
 
 .hover-drop-down {
-  @apply flex items-center pl-2 py-1 text-xs font-extrabold text-gray-700 transition duration-300 ease-in-out rounded-md w-36 whitespace-nowrap;
+  @apply flex items-center pl-1 py-1 text-xs text-gray-700 transition duration-300 ease-in-out rounded-md w-36 whitespace-nowrap;
 }
 
 .album-select {
-  @apply items-center flex lg:w-32 h-6 py-4 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md whitespace-nowrap;
+  @apply items-center flex lg:w-32 h-6 py-2.5 pl-4 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-lg whitespace-nowrap;
 }
 .album-actions {
-  @apply flex items-center w-64 h-6 py-4 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out rounded-md whitespace-nowrap hover:bg-blue-planning-100;
+  @apply flex items-center py-2.5 w-72 h-6 pl-2 pr-6 overflow-hidden text-gray-700 transition duration-300 ease-in-out;
 }
 
 .gallery__coverImg.active::after {
@@ -285,11 +285,11 @@
 }
 
 .footerBtn-primary {
-  @apply px-6 py-4 lg:text-lg font-semibold rounded-lg cursor-pointer lg:text-base-100 text-base-300;
+  @apply lg:px-3 lg:py-3 px-6 py-4 lg:text-sm font-semibold rounded-lg cursor-pointer lg:text-base-100 text-base-300;
 }
 
 .footerBtn-secondary {
-  @apply px-6 py-4 lg:text-lg font-semibold border-solid rounded-lg cursor-pointer lg:text-base-350 lg:bg-base-100 border-base-100 bg-base-300 text-base-100 border border-base-100;
+  @apply lg:px-3 lg:py-3 px-6 py-4 lg:text-sm font-semibold border-solid rounded-lg cursor-pointer lg:text-base-350 lg:bg-base-100 border-base-100 bg-base-300 text-base-100 border border-base-100;
 }
 
 .navBar__btn {
@@ -340,28 +340,23 @@
 }
 
 .removeBtn {
-  @apply z-10 opacity-0 left-4 bottom-4;
+  @apply z-10 opacity-0 left-3 bottom-3;
 }
 
 .viewBtn{
-  @apply z-10 opacity-0 left-4 top-4;
+  @apply z-10 opacity-0 left-3 top-3;
 }
 
 .meatballs{
-    right: 1rem;
-    top: 1rem;
-    z-index: 10;
-    opacity: 0;
+  @apply opacity-0;
 }
 
 .meatballsdropdown{
-    right: 1rem;
-    top: 3rem;
-    z-index: 40;
+  @apply right-3 top-12 z-40;
 }
 
 .likeBtn {
-  @apply z-10 right-4 bottom-3;
+  @apply z-10 right-3 bottom-3;
 }
 
 .likeBtn img {
@@ -618,4 +613,3 @@
     box-shadow: 0px 10px 14px -14px rgba(0, 0, 0, 0.15);
   }
 }
-

@@ -5,7 +5,7 @@
       <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pb-5 pl-10 pr-10 bg-gray-100 lg:pt-14 pt-20">
         <div class="flex justify-between">
           <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
-          <.icon_button {testid("add-album-popup")} class="ml-5 bg-white shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+          <.icon_button {testid("add-album-popup")} class="ml-5 text-sm bg-white shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
             Add Album
           </.icon_button>
         </div>
@@ -23,7 +23,7 @@
                 delete_event="delete_all_unsorted_photos"
                 delete_title="Delete all unsorted photos"
                 delete_value={@gallery.id}>
-                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center justify-between">
+                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
                       <button class="w-full album-actions">Go to unsorted photos</button>
                     </li>
                 </.actions>
@@ -39,13 +39,13 @@
                 delete_event="delete_album_popup"
                 delete_title="Delete Album"
                 delete_value={album.id}>
-                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center justify-between">
+                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                     <button class="w-full album-actions">Go to album</button>
                   </li>
-                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center justify-between">
+                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                     <button class="w-full album-actions">Go to album settings</button>
                   </li>
-                  <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center justify-between">
+                  <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
                     <button class="w-full album-actions">Edit album thumbnail</button>
                   </li>
                 </.actions>
@@ -59,7 +59,7 @@
       </div>
     </div>
   </div>
-  <div class="fixed bottom-0 left-0 right-0 z-10">
+  <div class="fixed bottom-0 left-0 right-0 z-10 lg:h-14">
   <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>
 </div>

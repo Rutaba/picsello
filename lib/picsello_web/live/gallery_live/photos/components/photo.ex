@@ -104,7 +104,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
 
   defp ul(assigns) do
     ~H"""
-    <ul class="absolute hidden bg-white rounded-md toggle-content meatballsdropdown w-40 overflow-visible">
+    <ul class="absolute hidden bg-white pl-1 py-1 rounded-md popover-content meatballsdropdown w-40 overflow-visible">
       <%= for li <- @entries do %>
       <li class={"flex #{Map.get(li, :class, nil)} items-center hover:bg-blue-planning-100 hover:rounded-md"}>
         <div id={li.id} class="hover-drop-down" phx-click={li.event} phx-value-photo_id={@id}>

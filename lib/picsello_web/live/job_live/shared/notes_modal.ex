@@ -36,7 +36,7 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
           </div>
 
           <fieldset>
-            <%= input f, :notes, type: :textarea, class: "w-full", phx_hook: "AutoHeight", phx_update: "ignore" %>
+            <%= input f, :notes, type: :textarea, class: "w-full max-h-60", phx_hook: "AutoHeight", phx_update: "ignore" %>
           </fieldset>
         </div>
 
