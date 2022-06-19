@@ -9,7 +9,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
 
   alias Picsello.{Galleries, Repo}
   alias PicselloWeb.GalleryLive.ProductPreview.Preview
-  alias PicselloWeb.GalleryLive.Photos.Upload
 
   @impl true
   def mount(_params, _session, socket) do

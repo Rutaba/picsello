@@ -9,8 +9,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent,
-    Shared.ConfirmationComponent,
-    Photos.Upload
+    Shared.ConfirmationComponent
   }
 
   alias Galleries.{

@@ -145,7 +145,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col modal">
+    <div class="flex flex-col modal sm:mb-8">
       <div class="flex items-start justify-between flex-shrink-0">
         <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">

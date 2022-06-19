@@ -1,11 +1,28 @@
 <div class="flex flex-col h-screen photographer-gallery lg:before:bg-gray-100">
   <div class="flex root">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
+    <.mobile_gallery_header gallery_name={@gallery.name}/>
+    <div class="hidden lg:flex">
+      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
+    </div>
     <div class="w-full h-full lg:bg-gray-100 lg:pl-96">
-      <div id="page-scroll" phx-hook="PageScroll" class="fixed top-0 w-max md:w-auto lg:right-0 z-20 lg:pl-10 pr-10 bg-gray-100 pt-14 lg:left-96">
-        <div class="flex flex-col md:flex-row">
-          <span class="lg:hidden mt-4 mb-2 items-center font-sans text-2xl font-bold flex lg:pl-0 pl-6"><%= extract_album(@album, :name, "Photos") %></span>
-          <div class="flex items-center font-sans lg:justify-start">
+      <div id="page-scroll" phx-hook="PageScroll" class="lg:fixed absolute top-0 w-screen lg:w-auto lg:right-0 z-10 lg:pl-10 lg:pr-10 lg:bg-gray-100 pt-14 bg-base-200 lg:left-96">
+        <div class="flex flex-col lg:flex-row">          
+          <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
+            <.mobile_banner albums={@album} title="Photos" class="items-center">
+              <%= if Enum.any?(@gallery.albums) do %>
+                <div class="flex bg-white">                
+                  <.crumbs class="mt-2 font-sans text-xs text-base-250">
+                    <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
+                    <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
+                  </.crumbs>                 
+                </div>
+              <% end %>               
+            </.mobile_banner> 
+          </div>
+          <%= if @album do %>
+            <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= @album.name %></span>
+          <% end %>                     
+          <div class="lg:flex hidden items-center font-sans lg:justify-start">
             <%= if Enum.any?(@gallery.albums) do %>
               <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
                 <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
@@ -13,107 +30,108 @@
               </.crumbs>
             <% end %>
           </div>
-          <div class="flex ml-auto shrink-0">
+          <div class="flex lg:ml-auto ml-10 lg:my-0 my-4 shrink-0">
             <%= if @album do %>
-              <.icon_button {testid("edit-album-settings")} class="text-sm ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
+              <.icon_button {testid("edit-album-settings")} class="text-sm lg:ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
                 Album settings
-              </.icon_button>
+              </.icon_button>              
               <%= if Enum.any?(@photos) do %>
                 <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 bg-white shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
                   Edit thumbnail
                 </.icon_button>
               <% end %>
+              <.add_album_button class="lg:hidden ml-2.5"/>
             <% end %>
             <%= if @gallery.albums == [] do %>
-              <.icon_button {testid("add-album")} class="ml-2.5 text-sm bg-white shadow-lg" title="Add Album" phx-click="albums_popup" color="blue-planning-300" icon="plus">
-                Add Album
-              </.icon_button>
-            <% end %>
-            <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
+              <.add_album_button class="lg:ml-2.5 lg:py-1 py-1.5"/>
+            <% end %>            
+            <div class="lg:flex hidden">
+              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
+            </div>            
           </div>
         </div>
-        <span class="flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
-        <div class={"#{@photos_error_count == 0 && 'hidden'} flex items-center mt-4 rounded-lg shadow-lg bg-orange-inbox-400"}>
+        <span class="hidden lg:flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
+        <div class={"#{@photos_error_count == 0 && 'hidden'} flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400"}>
           <div class="flex justify-center pl-5">
             <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
           </div>
-          <div class="flex-grow p-4 font-sans">
+          <div class="flex-grow p-4 lg:text-base text-sm font-sans">
             <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed to upload.
             <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
             to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
           </div>
         </div>
         <%= if Enum.any?(@photos) || @favorites_filter do %>
-        <div class="pt-8 grid lg:grid-cols-2">
-          <div class="flex flex-col text-sm justify-start md:flex-row">
-            <div class="h-10 lg:mx-0 mx-5 lg:w-32 w-full mb-4 font-sans bg-white cursor-pointer rounded-md">
-              <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
-                <div class="flex items-center dropdown text-ellipsis">
-                    <div class="mx-3">
+          <div class="lg:pt-8 grid lg:grid-cols-2">
+            <div class="flex flex-col text-sm justify-start md:flex-row">
+              <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">
+                <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
+                  <div class="flex lg:p-0 p-3 items-center dropdown">
+                    <div class="lg:mx-3">
                       <span>Select</span>
                     </div>
-                    <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
-                    <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
+                    <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+                    <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+                  </div>
+                  <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
+                    <%= for option <- options(:select) do %>
+                      <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
+                      class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
+                        <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
+                        <.icon name="tick" class="hidden w-6 h-5 mr-3 toggle-it" />
+                      </li>
+                    <% end %>
+                  </ul>
                 </div>
-                <ul class="absolute z-30 hidden lg:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
-                <%= for option <- options(:select) do %>
-                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-                  <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
-                  <.icon name="tick" class="hidden w-6 h-5 mr-3 toggle-it" />
-                </li>
-                <% end %>
-                </ul>
               </div>
-            </div>
-            <div class="h-10 mx-2.5 mb-4 w-full lg:w-72 font-sans bg-white cursor-pointer rounded-md">
-              <.actions id="actions" class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
-                <%= if(is_nil(@album)) do %>
-                  <.album_actions albums={@gallery.albums} />
-                <% else %>
-                  <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
-                  <li class="relative py-1.5 hover:bg-blue-planning-100">
-                      <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
-                  </li>
-                <% end %>
+              <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white cursor-pointer rounded-md">
+                <.actions id="actions" class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
+                  <%= if(is_nil(@album)) do %>
+                    <.album_actions albums={@gallery.albums} />
+                  <% else %>
+                    <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
+                    <li class="relative py-1.5 hover:bg-blue-planning-100">
+                        <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
+                    </li>
+                  <% end %>
                   <li class="relative hidden">
                     <button class="album-actions">Download photos</button>
                   </li>
-              </.actions>
+                </.actions>
+              </div>
             </div>
-          </div>
-          <div class="flex flex-col items-start min-w-0 lg:flex-row">
-            <div id="selected-photos-count" class="flex lg:mb-0 mb-4 lg:mx-0 mx-5 items-end pt-[0.40rem] font-sans text-xs text-base-250 lg:justify-start">
+            <div class="flex items-start min-w-0 flex-row">
               <%= if Enum.any?(@selected_photos) do %>
-                <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected
+                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mx-0 mx-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
+                  <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
+                </div>
               <% end %>
+              <label id="toggle_favorites" class="flex items-center lg:order-2 order-1 lg:mx-0 mx-10 lg:mb-0 mb-4 lg:ml-auto cursor-pointer">
+                <div class="font-sans text-sm">Show favorites only
+                </div>
+                <div class="relative ml-3">
+                  <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
+                  <%= if @favorites_filter do %>
+                    <div class="flex w-12 h-6 border rounded-full bg-blue-planning-300 border-base-100"></div>
+                    <div class="absolute w-4 h-4 rounded-full transition dot right-1 top-1 bg-base-100"></div>
+                  <% else %>
+                    <div class="block w-12 h-6 bg-gray-200 border rounded-full border-blue-planning-300"></div>
+                    <div class="absolute w-4 h-4 rounded-full transition dot left-1 top-1 bg-blue-planning-300"></div>
+                  <% end %>
+                </div>
+              </label>
             </div>
-            <label id="toggle_favorites" class="flex items-center lg:mx-0 mx-5 lg:mb-0 mb-4 lg:ml-auto cursor-pointer">
-              <div class="font-sans text-sm">Show favorites only
-              </div>
-              <div class="relative ml-3">
-                <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
-                <%= if @favorites_filter do %>
-                <div class="flex w-12 h-6 border rounded-full bg-blue-planning-300 border-base-100"></div>
-                <div class="absolute w-4 h-4 rounded-full transition dot right-1 top-1 bg-base-100"></div>
-                <% else %>
-                  <div class="block w-12 h-6 bg-gray-200 border rounded-full border-blue-planning-300"></div>
-                  <div class="absolute w-4 h-4 rounded-full transition dot left-1 top-1 bg-blue-planning-300"></div>
-                <% end %>
-              </div>
-            </label>
           </div>
-        </div>
         <% end %>
       </div>
-
-      <div class= "pt-16 pb-10 pl-10 pr-8">
+      <div class= "lg:pt-16 pt-60 pb-10 pl-10 pr-8">
         <%= case @photos == [] do %>
           <% true when not @favorites_filter -> %>
             <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-                Oops, there's nothing here - upload photos now to get started!
+                <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
+                <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
             </div>
-            <div class="relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
+            <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
             </div>
           <% true when @favorites_filter -> %>
@@ -121,7 +139,7 @@
                 Oops, there's no liked photo!
             </div>
           <% false -> %>
-            <div class={"px-0 pt-40 pb-16 mx-0 gallery__container #{@photos_error_count > 0 && 'pt-56'}"} id="gallery">
+            <div class={"px-0 lg:pb-16 pb-20 mx-0 gallery__container #{grid_padding(@photos_error_count, @album, @gallery)}"} id="gallery">
               <div
                 phx-hook="MasonryGrid"
                 phx-update={@update_mode}
@@ -150,13 +168,12 @@
                       component: false
                   %>
                 <% end %>
+              </div>
+              <div class="hidden">
+                <div id="selected-mode" class={@select_mode}></div>
+                <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
+              </div>
             </div>
-
-            <div style="display: none">
-              <div id="selected-mode" class={@select_mode}></div>
-              <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
-            </div>
-          </div>
         <% end %>
       </div>
     </div>
