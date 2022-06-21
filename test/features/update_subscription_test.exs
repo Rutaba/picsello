@@ -12,6 +12,88 @@ defmodule Picsello.SubscriptionChangesTest do
     [plan: plan, user: user]
   end
 
+  feature "Subscription ending in less than 7 days and subscription is cancelled", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    current_period_end = DateTime.utc_now() |> DateTime.add(60 * 60 * 24 + 60)
+
+    insert(:subscription_event,
+      user: user,
+      cancel_at: DateTime.utc_now(),
+      subscription_plan: plan,
+      current_period_end: current_period_end,
+      status: "trialing"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> assert_has(css("span", text: "1 day left until your subscription ends", count: 1))
+    |> assert_has(css("a", text: "1 day left until your subscription ends", count: 1))
+    |> assert_text("1 day left before your")
+    |> visit("/home")
+    |> assert_text(
+      "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+    )
+  end
+
+  feature "Subscription ending in more than 7 days and subscription is cancelled", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    current_period_end = DateTime.utc_now() |> DateTime.add(8 * 60 * 60 * 24 + 60)
+
+    insert(:subscription_event,
+      user: user,
+      cancel_at: DateTime.utc_now(),
+      subscription_plan: plan,
+      current_period_end: current_period_end,
+      status: "trialing"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> assert_has(css("span", text: "8 days left until your subscription ends", count: 1))
+    |> refute_has(css("a", text: "8 days left in your trial", count: 1))
+    |> visit("/home")
+    |> refute_has(
+      css("p",
+        text:
+          "You have 8 days left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+      )
+    )
+  end
+
+  feature "Subscription ending in less than 7 days and subscription is not cancelled", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    current_period_end = DateTime.utc_now() |> DateTime.add(60 * 60 * 24 + 60)
+
+    insert(:subscription_event,
+      user: user,
+      subscription_plan: plan,
+      current_period_end: current_period_end,
+      status: "trialing"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> assert_has(css("span", text: "1 day left in your trial", count: 1))
+    |> refute_has(css("span", text: "1 day left until your subscription ends", count: 1))
+    |> refute_has(css("a", text: "1 day left in your trial", count: 1))
+    |> visit("/home")
+    |> refute_has(
+      css("p",
+        text:
+          "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+      )
+    )
+  end
+
   feature "when subscription is in trial", %{session: session, user: user, plan: plan} do
     insert(:subscription_event,
       user: user,

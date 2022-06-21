@@ -9,6 +9,7 @@ defmodule Picsello.Subscriptions do
     Accounts.User
   }
 
+  import PicselloWeb.Helpers, only: [days_distance: 1]
   import Ecto.Query
   require Logger
 
@@ -45,6 +46,27 @@ defmodule Picsello.Subscriptions do
 
         {:ok, _} = handle_stripe_subscription(subscription)
       end
+    end
+  end
+
+  def subscription_ending_soon(nil), do: [hidden?: true]
+
+  def subscription_ending_soon(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
+    do: user |> Repo.preload(:subscription) |> subscription_ending_soon()
+
+  def subscription_ending_soon(%User{subscription: subscription}) do
+    case subscription do
+      %{current_period_end: current_period_end, cancel_at: cancel_at} when cancel_at != nil ->
+        days_left = days_distance(current_period_end)
+
+        [
+          hidden?: days_left > 7 || days_left < 0,
+          days_left: days_left |> Kernel.max(0),
+          subscription_end_at: DateTime.to_date(current_period_end)
+        ]
+
+      _ ->
+        [hidden?: true]
     end
   end
 

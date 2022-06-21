@@ -1,5 +1,6 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 <main role="main" class="flex flex-col min-h-screen">
+  <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex lg:pl-20 px-6 items-center bg-blue-planning-100 py-2"/>
   <header class="border-b">
     <div class="flex items-center px-6 center-container">
       <div id="hamburger-menu" class="relative cursor-pointer" phx-hook="ToggleContent">
@@ -69,7 +70,7 @@
   <div class="mt-12"></div>
   <footer class="mt-auto hidden sm:block bg-base-300 text-white">
     <div class="px-6 center-container py-10">
-      <nav class="text-lg font-bold mt-4">
+      <nav class="flex text-lg font-bold mt-4">
         <ul class="flex">
           <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
           <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
@@ -77,6 +78,7 @@
           <% end %>
           <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
         </ul>
+        <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-base-250 rounded px-2 py-1 items-center"/>
       </nav>
       <hr class="my-8 opacity-30" />
       <div class="flex">
