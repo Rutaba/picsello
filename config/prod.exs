@@ -21,7 +21,7 @@ config :picsello, PicselloWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger, level: :info, backends: [:console, Sentry.LoggerBackend]
 
 dns_name = System.get_env("RENDER_DISCOVERY_SERVICE")
 app_name = System.get_env("RENDER_SERVICE_NAME")
@@ -36,6 +36,13 @@ config :libcluster,
       ]
     ]
   ]
+
+config :sentry,
+  dsn: System.get_env("SENTRY_DSN"),
+  environment_name: System.get_env("RENDER_SERVICE_NAME"),
+  enable_source_code_context: true,
+  root_source_code_path: File.cwd!(),
+  included_environments: [System.get_env("RENDER_SERVICE_NAME")]
 
 # ## SSL Support
 #
