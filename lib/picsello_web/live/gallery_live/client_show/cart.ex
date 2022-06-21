@@ -13,11 +13,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         gallery = Galleries.populate_organization_user(gallery)
 
         socket
-        |> assign(:gallery, gallery)
-        |> assign(:order, order)
-        |> assign(:step, :product_list)
+        |> assign(gallery: gallery, order: order, client_menu_id: "clientMenu")
         |> assign_cart_count(gallery)
-        |> assign(:client_menu_id, "clientMenu")
         |> ok()
 
       _ ->
@@ -30,25 +27,26 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   @impl true
-  def handle_event("continue", _, %{assigns: %{step: :product_list, order: order}} = socket) do
+  def handle_params(_params, _uri, %{assigns: %{order: order, live_action: :address}} = socket) do
     socket
-    |> assign(:step, :delivery_info)
     |> assign(:delivery_info_changeset, Cart.order_delivery_info_change(order))
     |> noreply()
   end
 
+  def handle_params(_params, _uri, socket), do: noreply(socket)
+
+  @impl true
   def handle_event(
         "checkout",
         _,
         %{
           assigns: %{
-            step: :delivery_info,
             delivery_info_changeset: delivery_info_changeset,
             order: order
           }
         } = socket
       ) do
-    case Cart.store_order_delivery_info(order, delivery_info_changeset) do
+    case Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil)) do
       {:ok, %{gallery: gallery} = order} ->
         order
         |> Cart.checkout(
@@ -85,7 +83,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "edit_product",
         %{"editor-id" => editor_id},
-        %{assigns: %{step: :product_list, gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery}} = socket
       ) do
     %{url: url} =
       gallery
@@ -102,7 +100,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         params,
         %{
           assigns: %{
-            step: :product_list,
             order: order,
             gallery: gallery,
             client_menu_id: client_menu_id,
@@ -134,13 +131,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end
   end
 
-  def handle_event(
-        "validate_delivery_info",
-        %{"delivery_info" => params},
-        %{assigns: %{step: :delivery_info}} = socket
-      ) do
+  def handle_event("validate_delivery_info", %{"delivery_info" => params}, socket) do
     socket
-    |> assign(:delivery_info_changeset, Cart.delivery_info_change(params))
+    |> assign(
+      :delivery_info_changeset,
+      params |> Cart.delivery_info_change() |> Map.put(:action, :validate)
+    )
     |> noreply()
   end
 
@@ -171,9 +167,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp continue_summary(assigns) do
     ~H"""
     <.summary order={@order} id={@id}>
-      <button type="button" phx-click="continue" class="mx-5 text-lg mb-7 btn-primary">
+      <%= live_patch to: Routes.gallery_client_show_cart_path(@socket, :address, @order.gallery.client_link_hash), class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
         Continue
-      </button>
+      <% end %>
     </.summary>
     """
   end
@@ -183,7 +179,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp digitals?(%{digitals: [_ | _]}), do: true
   defp digitals?(%{digitals: [], bundle_price: %Money{}}), do: true
   defp digitals?(_), do: false
-  defp show_cart?(:product_list), do: true
+  defp show_cart?(:cart), do: true
   defp show_cart?(_), do: false
 
   defp item_id(item), do: item.editor_id

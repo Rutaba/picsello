@@ -32,8 +32,8 @@ defmodule Picsello.Cart.OrderDeliveryInfoTest do
         })
 
       assert changeset.valid?
-      assert %{address: %{state: ["do not fit the zip"]}} = errors_on(changeset2)
-      assert %{address: %{city: ["do not fit the zip"]}} = errors_on(changeset3)
+      assert %{address: %{state: ["does not match the zip code"]}} = errors_on(changeset2)
+      assert %{address: %{city: ["does not match the zip code"]}} = errors_on(changeset3)
     end
   end
 end

@@ -1,18 +1,24 @@
 <div>
   <div class="gallery__container">
-    <%= live_component ClientMenuComponent, id: @client_menu_id, live_action: @live_action, gallery: @gallery, cart_count: @cart_count, cart: show_cart?(@step) %>
+    <%= live_component ClientMenuComponent, id: @client_menu_id, live_action: @live_action, gallery: @gallery, cart_count: @cart_count, cart: show_cart?(@live_action) %>
   </div>
 
   <hr>
 
   <div class="gallery__container">
-    <%= case @step do %>
-      <% :product_list -> %>
-        <div class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-14 lg:pb-10">Cart Review</div>
+    <%= case @live_action do %>
+      <% :cart -> %>
+        <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
+          <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
+
+          <p class="mt-1">Back to gallery</p>
+        <% end %>
+
+        <div class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-8 lg:pb-10">Cart Review</div>
 
         <div class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
           <div class="block col-span-1 lg:hidden">
-            <.continue_summary order={@order} id="top-summary"/>
+            <.continue_summary order={@order} id="top-summary" socket={@socket}/>
           </div>
 
           <div {testid("line-items")} class="col-span-1 lg:col-span-2">
@@ -111,12 +117,20 @@
           </div>
 
           <div class="col-span-1">
-            <.continue_summary order={@order} id="bottom-summary"/>
+            <.continue_summary order={@order} id="bottom-summary" socket={@socket} />
           </div>
         </div>
-      <% :delivery_info -> %>
+      <% :address -> %>
         <div class="w-full m-auto max-w-screen-xl">
-          <h2 class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-14 lg:pb-10">Enter <%= if only_digitals?(@order), do: "digital delivery", else: "your shipping" %> information</h2>
+          <%= live_patch to: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
+            <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
+
+            <p class="mt-1">Back to cart</p>
+          <% end %>
+
+          <h2 class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-8 lg:pb-10">
+            Enter <%= if only_digitals?(@order), do: "digital delivery", else: "your shipping" %> information
+          </h2>
 
           <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="checkout" class="flex flex-col xl:flex-row">
             <div class="w-full px-6 py-8 border border-base-225 xl:w-2/3 xl:mr-6">
@@ -124,41 +138,49 @@
                 <div class="flex flex-col flex-1 md:mr-4">
                   <label for={input_id(f, :email)} class="pb-2 text-base font-extrabold md:text-sm leading-8">Email address</label>
 
-                  <%= email_input f, :email, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                  <%= input f, :email, type: :email_input, class: "border border-base-200 focus:outline-none focus:border-base-300 h-12 px-3" %>
                 </div>
 
                 <div class="flex flex-col flex-1">
                   <label for={input_id(f, :name)} class="pb-2 text-base font-bold md:text-sm leading-8">Name</label>
 
-                  <%= text_input f, :name, class: "border border-gray-100 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                  <%= input f, :name, class: "border border-base-200 focus:outline-none focus:border-base-300 h-12 px-3" %>
                 </div>
               </div>
 
               <%= unless only_digitals?(@order) do %>
                 <div class="mt-6">
                   <%= for fp <- inputs_for(f, :address) do %>
-                    <%= label_for fp, :addr1, label: "Shipping address", class: "text-base md:text-sm font-bold" %>
+                    <label for={input_id(fp, :addr1)} class="text-base font-bold md:text-sm">
+                      Shipping address
 
-                    <div class="pt-4">
-                      <%= text_input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                      <%= for {field, {error, _}} <- Enum.take(fp.errors, 1) do %>
+                        <span phx-feedback-for={input_name(fp, field)} class="ml-8 font-normal hidden-when-no-feedback text-red-error-300"><%= dyn_gettext(to_string(field)) %> <%= error %></span>
+                      <% end %>
+                    </label>
+
+                    <div class="pt-2">
+                      <%= input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-base-200 h-12 px-3" %>
                     </div>
 
                     <div class="pt-4">
-                      <%= text_input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                      <%= input fp, :addr2, placeholder: "Address line 2", class: "w-full border border-base-200 h-12 px-3" %>
                     </div>
 
-                    <div class="flex pt-4">
-                      <div class="w-1/2 mr-4">
-                        <%= text_input fp, :city, placeholder: "City", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
+                    <div class="flex flex-col pt-4 lg:flex-row">
+                      <div class="w-full lg:w-7/12">
+                        <%= input fp, :city, placeholder: "City", class: "w-full border border-base-200 h-12 px-3" %>
                       </div>
 
-                      <div class="w-1/2">
-                        <%= text_input fp, :zip, placeholder: "ZIP", class: "w-full border border-gray-200 focus:outline-none focus:border-blue-planning-300 h-12 px-3" %>
-                      </div>
-                    </div>
+                      <div class="flex w-full pt-4 ml-0 lg:ml-4 lg:pt-0 lg:w-5/12">
+                        <div class={classes("w-1/2 lg:w-2/5 cursor-pointer mr-4", select_invalid_classes(fp, :state))}>
+                          <%= select_field fp, :state, Cart.delivery_info_address_states(), prompt: "State", class: "select w-full focus:outline-none focus:border-base-300 px-3" %>
+                        </div>
 
-                    <div class="mt-4 cursor-pointer customSelect">
-                      <%= select fp, :state, Cart.delivery_info_address_states(), class: "customInvalidOption w-full border border-gray-200 focus:outline-none h-12 px-3"  %>
+                        <div class="w-1/2 lg:w-3/5">
+                          <%= input fp, :zip, placeholder: "ZIP", class: "w-full border border-base-200 h-12 px-3" %>
+                        </div>
+                      </div>
                     </div>
                   <% end %>
                 </div>

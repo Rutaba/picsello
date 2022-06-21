@@ -53,7 +53,7 @@ defmodule Picsello.GalleryCartTest do
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> click(css("a", text: "View Gallery"))
     |> click(link("cart"))
-    |> click(button("Continue"))
+    |> click(link("Continue"))
     |> fill_in(text_field("Email address"), with: "client@example.com")
     |> fill_in(text_field("Name"), with: "brian")
     |> fill_in(text_field("Shipping address"), with: "123 w main st")

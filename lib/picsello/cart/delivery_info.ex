@@ -43,66 +43,65 @@ defmodule Picsello.Cart.DeliveryInfo do
     import Ecto.Changeset
 
     @states [
-      State: nil,
-      AL: "AL",
-      AK: "AK",
-      AS: "AS",
-      AZ: "AZ",
-      AR: "AR",
-      CA: "CA",
-      CO: "CO",
-      CT: "CT",
-      DE: "DE",
-      DC: "DC",
-      FM: "FM",
-      FL: "FL",
-      GA: "GA",
-      GU: "GU",
-      HI: "HI",
-      ID: "ID",
-      IL: "IL",
-      IN: "IN",
-      IA: "IA",
-      KS: "KS",
-      KY: "KY",
-      LA: "LA",
-      ME: "ME",
-      MH: "MH",
-      MD: "MD",
-      MA: "MA",
-      MI: "MI",
-      MN: "MN",
-      MS: "MS",
-      MO: "MO",
-      MT: "MT",
-      NE: "NE",
-      NV: "NV",
-      NH: "NH",
-      NJ: "NJ",
-      NM: "NM",
-      NY: "NY",
-      NC: "NC",
-      ND: "ND",
-      MP: "MP",
-      OH: "OH",
-      OK: "OK",
-      OR: "OR",
-      PW: "PW",
-      PA: "PA",
-      PR: "PR",
-      RI: "RI",
-      SC: "SC",
-      SD: "SD",
-      TN: "TN",
-      TX: "TX",
-      UT: "UT",
-      VT: "VT",
-      VI: "VI",
-      VA: "VA",
-      WA: "WA",
-      WV: "WV",
-      WI: "WI",
-      WY: "WY"
+      "AL",
+      "AK",
+      "AS",
+      "AZ",
+      "AR",
+      "CA",
+      "CO",
+      "CT",
+      "DE",
+      "DC",
+      "FM",
+      "FL",
+      "GA",
+      "GU",
+      "HI",
+      "ID",
+      "IL",
+      "IN",
+      "IA",
+      "KS",
+      "KY",
+      "LA",
+      "ME",
+      "MH",
+      "MD",
+      "MA",
+      "MI",
+      "MN",
+      "MS",
+      "MO",
+      "MT",
+      "NE",
+      "NV",
+      "NH",
+      "NJ",
+      "NM",
+      "NY",
+      "NC",
+      "ND",
+      "MP",
+      "OH",
+      "OK",
+      "OR",
+      "PW",
+      "PA",
+      "PR",
+      "RI",
+      "SC",
+      "SD",
+      "TN",
+      "TX",
+      "UT",
+      "VT",
+      "VI",
+      "VA",
+      "WA",
+      "WV",
+      "WI",
+      "WY"
     ]
     @primary_key false
     embedded_schema do
@@ -138,8 +137,14 @@ defmodule Picsello.Cart.DeliveryInfo do
              {:city, :equal} <- compare_zip_change(changeset, :city, city) do
           []
         else
-          {:error, reason} -> [zip: reason]
-          error -> [error]
+          {:error, "Zip code not found"} ->
+            [zip: "not found"]
+
+          {:error, reason} ->
+            [zip: reason]
+
+          error ->
+            [error]
         end
       end)
     end
@@ -148,7 +153,7 @@ defmodule Picsello.Cart.DeliveryInfo do
       if get_field(changeset, field) == change do
         {field, :equal}
       else
-        {field, "do not fit the zip"}
+        {field, "does not match the zip code"}
       end
     end
   end

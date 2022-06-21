@@ -39,7 +39,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
 
       {:ok, view, _html} = live(conn, cart_path)
 
-      view |> element(".block button", "Continue") |> render_click()
+      view |> element(".block a", "Continue") |> render_click()
 
       view
       |> form("form")
@@ -95,7 +95,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
                end)
     end
 
-    test "places one whcc order when multiple products", %{
+    test "places one whcc order", %{
       conn: conn,
       cart_path: cart_path,
       order: order
@@ -145,7 +145,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
       end)
 
       {:ok, view, _html} = live(conn, cart_path)
-      view |> element(".block button", "Continue") |> render_click()
+      view |> element(".block a", "Continue") |> render_click()
 
       view
       |> form("form")
