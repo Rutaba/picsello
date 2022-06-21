@@ -1,6 +1,7 @@
 defmodule Picsello.PaymentSchedules do
   @moduledoc "context module for payment schedules"
   import Money.Sigils
+  import Ecto.Query
 
   alias Picsello.{
     Repo,
@@ -46,6 +47,27 @@ defmodule Picsello.PaymentSchedules do
         })
       end
     )
+  end
+
+  def deliver_reminders(helpers) do
+    from(payment in PaymentSchedule,
+      join: job in assoc(payment, :job),
+      join: job_status in assoc(job, :job_status),
+      where:
+        is_nil(payment.paid_at) and
+          is_nil(payment.reminded_at) and
+          fragment("?.due_at <= now() - interval '3 days'", payment) and
+          not job_status.is_lead,
+      preload: :job
+    )
+    |> Repo.all()
+    |> Enum.each(fn payment ->
+      Picsello.Notifiers.ClientNotifier.deliver_balance_due_email(payment.job, helpers)
+
+      payment
+      |> PaymentSchedule.reminded_at_changeset()
+      |> Repo.update!()
+    end)
   end
 
   def free?(%Job{} = job) do
@@ -162,10 +184,6 @@ defmodule Picsello.PaymentSchedules do
     job |> remainder_payment() |> Map.get(:due_at)
   end
 
-  def remainder_paid_at(%Job{} = job) do
-    job |> remainder_payment() |> Map.get(:paid_at)
-  end
-
   def unpaid_payment(job) do
     job |> payment_schedules() |> Enum.find(&(!paid?(&1)))
   end
@@ -266,7 +284,7 @@ defmodule Picsello.PaymentSchedules do
   defp customer_id(%Client{stripe_customer_id: customer_id}), do: customer_id
 
   defp remainder_payment(job) do
-    job |> payment_schedules() |> Enum.at(-1) || %PaymentSchedule{}
+    unpaid_payment(job) || %PaymentSchedule{}
   end
 
   defdelegate paid?(payment_schedule), to: PaymentSchedule

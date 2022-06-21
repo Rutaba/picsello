@@ -1,7 +1,7 @@
 defmodule Picsello.PaymentSchedulesTest do
   use Picsello.DataCase, async: true
-
-  alias Picsello.{PaymentSchedules}
+  import Money.Sigils
+  alias Picsello.{PaymentSchedules, Repo}
 
   describe "build_payment_schedules_for_lead/1" do
     test "when package total price is zero" do
@@ -185,6 +185,70 @@ defmodule Picsello.PaymentSchedulesTest do
 
         assert deposit_due |> DateTime.to_date() == DateTime.utc_now() |> DateTime.to_date()
       end
+    end
+  end
+
+  describe "deliver_reminders/0" do
+    test "only sends reminders to payments with recent due date" do
+      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
+      lead1 = insert(:lead, type: "wedding", client: [email: "elizabeth-lead@example.com"])
+
+      job1 =
+        insert(:lead, type: "wedding", client: [email: "elizabeth1@example.com"])
+        |> promote_to_job()
+
+      job2 =
+        insert(:lead, type: "wedding", client: [email: "elizabeth2@example.com"])
+        |> promote_to_job()
+
+      job3 =
+        insert(:lead, type: "wedding", client: [email: "elizabeth2@example.com"])
+        |> promote_to_job()
+
+      insert(:email_preset, state: :balance_due, job_type: "wedding")
+
+      payment_lead =
+        insert(:payment_schedule,
+          job: lead1,
+          price: ~M[5000]USD,
+          due_at: DateTime.utc_now() |> DateTime.add(-4 * :timer.hours(24), :millisecond)
+        )
+
+      payment1 =
+        insert(:payment_schedule,
+          job: job1,
+          price: ~M[5000]USD,
+          due_at: DateTime.utc_now() |> DateTime.add(-4 * :timer.hours(24), :millisecond)
+        )
+
+      payment2 =
+        insert(:payment_schedule,
+          job: job2,
+          price: ~M[5000]USD,
+          due_at: DateTime.utc_now() |> DateTime.add(-2 * :timer.hours(24), :millisecond)
+        )
+
+      already_reminded_at = DateTime.utc_now() |> DateTime.add(-100)
+
+      payment3 =
+        insert(:payment_schedule,
+          job: job3,
+          price: ~M[5000]USD,
+          due_at: DateTime.utc_now() |> DateTime.add(3 * :timer.hours(24), :millisecond),
+          reminded_at: already_reminded_at
+        )
+
+      PaymentSchedules.deliver_reminders(PicselloWeb.Helpers)
+
+      refute payment1 |> Repo.reload!() |> Map.get(:reminded_at) |> is_nil()
+      assert payment2 |> Repo.reload!() |> Map.get(:reminded_at) |> is_nil()
+      assert payment_lead |> Repo.reload!() |> Map.get(:reminded_at) |> is_nil()
+
+      assert payment3 |> Repo.reload!() |> Map.get(:reminded_at) ==
+               already_reminded_at |> DateTime.truncate(:second)
+
+      assert_receive {:delivered_email, %{to: [nil: "elizabeth1@example.com"]}}
     end
   end
 end
