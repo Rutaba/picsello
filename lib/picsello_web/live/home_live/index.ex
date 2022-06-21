@@ -228,7 +228,7 @@ defmodule PicselloWeb.HomeLive.Index do
              action: "open-billing-portal",
              title: "Balance(s) Due",
              body:
-               "There is an unpaid balance that needs your attention. Please open the Billing Portal to resolve this issue.",
+               "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
              icon: "money-bags",
              button_label: "Open Billing Portal",
              button_class: "btn-primary",
