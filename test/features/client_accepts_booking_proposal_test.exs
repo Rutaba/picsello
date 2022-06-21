@@ -217,6 +217,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                         success_url: stripe_success_url,
                         metadata: %{"paying_for" => ^deposit_payment_id},
                         automatic_tax: %{enabled: true},
+                        payment_intent_data: %{setup_future_usage: "off_session"},
                         line_items: [
                           %{
                             price_data: %{
