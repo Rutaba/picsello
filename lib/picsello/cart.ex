@@ -211,6 +211,10 @@ defmodule Picsello.Cart do
     DeliveryInfo.changeset(%DeliveryInfo{}, attrs)
   end
 
+  def delivery_info_change(delivery_info, attrs) do
+    DeliveryInfo.changeset(delivery_info, attrs)
+  end
+
   def order_delivery_info_change(%Order{delivery_info: delivery_info}, attrs \\ %{}) do
     DeliveryInfo.changeset(delivery_info, attrs)
   end

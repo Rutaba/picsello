@@ -22,10 +22,17 @@ defmodule Picsello.Cart.DeliveryInfo do
 
   def changeset(nil, attrs), do: changeset(%__MODULE__{}, attrs)
 
-  def changeset(%__MODULE__{} = struct, attrs) do
-    struct
+  def changeset(%Ecto.Changeset{} = delivery_info, %{"address_components" => _} = google_place) do
+    delivery_info
+    |> apply_changes()
+    |> Map.put(:address, nil)
+    |> changeset(%{"address" => google_place})
+  end
+
+  def changeset(delivery_info, attrs) do
+    delivery_info
     |> cast(attrs, [:name, :email])
-    |> cast_embed(:address, with: &Address.changeset/2)
+    |> cast_embed(:address)
     |> validate_required([:name, :email])
     |> validate_email(:email)
     |> validate_length(:name, min: 2, max: 30)
@@ -103,6 +110,7 @@ defmodule Picsello.Cart.DeliveryInfo do
       "WI",
       "WY"
     ]
+
     @primary_key false
     embedded_schema do
       field :country, :string, default: "US"
@@ -120,6 +128,26 @@ defmodule Picsello.Cart.DeliveryInfo do
             state: String.t(),
             zip: String.t()
           }
+
+    @google_place_field_map %{
+      "street_number" => "addr1",
+      "route" => "addr1",
+      "locality" => "city",
+      "administrative_area_level_1" => "state",
+      "postal_code" => "zip"
+    }
+
+    def changeset(address, %{"address_components" => components}) do
+      attrs =
+        for %{"short_name" => value, "types" => [type | _]} <- components,
+            type in Map.keys(@google_place_field_map),
+            reduce: %{} do
+          addr ->
+            Map.update(addr, Map.get(@google_place_field_map, type), value, &"#{&1} #{value}")
+        end
+
+      changeset(address, attrs)
+    end
 
     def changeset(struct, attrs) do
       struct

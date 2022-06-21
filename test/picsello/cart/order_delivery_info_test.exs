@@ -35,5 +35,29 @@ defmodule Picsello.Cart.OrderDeliveryInfoTest do
       assert %{address: %{state: ["does not match the zip code"]}} = errors_on(changeset2)
       assert %{address: %{city: ["does not match the zip code"]}} = errors_on(changeset3)
     end
+
+    test "works with google places" do
+      changeset =
+        Cart.delivery_info_change(%{
+          "name" => "David",
+          "email" => "david@mail.ua",
+          "address" => %{}
+        })
+
+      refute changeset.valid?
+
+      changeset =
+        Cart.delivery_info_change(changeset, %{
+          "address_components" => [
+            %{"short_name" => "123", "types" => ["street_number"]},
+            %{"short_name" => "main st", "types" => ["route"]},
+            %{"short_name" => "Chicago", "types" => ["locality"]},
+            %{"short_name" => "IL", "types" => ["administrative_area_level_1"]},
+            %{"short_name" => "60661", "types" => ["postal_code"]}
+          ]
+        })
+
+      assert changeset.valid?
+    end
   end
 end
