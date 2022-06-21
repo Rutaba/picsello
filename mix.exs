@@ -75,6 +75,7 @@ defmodule Picsello.MixProject do
         {:google_api_sheets, "~> 0.29.2"},
         {:elixir_uuid, "~> 1.2"},
         {:kane, "~> 0.9.0"},
+        {:sentry, "~> 8.0"},
         {:struct_access, "~> 1.1"},
         {:size, "~> 0.1.0"},
         {:cll, "~> 0.1.0"},
