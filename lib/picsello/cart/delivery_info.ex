@@ -137,8 +137,14 @@ defmodule Picsello.Cart.DeliveryInfo do
              {:city, :equal} <- compare_zip_change(changeset, :city, city) do
           []
         else
-          {:error, reason} -> [zip: reason]
-          error -> [error]
+          {:error, "Zip code not found"} ->
+            [zip: "not found"]
+
+          {:error, reason} ->
+            [zip: reason]
+
+          error ->
+            [error]
         end
       end)
     end

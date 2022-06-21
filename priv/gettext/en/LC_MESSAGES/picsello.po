@@ -243,3 +243,6 @@ msgstr "Wisconsin"
 
 msgid "WY"
 msgstr "Wyoming"
+
+msgid "addr1"
+msgstr "address line 1"

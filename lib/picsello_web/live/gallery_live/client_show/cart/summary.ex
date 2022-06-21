@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={"flex flex-col border border-base-200 #{@class}"}>
+    <div class={"flex flex-col border border-base-225 #{@class}"}>
       <button type="button" phx-click={toggle(@class)} class="block px-5 pt-4 text-base-250 lg:hidden">
         <div class="flex items-center pb-2">
           <.icon name="up" class="toggle w-5 h-2.5 stroke-2 stroke-current mr-2.5" />

@@ -279,7 +279,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Products (1)", text: "$100.00"))
       |> assert_has(definition("Print credits used", text: "$100.00"))
       |> assert_has(definition("Total", text: "$0.00"))
-      |> click(button("Continue"))
+      |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out"))
 
@@ -347,7 +347,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Products (1)", text: "50.00"))
       |> assert_has(definition("Print credits used", text: "$50.00"))
       |> assert_has(definition("Total", text: "$0.00"))
-      |> click(button("Continue"))
+      |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out"))
 
@@ -414,7 +414,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Digital downloads (1)", text: "55.00"))
       |> assert_has(definition("Print credits used", text: "$100.00"))
       |> assert_has(definition("Total", text: "$55.00"))
-      |> click(button("Continue"))
+      |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out with Stripe"))
 
@@ -482,7 +482,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Products (1)", text: "120.00"))
       |> assert_has(definition("Print credits used", text: "$100.00"))
       |> assert_has(definition("Total", text: "$20.00"))
-      |> click(button("Continue"))
+      |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out with Stripe"))
 

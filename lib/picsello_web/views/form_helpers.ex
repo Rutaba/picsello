@@ -31,7 +31,8 @@ defmodule PicselloWeb.FormHelpers do
   Generates an input tag with error state.
   """
   def input(form, field, opts \\ []) do
-    type = opts |> Keyword.get(:type, :text_input)
+    {type, opts} = Keyword.pop(opts, :type, :text_input)
+    {classes, opts} = Keyword.pop_values(opts, :class)
 
     opts =
       case type do
@@ -48,16 +49,12 @@ defmodule PicselloWeb.FormHelpers do
           opts
       end
 
-    phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
-
     input_opts =
-      [
-        phx_feedback_for,
-        class:
-          classes(["text-input", Keyword.get_values(opts, :class)], %{
-            "text-input-invalid" => form.errors[field]
-          })
-      ] ++ Keyword.drop(opts, [:class, :type])
+      opts ++
+        [
+          phx_feedback_for: input_name(form, field),
+          class: classes(["text-input", classes], %{"text-input-invalid" => form.errors[field]})
+        ]
 
     apply(Phoenix.HTML.Form, type, [form, field, input_opts])
   end
@@ -75,11 +72,10 @@ defmodule PicselloWeb.FormHelpers do
   defp format_datetime(_, _), do: nil
 
   def label_for(form, field, opts \\ []) do
-    phx_feedback_for = {:phx_feedback_for, input_name(form, field)}
     label_text = Keyword.get(opts, :label) || humanize(field)
 
     label_opts = [
-      phx_feedback_for,
+      phx_feedback_for: input_name(form, field),
       class:
         classes(["input-label" | Keyword.get_values(opts, :class)], %{
           "input-label-invalid" => form.errors[field],

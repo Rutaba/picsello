@@ -41,15 +41,10 @@
     @apply text-base-300;
   }
 
-  .text-input-invalid:not(.phx-no-feedback) {
-    @apply border-red-sales-300
-      bg-red-sales-100
-      focus:border-red-sales-300;
-  }
-  .select-invalid > select:not(.phx-no-feedback) {
-    @apply border-red-sales-300
-      bg-red-sales-100
-      focus:border-red-sales-300;
+  .hidden-when-no-feedback.phx-no-feedback { @apply hidden; }
+
+  .text-input-invalid:not(.phx-no-feedback), .select-invalid > select:not(.phx-no-feedback) {
+    @apply bg-transparent border-red-error-300 focus:border-red-error-300;
   }
 
   .modal-container,
