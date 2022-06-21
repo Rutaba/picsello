@@ -1,4 +1,5 @@
 import Muuri from 'muuri';
+import isMobile from '../utils/isMobile';
 
 /**
  * Returns true when reached either document percent or screens to bottom threshold
@@ -162,6 +163,11 @@ export default {
         return true;
       }
     });
+    
+    if (isMobile()) {
+      this.el.style.width = '80%';
+    }
+    
     const offset = (w - iw - count * 12) / 2;
     if (offset > 0) {
       this.el.style.marginLeft = offset + 'px';

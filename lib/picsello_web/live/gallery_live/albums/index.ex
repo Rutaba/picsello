@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Galleries, Albums}
-  alias PicselloWeb.GalleryLive.Photos.Upload
   alias PicselloWeb.GalleryLive.Albums.{AlbumSettings, AlbumThumbnail}
 
   @blank_image "/images/album_placeholder.png"

@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
-  alias PicselloWeb.GalleryLive.Shared.{ConfirmationComponent}
+  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent, Photos.Upload}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -368,14 +368,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def actions(assigns) do
     ~H"""
     <div id={@id} class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
-      <div class={"flex items-center dropdown " <> @class}>
-          <div class="mx-3">
+      <div class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
+          <div class="lg:mx-3">
             <span>Actions</span>
           </div>
           <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
           <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden w-full mt-2 bg-white rounded-md popover-content border border-base-200">
+      <ul class="absolute z-30 hidden mt-2 w-full bg-white rounded-md popover-content border border-base-200">
         <%= render_slot(@inner_block) %>
         <li class="flex items-center py-1.5 bg-base-200 rounded-b-md hover:opacity-75">
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
@@ -428,15 +428,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
         <h1 class="text-md mt-4 mx-24 font-sans text-base-300">
             <%= @title %>
         </h1>
-        <div class="flex pt-6 pb-6 mx-24 grid grid-cols-3 grid-rows-preview">
+        <div class="flex pt-6 pb-6 mx-24 grid lg:grid-cols-3 grid-cols-1 lg:grid-rows-preview">
           <%= render_slot(@inner_block) %>
-          <div class="description ml-11 row-span-2 col-span-2">
-              <p class="pt-3 font-sans text-base pb-11"><%= @description %></p>
+          <div class="description lg:ml-11 row-span-2 col-span-2">
+              <p class="pt-3 font-sans text-base lg:pb-11 pb-6"><%= @description %></p>
               <button phx-click="save" phx-target={@myself} disabled={!@selected} class="w-full rounded-lg save-button btn-settings">Save</button>
           </div>
         </div>
     </div>
-    <div id="gallery_form" class="pt-56 pb-11 px-11 mt-52">
+    <div id="gallery_form" class="lg:pt-56 pt-80 pb-11 px-11 lg:mt-56 mt-72">
       <div
           phx-hook="MasonryGrid"
           phx-update="append"
@@ -559,4 +559,43 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def cards_width(frame_image), do: if(frame_image == "card.png", do: "198")
+
+  def mobile_gallery_header(assigns) do
+    ~H"""
+      <div class="lg:hidden absolute top-0 left-0 h-20 px-10 py-6 z-20 shrink-0 w-screen bg-base-200">
+        <p class="font-sans font-bold text-2xl"><%= @gallery_name %></p>
+      </div>
+    """
+  end
+
+  def sticky_upload(assigns) do
+    ~H"""
+      <div class="hidden">
+        <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery_id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
+        <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery_id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
+      </div>
+    """
+  end
+
+  def add_album_button(assigns) do
+    ~H"""
+      <.icon_button {testid("add-album-popup")} class={"text-sm bg-white shadow-lg #{@class}"} title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+        Add Album
+      </.icon_button>
+    """
+  end
+
+  def mobile_banner(assigns) do
+    ~H"""
+      <div class={"lg:hidden flex flex-row items-center #{@class}"}>
+        <div class="flex w-10 h-10 items-center justify-center rounded-full bg-blue-planning-300">
+          <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+        </div>
+        <div class="flex flex-col ml-4">
+          <div class="flex font-sans text-2xl font-bold"><%= @title %></div>
+          <%= render_slot(@inner_block) %>
+        </div>
+      </div>
+    """
+  end
 end

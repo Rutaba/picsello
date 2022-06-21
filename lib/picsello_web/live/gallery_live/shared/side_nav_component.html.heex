@@ -11,7 +11,6 @@
             </li>
         </ul>
       </span>
-      <span class="text-2xl font-bold flex-col pl-8 pt-2 text-base-300 lg:hidden"> Gallery Overview </span>
       </div>
       <div class="mt-2 gallery-name-edit hidden lg:block">
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
@@ -55,7 +54,7 @@
         <div phx-click="select_photos" phx-target={@myself} class="flex items-center h-11 pr-4 pl-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300">
              <div class="flex items-center justify-start">
                   <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/product-icon.png")} width="16" height="16"/> 
+                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/> 
                   </div>
                   <div class="justify-start ml-3">
                      <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>

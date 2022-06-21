@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
     ~H"""
     <div class="flex flex-col justify-between">
       <div class="items-center mt-8">
-        <div class={classes("flex items-center pt-4 font-sans text-lg font-bold", %{"text-gray-400" => @category.coming_soon})}>
+        <div class={classes("flex items-center pt-4 font-sans lg:text-lg text-2xl font-bold", %{"text-gray-400" => @category.coming_soon})}>
           <%= @category.name %>
         </div>
         <div class={classes("mt-4 pb-14 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>

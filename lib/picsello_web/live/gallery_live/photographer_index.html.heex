@@ -1,127 +1,127 @@
-<div class="flex flex-col photographer-gallery lg:before:bg-gray-100">
-  <div class="flex flex-row bg-base-200 ">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "overview", album_dropdown_show: false %>
-    <div class="w-full h-full font-sans bg-white lg:bg-gray-100 lg:pl-96">
-    <div class="relative -mb-64 lg:pb-10 pl-10 -mb-64 pr-10 pt-16">
-    <div>
-    <div class="flex">
-      <span class="font-sans lg:text-2xl font-bold lg:mt-0 mt-2 text-3xl hidden lg:flex">Overview</span>
-      <span class="font-sans lg:text-2xl font-bold lg:mt-0 mt-2 text-3xl lg:hidden"><%= @gallery.name %></span>
-    </div>
-    <hr class="mt-4 lg:hidden">
-    <%= if expire_soon(@gallery) do %>
-      <div class="flex mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-400" role="alert">
-        <div class="flex justify-center pt-5 pl-6">
-            <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
-        </div>
-        <div class="flex-grow py-4 pl-2 pr-4 font-sans">
-          <b class="font-sans">Note: </b>Your gallery has expired. In order to re-enable your gallery, you’ll need to set the expiration date for a date in the future, or set it to “Never expires.”
-          <a href="#expiration_component" class="font-sans font-bold cursor-pointer primary text-blue-planning-300">Click here</a>
-          to update the expiration date.
-        </div>
+<div class="flex flex-col photographer-gallery lg:before:bg-gray-100">   
+   <div class="flex flex-row bg-base-200">
+      <.mobile_gallery_header gallery_name={@gallery.name}/>
+      <div class="hidden lg:flex">
+         <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "overview", album_dropdown_show: false %>
       </div>
-    <% end %>
-    <div class="relative flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
-    <%= if @cover_photo_processing do %>
-      <div class="flex justify-between w-full h-full mt-6 reuploadingBlock" style="box-shadow:none;">
-         <h3>Cover photo</h3>
-         <label class="font-sans font-bold text-blue-planning-300">Processing...</label>
-      </div>
-    <% else %>
-      <%= if @gallery.cover_photo do %>
-      <div class="flex flex-col mt-6">
-         <h3>Cover photo</h3>
-         <div {display_cover_photo(@gallery)} class="gallery__coverImg active"></div>
-         <div class="flex justify-between w-full h-full mt-4">
-            <form id="cover-photo-dragDrop-form" phx-submit="save" phx-change="start" class="h-full" >
-               <div class="dragDrop__content">
-                  <label class="font-sans font-bold text-white">Choose a new photo
-                  <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                  </label>
+      <div class="w-full h-full font-sans bg-white lg:bg-gray-100 lg:pl-96">
+         <div class="relative lg:pb-10 pl-10 pr-10 lg:pt-16 pt-20">
+            <div class="flex items-center lg:mt-0 mt-4">
+               <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300">
+                  <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
                </div>
-            </form>
-            <button phx-click="delete_cover_photo_popup">
-            <.icon name="remove-icon" class="w-5 h-5 cursor-pointer text-base-250" />
-            </button>
+               <div class="ml-3">
+                  <span class="font-sans lg:text-2xl font-bold text-3xl">Overview</span>
+               </div>
+            </div>
+            <hr class="mt-4 lg:hidden">
+            <%= if expire_soon(@gallery) do %>
+               <div class="flex mt-4 rounded-lg shadow-lg cursor-pointer bg-orange-inbox-400" role="alert">
+               <div class="flex justify-center pt-5 pl-6">
+                  <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
+               </div>
+               <div class="flex-grow py-4 pl-2 pr-4 font-sans">
+                  <b class="font-sans">Note: </b>Your gallery has expired. In order to re-enable your gallery, you’ll need to set the expiration date for a date in the future, or set it to “Never expires.”
+                  <a href="#expiration_component" class="font-sans font-bold cursor-pointer primary text-blue-planning-300">Click here</a>
+                  to update the expiration date.
+               </div>
+               </div>
+            <% end %>
+            <div class="relative flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
+               <%= if @cover_photo_processing do %>
+                  <div class="flex justify-between w-full h-full mt-6 reuploadingBlock" style="box-shadow:none;">
+                     <h3>Cover photo</h3>
+                     <label class="font-sans font-bold text-blue-planning-300">Processing...</label>
+                  </div>
+               <% else %>
+                  <%= if @gallery.cover_photo do %>
+                     <div class="flex flex-col mt-6">
+                        <h3>Cover photo</h3>
+                        <div {display_cover_photo(@gallery)} class="gallery__coverImg active">
+                        </div>
+                        <div class="flex justify-between w-full h-full mt-4">
+                           <form id="cover-photo-dragDrop-form" phx-submit="save" phx-change="start" class="h-full" >
+                              <div class="dragDrop__content">
+                                 <label class="font-sans font-bold text-white">Choose a new photo
+                                 <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                                 </label>
+                              </div>
+                           </form>
+                           <button phx-click="delete_cover_photo_popup">
+                              <.icon name="remove-icon" class="w-5 h-5 cursor-pointer text-base-250" />
+                           </button>
+                        </div>
+                     </div>
+                  <% else %>
+                     <div class="w-full h-full mt-6 uploadingBlock" style="box-shadow:none;">
+                        <h3>Cover photo</h3>
+                        <div class="dragDrop__wrapper">
+                           <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
+                              <label>
+                                 <div class="flex flex-col items-center justify-center h-full gap-4 cursor-pointer dragDrop" id="dropzone-cover" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
+                                    <.icon name="add-photos" class="w-20 h-20 cursor-pointer text-blue-planning-300" />
+                                    <div class="dragDrop__content">
+                                       <p class="font-bold"><span>Drop image or </span><span class="primary">Browse</span></p>
+                                       <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                                       <p class="gray">Supports JPEG or PNG</p>
+                                    </div>
+                                 </div>
+                              </label>
+                           </form>
+                        </div>
+                     </div>
+                  <% end %>
+               <% end %>
+               <div class="galleryUpdateName xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-end-2">
+                  <%= live_component PicselloWeb.GalleryLive.Settings.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
+               </div>
+               <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
+                  <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
+               </div>
+               <div id="expiration_component" class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">
+                     <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
+                     id: "expiration-date-#{@gallery.id}",
+                     gallery: @gallery %>
+               </div>
+               <%= unless Galleries.do_not_charge_for_download?(@gallery) do %>
+                  <div id="galleryWatermark" class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
+                     <h3 class="font-sans">Watermark</h3>
+                     <%= if @gallery.watermark do %>
+                        <%= if @gallery.watermark.type == "image" do %>
+                           <div class="flex justify-between py-3 font-sans">
+                              <p><%= @gallery.watermark.name %></p>
+                              <div class="flex">
+                                 <p><%= filesize(@gallery.watermark.size) %></p>
+                                 <.remove_watermark_button />
+                              </div>
+                           </div>
+                        <% else %>
+                           <div class="flex justify-between font-sans">
+                              <p><%= @gallery.watermark.text %></p>
+                              <div class="flex items-center">
+                                 <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
+                                 <.remove_watermark_button />
+                              </div>
+                           </div>
+                        <% end %>
+                        <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
+                     <% else %>
+                        <p class="font-sans">Upload your logo and we’ll do the rest.</p>
+                        <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
+                     <% end %>
+                  </div>
+               <% end %>
+               <div id="deleteGallery" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
+                  <h3 class="font-sans">Delete gallery</h3>
+                  <p class="font-sans">If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
+                  <button phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
+               </div>
+            </div>
          </div>
-      </div>
-      <% else %>
-          <div class="w-full h-full mt-6 uploadingBlock" style="box-shadow:none;">
-             <h3>Cover photo</h3>
-             <div class="dragDrop__wrapper">
-                <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
-                   <label>
-                      <div class="flex flex-col items-center justify-center h-full gap-4 cursor-pointer dragDrop" id="dropzone-cover" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
-                         <.icon name="add-photos" class="w-20 h-20 cursor-pointer text-blue-planning-300" />
-                         <div class="dragDrop__content">
-                            <p class="font-bold"><span>Drop image or </span><span class="primary">Browse</span></p>
-                            <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
-                            <p class="gray">Supports JPEG or PNG</p>
-                         </div>
-                      </div>
-                   </label>
-                </form>
-             </div>
-          </div>
-      <% end %>
-    <% end %>
-      <div class="galleryUpdateName xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-end-2">
-         <%= live_component PicselloWeb.GalleryLive.Settings.UpdateNameComponent, id: @gallery.id, gallery: @gallery %>
-      </div>
-      <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
-         <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
-      </div>
-      <div id="expiration_component" class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">
-            <%= live_component PicselloWeb.GalleryLive.Settings.ExpirationDateComponent,
-            id: "expiration-date-#{@gallery.id}",
-            gallery: @gallery %>
-      </div>
-      <%= unless Galleries.do_not_charge_for_download?(@gallery) do %>
-      <div id="galleryWatermark" class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-         <h3 class="font-sans">Watermark</h3>
-         <%= if @gallery.watermark do %>
-            <%= if @gallery.watermark.type == "image" do %>
-             <div class="flex justify-between py-3 font-sans">
-               <p><%= @gallery.watermark.name %></p>
-
-               <div class="flex">
-                 <p><%= filesize(@gallery.watermark.size) %></p>
-
-                 <.remove_watermark_button />
-               </div>
-             </div>
-           <% else %>
-             <div class="flex justify-between font-sans">
-               <p><%= @gallery.watermark.text %></p>
-
-               <div class="flex items-center">
-                 <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
-
-                 <.remove_watermark_button />
-               </div>
-             </div>
-           <% end %>
-
-           <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
-         <% else %>
-         <p class="font-sans">Upload your logo and we’ll do the rest.</p>
-         <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
-         <% end %>
-      </div>
-      <% end %>
-      <div id="deleteGallery" class="flex flex-col sm:mb-12 mb-32 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-         <h3 class="font-sans">Delete gallery</h3>
-         <p class="font-sans">If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
-         <button phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
-      </div>
+      </div>   
    </div>
-      </div>
-    </div>
-    </div>
-  </div>
-   <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
-   <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
+   <.sticky_upload socket={@socket} gallery_id={@gallery.id} />
    <div class="relative bottom-0 left-0 right-0 z-30 lg:h-14">
       <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent, id: "footer-#{@gallery.id}", gallery: @gallery %>
-  </div>
+   </div>
 </div>

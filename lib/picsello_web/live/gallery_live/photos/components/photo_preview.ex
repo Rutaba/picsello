@@ -127,7 +127,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col p-10 bg-white rounded-lg mb-4">
+    <div class="flex flex-col p-10 bg-white rounded-lg mx-4 mb-4 relative max-h-[180vw] overflow-y-auto lg:w-full">
       <div class="flex items-start justify-between flex-shrink-0">
           <h1 class="font-sans text-3xl font-bold">
             Set as preview for which products?
@@ -136,7 +136,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
             <.icon name="close-x" class="w-2 h-2 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
           </button>
       </div>
-      <div class="relative flex py-10 font-sans bg-white">
+      <div class="flex py-10 justify-center font-sans bg-white">
           <div id="product-preview" class="items-center grid lg:grid-cols-3 grid-cols-1 gap-4">
               <%= for product <- @updated_products do %>
                 <%= unless product.category.coming_soon do %>

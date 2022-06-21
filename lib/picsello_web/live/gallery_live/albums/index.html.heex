@@ -1,64 +1,68 @@
-<div class="flex flex-col photographer-gallery lg:before:bg-gray-100">
+<div class="flex flex-col">
   <div class="flex flex-row bg-base-200">
-    <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "photos", album_dropdown_show: true %>
+    <.mobile_gallery_header gallery_name={@gallery.name}/>
+    <div class="hidden lg:flex">
+      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "photos", album_dropdown_show: true %>
+    </div>
     <div class="w-full h-full pb-16 lg:bg-gray-100 bg-white lg:pl-96">
-      <div id="page-scroll" phx-hook="PageScroll" class="sticky top-0 z-20 pb-5 pl-10 pr-10 bg-gray-100 lg:pt-14 pt-20">
-        <div class="flex justify-between">
+      <div id="page-scroll" phx-hook="PageScroll" class="lg:sticky top-0 z-20 lg:pb-5 pl-10 pr-10 lg:bg-gray-100 bg-white lg:pt-14 pt-20">
+       <.mobile_banner albums={@albums} title="Photos" class="py-4">
+          <div class="flex lg:mt-4 font-sans text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></div>        
+       </.mobile_banner>
+       <div class="hidden lg:flex justify-between">
           <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
-          <.icon_button {testid("add-album-popup")} class="ml-5 text-sm bg-white shadow-lg" title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
-            Add Album
-          </.icon_button>
+          <.add_album_button class="ml-5"/>
         </div>
-        <p class="mt-4 font-sans text-gray-400"><%= length(@albums) %> albums</p>
+        <p class="mt-4 font-sans hidden lg:flex text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></p>
       </div>
-      <div>
-        <div id="albums" class="relative flex flex-col w-full min-h-screen">
-          <div class="pl-10 grid lg:grid-cols-2 grid-cols-1 pr-7 sm:gap-2 md:gap-2">
-             <div class="flex flex-col mb-2 mr-2 album">
-              <.thumbnail event="go_to_unsorted_photos" album={%{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}}/>
-              <div class="cursor-pointer actionBlock">
-                <.actions
-                id="unsorted_actions"
-                class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
-                delete_event="delete_all_unsorted_photos"
-                delete_title="Delete all unsorted photos"
-                delete_value={@gallery.id}>
-                    <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
-                      <button class="w-full album-actions">Go to unsorted photos</button>
-                    </li>
-                </.actions>
-              </div>
-            </div>
-            <%= for album <- @albums do %>
+      <div class="lg:hidden bg-base-200 px-10 py-4">
+      <.add_album_button class="py-1.5"/>
+      </div>
+      <div id="albums" class="relative flex flex-col w-full mb-20 lg:mb-10">
+        <div class="pl-10 grid lg:grid-cols-2 grid-cols-1 pr-7 sm:gap-2 md:gap-2">
             <div class="flex flex-col mb-2 mr-2 album">
-              <.thumbnail event="go_to_album" album={album}/>
-              <div class="cursor-pointer actionBlock">
-                <.actions
-                id={"actions-#{album.id}"}
-                class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
-                delete_event="delete_album_popup"
-                delete_title="Delete Album"
-                delete_value={album.id}>
-                  <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
-                    <button class="w-full album-actions">Go to album</button>
+            <.thumbnail event="go_to_unsorted_photos" album={%{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}}/>
+            <div class="cursor-pointer actionBlock">
+              <.actions
+              id="unsorted_actions"
+              class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
+              delete_event="delete_all_unsorted_photos"
+              delete_title="Delete all unsorted photos"
+              delete_value={@gallery.id}>
+                  <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
+                    <button class="w-full album-actions">Go to unsorted photos</button>
                   </li>
-                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
-                    <button class="w-full album-actions">Go to album settings</button>
-                  </li>
-                  <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
-                    <button class="w-full album-actions">Edit album thumbnail</button>
-                  </li>
-                </.actions>
-              </div>
+              </.actions>
             </div>
-            <% end %>
           </div>
+          <%= for album <- @albums do %>
+          <div class="flex flex-col mb-2 mr-2 album">
+            <.thumbnail event="go_to_album" album={album}/>
+            <div class="cursor-pointer actionBlock">
+              <.actions
+              id={"actions-#{album.id}"}
+              class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
+              delete_event="delete_album_popup"
+              delete_title="Delete Album"
+              delete_value={album.id}>
+                <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
+                  <button class="w-full album-actions">Go to album</button>
+                </li>
+                <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
+                  <button class="w-full album-actions">Go to album settings</button>
+                </li>
+                <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
+                  <button class="w-full album-actions">Edit album thumbnail</button>
+                </li>
+              </.actions>
+            </div>
+          </div>
+          <% end %>
         </div>
-        <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
-        <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery.id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
       </div>
     </div>
   </div>
+  <.sticky_upload socket={@socket} gallery_id={@gallery.id} />
   <div class="fixed bottom-0 left-0 right-0 z-10 lg:h-14">
   <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>
