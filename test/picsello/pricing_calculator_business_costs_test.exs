@@ -76,7 +76,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
       assert %{
                active: true,
                line_items: [
-                 %{title: "Light", yearly_cost: %Money{amount: ~M[50000], currency: :USD}},
+                 %{title: "Light", yearly_cost: ~M[50000]},
                  %{title: "Camera"}
                ]
              } =
