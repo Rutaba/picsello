@@ -1,4 +1,4 @@
-defmodule Picsello.PricingCalculatorBusinessCostsTest do
+defmodule Picsello.PricingCalculatorTaxSchedulesTest do
   @moduledoc false
   use Picsello.DataCase, async: true
   import Money.Sigils
