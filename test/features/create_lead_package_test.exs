@@ -31,9 +31,9 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
-    |> click(checkbox("package_pricing_is_buy_all"))
+    |> click(checkbox("download_is_buy_all"))
     |> find(
-      text_field("package[buy_all]"),
+      text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
     )
     |> click(checkbox("package_pricing_is_enabled"))
@@ -81,20 +81,16 @@ defmodule Picsello.CreateLeadPackageTest do
     insert(:package_template,
       user: user,
       job_type: "wedding",
-      name: "best wedding",
-      buy_all: 20,
-      print_credits: 20
+      name: "best wedding"
     )
 
     insert(:package_template,
       user: user,
       job_type: "wedding",
-      name: "lame wedding",
-      buy_all: 20,
-      print_credits: 20
+      name: "lame wedding"
     )
 
-    insert(:package_template, user: user, job_type: "other", buy_all: 20, print_credits: 20)
+    insert(:package_template, user: user, job_type: "other")
 
     selected_card = css("[data-testid='template-card'] > .border-blue-planning-300")
 
@@ -122,9 +118,7 @@ defmodule Picsello.CreateLeadPackageTest do
     insert(:package_template,
       user: user,
       job_type: "wedding",
-      name: "best wedding",
-      buy_all: 20,
-      print_credits: 20
+      name: "best wedding"
     )
 
     session
@@ -192,7 +186,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     base_price = Money.new(10_000)
     download_each_price = Money.new(200)
-    buy_all = Money.new(0)
+    buy_all = Money.new(300)
     print_credits = Money.new(0)
 
     template =
@@ -278,9 +272,9 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
-    |> click(checkbox("package_pricing_is_buy_all"))
+    |> click(checkbox("download_is_buy_all"))
     |> find(
-      text_field("package[buy_all]"),
+      text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
     |> click(checkbox("package_pricing_is_enabled"))

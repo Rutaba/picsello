@@ -538,7 +538,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       |> Map.merge(%{
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "organization_id" => current_user.organization_id
+        "organization_id" => current_user.organization_id,
+        "buy_all" => Download.buy_all(download)
       })
       |> Package.import_changeset()
       |> Map.put(:action, action)

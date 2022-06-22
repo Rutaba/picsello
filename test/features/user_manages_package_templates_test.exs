@@ -16,10 +16,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     insert(:package_template,
       user: user,
       name: "Deluxe Template",
-      download_count: 5,
-      download_each_price: 0,
-      buy_all: 20,
-      print_credits: 20
+      download_each_price: 0
     )
 
     session
@@ -35,7 +32,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       name: "Super Deluxe Template",
       download_count: 5,
       download_each_price: 20,
-      buy_all: 20,
       print_credits: 20
     )
 
@@ -100,7 +96,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   end
 
   feature "edit", %{session: session, user: user} do
-    template = insert(:package_template, user: user, print_credits: 20, buy_all: 20)
+    template = insert(:package_template, user: user, print_credits: 20)
 
     session
     |> click(link("Settings"))
@@ -157,9 +153,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       insert(:package_template,
         user: user,
         job_type: type,
-        name: name,
-        buy_all: 20,
-        print_credits: 20
+        name: name
       )
     end
 

@@ -12,7 +12,7 @@ defmodule Picsello.Packages do
   }
 
   import Picsello.Repo.CustomMacros
-
+  import Picsello.Package, only: [validate_money: 3]
   import Ecto.Query, only: [from: 2]
 
   defmodule PackagePricing do
@@ -23,25 +23,17 @@ defmodule Picsello.Packages do
     @primary_key false
     embedded_schema do
       field(:is_enabled, :boolean)
-      field(:is_buy_all, :boolean)
     end
 
     def changeset(package_pricing \\ %__MODULE__{}, attrs) do
       package_pricing
-      |> cast(attrs, [:is_enabled, :is_buy_all])
+      |> cast(attrs, [:is_enabled])
     end
 
     def handle_package_params(package, params) do
-      package =
-        case Map.get(params, "package_pricing", %{})
-             |> Map.get("is_enabled") do
-          "false" -> Map.put(package, "print_credits", Money.new(0))
-          _ -> package
-        end
-
       case Map.get(params, "package_pricing", %{})
-           |> Map.get("is_buy_all") do
-        "false" -> Map.put(package, "buy_all", Money.new(0))
+           |> Map.get("is_enabled") do
+        "false" -> Map.put(package, "print_credits", Money.new(0))
         _ -> package
       end
     end
@@ -112,17 +104,33 @@ defmodule Picsello.Packages do
       field(:includes_credits, :boolean, default: false)
       field(:each_price, Money.Ecto.Amount.Type, default: @default_each_price)
       field(:count, :integer)
+      field(:buy_all, Money.Ecto.Amount.Type)
+      field(:is_buy_all, :boolean)
     end
 
     def changeset(download \\ %__MODULE__{}, attrs) do
       download
-      |> cast(attrs, [:is_enabled, :is_custom_price, :includes_credits, :each_price, :count])
+      |> cast(attrs, [
+        :is_enabled,
+        :is_custom_price,
+        :includes_credits,
+        :each_price,
+        :count,
+        :is_buy_all,
+        :buy_all
+      ])
       |> then(
         &if get_field(&1, :is_enabled),
           do: &1,
           else:
             Enum.reduce(
-              [each_price: @zero_price, is_custom_price: false, includes_credits: false],
+              [
+                each_price: @zero_price,
+                is_custom_price: false,
+                includes_credits: false,
+                is_buy_all: false,
+                buy_all: nil
+              ],
               &1,
               fn {k, v}, changeset -> force_change(changeset, k, v) end
             )
@@ -147,27 +155,44 @@ defmodule Picsello.Packages do
           else: force_change(&1, :count, nil)
         )
       )
+      |> validate_buy_all()
     end
 
-    def from_package(%{download_each_price: each_price, download_count: count})
-        when each_price in [@default_each_price, nil],
-        do: set_count_fields(%__MODULE__{}, count)
+    defp validate_buy_all(changeset) do
+      download_each_price = get_field(changeset, :each_price) || @zero_price
 
-    def from_package(%{download_each_price: @zero_price, download_count: count}),
+      changeset
+      |> validate_money(:buy_all,
+        greater_than: download_each_price.amount,
+        message: "Must be greater than digital image price"
+      )
+    end
+
+    def from_package(%{download_each_price: each_price, download_count: count} = package)
+        when each_price in [@default_each_price, nil],
+        do: set_count_fields(%__MODULE__{}, count) |> set_buy_all_fields(package)
+
+    def from_package(%{download_each_price: @zero_price, download_count: count} = package),
       do:
         set_count_fields(
           %__MODULE__{is_enabled: false, includes_credits: false, each_price: @zero_price},
           count
         )
+        |> set_buy_all_fields(package)
 
-    def from_package(%{download_each_price: each_price, download_count: count}),
-      do: set_count_fields(%__MODULE__{each_price: each_price, is_custom_price: true}, count)
+    def from_package(%{download_each_price: each_price, download_count: count} = package),
+      do:
+        set_count_fields(%__MODULE__{each_price: each_price, is_custom_price: true}, count)
+        |> set_buy_all_fields(package)
 
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count
 
     def each_price(%__MODULE__{is_enabled: false}), do: @zero_price
     def each_price(%__MODULE__{each_price: each_price}), do: each_price
+
+    def buy_all(%__MODULE__{is_buy_all: false}), do: nil
+    def buy_all(%__MODULE__{buy_all: buy_all}), do: buy_all
 
     def default_each_price(), do: @default_each_price
 
@@ -176,6 +201,14 @@ defmodule Picsello.Packages do
 
     defp set_count_fields(download, count),
       do: %{download | count: count, includes_credits: true}
+
+    defp set_buy_all_fields(download, %{buy_all: %Money{} = buy_all}) do
+      %{download | is_buy_all: true, buy_all: buy_all}
+    end
+
+    defp set_buy_all_fields(download, _package) do
+      %{download | is_buy_all: false, buy_all: nil}
+    end
   end
 
   def templates_for_user(user, job_type),
@@ -212,8 +245,8 @@ defmodule Picsello.Packages do
     )
   end
 
-  def insert_or_update_package(build_params, client_params),
-    do: build_params |> build_package_changeset(client_params) |> Repo.insert_or_update()
+  def insert_or_update_package(changeset),
+    do: Repo.insert_or_update(changeset)
 
   defdelegate job_types(), to: JobType, as: :all
 
@@ -271,7 +304,7 @@ defmodule Picsello.Packages do
           download_each_price: type(^default_each_price, base.base_price),
           inserted_at: now(),
           job_type: base.job_type,
-          buy_all: type(^zero_price, base.buy_all),
+          buy_all: base.buy_all,
           print_credits: type(^zero_price, base.print_credits),
           name: name.initcap,
           organization_id: type(^organization_id, base.id),
