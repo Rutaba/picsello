@@ -49,24 +49,24 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def subscription_ending_soon(nil), do: [hidden?: true]
+  def subscription_ending_soon_info(nil), do: %{hidden?: true}
 
-  def subscription_ending_soon(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
-    do: user |> Repo.preload(:subscription) |> subscription_ending_soon()
+  def subscription_ending_soon_info(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
+    do: user |> Repo.preload(:subscription) |> subscription_ending_soon_info()
 
-  def subscription_ending_soon(%User{subscription: subscription}) do
+  def subscription_ending_soon_info(%User{subscription: subscription}) do
     case subscription do
       %{current_period_end: current_period_end, cancel_at: cancel_at} when cancel_at != nil ->
         days_left = days_distance(current_period_end)
 
-        [
+        %{
           hidden?: days_left > 7 || days_left < 0,
           days_left: days_left |> Kernel.max(0),
           subscription_end_at: DateTime.to_date(current_period_end)
-        ]
+        }
 
       _ ->
-        [hidden?: true]
+        %{hidden?: true}
     end
   end
 

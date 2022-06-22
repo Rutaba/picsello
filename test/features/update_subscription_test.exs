@@ -56,12 +56,13 @@ defmodule Picsello.SubscriptionChangesTest do
     session
     |> click(link("Settings"))
     |> assert_has(css("span", text: "8 days left until your subscription ends", count: 1))
-    |> refute_has(css("a", text: "8 days left in your trial", count: 1))
+    |> assert_has(css("a", text: "8 days left in your trial", count: 0))
     |> visit("/home")
-    |> refute_has(
+    |> assert_has(
       css("p",
         text:
-          "You have 8 days left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+          "You have 8 days left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}",
+        count: 0
       )
     )
   end
@@ -84,12 +85,13 @@ defmodule Picsello.SubscriptionChangesTest do
     |> click(link("Settings"))
     |> assert_has(css("span", text: "1 day left in your trial", count: 1))
     |> refute_has(css("span", text: "1 day left until your subscription ends", count: 1))
-    |> refute_has(css("a", text: "1 day left in your trial", count: 1))
+    |> assert_has(css("a", text: "1 day left in your trial", count: 0))
     |> visit("/home")
-    |> refute_has(
+    |> assert_has(
       css("p",
         text:
-          "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+          "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}",
+        count: 0
       )
     )
   end

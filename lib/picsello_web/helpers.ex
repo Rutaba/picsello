@@ -31,9 +31,9 @@ defmodule PicselloWeb.Helpers do
   end
 
   def days_distance(%DateTime{} = datetime),
-    do: Date.diff(DateTime.to_date(datetime), Date.utc_today())
+    do: datetime |> DateTime.to_date() |> days_distance()
 
-  def days_distance(%Date{} = date), do: Date.diff(date, Date.utc_today())
+  def days_distance(%Date{} = date), do: date |> Date.diff(Date.utc_today())
 
   defdelegate strftime(zone, date, format), to: PicselloWeb.LiveHelpers
 

@@ -167,14 +167,14 @@ defmodule PicselloWeb.LayoutView do
     ]
 
   def subscription_ending_soon(%{current_user: current_user} = assigns) do
-    subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon()
+    subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
 
     case assigns.type do
       "banner" ->
         ~H"""
-        <div class={classes(@class, %{"hidden" => Keyword.get(subscription, :hidden?)})}>
+        <div class={classes(@class, %{"hidden" => subscription.hidden?})}>
           <.icon name="clock-filled" class="lg:w-5 lg:h-5 w-8 h-8 mr-2"/>
-          <span>You have <%= ngettext("1 day", "%{count} days", Keyword.get(subscription, :days_left, 0)) %> left before your subscription ends.
+          <span>You have <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left before your subscription ends.
             <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Click here" do %>
               <span class="font-bold underline px-1 cursor-pointer">Click here</span>
             <% end %>
@@ -185,9 +185,9 @@ defmodule PicselloWeb.LayoutView do
 
       _ ->
         ~H"""
-        <div class={classes(@class, %{"hidden" => Keyword.get(subscription, :hidden?)})}>
+        <div class={classes(@class, %{"hidden" => subscription.hidden?})}>
           <%= live_redirect to: Routes.user_settings_path(@socket, :edit) do %>
-            <%= ngettext("1 day", "%{count} days", Keyword.get(subscription, :days_left, 0)) %> left until your subscription ends
+            <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left until your subscription ends
           <% end %>
         </div>
         """

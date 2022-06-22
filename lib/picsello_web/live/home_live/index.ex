@@ -48,7 +48,7 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("subscription_ending_soon", _, socket),
+  def handle_event("open-user-settings", _, socket),
     do:
       socket
       |> push_redirect(to: Routes.user_settings_path(socket, :edit))
@@ -190,7 +190,7 @@ defmodule PicselloWeb.HomeLive.Index do
           }
         } = socket
       ) do
-    subscription = current_user |> Subscriptions.subscription_ending_soon()
+    subscription = current_user |> Subscriptions.subscription_ending_soon_info()
 
     items =
       for(
@@ -207,12 +207,12 @@ defmodule PicselloWeb.HomeLive.Index do
              color: "red-sales-300",
              class: "intro-confirmation border-red-sales-300"
            }},
-          {!Keyword.get(subscription, :hidden?),
+          {!subscription.hidden?,
            %{
-             action: "subscription_ending_soon",
+             action: "open-user-settings",
              title: "Subscription ending soon",
              body:
-               "You have #{ngettext("1 day", "%{count} days", Keyword.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Keyword.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
+               "You have #{ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Map.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
              icon: "clock-filled",
              button_label: "Go to acccount settings",
              button_class: "btn-secondary",
