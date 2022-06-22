@@ -44,3 +44,4 @@ npm-debug.log
 .DS_Store
 service-account.json
 .credo.exs
+.vscode

@@ -29,13 +29,24 @@ defmodule Picsello.SubscriptionChangesTest do
 
     session
     |> click(link("Settings"))
-    |> assert_has(css("span", text: "1 day left until your subscription ends", count: 1))
-    |> assert_has(css("a", text: "1 day left until your subscription ends", count: 1))
-    |> assert_text("1 day left before your")
-    |> visit("/home")
-    |> assert_text(
-      "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+    |> find(
+      testid("subscription-top-banner"),
+      &assert_text(&1, "1 day left before your subscription ends")
     )
+    |> find(
+      testid("subscription-footer"),
+      &assert_text(&1, "1 day left until your subscription ends")
+    )
+    |> assert_has(css("*[role='status']", text: "1 day left until your subscription ends"))
+    |> visit("/home")
+    |> find(
+      testid("attention-item",
+        text:
+          "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+      ),
+      &click(&1, button("Go to acccount settings"))
+    )
+    |> assert_path("/users/settings")
   end
 
   feature "Subscription ending in more than 7 days and subscription is cancelled", %{
@@ -55,16 +66,11 @@ defmodule Picsello.SubscriptionChangesTest do
 
     session
     |> click(link("Settings"))
-    |> assert_has(css("span", text: "8 days left until your subscription ends", count: 1))
-    |> assert_has(css("a", text: "8 days left in your trial", count: 0))
+    |> assert_has(testid("subscription-top-banner", text: "left in your trial", count: 0))
+    |> assert_has(testid("subscription-footer", text: "left in your trial", count: 0))
+    |> assert_has(css("*[role='status']", text: "8 days left until your subscription ends"))
     |> visit("/home")
-    |> assert_has(
-      css("p",
-        text:
-          "You have 8 days left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}",
-        count: 0
-      )
-    )
+    |> assert_has(testid("attention-item", text: "left before your subscription ends", count: 0))
   end
 
   feature "Subscription ending in less than 7 days and subscription is not cancelled", %{
@@ -83,17 +89,11 @@ defmodule Picsello.SubscriptionChangesTest do
 
     session
     |> click(link("Settings"))
-    |> assert_has(css("span", text: "1 day left in your trial", count: 1))
-    |> refute_has(css("span", text: "1 day left until your subscription ends", count: 1))
-    |> assert_has(css("a", text: "1 day left in your trial", count: 0))
+    |> assert_has(testid("subscription-top-banner", text: "left in your trial", count: 0))
+    |> assert_has(testid("subscription-footer", text: "left in your trial", count: 0))
+    |> assert_has(css("*[role='status']", text: "1 day left in your trial"))
     |> visit("/home")
-    |> assert_has(
-      css("p",
-        text:
-          "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}",
-        count: 0
-      )
-    )
+    |> assert_has(testid("attention-item", text: "left before your subscription ends", count: 0))
   end
 
   feature "when subscription is in trial", %{session: session, user: user, plan: plan} do
