@@ -68,9 +68,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
         %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"},
         %{
           id: "photo-download-#{id}",
-          event: "photo_download_pop",
-          title: "Download photo",
-          class: "hidden"
+          event: "photo_download_popup",
+          title: "Download photo"
         }
       ]
   end

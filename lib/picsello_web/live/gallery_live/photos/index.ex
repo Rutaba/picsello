@@ -406,6 +406,54 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_event(
+        "photo_download_popup",
+        %{"photo_id" => photo_id},
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket
+      ) do
+    link =
+      Routes.gallery_downloads_path(
+        socket,
+        :download_photo,
+        gallery.client_link_hash,
+        photo_id,
+        is_photographer: true
+      )
+
+    socket
+    |> redirect(to: link)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "download_selected_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    link =
+      Routes.gallery_downloads_path(socket, :download_all, gallery.client_link_hash,
+        photo_ids: selected_photos
+      )
+
+    selected_photos
+    |> case do
+      [] -> put_flash(socket, :error, "Please select at least one item")
+      _ -> redirect(socket, to: link)
+    end
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do
     socket
     |> close_modal()

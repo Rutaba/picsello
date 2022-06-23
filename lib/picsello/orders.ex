@@ -85,6 +85,13 @@ defmodule Picsello.Orders do
     }
   end
 
+  def get_selected_photos!(photo_ids, gallery_hash) do
+    %{
+      organization: get_organization!(gallery_hash),
+      photos: from(photo in Photo, where: photo.id in ^photo_ids) |> some!()
+    }
+  end
+
   def get_purchased_photo!(gallery, photo_id) do
     if can_download_all?(gallery) do
       from(photo in Photo, where: photo.gallery_id == ^gallery.id and photo.id == ^photo_id)

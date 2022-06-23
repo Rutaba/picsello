@@ -94,8 +94,8 @@
                         <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
                     </li>
                   <% end %>
-                  <li class="relative hidden">
-                    <button class="album-actions">Download photos</button>
+                  <li class="relative">
+                    <button class="album-actions" phx-click="download_selected_photos">Download photos</button>
                   </li>
                   <%= unless @album do %>
                     <li class="relative py-1.5 hover:bg-blue-planning-100">

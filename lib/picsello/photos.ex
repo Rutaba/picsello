@@ -90,6 +90,8 @@ defmodule Picsello.Photos do
   """
   def get(id), do: Repo.get(watermarked_query(), id)
 
+  def get!(id), do: Repo.get!(watermarked_query(), id)
+
   def toggle_liked(id) when is_number(id) do
     {1, [photo]} =
       from(photo in Photo,
