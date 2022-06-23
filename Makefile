@@ -60,7 +60,10 @@ update-mix: ## Update mix packages.
 	mix deps.update --all
 
 stripe-connect-listen:
-	stripe listen --log-level=debug --forward-to=localhost:4000/stripe/connect-webhooks --latest --events=checkout.session.completed
+	stripe listen --log-level=debug --forward-to=localhost:4000/stripe/connect-webhooks --latest --events=payment_intent.canceled,checkout.session.completed --api-key=${STRIPE_SECRET}
+
+stripe-app-listen:
+	stripe listen --log-level=debug --forward-to=localhost:4000/stripe/app-webhooks --latest --events=customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,invoice.payment_succeeded,invoice.payment_failed --api-key=${STRIPE_SECRET}
 
 rollback:
 	mix ecto.rollback && MIX_ENV=test mix ecto.rollback
