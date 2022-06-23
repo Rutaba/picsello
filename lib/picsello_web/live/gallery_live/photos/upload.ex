@@ -331,12 +331,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp apply_limits(
-         %{assigns: %{pending_photos: pending_photos, invalid_photos: invalid_photos} = assigns} =
+         %{assigns: %{pending_photos: pending_photos, invalid_photos: invalid_photos, gallery: gallery} = assigns} =
            socket
        ) do
     if Enum.empty?(pending_photos) do
       entries = assigns.uploads.photo.entries |> Enum.filter(&(!&1.done?))
-      {valid, invalid} = max_size_limit(entries)
+      {valid, invalid} = max_size_limit(entries, gallery.id)
       {valid_entries, pending_entries} = max_entries_limit(valid)
       pending_entries = List.flatten(pending_entries)
       invalid = invalid ++ invalid_photos
@@ -370,14 +370,31 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> List.pop_at(0)
   end
 
-  defp max_size_limit(entries) do
-    Enum.reduce(entries, {[], []}, fn entry, {valid, invalid} ->
+  defp max_size_limit(entries, gallery_id \\ nil) do
+    Enum.reduce(entries, {[], []}, fn entry, {valid, invalid} = acc ->
       if entry.client_size < Keyword.get(@upload_options, :max_file_size) do
-        {[entry | valid], invalid}
+        duplicate_entries(entry, acc, gallery_id)
       else
-        {valid, [entry | invalid]}
+        {valid, [Map.put(entry, :error, "File too large") | invalid]}
       end
     end)
+  end
+
+  defp duplicate_entries(entry, {valid, invalid} = acc, gallery_id) do
+    if gallery_id do
+     photos = Enum.filter(Galleries.get_gallery_photos(gallery_id), fn photo -> photo.name == entry.client_name end)
+     filter_duplicate(entry, acc, photos)
+    else
+      {[entry | valid], invalid}
+    end
+  end
+
+  defp filter_duplicate(entry, {valid, invalid}, photos) do
+    if Enum.any?(photos) do
+      {valid, [Map.put(entry, :error, "Duplicate") | invalid]}
+    else
+      {[entry | valid], invalid}
+    end
   end
 
   defp update_uploader(
