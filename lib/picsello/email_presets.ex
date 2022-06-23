@@ -28,15 +28,23 @@ defmodule Picsello.EmailPresets do
     |> Repo.all()
   end
 
-  defp for_job(query, %Job{job_status: %{is_lead: true}}) do
-    query |> where([preset], preset.state == :lead)
+  defp for_job(query, %Job{
+         job_status: %{is_lead: true, current_status: current_status},
+         id: job_id
+       }) do
+    state = if current_status == :not_sent, do: :lead, else: :booking_proposal_sent
+
+    from(preset in query,
+      join: job in Job,
+      on: job.type == preset.job_type and job.id == ^job_id,
+      where: preset.state == ^state
+    )
   end
 
   defp for_job(query, %Job{job_status: %{is_lead: false}, id: job_id}) do
     from(preset in query,
       join: job in Job,
       on: job.type == preset.job_type and job.id == ^job_id,
-      join: status in assoc(job, :job_status),
       join:
         shoot in subquery(
           from(shoot in Shoot,

@@ -42,9 +42,24 @@ defmodule Picsello.EmailPresetsTest do
       assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(job)
     end
 
-    test "lead" do
+    test "lead without proposal" do
       lead = insert(:lead, type: "wedding")
       %{id: expected_id} = insert(:email_preset, state: :lead, job_type: "wedding")
+      insert(:email_preset, state: :booking_proposal_sent, job_type: "wedding")
+      insert(:email_preset, state: :job, job_type: "wedding")
+      insert(:email_preset, state: :lead, job_type: "event")
+
+      assert [%EmailPreset{id: ^expected_id}] = EmailPresets.for(lead)
+    end
+
+    test "lead with sent proposal" do
+      lead = insert(:lead, type: "wedding")
+      insert(:proposal, job: lead)
+      insert(:email_preset, state: :lead, job_type: "wedding")
+
+      %{id: expected_id} =
+        insert(:email_preset, state: :booking_proposal_sent, job_type: "wedding")
+
       insert(:email_preset, state: :job, job_type: "wedding")
       insert(:email_preset, state: :lead, job_type: "event")
 
