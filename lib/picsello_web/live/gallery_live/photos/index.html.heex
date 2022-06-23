@@ -84,7 +84,7 @@
                   </ul>
                 </div>
               </div>
-              <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white cursor-pointer rounded-md">
+              <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
                 <.actions id="actions" class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id} photo_selected={Enum.any?(@selected_photos)}>
                   <%= if(is_nil(@album)) do %>
                     <.album_actions albums={@gallery.albums} />
