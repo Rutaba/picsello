@@ -312,14 +312,14 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def subscription_modal(assigns) do
     ~H"""
-    <div class="fixed inset-0 z-20 bg-black bg-opacity-60 flex items-center justify-center">
-      <div class="modal rounded-lg sm:max-w-4xl">
+    <div class="fixed inset-0 z-20 flex items-center justify-center bg-black/60">
+      <div class="rounded-lg modal sm:max-w-4xl">
         <h1 class="text-3xl font-semibold">Your plan has expired</h1>
         <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
-            <div class="border rounded-lg p-4 flex items-center justify-between">
+            <div class="flex items-center justify-between p-4 border rounded-lg">
               <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
               <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
                 Select this plan

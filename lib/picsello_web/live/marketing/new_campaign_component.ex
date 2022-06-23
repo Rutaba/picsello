@@ -68,7 +68,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         </fieldset>
 
         <%= if @review do %>
-          <div class="mt-3 p-3 rounded-lg border w-full">
+          <div class="w-full p-3 mt-3 border rounded-lg">
             <dl>
               <dt class="inline text-blue-planning-300">Subject line:</dt>
               <dd class="inline"><%= input_value(f, :subject) %></dd>
@@ -86,7 +86,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
                 Loading...
               </div>
             <% content -> %>
-              <div class="rounded-lg bg-base-200 flex justify-center mt-4 p-2">
+              <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
                 <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
                 </iframe>
               </div>
@@ -120,7 +120,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
   defp segment_type_option(assigns) do
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer leading-tight",
+        "flex items-center p-2 border rounded-lg hover:bg-blue-planning-100/60 cursor-pointer leading-tight",
         %{"border-blue-planning-300 bg-blue-planning-100" => @checked}
       )}>
         <input class="hidden" type={:radio} name={@name} value={@value} checked={@checked} />
@@ -133,7 +133,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         </div>
 
         <div class="flex flex-col">
-          <div class="font-semibold text-sm">
+          <div class="text-sm font-semibold">
             <%= @title %>
           </div>
           <div class="block text-sm opacity-70">

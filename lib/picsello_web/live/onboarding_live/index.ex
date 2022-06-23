@@ -82,7 +82,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
-          <div class="flex justify-between mt-5 sm:justify-end sm:mt-9 items-center">
+          <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9">
             <%= if @step > 2 do %>
               <button type="button" phx-click="previous" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">
                 Back
@@ -216,7 +216,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
           <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
             <%= for({value, label} <- software_options(), checked <- [software_selected?.(o, value)]) do %>
               <label class={classes(
-                "p-3 border rounded-lg hover:bg-blue-planning-100 hover:bg-opacity-60 cursor-pointer font-semibold text-sm sm:text-base",
+                "p-3 border rounded-lg hover:bg-blue-planning-100/60 cursor-pointer font-semibold text-sm sm:text-base",
                 %{"border-blue-planning-300 bg-blue-planning-100" => checked}
               )}>
                 <input class="hidden" type={if software_selected?.(o, :none), do: "radio", else: "checkbox"} name={input_name(o, :switching_from_softwares) <> "[]"} value={value} checked={checked} />
@@ -243,12 +243,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <p class="font-bold">When will I be charged?</p>
     <p><%= Subscriptions.subscription_content(@subscription_plan).description_prefix %>. (You can change to annual if you prefer in account settings.)</p>
     <hr class="my-4" />
-    <p class="italic text-sm text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
+    <p class="text-sm italic text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
-      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-        <div class="dialog rounded-lg">
+      <div class="fixed inset-0 flex items-center justify-center bg-black/60">
+        <div class="rounded-lg dialog">
           <.icon name="confetti" class="w-11 h-11" />
 
           <h1 class="text-3xl font-semibold"><%= Subscriptions.subscription_content(@subscription_plan).success_prefix %> has started!</h1>

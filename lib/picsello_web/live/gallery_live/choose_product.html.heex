@@ -1,4 +1,4 @@
-<div class="relative lg:pb-10 pb-24">
+<div class="relative pb-24 lg:pb-10">
   <div class="relative choose-product__modal">
     <a href="#" phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
       <.icon name="close-x" class="w-4 h-4 stroke-current lg:w-5 lg:h-5 stroke-2" />
@@ -9,11 +9,11 @@
     <div class="flex-row w-full px-5 select-none grid lg:flex lg:h-full lg:overflow-y-auto lg:justify-between lg:px-0 lg:pl-16 xl:pl-20">
       <div class="relative w-full mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
         <div id="wrapper" class="flex flex-row justify-center h-full wrapper">
-          <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="left-0 choose-product__btn top-1/2 transform -translate-y-1/2 -translate-x-1/4 swiper-button-prev">
+          <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="left-0 choose-product__btn top-1/2 -translate-y-1/2 -translate-x-1/4 swiper-button-prev">
             <.icon name="back" class="w-8 h-8 cursor-pointer text-blue-planning-300 stroke-2" />
           </div>
 
-          <div phx-click="next" phx-target={@myself} class="right-0 choose-product__btn top-1/2 transform -translate-y-1/2 translate-x-1/4 swiper-button-next">
+          <div phx-click="next" phx-target={@myself} class="right-0 choose-product__btn top-1/2 -translate-y-1/2 translate-x-1/4 swiper-button-next">
             <.icon name="forth" class="w-8 h-8 cursor-pointer text-blue-planning-300 stroke-2" />
           </div>
 
