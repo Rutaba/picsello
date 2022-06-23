@@ -1,15 +1,25 @@
 const PlacesAutocomplete = {
   mounted() {
-    const metaTag = [
-      ...document.head.getElementsByTagName('meta'),
-    ].find(({ name }) => name == 'google-maps-api-key');
+    const metaTag = document.head.querySelector(
+      'meta[name=google-maps-api-key]'
+    );
 
-    if(!metaTag) return;
+    if (!metaTag) return;
 
     const input = this.el;
 
+    const eventName = input.dataset.eventName;
+
     const setAutocomplete = () => {
-      new window.google.maps.places.Autocomplete(input);
+      const autocomplete = new window.google.maps.places.Autocomplete(input, {
+        types: ['address'],
+        fields: ['formatted_address', 'name', 'address_components'],
+      });
+
+      if (eventName)
+        autocomplete.addListener('place_changed', () => {
+          this.pushEvent(eventName, autocomplete.getPlace());
+        });
 
       setTimeout(() => {
         // move .pac-container from document.body to .autocomplete-wrapper so it scrolls together with the input

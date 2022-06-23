@@ -140,6 +140,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
+  def handle_event(
+        "place_changed",
+        params,
+        %{assigns: %{delivery_info_changeset: changeset}} = socket
+      ) do
+    socket
+    |> assign(delivery_info_changeset: Cart.delivery_info_change(changeset, params))
+    |> noreply()
+  end
+
   @impl true
   @doc "called when checkout completes"
   def handle_info(
