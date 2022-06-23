@@ -367,7 +367,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def actions(assigns) do
     ~H"""
-    <div id={@id} class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
+    <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update="ignore" data-offset-y="10" phx-hook="Select">
       <div class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
           <div class="lg:mx-3">
             <span>Actions</span>
