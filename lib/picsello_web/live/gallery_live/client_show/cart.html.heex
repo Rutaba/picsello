@@ -160,7 +160,8 @@
                     </label>
 
                     <div class="pt-2">
-                      <%= input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-base-200 h-12 px-3", phx_hook: "PlacesAutocomplete", "data-event-name": "place_changed" %>
+                      <%= input fp, :addr1, placeholder: "Address line 1", class: "w-full border border-base-200 h-12 px-3", phx_hook: "PlacesAutocomplete", data_event_name: "place_changed" %>
+
                       <div id="place-autocomplete-target" class="relative autocomplete-wrapper" phx-update="ignore"></div>
                     </div>
 
