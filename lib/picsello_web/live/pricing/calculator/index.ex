@@ -176,15 +176,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
         <div class="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
           <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">What's your zipcode?</p>
-            <%= input @f, :zipcode, type: :text_input, phx_debounce: 500, min: 0, placeholder: "00000", class: "p-4" %>
-            <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
-          </label>
-
-          <label class="flex flex-col mt-4">
             <p class="py-2 font-extrabold">Where’s your business based?</p>
             <%= select @f, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
             <%= error_tag @f, :state, class: "text-red-sales-300 text-sm" %>
+          </label>
+
+          <label class={classes("flex flex-col mt-4", %{"opacity-50" => @f |> input_value(:state) |> Picsello.Onboardings.non_us_state?()})}>
+            <p class="py-2 font-extrabold">What's your zipcode?</p>
+            <%= input @f, :zipcode, type: :text_input, disabled: @f |> input_value(:state) |> Picsello.Onboardings.non_us_state?(), phx_debounce: 500, min: 0, placeholder: "00000", class: "p-4" %>
+            <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
           </label>
         </div>
 

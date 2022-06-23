@@ -14,6 +14,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       stripe_customer_id: "photographer-stripe-customer-id",
       email: "photographer@example.com"
     )
+    |> onboard!()
 
     package =
       insert(:package,

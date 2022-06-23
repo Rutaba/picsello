@@ -338,7 +338,7 @@ defmodule PicselloWeb.LiveHelpers do
     |> noreply()
   end
 
-  def help_scout_output(current_user, help_scout_id) do
+  def help_scout_output(current_user, help_scout_id, opts \\ []) do
     %{
       phx_hook: "HelpScout",
       data_id: Application.get_env(:picsello, help_scout_id),
@@ -346,6 +346,7 @@ defmodule PicselloWeb.LiveHelpers do
       data_email: current_user.email,
       data_name: current_user.name
     }
+    |> Map.merge(Enum.into(opts, %{}))
   end
 
   def shoot_location(%{address: address, location: location}),
