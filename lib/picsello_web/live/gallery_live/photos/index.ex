@@ -52,8 +52,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "add_album_popup_with_selected",
-        _,
+        "add_album_popup",
+        %{},
         %{
           assigns: %{
             gallery: gallery,
@@ -61,28 +61,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    open_model_assigns = %{gallery_id: gallery.id, selected_photos: selected_photos}
-
-    selected_photos
-    |> case do
-      [] -> put_flash(socket, :error, "Please select at least one image")
-      _ -> open_modal(socket, AlbumSettings, open_model_assigns)
-    end
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "add_album_popup",
-        %{},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id})
+    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, selected_photos: selected_photos})
     |> noreply()
   end
 
