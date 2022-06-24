@@ -13,6 +13,6 @@ defmodule Picsello.Repo.Migrations.AddEmailPresets do
       timestamps()
     end
 
-    create unique_index(:email_presets, ~w[job_type job_state name]a)
+    create(unique_index(:email_presets, ~w[job_type job_state name]a))
   end
 end

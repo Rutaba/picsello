@@ -10,7 +10,7 @@ defmodule Picsello.Repo.Migrations.CreateProductPreviews do
       timestamps()
     end
 
-    create index(:product_previews, [:product_id])
-    create index(:product_previews, [:photo_id])
+    create(index(:product_previews, [:product_id]))
+    create(index(:product_previews, [:photo_id]))
   end
 end

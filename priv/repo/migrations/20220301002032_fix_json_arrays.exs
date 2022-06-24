@@ -10,7 +10,7 @@ defmodule Picsello.Repo.Migrations.FixJsonArrays do
       add(:digitals, :map, null: false, default: "[]")
     end
 
-    execute """
+    execute("""
       update gallery_orders set products = products_json, digitals = digitals_json
       from (
         select
@@ -23,7 +23,7 @@ defmodule Picsello.Repo.Migrations.FixJsonArrays do
         left join unnest(old_digitals) as unnested_digitals on true
         group by id
       ) as jsonified where jsonified.id = gallery_orders.id
-    """
+    """)
 
     alter table("gallery_orders") do
       remove(:old_products)
@@ -40,7 +40,7 @@ defmodule Picsello.Repo.Migrations.FixJsonArrays do
       add(:digitals, {:array, :map})
     end
 
-    execute """
+    execute("""
       update gallery_orders set products = products_array, digitals = digitals_array
       from (
         select
@@ -54,7 +54,7 @@ defmodule Picsello.Repo.Migrations.FixJsonArrays do
         group by
           id
       ) as jsonified where jsonified.id = gallery_orders.id
-    """
+    """)
 
     alter table("gallery_orders") do
       remove(:old_products)

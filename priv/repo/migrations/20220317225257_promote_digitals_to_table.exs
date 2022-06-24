@@ -127,6 +127,6 @@ defmodule Picsello.Repo.Migrations.PromoteDigitalsToTable do
       where subtotals.id = gallery_orders.id
     """)
 
-    drop table("digital_line_items")
+    drop(table("digital_line_items"))
   end
 end

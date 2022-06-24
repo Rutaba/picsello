@@ -2,7 +2,7 @@ defmodule Picsello.Repo.Migrations.RemoveProductPreviews do
   use Ecto.Migration
 
   def up do
-    drop table(:product_previews)
+    drop(table(:product_previews))
   end
 
   def down do
@@ -14,7 +14,7 @@ defmodule Picsello.Repo.Migrations.RemoveProductPreviews do
       timestamps()
     end
 
-    create index(:product_previews, [:product_id])
-    create index(:product_previews, [:photo_id])
+    create(index(:product_previews, [:product_id]))
+    create(index(:product_previews, [:photo_id]))
   end
 end

@@ -5,7 +5,7 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
     drop_if_exists(table(:gallery_products), mode: :cascade)
 
     create table(:gallery_products) do
-      add :name, :string
+      add(:name, :string)
 
       add(:category_template_id, references(:category_templates, on_delete: :nothing), null: false)
 
@@ -15,9 +15,9 @@ defmodule Picsello.Repo.Migrations.GalleryProducts do
       timestamps()
     end
 
-    create index(:gallery_products, [:category_template_id])
-    create index(:gallery_products, [:preview_photo_id])
-    create index(:gallery_products, [:gallery_id])
+    create(index(:gallery_products, [:category_template_id]))
+    create(index(:gallery_products, [:preview_photo_id]))
+    create(index(:gallery_products, [:gallery_id]))
   end
 
   def down do

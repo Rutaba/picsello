@@ -22,7 +22,7 @@ defmodule Picsello.Repo.Migrations.RemoveCategoryTemplates do
       add(:frame_image, :string)
     end
 
-    drop table(:category_templates)
+    drop(table(:category_templates))
   end
 
   def down do
@@ -36,7 +36,7 @@ defmodule Picsello.Repo.Migrations.RemoveCategoryTemplates do
       timestamps()
     end
 
-    create index(:category_templates, [:category_id])
+    create(index(:category_templates, [:category_id]))
 
     execute("""
     insert into category_templates (name,corners,category_id,title,price,inserted_at,updated_at)

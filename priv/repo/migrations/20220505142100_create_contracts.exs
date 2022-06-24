@@ -3,12 +3,12 @@ defmodule Picsello.Repo.Migrations.CreateContracts do
 
   def change do
     create table(:contracts) do
-      add :name, :string, null: false
-      add :content, :text, null: false
-      add :organization_id, references(:organizations, on_delete: :nothing)
-      add :job_type, references(:job_types, column: :name, type: :string)
-      add :job_id, references(:jobs, on_delete: :nothing)
-      add :contract_template_id, references(:contracts, on_delete: :nothing)
+      add(:name, :string, null: false)
+      add(:content, :text, null: false)
+      add(:organization_id, references(:organizations, on_delete: :nothing))
+      add(:job_type, references(:job_types, column: :name, type: :string))
+      add(:job_id, references(:jobs, on_delete: :nothing))
+      add(:contract_template_id, references(:contracts, on_delete: :nothing))
 
       timestamps()
     end
@@ -47,13 +47,13 @@ defmodule Picsello.Repo.Migrations.CreateContracts do
       )
     )
 
-    create index(:contracts, [:organization_id])
+    create(index(:contracts, [:organization_id]))
 
-    create unique_index(:contracts, [:job_id])
+    create(unique_index(:contracts, [:job_id]))
 
-    create unique_index(:contracts, [:name, :organization_id],
-             where: "contract_template_id is null"
-           )
+    create(
+      unique_index(:contracts, [:name, :organization_id], where: "contract_template_id is null")
+    )
 
     name = "Picsello Default Contract"
 

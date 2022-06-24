@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.AddColumnToCategoryTemplate do
 
   def up do
     alter table("category_templates") do
-      add :title, :text
+      add(:title, :text)
     end
   end
 end

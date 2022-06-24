@@ -24,6 +24,6 @@ defmodule Picsello.Repo.Migrations.CreateGalleries do
       timestamps()
     end
 
-    create index(:galleries, [:job_id])
+    create(index(:galleries, [:job_id]))
   end
 end
