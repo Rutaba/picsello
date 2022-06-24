@@ -406,54 +406,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event(
-        "photo_download_popup",
-        %{"photo_id" => photo_id},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    link =
-      Routes.gallery_downloads_path(
-        socket,
-        :download_photo,
-        gallery.client_link_hash,
-        photo_id,
-        is_photographer: true
-      )
-
-    socket
-    |> redirect(to: link)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "download_selected_photos",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery,
-            selected_photos: selected_photos
-          }
-        } = socket
-      ) do
-    link =
-      Routes.gallery_downloads_path(socket, :download_all, gallery.client_link_hash,
-        photo_ids: selected_photos
-      )
-
-    selected_photos
-    |> case do
-      [] -> put_flash(socket, :error, "Please select at least one item")
-      _ -> redirect(socket, to: link)
-    end
-    |> noreply()
-  end
-
-  @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do
     socket
     |> close_modal()
@@ -732,7 +684,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     ~H"""
     <%= for album <- @albums do %>
       <%= if @exclude_album_id != album.id do %>
-        <li class={"relative py-1.5 hover:bg-blue-planning-100 #{get_class(album.name)}"}>
+        <li class={"relative py-1 hover:bg-blue-planning-100 #{get_class(album.name)}"}>
           <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
           <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
         </li>
@@ -755,5 +707,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       true ->
         "pt-40"
     end
+  end
+
+  def encode(photo_ids) do
+    {_, photo_ids} = Jason.encode(photo_ids)
+    photo_ids
   end
 end

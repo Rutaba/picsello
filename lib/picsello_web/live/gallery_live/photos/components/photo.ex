@@ -17,6 +17,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
+      client_link_hash: Map.get(assigns, :client_link_hash),
       url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
     )
     |> assign(assigns)
@@ -65,12 +66,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       []
     end ++
       [
-        %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"},
-        %{
-          id: "photo-download-#{id}",
-          event: "photo_download_popup",
-          title: "Download photo"
-        }
+        %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
       ]
   end
 
@@ -105,12 +101,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     ~H"""
     <ul class="absolute hidden bg-white pl-1 py-1 rounded-md popover-content meatballsdropdown w-40 overflow-visible">
       <%= for li <- @entries do %>
-      <li class={"flex #{Map.get(li, :class, nil)} items-center hover:bg-blue-planning-100 hover:rounded-md"}>
+      <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
         <div id={li.id} class="hover-drop-down" phx-click={li.event} phx-value-photo_id={@id}>
           <%= li.title %>
         </div>
       </li>
       <% end %>
+      <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
+        <a id={"download-photo-#{@id}"} class="hover-drop-down"
+          download
+          href={Routes.gallery_downloads_path(
+            @socket,
+            :download_photo,
+            @client_link_hash,
+            @id,
+            is_photographer: true
+          )}>Download photo
+        </a>
+      </li>
     </ul>
     """
   end

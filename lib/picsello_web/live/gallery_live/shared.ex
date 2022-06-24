@@ -367,17 +367,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def actions(assigns) do
     ~H"""
-    <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update="ignore" data-offset-y="10" phx-hook="Select">
+    <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
       <div class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
-          <div class="lg:mx-3">
-            <span>Actions</span>
-          </div>
-          <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
-          <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
+        <div class="lg:mx-3">
+          <span>Actions</span>
+        </div>
+        <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
+        <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
       </div>
       <ul class="absolute z-30 hidden mt-2 w-full bg-white rounded-md popover-content border border-base-200">
         <%= render_slot(@inner_block) %>
-        <li class="flex items-center py-1.5 bg-base-200 rounded-b-md hover:opacity-75">
+        <li class="flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75">
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
           </button>

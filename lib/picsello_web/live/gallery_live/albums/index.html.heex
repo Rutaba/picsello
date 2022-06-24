@@ -25,6 +25,7 @@
             <div class="cursor-pointer actionBlock">
               <.actions
               id="unsorted_actions"
+              update_mode="ignore"
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_all_unsorted_photos"
               delete_title="Delete all unsorted photos"
@@ -42,6 +43,7 @@
             <div class="cursor-pointer actionBlock">
               <.actions
               id={"actions-#{album.id}"}
+              update_mode="ignore"
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_album_popup"
               delete_title="Delete Album"

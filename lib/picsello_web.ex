@@ -24,6 +24,7 @@ defmodule PicselloWeb do
       import Plug.Conn
       import PicselloWeb.Gettext
       alias PicselloWeb.Router.Helpers, as: Routes
+      alias PicselloWeb.ErrorView
     end
   end
 

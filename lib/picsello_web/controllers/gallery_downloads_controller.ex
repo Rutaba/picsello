@@ -10,14 +10,16 @@ defmodule PicselloWeb.GalleryDownloadsController do
   end
 
   def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids} = _params) do
+
     gallery = Galleries.get_gallery_by_hash!(hash)
     photographer = Galleries.gallery_photographer(gallery)
 
     if photographer.id == conn.assigns.current_user.id do
-      %{organization: org, photos: photos} = Orders.get_selected_photos!(photo_ids, hash)
-      process_photos(conn, photos, "#{org.name}.zip")
+      {_, photo_ids} = Jason.decode(photo_ids)
+      photos = Galleries.get_photos_by_ids(photo_ids) |> some!()
+      process_photos(conn, photos, "#{gallery.name}.zip")
     else
-      conn |> put_flash(:error, "You are not allowed") |> redirect(to: "/")
+      conn |> put_view(ErrorView) |> render("403.html")
     end
   end
 
@@ -33,11 +35,11 @@ defmodule PicselloWeb.GalleryDownloadsController do
     gallery = Galleries.get_gallery_by_hash!(hash)
     photographer = Galleries.gallery_photographer(gallery)
 
-    if photographer.id != conn.assigns.current_user.id do
+    if photographer.id == conn.assigns.current_user.id do
       photo = Photos.get!(photo_id)
       process_photo(conn, photo)
     else
-      conn |> put_flash(:error, "You are not allowed") |> redirect(to: "/")
+      conn |> put_view(ErrorView) |> render("403.html")
     end
   end
 
@@ -64,6 +66,11 @@ defmodule PicselloWeb.GalleryDownloadsController do
     |> send_chunked(200)
     |> process_chunks(id)
   end
+
+  defp some!(photos), do: (case photos do
+            [] -> raise Ecto.NoResultsError
+            some -> some
+          end)
 
   # Encode header value same way as Packmatic https://github.com/evadne/packmatic/blob/5fe031896dae48665d31be3d287508aa5887be24/lib/packmatic/conn.ex#L22
   defp encode_header_value(filename) do
