@@ -61,7 +61,7 @@ defmodule Picsello.Albums do
   def insert_album(params),
     do: Album.create_changeset(params) |> Repo.insert()
 
-  def insert_album_with_selected(params, selected_photos) do
+  def insert_album_with_selected_photos(params, selected_photos) do
     Multi.new()
     |> Multi.insert(:album, change_album(%Album{}, params))
     |> Multi.update_all(

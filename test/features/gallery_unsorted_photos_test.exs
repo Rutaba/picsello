@@ -145,7 +145,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> assert_has(css(".item", count: photos_count))
   end
 
-  test "Unsorted Photos, create album with selected potos", %{
+  test "Unsorted Photos, create album with selected photos", %{
     session: session,
     gallery: %{id: gallery_id}
   } do
