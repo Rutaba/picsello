@@ -53,7 +53,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
   def insert_intent(%{order: order}) do
     intent =
       insert(:intent,
-        stripe_id: "payment-intent-id",
+        stripe_payment_intent_id: "payment-intent-id",
         order: order,
         amount: Order.total_cost(order),
         status: :requires_payment_method
@@ -65,7 +65,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
       intent: intent,
       stripe_intent:
         build(:stripe_payment_intent,
-          id: intent.stripe_id,
+          id: intent.stripe_payment_intent_id,
           amount: total_cents,
           status: "requires_capture",
           amount_capturable: total_cents
@@ -99,7 +99,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
     [
       session:
         build(:stripe_session,
-          payment_intent: intent.stripe_id,
+          payment_intent: intent.stripe_payment_intent_id,
           client_reference_id: "order_number_#{Order.number(order)}"
         )
     ]

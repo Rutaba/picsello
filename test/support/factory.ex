@@ -796,7 +796,8 @@ defmodule Picsello.Factory do
       application_fee_amount: ~M[0]USD,
       order: fn -> build(:order) end,
       status: :requires_payment_method,
-      stripe_id: sequence(:payment_intent, &"payment-intent-#{&1}")
+      stripe_payment_intent_id: sequence(:payment_intent, &"payment-intent-#{&1}"),
+      stripe_session_id: sequence(:session, &"session-#{&1}")
     }
     |> evaluate_lazy_attributes()
   end
@@ -816,16 +817,20 @@ defmodule Picsello.Factory do
 
   def stripe_payment_intent_factory() do
     %Stripe.PaymentIntent{
-      amount: ~M[0]USD,
-      amount_received: ~M[0]USD,
-      amount_capturable: ~M[0]USD,
+      amount: 0,
+      amount_received: 0,
+      amount_capturable: 0,
+      application_fee_amount: 0,
       status: "requires_payment_method",
       id: sequence(:payment_intent_stripe_id, &"payment-intent-stripe-id-#{&1}")
     }
   end
 
   def stripe_session_factory do
-    %Stripe.Session{payment_intent: build(:stripe_payment_intent)}
+    %Stripe.Session{
+      id: sequence(:session, &"session-#{&1}"),
+      payment_intent: build(:stripe_payment_intent)
+    }
   end
 
   def stripe_invoice_factory() do

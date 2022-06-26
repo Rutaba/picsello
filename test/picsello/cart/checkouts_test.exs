@@ -95,7 +95,7 @@ defmodule Picsello.Cart.CheckoutsTest do
     end)
 
     assert {:ok, _} = check_out(order)
-    assert [%Intent{stripe_id: "intent-stripe-id"}] = Repo.all(Intent)
+    assert [%Intent{stripe_payment_intent_id: "intent-stripe-id"}] = Repo.all(Intent)
   end
 
   def creates_whcc_order(%{order: order, whcc_order: whcc_order}) do
@@ -107,6 +107,27 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     assert [%{whcc_order: %Picsello.WHCC.Order.Created{entry_id: "whcc-entry-id"}}] =
              Repo.all(Order)
+  end
+
+  describe "check_out - second checkout, first still unpaid by client" do
+    setup [:stub_create_session]
+
+    setup %{gallery: gallery} do
+      order = build(:digital) |> Cart.place_product(gallery)
+
+      refute ~M[0]USD == Order.total_cost(order)
+
+      assert {:ok, _} = check_out(order)
+      [order: order]
+    end
+
+    test "exipres previous session", %{order: order} do
+      Mox.expect(MockPayments, :expire_session, fn id, _ ->
+        {:ok, build(:stripe_session, id: id, status: "expired")}
+      end)
+
+      check_out(order)
+    end
   end
 
   describe "check_out - client owes, whcc outstanding" do

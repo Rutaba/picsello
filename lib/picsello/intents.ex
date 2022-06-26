@@ -19,30 +19,46 @@ defmodule Picsello.Intents do
         values:
           ~w[requires_payment_method requires_confirmation requires_capture requires_action processing succeeded canceled]a
 
-      field :stripe_id, :string
+      field :stripe_payment_intent_id, :string
+      field :stripe_session_id, :string
 
       belongs_to :order, Order
 
       timestamps(type: :utc_datetime)
     end
 
-    def changeset(%Stripe.PaymentIntent{id: stripe_id} = params, %Order{id: order_id}) do
-      required_attrs = ~w[amount amount_received amount_capturable status stripe_id order_id]a
+    def changeset(%Stripe.PaymentIntent{id: stripe_id} = params, opts) do
+      required_attrs =
+        ~w[amount amount_received amount_capturable status stripe_payment_intent_id stripe_session_id order_id]a
 
       cast(
         %__MODULE__{},
         params
         |> Map.from_struct()
-        |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
+        |> Map.merge(%{
+          stripe_payment_intent_id: stripe_id,
+          order_id: Keyword.get(opts, :order_id),
+          stripe_session_id: Keyword.get(opts, :session_id)
+        }),
         [:application_fee_amount | required_attrs]
       )
       |> validate_required(required_attrs)
+      |> validate_one_uncancelled()
     end
 
-    def changeset(%__MODULE__{} = invoice, %Stripe.PaymentIntent{} = params) do
+    def changeset(%__MODULE__{} = intent, %Stripe.PaymentIntent{} = params) do
       attrs = ~w[amount amount_received amount_capturable status]a
 
-      cast(invoice, Map.from_struct(params), attrs) |> validate_required(attrs)
+      cast(intent, Map.from_struct(params), attrs)
+      |> validate_required(attrs)
+      |> validate_one_uncancelled()
+    end
+
+    defp validate_one_uncancelled(changeset) do
+      unique_constraint(changeset, [:order_id, :status],
+        name: "gallery_order_intents_uncanceled_order_id",
+        message: "only one uncancelled intent per order"
+      )
     end
   end
 
@@ -52,12 +68,12 @@ defmodule Picsello.Intents do
 
   def update(%Stripe.PaymentIntent{id: "" <> stripe_id} = intent) do
     Intent
-    |> Repo.get_by(stripe_id: stripe_id)
+    |> Repo.get_by(stripe_payment_intent_id: stripe_id)
     |> Intent.changeset(intent)
     |> Repo.update()
   end
 
-  def capture(%Intent{stripe_id: stripe_id}, stripe_options) do
+  def capture(%Intent{stripe_payment_intent_id: stripe_id}, stripe_options) do
     case Picsello.Payments.capture_payment_intent(stripe_id, stripe_options) do
       {:ok, stripe_intent} -> update(stripe_intent)
       error -> error
@@ -65,5 +81,16 @@ defmodule Picsello.Intents do
   end
 
   def unpaid_query(),
-    do: from(intents in Intent, where: intents.status not in [:succeeded, :requires_capture])
+    do:
+      from(intents in Intent,
+        where: intents.status not in [:succeeded, :requires_capture, :canceled]
+      )
+
+  def unresolved_for_order(order_id) do
+    resolved_statuses = [:succeeded, :canceled]
+
+    from(intent in Intent,
+      where: intent.order_id == ^order_id and intent.status not in ^resolved_statuses
+    )
+  end
 end
