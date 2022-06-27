@@ -171,7 +171,6 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       )
     end
 
-
     test "sends a zip of all photos when bundle is purchased", %{
       conn: conn,
       original_url: original_url

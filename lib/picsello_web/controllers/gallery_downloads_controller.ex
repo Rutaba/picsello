@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryDownloadsController do
   end
 
   def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids} = _params) do
-
     gallery = Galleries.get_gallery_by_hash!(hash)
     photographer = Galleries.gallery_photographer(gallery)
 
@@ -67,10 +66,12 @@ defmodule PicselloWeb.GalleryDownloadsController do
     |> process_chunks(id)
   end
 
-  defp some!(photos), do: (case photos do
-            [] -> raise Ecto.NoResultsError
-            some -> some
-          end)
+  defp some!(photos),
+    do:
+      (case photos do
+         [] -> raise Ecto.NoResultsError
+         some -> some
+       end)
 
   # Encode header value same way as Packmatic https://github.com/evadne/packmatic/blob/5fe031896dae48665d31be3d287508aa5887be24/lib/packmatic/conn.ex#L22
   defp encode_header_value(filename) do
