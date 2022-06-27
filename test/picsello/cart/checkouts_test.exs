@@ -65,12 +65,7 @@ defmodule Picsello.Cart.CheckoutsTest do
     |> Mox.stub(:create_invoice, fn _, _ ->
       {:ok, build(:stripe_invoice)}
     end)
-
-    :ok
-  end
-
-  def stub_finalize_invoice(_) do
-    Mox.stub(MockPayments, :finalize_invoice, fn _, _, _ ->
+    |> Mox.stub(:finalize_invoice, fn _, _, _ ->
       {:ok, build(:stripe_invoice, status: "open")}
     end)
 
@@ -152,15 +147,6 @@ defmodule Picsello.Cart.CheckoutsTest do
     )
 
     test("creates whcc order", context, do: creates_whcc_order(context))
-
-    test("creates invoice", %{order: order}) do
-      Mox.expect(MockPayments, :create_invoice, fn _params, _opts ->
-        {:ok, build(:stripe_invoice, id: "invoice-stripe-id")}
-      end)
-
-      assert {:ok, _} = check_out(order)
-      assert [%Invoice{stripe_id: "invoice-stripe-id"}] = Repo.all(Invoice)
-    end
   end
 
   describe "check_out - client owes, no products" do
@@ -208,7 +194,7 @@ defmodule Picsello.Cart.CheckoutsTest do
       [whcc_order: build(:whcc_order_created, entry_id: "whcc-entry-id", total: ~M[500000]USD)]
     end
 
-    setup [:stub_create_order, :stub_create_invoice, :stub_finalize_invoice]
+    setup [:stub_create_order, :stub_create_invoice]
 
     setup %{gallery: gallery, whcc_order: whcc_order} do
       order =

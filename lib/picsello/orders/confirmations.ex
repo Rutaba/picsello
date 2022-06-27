@@ -7,9 +7,20 @@ defmodule Picsello.Orders.Confirmations do
     See also Picsello.Cart.Checkouts for the steps that come before this in the ordering process.
   """
 
-  alias Picsello.{Invoices.Invoice, Galleries, Cart.Order, Payments, Cart.OrderNumber, WHCC, Repo}
+  alias Picsello.{
+    Invoices,
+    Invoices.Invoice,
+    Galleries,
+    Cart.Order,
+    Payments,
+    Cart.OrderNumber,
+    WHCC,
+    Repo
+  }
+
   import Ecto.Query, only: [from: 2]
-  import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2]
+  import Money.Sigils
+  import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2, insert: 3]
 
   @doc """
   Handles a stripe session.
@@ -19,12 +30,13 @@ defmodule Picsello.Orders.Confirmations do
   1. maybe fetch the session
   1. update intent
   1. is client paid up?
-    1. send confirmation email
-    1. is the order all paid for?
-      1. capture the stripe funds
-      1. confirm with whcc
-    1. photographer still owes?
-      1. finalize photographer invoice
+     1. send confirmation email
+     1. is the order all paid for?
+        1. capture the stripe funds
+        1. confirm with whcc
+     1. photographer still owes?
+        1. insert photographer invoice
+        1. finalize photographer invoice
   """
   @spec handle_session(Stripe.Session.t()) ::
           {:ok, Order.t(), :confirmed | :already_confirmed} | {:error, any()}
@@ -82,28 +94,28 @@ defmodule Picsello.Orders.Confirmations do
     |> run(:order, &load_order/2)
     |> run(:stripe_options, &stripe_options/2)
     |> session_fn.()
-    |> run(:paid, &check_paid/2)
+    |> run(:client_paid, &check_paid/2)
     |> update(:place_order, &place_order/1)
     |> run(:intent, &update_intent/2)
+    |> run(:photographer_owes, &photographer_owes/2)
     |> merge(fn
-      %{order: %{products: [_ | _]} = order, paid: %{photographer: true}} = multi ->
+      %{order: %{products: [_ | _]} = order, photographer_owes: ~M[0]USD} = multi ->
         new()
         |> run(:confirm_order, fn _, _ -> confirm_order(order) end)
         |> update(:confirmed_order, Order.whcc_confirmation_changeset(order))
         |> run(:capture, fn _, _ -> capture(multi) end)
 
-      %{paid: %{photographer: false}, order: order} ->
-        new()
-        |> run(:invoice, fn repo, _ -> load_invoice(repo, order) end)
-        |> run(:stripe_invoice, &finalize_invoice/2)
-        |> update(:updated_invoice, &update_invoice_changeset/1)
-
       %{order: %{products: []}} = multi ->
         run(new(), :capture, fn _, _ -> capture(multi) end)
+
+      %{order: order, photographer_owes: photographer_owes} ->
+        new()
+        |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, photographer_owes) end)
+        |> insert(:invoice, &insert_invoice_changeset(&1, order))
     end)
     |> Repo.transaction()
     |> case do
-      {:error, :paid, _, %{order: order}} ->
+      {:error, :client_paid, _, %{order: order}} ->
         {:ok, order, :already_confirmed}
 
       {:ok, %{place_order: order}} ->
@@ -119,6 +131,24 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
+  defp photographer_owes(_repo, %{order: %{whcc_order: nil}}), do: {:ok, ~M[0]USD}
+
+  defp photographer_owes(_repo, %{
+         intent: %{application_fee_amount: nil},
+         order: %{whcc_order: whcc_order}
+       }),
+       do: {:ok, Picsello.WHCC.Order.Created.total(whcc_order)}
+
+  defp photographer_owes(_repo, %{
+         intent: %{application_fee_amount: application_fee_amount},
+         order: %{whcc_order: whcc_order}
+       }),
+       do:
+         {:ok,
+          whcc_order
+          |> Picsello.WHCC.Order.Created.total()
+          |> Money.subtract(application_fee_amount)}
+
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
 
   defp load_order(repo, %{order_number: order_number}) do
@@ -130,7 +160,7 @@ defmodule Picsello.Orders.Confirmations do
         preload: [
           products: :whcc_product,
           digitals: :photo,
-          gallery: [job: [client: :organization]]
+          gallery: [organization: :user]
         ]
       )
       |> repo.one!()
@@ -140,7 +170,7 @@ defmodule Picsello.Orders.Confirmations do
 
   defp stripe_options(_, %{order: order}) do
     case order do
-      %{gallery: %{job: %{client: %{organization: %{stripe_account_id: stripe_account_id}}}}} ->
+      %{gallery: %{organization: %{stripe_account_id: stripe_account_id}}} ->
         {:ok, connect_account: stripe_account_id}
 
       _ ->
@@ -152,12 +182,10 @@ defmodule Picsello.Orders.Confirmations do
     do: [connect_account: stripe_account_id]
 
   defp check_paid(_, %{order: order}) do
-    photographer_paid = Picsello.Orders.photographer_paid?(order)
-
     if Picsello.Orders.client_paid?(order) do
-      {:error, %{client: true, photographer: photographer_paid}}
+      {:error, true}
     else
-      {:ok, %{client: false, photographer: photographer_paid}}
+      {:ok, false}
     end
   end
 
@@ -228,20 +256,32 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp load_invoice(repo, %Order{id: order_id}) do
-    Invoice
-    |> repo.get_by(order_id: order_id)
-    |> case do
-      nil -> {:error, "no invoice"}
-      invoice -> {:ok, invoice}
-    end
-  end
-
-  defp finalize_invoice(_repo, %{invoice: %{stripe_id: stripe_invoice_id}}) do
-    Payments.finalize_invoice(stripe_invoice_id, %{auto_advance: true})
-  end
-
   defp update_invoice_changeset(%{stripe_invoice: stripe_invoice, invoice: invoice}) do
     Invoice.changeset(invoice, stripe_invoice)
   end
+
+  defp create_stripe_invoice(
+         %{gallery: %{organization: %{user: user}}} = invoice_order,
+         %{amount: outstanding_cents}
+       ) do
+    with "" <> customer <- Picsello.Subscriptions.user_customer_id(user),
+         {:ok, _invoice_item} <-
+           Payments.create_invoice_item(%{
+             customer: customer,
+             amount: outstanding_cents,
+             currency: "USD"
+           }),
+         {:ok, invoice} <-
+           Payments.create_invoice(%{
+             customer: customer,
+             description:
+               "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}",
+             auto_advance: true
+           }) do
+      Payments.finalize_invoice(invoice, %{auto_advance: true})
+    end
+  end
+
+  defp insert_invoice_changeset(%{stripe_invoice: stripe_invoice}, order),
+    do: Invoices.changeset(stripe_invoice, order)
 end

@@ -10,21 +10,52 @@ defmodule Picsello.Orders.ConfirmationsTest do
     Intents.Intent
   }
 
+  import Money.Sigils
+
   setup do
     Mox.verify_on_exit!()
 
-    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+    [
+      gallery:
+        insert(:gallery,
+          job:
+            insert(:lead,
+              client:
+                insert(:client,
+                  organization:
+                    insert(:organization,
+                      user: insert(:user, stripe_customer_id: "photographer-stripe-customer-id")
+                    )
+                )
+            )
+        )
+    ]
+  end
 
-    gallery = insert(:gallery)
+  def insert_order(%{whcc_order: whcc_order, placed_at: placed_at, gallery: gallery}),
+    do: [
+      order:
+        :order
+        |> insert(
+          delivery_info: %{email: "client@example.com"},
+          whcc_order: whcc_order,
+          placed_at: placed_at,
+          gallery: gallery
+        )
+        |> Repo.preload([:gallery, :products, :digitals])
+    ]
 
-    order =
-      insert(:order,
-        delivery_info: %{email: "client@example.com"},
-        whcc_order: build(:whcc_order_created),
-        gallery: gallery
-      )
+  def insert_order(%{} = context),
+    do:
+      context
+      |> Enum.into(%{whcc_order: build(:whcc_order_created), placed_at: DateTime.utc_now()})
+      |> insert_order()
 
-    [gallery: gallery, order: Repo.preload(order, [:gallery, :products, :digitals])]
+  def insert_invoice(%{order: order}) do
+    [
+      invoice: insert(:invoice, order: order, status: :open, stripe_id: "invoice-stripe-id"),
+      stripe_invoice: build(:stripe_invoice, status: "paid", id: "invoice-stripe-id")
+    ]
   end
 
   def stub_confirm_order(_) do
@@ -41,13 +72,6 @@ defmodule Picsello.Orders.ConfirmationsTest do
     end)
 
     :ok
-  end
-
-  def insert_invoice(%{order: order}) do
-    [
-      invoice: insert(:invoice, order: order, status: :open, stripe_id: "invoice-stripe-id"),
-      stripe_invoice: build(:stripe_invoice, status: "paid", id: "invoice-stripe-id")
-    ]
   end
 
   def insert_intent(%{order: order}) do
@@ -81,6 +105,23 @@ defmodule Picsello.Orders.ConfirmationsTest do
     :ok
   end
 
+  def stub_create_invoice(_) do
+    invoice = build(:stripe_invoice)
+
+    MockPayments
+    |> Mox.stub(:create_invoice_item, fn _, _ ->
+      {:ok, %Stripe.Invoiceitem{}}
+    end)
+    |> Mox.stub(:create_invoice, fn _, _ ->
+      {:ok, invoice}
+    end)
+    |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+      {:ok, %{invoice | status: "open"}}
+    end)
+
+    :ok
+  end
+
   def updates_invoice(%{stripe_invoice: stripe_invoice}) do
     assert {:ok, _} = Confirmations.handle_invoice(stripe_invoice)
     assert [%Invoice{status: :paid}] = Repo.all(Invoice)
@@ -108,14 +149,20 @@ defmodule Picsello.Orders.ConfirmationsTest do
   def handle_session(session), do: Confirmations.handle_session(session)
 
   describe "handle_invoice - paid, no intent" do
-    setup [:insert_invoice, :stub_confirm_order]
+    setup [:stub_confirm_order, :insert_order, :insert_invoice]
 
     test("updates invoice", ctx, do: updates_invoice(ctx))
     test("confirms whcc order", ctx, do: confirms_whcc_order(ctx))
   end
 
   describe "handle_invoice - paid, unpaid intent" do
-    setup [:insert_invoice, :stub_confirm_order, :insert_intent, :stub_capture_intent]
+    setup [
+      :insert_order,
+      :insert_invoice,
+      :stub_confirm_order,
+      :insert_intent,
+      :stub_capture_intent
+    ]
 
     test("updates invoice", ctx, do: updates_invoice(ctx))
     test("confirms whcc order", ctx, do: confirms_whcc_order(ctx))
@@ -132,6 +179,12 @@ defmodule Picsello.Orders.ConfirmationsTest do
   end
 
   describe "handle_session - paid, with products" do
+    setup do
+      [placed_at: nil]
+    end
+
+    setup :insert_order
+
     setup %{gallery: gallery, order: order} do
       Picsello.Cart.place_product(build(:cart_product), gallery)
 
@@ -144,7 +197,9 @@ defmodule Picsello.Orders.ConfirmationsTest do
         order:
           order
           |> Order.whcc_order_changeset(
-            build(:whcc_order_created, orders: build_list(1, :whcc_order_created_order))
+            build(:whcc_order_created,
+              orders: build_list(1, :whcc_order_created_order, total: ~M[0]USD)
+            )
           )
           |> Repo.update!()
           |> Repo.preload([:digitals, :products], force: true)
@@ -170,6 +225,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
       session: session
     } do
       handle_session(session)
+      assert Picsello.Orders.client_paid?(order)
+      order |> Repo.reload!() |> Repo.preload(digitals: :photo) |> IO.inspect()
 
       Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
     end
@@ -185,15 +242,25 @@ defmodule Picsello.Orders.ConfirmationsTest do
     end
   end
 
-  describe "handle_session - paid, unpaid invoice" do
-    setup :insert_invoice
+  describe "handle_session - paid, photographer owes" do
+    setup do
+      [whcc_order: build(:whcc_order_created, total: ~M[60_000]USD), placed_at: nil]
+    end
 
-    setup %{gallery: gallery, order: order} do
+    setup [:insert_order, :stub_create_invoice]
+
+    setup %{order: %{gallery: gallery} = order} do
       insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
 
-      order = Repo.preload(order, [:digitals], force: true)
+      Picsello.Cart.place_product(build(:cart_product), gallery)
 
-      refute Picsello.Orders.photographer_paid?(order)
+      order = Repo.preload(order, [:digitals, :products], force: true)
+
+      assert :lt ==
+               Money.cmp(
+                 Order.total_cost(order),
+                 Picsello.WHCC.Order.Created.total(order.whcc_order)
+               )
 
       [order: order]
     end
@@ -226,12 +293,21 @@ defmodule Picsello.Orders.ConfirmationsTest do
       Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
     end
 
-    test "finalizes invoice", %{invoice: %{stripe_id: invoice_id}, session: session} do
-      Mox.expect(MockPayments, :finalize_invoice, fn ^invoice_id, _params, _opts ->
-        {:ok, build(:stripe_invoice, id: invoice_id, status: "open")}
+    test "creates and finalizes invoice", %{order: order, session: session} do
+      test_pid = self()
+
+      Mox.expect(MockPayments, :finalize_invoice, fn %{id: invoice_id} = invoice,
+                                                     _params,
+                                                     _opts ->
+        send(test_pid, {:finalized_invoice_id, invoice_id})
+        {:ok, %{invoice | status: "open"}}
       end)
 
       handle_session(session)
+
+      assert %{stripe_id: invoice_id} = Repo.get_by(Invoice, order_id: order.id)
+
+      assert_receive {:finalized_invoice_id, ^invoice_id}
 
       assert [%{status: :open}] = Repo.all(Invoice)
     end
@@ -248,7 +324,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
   end
 
   describe "handle_session - order already paid for" do
-    setup [:insert_intent, :build_session]
+    setup [:insert_order, :insert_intent, :build_session]
 
     setup %{intent: intent, order: order, stripe_intent: stripe_intent} do
       [
@@ -259,7 +335,6 @@ defmodule Picsello.Orders.ConfirmationsTest do
     end
 
     test "is successful", %{order: order, session: session} do
-      assert Picsello.Orders.photographer_paid?(order)
       assert Picsello.Orders.client_paid?(order)
 
       assert {:ok, _, :already_confirmed} = handle_session(session)
@@ -267,7 +342,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
   end
 
   describe "handle_session - something does wrong" do
-    setup [:insert_intent, :build_session]
+    setup [:insert_order, :insert_intent, :build_session]
 
     test "cancels payment intent", %{order: order} do
       Picsello.MockPayments

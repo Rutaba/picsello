@@ -455,7 +455,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           status: "draft"
         )
 
-      Mox.expect(Picsello.MockPayments, :finalize_invoice, fn "stripe-invoice-id",
+      Mox.expect(Picsello.MockPayments, :finalize_invoice, fn %{id: "stripe-invoice-id"},
                                                               _params,
                                                               _opts ->
         {:ok, %{stripe_invoice | status: "open"}}

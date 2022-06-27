@@ -69,7 +69,6 @@ defmodule Picsello.Cart.Checkouts do
         new()
         |> append(create_whcc_order(cart))
         |> run(:stripe_invoice, &create_stripe_invoice/2)
-        |> run(:finalize_invoice, &finalize_invoice/2)
         |> insert(:invoice, &insert_invoice/1)
         |> update(:order, place_order(cart))
 
@@ -82,7 +81,6 @@ defmodule Picsello.Cart.Checkouts do
             opts |> Map.merge(&1) |> Map.put(:client_total, client_total)
           )
         )
-        |> merge(&handle_invoice/1)
     end)
     |> Repo.transaction()
   end
@@ -194,27 +192,6 @@ defmodule Picsello.Cart.Checkouts do
     end)
   end
 
-  defp handle_invoice(
-         %{
-           whcc_order: whcc_order,
-           save_whcc_order: order,
-           intent: %{application_fee_amount: application_fee_amount}
-         } = state
-       ) do
-    whcc_order
-    |> WHCCOrder.total()
-    |> Money.subtract(application_fee_amount)
-    |> case do
-      ~M[0]USD ->
-        new()
-
-      outstanding ->
-        new()
-        |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, outstanding) end)
-        |> insert(:invoice, &insert_invoice(Map.merge(state, &1)))
-    end
-  end
-
   defp create_stripe_invoice(
          _repo,
          %{save_whcc_order: %{whcc_order: whcc_order} = order}
@@ -238,19 +215,14 @@ defmodule Picsello.Cart.Checkouts do
              description:
                "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}",
              auto_advance: true
-           }) do
+           }),
+         {:ok, invoice} <- Payments.finalize_invoice(invoice, %{auto_advance: true}) do
       {:ok, invoice}
     end
   end
 
-  defp insert_invoice(%{save_whcc_order: order, finalize_invoice: stripe_invoice}),
-    do: Invoices.changeset(stripe_invoice, order)
-
   defp insert_invoice(%{save_whcc_order: order, stripe_invoice: stripe_invoice}),
     do: Invoices.changeset(stripe_invoice, order)
-
-  defp finalize_invoice(_repo, %{stripe_invoice: stripe_invoice}),
-    do: Picsello.Payments.finalize_invoice(stripe_invoice, %{auto_advance: true})
 
   defp place_order(cart), do: Order.placed_changeset(cart)
   defp client_total(_repo, %{cart: cart}), do: {:ok, Order.total_cost(cart)}
