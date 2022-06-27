@@ -262,24 +262,11 @@ defmodule Picsello.Orders.Confirmations do
 
   defp create_stripe_invoice(
          %{gallery: %{organization: %{user: user}}} = invoice_order,
-         %{amount: outstanding_cents}
+         outstanding
        ) do
-    with "" <> customer <- Picsello.Subscriptions.user_customer_id(user),
-         {:ok, _invoice_item} <-
-           Payments.create_invoice_item(%{
-             customer: customer,
-             amount: outstanding_cents,
-             currency: "USD"
-           }),
-         {:ok, invoice} <-
-           Payments.create_invoice(%{
-             customer: customer,
-             description:
-               "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}",
-             auto_advance: true
-           }) do
-      Payments.finalize_invoice(invoice, %{auto_advance: true})
-    end
+    Invoices.invoice_user(user, outstanding,
+      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
+    )
   end
 
   defp insert_invoice_changeset(%{stripe_invoice: stripe_invoice}, order),

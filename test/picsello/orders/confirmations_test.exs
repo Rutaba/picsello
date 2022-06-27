@@ -105,23 +105,6 @@ defmodule Picsello.Orders.ConfirmationsTest do
     :ok
   end
 
-  def stub_create_invoice(_) do
-    invoice = build(:stripe_invoice)
-
-    MockPayments
-    |> Mox.stub(:create_invoice_item, fn _, _ ->
-      {:ok, %Stripe.Invoiceitem{}}
-    end)
-    |> Mox.stub(:create_invoice, fn _, _ ->
-      {:ok, invoice}
-    end)
-    |> Mox.stub(:finalize_invoice, fn _, _, _ ->
-      {:ok, %{invoice | status: "open"}}
-    end)
-
-    :ok
-  end
-
   def updates_invoice(%{stripe_invoice: stripe_invoice}) do
     assert {:ok, _} = Confirmations.handle_invoice(stripe_invoice)
     assert [%Invoice{status: :paid}] = Repo.all(Invoice)
@@ -226,7 +209,6 @@ defmodule Picsello.Orders.ConfirmationsTest do
     } do
       handle_session(session)
       assert Picsello.Orders.client_paid?(order)
-      order |> Repo.reload!() |> Repo.preload(digitals: :photo) |> IO.inspect()
 
       Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
     end
@@ -244,10 +226,27 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
   describe "handle_session - paid, photographer owes" do
     setup do
-      [whcc_order: build(:whcc_order_created, total: ~M[60_000]USD), placed_at: nil]
+      invoice = build(:stripe_invoice, id: "invoice-stripe-id")
+
+      MockPayments
+      |> Mox.stub(:create_invoice_item, fn _, _ ->
+        {:ok, %Stripe.Invoiceitem{}}
+      end)
+      |> Mox.stub(:create_invoice, fn _, _ ->
+        {:ok, invoice}
+      end)
+      |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+        {:ok, %{invoice | status: "open"}}
+      end)
+
+      [
+        whcc_order: build(:whcc_order_created, total: ~M[60_000]USD),
+        placed_at: nil,
+        stripe_invoice: invoice
+      ]
     end
 
-    setup [:insert_order, :stub_create_invoice]
+    setup :insert_order
 
     setup %{order: %{gallery: gallery} = order} do
       insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
@@ -293,12 +292,14 @@ defmodule Picsello.Orders.ConfirmationsTest do
       Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
     end
 
-    test "creates and finalizes invoice", %{order: order, session: session} do
+    test "creates and finalizes invoice", %{
+      order: order,
+      session: session,
+      stripe_invoice: invoice
+    } do
       test_pid = self()
 
-      Mox.expect(MockPayments, :finalize_invoice, fn %{id: invoice_id} = invoice,
-                                                     _params,
-                                                     _opts ->
+      Mox.expect(MockPayments, :finalize_invoice, fn invoice_id, _params, _opts ->
         send(test_pid, {:finalized_invoice_id, invoice_id})
         {:ok, %{invoice | status: "open"}}
       end)
