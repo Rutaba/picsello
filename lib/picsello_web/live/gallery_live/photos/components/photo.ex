@@ -114,8 +114,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
             @socket,
             :download_photo,
             @client_link_hash,
-            @id,
-            is_photographer: true
+            @id
           )}>Download photo
         </a>
       </li>

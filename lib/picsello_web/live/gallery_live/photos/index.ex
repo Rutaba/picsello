@@ -709,8 +709,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     end
   end
 
-  def encode(photo_ids) do
-    {_, photo_ids} = Jason.encode(photo_ids)
-    photo_ids
+  defp stringify(photo_ids) do
+    photo_ids |> inspect() |> String.replace(~r'[\[\]]', "")
   end
 end

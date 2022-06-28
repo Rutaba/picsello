@@ -196,7 +196,6 @@ defmodule PicselloWeb.Router do
         live "/", GalleryLive.ClientIndex, :index
         live "/album/:album_id", GalleryLive.ClientAlbum, :album
         get "/zip", GalleryDownloadsController, :download_all
-        get "/photos/:photo_ids/zip", GalleryDownloadsController, :download_all
         get "/photos/:photo_id/download", GalleryDownloadsController, :download_photo
       end
 
