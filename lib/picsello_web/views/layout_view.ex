@@ -3,7 +3,15 @@ defmodule PicselloWeb.LayoutView do
   alias Picsello.Accounts.User
 
   import PicselloWeb.LiveHelpers,
-    only: [icon: 1, nav_link: 1, classes: 1, initials_circle: 1, help_scout_output: 2]
+    only: [
+      testid: 1,
+      classes: 2,
+      icon: 1,
+      nav_link: 1,
+      classes: 1,
+      initials_circle: 1,
+      help_scout_output: 2
+    ]
 
   use Phoenix.Component
 
@@ -165,4 +173,32 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
+
+  def subscription_ending_soon(%{current_user: current_user} = assigns) do
+    subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
+
+    case assigns.type do
+      "banner" ->
+        ~H"""
+        <div {testid("subscription-top-banner")} class={classes(@class, %{"hidden" => subscription.hidden?})}>
+          <.icon name="clock-filled" class="lg:w-5 lg:h-5 w-8 h-8 mr-2"/>
+          <span>You have <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left before your subscription ends.
+            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Click here" do %>
+              <span class="font-bold underline px-1 cursor-pointer">Click here</span>
+            <% end %>
+            to upgrade.
+          </span>
+        </div>
+        """
+
+      _ ->
+        ~H"""
+        <div {testid("subscription-footer")} class={classes(@class, %{"hidden" => subscription.hidden?})}>
+          <%= live_redirect to: Routes.user_settings_path(@socket, :edit) do %>
+            <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left until your subscription ends
+          <% end %>
+        </div>
+        """
+    end
+  end
 end

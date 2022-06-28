@@ -14,6 +14,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Subscriptions
   }
 
+  import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
 
   @impl true
@@ -47,6 +48,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("open-user-settings", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.user_settings_path(socket, :edit))
+      |> noreply()
+
+  @impl true
   def handle_event(
         "send-confirmation-email",
         %{},
@@ -72,7 +80,7 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_event("open-billing-portal", %{}, socket) do
     {:ok, url} =
-      Picsello.Subscriptions.billing_portal_link(
+      Subscriptions.billing_portal_link(
         socket.assigns.current_user,
         Routes.home_url(socket, :index)
       )
@@ -182,6 +190,8 @@ defmodule PicselloWeb.HomeLive.Index do
           }
         } = socket
       ) do
+    subscription = current_user |> Subscriptions.subscription_ending_soon_info()
+
     items =
       for(
         {true, item} <- [
@@ -193,6 +203,19 @@ defmodule PicselloWeb.HomeLive.Index do
              icon: "envelope",
              button_label: "Resend email",
              button_class: "btn-primary",
+             external_link: "",
+             color: "red-sales-300",
+             class: "intro-confirmation border-red-sales-300"
+           }},
+          {!subscription.hidden?,
+           %{
+             action: "open-user-settings",
+             title: "Subscription ending soon",
+             body:
+               "You have #{ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Map.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
+             icon: "clock-filled",
+             button_label: "Go to acccount settings",
+             button_class: "btn-secondary",
              external_link: "",
              color: "red-sales-300",
              class: "intro-confirmation border-red-sales-300"

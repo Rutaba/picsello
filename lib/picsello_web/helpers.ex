@@ -30,6 +30,11 @@ defmodule PicselloWeb.Helpers do
     Gettext.dngettext(PicselloWeb.Gettext, "picsello", singular, plural, count, %{})
   end
 
+  def days_distance(%DateTime{} = datetime),
+    do: datetime |> DateTime.to_date() |> days_distance()
+
+  def days_distance(%Date{} = date), do: date |> Date.diff(Date.utc_today())
+
   defdelegate strftime(zone, date, format), to: PicselloWeb.LiveHelpers
 
   defdelegate dyn_gettext(key), to: PicselloWeb.Gettext

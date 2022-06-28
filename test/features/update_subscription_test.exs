@@ -12,6 +12,90 @@ defmodule Picsello.SubscriptionChangesTest do
     [plan: plan, user: user]
   end
 
+  feature "Subscription ending in less than 7 days and subscription is cancelled", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    current_period_end = DateTime.utc_now() |> DateTime.add(60 * 60 * 24 + 60)
+
+    insert(:subscription_event,
+      user: user,
+      cancel_at: DateTime.utc_now(),
+      subscription_plan: plan,
+      current_period_end: current_period_end,
+      status: "trialing"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> find(
+      testid("subscription-top-banner"),
+      &assert_text(&1, "1 day left before your subscription ends")
+    )
+    |> find(
+      testid("subscription-footer"),
+      &assert_text(&1, "1 day left until your subscription ends")
+    )
+    |> assert_has(css("*[role='status']", text: "1 day left until your subscription ends"))
+    |> visit("/home")
+    |> find(
+      testid("attention-item",
+        text:
+          "You have 1 day left before your subscription ends. You will lose access on #{DateTime.to_date(current_period_end)}"
+      ),
+      &click(&1, button("Go to acccount settings"))
+    )
+    |> assert_path("/users/settings")
+  end
+
+  feature "Subscription ending in more than 7 days and subscription is cancelled", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    current_period_end = DateTime.utc_now() |> DateTime.add(8 * 60 * 60 * 24 + 60)
+
+    insert(:subscription_event,
+      user: user,
+      cancel_at: DateTime.utc_now(),
+      subscription_plan: plan,
+      current_period_end: current_period_end,
+      status: "trialing"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> assert_has(testid("subscription-top-banner", text: "left in your trial", count: 0))
+    |> assert_has(testid("subscription-footer", text: "left in your trial", count: 0))
+    |> assert_has(css("*[role='status']", text: "8 days left until your subscription ends"))
+    |> visit("/home")
+    |> assert_has(testid("attention-item", text: "left before your subscription ends", count: 0))
+  end
+
+  feature "Subscription ending in less than 7 days and subscription is not cancelled", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    current_period_end = DateTime.utc_now() |> DateTime.add(60 * 60 * 24 + 60)
+
+    insert(:subscription_event,
+      user: user,
+      subscription_plan: plan,
+      current_period_end: current_period_end,
+      status: "trialing"
+    )
+
+    session
+    |> click(link("Settings"))
+    |> assert_has(testid("subscription-top-banner", text: "left in your trial", count: 0))
+    |> assert_has(testid("subscription-footer", text: "left in your trial", count: 0))
+    |> assert_has(css("*[role='status']", text: "1 day left in your trial"))
+    |> visit("/home")
+    |> assert_has(testid("attention-item", text: "left before your subscription ends", count: 0))
+  end
+
   feature "when subscription is in trial", %{session: session, user: user, plan: plan} do
     insert(:subscription_event,
       user: user,

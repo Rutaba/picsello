@@ -12,6 +12,7 @@ defmodule PicselloWeb.Live.User.Settings do
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.Helpers, only: [days_distance: 1]
 
   require Logger
 
@@ -339,23 +340,22 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   def subscription_badge(%Subscription{} = subscription) do
+    days_left =
+      ngettext(
+        "1 day",
+        "%{count} days",
+        days_distance(subscription.current_period_end) |> Kernel.max(0)
+      )
+
     cond do
       subscription.cancel_at != nil ->
-        "#{ngettext("1 day", "%{count} days", days_distance(subscription.cancel_at))} left until your subscription ends"
+        "#{days_left} left until your subscription ends"
 
       subscription.status == "trialing" ->
-        "#{ngettext("1 day", "%{count} days", days_distance(subscription.current_period_end))} left in your trial"
+        "#{days_left} left in your trial"
 
       true ->
         nil
     end
-  end
-
-  def days_distance(date) do
-    date
-    |> DateTime.diff(DateTime.utc_now(), :millisecond)
-    |> Kernel./(1000 * 60 * 60 * 24)
-    |> trunc()
-    |> Kernel.max(0)
   end
 end
