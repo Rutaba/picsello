@@ -239,6 +239,7 @@ defmodule Picsello.PaymentSchedules do
         address: "auto"
       },
       line_items: line_items,
+      payment_intent_data: %{setup_future_usage: "off_session"},
       metadata: Keyword.get(opts, :metadata, %{})
     }
 
