@@ -16,7 +16,7 @@ defmodule Picsello.Repo.Migrations.CreatePhotos do
       timestamps()
     end
 
-    create index(:photos, [:gallery_id])
-    create index(:photos, [:album_id])
+    create(index(:photos, [:gallery_id]))
+    create(index(:photos, [:album_id]))
   end
 end

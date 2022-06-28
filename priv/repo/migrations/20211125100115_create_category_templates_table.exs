@@ -10,6 +10,6 @@ defmodule Picsello.Repo.Migrations.CategoryTemplates do
       timestamps()
     end
 
-    create index(:category_templates, [:category_id])
+    create(index(:category_templates, [:category_id]))
   end
 end

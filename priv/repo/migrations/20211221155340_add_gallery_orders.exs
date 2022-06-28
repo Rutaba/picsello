@@ -16,6 +16,6 @@ defmodule Picsello.Repo.Migrations.AddGalleryOrders do
       timestamps()
     end
 
-    create index(:gallery_orders, [:gallery_id])
+    create(index(:gallery_orders, [:gallery_id]))
   end
 end

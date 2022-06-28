@@ -3,15 +3,15 @@ defmodule Picsello.Repo.Migrations.CreatePaymentSchedules do
 
   def change do
     create table(:payment_schedules) do
-      add :price, :integer, null: false
-      add :due_at, :utc_datetime, null: false
-      add :paid_at, :utc_datetime
-      add :job_id, references(:jobs, on_delete: :nothing), null: false
+      add(:price, :integer, null: false)
+      add(:due_at, :utc_datetime, null: false)
+      add(:paid_at, :utc_datetime)
+      add(:job_id, references(:jobs, on_delete: :nothing), null: false)
 
       timestamps()
     end
 
-    create index(:payment_schedules, [:job_id])
+    create(index(:payment_schedules, [:job_id]))
 
     execute(
       """

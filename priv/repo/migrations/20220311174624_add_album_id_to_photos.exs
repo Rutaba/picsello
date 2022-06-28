@@ -6,6 +6,6 @@ defmodule Picsello.Repo.Migrations.AddAlbumIdToPhotos do
       add(:album_id, references(:albums, on_delete: :nothing))
     end
 
-    create index(:photos, [:album_id])
+    create(index(:photos, [:album_id]))
   end
 end

@@ -10,6 +10,6 @@ defmodule Picsello.Repo.Migrations.CreateAlbums do
       timestamps()
     end
 
-    create index(:albums, [:gallery_id])
+    create(index(:albums, [:gallery_id]))
   end
 end

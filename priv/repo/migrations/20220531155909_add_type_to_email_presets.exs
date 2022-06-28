@@ -6,7 +6,7 @@ defmodule Picsello.Repo.Migrations.AddTypeToEmailPresets do
       add(:type, :string)
     end
 
-    execute "update email_presets set type = 'job';"
+    execute("update email_presets set type = 'job';")
 
     alter table(:email_presets) do
       modify(:type, :string, null: false)
@@ -19,17 +19,17 @@ defmodule Picsello.Repo.Migrations.AddTypeToEmailPresets do
       )
     )
 
-    rename table(:email_presets), :job_state, to: :state
+    rename(table(:email_presets), :job_state, to: :state)
   end
 
   def down do
-    drop constraint(:email_presets, "job_must_have_job_type")
+    drop(constraint(:email_presets, "job_must_have_job_type"))
 
     alter table(:email_presets) do
       remove(:type, :string)
       modify(:job_type, :string, null: false)
     end
 
-    rename table(:email_presets), :state, to: :job_state
+    rename(table(:email_presets), :state, to: :job_state)
   end
 end

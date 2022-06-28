@@ -3,11 +3,11 @@ defmodule Picsello.Repo.Migrations.AddActiveColumnToGalleries do
 
   def change do
     alter table(:galleries) do
-      add :active, :boolean, null: false, default: true
+      add(:active, :boolean, null: false, default: true)
     end
 
     alter table(:photos) do
-      add :active, :boolean, null: false, default: true
+      add(:active, :boolean, null: false, default: true)
     end
 
     execute("update galleries set active = true", "")

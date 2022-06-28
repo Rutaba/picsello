@@ -18,6 +18,6 @@ defmodule Picsello.Repo.Migrations.AddGalleryWatermaeksTable do
       timestamps()
     end
 
-    create index(:gallery_watermarks, [:gallery_id])
+    create(index(:gallery_watermarks, [:gallery_id]))
   end
 end

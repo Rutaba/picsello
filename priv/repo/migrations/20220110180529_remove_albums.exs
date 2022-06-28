@@ -3,10 +3,10 @@ defmodule Picsello.Repo.Migrations.RemoveAlbums do
 
   def up do
     alter table("photos") do
-      remove :album_id
+      remove(:album_id)
     end
 
-    drop table("albums")
+    drop(table("albums"))
   end
 
   def down do
@@ -18,10 +18,10 @@ defmodule Picsello.Repo.Migrations.RemoveAlbums do
       timestamps()
     end
 
-    create index(:albums, [:gallery_id])
+    create(index(:albums, [:gallery_id]))
 
     alter table("photos") do
-      add :album_id, references(:albums)
+      add(:album_id, references(:albums))
     end
   end
 end
