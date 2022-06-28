@@ -147,7 +147,8 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
 
   test "Unsorted Photos, create album with selected photos", %{
     session: session,
-    gallery: %{id: gallery_id}
+    gallery: %{id: gallery_id},
+    photos_count: photos_count
   } do
     session
     |> visit("/galleries/#{gallery_id}/photos")
@@ -160,6 +161,8 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(css("#toggle-visibility"))
     |> click(button("Save"))
     |> assert_has(css("p", text: "Album successfully created"))
-    |> find(css("#albums .album", count: 3))
+    |> assert_has(css("#albums .album", count: 3))
+    |> click(css("#albums .album:nth-child(3)"))
+    |> assert_has(css(".item", count: photos_count))
   end
 end
