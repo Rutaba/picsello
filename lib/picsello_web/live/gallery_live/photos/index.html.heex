@@ -101,7 +101,7 @@
                             @socket,
                             :download_all,
                             @gallery.client_link_hash,
-                            photo_ids: stringify(@selected_photos)
+                            photo_ids: Enum.join(@selected_photos, ",")
                             )}>Download photos
                     </a>
                   </li>

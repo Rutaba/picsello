@@ -299,6 +299,11 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  def get_photos_by_ids(gallery, photo_ids) do
+    from(p in Photos.active_photos(), where: p.id in ^photo_ids and p.gallery_id == ^gallery.id)
+    |> Repo.all()
+  end
+
   @spec get_albums_photo_count(gallery_id :: integer) :: integer
   def get_albums_photo_count(gallery_id) do
     from(p in Photos.active_photos(),

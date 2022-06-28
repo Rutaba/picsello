@@ -708,8 +708,4 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "pt-40"
     end
   end
-
-  defp stringify(photo_ids) do
-    photo_ids |> inspect() |> String.replace(~r'[\[\]]', "")
-  end
 end

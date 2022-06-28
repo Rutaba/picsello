@@ -14,8 +14,8 @@ defmodule PicselloWeb.GalleryDownloadsController do
     photographer = Galleries.gallery_photographer(gallery)
 
     if photographer.id == conn.assigns.current_user.id do
-      photo_ids = photo_ids |> String.split(",") |> Enum.map(&(String.trim(&1) |> String.to_integer()))
-      photos = Galleries.get_photos_by_ids(photo_ids) |> some!()
+      photo_ids = photo_ids |> String.split(",") |> Enum.map(&String.to_integer/1)
+      photos = Galleries.get_photos_by_ids(gallery, photo_ids) |> some!()
       process_photos(conn, photos, "#{gallery.name}.zip")
     else
       conn |> put_view(ErrorView) |> render("403.html")
@@ -30,12 +30,15 @@ defmodule PicselloWeb.GalleryDownloadsController do
     process_photos(conn, photos, "#{org_name}.zip")
   end
 
-  def download_photo(%{assigns: %{current_user: %{id: id}}} = conn, %{"hash" => hash, "photo_id" => photo_id}) do
+  def download_photo(%{assigns: %{current_user: %{id: id}}} = conn, %{
+        "hash" => hash,
+        "photo_id" => photo_id
+      }) do
     gallery = Galleries.get_gallery_by_hash!(hash)
     photographer = Galleries.gallery_photographer(gallery)
 
     if photographer.id == id do
-      photo = Photos.get!(photo_id)
+      photo = Photos.get!(gallery, photo_id)
       process_photo(conn, photo)
     else
       conn |> put_view(ErrorView) |> render("403.html")

@@ -29,7 +29,7 @@ defmodule PicselloWeb.JobLive.Show do
     case Picsello.Galleries.gallery_current_status(gallery) do
       :none_created ->
         %{
-          button_text: "Upload photo",
+          button_text: "Upload photos",
           button_click: "create-gallery",
           button_disabled: false,
           text: "Looks like you need to upload photos."
