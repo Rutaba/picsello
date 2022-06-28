@@ -51,7 +51,9 @@ defmodule PicselloWeb.LiveAuth do
   defp assign_current_user(socket, %{"user_token" => user_token}) do
     socket
     |> assign_new(:current_user, fn ->
-      Accounts.get_user_by_session_token(user_token)
+      user_token
+      |> Accounts.get_user_by_session_token()
+      |> tap(&Sentry.Context.set_user_context/1)
     end)
   end
 
@@ -91,15 +93,19 @@ defmodule PicselloWeb.LiveAuth do
     end
   end
 
-  defp authenticate_gallery_client(%{assigns: %{gallery: gallery}} = socket, session) do
-    socket
-    |> assign(
-      authenticated:
-        Galleries.session_exists_with_token?(
-          gallery.id,
-          Map.get(session, "gallery_session_token")
-        )
-    )
+  defp authenticate_gallery_client(
+         %{assigns: %{gallery: %{job: %{client: client}} = gallery}} = socket,
+         session
+       ) do
+    if Galleries.session_exists_with_token?(
+         gallery.id,
+         Map.get(session, "gallery_session_token")
+       ) do
+      Sentry.Context.set_user_context(client)
+      assign(socket, authenticated: true)
+    else
+      assign(socket, authenticated: false)
+    end
   end
 
   defp authenticate_gallery_client(socket, _), do: socket
