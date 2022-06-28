@@ -121,13 +121,15 @@ defmodule PicselloWeb.PackageLive.Shared do
               <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
             </div>
           </div>
-          <% p = form_for(@package_pricing, "#") %>
           <label class="flex items-center mt-3">
-            <%= checkbox(p, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
+            <%= checkbox(d, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
             Set a "buy them all" price
           </label>
-          <%= if p |> current() |> Map.get(:is_buy_all) do %>
-            <%= input(@package_form, :buy_all, placeholder: "$750.00", class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+          <%= if d |> current() |> Map.get(:is_buy_all) do %>
+            <div class="flex items-center mt-3">
+              <%= input(d, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+              <%= error_tag d, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
+            </div>
           <% end %>
         </div>
       <% end %>

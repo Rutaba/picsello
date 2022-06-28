@@ -48,9 +48,9 @@ defmodule Picsello.ImportJobTest do
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
-    |> click(checkbox("package_pricing_is_buy_all"))
+    |> click(checkbox("download_is_buy_all"))
     |> find(
-      text_field("package[buy_all]"),
+      text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
     )
   end

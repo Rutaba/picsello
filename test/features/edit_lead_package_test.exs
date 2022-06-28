@@ -1,6 +1,7 @@
 defmodule Picsello.EditLeadPackageTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.Repo
+  import Money.Sigils
 
   setup :onboarded
   setup :authenticated
@@ -15,7 +16,6 @@ defmodule Picsello.EditLeadPackageTest do
           name: "My Greatest Package",
           description: "<p>My custom description</p>",
           shoot_count: 2,
-          buy_all: 100,
           print_credits: 200,
           base_price: 100,
           download_each_price: 0
@@ -44,6 +44,22 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_value(@price_text_field, "$1.00")
     |> fill_in(@price_text_field, with: "2.00")
     |> assert_has(radio_button("Do not charge for downloads", checked: true))
+    |> click(radio_button("Charge for downloads", checked: false))
+    |> click(checkbox("Set my own download price"))
+    |> find(
+      text_field("download_each_price"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
+    )
+    |> scroll_into_view(css("#package_pricing_is_enabled"))
+    |> click(checkbox("buy them all"))
+    |> scroll_into_view(css("#download_buy_all"))
+    |> fill_in(text_field("download_buy_all"), with: "$4")
+    |> assert_text("Must be greater than digital image price")
+    |> find(
+      text_field("download_buy_all"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
+    )
+    |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> find(testid("card-Package details"), &assert_text(&1, "My updated package"))
@@ -58,13 +74,38 @@ defmodule Picsello.EditLeadPackageTest do
         package
         | name: "My updated package",
           description: "<p>indescribably great.</p>",
-          base_price: %Money{amount: 200},
-          download_each_price: %Money{amount: 0},
-          buy_all: %Money{amount: 100},
-          print_credits: %Money{amount: 200}
+          base_price: ~M[200]USD,
+          download_each_price: ~M[400]USD,
+          buy_all: ~M[500]USD,
+          print_credits: ~M[200]USD
       }
       |> Map.take([:id | form_fields])
 
-    assert ^updated = Repo.reload!(package) |> Map.take([:id | form_fields])
+    package = Repo.reload!(package)
+    assert ^updated = package |> Map.take([:id | form_fields])
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> find(testid("card-Package details"), &click(&1, button("Edit")))
+    |> assert_text("Edit Package: Provide Details")
+    |> click(button("Next"))
+    |> scroll_into_view(css("#package_pricing_is_enabled"))
+    |> click(radio_button("Do not charge for downloads", checked: false))
+    |> click(checkbox("package_pricing_is_enabled", checked: false))
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> find(testid("card-Package details"), &assert_text(&1, "My updated package"))
+
+    updated =
+      %{
+        package
+        | download_each_price: ~M[0]USD,
+          buy_all: nil,
+          print_credits: ~M[0]USD
+      }
+      |> Map.take([:id | form_fields])
+
+    package = Repo.reload!(package)
+    assert ^updated = package |> Map.take([:id | form_fields])
   end
 end

@@ -355,20 +355,22 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def handle_event(
         "submit",
-        %{"package" => params, "step" => "pricing"},
+        %{"step" => "pricing"} = params,
         %{assigns: %{is_template: false, job: job, package: %Package{id: nil}}} = socket
       ) do
-    changeset = build_changeset(socket, params)
-    insert_package_and_update_job(socket, changeset, job)
+    socket = assign_changeset(socket, params)
+    insert_package_and_update_job(socket, socket.assigns.changeset, job)
   end
 
   @impl true
   def handle_event(
         "submit",
-        %{"package" => params, "step" => "pricing"},
+        %{"step" => "pricing"} = params,
         socket
       ) do
-    case Packages.insert_or_update_package(socket.assigns, params) do
+    socket = assign_changeset(socket, params)
+
+    case Packages.insert_or_update_package(socket.assigns.changeset) do
       {:ok, package} ->
         successfull_save(socket, package)
 
@@ -402,7 +404,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package:
         Map.merge(
           socket.assigns.package,
-          Map.take(template, [:download_each_price, :download_count, :base_multiplier])
+          Map.take(template, [
+            :download_each_price,
+            :download_count,
+            :base_multiplier,
+            :buy_all,
+            :print_credits
+          ])
         ),
       changeset: changeset
     )
@@ -494,7 +502,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Map.merge(%{
         "base_multiplier" => multiplier_changeset |> current() |> Multiplier.to_decimal(),
         "download_count" => Download.count(download),
-        "download_each_price" => Download.each_price(download)
+        "download_each_price" => Download.each_price(download),
+        "buy_all" => Download.buy_all(download)
       })
 
     changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
@@ -520,16 +529,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defp package_pricing_params(package) do
-    print_credits =
-      case package |> Map.get(:print_credits) do
-        nil -> %{is_enabled: false}
-        %Money{} = value -> %{is_enabled: Money.positive?(value)}
-        %{} -> %{}
-      end
-
-    case package |> Map.get(:buy_all) do
-      nil -> Map.put(print_credits, :is_buy_all, false)
-      %Money{} = value -> Map.put(print_credits, :is_buy_all, Money.positive?(value))
+    case package |> Map.get(:print_credits) do
+      nil -> %{is_enabled: false}
+      %Money{} = value -> %{is_enabled: Money.positive?(value)}
       %{} -> %{}
     end
   end
