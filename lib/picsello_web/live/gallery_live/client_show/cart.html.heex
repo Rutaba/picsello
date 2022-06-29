@@ -121,6 +121,22 @@
           </div>
         </div>
       <% :address -> %>
+        <div class={classes("absolute top-0 left-0 flex items-center justify-center bg-base-300/90 duration-300 transition-opacity z-10", %{"opacity-0" => !@checking_out, "w-full h-full opacity-100" => @checking_out })}>
+          <div class="px-24 py-10 bg-base-100">
+            <.photographer_logo organization={@organization} />
+
+            <div class="flex items-center mt-4">
+              <svg width="16" height="16" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18.5" cy="18.5" r="13.5" class="text-base-200" stroke="currentColor" stroke-width="5"/>
+
+                <path d="M5 19C5 11.268 10.8203 5 18 5" class="origin-center animate-spin text-base-225" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+
+              <p class="text-xs ml-1.5 mt-1">loading…</p>
+            </div>
+          </div>
+        </div>
+
         <div class="w-full m-auto max-w-screen-xl">
           <%= live_patch to: Routes.gallery_client_show_cart_path(@socket, :cart, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
             <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />

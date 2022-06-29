@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   import PicselloWeb.GalleryLive.Shared
   import Money.Sigils
 
+  import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
+
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
     case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals, :package]) do
@@ -15,21 +17,34 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         socket
         |> assign(gallery: gallery, order: order, client_menu_id: "clientMenu")
         |> assign_cart_count(gallery)
-        |> ok()
 
       _ ->
         socket
         |> push_redirect(
           to: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
         )
-        |> ok()
     end
+    |> ok()
   end
 
   @impl true
-  def handle_params(_params, _uri, %{assigns: %{order: order, live_action: :address}} = socket) do
+  def handle_params(
+        _params,
+        _uri,
+        %{
+          assigns: %{
+            order: order,
+            gallery: %{job: %{client: %{organization: organization}}},
+            live_action: :address
+          }
+        } = socket
+      ) do
     socket
-    |> assign(:delivery_info_changeset, Cart.order_delivery_info_change(order))
+    |> assign(
+      delivery_info_changeset: Cart.order_delivery_info_change(order),
+      organization: organization,
+      checking_out: false
+    )
     |> noreply()
   end
 
@@ -42,12 +57,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{
           assigns: %{
             delivery_info_changeset: delivery_info_changeset,
-            order: order
+            order: order,
+            gallery: gallery
           }
         } = socket
       ) do
     case Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil)) do
-      {:ok, %{gallery: gallery} = order} ->
+      {:ok, order} ->
         order
         |> Cart.checkout(
           success_url:
@@ -68,8 +84,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           helpers: PicselloWeb.Helpers
         )
         |> case do
-          :ok -> socket
-          _error -> socket |> put_flash(:error, "something wen't wrong")
+          :ok ->
+            socket |> assign(:checking_out, true)
+
+          _error ->
+            socket |> put_flash(:error, "something wen't wrong")
         end
         |> noreply()
 

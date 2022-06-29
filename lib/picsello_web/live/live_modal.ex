@@ -6,6 +6,7 @@ defmodule PicselloWeb.LiveModal do
 
     defstruct state: :closed,
               component: nil,
+              closable: true,
               assigns: %{},
               close_event: nil,
               transition_ms: 0
@@ -21,7 +22,8 @@ defmodule PicselloWeb.LiveModal do
         | component: component,
           state: :opening,
           assigns: Map.get(config, :assigns, %{}),
-          close_event: Map.get(config, :close_event)
+          close_event: Map.get(config, :close_event),
+          closable: Map.get(config, :closable, true)
       }
   end
 
@@ -73,7 +75,7 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def render(assigns) do
     ~H"""
-    <div role="dialog" id="modal-wrapper" phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/90 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
+    <div role="dialog" id="modal-wrapper" data-closable={@modal.closable} phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/90 z-30 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
       <%= if @modal.state != :closed do %>
         <div class="modal-container">
           <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
@@ -90,7 +92,7 @@ defmodule PicselloWeb.LiveModal do
       <div class={@class}></div>
 
       <div {testid("modal-buttons")} class="sticky px-4 -m-4 bg-white -bottom-6 sm:px-8 sm:-m-8 sm:-bottom-8">
-        <div class="flex flex-col gap-2 py-6 bg-white sm:flex-row-reverse">
+        <div class="flex flex-col py-6 bg-white gap-2 sm:flex-row-reverse">
           <%= if @inner_block do %>
             <%= render_block @inner_block %>
           <% else %>
