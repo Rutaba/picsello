@@ -15,14 +15,53 @@ defmodule Picsello.Profiles do
 
   require Logger
 
+  defmodule BrandLinks do
+    @moduledoc "a public image embedded in the profile json"
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @primary_key false
+    embedded_schema do
+      field :title, :string
+      field :icon, :string
+      field :link, :string
+      field :link_id, :string
+      field :can_edit?, :boolean, default: true
+      field :active?, :boolean, default: false
+      field :use_publicly?, :boolean, default: false
+      field :show_on_profile?, :boolean, default: false
+      field :custom?, :boolean, default: true
+    end
+
+    def changeset(brand_link, attrs) do
+      cast(brand_link, attrs, [
+        :title,
+        :icon,
+        :link,
+        :link_id,
+        :can_edit?,
+        :active?,
+        :use_publicly?,
+        :show_on_profile?,
+        :custom?
+      ])
+      |> validate_required([:title])
+      |> validate_length(:title, max: 50)
+      |> validate_change(
+        :link,
+        &for(e <- Picsello.Profiles.Profile.url_validation_errors(&2), do: {&1, e})
+      )
+    end
+  end
+
   defmodule ProfileImage do
     @moduledoc "a public image embedded in the profile json"
     use Ecto.Schema
     import Ecto.Changeset
 
     embedded_schema do
-      field(:url, :string)
-      field(:content_type, :string)
+      field :url, :string
+      field :content_type, :string
     end
 
     def changeset(profile_image, attrs) do
@@ -44,7 +83,7 @@ defmodule Picsello.Profiles do
 
     @primary_key false
     embedded_schema do
-      field :is_enabled, :boolean, default: true
+      field(:is_enabled, :boolean, default: true)
       field(:color, :string)
       field(:job_types, {:array, :string})
       field(:no_website, :boolean, default: false)
@@ -52,6 +91,7 @@ defmodule Picsello.Profiles do
       field(:website_login, :string)
       field(:description, :string)
       field(:job_types_description, :string)
+      embeds_many(:brand_links, BrandLinks, on_replace: :delete)
       embeds_one(:logo, ProfileImage, on_replace: :update)
       embeds_one(:main_image, ProfileImage, on_replace: :update)
     end
@@ -69,6 +109,7 @@ defmodule Picsello.Profiles do
           do: put_change(&1, :website, nil),
           else: &1
       )
+      |> cast_embed(:brand_links)
       |> cast_embed(:logo)
       |> cast_embed(:main_image)
       |> prepare_changes(&clean_job_types/1)
@@ -76,7 +117,7 @@ defmodule Picsello.Profiles do
       |> validate_change(:website_login, &for(e <- url_validation_errors(&2), do: {&1, e}))
     end
 
-    defp url_validation_errors(url) do
+    def url_validation_errors(url) do
       case URI.parse(url) do
         %{scheme: nil} ->
           ("https://" <> url) |> url_validation_errors()

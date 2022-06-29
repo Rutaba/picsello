@@ -7,37 +7,99 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
   @website_field text_field("organization_profile_website")
   @website_login_field text_field("organization_profile_website_login")
 
-  feature "sees missing link for website login", %{session: session} do
+  feature "view with no brand link added", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
-    |> find(css("[data-testid='marketing-links']:nth-child(2)"), fn card ->
-      card
-      |> assert_has(css("h4", text: "Manage Website"))
-      |> assert_has(css("[role='status']", text: "Missing link"))
-    end)
+    |> assert_text("Looks like you don’t have any links")
+    # iPhone 8+
+    |> resize_window(414, 736)
+    |> assert_text("Add links to your web platforms")
   end
 
-  feature "sees missing link for website", %{session: session} do
+  feature "edit and activate brand link with disabled delete button", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
+    |> click(button("Manage links"))
+    |> fill_in(css("#brand-link_link"), with: "https://xyz.com")
+    |> click(testid("active?"))
+    |> click(testid("use_publicly?"))
+    |> click(testid("show_on_profile?"))
+    |> assert_has(css("#delete-link", count: 0))
+    |> click(css("#save"))
+    |> assert_text("Add links to your web platforms")
     |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
       card
       |> assert_has(css("h4", text: "Website"))
-      |> assert_has(css("[role='status']", text: "Missing link"))
+      |> assert_has(css("a", text: "Open"))
+      |> assert_has(css("button", text: "Edit"))
     end)
   end
 
-  feature "views external brand link", %{session: session} do
+  feature "edit and activate brand link with disabled delete button for mobile", %{
+    session: session
+  } do
+    session
+    # iPhone 8+
+    |> resize_window(414, 736)
+    |> click(css("#hamburger-menu"))
+    |> click(link("Marketing"))
+    |> click(button("Manage links"))
+    |> click(css("#side-nave > div:first-child"))
+    |> fill_in(css("#brand-link_link"), with: "https://xyz.com")
+    |> click(testid("active?"))
+    |> click(testid("use_publicly?"))
+    |> click(testid("show_on_profile?"))
+    |> assert_has(css("#delete-link", count: 0))
+    |> click(css("#save_mobile"))
+    |> assert_has(css("#side-nave div.grid-item", count: 10))
+    |> click(css("#live_modal-1-0 button"))
+    |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
+      card
+      |> assert_has(css("h4", text: "Website"))
+      |> assert_has(css("a", text: "Open"))
+      |> assert_has(css("button", text: "Edit"))
+    end)
+  end
+
+  feature "add and delete custom link", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
-    |> find(css("[data-testid='marketing-links']:last-child"), fn card ->
+    |> click(button("Manage links"))
+    |> click(css("span", text: "Add new link"))
+    |> fill_in(css("#brand-link_link"), with: "https://xyz.com")
+    |> click(testid("active?"))
+    |> click(testid("use_publicly?"))
+    |> click(testid("show_on_profile?"))
+    |> click(css("#delete-link"))
+    |> click(css("span", text: "Add new link"))
+    |> fill_in(css("#brand-link_link"), with: "http://abc.com")
+    |> click(testid("active?"))
+    |> click(css("#save"))
+    |> assert_text("Add links to your web platforms")
+    |> click(testid("marketing-links", count: 1))
+    |> find(css("#marketing-links div:first-child"))
+  end
+
+  feature "view and edit button test", %{session: session} do
+    session
+    |> click(css("#hamburger-menu"))
+    |> click(link("Marketing"))
+    |> click(button("Manage links"))
+    |> fill_in(css("#brand-link_link"), with: "https://xyz.com")
+    |> click(testid("active?"))
+    |> assert_has(css("#delete-link", count: 0))
+    |> click(css("#save"))
+    |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
       card
-      |> assert_has(css("h4", text: "Pinterest"))
-      |> click(link("Open"))
+      |> assert_has(css("a[href='https://xyz.com']", text: "Open"))
+      |> click(css("button", text: "Edit"))
     end)
+    |> click(css("#save"))
+    |> assert_text("Add links to your web platforms")
+    |> click(testid("marketing-links", count: 1))
   end
 
   feature "views external next up card", %{session: session} do
@@ -62,46 +124,5 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
     )
     |> click(button("Take me to settings"))
     |> assert_path("/profile/settings")
-  end
-
-  feature "edits website link", %{session: session} do
-    session
-    |> click(css("#hamburger-menu"))
-    |> click(link("Marketing"))
-    |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
-      card
-      |> click(button("Edit"))
-    end)
-    |> click(css("#clear-website"))
-    |> fill_in(@website_field, with: "inval!d.com")
-    |> assert_has(css(".invalid-feedback", text: "Website URL is invalid"))
-    |> fill_in(@website_field, with: "example.com")
-    |> click(button("Save"))
-    |> assert_flash(:success, text: "Link updated")
-    |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
-      card
-      |> refute_has(css("[role='status']", text: "Missing link"))
-    end)
-  end
-
-  feature "edits website login link", %{session: session} do
-    session
-    |> click(css("#hamburger-menu"))
-    |> click(link("Marketing"))
-    |> find(css("[data-testid='marketing-links']:nth-child(2)"), fn card ->
-      card
-      |> click(button("Edit"))
-    end)
-    |> fill_in(@website_login_field,
-      with: "inval!d.com"
-    )
-    |> assert_has(css(".invalid-feedback", text: "Website URL is invalid"))
-    |> fill_in(@website_login_field, with: "example.com/wp-admin")
-    |> click(button("Save"))
-    |> assert_flash(:success, text: "Link updated")
-    |> find(css("[data-testid='marketing-links']:nth-child(2)"), fn card ->
-      card
-      |> refute_has(css("[role='status']", text: "Missing link"))
-    end)
   end
 end

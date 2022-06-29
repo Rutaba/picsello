@@ -225,4 +225,61 @@ defmodule PicselloWeb.FormHelpers do
       </label>
     """
   end
+
+  def title_field(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: "",
+        placeholder: "",
+        label: "Link Name",
+        name: :title
+      })
+
+    ~H"""
+    <label class={"flex flex-col #{@class}"}>
+        <p class="py-2 font-extrabold"><%= @label %> <i class="italic font-light">(public facing or private logins)</i></p>
+
+        <div class="relative flex flex-col">
+          <%= input @form, @name,
+              phx_debounce: "500",
+              disabled: !@custom? && @link_id != "website",
+              placeholder: @placeholder,
+              class: classes("p-4", %{"bg-gray-200" => !@custom? && @link_id != "website"}) %>
+          <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: @label %>
+        </div>
+      </label>
+    """
+  end
+
+  def link_field(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: "",
+        placeholder: "www.mystudio.com",
+        label: "Link",
+        sub_label: "",
+        name: :link
+      })
+
+    ~H"""
+    <label class={"flex flex-col #{@class}"}>
+        <p class="py-2 font-extrabold"><%= @label %> <i class="italic font-light"><%= @sub_label %></i></p>
+
+        <div class="relative flex flex-col">
+          <%= input @form, @name,
+              type: :url_input,
+              phx_debounce: "500",
+              disabled: !@custom? && @link_id != "website",
+              placeholder: @placeholder,
+              autocomplete: "url",
+              novalidate: true,
+              phx_hook: "PrefixHttp",
+              class: classes("p-4", %{"bg-gray-200" => !@custom? && @link_id != "website"}) %>
+          <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: @label %>
+        </div>
+      </label>
+    """
+  end
 end
