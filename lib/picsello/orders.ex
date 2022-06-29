@@ -19,7 +19,13 @@ defmodule Picsello.Orders do
 
     from(order in orders(),
       where: order.gallery_id == ^gallery_id,
-      preload: [:package, digitals: [photo: ^photo_query], products: :whcc_product],
+      preload: [
+        :package,
+        :intent,
+        :canceled_intents,
+        digitals: [photo: ^photo_query],
+        products: :whcc_product
+      ],
       order_by: [desc: order.placed_at]
     )
     |> Repo.all()
@@ -73,11 +79,11 @@ defmodule Picsello.Orders do
 
     gallery
     |> placed_order_query(order_number)
-    |> preload(
-      gallery: :organization,
-      products: :whcc_product,
-      digitals: [photo: ^watermarked_query]
-    )
+    |> preload([
+      :intent,
+      :canceled_intents,
+      [gallery: :organization, products: :whcc_product, digitals: [photo: ^watermarked_query]]
+    ])
     |> Repo.one!()
   end
 
@@ -171,6 +177,8 @@ defmodule Picsello.Orders do
 
   defdelegate handle_session(session), to: __MODULE__.Confirmations
   defdelegate handle_invoice(invoice), to: __MODULE__.Confirmations
+  defdelegate handle_intent(intent), to: __MODULE__.Confirmations
+  defdelegate canceled?(order), to: Order
 
   defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
     from(photo in Photo, where: photo.gallery_id == ^order.gallery_id)

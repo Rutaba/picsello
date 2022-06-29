@@ -81,13 +81,16 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
   def deliver_order_confirmation(
         %{
-          gallery: %{job: %{client: %{organization: organization}}} = gallery,
+          gallery:
+            %{
+              job: %{
+                client: %{organization: %{user: %{time_zone: "" <> time_zone}} = organization}
+              }
+            } = gallery,
           delivery_info: %{name: client_name, address: address, email: to_email}
         } = order,
         helpers
       ) do
-    %{user: %{time_zone: time_zone}} = Repo.preload(organization, :user)
-
     products =
       for(product <- Cart.preload_products(order).products) do
         %{
@@ -128,6 +131,39 @@ defmodule Picsello.Notifiers.ClientNotifier do
     sendgrid_template(:order_confirmation_template, opts)
     |> to({client_name, to_email})
     |> from({organization.name, "noreply@picsello.com"})
+    |> deliver_later()
+  end
+
+  def deliver_order_cancelation(
+        %{
+          delivery_info: %{email: email, name: client_name},
+          gallery: %{job: %{client: %{organization: %{user: user} = organization}}} = gallery
+        } = order,
+        helpers
+      ) do
+    params = %{
+      logo_url: Picsello.Profiles.logo_url(organization),
+      headline: "Your order has been canceled",
+      client_name: client_name,
+      client_order_url: helpers.order_url(gallery, order),
+      client_gallery_url: helpers.gallery_url(gallery),
+      organization_name: organization.name,
+      email_signature: email_signature(organization),
+      order_number: Picsello.Cart.Order.number(order),
+      order_date: helpers.strftime(user.time_zone, order.placed_at, "%-m/%-d/%y"),
+      order_items:
+        for product <- order.products do
+          %{
+            item_name: Picsello.Cart.product_name(product),
+            item_quantity: Picsello.Cart.product_quantity(product)
+          }
+        end ++ List.duplicate(%{item_name: "Digital Download"}, length(order.digitals))
+    }
+
+    sendgrid_template(:client_order_canceled_template, params)
+    |> to(email)
+    |> from("noreply@picsello.com")
+    |> subject("Order canceled")
     |> deliver_later()
   end
 

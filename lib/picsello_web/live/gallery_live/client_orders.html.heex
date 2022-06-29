@@ -31,11 +31,15 @@
             <dd class="hidden lg:block"><%= order_date(@gallery, order, "%B %-d, %Y") %></dd>
           </dl>
 
-          <dl class="flex col-start-1 lg:col-start-2">
-            <dt class="mr-2 font-extrabold lg:font-bold">Order total:</dt>
+          <%= if canceled?(order) do %>
+            <p class="text-[#B73208] font-semibold">Order Canceled</p>
+          <% else %>
+            <dl class="flex col-start-1 lg:col-start-2">
+              <dt class="mr-2 font-extrabold lg:font-bold">Order total:</dt>
 
-            <dd><%= total_cost(order) %></dd>
-          </dl>
+              <dd><%= total_cost(order) %></dd>
+            </dl>
+          <% end %>
 
           <dl class="flex col-start-1 lg:col-start-3 lg:justify-self-end">
             <dt class="mr-2 font-normal lg:font-bold">Order number:</dt>

@@ -85,4 +85,7 @@ defmodule Picsello.Invoices do
       Payments.finalize_invoice(invoice_id, %{auto_advance: true})
     end
   end
+
+  def open_invoice_for_order_query(%{id: order_id}),
+    do: from(invoice in Invoice, where: invoice.order_id == ^order_id and invoice.status == :open)
 end

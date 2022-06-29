@@ -134,6 +134,9 @@ defmodule Picsello.Payments do
               {:ok, Stripe.Invoice.t()} | {:error, Stripe.Error.t()}
             when params: %{:id => String.t(), optional(:auto_advance) => boolean()} | %{}
 
+  @callback void_invoice(Stripe.id() | Stripe.Invoice.t(), Stripe.options()) ::
+              {:ok, Stripe.Invoice.t()} | {:error, Stripe.Error.t()}
+
   @callback create_invoice_item(params, Stripe.options()) ::
               {:ok, Stripe.Invoiceitem.t()} | {:error, Stripe.Error.t()}
             when params:
@@ -182,6 +185,7 @@ defmodule Picsello.Payments do
   def cancel_payment_intent(id, opts), do: impl().cancel_payment_intent(id, opts)
   def create_invoice(params, opts \\ []), do: impl().create_invoice(params, opts)
   def finalize_invoice(id, params, opts \\ []), do: impl().finalize_invoice(id, params, opts)
+  def void_invoice(id, opts \\ []), do: impl().void_invoice(id, opts)
   def create_invoice_item(params, opts \\ []), do: impl().create_invoice_item(params, opts)
 
   def construct_event(body, signature, secret),

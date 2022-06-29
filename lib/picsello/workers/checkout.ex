@@ -19,7 +19,7 @@ defmodule Picsello.Workers.Checkout do
       {:ok, %{order: order}} ->
         Orders.broadcast(order, {:checkout, :complete, order})
 
-        Picsello.Notifiers.OrderNotifier.deliver_order_emails(
+        Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
           order,
           String.to_existing_atom(helpers_module)
         )

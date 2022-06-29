@@ -123,14 +123,17 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     :ok
   end
 
-  def trigger_stripe_webhook(session, type, object) do
+  def trigger_stripe_webhook(session, category, type, object) do
     Mox.expect(Picsello.MockPayments, :construct_event, fn _body, _str, _sig ->
       {:ok, %Stripe.Event{type: type, data: %{object: object}}}
     end)
 
     post(
       session,
-      PicselloWeb.Router.Helpers.stripe_webhooks_path(PicselloWeb.Endpoint, :app_webhooks),
+      PicselloWeb.Router.Helpers.stripe_webhooks_path(
+        PicselloWeb.Endpoint,
+        :"#{category}_webhooks"
+      ),
       Jason.encode!(%{}),
       [{"stripe-signature", "love, stripe"}]
     )
@@ -235,7 +238,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       end
     )
 
-    :ok
+    [stripe_payment_intent: intent]
   end
 
   setup :authenticated_gallery_client
@@ -299,7 +302,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       refute_receive({:order_confirmed, _order})
 
-      trigger_stripe_webhook(session, "invoice.payment_succeeded", %{
+      trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
         | amount_paid: 5000,
           amount_due: 0,
@@ -367,7 +370,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       refute_receive({:order_confirmed, _order})
 
-      trigger_stripe_webhook(session, "invoice.payment_succeeded", %{
+      trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
         | amount_paid: 2000,
           amount_due: 0,
@@ -471,7 +474,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     setup [:stub_whcc, :expect_create_invoice, :expect_stripe_checkout]
 
-    feature("charges both client and photographer", %{session: session, stripe_invoice: invoice}) do
+    def place_order(session) do
       session
       |> click(link("View Gallery"))
       |> assert_has(definition("Print Credit", text: "$100.00"))
@@ -490,6 +493,11 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       assert [%{errors: []}] = run_jobs()
 
       session
+    end
+
+    feature("charges both client and photographer", %{session: session, stripe_invoice: invoice}) do
+      session
+      |> place_order()
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "20.00"))
@@ -502,7 +510,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       refute_receive({:order_confirmed, _order})
       refute_receive({:capture_payment_intent, _intent_id})
 
-      trigger_stripe_webhook(session, "invoice.payment_succeeded", %{
+      trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
         | amount_paid: 2000,
           amount_due: 0,
@@ -512,6 +520,35 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       assert_receive({:order_confirmed, _order})
       assert_receive({:capture_payment_intent, _intent_id})
+    end
+
+    feature("cancels if client hold expires", %{
+      session: session,
+      stripe_invoice: %{id: invoice_id} = invoice,
+      stripe_payment_intent: intent
+    }) do
+      Mox.expect(Picsello.MockPayments, :void_invoice, fn ^invoice_id, _ ->
+        {:ok, %{invoice | status: "void"}}
+      end)
+
+      session
+      |> place_order()
+      |> trigger_stripe_webhook(:connect, "payment_intent.canceled", %{
+        intent
+        | status: "canceled"
+      })
+      |> click(link("My orders"))
+      |> assert_text("Order Canceled")
+      |> click(link("View details"))
+      |> assert_text("Order Canceled")
+
+      assert_receive(
+        {:delivered_email, %{subject: "Order canceled", to: [{_, "photographer@example.com"}]}}
+      )
+
+      assert_receive(
+        {:delivered_email, %{subject: "Order canceled", to: [{_, "client@example.com"}]}}
+      )
     end
   end
 end

@@ -277,7 +277,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       assert Jason.decode!(Jason.encode!(email_variables))
     end
 
-    test "loggs error if WHCC breaks", %{conn: conn, order: order} do
+    test "logs error if WHCC breaks", %{conn: conn, order: order} do
       add_cart_product(order, ~M[1000]USD)
 
       Mox.expect(Picsello.MockWHCCClient, :confirm_order, fn _, _ -> {:error, "oops"} end)
@@ -287,10 +287,9 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       Process.flag(:trap_exit, true)
 
-      assert capture_log(fn ->
-               make_request(conn)
-             end)
-             |> String.contains?(":badmatch")
+      assert fn -> make_request(conn) end
+             |> capture_log()
+             |> String.contains?("Error: {:error, :confirm_order, \"oops\"")
     end
   end
 

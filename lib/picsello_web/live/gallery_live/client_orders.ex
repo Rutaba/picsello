@@ -64,6 +64,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     """
   end
 
+  defdelegate canceled?(order), to: Orders
+
   defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
   defp product_name({:bundle, _}), do: "All digital downloads"
   defp product_name(item), do: Cart.product_name(item)

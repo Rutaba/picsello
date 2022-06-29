@@ -100,6 +100,9 @@ config :picsello, Picsello.Mailer,
   email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
   order_confirmation_template: System.get_env("SENDGRID_ORDER_CONFIMATION_TEMPLATE"),
+  photographer_order_canceled_template:
+    System.get_env("SENDGRID_ORDER_CANCELED_PHOTOGRAPHER_TEMPLATE"),
+  client_order_canceled_template: System.get_env("SENDGRID_ORDER_CANCELED_PHOTOGRAPHER_TEMPLATE"),
   photographer_order_confirmation_template:
     System.get_env("SENDGRID_PHOTOGRAPHER_ORDER_CONFIMATION_TEMPLATE"),
   hackney_opts: [
