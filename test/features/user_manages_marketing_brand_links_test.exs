@@ -4,9 +4,6 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
   setup :onboarded
   setup :authenticated
 
-  @website_field text_field("organization_profile_website")
-  @website_login_field text_field("organization_profile_website_login")
-
   feature "view with no brand link added", %{session: session} do
     session
     |> click(css("#hamburger-menu"))

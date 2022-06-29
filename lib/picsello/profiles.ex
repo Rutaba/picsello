@@ -45,7 +45,7 @@ defmodule Picsello.Profiles do
         :show_on_profile?,
         :custom?
       ])
-      |> validate_required([:title])
+      |> validate_required([:title, :link])
       |> validate_length(:title, max: 50)
       |> validate_change(
         :link,

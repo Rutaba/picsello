@@ -210,29 +210,16 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     socket
     |> assign_changeset(params)
     |> then(fn %{assigns: %{changeset: changeset}} = socket ->
-      brand_link =
-        cond do
-          changeset.valid? && is_nil(brand_link.link) ->
-            brand_link
-            |> Map.merge(changeset.changes)
-            |> Map.merge(%{active?: false, use_publicly?: false, show_on_profile?: false})
-
-          changeset.valid? ->
-            Map.merge(brand_link, changeset.changes)
-
-          true ->
-            brand_link
-        end
-
-      socket
-      |> assign(:brand_link, brand_link)
+      if changeset.valid? do
+        socket
+        |> assign(:brand_link, Map.merge(brand_link, changeset.changes))
+      else
+        socket
+        |> assign(:brand_link, Map.merge(brand_link, %{active?: false, use_publicly?: false, show_on_profile?: false}))
+      end
     end)
     |> noreply()
   end
-
-  @impl true
-  def handle_event("intro_js" = event, params, socket),
-    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   def handle_event("save", _, socket) do

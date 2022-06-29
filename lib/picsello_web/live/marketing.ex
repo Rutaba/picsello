@@ -54,14 +54,14 @@ defmodule PicselloWeb.Live.Marketing do
         <div class="my-12">
           <.card title="Brand links" class="relative intro-brand-links">
             <div class="flex items-center flex-wrap justify-between">
-            <%= if is_active(@brand_links) do %>
-            <p class="lg:flex hidden">Looks like you don’t have any links. Go head and add one!</p>
-            <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
-            <% else %>
-            <p class="lg:flex hidden">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
-            <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
-            <% end %>
-            <button type="button" phx-click="edit-link" phx-value-link-id="website" class="w-full sm:w-auto text-center btn-primary">Manage links</button>
+              <%= if is_active(@brand_links) do %>
+                <p class="lg:flex hidden">Looks like you don’t have any links. Go head and add one!</p>
+                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
+              <% else %>
+                <p class="lg:flex hidden">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
+                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
+              <% end %>
+              <button type="button" phx-click="edit-link" phx-value-link-id="website" class="w-full sm:w-auto text-center btn-primary">Manage links</button>
             </div>
             <div id="marketing-links" class={classes("grid gap-5 mt-10 lg:grid-cols-4 md:grid-cols-2 grid-cols-1", %{"hidden" => is_active(@brand_links)})}>
               <%= case @brand_links do %>
@@ -218,7 +218,7 @@ defmodule PicselloWeb.Live.Marketing do
           %BrandLinks{
             title: "Website",
             icon: "website",
-            link: website,
+            link: website || "www.google.com",
             link_id: "website",
             can_edit?: true,
             active?: false,
