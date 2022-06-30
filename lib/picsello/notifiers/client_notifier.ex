@@ -24,6 +24,26 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> deliver_transactional_email(to_email, job)
   end
 
+  def deliver_balance_due_email(job, helpers) do
+    with client <- job |> Repo.preload(:client) |> Map.get(:client),
+         proposal <- BookingProposal.last_for_job(job.id),
+         [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
+      %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
+      |> Picsello.Messages.insert_scheduled_message!(job)
+      |> deliver_email(
+        client.email,
+        %{
+          button: %{
+            text: "Open invoice",
+            url: BookingProposal.url(proposal.id)
+          }
+        }
+      )
+    end
+  end
+
   def deliver_shipping_notification(event, order, helpers) do
     with %{gallery: gallery} <- order |> Repo.preload(gallery: :job),
          [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_shipping_to_client),

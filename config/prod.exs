@@ -102,3 +102,7 @@ config :picsello, Picsello.Mailer,
   ]
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
+
+config :picsello,
+       :feature_flags,
+       ~w[balance_due_emails]a

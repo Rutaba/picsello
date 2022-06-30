@@ -106,6 +106,7 @@ config :picsello, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"*/10 * * * *", Picsello.Workers.SendProposalReminder},
+       {"0 * * * *", Picsello.Workers.SendPaymentScheduleReminder},
        {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},
        {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
      ]}

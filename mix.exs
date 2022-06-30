@@ -45,6 +45,7 @@ defmodule Picsello.MixProject do
         {:ecto_sql, "~> 3.7"},
         {:elixir_email_reply_parser, "~> 0.1.2"},
         {:gettext, "~> 0.18"},
+        {:html_sanitize_ex, "~> 1.4"},
         {:flow, "~> 1.1"},
         {:jason, "~> 1.2.2"},
         {:libcluster, "~> 3.3"},

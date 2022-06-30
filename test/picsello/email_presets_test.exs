@@ -123,6 +123,13 @@ defmodule Picsello.EmailPresetsTest do
       insert(:shoot, starts_at: shoot_starts_at, job: job, location: :studio)
 
       insert(:payment_schedule,
+        due_at: shoot_starts_at |> DateTime.add(-48 * 60 * 60),
+        paid_at: shoot_starts_at |> DateTime.add(-48 * 60 * 60),
+        job: job,
+        price: ~M[2000]USD
+      )
+
+      insert(:payment_schedule,
         due_at: shoot_starts_at |> DateTime.add(-24 * 60 * 60),
         job: job,
         price: ~M[1000]USD

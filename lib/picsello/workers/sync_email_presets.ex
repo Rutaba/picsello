@@ -29,7 +29,12 @@ defmodule Picsello.Workers.SyncEmailPresets do
     Repo.transaction(fn ->
       job_types = Picsello.JobType.all()
 
-      rows = Enum.filter(rows, &Enum.member?(job_types, Map.get(&1, :job_type)))
+      rows =
+        Enum.filter(
+          rows,
+          &(Enum.member?(job_types, Map.get(&1, :job_type)) &&
+              Enum.member?(EmailPreset.states(), Map.get(&1, :state)))
+        )
 
       {_count, presets} =
         Repo.insert_all(EmailPreset, rows,
