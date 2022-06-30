@@ -156,7 +156,7 @@ const Hooks = {
   ToggleSiblings,
   ResumeUpload,
   GallerySelector,
-  ClientGalleryCookie
+  ClientGalleryCookie,
 };
 
 let Uploaders = {};
@@ -234,6 +234,14 @@ window.addEventListener('phx:page-loading-stop', (info) => {
   topBarScheduled = undefined;
   topbar.hide();
   Analytics.init(info);
+});
+
+window.addEventListener('phx:scroll:lock', () => {
+  document.body.classList.add('overflow-hidden');
+});
+
+window.addEventListener('phx:scroll:unlock', () => {
+  document.body.classList.remove('overflow-hidden');
 });
 
 // connect if there are any LiveViews on the page

@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
 
   alias Picsello.Profiles
+  alias Phoenix.LiveView.JS
 
   @defaults %{
     cart_count: 0,
@@ -50,6 +51,12 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
     <% end %>
     """
   end
+
+  defp hamburger(:open),
+    do: JS.remove_class("hidden", to: "#gallery-nav") |> JS.dispatch("phx:scroll:lock")
+
+  defp hamburger(:close),
+    do: JS.add_class("hidden", to: "#gallery-nav") |> JS.dispatch("phx:scroll:unlock")
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end
