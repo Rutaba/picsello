@@ -10,6 +10,12 @@ defmodule PicselloWeb.ErrorView do
     end
   end
 
+  def render("403.html", assigns) do
+    Phoenix.View.render_layout PicselloWeb.LayoutView, "root.html", assigns do
+      render("403_page.html", assigns)
+    end
+  end
+
   def render("500.html", assigns) do
     Phoenix.View.render_layout PicselloWeb.LayoutView, "root.html", assigns do
       render("500_page.html", assigns)

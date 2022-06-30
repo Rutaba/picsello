@@ -85,17 +85,25 @@
                 </div>
               </div>
               <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
-                <.actions id="actions" class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id} photo_selected={Enum.any?(@selected_photos)}>
+                <.actions id="actions" update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                   <%= if(is_nil(@album)) do %>
                     <.album_actions albums={@gallery.albums} />
                   <% else %>
                     <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
-                    <li class="relative py-1.5 hover:bg-blue-planning-100">
+                    <li class="relative py-1 hover:bg-blue-planning-100">
                         <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
                     </li>
                   <% end %>
-                  <li class="relative hidden">
-                    <button class="album-actions">Download photos</button>
+                  <li class="relative py-1 hover:bg-blue-planning-100">
+                    <a class="album-actions"
+                      download
+                      href={Routes.gallery_downloads_path(
+                            @socket,
+                            :download_all,
+                            @gallery.client_link_hash,
+                            photo_ids: Enum.join(@selected_photos, ",")
+                            )}>Download photos
+                    </a>
                   </li>
                   <%= unless @album do %>
                     <li class="relative py-1.5 hover:bg-blue-planning-100">
@@ -170,7 +178,8 @@
                       is_viewable: true,
                       is_meatball: true,
                       is_gallery_category_page: false,
-                      component: false
+                      component: false,
+                      client_link_hash: @gallery.client_link_hash
                   %>
                 <% end %>
               </div>

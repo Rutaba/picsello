@@ -1,15 +1,25 @@
 defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
-  alias Picsello.{Orders, Galleries, Galleries.Workers.PhotoStorage}
+  alias Picsello.{Orders, Photos, Galleries, Galleries.Workers.PhotoStorage}
 
   def download(conn, %{"hash" => hash, "order_number" => order_number} = _params) do
     %{organization: %{name: org_name}, photos: photos} =
       Orders.get_purchased_photos!(order_number, %{client_link_hash: hash})
 
-    photos
-    |> to_entries()
-    |> Packmatic.build_stream()
-    |> Packmatic.Conn.send_chunked(conn, "#{org_name} - #{order_number}.zip")
+    process_photos(conn, photos, "#{org_name} - #{order_number}.zip")
+  end
+
+  def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids} = _params) do
+    gallery = Galleries.get_gallery_by_hash!(hash)
+    photographer = Galleries.gallery_photographer(gallery)
+
+    if photographer.id == conn.assigns.current_user.id do
+      photo_ids = photo_ids |> String.split(",") |> Enum.map(&String.to_integer/1)
+      photos = Galleries.get_photos_by_ids(gallery, photo_ids) |> some!()
+      process_photos(conn, photos, "#{gallery.name}.zip")
+    else
+      conn |> put_view(ErrorView) |> render("403.html")
+    end
   end
 
   def download_all(conn, %{"hash" => hash} = _params) do
@@ -17,16 +27,39 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
     %{organization: %{name: org_name}, photos: photos} = Orders.get_all_photos!(gallery)
 
-    photos
-    |> to_entries()
-    |> Packmatic.build_stream()
-    |> Packmatic.Conn.send_chunked(conn, "#{org_name}.zip")
+    process_photos(conn, photos, "#{org_name}.zip")
+  end
+
+  def download_photo(%{assigns: %{current_user: %{id: id}}} = conn, %{
+        "hash" => hash,
+        "photo_id" => photo_id
+      }) do
+    gallery = Galleries.get_gallery_by_hash!(hash)
+    photographer = Galleries.gallery_photographer(gallery)
+
+    if photographer.id == id do
+      photo = Photos.get!(gallery, photo_id)
+      process_photo(conn, photo)
+    else
+      conn |> put_view(ErrorView) |> render("403.html")
+    end
   end
 
   def download_photo(conn, %{"hash" => hash, "photo_id" => photo_id} = _params) do
     gallery = Galleries.get_gallery_by_hash!(hash)
     photo = Orders.get_purchased_photo!(gallery, photo_id)
 
+    process_photo(conn, photo)
+  end
+
+  defp process_photos(conn, photos, file_name) do
+    photos
+    |> to_entries()
+    |> Packmatic.build_stream()
+    |> Packmatic.Conn.send_chunked(conn, file_name)
+  end
+
+  defp process_photo(conn, photo) do
     %HTTPoison.AsyncResponse{id: id} =
       photo.original_url |> PhotoStorage.path_to_url() |> HTTPoison.get!(%{}, stream_to: self())
 
@@ -35,6 +68,13 @@ defmodule PicselloWeb.GalleryDownloadsController do
     |> send_chunked(200)
     |> process_chunks(id)
   end
+
+  defp some!(photos),
+    do:
+      (case photos do
+         [] -> raise Ecto.NoResultsError
+         some -> some
+       end)
 
   # Encode header value same way as Packmatic https://github.com/evadne/packmatic/blob/5fe031896dae48665d31be3d287508aa5887be24/lib/packmatic/conn.ex#L22
   defp encode_header_value(filename) do

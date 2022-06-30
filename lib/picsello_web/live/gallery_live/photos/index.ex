@@ -684,7 +684,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     ~H"""
     <%= for album <- @albums do %>
       <%= if @exclude_album_id != album.id do %>
-        <li class={"relative py-1.5 hover:bg-blue-planning-100 #{get_class(album.name)}"}>
+        <li class={"relative py-1 hover:bg-blue-planning-100 #{get_class(album.name)}"}>
           <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
           <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
         </li>
