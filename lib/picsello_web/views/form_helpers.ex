@@ -206,78 +206,13 @@ defmodule PicselloWeb.FormHelpers do
           <%= input @form, @name,
               type: :url_input,
               phx_debounce: "500",
-              disabled: @show_checkbox && input_value(@form, :no_website) == true,
+              disabled: input_value(@form, :website) == true,
               placeholder: @placeholder,
               autocomplete: "url",
               novalidate: true,
               phx_hook: "PrefixHttp",
-              class: classes("p-4", %{"sm:pr-48" => @show_checkbox}) %>
+              class: "p-4" %>
           <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
-
-          <%= if @show_checkbox do %>
-            <label id="clear-website" phx-hook="ClearInput" data-input-name={@name} class="flex items-center py-2 pl-2 pr-3 mt-2 bg-gray-200 rounded sm:absolute top-2 right-2 sm:mt-0">
-              <%= checkbox @form, :no_website, class: "w-5 h-5 checkbox" %>
-
-              <p class="ml-2">I don't have one</p>
-            </label>
-          <% end %>
-        </div>
-      </label>
-    """
-  end
-
-  def title_field(assigns) do
-    assigns =
-      assigns
-      |> Enum.into(%{
-        class: "",
-        placeholder: "",
-        label: "Link Name",
-        name: :title
-      })
-
-    ~H"""
-    <label class={"flex flex-col #{@class}"}>
-        <p class="py-2 font-extrabold"><%= @label %> <i class="italic font-light">(public facing or private logins)</i></p>
-
-        <div class="relative flex flex-col">
-          <%= input @form, @name,
-              phx_debounce: "500",
-              disabled: !@custom? && @link_id != "website",
-              placeholder: @placeholder,
-              class: classes("p-4", %{"bg-gray-200" => !@custom? && @link_id != "website"}) %>
-          <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: @label %>
-        </div>
-      </label>
-    """
-  end
-
-  def link_field(assigns) do
-    assigns =
-      assigns
-      |> Enum.into(%{
-        class: "",
-        placeholder: "www.mystudio.com",
-        label: "Link",
-        sub_label: "",
-        name: :link
-      })
-
-    ~H"""
-    <label class={"flex flex-col #{@class}"}>
-        <p class="py-2 font-extrabold"><%= @label %> <i class="italic font-light"><%= @sub_label %></i></p>
-
-        <div class="relative flex flex-col">
-          <%= input @form, @name,
-              type: :url_input,
-              phx_debounce: "500",
-              disabled: !@custom? && @link_id != "website",
-              placeholder: @placeholder,
-              autocomplete: "url",
-              novalidate: true,
-              phx_hook: "PrefixHttp",
-              class: classes("p-4", %{"bg-gray-200" => !@custom? && @link_id != "website"}) %>
-          <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: @label %>
         </div>
       </label>
     """

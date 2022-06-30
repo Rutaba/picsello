@@ -1,8 +1,8 @@
 defmodule PicselloWeb.Live.Marketing do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Marketing, Profiles}
-  alias Picsello.Profiles.BrandLinks
+
+  alias Picsello.{Marketing, Profiles, BrandLinks}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -54,23 +54,23 @@ defmodule PicselloWeb.Live.Marketing do
         <div class="my-12">
           <.card title="Brand links" class="relative intro-brand-links">
             <div class="flex items-center flex-wrap justify-between">
-              <%= if is_active(@brand_links) do %>
-                <p class="lg:flex hidden">Looks like you don’t have any links. Go head and add one!</p>
+              <%= if active?(@brand_links) do %>
+                <p class="lg:flex hidden">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
                 <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
               <% else %>
-                <p class="lg:flex hidden">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
+                <p class="lg:flex hidden">Looks like you don’t have any links. Go head and add one!</p>
                 <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
               <% end %>
               <button type="button" phx-click="edit-link" phx-value-link-id="website" class="w-full sm:w-auto text-center btn-primary">Manage links</button>
             </div>
-            <div id="marketing-links" class={classes("grid gap-5 mt-10 lg:grid-cols-4 md:grid-cols-2 grid-cols-1", %{"hidden" => is_active(@brand_links)})}>
+            <div id="marketing-links" class={classes("hiddden gap-5 mt-10 lg:grid-cols-4 md:grid-cols-2 grid-cols-1", %{"grid" => active?(@brand_links)})}>
               <%= case @brand_links do %>
                 <% [] -> %>
                 <% brand_links -> %>
-                <%= for %{title: title, icon: icon, link: link, link_id: link_id, can_edit?: can_edit?, active?: active?} <- brand_links do %>
+                <%= for %{title: title, link: link, link_id: link_id, active?: active?} <- brand_links do %>
                   <div {testid("marketing-links")} class={classes("flex items-center mb-4", %{"hidden" => !active?})}>
                     <div class="flex items-center justify-center w-20 h-20 ml-1 mr-3 rounded-full flex-shrink-0 bg-base-200 p-6">
-                      <.icon name={icon} />
+                      <.icon name={get_brand_link_icon(link_id)} />
                     </div>
                     <div>
                       <h4 class="text-xl font-bold mb-2"><a href={link} target="_blank" rel="noopener noreferrer"><%= title %></a></h4>
@@ -78,9 +78,7 @@ defmodule PicselloWeb.Live.Marketing do
                         <%= if link do %>
                           <a href={link} target="_blank" rel="noopener noreferrer" class="px-1 pb-1 font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300 hover:bg-blue-planning-100">Open</a>
                         <% end %>
-                        <%= if can_edit? do %>
-                          <button phx-click="edit-link" phx-value-link-id={link_id} class="ml-2 text-blue-planning-300 underline">Edit</button>
-                        <% end %>
+                        <button phx-click="edit-link" phx-value-link-id={link_id} class="ml-2 text-blue-planning-300 underline">Edit</button>
                       </div>
                     </div>
                   </div>
@@ -174,11 +172,10 @@ defmodule PicselloWeb.Live.Marketing do
     |> noreply()
   end
 
-  def handle_info({:update_org, organization}, socket) do
+  def handle_info({:update_brand_links, brand_links, message}, socket) do
     socket
-    |> assign(:organization, organization)
-    |> assign_brand_links()
-    |> put_flash(:success, "Link updated")
+    |> assign(:brand_links, brand_links)
+    |> put_flash(:success, "Link #{message}")
     |> noreply()
   end
 
@@ -204,128 +201,82 @@ defmodule PicselloWeb.Live.Marketing do
         %{
           assigns: %{
             organization: %{
+              id: organization_id,
               profile: %{
-                brand_links: brand_links,
                 website: website
               }
             }
           }
         } = socket
       ) do
+    brand_links = [
+      %{
+        title: "Website",
+        link: website || nil,
+        link_id: "website",
+        organization_id: organization_id
+      },
+      %{
+        title: "Instagram",
+        link: "https://www.instagram.com/",
+        link_id: "instagram",
+        organization_id: organization_id
+      },
+      %{
+        title: "Twitter",
+        link: "https://www.twitter.com/",
+        link_id: "twitter",
+        organization_id: organization_id
+      },
+      %{
+        title: "TikTok",
+        link: "https://www.tiktok.com/",
+        link_id: "tiktok",
+        organization_id: organization_id
+      },
+      %{
+        title: "Facebook",
+        link: "https://www.facebook.com/",
+        link_id: "facebook",
+        organization_id: organization_id
+      },
+      %{
+        title: "Google Reviews",
+        link: "https://www.google.com/business",
+        link_id: "google-business",
+        organization_id: organization_id
+      },
+      %{
+        title: "Linkedin",
+        link: "https://www.linkedin.com/",
+        link_id: "linkedin",
+        organization_id: organization_id
+      },
+      %{
+        title: "Pinterest",
+        link: "https://www.pinterest.com/",
+        link_id: "pinterest",
+        organization_id: organization_id
+      },
+      %{
+        title: "Yelp",
+        link: "https://www.yelp.com/",
+        link_id: "yelp",
+        organization_id: organization_id
+      },
+      %{
+        title: "Snapchat",
+        link: "https://www.snapchat.com/",
+        link_id: "snapchat",
+        organization_id: organization_id
+      }
+    ]
+
     brand_links =
-      (Enum.any?(brand_links) && brand_links) ||
-        [
-          %BrandLinks{
-            title: "Website",
-            icon: "website",
-            link: website || "www.google.com",
-            link_id: "website",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Instagram",
-            icon: "instagram",
-            link: "https://www.instagram.com/",
-            link_id: "instagram",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Twitter",
-            icon: "twitter",
-            link: "https://www.twitter.com/",
-            link_id: "twitter",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "TikTok",
-            icon: "tiktok",
-            link: "https://www.tiktok.com/",
-            link_id: "tiktok",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Facebook",
-            icon: "facebook",
-            link: "https://www.facebook.com/",
-            link_id: "facebook",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Google Reviews",
-            icon: "google-business",
-            link: "https://www.google.com/business",
-            link_id: "google-business",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Linkedin",
-            icon: "linkedin",
-            link: "https://www.linkedin.com/",
-            link_id: "linkedin",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Pinterest",
-            icon: "pinterest",
-            link: "https://www.pinterest.com/",
-            link_id: "pinterest",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Yelp",
-            icon: "yelp",
-            link: "https://www.yelp.com/",
-            link_id: "yelp",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          },
-          %BrandLinks{
-            title: "Snapchat",
-            icon: "snapchat",
-            link: "https://www.snapchat.com/",
-            link_id: "snapchat",
-            can_edit?: true,
-            active?: false,
-            use_publicly?: false,
-            show_on_profile?: false,
-            custom?: false
-          }
-        ]
+      case BrandLinks.get_brand_link_by_organization_id(organization_id) do
+        [] -> BrandLinks.insert_brand_links(brand_links)
+        brand_links -> brand_links
+      end
 
     socket |> assign(:brand_links, brand_links)
   end
@@ -371,5 +322,5 @@ defmodule PicselloWeb.Live.Marketing do
     socket |> assign(:campaigns, campaigns)
   end
 
-  defp is_active(brand_links), do: brand_links |> Enum.filter(& &1.active?) |> Enum.empty?()
+  defp active?(brand_links), do: brand_links |> Enum.any?(& &1.active?)
 end

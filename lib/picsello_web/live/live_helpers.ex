@@ -365,4 +365,7 @@ defmodule PicselloWeb.LiveHelpers do
       is_mobile: if(String.valid?(is_mobile), do: String.to_existing_atom(is_mobile), else: is_mobile)
     )
   end
+
+  def get_brand_link_icon(link_id),
+    do: if(String.contains?(link_id, "link_"), do: "anchor", else: link_id)
 end

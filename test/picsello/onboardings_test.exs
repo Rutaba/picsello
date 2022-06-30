@@ -74,7 +74,6 @@ defmodule Picsello.OnboardingsTest do
                organization: %{
                  name: [:required],
                  profile: %{
-                   website: [:required],
                    job_types: [:required],
                    color: [:required]
                  }
@@ -103,7 +102,6 @@ defmodule Picsello.OnboardingsTest do
                organization: %{
                  name: [:required],
                  profile: %{
-                   website: [:required],
                    job_types: [:required],
                    color: [:required]
                  }

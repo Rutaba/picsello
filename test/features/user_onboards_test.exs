@@ -150,7 +150,6 @@ defmodule Picsello.UserOnboardsTest do
                ],
                profile: %{
                  website: "https://example.com",
-                 no_website: false,
                  color: ^second_color,
                  job_types: ~w(event portrait)
                }
@@ -210,11 +209,6 @@ defmodule Picsello.UserOnboardsTest do
     |> click(css("label", text: "Portrait"))
     |> click(button("Next"))
     |> click(@second_color_field)
-    |> fill_in(@website_field, with: "example.com")
-    |> click(checkbox("I don't have one"))
-    |> assert_value(@website_field, "")
-    |> assert_disabled(@website_field)
-    |> wait_for_enabled_submit_button()
     |> click(button("Next"))
 
     user =
@@ -225,8 +219,7 @@ defmodule Picsello.UserOnboardsTest do
     assert %User{
              organization: %{
                profile: %{
-                 website: nil,
-                 no_website: true
+                 website: nil
                }
              }
            } = user

@@ -83,7 +83,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> click(button("Save"))
     |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
     |> click(button("Edit Link"))
-    |> click(checkbox("I don't have one"))
+    |> fill_in(text_field("organization_profile_website"), with: "")
     |> click(button("Save"))
     |> assert_has(css("a[href='#']", text: "See our full portfolio"))
   end

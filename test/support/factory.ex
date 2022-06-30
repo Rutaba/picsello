@@ -97,8 +97,7 @@ defmodule Picsello.Factory do
     do: %{
       color: Profile.colors() |> hd,
       is_enabled: true,
-      job_types: ["event", "wedding", "newborn"],
-      no_website: true
+      job_types: ["event", "wedding", "newborn"]
     }
 
   def valid_user_attributes(attrs \\ %{}),

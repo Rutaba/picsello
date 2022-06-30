@@ -163,7 +163,6 @@ defmodule Picsello.Onboardings do
     profile
     |> profile_onboarding_changeset(attrs, 3)
     |> validate_required([:color])
-    |> then(&if get_field(&1, :no_website), do: &1, else: validate_required(&1, [:website]))
   end
 
   defp onboarding_changeset(onboarding, attrs, 5) do

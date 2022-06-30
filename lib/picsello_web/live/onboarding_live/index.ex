@@ -223,7 +223,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <% end %>
             </ul>
           </label>
-
+          
           <.website_field form={p} class="mt-4" />
         <% end %>
       <% end %>
