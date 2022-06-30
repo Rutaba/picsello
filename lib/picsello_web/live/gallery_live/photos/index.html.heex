@@ -97,7 +97,12 @@
                   <li class="relative hidden">
                     <button class="album-actions">Download photos</button>
                   </li>
-                </.actions>
+                  <%= unless @album do %>
+                    <li class="relative py-1.5 hover:bg-blue-planning-100">
+                      <button class="album-actions" phx-click="add_album_popup">Create new album with selected</button>
+                    </li>
+                  <% end %>
+              </.actions>
               </div>
             </div>
             <div class="flex items-start min-w-0 flex-row">

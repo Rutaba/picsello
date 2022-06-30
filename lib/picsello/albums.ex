@@ -5,8 +5,10 @@ defmodule Picsello.Albums do
 
   import Ecto.Query, warn: false
 
+  alias Ecto.Multi
   alias Picsello.Repo
   alias Picsello.Galleries.Album
+  alias Picsello.Galleries.Photo
 
   @doc """
   Gets a single album.
@@ -58,6 +60,19 @@ defmodule Picsello.Albums do
   """
   def insert_album(params),
     do: Album.create_changeset(params) |> Repo.insert()
+
+  def insert_album_with_selected_photos(params, selected_photos) do
+    Multi.new()
+    |> Multi.insert(:album, change_album(%Album{}, params))
+    |> Multi.update_all(
+      :photos,
+      fn %{album: album} ->
+        from(p in Photo, where: p.id in ^selected_photos, update: [set: [album_id: ^album.id]])
+      end,
+      []
+    )
+    |> Repo.transaction()
+  end
 
   @doc """
   Update album

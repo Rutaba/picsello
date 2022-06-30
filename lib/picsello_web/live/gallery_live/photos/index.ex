@@ -56,12 +56,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{},
         %{
           assigns: %{
-            gallery: gallery
+            gallery: gallery,
+            selected_photos: selected_photos
           }
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id})
+    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, selected_photos: selected_photos})
     |> noreply()
   end
 

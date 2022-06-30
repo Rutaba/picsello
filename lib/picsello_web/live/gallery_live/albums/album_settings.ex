@@ -10,9 +10,11 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   @impl true
   def update(%{gallery_id: gallery_id} = assigns, socket) do
     album = Map.get(assigns, :album, nil)
+    selected_photos = Map.get(assigns, :selected_photos, [])
 
     socket
     |> assign(:album, album)
+    |> assign(:selected_photos, selected_photos)
     |> assign(:gallery_id, gallery_id)
     |> assign_album_changeset()
     |> assign(:visibility, false)
@@ -40,12 +42,17 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       ) do
     if album do
       {album, message} =
-        upsert_album(Albums.update_album(album, params), "Album settings successfully updated")
+        album
+        |> Albums.update_album(params)
+        |> upsert_album("Album settings successfully updated")
 
       send(self(), {:album_settings, %{message: message, album: album}})
       socket |> noreply()
     else
-      {_, message} = upsert_album(Albums.insert_album(params), "Album successfully created")
+      {_, message} =
+        socket.assigns
+        |> insert_album(params)
+        |> upsert_album("Album successfully created")
 
       socket
       |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
@@ -120,6 +127,11 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       album_password
     end
   end
+
+  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
+
+  defp insert_album(%{selected_photos: selected_photos}, album_params),
+    do: Albums.insert_album_with_selected_photos(album_params, selected_photos)
 
   defp upsert_album(result, message) do
     case result do
