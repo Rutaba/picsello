@@ -16,6 +16,7 @@ defmodule PicselloWeb.Live.Profile do
     socket
     |> assign(:edit, false)
     |> assign(:uploads, nil)
+    |> assign(:entry, nil)
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
     |> assign_job_type_packages()
@@ -28,12 +29,14 @@ defmodule PicselloWeb.Live.Profile do
   def mount(params, session, socket) when map_size(params) == 0 do
     socket
     |> assign(:edit, true)
+    |> assign(:entry, nil)
     |> assign_defaults(session)
     |> assign_current_organization()
     |> assign_job_type_packages()
     |> allow_upload(
       :logo,
       accept: ~w(.svg .png),
+      max_file_size: String.to_integer(Application.get_env(:picsello, :logo_max_size)),
       max_entries: 1,
       external: &preflight/2,
       auto_upload: true
@@ -41,6 +44,7 @@ defmodule PicselloWeb.Live.Profile do
     |> allow_upload(
       :main_image,
       accept: ~w(.jpg .png),
+      max_file_size: String.to_integer(Application.get_env(:picsello, :logo_max_size)),
       max_entries: 1,
       external: &preflight/2,
       auto_upload: true
@@ -54,14 +58,14 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <div class="flex-grow md:mx-32 client-app">
       <div class="flex flex-wrap items-center justify-between px-6 py-2 md:py-4 md:px-12">
-        <.logo_image uploads={@uploads} organization={@organization} edit={@edit} />
+        <.logo_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :logo)} uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
       </div>
 
       <hr class="border-base-300">
 
       <div class="flex flex-col justify-center max-w-screen-lg px-6 mx-auto mt-10 md:px-16">
-        <.main_image edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
+        <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
         <h1 class="mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
@@ -198,11 +202,11 @@ defmodule PicselloWeb.Live.Profile do
         _params,
         %{assigns: %{uploads: %{logo: %{entries: [entry]}}}} = socket
       ) do
-    if entry.valid? do
-      socket |> noreply()
-    else
-      socket |> cancel_upload(:logo, entry.ref) |> noreply()
-    end
+    send(self(), {:validate_entry, entry})
+
+    socket
+    |> assign(:entry, entry)
+    |> noreply()
   end
 
   @impl true
@@ -211,11 +215,11 @@ defmodule PicselloWeb.Live.Profile do
         _params,
         %{assigns: %{uploads: %{main_image: %{entries: [entry]}}}} = socket
       ) do
-    if entry.valid? do
-      socket |> noreply()
-    else
-      socket |> cancel_upload(:main_image, entry.ref) |> noreply()
-    end
+    send(self(), {:validate_entry, entry})
+
+    socket
+    |> assign(:entry, entry)
+    |> noreply()
   end
 
   @impl true
@@ -254,6 +258,15 @@ defmodule PicselloWeb.Live.Profile do
     socket |> assign_organization(organization) |> noreply()
   end
 
+  def handle_info({:validate_entry, %{valid?: true}}, socket), do: noreply(socket)
+
+  def handle_info({:validate_entry, %{valid?: false} = entry}, socket) do
+    socket
+    |> put_flash(:error, "Image was too large, needs to be below 10 mb")
+    |> cancel_upload(entry.upload_config, entry.ref)
+    |> noreply()
+  end
+
   defp website_url(nil), do: "#"
   defp website_url("http" <> _domain = url), do: url
   defp website_url(domain), do: "https://#{domain}"
@@ -282,14 +295,14 @@ defmodule PicselloWeb.Live.Profile do
 
     ~H"""
     <form id={"#{@image_upload.name}-form"} phx-submit="save-image" class={"flex #{@class}"} phx-change="validate-image" phx-drop-target={@image_upload.ref}>
-      <label class={"w-full h-full flex items-center p-4 font-bold font-sans border border-blue-planning-300 border-2 border-dashed rounded-lg cursor-pointer #{@label_class}"}>
+      <label class={"w-full h-full flex items-center p-4 font-bold font-sans border border-#{@icon_class} border-2 border-dashed rounded-lg cursor-pointer #{@label_class}"}>
         <%= if @image && Enum.any?(@image_upload.entries) do %>
           <.progress image={@image_upload} class="m-4"/>
         <% else %>
-          <.icon name="upload" class="w-10 h-10 mr-5 stroke-current text-blue-planning-300" />
+          <.icon name="upload" class={"w-10 h-10 mr-5 stroke-current text-#{@icon_class}"} />
           <div class={@supports_class}>
             Drag your <%= @image_title %> or
-            <span class="text-blue-planning-300">browse</span>
+            <span class={"text-#{@icon_class}"}>browse</span>
             <p class="text-sm font-normal text-base-250">Supports <%= @supports %></p>
           </div>
         <% end %>
@@ -298,6 +311,9 @@ defmodule PicselloWeb.Live.Profile do
     </form>
     """
   end
+
+  defp select_icon_class(%{valid?: false}, true), do: "red-sales-300"
+  defp select_icon_class(_entry, _), do: "blue-planning-300"
 
   defp logo_image(assigns) do
     ~H"""
@@ -308,7 +324,7 @@ defmodule PicselloWeb.Live.Profile do
           <div class="my-8 sm:my-0 sm:ml-8"><.edit_image_button image={@uploads.logo} image_field={"logo"}/></div>
         <% else %>
           <p class="mx-5 font-sans text-2xl font-bold">or</p>
-          <.drag_image_upload image={@organization.profile.logo} image_upload={@uploads.logo} supports="PNG or SVG" image_title="logo" />
+          <.drag_image_upload icon_class={@icon_class} image={@organization.profile.logo} image_upload={@uploads.logo} supports="PNG or SVG: under 10 mb" image_title="logo" />
         <% end %>
       <% end %>
     </div>
@@ -327,7 +343,7 @@ defmodule PicselloWeb.Live.Profile do
           <div class="absolute top-8 right-8"><.edit_image_button image={@uploads.main_image} image_field={"main_image"} /></div>
         <% else %>
           <div class="bg-[#F6F6F6] w-full aspect-h-1 aspect-w-2" >
-            <.drag_image_upload image={@image} image_upload={@uploads.main_image} supports_class="text-center" supports="JPEG or PNG: 1060x650 under 10mb" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
+            <.drag_image_upload icon_class={@icon_class} image={@image} image_upload={@uploads.main_image} supports_class="text-center" supports="JPEG or PNG: 1060x650 under 10mb" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
           </div>
         <% end %>
 
