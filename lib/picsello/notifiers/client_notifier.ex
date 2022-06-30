@@ -30,17 +30,16 @@ defmodule Picsello.Notifiers.ClientNotifier do
          [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
-      deliver_transactional_email(
+      %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
+      |> Picsello.Messages.insert_scheduled_message!(job)
+      |> deliver_email(
+        client.email,
         %{
-          subject: subject,
-          body: body,
           button: %{
             text: "Open invoice",
             url: BookingProposal.url(proposal.id)
           }
-        },
-        client.email,
-        job
+        }
       )
     end
   end

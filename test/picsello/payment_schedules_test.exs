@@ -206,7 +206,11 @@ defmodule Picsello.PaymentSchedulesTest do
         insert(:lead, type: "wedding", client: [email: "elizabeth2@example.com"])
         |> promote_to_job()
 
-      insert(:email_preset, state: :balance_due, job_type: "wedding")
+      insert(:email_preset,
+        state: :balance_due,
+        job_type: "wedding",
+        body_template: "<p>{{invoice_amount}}</p>"
+      )
 
       payment_lead =
         insert(:payment_schedule,
@@ -249,6 +253,8 @@ defmodule Picsello.PaymentSchedulesTest do
                already_reminded_at |> DateTime.truncate(:second)
 
       assert_receive {:delivered_email, %{to: [nil: "elizabeth1@example.com"]}}
+      job_id = job1.id
+      assert [%{job_id: ^job_id, body_text: "$50.00"}] = Repo.all(Picsello.ClientMessage)
     end
   end
 end
