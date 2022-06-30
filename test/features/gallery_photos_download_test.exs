@@ -52,16 +52,16 @@ defmodule Picsello.GalleryPhotosDownloadTest do
 
     session
     |> visit("/galleries/#{gallery_id}/photos")
+    |> find(css("#item-#{List.first(photo_ids)}"))
     |> force_simulate_click(css("#meatball-photo-#{List.first(photo_ids)}"))
     |> find(
-      css("#download-photo-#{List.first(photo_ids)}"),
+      css("a", text: "Download photo"),
       &assert(Element.attr(&1, "href") =~ link)
     )
   end
 
   test "render error 403 if unauthorized user", %{
-    session: session,
-    gallery: %{id: gallery_id}
+    session: session
   } do
     organization = insert(:organization, user: insert(:user))
     client = insert(:client, organization: organization)
@@ -81,13 +81,5 @@ defmodule Picsello.GalleryPhotosDownloadTest do
     session
     |> visit(link)
     |> assert_text("Whoa! You aren’t authorized to do that.")
-
-    session
-    |> visit("/galleries/#{gallery_id}/photos")
-    |> click(css("#select"))
-    |> click(button("All"))
-    |> click(css("#actions"))
-    |> click(css("a", text: "Download photos"))
-    |> assert_has(css("p", text: "proper permissions to do that action.", count: 0))
   end
 end
