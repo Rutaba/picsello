@@ -85,7 +85,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         )
         |> case do
           :ok ->
-            socket |> assign(:checking_out, true)
+            socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
 
           _error ->
             socket |> put_flash(:error, "something wen't wrong")
@@ -176,15 +176,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
-    |> redirect(
+    |> push_redirect(
       to:
         Routes.gallery_client_order_path(
           socket,
           :show,
           gallery.client_link_hash,
           Order.number(order)
-        )
+        ),
+      replace: true
     )
+    |> push_event("scroll:unlock", %{})
     |> noreply()
   end
 

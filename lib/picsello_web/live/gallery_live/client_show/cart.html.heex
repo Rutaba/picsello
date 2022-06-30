@@ -121,7 +121,7 @@
           </div>
         </div>
       <% :address -> %>
-        <div class={classes("absolute top-0 left-0 flex items-center justify-center bg-base-300/90 duration-300 transition-opacity z-10", %{"opacity-0" => !@checking_out, "w-full h-full opacity-100" => @checking_out })}>
+        <div class={classes("fixed top-0 left-0 flex items-center justify-center bg-base-300/90 duration-300 transition-opacity z-10", %{"opacity-0 hidden" => !@checking_out, "w-full h-full opacity-100" => @checking_out })}>
           <div class="px-24 py-10 bg-base-100">
             <.photographer_logo organization={@organization} />
 

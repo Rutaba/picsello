@@ -1,49 +1,44 @@
-<div class={classes("flex w-full items-center py-2", %{"justify-between" => @cart, "justify-start" => !@cart})}>
-  <div id="hamburger-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
-    <div class="fixed top-0 bottom-0 left-0 z-10 flex flex-col items-start hidden w-3/4 px-10 py-6 bg-white cursor-default toggle-content">
-      <div class="cursor-pointer text-base-300">
-        <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+<div class="items-center w-full py-2 grid grid-cols-3 sm:grid-cols-[1fr,min-content]">
+  <div phx-click={hamburger(:open)} class="block sm:hidden">
+   <.icon name="hamburger" class="w-6 h-4 text-base-300"/>
+ </div>
+
+ <div class="flex items-center justify-center">
+   <div class="px-6 py-2 sm:pl-0 sm:pr-4 shrink-0">
+     <.photographer_logo {assigns} />
+   </div>
+
+   <nav id="gallery-nav" phx-click={hamburger(:close)} class="fixed top-0 left-0 z-10 hidden w-full h-full sm:relative sm:block bg-base-300/60">
+     <div class="w-2/3 h-full p-2 sm:w-full bg-base-100">
+       <div class="block px-4 pt-8 pb-6 text-base-300 sm:hidden">
+         <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/>
+       </div>
+
+       <ul class="flex flex-col text-xl sm:text-base sm:flex-row">
+         <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
+           <li>
+             <.nav_link title={title} to={path} socket={@socket} live_action={@live_action}
+               class="flex items-center p-4" active_class="bg-blue-planning-100 sm:bg-base-100 font-extrabold">
+             <%= title %>
+             </.nav_link>
+           </li>
+         <% end %>
+       </ul>
+     </div>
+   </nav>
+ </div>
+
+  <div class="pl-2 justify-self-end">
+    <%= if @cart do %>
+      <div class="relative">
+        <.cart_wrapper route={@cart_route} count={@cart_count} >
+          <.icon name="shopping-cart" class="w-8 h-8 text-base-300" />
+
+          <span class="absolute -top-1 -left-1.5 border-base-300 border-2 bg-base-100 text-base-300 font-bold rounded-full flex items-center justify-center w-5 h-5 pt-0.5 text-[12px]">
+            <%= @cart_count %>
+          </span>
+        </.cart_wrapper>
       </div>
-
-      <nav class="flex flex-col pt-1">
-        <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
-          <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center pt-6 text-lg font-medium" active_class="bg-blue-planning-100 font-bold">
-            <%= title %>
-          </.nav_link>
-        <% end %>
-      </nav>
-    </div>
-
-    <.icon name="hamburger" class="w-6 h-4 text-base-300" />
-  </div>
-
-  <div class="px-6 py-2 sm:pl-0 sm:pr-9">
-    <div class="flex justify-center md:justify-start md:py-14">
-      <.photographer_logo {assigns} />
-    </div>
-  </div>
-
-  <ul class="items-center hidden pt-4 sm:flex">
-    <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
-      <li>
-        <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class="flex items-center mr-6 text-base text-lg font-semibold" active_class="bg-blue-planning-100 font-extrabold">
-          <%= title %>
-        </.nav_link>
-      </li>
     <% end %>
-  </ul>
-
-  <%= if @cart do %>
-    <div class="relative sm:ml-auto">
-      <.cart_wrapper route={@cart_route} count={@cart_count} >
-        <.icon name="shopping-cart" class="w-8 h-8 text-base-300" />
-
-        <span class="absolute -top-1 -left-1.5 border-base-300 border-2 bg-base-100 text-base-300 font-bold rounded-full flex items-center justify-center w-5 h-5 pt-0.5 text-[12px]">
-          <%= @cart_count %>
-        </span>
-      </.cart_wrapper>
-    </div>
-  <% else %>
-    <span></span>
-  <% end %>
+  </div>
 </div>
