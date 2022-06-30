@@ -36,7 +36,7 @@
             <%= Enum.with_index(@invalid_photos, fn entry, index -> %>
                 <.errors target={@myself} delete_from="invalid_photos" entry={entry} index={index}>
                     <p class="error btn items-center">Failed</p>
-                    <p class="border border-solid border-base-250 text-base-250 font-bold btn too-large">File too large</p>
+                    <p class="border border-solid border-base-250 text-base-250 font-bold btn too-large"><%= entry.error %></p>
                 </.errors>
             <% end) %>
             <%= Enum.with_index(@pending_photos, fn entry, index -> %>

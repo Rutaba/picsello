@@ -115,9 +115,9 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     <div class="pl-4">
       <%= cond do %>
       <%= @invalid_count > 0 && @pending_count == 0 -> %>
-        It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to
+        It looks like some of your photos failed because they’re duplicate photos or over our photo size limit. We accept photos up to
         <span class="font-bold">100MB </span>
-        in size. Please reduce the file size of these photos and reupload.
+        in size. Please reduce the file size or change the file name of these photos and reupload.
 
       <% @invalid_count == 0 && @pending_count > 0 -> %>
         We can only upload
@@ -125,8 +125,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
         , so some of your photos are still in the upload queue. You can retry uploading these photos below.
 
       <% true -> %>
-        It looks like some of your photos failed because they’re over our photo size limit. We accept photos up to
-        <span class="font-bold">100MB </span>in size. Please reduce the file size of these photos and reupload.<br>
+        It looks like some of your photos failed because they’re duplicate photos or over our photo size limit. We accept photos up to
+        <span class="font-bold">100MB </span>in size. Please reduce the file size or change the file name of these photos and reupload.<br>
         <br>
         We can only upload
         <span class="font-bold">1,500 photos at a time</span>

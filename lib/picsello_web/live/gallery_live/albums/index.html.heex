@@ -28,7 +28,8 @@
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_all_unsorted_photos"
               delete_title="Delete all unsorted photos"
-              delete_value={@gallery.id}>
+              delete_value={@gallery.id}
+              photo_selected="true">
                   <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
                     <button class="w-full album-actions">Go to unsorted photos</button>
                   </li>
@@ -44,7 +45,8 @@
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_album_popup"
               delete_title="Delete Album"
-              delete_value={album.id}>
+              delete_value={album.id}
+              photo_selected="true">
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>
                 </li>
