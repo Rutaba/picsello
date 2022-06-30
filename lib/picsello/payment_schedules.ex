@@ -56,7 +56,7 @@ defmodule Picsello.PaymentSchedules do
       where:
         is_nil(payment.paid_at) and
           is_nil(payment.reminded_at) and
-          fragment("?.due_at <= now() - interval '3 days'", payment) and
+          fragment("?.due_at <= now() + interval '3 days'", payment) and
           not job_status.is_lead,
       preload: :job
     )

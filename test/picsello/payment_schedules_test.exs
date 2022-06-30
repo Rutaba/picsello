@@ -212,21 +212,21 @@ defmodule Picsello.PaymentSchedulesTest do
         insert(:payment_schedule,
           job: lead1,
           price: ~M[5000]USD,
-          due_at: DateTime.utc_now() |> DateTime.add(-4 * :timer.hours(24), :millisecond)
+          due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond)
         )
 
       payment1 =
         insert(:payment_schedule,
           job: job1,
           price: ~M[5000]USD,
-          due_at: DateTime.utc_now() |> DateTime.add(-4 * :timer.hours(24), :millisecond)
+          due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond)
         )
 
       payment2 =
         insert(:payment_schedule,
           job: job2,
           price: ~M[5000]USD,
-          due_at: DateTime.utc_now() |> DateTime.add(-2 * :timer.hours(24), :millisecond)
+          due_at: DateTime.utc_now() |> DateTime.add(4 * :timer.hours(24), :millisecond)
         )
 
       already_reminded_at = DateTime.utc_now() |> DateTime.add(-100)
@@ -235,7 +235,7 @@ defmodule Picsello.PaymentSchedulesTest do
         insert(:payment_schedule,
           job: job3,
           price: ~M[5000]USD,
-          due_at: DateTime.utc_now() |> DateTime.add(3 * :timer.hours(24), :millisecond),
+          due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond),
           reminded_at: already_reminded_at
         )
 
