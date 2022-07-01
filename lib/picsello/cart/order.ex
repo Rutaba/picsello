@@ -100,9 +100,9 @@ defmodule Picsello.Cart.Order do
   def placed_changeset(order),
     do: change(order, %{placed_at: DateTime.utc_now() |> DateTime.truncate(:second)})
 
-  def whcc_confirmation_changeset(%__MODULE__{} = order) do
+  def whcc_confirmation_changeset(%__MODULE__{whcc_order: %{entry_id: entry_id}} = order) do
     order
-    |> cast(%{whcc_order: %{confirmed_at: DateTime.utc_now()}}, [])
+    |> cast(%{whcc_order: %{entry_id: entry_id, confirmed_at: DateTime.utc_now()}}, [])
     |> cast_embed(:whcc_order)
   end
 
