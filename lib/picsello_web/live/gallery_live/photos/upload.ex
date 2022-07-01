@@ -331,8 +331,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp apply_limits(
-         %{assigns: %{pending_photos: pending_photos, invalid_photos: invalid_photos, gallery: gallery} = assigns} =
-           socket
+         %{
+           assigns:
+             %{pending_photos: pending_photos, invalid_photos: invalid_photos, gallery: gallery} =
+               assigns
+         } = socket
        ) do
     if Enum.empty?(pending_photos) do
       entries = assigns.uploads.photo.entries |> Enum.filter(&(!&1.done?))
@@ -382,8 +385,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   defp duplicate_entries(entry, {valid, invalid} = acc, gallery_id) do
     if gallery_id do
-     photos = Enum.filter(Galleries.get_gallery_photos(gallery_id), fn photo -> photo.name == entry.client_name end)
-     filter_duplicate(entry, acc, photos)
+      photos =
+        Enum.filter(Galleries.get_gallery_photos(gallery_id), fn photo ->
+          photo.name == entry.client_name
+        end)
+
+      filter_duplicate(entry, acc, photos)
     else
       {[entry | valid], invalid}
     end
