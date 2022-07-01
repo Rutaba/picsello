@@ -202,9 +202,9 @@ defmodule PicselloWeb.Live.Profile do
         _params,
         %{assigns: %{uploads: %{logo: %{entries: [entry]}}}} = socket
       ) do
-    send(self(), {:validate_entry, entry})
 
     socket
+    |> validate_entry(entry)
     |> assign(:entry, entry)
     |> noreply()
   end
@@ -215,9 +215,9 @@ defmodule PicselloWeb.Live.Profile do
         _params,
         %{assigns: %{uploads: %{main_image: %{entries: [entry]}}}} = socket
       ) do
-    send(self(), {:validate_entry, entry})
 
     socket
+    |> validate_entry(entry)
     |> assign(:entry, entry)
     |> noreply()
   end
@@ -256,15 +256,6 @@ defmodule PicselloWeb.Live.Profile do
     consume_uploaded_entries(socket, image_field, fn _, _ -> ok(nil) end)
 
     socket |> assign_organization(organization) |> noreply()
-  end
-
-  def handle_info({:validate_entry, %{valid?: true}}, socket), do: noreply(socket)
-
-  def handle_info({:validate_entry, %{valid?: false} = entry}, socket) do
-    socket
-    |> put_flash(:error, "Image was too large, needs to be below 10 mb")
-    |> cancel_upload(entry.upload_config, entry.ref)
-    |> noreply()
   end
 
   defp website_url(nil), do: "#"
@@ -462,5 +453,15 @@ defmodule PicselloWeb.Live.Profile do
     Profiles.subscribe_to_photo_processed(organization)
 
     socket
+  end
+
+  defp validate_entry(socket, %{valid?: valid} = entry) do
+    if valid do
+      socket
+    else
+      socket
+      |> put_flash(:error, "Image was too large, needs to be below 10 mb")
+      |> cancel_upload(entry.upload_config, entry.ref)
+    end
   end
 end
