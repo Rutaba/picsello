@@ -64,18 +64,18 @@ defmodule Picsello.GalleryAlbumTest do
     session: session,
     gallery: %{id: gallery_id},
     album: album
-   } do
+  } do
     session
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> click(css("#actions"))
     |> assert_has(css(".pointer-events-none", count: 1))
-   end
+  end
 
-   test "Albums, Action dropdown with photo selected", %{
+  test "Albums, Action dropdown with photo selected", %{
     session: session,
     gallery: %{id: gallery_id},
     album: album
-   } do
+  } do
     session
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> click(css("#select"))
@@ -83,7 +83,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(css("#actions"))
     |> refute_has(css(".pointer-events-none"))
     |> assert_has(css("#actions li button", text: "Delete"))
-   end
+  end
 
   test "Albums, album action dropdown, Edit album thumbnail", %{
     session: session,

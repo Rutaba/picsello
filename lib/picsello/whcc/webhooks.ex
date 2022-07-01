@@ -3,6 +3,8 @@ defmodule Picsello.WHCC.Webhooks do
     context module for handling WHCC webhooks
   """
 
+  require Logger
+
   defmodule Error do
     @moduledoc """
       whcc error webhook payload
@@ -11,9 +13,9 @@ defmodule Picsello.WHCC.Webhooks do
     import Ecto.Changeset
 
     embedded_schema do
-      field :error_code, :string
-      field :error, :string
-      field :info, :map
+      field(:error_code, :string)
+      field(:error, :string)
+      field(:info, :map)
     end
 
     def changeset(error, params) do
@@ -33,14 +35,14 @@ defmodule Picsello.WHCC.Webhooks do
     import Ecto.Changeset
 
     embedded_schema do
-      field :confirmation_id, :string
-      field :entry_id, :string
-      field :event, :string
-      field :order_number, :integer
-      field :reference, :string
-      field :sequence_number, :integer
-      field :status, :string
-      embeds_many :errors, Error
+      field(:confirmation_id, :string)
+      field(:entry_id, :string)
+      field(:event, :string)
+      field(:order_number, :integer)
+      field(:reference, :string)
+      field(:sequence_number, :integer)
+      field(:status, :string)
+      embeds_many(:errors, Error)
     end
 
     def new(payload) do
@@ -62,11 +64,11 @@ defmodule Picsello.WHCC.Webhooks do
     import Ecto.Changeset
 
     embedded_schema do
-      field :carrier, :string
-      field :ship_date, :utc_datetime
-      field :tracking_number, :string
-      field :tracking_url, :string
-      field :weight, :float
+      field(:carrier, :string)
+      field(:ship_date, :utc_datetime)
+      field(:tracking_number, :string)
+      field(:tracking_url, :string)
+      field(:weight, :float)
     end
 
     def changeset(error, params) do
@@ -82,14 +84,14 @@ defmodule Picsello.WHCC.Webhooks do
     import Ecto.Changeset
 
     embedded_schema do
-      field :confirmation_id, :string
-      field :entry_id, :string
-      field :event, :string
-      field :order_number, :integer
-      field :reference, :string
-      field :sequence_number, :integer
+      field(:confirmation_id, :string)
+      field(:entry_id, :string)
+      field(:event, :string)
+      field(:order_number, :integer)
+      field(:reference, :string)
+      field(:sequence_number, :integer)
 
-      embeds_many :shipping_info, ShippingInfo
+      embeds_many(:shipping_info, ShippingInfo)
     end
 
     def new(payload) do
@@ -103,11 +105,17 @@ defmodule Picsello.WHCC.Webhooks do
     end
   end
 
-  def parse_payload(%{"Status" => _status} = params) do
+  def parse_payload(payload) do
+    Picsello.WHCC.log("webhook: #{inspect(payload)}")
+
+    do_parse_payload(payload)
+  end
+
+  defp do_parse_payload(%{"Status" => _status} = params) do
     params |> underscore_keys() |> Status.new()
   end
 
-  def parse_payload(%{"Event" => _event} = params) do
+  defp do_parse_payload(%{"Event" => _event} = params) do
     params |> underscore_keys() |> Event.new()
   end
 

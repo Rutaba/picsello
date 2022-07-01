@@ -51,9 +51,10 @@ defmodule PicselloWeb.LiveAuth do
   defp assign_current_user(socket, %{"user_token" => user_token}) do
     socket
     |> assign_new(:current_user, fn ->
-      user_token
-      |> Accounts.get_user_by_session_token()
-      |> tap(&Sentry.Context.set_user_context/1)
+      with %{} = user <- Accounts.get_user_by_session_token(user_token) do
+        Sentry.Context.set_user_context(user)
+        user
+      end
     end)
   end
 

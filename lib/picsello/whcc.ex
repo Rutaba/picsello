@@ -18,6 +18,7 @@ defmodule Picsello.WHCC do
   ]
   @area_markup_category "h3GrtaTf5ipFicdrJ"
 
+  require Logger
   import Ecto.Query, only: [from: 2]
 
   alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor}
@@ -225,6 +226,16 @@ defmodule Picsello.WHCC do
     )
     |> Map.merge(%{whcc_product: product, whcc_product_id: whcc_product_id})
   end
+
+  def log(message),
+    do:
+      with(
+        "" <> level <- Keyword.get(Application.get_env(:picsello, :whcc), :debug),
+        do:
+          level
+          |> String.to_existing_atom()
+          |> Logger.log("[WHCC] #{message}")
+      )
 
   defp get_product(%Editor.Details{product_id: product_id}) do
     from(product in Picsello.Product,

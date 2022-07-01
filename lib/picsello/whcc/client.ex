@@ -3,6 +3,7 @@ defmodule Picsello.WHCC.Client do
   plug(Tesla.Middleware.JSON)
   plug(Tesla.Middleware.BaseUrl, config() |> Keyword.get(:url))
   plug(Tesla.Middleware.Logger)
+  plug(__MODULE__.Logger)
 
   alias Picsello.WHCC
 
