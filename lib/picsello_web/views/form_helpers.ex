@@ -194,7 +194,7 @@ defmodule PicselloWeb.FormHelpers do
         class: "",
         placeholder: "www.mystudio.com",
         label: "What is your website URL?",
-        name: :website,
+        name: :link,
         show_checkbox: true
       })
 
@@ -206,7 +206,7 @@ defmodule PicselloWeb.FormHelpers do
           <%= input @form, @name,
               type: :url_input,
               phx_debounce: "500",
-              disabled: input_value(@form, :website) == true,
+              disabled: input_value(@form, @name) == true,
               placeholder: @placeholder,
               autocomplete: "url",
               novalidate: true,

@@ -14,8 +14,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
             slug: "mary-jane-photos",
             profile: %{
               color: color,
-              job_types: ~w(portrait event),
-              website: "photos.example.com"
+              job_types: ~w(portrait event)
             }
           }
         )

@@ -1,9 +1,11 @@
 defmodule Picsello.Profiles do
   @moduledoc "context module for public photographer profile"
+  import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
 
   alias Picsello.{
     Repo,
+    BrandLink,
     Organization,
     Job,
     JobType,
@@ -47,7 +49,6 @@ defmodule Picsello.Profiles do
       field(:is_enabled, :boolean, default: true)
       field(:color, :string)
       field(:job_types, {:array, :string})
-      field(:website, :string)
       field(:description, :string)
       field(:job_types_description, :string)
 
@@ -61,12 +62,11 @@ defmodule Picsello.Profiles do
       profile
       |> cast(
         attrs,
-        ~w[website color job_types description job_types_description]a
+        ~w[color job_types description job_types_description]a
       )
       |> cast_embed(:logo)
       |> cast_embed(:main_image)
       |> prepare_changes(&clean_job_types/1)
-      |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
     end
 
     def url_validation_errors(url) do
@@ -142,8 +142,20 @@ defmodule Picsello.Profiles do
     Contact.changeset(%Contact{}, %{})
   end
 
+  defp brand_link_profile_changeset(organization, %{"brand_links" => _}) do
+    organization
+    |> cast_assoc(:brand_links,
+      required: true,
+      with: &BrandLink.brand_link_changeset(&1, &2)
+    )
+  end
+
+  defp brand_link_profile_changeset(organization, _), do: organization
+
   def edit_organization_profile_changeset(%Organization{} = organization, attrs) do
-    Organization.edit_profile_changeset(organization, attrs)
+    organization
+    |> Organization.edit_profile_changeset(attrs)
+    |> brand_link_profile_changeset(attrs)
   end
 
   def update_organization_profile(%Organization{} = organization, attrs) do
@@ -218,7 +230,7 @@ defmodule Picsello.Profiles do
           ^slug
         ),
       limit: 1,
-      preload: [:user]
+      preload: [:user, :brand_links]
     )
     |> Repo.one!()
   end

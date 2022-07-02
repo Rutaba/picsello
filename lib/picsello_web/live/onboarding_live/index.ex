@@ -71,11 +71,11 @@ defmodule PicselloWeb.OnboardingLive.Index do
         |> assign(current_user: user)
         |> assign_step(step + 1)
         |> assign_changeset()
-        |> noreply()
 
       {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+        socket |> assign(changeset: changeset)
     end
+    |> noreply()
   end
 
   @impl true
@@ -223,8 +223,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <% end %>
             </ul>
           </label>
-          
-          <.website_field form={p} class="mt-4" />
+        <% end %>
+        <%= for b <- inputs_for(o, :brand_links) do %>
+          <%= hidden_inputs_for b %>
+          <.website_field form={b} class="mt-4" />
         <% end %>
       <% end %>
     """

@@ -4,7 +4,7 @@ defmodule Picsello.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias Picsello.{Repo, Accounts.User, Accounts.UserToken, Notifiers.UserNotifier}
+  alias Picsello.{Repo, Accounts.User, BrandLink, Accounts.UserToken, Notifiers.UserNotifier}
 
   ## Database getters
 
@@ -226,12 +226,13 @@ defmodule Picsello.Accounts do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
+    brand_links_query = from bl in BrandLink, where: bl.link_id == "website"
 
     from(user in Picsello.Accounts.User,
       where: user.id in subquery(query),
       join: org in assoc(user, :organization),
       left_join: subscription in assoc(user, :subscription),
-      preload: [organization: org, subscription: subscription]
+      preload: [organization: {org, brand_links: ^brand_links_query}, subscription: subscription]
     )
     |> Repo.one()
   end

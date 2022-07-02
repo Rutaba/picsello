@@ -11,12 +11,13 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
           slug: "mary-jane-photos",
           profile: %{
             color: Picsello.Profiles.Profile.colors() |> hd,
-            job_types: ~w(portrait event),
-            website: "http://photos.example.com"
+            job_types: ~w(portrait event)
           }
         }
       )
       |> onboard!
+
+    insert(:brand_link, user: user, link: "http://photos.example.com")
 
     insert(:package_template,
       name: "Gold",

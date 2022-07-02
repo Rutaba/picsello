@@ -6,11 +6,11 @@ defmodule Picsello.Repo.Migrations.CreateBrandLinks do
   def change do
     create table(@table) do
       add(:title, :string, null: false)
-      add(:link_id, :string)
+      add(:link_id, :string, null: false)
       add(:link, :string)
-      add(:active?, :boolean, default: false)
-      add(:use_publicly?, :boolean, default: false)
-      add(:show_on_profile?, :boolean, default: false)
+      add(:active?, :boolean, null: false, default: false)
+      add(:use_publicly?, :boolean, null: false, default: false)
+      add(:show_on_profile?, :boolean, null: false, default: false)
       add(:organization_id, references(:organizations, on_delete: :nothing), null: false)
     end
 

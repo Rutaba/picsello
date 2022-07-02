@@ -366,6 +366,6 @@ defmodule PicselloWeb.LiveHelpers do
     )
   end
 
-  def get_brand_link_icon(link_id),
-    do: if(String.contains?(link_id, "link_"), do: "anchor", else: link_id)
+  def get_brand_link_icon("link_" <> _), do: "anchor"
+  def get_brand_link_icon(link_id), do: link_id
 end

@@ -26,7 +26,8 @@ defmodule Picsello.Factory do
     Galleries.Album,
     Galleries.Watermark,
     Galleries.Photo,
-    Profiles.Profile
+    Profiles.Profile,
+    BrandLink
   }
 
   def valid_user_password(), do: "hello world!"
@@ -158,6 +159,28 @@ defmodule Picsello.Factory do
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
           _ -> build(:organization, Map.get(attrs, :organization, %{}))
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def brand_link_factory(attrs) do
+    %BrandLink{
+      title: "Website",
+      link: "photos.example.com",
+      link_id: "website",
+      organization_id: fn ->
+        case attrs do
+          %{user: user} ->
+            user
+            |> Repo.preload(:organization)
+            |> Map.get(:organization)
+            |> Map.get(:id)
+
+          _ ->
+            build(:organization, Map.get(attrs, :organization, %{})) |> Map.get(:id)
         end
       end
     }

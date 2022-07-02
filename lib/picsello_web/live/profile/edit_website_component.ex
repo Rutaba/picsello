@@ -10,8 +10,9 @@ defmodule PicselloWeb.Live.Profile.EditWebsiteComponent do
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
-        <%= for p <- inputs_for(f, :profile) do %>
-          <.website_field form={p} class="mt-4" placeholder="Add your website…" />
+        <%= for b <- inputs_for(f, :brand_links) do %>
+          <%= hidden_inputs_for b %>
+          <.website_field form={b} class="mt-4" placeholder="Add your website…" />
         <% end %>
 
         <PicselloWeb.LiveModal.footer />

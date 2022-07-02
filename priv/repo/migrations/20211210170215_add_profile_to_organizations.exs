@@ -16,7 +16,7 @@ defmodule Picsello.Repo.Migrations.AddProfileToOrganizations do
         FROM
           jsonb_each(onboarding)
         WHERE
-          key IN ('website', 'job_types', 'color')
+          key IN ('no_website', 'website', 'job_types', 'color')
       )
     from
       users
@@ -34,7 +34,7 @@ defmodule Picsello.Repo.Migrations.AddProfileToOrganizations do
         FROM
           jsonb_each(onboarding)
         WHERE
-          key not in ('website', 'job_types', 'color')
+          key not in ('no_website', 'website', 'job_types', 'color')
       ), '{}')
     """)
   end
@@ -50,7 +50,7 @@ defmodule Picsello.Repo.Migrations.AddProfileToOrganizations do
         FROM
           jsonb_each(profile)
         WHERE
-          key IN ('website', 'job_types', 'color')
+          key IN ('no_website', 'website', 'job_types', 'color')
       ), '{}')
     from
       organizations

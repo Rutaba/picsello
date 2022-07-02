@@ -28,7 +28,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
             <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
               <.bar class="hidden lg:block" is_mobile="no" entry={entry} target={@myself}/>
               <.bar class="lg:hidden block" is_mobile="yes" entry={entry} target={@myself}/>
-              <span class={classes("hidden arrow", %{"lg:block" => entry.link_id == @link_id})}>
+              <span class={classes("hidden arrow", %{"lg:block" => entry.link_id == @brand_link.link_id})}>
                 <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
             </div>
@@ -93,7 +93,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
         <div class={classes("flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 bg-blue-planning-300", %{"bg-base-250" => !@entry.link})}>
           <.icon name={get_brand_link_icon(@entry.link_id)} class="h-3 w-3 text-base-100" />
         </div>
-        <div class="ml-2 truncate ...">
+        <div class="ml-2 truncate">
           <span class={classes(%{"text-blue-planning-300" => !!@entry.link})}><%= @entry.title %>
           <span class={classes("font-normal", %{"hidden" => @entry.use_publicly?})}> (private)</span>
           </span>
@@ -186,7 +186,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
 
   @impl true
   def handle_event("add_brand_link", _, %{assigns: %{brand_links: brand_links}} = socket) do
-    count = brand_links |> Enum.filter(&(get_brand_link_icon(&1.link_id) == "anchor")) |> length()
+    count = brand_links |> Enum.filter(&String.contains?(&1.link_id, "link_")) |> length()
 
     {:ok, brand_link} =
       %{
@@ -201,7 +201,6 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
 
     socket
     |> assign(:brand_link, brand_link)
-    |> assign(:link_id, brand_link.link_id)
     |> assign(:brand_links, brand_links)
     |> assign_changeset()
     |> noreply()
@@ -312,11 +311,11 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
 
   defp save(%{assigns: %{brand_links: brand_links}} = socket) do
     case BrandLinks.upsert_brand_links(struct_to_map(brand_links)) do
-      {count, _} when count > 0 ->
-        send(socket.parent_pid, {:update_brand_links, brand_links, "updated"})
+      [] ->
         socket
 
       _ ->
+        send(socket.parent_pid, {:update_brand_links, brand_links, "updated"})
         socket
     end
   end

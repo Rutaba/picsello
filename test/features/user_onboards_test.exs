@@ -5,7 +5,7 @@ defmodule Picsello.UserOnboardsTest do
 
   setup :authenticated
 
-  setup %{session: session} do
+  setup %{session: session, user: user} do
     test_pid = self()
 
     Tesla.Mock.mock_global(fn %{method: :put} = request ->
@@ -16,6 +16,8 @@ defmodule Picsello.UserOnboardsTest do
         body: %{"job_id" => "1234"}
       }
     end)
+
+    insert(:brand_link, user: user, link: nil)
 
     insert(:cost_of_living_adjustment)
     insert(:cost_of_living_adjustment, state: "Non-US")
@@ -31,7 +33,7 @@ defmodule Picsello.UserOnboardsTest do
   @phone_field text_field("onboarding-step-2_onboarding_phone")
   @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
   @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
-  @website_field text_field("onboarding-step-4_organization_profile_website")
+  @website_field text_field("onboarding-step-4_organization_brand_links_0_link")
 
   def fill_in_step(session, 2) do
     session
@@ -41,7 +43,10 @@ defmodule Picsello.UserOnboardsTest do
   end
 
   feature "user onboards", %{session: session, user: user, subscription_plan: subscription_plan} do
-    user = Repo.preload(user, :organization)
+    user =
+      user
+      |> Repo.reload()
+      |> Repo.preload(organization: :brand_links)
 
     home_path = Routes.home_path(PicselloWeb.Endpoint, :index)
 
@@ -93,7 +98,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_has(css("input[name$='[website]']:not(.text-input-invalid:not(.phx-no-feedback))"))
+    |> assert_has(css("input[name$='[link]']:not(.text-input-invalid:not(.phx-no-feedback))"))
     |> assert_disabled_submit()
     |> click(@second_color_field)
     |> fill_in(@website_field, with: "inval!d.com")
@@ -149,7 +154,6 @@ defmodule Picsello.UserOnboardsTest do
                  %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
                ],
                profile: %{
-                 website: "https://example.com",
                  color: ^second_color,
                  job_types: ~w(event portrait)
                }
@@ -214,15 +218,9 @@ defmodule Picsello.UserOnboardsTest do
     user =
       user
       |> Repo.reload()
-      |> Repo.preload(:organization)
+      |> Repo.preload(organization: :brand_links)
 
-    assert %User{
-             organization: %{
-               profile: %{
-                 website: nil
-               }
-             }
-           } = user
+    assert %User{organization: %{brand_links: [%{link: nil}]}} = user
   end
 
   feature "user selects Non-US state", %{session: session, user: user} do

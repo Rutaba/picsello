@@ -1,7 +1,26 @@
 defmodule Picsello.UserManagesMarketingBrandLinksTest do
   use Picsello.FeatureCase, async: false
 
-  setup :onboarded
+  setup do
+    user = %{
+      user:
+        insert(:user,
+          organization: %{
+            name: "Mary Jane Photography",
+            slug: "mary-jane-photos",
+            profile: %{
+              job_types: ~w(portrait event)
+            }
+          }
+        )
+        |> onboard!
+    }
+
+    insert(:brand_link, user)
+
+    user
+  end
+
   setup :authenticated
 
   feature "view with no brand link added", %{session: session} do
@@ -50,7 +69,7 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
     |> click(testid("show_on_profile?"))
     |> assert_has(css("#delete-link", count: 0))
     |> click(css("#save_mobile"))
-    |> assert_has(css("#side-nave div.grid-item", count: 10))
+    |> assert_has(css("#side-nave div.grid-item", count: 1))
     |> click(css("#live_modal-1-0 button"))
     |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
       card

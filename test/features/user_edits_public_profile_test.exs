@@ -12,13 +12,13 @@ defmodule Picsello.UserEditsPublicProfileTest do
           slug: "mary-jane-photos",
           profile: %{
             color: color,
-            job_types: ~w(portrait event),
-            website: "photos.example.com"
+            job_types: ~w(portrait event)
           }
         }
       )
       |> onboard!
 
+    insert(:brand_link, user: user)
     insert(:package_template, user: user, job_type: "portrait", base_price: 3000)
     insert(:package_template, user: user, job_type: "portrait", base_price: 2000)
 
@@ -79,11 +79,11 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> resize_window(1280, 900)
     |> scroll_into_view(testid("edit-link-button"))
     |> click(button("Edit Link"))
-    |> fill_in(text_field("organization_profile_website"), with: "http://google.com")
+    |> fill_in(text_field("organization_brand_links_0_link"), with: "http://google.com")
     |> click(button("Save"))
     |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
     |> click(button("Edit Link"))
-    |> fill_in(text_field("organization_profile_website"), with: "")
+    |> fill_in(text_field("organization_brand_links_0_link"), with: "")
     |> click(button("Save"))
     |> assert_has(css("a[href='#']", text: "See our full portfolio"))
   end

@@ -197,89 +197,10 @@ defmodule PicselloWeb.Live.Marketing do
     |> noreply()
   end
 
-  def assign_brand_links(
-        %{
-          assigns: %{
-            organization: %{
-              id: organization_id,
-              profile: %{
-                website: website
-              }
-            }
-          }
-        } = socket
-      ) do
-    brand_links = [
-      %{
-        title: "Website",
-        link: website || nil,
-        link_id: "website",
-        organization_id: organization_id
-      },
-      %{
-        title: "Instagram",
-        link: "https://www.instagram.com/",
-        link_id: "instagram",
-        organization_id: organization_id
-      },
-      %{
-        title: "Twitter",
-        link: "https://www.twitter.com/",
-        link_id: "twitter",
-        organization_id: organization_id
-      },
-      %{
-        title: "TikTok",
-        link: "https://www.tiktok.com/",
-        link_id: "tiktok",
-        organization_id: organization_id
-      },
-      %{
-        title: "Facebook",
-        link: "https://www.facebook.com/",
-        link_id: "facebook",
-        organization_id: organization_id
-      },
-      %{
-        title: "Google Reviews",
-        link: "https://www.google.com/business",
-        link_id: "google-business",
-        organization_id: organization_id
-      },
-      %{
-        title: "Linkedin",
-        link: "https://www.linkedin.com/",
-        link_id: "linkedin",
-        organization_id: organization_id
-      },
-      %{
-        title: "Pinterest",
-        link: "https://www.pinterest.com/",
-        link_id: "pinterest",
-        organization_id: organization_id
-      },
-      %{
-        title: "Yelp",
-        link: "https://www.yelp.com/",
-        link_id: "yelp",
-        organization_id: organization_id
-      },
-      %{
-        title: "Snapchat",
-        link: "https://www.snapchat.com/",
-        link_id: "snapchat",
-        organization_id: organization_id
-      }
-    ]
-
-    brand_links =
-      case BrandLinks.get_brand_link_by_organization_id(organization_id) do
-        [] -> BrandLinks.insert_brand_links(brand_links)
-        brand_links -> brand_links
-      end
-
-    socket |> assign(:brand_links, brand_links)
-  end
+  def assign_brand_links(%{assigns: %{organization: %{id: id}}} = socket),
+    do:
+      socket
+      |> assign(:brand_links, BrandLinks.get_brand_link_by_organization_id(id))
 
   def assign_attention_items(socket) do
     items = [
