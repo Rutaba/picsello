@@ -69,28 +69,26 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
               <%= input f, :trial_length, type: :number_input, phx_debounce: 200, class: "w-full" %>
             </div>
             <div class="col-start-3 col-span-4">
-              <%= for d <- inputs_for(f, :content, class: "w-full") do %>
-                <div class="flex items-center gap-10 mb-2">
-                  <label class="font-bold shrink-0 w-1/4">Signup Title</label>
-                  <%= input d, :signup_title, phx_debounce: 200, class: "w-3/4" %>
-                </div>
-                <div class="flex items-center gap-10 mb-2">
-                  <label class="font-bold shrink-0 w-1/4">Signup Description</label>
-                  <%= input d, :signup_description, phx_debounce: 200, class: "w-3/4" %>
-                </div>
-                <div class="flex items-center gap-10 mb-2">
-                  <label class="font-bold shrink-0 w-1/4">Onboarding Title</label>
-                  <%= input d, :onboarding_title, phx_debounce: 200, class: "w-3/4" %>
-                </div>
-                <div class="flex items-center gap-10 mb-2">
-                  <label class="font-bold shrink-0 w-1/4">Onboarding Description</label>
-                  <%= input d, :onboarding_description, phx_debounce: 200, class: "w-3/4" %>
-                </div>
-                <div class="flex items-center gap-10 mb-2">
-                  <label class="font-bold shrink-0 w-1/4">Success Title</label>
-                  <%= input d, :success_title, phx_debounce: 200, class: "w-3/4" %>
-                </div>
-              <% end %>
+              <div class="flex items-center gap-10 mb-2">
+                <label class="font-bold shrink-0 w-1/4">Signup Title</label>
+                <%= input f, :signup_title, phx_debounce: 200, class: "w-3/4" %>
+              </div>
+              <div class="flex items-center gap-10 mb-2">
+                <label class="font-bold shrink-0 w-1/4">Signup Description</label>
+                <%= input f, :signup_description, phx_debounce: 200, class: "w-3/4" %>
+              </div>
+              <div class="flex items-center gap-10 mb-2">
+                <label class="font-bold shrink-0 w-1/4">Onboarding Title</label>
+                <%= input f, :onboarding_title, phx_debounce: 200, class: "w-3/4" %>
+              </div>
+              <div class="flex items-center gap-10 mb-2">
+                <label class="font-bold shrink-0 w-1/4">Onboarding Description</label>
+                <%= input f, :onboarding_description, phx_debounce: 200, class: "w-3/4" %>
+              </div>
+              <div class="flex items-center gap-10 mb-2">
+                <label class="font-bold shrink-0 w-1/4">Success Title</label>
+                <%= input f, :success_title, phx_debounce: 200, class: "w-3/4" %>
+              </div>
             </div>
             <div class="col-start-7 flex flex-col items-center justify-center">
               <div class="mb-8">
@@ -136,7 +134,7 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
     |> update_subscription_metadata_row(params, fn row, params ->
       case row |> SubscriptionPlansMetadata.changeset(params) |> Repo.update() do
         {:ok, row} ->
-          %{row: row, changeset: SubscriptionPlansMetadata.changeset(clean_nested_struct(row))}
+          %{row: row, changeset: SubscriptionPlansMetadata.changeset(row |> Map.from_struct())}
 
         {:error, changeset} ->
           %{row: row, changeset: changeset}
@@ -234,13 +232,11 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
       code: Enum.random(100_000..999_999) |> to_string,
       trial_length: 60,
       active: false,
-      content: %{
-        signup_title: "Enter content…",
-        signup_description: "Enter content…",
-        onboarding_title: "Enter content…",
-        onboarding_description: "Enter content…",
-        success_title: "Enter content…"
-      }
+      signup_title: "Enter content…",
+      signup_description: "Enter content…",
+      onboarding_title: "Enter content…",
+      onboarding_description: "Enter content…",
+      success_title: "Enter content…"
     })
     |> Repo.insert()
 
@@ -265,18 +261,9 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
         |> Enum.map(
           &%{
             row: &1,
-            changeset: SubscriptionPlansMetadata.changeset(clean_nested_struct(&1))
+            changeset: SubscriptionPlansMetadata.changeset(&1 |> Map.from_struct())
           }
         )
     )
-  end
-
-  defp clean_nested_struct(struct) do
-    struct
-    |> Map.from_struct()
-    |> Map.get_and_update(:content, fn current_value ->
-      {current_value, current_value |> Map.from_struct()}
-    end)
-    |> elem(1)
   end
 end

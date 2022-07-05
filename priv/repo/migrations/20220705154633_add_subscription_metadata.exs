@@ -6,7 +6,11 @@ defmodule Picsello.Repo.Migrations.AddSubscriptionMetadata do
       add(:code, :string, null: false)
       add(:trial_length, :integer, null: false)
       add(:active, :boolean, null: false, default: false)
-      add(:content, :map, default: fragment("'{}'::jsonb"))
+      add(:signup_title, :string, null: false)
+      add(:signup_description, :string, null: false)
+      add(:onboarding_title, :string, null: false)
+      add(:onboarding_description, :string, null: false)
+      add(:success_title, :string, null: false)
 
       timestamps()
     end
