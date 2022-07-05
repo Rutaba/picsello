@@ -25,6 +25,34 @@ defmodule PicselloWeb.JobLive.Show do
     |> ok()
   end
 
+  defp orders_attrs(%Job{gallery: gallery}, orders_count) do
+    cond do
+      is_nil(gallery) ->
+        %{
+          button_text: "Setup gallery",
+          button_click: "create-gallery",
+          button_disabled: false,
+          text: "You need to set your gallery up before clients can order"
+        }
+
+      orders_count == 0 ->
+        %{
+          button_text: "View orders",
+          button_click: "#",
+          button_disabled: true,
+          text: "No orders to view"
+        }
+
+      true ->
+        %{
+          button_text: "View orders",
+          button_click: "#",
+          button_disabled: false,
+          text: "#{ngettext("1 order", "%{count} orders", orders_count)} to view from your client"
+        }
+    end
+  end
+
   def gallery_attrs(%Job{gallery: gallery}) do
     case Picsello.Galleries.gallery_current_status(gallery) do
       :none_created ->
