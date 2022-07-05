@@ -1,10 +1,10 @@
-<div class="flex flex-col h-screen photographer-gallery lg:before:bg-gray-100">
-  <div class="flex root">
+<div class={classes("flex flex-col photographer-gallery lg:before:bg-gray-100", %{"hidden" => is_nil(@is_mobile)})}>
+  <div class="flex root lg:min-h-fit min-h-screen lg:static relative">
     <.mobile_gallery_header gallery_name={@gallery.name}/>
-    <div class="hidden lg:flex">
-      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true %>
+    <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
+      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true, is_mobile: @is_mobile %>
     </div>
-    <div class="w-full h-full lg:bg-gray-100 lg:pl-96">
+    <div class={classes("lg:block  w-full h-full lg:bg-gray-100 lg:pl-96", %{"hidden" => @is_mobile})}>
       <div id="page-scroll" phx-hook="PageScroll" class="lg:fixed absolute top-0 w-screen lg:w-auto lg:right-0 z-10 lg:pl-10 lg:pr-10 lg:bg-gray-100 pt-14 bg-base-200 lg:left-96">
         <div class="flex flex-col lg:flex-row">          
           <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
@@ -12,7 +12,7 @@
               <%= if Enum.any?(@gallery.albums) do %>
                 <div class="flex bg-white">                
                   <.crumbs class="mt-2 font-sans text-xs text-base-250">
-                    <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
+                    <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}>Photos</:crumb>
                     <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
                   </.crumbs>                 
                 </div>
@@ -192,7 +192,7 @@
       </div>
     </div>
   </div>
-  <div class="fixed bottom-0 left-0 right-0 z-30 lg:h-14">
+  <div class={classes("z-30 lg:h-14", %{"relative" => !@is_mobile})}>
     <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>
 </div>

@@ -132,7 +132,8 @@ defmodule Picsello.GalleryAlbumsTest do
     session
     |> visit("/galleries/#{gallery_id}/albums")
     |> click(css("#actions-#{album.id}"))
-    |> click(button("Delete Album"))
+    |> scroll_into_view(css("#actions-#{album.id}"))
+    |> click(css("#actions-#{album.id} button", text: "Delete Album"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(css("p", text: "Album deleted successfully"))
 

@@ -42,7 +42,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => id} = params, _, socket) do
     gallery =
       Galleries.get_gallery!(id)
       |> Galleries.load_watermark_in_gallery()
@@ -54,6 +54,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     prepare_gallery(gallery)
 
     socket
+    |> is_mobile(params)
     |> assign(:gallery, gallery)
     |> noreply()
   end
@@ -140,6 +141,11 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   def handle_event("watermark_popup", _, socket) do
     send(self(), :open_modal)
     socket |> noreply()
+  end
+
+  @impl true
+  def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket |> assign(:is_mobile, !is_mobile) |> noreply
   end
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do

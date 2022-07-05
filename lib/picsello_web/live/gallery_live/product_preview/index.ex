@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => id} = params, _, socket) do
     gallery = Galleries.get_gallery!(id) |> Repo.preload([:albums, :photographer])
     prepare_gallery(gallery)
 
@@ -29,7 +29,13 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
       page_title: page_title(socket.assigns.live_action),
       products: Galleries.products(gallery)
     )
+    |> is_mobile(params)
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("back-to-navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket |> assign(:is_mobile, !is_mobile) |> noreply
   end
 
   @impl true

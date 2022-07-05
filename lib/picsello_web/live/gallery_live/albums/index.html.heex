@@ -1,10 +1,10 @@
-<div class="flex flex-col">
-  <div class="flex flex-row bg-base-200">
+<div class={classes("flex flex-col", %{"hidden" => is_nil(@is_mobile)})}>
+  <div class="flex flex-row bg-base-200 lg:static relative">
     <.mobile_gallery_header gallery_name={@gallery.name}/>
-    <div class="hidden lg:flex">
-      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "photos", album_dropdown_show: true %>
+    <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
+      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "photos", album_dropdown_show: true, is_mobile: @is_mobile %>
     </div>
-    <div class="w-full h-full pb-16 lg:bg-gray-100 bg-white lg:pl-96">
+    <div class={classes("lg:block w-full min-h-screen pb-16 lg:bg-gray-100 bg-white lg:pl-96", %{"hidden" => @is_mobile})}>
       <div id="page-scroll" phx-hook="PageScroll" class="lg:sticky top-0 z-20 lg:pb-5 pl-10 pr-10 lg:bg-gray-100 bg-white lg:pt-14 pt-20">
        <.mobile_banner albums={@albums} title="Photos" class="py-4">
           <div class="flex lg:mt-4 font-sans text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></div>        
@@ -29,9 +29,8 @@
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_all_unsorted_photos"
               delete_title="Delete all unsorted photos"
-              delete_value={@gallery.id}
-              photo_selected="true">
-                  <li phx-click="go_to_unsorted_photos" phx-value-album="22" class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
+              delete_value={@gallery.id}>
+                  <li phx-click="go_to_unsorted_photos" class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
                     <button class="w-full album-actions">Go to unsorted photos</button>
                   </li>
               </.actions>
@@ -47,8 +46,7 @@
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_album_popup"
               delete_title="Delete Album"
-              delete_value={album.id}
-              photo_selected="true">
+              delete_value={album.id}>
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>
                 </li>
@@ -67,7 +65,7 @@
     </div>
   </div>
   <.sticky_upload socket={@socket} gallery_id={@gallery.id} />
-  <div class="fixed bottom-0 left-0 right-0 z-10 lg:h-14">
+  <div class={classes("z-30 lg:h-14", %{"relative" => !@is_mobile})}>
   <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>
 </div>

@@ -1,17 +1,24 @@
-<div class="fixed top-0 lg:bottom-0 left-0 flex flex-col lg:h-screen h-16 px-5 pb-6 pt-2 lg:bg-white lg:z-10 z-40 shrink-0 lg:w-[384px] w-screen bg-base-200">
-    <div class="fixed">
-    <div class="flex">
-      <span class="flex-col circleBtn">
-        <ul>
+<div class="fixed top-0 lg:left-0 flex flex-col h-screen px-5 pb-6 pt-2 bg-white lg:z-10 z-30 shrink-0 lg:w-[384px] w-screen">
+    <.mobile_gallery_header gallery_name={@gallery.name}/>
+    <div class="lg:mt-0 mt-28 w-full">      
+      <div class="hidden lg:flex">
+        <span class="flex-col circleBtn">
+          <ul>
             <li>
               <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
               <.icon name="back" class="stroke-current w-14 h-14 text-blue-planning-300" />
               <span>Back to job</span>
               <% end %>
             </li>
-        </ul>
-      </span>
+          </ul>
+        </span>
       </div>
+      <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
+        <div class="flex lg:hidden px-4 py-3 w-fit mb-2 items-center rounded-full shadow-lg bg-base-100">          
+          <.icon name="back" class="stroke-current w-2 h-3 stroke-3 text-blue-planning-300"/>
+          <span class="flex ml-2 items-center font-bold text-lg">Back to job</span>
+        </div>
+      <% end %>
       <div class="mt-2 gallery-name-edit hidden lg:block">
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
           <div class={if(!@edit_name, do: "hidden")}>
@@ -29,112 +36,97 @@
           </div>
         </.form>
       </div>
-      <div class="lg:grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-xl grid-container hidden w-80 gap-y-1">
-        <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
-            <div phx-click="select_overview" phx-target={@myself} class="flex items-center h-11 pr-4 pl-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
-              <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                  <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/globe-icon.png")} width="16" height="16"/> 
-              </div>
-              <div class="ml-3">
-                <span class={@arrow_show == "overview" && "text-blue-planning-300"}>Overview</span>
-              </div>
-              <div class="flex px-2 items-center ml-auto">
-              <%= if expire_soon(@gallery) do %>
-                <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
-                <% end %>
-              </div>
-            </div>
-            <%= if @arrow_show == "overview" do %>
-              <span class="arrow show">
-                <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
-              </span>
-            <% end %>
+      <div class="grid grid-cols-1 p-5 mt-6 bg-base-200 rounded-xl grid-container lg:w-80 gap-y-1">
+        <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
+          <.bar class="block" route={Routes.gallery_photographer_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Overview" icon="globe-icon.png" arrow_show={@arrow_show == "overview"}>
+            <%= if expire_soon(@gallery) do %>
+              <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
+            <% end %>       
+          </.bar>
+          <%= if @arrow_show == "overview" do %>
+            <span class="arrow show lg:block hidden">
+              <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+            </span>
+          <% end %>
         </div>
-        <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
-        <div phx-click="select_photos" phx-target={@myself} class="flex items-center h-11 pr-4 pl-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300">
-             <div class="flex items-center justify-start">
+        <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
+          <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300">
+            <div class="w-full">
+              <%= live_redirect to: get_select_photo_route(@socket, @albums, @gallery, if(@is_mobile, do: [is_mobile: false], else: [])) do %>
+                <div class="flex items-center justify-start">
                   <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/> 
+                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/>
                   </div>
                   <div class="justify-start ml-3">
-                     <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>
+                    <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>
                   </div>
-             </div>
-            <div class="flex px-2 items-center ml-auto">
-              <%= if @photos_error_count > 0 do %>
-                <div class="flex">
-                  <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
                 </div>
-              <% end %>
-              <%= if @total_progress > 0 && @total_progress < 100 do %>
-                <div class="flex sk-circle">
-                    <div class="sk-circle1 sk-child"></div>
-                    <div class="sk-circle2 sk-child"></div>
-                    <div class="sk-circle3 sk-child"></div>
-                    <div class="sk-circle4 sk-child"></div>
-                    <div class="sk-circle5 sk-child"></div>
-                    <div class="sk-circle6 sk-child"></div>
-                    <div class="sk-circle7 sk-child"></div>
-                    <div class="sk-circle8 sk-child"></div>
-                    <div class="sk-circle9 sk-child"></div>
-                    <div class="sk-circle10 sk-child"></div>
-                    <div class="sk-circle11 sk-child"></div>
-                    <div class="sk-circle12 sk-child"></div>
-                </div>
-                <div class="flex items-center font-normal text-gray-400">
-                    <%= @total_progress %>%
+                <div class="flex px-2 items-center ml-auto">
+                  <%= if @photos_error_count > 0 do %>
+                    <div class="flex">
+                      <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+                    </div>
+                  <% end %>
+                  <%= if @total_progress > 0 && @total_progress < 100 do %>
+                    <div class="flex sk-circle">
+                      <div class="sk-circle1 sk-child"></div>
+                      <div class="sk-circle2 sk-child"></div>
+                      <div class="sk-circle3 sk-child"></div>
+                      <div class="sk-circle4 sk-child"></div>
+                      <div class="sk-circle5 sk-child"></div>
+                      <div class="sk-circle6 sk-child"></div>
+                      <div class="sk-circle7 sk-child"></div>
+                      <div class="sk-circle8 sk-child"></div>
+                      <div class="sk-circle9 sk-child"></div>
+                      <div class="sk-circle10 sk-child"></div>
+                      <div class="sk-circle11 sk-child"></div>
+                      <div class="sk-circle12 sk-child"></div>
+                    </div>
+                    <div class="flex items-center font-normal text-gray-400">
+                        <%= @total_progress %>%
+                    </div>
+                  <% end %>
                 </div>
               <% end %>
             </div>
             <%= if length(@albums) >= 1 do %>
-                <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300">
-                  <%= if @album_dropdown_show do %>
-                    <.icon name="up" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 close-icon hover:text-blue-planning-300", %{"text-blue-planning-300" => @arrow_show == "photos", "text-black" => @arrow_show !== "photos"})} />
-                  <% else %>
-                    <.icon name="down" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 open-icon hover:text-blue-planning-300", %{"text-blue-planning-300" => @arrow_show == "photos", "text-black" => @arrow_show !== "photos"})} />
-                  <% end %>
-                </div>
-            <% end %>
-            </div>
-            <%= if @arrow_show == "photos" do %>
-              <span class="arrow show">
-                <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
-              </span>
-            <% end %>
-            <div class="bg-gray-100 border-2 border-gray-200 rounded-b-lg">
-              <%= if @album_dropdown_show do %>
-                <%= if length(@albums) > 0 do %>
-                        <ul>
-                          <li phx-click="go_to_unsorted_photos" phx-target={@myself} class="relative">
-                            <button class={"#{if @selected_album == nil, do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}>Unsorted photos</button>
-                          </li>
-                        </ul>
-                      <% end %>
-                  <%= for album <- @albums do %>
-                        <ul>
-                          <li phx-click="go_to_album_selected" phx-target={@myself} phx-value-album={album.id} class="relative">
-                            <button class={"#{if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} flex items-center h-6 py-4 pl-12 pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}><%= album.name %></button>
-                          </li>
-                        </ul>
-                  <% end %>
+              <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300 ml-auto">
+                <%= if @album_dropdown_show do %>
+                  <.icon name="up" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 close-icon hover:text-blue-planning-300", %{"text-blue-planning-300" => @arrow_show == "photos", "text-black" => @arrow_show !== "photos"})} />
+                <% else %>
+                  <.icon name="down" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 open-icon hover:text-blue-planning-300", %{"text-blue-planning-300" => @arrow_show == "photos", "text-black" => @arrow_show !== "photos"})} />
                 <% end %>
               </div>
-        </div>
-        <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
-              <div phx-click="select_preview" phx-target={@myself} class="flex items-center h-11 px-2 py-4 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
-                  <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/shop-icon.png")} width="16" height="16"/> 
-                  </div>
-                  <div class="ml-3">
-                    <span class={@arrow_show == "product_previews" && "text-blue-planning-300"}>Product previews</span>
-                  </div>
-              </div>
-              <%= if @arrow_show == "product_previews" do %>
-              <span class="arrow show">
-                <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
+            <% end %>
+          </div>
+            <%= if @arrow_show == "photos" do %>
+              <span class="arrow show lg:block hidden">
+                <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
             <% end %>
+            <div class="bg-base-200 border-2 border-gray-200 rounded-b-lg">
+              <%= if @album_dropdown_show do %>
+                <%= if length(@albums) > 0 do %>
+                  <ul>
+                    <.li title="Unsorted photos" class="block" button_class={if @selected_album == nil, do: " text-blue-planning-300", else: "text-gray-700"} selected_album={@selected_album} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                  </ul>
+                <% end %>
+                <%= for album <- @albums do %>
+                  <ul>
+                    <.li title={album.name} class="block" button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} selected_album={@selected_album} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                  </ul>
+                <% end %>
+              <% end %>
             </div>
+        </div>
+        <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
+          <.bar class="block" route={Routes.gallery_product_preview_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Product previews" icon="shop-icon.png" arrow_show={@arrow_show == "product_previews"}></.bar>
+          <%= if @arrow_show == "product_previews" do %>
+            <span class="arrow show lg:block hidden">
+              <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+            </span>
+          <% end %>
+        </div>
       </div>
      </div>
   </div>

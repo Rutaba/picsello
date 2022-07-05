@@ -14,7 +14,8 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
           photos_error_count: photos_error_count,
           gallery: gallery,
           arrow_show: arrow_show,
-          album_dropdown_show: album_dropdown_show
+          album_dropdown_show: album_dropdown_show,
+          is_mobile: is_mobile
         } = params,
         socket
       ) do
@@ -40,6 +41,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> assign(:photos_error_count, photos_error_count)
     |> assign(:gallery, gallery)
     |> assign(:edit_name, true)
+    |> assign(:is_mobile, is_mobile)
     |> assign(:albums, albums)
     |> assign(:arrow_show, arrow_show)
     |> assign(:album_dropdown_show, album_dropdown_show)
@@ -77,104 +79,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   @impl true
   def handle_event(
-        "select_overview",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "go_to_unsorted_photos",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "select_photos",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery,
-            albums: albums
-          }
-        } = socket
-      ) do
-    if Enum.empty?(albums) do
-      socket
-      |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery))
-      |> noreply()
-    else
-      socket
-      |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery))
-      |> noreply()
-    end
-  end
-
-  @impl true
-  def handle_event(
-        "select_albums",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "select_preview",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> push_redirect(to: Routes.gallery_product_preview_index_path(socket, :index, gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "go_to_album_selected",
-        %{"album" => album_id},
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    socket
-    |> assign(:selected_item, "go_to_album")
-    |> push_redirect(to: Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
         "select_albums_dropdown",
         _,
         %{
@@ -183,15 +87,49 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
           }
         } = socket
       ) do
-    album_dropdown_updated =
-      case album_dropdown_show do
-        false -> true
-        true -> false
-      end
-
     socket
-    |> assign(:album_dropdown_show, album_dropdown_updated)
+    |> assign(:album_dropdown_show, !album_dropdown_show)
     |> noreply()
+  end
+
+  defp bar(assigns) do
+    ~H"""
+    <div class={@class}>
+      <%= live_redirect to: @route do %>
+        <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
+          <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
+              <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/#{@icon}")} width="16" height="16"/>
+          </div>
+          <div class="ml-3">
+            <span class={@arrow_show && "text-blue-planning-300"}><%= @title %></span>
+          </div>
+          <div class="flex px-2 items-center ml-auto">
+            <%= render_slot(@inner_block) %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp li(assigns) do
+    ~H"""
+    <div class={"#{@class}"}>
+      <%= live_redirect to: @route do %>
+        <li>
+          <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}><%= @title%></button>
+        </li>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp get_select_photo_route(socket, albums, gallery, opts) do
+    if Enum.empty?(albums) do
+      Routes.gallery_photos_index_path(socket, :index, gallery, opts)
+    else
+      Routes.gallery_albums_index_path(socket, :index, gallery, opts)
+    end
   end
 
   defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),

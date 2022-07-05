@@ -214,7 +214,7 @@ let csrfToken = document
   .getAttribute('content');
 let liveSocket = new LiveSocket('/live', Socket, {
   hooks: Hooks,
-  params: { _csrf_token: csrfToken },
+  params: { _csrf_token: csrfToken, isMobile: window.innerWidth <= 768 },
   uploaders: Uploaders,
 });
 
