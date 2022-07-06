@@ -25,6 +25,9 @@ defmodule PicselloWeb.StripeWebhooksController do
             {:ok, order, :confirmed} ->
               Picsello.Notifiers.OrderNotifier.deliver_order_emails(order, PicselloWeb.Helpers)
 
+            {:ok, order, :already_confirmed} ->
+              {:ok, order}
+
             err ->
               err
           end

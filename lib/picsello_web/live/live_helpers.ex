@@ -84,6 +84,11 @@ defmodule PicselloWeb.LiveHelpers do
     |> Calendar.strftime(format)
   end
 
+  def strftime(nil, time, format) do
+    time
+    |> Calendar.strftime(format)
+  end
+
   def icon(%{name: name} = assigns) do
     assigns =
       assigns
