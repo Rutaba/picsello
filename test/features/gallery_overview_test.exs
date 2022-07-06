@@ -65,7 +65,8 @@ defmodule Picsello.GalleryOverviewTest do
 
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> scroll_into_view(css("#galleryPasswordInput"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("#togglePasswordVisibility"))
     |> click(css("#regeneratePasswordButton"))
     |> click(css("#togglePasswordVisibility"))
@@ -79,7 +80,8 @@ defmodule Picsello.GalleryOverviewTest do
 
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> scroll_into_view(css("#expiration_component"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("#updateGalleryNeverExpire"))
     |> click(css("#saveGalleryExpiration"))
 
@@ -91,7 +93,8 @@ defmodule Picsello.GalleryOverviewTest do
   feature "Expiration date, set gallery expiry", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> scroll_into_view(css("#expiration_component"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("#updateGalleryNeverExpire"))
     |> find(select("date[month]"), &click(&1, option("January")))
     |> find(select("date[day]"), &click(&1, option("2")))
@@ -106,7 +109,8 @@ defmodule Picsello.GalleryOverviewTest do
   feature "Watermark, Set text watermark", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> scroll_into_view(css("#galleryWatermark"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("#watermark_popup"))
     |> click(css("#waterMarkText"))
     |> fill_in(text_field("textWatermarkForm_text"), with: "test watermark")
@@ -117,7 +121,8 @@ defmodule Picsello.GalleryOverviewTest do
   feature "Watermark, Delete watermark", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> scroll_into_view(css("#galleryWatermark"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("#watermark_popup"))
     |> click(css("#waterMarkText"))
     |> fill_in(text_field("textWatermarkForm_text"), with: "test watermark")
@@ -136,7 +141,8 @@ defmodule Picsello.GalleryOverviewTest do
   feature "Delete Gallery", %{session: session, job: job, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> scroll_into_view(css("#deleteGallery"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(testid("card-Gallery", text: "Looks like you need to upload photos."))

@@ -139,4 +139,19 @@ defmodule Picsello.GalleryAlbumsTest do
 
     assert current_path(session) == "/galleries/#{gallery_id}/photos"
   end
+
+  test "Albums, mobile screen, side nav actions, overview and albums", %{
+    session: session,
+    gallery: %{id: gallery_id},
+    album: album
+  } do
+    session
+    |> resize_window(414, 736)
+    |> visit("/galleries/#{gallery_id}")
+    |> click(css("span", text: "Overview"))
+    |> click(css("*[phx-click='back_to_navbar']"))
+    |> assert_has(css("*[phx-click='back_to_navbar']", count: 0))
+    |> click(css("*[phx-click='select_albums_dropdown']"))
+    |> click(button(album.name))
+  end
 end

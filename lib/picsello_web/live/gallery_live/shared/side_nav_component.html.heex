@@ -51,44 +51,42 @@
         </div>
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
           <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300">
-            <div class="w-full">
-              <%= live_redirect to: get_select_photo_route(@socket, @albums, @gallery, if(@is_mobile, do: [is_mobile: false], else: [])) do %>
-                <div class="flex items-center justify-start">
-                  <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/>
-                  </div>
-                  <div class="justify-start ml-3">
-                    <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>
-                  </div>
+            <%= live_redirect class: "flex w-full", to: get_select_photo_route(@socket, @albums, @gallery, if(@is_mobile, do: [is_mobile: false], else: [])) do %>
+              <div class="flex items-center justify-start">
+                <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
+                  <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/>
                 </div>
-                <div class="flex px-2 items-center ml-auto">
-                  <%= if @photos_error_count > 0 do %>
-                    <div class="flex">
-                      <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
-                    </div>
-                  <% end %>
-                  <%= if @total_progress > 0 && @total_progress < 100 do %>
-                    <div class="flex sk-circle">
-                      <div class="sk-circle1 sk-child"></div>
-                      <div class="sk-circle2 sk-child"></div>
-                      <div class="sk-circle3 sk-child"></div>
-                      <div class="sk-circle4 sk-child"></div>
-                      <div class="sk-circle5 sk-child"></div>
-                      <div class="sk-circle6 sk-child"></div>
-                      <div class="sk-circle7 sk-child"></div>
-                      <div class="sk-circle8 sk-child"></div>
-                      <div class="sk-circle9 sk-child"></div>
-                      <div class="sk-circle10 sk-child"></div>
-                      <div class="sk-circle11 sk-child"></div>
-                      <div class="sk-circle12 sk-child"></div>
-                    </div>
-                    <div class="flex items-center font-normal text-gray-400">
-                        <%= @total_progress %>%
-                    </div>
-                  <% end %>
+                <div class="justify-start ml-3">
+                  <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>
                 </div>
-              <% end %>
-            </div>
+              </div>
+              <div class="flex px-2 items-center ml-auto">
+                <%= if @photos_error_count > 0 do %>
+                  <div class="flex">
+                    <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+                  </div>
+                <% end %>
+                <%= if @total_progress > 0 && @total_progress < 100 do %>
+                  <div class="flex sk-circle">
+                    <div class="sk-circle1 sk-child"></div>
+                    <div class="sk-circle2 sk-child"></div>
+                    <div class="sk-circle3 sk-child"></div>
+                    <div class="sk-circle4 sk-child"></div>
+                    <div class="sk-circle5 sk-child"></div>
+                    <div class="sk-circle6 sk-child"></div>
+                    <div class="sk-circle7 sk-child"></div>
+                    <div class="sk-circle8 sk-child"></div>
+                    <div class="sk-circle9 sk-child"></div>
+                    <div class="sk-circle10 sk-child"></div>
+                    <div class="sk-circle11 sk-child"></div>
+                    <div class="sk-circle12 sk-child"></div>
+                  </div>
+                  <div class="flex items-center font-normal text-gray-400">
+                      <%= @total_progress %>%
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
             <%= if length(@albums) >= 1 do %>
               <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300 ml-auto">
                 <%= if @album_dropdown_show do %>

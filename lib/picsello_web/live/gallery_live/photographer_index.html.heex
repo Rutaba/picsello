@@ -104,17 +104,17 @@
                               </div>
                            </div>
                         <% end %>
-                        <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
+                        <button {testid("watermark_popup")} phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
                      <% else %>
                         <p class="font-sans">Upload your logo and we’ll do the rest.</p>
-                        <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
+                        <button {testid("watermark_popup")} phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
                      <% end %>
                   </div>
                <% end %>
                <div id="deleteGallery" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
                   <h3 class="font-sans">Delete gallery</h3>
                   <p class="font-sans">If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
-                  <button phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
+                  <button {testid("deleteGalleryPopupButton")} phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
                </div>
             </div>
          </div>

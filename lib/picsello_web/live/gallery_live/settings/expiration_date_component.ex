@@ -215,7 +215,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
           <%= select_field f, :day, @day_options, id: "day-#{@is_never_expires}", prompt: "Day", value: @day, class: "border-blue-planning-300 mx-2 md:mx-3 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
           <%= select_field f, :year, @year_options, id: "year-#{@is_never_expires}", prompt: "Year", value: @year, class: "border-blue-planning-300 w-1/3 cursor-pointer #{@is_never_expires && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires %>
         </div>
-        <div class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
+        <div {testid("toggle_expiry")} class="flex flex-row-reverse items-center justify-between w-full mt-5 lg:items-start">
             <%= submit "Save", class: "btn-settings w-32 px-11", disabled: save_disabled?(@year, @month, @day, @is_never_expires, @gallery), phx_disable_with: "Saving...", id: "saveGalleryExpiration" %>
             <div class="flex items-center" phx-click="toggle-never-expires" phx-target={@myself} id="updateGalleryNeverExpire">
                 <input id="neverExpire" type="checkbox" class="w-6 h-6 mr-3 checkbox-exp cursor-pointer" checked={@is_never_expires} />
