@@ -48,4 +48,31 @@ defmodule Picsello.SubscriptionPlansMetadata do
   def all_subscription_plans_metadata() do
     Repo.all(from(s in __MODULE__))
   end
+
+  def subscription_plan_metadata(nil) do
+    %Picsello.SubscriptionPlansMetadata{
+      trial_length: 30,
+      onboarding_description:
+        "After 30 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
+      onboarding_title: "Start your 30-day free trial",
+      signup_description:
+        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
+      signup_title: "Let's get started!",
+      success_title: "Your 30-day free trial has started!"
+    }
+  end
+
+  def subscription_plan_metadata(code) do
+    query = Repo.get_by(__MODULE__, code: code, active: true)
+
+    if query === nil do
+      subscription_plan_metadata(nil)
+    else
+      query
+    end
+  end
+
+  def get_subscription_plan_metadata(code) do
+    subscription_plan_metadata(code)
+  end
 end

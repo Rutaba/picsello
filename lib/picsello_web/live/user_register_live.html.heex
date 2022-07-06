@@ -1,6 +1,6 @@
-<.container step={1} color_class="bg-blue-planning-200" title="Let's get started!" subtitle={"#{subscription_content(@subscription_plan_month).onboarding_offer_prefix} #{subscription_content(@subscription_plan_month).onboarding_offer} OR #{subscription_content(@subscription_plan_year).onboarding_offer}"}>
+<.container step={1} color_class="bg-blue-planning-200" title={@subscription_plan_metadata.signup_title} subtitle={@subscription_plan_metadata.signup_description}>
   <div id="tz-cookie" phx-hook="TZCookie"></div>
-
+  <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
   <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-secondary">
     <.icon name="google" width="25" height="24" class="mr-4" />
     Continue with Google

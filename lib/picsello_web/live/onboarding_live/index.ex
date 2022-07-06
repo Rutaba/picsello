@@ -2,14 +2,28 @@ defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
-  alias Picsello.{Repo, JobType, Onboardings, Subscriptions, Accounts.User}
+
+  alias Picsello.{
+    Repo,
+    JobType,
+    Onboardings,
+    Subscriptions,
+    SubscriptionPlansMetadata,
+    Accounts.User
+  }
 
   @impl true
   def mount(params, _session, socket) do
+    subscription = Subscriptions.get_subscription_plan("month")
+
     socket
     |> assign_step(2)
     |> assign(:loading_stripe, false)
-    |> assign(:subscription_plan, Subscriptions.get_subscription_plan("month"))
+    |> assign(:subscription_plan, subscription)
+    |> assign(
+      :subscription_plan_metadata,
+      SubscriptionPlansMetadata.get_subscription_plan_metadata(nil)
+    )
     |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
     |> maybe_show_trial(params)
@@ -42,7 +56,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
            success_url:
              "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
-           trial_days: Subscriptions.subscription_content(socket.assigns.subscription_plan).length
+           trial_days: socket.assigns.subscription_plan_metadata.trial_length
          ) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
@@ -76,13 +90,33 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
+  def handle_event("trial-code", %{"code" => code}, socket) do
+    supscription_plan_metadata = SubscriptionPlansMetadata.get_subscription_plan_metadata(code)
+
+    step_title =
+      if socket.assigns.step === 6 do
+        supscription_plan_metadata.onboarding_title
+      else
+        socket.assigns.step_title
+      end
+
+    socket
+    |> assign(
+      :subscription_plan_metadata,
+      supscription_plan_metadata
+    )
+    |> assign(step_title: step_title)
+    |> noreply()
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
-          <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9">
+          <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9" phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="retrieve">
             <%= if @step > 2 do %>
               <button type="button" phx-click="previous" class="flex-grow px-6 sm:flex-grow-0 btn-secondary sm:px-8">
                 Back
@@ -241,7 +275,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
     <hr class="my-4" />
     <p class="font-bold">When will I be charged?</p>
-    <p><%= Subscriptions.subscription_content(@subscription_plan).description_prefix %>. (You can change to annual if you prefer in account settings.)</p>
+    <p><%= @subscription_plan_metadata.onboarding_description %></p>
     <hr class="my-4" />
     <p class="text-sm italic text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
@@ -251,7 +285,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <div class="rounded-lg dialog">
           <.icon name="confetti" class="w-11 h-11" />
 
-          <h1 class="text-3xl font-semibold"><%= Subscriptions.subscription_content(@subscription_plan).success_prefix %> has started!</h1>
+          <h1 class="text-3xl font-semibold"><%= @subscription_plan_metadata.success_title %></h1>
           <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
 
           <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
@@ -315,8 +349,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 6,
       color_class: "bg-blue-gallery-200",
-      step_title:
-        Subscriptions.subscription_content(socket.assigns.subscription_plan).title_prefix,
+      step_title: socket.assigns.subscription_plan_metadata.onboarding_title,
       subtitle:
         "Explore and learn Picsello at your own pace. Pricing simplified. One plan, all features.",
       page_title: "Onboarding Step 6"
