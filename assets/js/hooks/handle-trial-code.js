@@ -22,8 +22,6 @@ export default {
     const { el } = this;
     const handle = el.dataset.handle;
 
-    console.log(saveCodefromURLtoLocalStorage());
-
     handle === 'retrieve'
       ? this.pushEvent('trial-code', { code: saveCodefromURLtoLocalStorage() })
       : saveCodefromURLtoLocalStorage();

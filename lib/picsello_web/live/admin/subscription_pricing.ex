@@ -215,13 +215,10 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
        ) do
     id = String.to_integer(id)
 
-    Enum.map(pricing_metadata, fn
-      %{row: %{id: ^id} = row} ->
-        row |> Repo.delete()
-
-      _pricing_metadata ->
-        nil
-    end)
+    Enum.filter(pricing_metadata, fn %{row: row} -> row.id === id end)
+    |> List.first()
+    |> Map.get(:row)
+    |> Repo.delete()
 
     socket
     |> assign_pricing_metadata()
