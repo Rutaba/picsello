@@ -134,4 +134,30 @@ defmodule Picsello.SignUpTest do
              ]
            } = Jason.decode!(sendgrid_request_body)
   end
+
+  feature "user has promotional code", %{session: session} do
+    random_code = generate_random_code()
+    insert_subscription_metadata_factory!(%{active: true, code: random_code})
+
+    session
+    |> visit("/users/register?code=#{random_code}")
+    |> assert_has(
+      css("h2",
+        text: "3 months free"
+      )
+    )
+  end
+
+  feature "user has inactive/non-existent promotional code", %{session: session} do
+    random_code = generate_random_code()
+    insert_subscription_metadata_factory!(%{code: random_code})
+
+    session
+    |> visit("/users/register?code=#{random_code}")
+    |> assert_has(
+      css("h2",
+        text: "1 month free"
+      )
+    )
+  end
 end
