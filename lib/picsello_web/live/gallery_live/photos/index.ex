@@ -37,17 +37,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_params(%{"id" => gallery_id, "album_id" => album_id}, _, socket) do
+  def handle_params(%{"id" => gallery_id, "album_id" => album_id} = params, _, socket) do
     album = Albums.get_album!(album_id) |> Repo.preload(:photos)
 
     socket
+    |> is_mobile(params)
     |> assigns(gallery_id, album)
   end
 
   @impl true
-  def handle_params(%{"id" => gallery_id}, _, socket) do
+  def handle_params(%{"id" => gallery_id} = params, _, socket) do
     socket
+    |> is_mobile(params)
     |> assigns(gallery_id)
+  end
+
+  @impl true
+  def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket |> assign(:is_mobile, !is_mobile) |> noreply
   end
 
   @impl true

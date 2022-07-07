@@ -48,7 +48,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
           <% end %>
         </a>
       </div>
-      <div class="flex items-center justify-between w-full mt-3 lg:items-start">
+      <div {testid("password_component")} class="flex items-center justify-between w-full mt-3 lg:items-start">
         <button phx-click="regenerate" phx-target={@myself} class="p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0" id="regeneratePasswordButton">
             Re-generate
         </button>

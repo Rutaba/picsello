@@ -132,10 +132,26 @@ defmodule Picsello.GalleryAlbumsTest do
     session
     |> visit("/galleries/#{gallery_id}/albums")
     |> click(css("#actions-#{album.id}"))
-    |> click(button("Delete Album"))
+    |> scroll_into_view(css("#actions-#{album.id}"))
+    |> click(css("#actions-#{album.id} button", text: "Delete Album"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(css("p", text: "Album deleted successfully"))
 
     assert current_path(session) == "/galleries/#{gallery_id}/photos"
+  end
+
+  test "Albums, mobile screen, side nav actions, overview and albums", %{
+    session: session,
+    gallery: %{id: gallery_id},
+    album: album
+  } do
+    session
+    |> resize_window(414, 736)
+    |> visit("/galleries/#{gallery_id}")
+    |> click(css("span", text: "Overview"))
+    |> click(css("*[phx-click='back_to_navbar']"))
+    |> assert_has(css("*[phx-click='back_to_navbar']", count: 0))
+    |> click(css("*[phx-click='select_albums_dropdown']"))
+    |> click(button(album.name))
   end
 end

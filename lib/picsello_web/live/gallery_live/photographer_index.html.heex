@@ -1,13 +1,13 @@
-<div class="flex flex-col photographer-gallery lg:before:bg-gray-100">   
-   <div class="flex flex-row bg-base-200">
-      <.mobile_gallery_header gallery_name={@gallery.name}/>
-      <div class="hidden lg:flex">
-         <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "overview", album_dropdown_show: false %>
+<div class={classes("flex flex-col photographer-gallery lg:before:bg-gray-100", %{"hidden" => is_nil(@is_mobile)})}>
+   <div class="flex flex-row bg-base-200 lg:static relative">      
+      <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
+         <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "overview", album_dropdown_show: false, is_mobile: @is_mobile %>
       </div>
-      <div class="w-full h-full font-sans bg-white lg:bg-gray-100 lg:pl-96">
+      <.mobile_gallery_header gallery_name={@gallery.name}/>
+      <div class={classes("lg:flex w-full h-full font-sans bg-white lg:bg-gray-100 lg:pl-96", %{"hidden" => @is_mobile})}>
          <div class="relative lg:pb-10 pl-10 pr-10 lg:pt-16 pt-20">
             <div class="flex items-center lg:mt-0 mt-4">
-               <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300">
+               <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
                   <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
                </div>
                <div class="ml-3">
@@ -104,24 +104,24 @@
                               </div>
                            </div>
                         <% end %>
-                        <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
+                        <button {testid("watermark_popup")} phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
                      <% else %>
                         <p class="font-sans">Upload your logo and we’ll do the rest.</p>
-                        <button phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
+                        <button {testid("watermark_popup")} phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
                      <% end %>
                   </div>
                <% end %>
                <div id="deleteGallery" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
                   <h3 class="font-sans">Delete gallery</h3>
                   <p class="font-sans">If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
-                  <button phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
+                  <button {testid("deleteGalleryPopupButton")} phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
                </div>
             </div>
          </div>
       </div>   
    </div>
    <.sticky_upload socket={@socket} gallery_id={@gallery.id} />
-   <div class="relative bottom-0 left-0 right-0 z-30 lg:h-14">
+   <div class={classes("z-40 lg:h-14", %{"relative" => !@is_mobile})}>
       <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent, id: "footer-#{@gallery.id}", gallery: @gallery %>
    </div>
 </div>

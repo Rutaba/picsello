@@ -1,13 +1,13 @@
-<div class="flex flex-col h-screen photographer-gallery lg:before:bg-gray-100">
-  <div class="flex root">
+<div class={classes("flex flex-col photographer-gallery lg:before:bg-gray-100", %{"hidden" => is_nil(@is_mobile)})}>
+  <div class="flex root lg:static relative">
     <.mobile_gallery_header gallery_name={@gallery.name}/>
-    <div class="hidden lg:flex">
-      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "product_previews", album_dropdown_show: false %>
+    <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
+      <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "product_previews", album_dropdown_show: false, is_mobile: @is_mobile %>
     </div>  
-    <div class="w-full h-full mb-36 lg:mb-20 lg:bg-base-100 bg-white lg:pl-96 lg:pt-16 pt-24">
-      <div class="relative items-center justify-between lg:px-16 pb-10" {intro_hints_only("intro_hints_only_product_preview")}>
+    <div class={classes("w-full h-full mb-36 lg:mb-20 lg:bg-base-100 bg-white lg:pl-96 lg:pt-16 pt-24", %{"lg:block hidden" => @is_mobile})}>
+      <div class="relative items-center justify-between lg:px-16 pb-10">
         <div class="flex flex-row lg:px-0 px-6 items-center">
-          <div class="lg:hidden flex w-8 h-8 mr-4 items-center justify-center rounded-full bg-blue-planning-300">
+          <div class="lg:hidden flex w-8 h-8 mr-4 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back-to-navbar">
             <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
           </div>
           <span class="font-sans lg:text-2xl text-3xl font-bold font-black" >
@@ -36,7 +36,7 @@
     </div>
   </div>
   <.sticky_upload socket={@socket} gallery_id={@gallery.id} />
-  <div class="fixed bottom-0 left-0 right-0 z-10 lg:h-14">
+  <div class={classes("z-40 lg:h-14", %{"relative" => !@is_mobile})}>
     <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>
 </div>

@@ -366,6 +366,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def actions(assigns) do
+    assigns = assigns |> Enum.into(%{photo_selected: true})
+
     ~H"""
     <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
       <div class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
@@ -588,7 +590,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def mobile_banner(assigns) do
     ~H"""
       <div class={"lg:hidden flex flex-row items-center #{@class}"}>
-        <div class="flex w-10 h-10 items-center justify-center rounded-full bg-blue-planning-300">
+        <div class="flex w-10 h-10 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
           <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
         </div>
         <div class="flex flex-col ml-4">

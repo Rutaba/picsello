@@ -4,7 +4,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   alias Picsello.Onboardings
 
-  import Phoenix.LiveView, only: [assign: 2, assign_new: 3]
+  import Phoenix.LiveView, only: [get_connect_params: 1, assign: 2, assign_new: 3]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
@@ -356,4 +356,13 @@ defmodule PicselloWeb.LiveHelpers do
 
   def shoot_location(%{address: address, location: location}),
     do: address || location |> Atom.to_string() |> dyn_gettext()
+
+  def is_mobile(socket, params) do
+    is_mobile = Map.get(params, "is_mobile", get_connect_params(socket)["isMobile"])
+
+    socket
+    |> assign(
+      is_mobile: if(String.valid?(is_mobile), do: String.to_existing_atom(is_mobile), else: is_mobile)
+    )
+  end
 end
