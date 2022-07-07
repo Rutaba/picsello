@@ -82,7 +82,8 @@ config :picsello,
   photo_processing_output_topic: add_suffix.("PHOTO_PROCESSING_OUTPUT_TOPIC"),
   photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET"),
   photos_max_entries: System.get_env("PHOTOS_MAX_ENTRIES") || "1500",
-  photo_max_file_size: System.get_env("PHOTO_MAX_FILE_SIZE") || "104857600"
+  photo_max_file_size: System.get_env("PHOTO_MAX_FILE_SIZE") || "104857600",
+  logo_max_size: System.get_env("LOGO_MAX_SIZE") || "10485760"
 
 config :picsello, :whcc,
   adapter: Picsello.WHCC.Client,
