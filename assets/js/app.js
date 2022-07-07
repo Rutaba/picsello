@@ -28,6 +28,7 @@ import Calendar from './hooks/calendar';
 import Clipboard from './hooks/clipboard';
 import DragDrop from './hooks/drag-drop';
 import Flash from './hooks/flash';
+import HandleTrialCode from './hooks/handle-trial-code';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
 import HelpScout from './hooks/help-scout';
@@ -134,6 +135,7 @@ const Hooks = {
   DragDrop,
   Flash,
   GalleryMobile,
+  HandleTrialCode,
   IFrameAutoHeight,
   HelpScout,
   IntroJS,

@@ -647,6 +647,28 @@ defmodule Picsello.Factory do
       current_period_end: DateTime.utc_now() |> DateTime.add(60 * 60 * 24)
     }
 
+  def subscription_metadata_factory(attrs),
+    do:
+      %Picsello.SubscriptionPlansMetadata{
+        code: "123456",
+        trial_length: 90,
+        active: false,
+        signup_title: "Let's get started!",
+        signup_description:
+          "Grow your photography business with Picsello—3 months free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
+        onboarding_title: "Start your 90-day free trial",
+        onboarding_description:
+          "After 90 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
+        success_title: "Your 90-day free trial has started!"
+      }
+      |> merge_attributes(attrs)
+
+  def insert_subscription_metadata_factory!(attrs) do
+    insert(subscription_metadata_factory(attrs))
+  end
+
+  def generate_random_code(), do: Enum.random(100_000..999_999) |> to_string
+
   def digital_factory,
     do:
       %Picsello.Cart.Digital{

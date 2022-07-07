@@ -4,16 +4,18 @@ defmodule PicselloWeb.UserRegisterLive do
 
   alias Picsello.{Accounts, Accounts.User}
   import PicselloWeb.OnboardingLive.Index, only: [container: 1]
-  import Picsello.Subscriptions, only: [get_subscription_plan: 1, subscription_content: 1]
+
+  import Picsello.Subscriptions,
+    only: [get_subscription_plan_metadata: 0, get_subscription_plan_metadata: 1]
 
   @impl true
   def mount(_params, session, socket) do
     socket
     |> assign_defaults(session)
-    |> assign(%{
-      subscription_plan_month: get_subscription_plan("month"),
-      subscription_plan_year: get_subscription_plan("year")
-    })
+    |> assign(
+      :subscription_plan_metadata,
+      get_subscription_plan_metadata()
+    )
     |> assign(%{
       page_title: "Sign Up",
       meta_attrs: %{
@@ -24,6 +26,20 @@ defmodule PicselloWeb.UserRegisterLive do
     |> assign_changeset()
     |> assign_trigger_submit()
     |> ok()
+  end
+
+  @impl true
+  def handle_params(%{"code" => code}, _uri, socket) do
+    socket
+    |> assign(
+      :subscription_plan_metadata,
+      get_subscription_plan_metadata(code)
+    )
+    |> noreply()
+  end
+
+  def handle_params(_params, _uri, socket) do
+    socket |> noreply()
   end
 
   @impl true
