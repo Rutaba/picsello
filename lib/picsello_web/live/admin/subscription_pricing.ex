@@ -254,7 +254,7 @@ defmodule PicselloWeb.Live.Admin.SubscriptionPricing do
     socket
     |> assign(
       pricing_metadata:
-        SubscriptionPlansMetadata.all_subscription_plans_metadata()
+        Subscriptions.all_subscription_plans_metadata()
         |> Enum.map(
           &%{
             row: &1,

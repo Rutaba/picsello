@@ -1,6 +1,6 @@
 defmodule Picsello.SubscriptionMetadataTest do
   use Picsello.DataCase, async: true
-  alias Picsello.{SubscriptionPlansMetadata}
+  alias Picsello.{Subscriptions}
 
   describe "usage of variable trial codes" do
     test "add subscription trial code" do
@@ -23,7 +23,7 @@ defmodule Picsello.SubscriptionMetadataTest do
         trial_length: 90,
         active: true,
         onboarding_title: "Start your 90-day free trial"
-      } = SubscriptionPlansMetadata.subscription_plan_metadata(random_code)
+      } = Subscriptions.get_subscription_plan_metadata(random_code)
     end
 
     test "get default subscription content when no trial codes" do
@@ -31,13 +31,13 @@ defmodule Picsello.SubscriptionMetadataTest do
         code: nil,
         trial_length: 30,
         success_title: "Your 30-day free trial has started!"
-      } = SubscriptionPlansMetadata.subscription_plan_metadata("99999")
+      } = Subscriptions.get_subscription_plan_metadata("99999")
 
       %Picsello.SubscriptionPlansMetadata{
         code: nil,
         trial_length: 30,
         onboarding_title: "Start your 30-day free trial"
-      } = SubscriptionPlansMetadata.subscription_plan_metadata(nil)
+      } = Subscriptions.get_subscription_plan_metadata()
     end
 
     test "get default subscription content when trial code is inactive" do
@@ -48,7 +48,7 @@ defmodule Picsello.SubscriptionMetadataTest do
         code: nil,
         trial_length: 30,
         success_title: "Your 30-day free trial has started!"
-      } = SubscriptionPlansMetadata.subscription_plan_metadata(random_code)
+      } = Subscriptions.get_subscription_plan_metadata(random_code)
     end
   end
 end

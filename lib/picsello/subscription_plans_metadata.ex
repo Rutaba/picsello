@@ -2,21 +2,16 @@ defmodule Picsello.SubscriptionPlansMetadata do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  import Ecto.Query
-
-  alias Picsello.{
-    Repo
-  }
 
   schema "subscription_plans_metadata" do
-    field :code, :string
-    field :trial_length, :integer
-    field :active, :boolean
-    field :signup_title, :string
-    field :signup_description, :string
-    field :onboarding_title, :string
-    field :onboarding_description, :string
-    field :success_title, :string
+    field(:code, :string)
+    field(:trial_length, :integer)
+    field(:active, :boolean)
+    field(:signup_title, :string)
+    field(:signup_description, :string)
+    field(:onboarding_title, :string)
+    field(:onboarding_description, :string)
+    field(:success_title, :string)
 
     timestamps()
   end
@@ -44,25 +39,4 @@ defmodule Picsello.SubscriptionPlansMetadata do
       :success_title
     ])
   end
-
-  def all_subscription_plans_metadata(), do: Repo.all(from(s in __MODULE__))
-
-  def subscription_plan_metadata(%Picsello.SubscriptionPlansMetadata{} = query), do: query
-
-  def subscription_plan_metadata(nil),
-    do: %Picsello.SubscriptionPlansMetadata{
-      trial_length: 30,
-      onboarding_description:
-        "After 30 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
-      onboarding_title: "Start your 30-day free trial",
-      signup_description:
-        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
-      signup_title: "Let's get started!",
-      success_title: "Your 30-day free trial has started!"
-    }
-
-  def subscription_plan_metadata(code),
-    do: Repo.get_by(__MODULE__, code: code, active: true) |> subscription_plan_metadata()
-
-  def get_subscription_plan_metadata(code), do: subscription_plan_metadata(code)
 end

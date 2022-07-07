@@ -5,8 +5,8 @@ defmodule PicselloWeb.UserRegisterLive do
   alias Picsello.{Accounts, Accounts.User}
   import PicselloWeb.OnboardingLive.Index, only: [container: 1]
 
-  import Picsello.SubscriptionPlansMetadata,
-    only: [get_subscription_plan_metadata: 1]
+  import Picsello.Subscriptions,
+    only: [get_subscription_plan_metadata: 0, get_subscription_plan_metadata: 1]
 
   @impl true
   def mount(_params, session, socket) do
@@ -14,7 +14,7 @@ defmodule PicselloWeb.UserRegisterLive do
     |> assign_defaults(session)
     |> assign(
       :subscription_plan_metadata,
-      get_subscription_plan_metadata(nil)
+      get_subscription_plan_metadata()
     )
     |> assign(%{
       page_title: "Sign Up",

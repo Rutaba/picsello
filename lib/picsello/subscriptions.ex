@@ -6,7 +6,8 @@ defmodule Picsello.Subscriptions do
     SubscriptionEvent,
     Payments,
     Subscription,
-    Accounts.User
+    Accounts.User,
+    SubscriptionPlansMetadata
   }
 
   import PicselloWeb.Helpers, only: [days_distance: 1]
@@ -173,21 +174,6 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def subscription_content(%{recurring_interval: recurring_interval, price: price}) do
-    price = price |> Money.to_string(fractional_unit: false)
-
-    %{
-      length: 30,
-      title_prefix: "Start your 30-day free trial",
-      description_prefix:
-        "After 30 days, your subscription will be #{price}/#{recurring_interval}",
-      success_prefix: "Your 30-day free trial",
-      onboarding_offer_prefix:
-        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of",
-      onboarding_offer: "#{price} a #{recurring_interval}"
-    }
-  end
-
   def user_customer_id(%User{stripe_customer_id: nil} = user) do
     params = %{name: user.name, email: user.email}
 
@@ -204,6 +190,36 @@ defmodule Picsello.Subscriptions do
   end
 
   def user_customer_id(%User{stripe_customer_id: customer_id}), do: customer_id
+
+  def all_subscription_plans_metadata(), do: Repo.all(from(s in SubscriptionPlansMetadata))
+
+  def get_subscription_plan_metadata(code), do: subscription_plan_metadata(code)
+  def get_subscription_plan_metadata(), do: subscription_plan_metadata()
+
+  defp subscription_plan_metadata(%Picsello.SubscriptionPlansMetadata{} = query), do: query
+
+  defp subscription_plan_metadata(nil),
+    do: subscription_plan_metadata_default()
+
+  defp subscription_plan_metadata(code),
+    do:
+      Repo.get_by(SubscriptionPlansMetadata, code: code, active: true)
+      |> subscription_plan_metadata()
+
+  defp subscription_plan_metadata(),
+    do: subscription_plan_metadata_default()
+
+  defp subscription_plan_metadata_default(),
+    do: %Picsello.SubscriptionPlansMetadata{
+      trial_length: 30,
+      onboarding_description:
+        "After 30 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
+      onboarding_title: "Start your 30-day free trial",
+      signup_description:
+        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
+      signup_title: "Let's get started!",
+      success_title: "Your 30-day free trial has started!"
+    }
 
   defp to_datetime(nil), do: nil
   defp to_datetime(unix_date), do: DateTime.from_unix!(unix_date)

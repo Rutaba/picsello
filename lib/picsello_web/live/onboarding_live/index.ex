@@ -8,21 +8,17 @@ defmodule PicselloWeb.OnboardingLive.Index do
     JobType,
     Onboardings,
     Subscriptions,
-    SubscriptionPlansMetadata,
     Accounts.User
   }
 
   @impl true
   def mount(params, _session, socket) do
-    subscription = Subscriptions.get_subscription_plan("month")
-
     socket
     |> assign_step(2)
     |> assign(:loading_stripe, false)
-    |> assign(:subscription_plan, subscription)
     |> assign(
       :subscription_plan_metadata,
-      SubscriptionPlansMetadata.get_subscription_plan_metadata(nil)
+      Subscriptions.get_subscription_plan_metadata()
     )
     |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
@@ -91,7 +87,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_event("trial-code", %{"code" => code}, socket) do
-    supscription_plan_metadata = SubscriptionPlansMetadata.get_subscription_plan_metadata(code)
+    supscription_plan_metadata = Subscriptions.get_subscription_plan_metadata(code)
 
     step_title =
       if socket.assigns.step === 6 do
