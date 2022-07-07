@@ -19,7 +19,7 @@ defmodule Picsello.BrandLinks do
       nil
 
   """
-  @spec get_brand_link(link_id :: integer, organization_id :: integer) :: %BrandLink{}
+  @spec get_brand_link(link_id :: integer, organization_id :: integer) :: %BrandLink{} | nil
   def get_brand_link(link_id, organization_id) do
     Repo.get_by(BrandLink, organization_id: organization_id, link_id: link_id)
   end

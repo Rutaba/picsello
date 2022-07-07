@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   use Phoenix.Component
-  alias Picsello.Profiles
+  alias Picsello.{Repo, Profiles}
 
   def update(assigns, socket) do
     socket
@@ -74,8 +74,10 @@ defmodule PicselloWeb.Live.Profile.Shared do
     )
   end
 
+  defp get_website_link([]), do: nil
+
   defp get_website_link(brand_links),
-    do: brand_links |> Enum.filter(&(&1.link_id == "website")) |> List.first() |> Map.get(:link)
+    do: Enum.find(brand_links, &(&1.link_id == "website")) |> Map.get(:link)
 
   def photographer_logo(assigns) do
     ~H"""

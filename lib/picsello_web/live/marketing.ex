@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Marketing do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Marketing, Profiles, BrandLinks}
+  alias Picsello.{Repo, Marketing, Profiles, BrandLink}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -197,10 +197,94 @@ defmodule PicselloWeb.Live.Marketing do
     |> noreply()
   end
 
-  def assign_brand_links(%{assigns: %{organization: %{id: id}}} = socket),
-    do:
-      socket
-      |> assign(:brand_links, BrandLinks.get_brand_link_by_organization_id(id))
+  def assign_brand_links(
+        %{assigns: %{organization: %{id: organization_id, brand_links: brand_links}}} = socket
+      ) do
+    preset_brand_links = [
+      %BrandLink{
+        title: "Website",
+        link: nil,
+        link_id: "website",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Instagram",
+        link: "https://www.instagram.com/",
+        link_id: "instagram",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Twitter",
+        link: "https://www.twitter.com/",
+        link_id: "twitter",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "TikTok",
+        link: "https://www.tiktok.com/",
+        link_id: "tiktok",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Facebook",
+        link: "https://www.facebook.com/",
+        link_id: "facebook",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Google Reviews",
+        link: "https://www.google.com/business",
+        link_id: "google-business",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Linkedin",
+        link: "https://www.linkedin.com/",
+        link_id: "linkedin",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Pinterest",
+        link: "https://www.pinterest.com/",
+        link_id: "pinterest",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Yelp",
+        link: "https://www.yelp.com/",
+        link_id: "yelp",
+        organization_id: organization_id
+      },
+      %BrandLink{
+        title: "Snapchat",
+        link: "https://www.snapchat.com/",
+        link_id: "snapchat",
+        organization_id: organization_id
+      }
+    ]
+
+    socket
+    # |> assign(:brand_links, Enum.flat_map(preset_brand_links, &map_brand_links(&1, brand_links)) ++ brand_links)
+    |> assign(:brand_links, map_brand_links(preset_brand_links, brand_links))
+  end
+
+  defp map_brand_links(preset_brand_links, []), do: preset_brand_links
+
+  defp map_brand_links(preset_brand_links, brand_links) do
+    [presets | custom] =
+      brand_links |> Enum.group_by(&String.contains?(&1.link_id, "link_")) |> Map.values()
+
+    Enum.reduce(preset_brand_links, [], fn preset_brand_link, acc ->
+      Enum.find(presets, fn brand_link ->
+        brand_link.link_id == preset_brand_link.link_id
+      end)
+      |> case do
+        nil -> [preset_brand_link | acc]
+        _ -> acc
+      end
+    end) ++
+      presets ++ Enum.with_index(List.flatten(custom), &Map.put(&1, :link_id, "link_#{&2 + 1}"))
+  end
 
   def assign_attention_items(socket) do
     items = [
@@ -234,7 +318,7 @@ defmodule PicselloWeb.Live.Marketing do
   end
 
   def assign_organization(%{assigns: %{current_user: current_user}} = socket) do
-    organization = Profiles.find_organization_by(user: current_user)
+    organization = Profiles.find_organization_by(user: current_user) |> Repo.preload(:brand_links)
     socket |> assign(:organization, organization)
   end
 

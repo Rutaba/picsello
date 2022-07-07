@@ -14,7 +14,8 @@ defmodule Picsello.UserSettingsTest do
       )
       |> onboard!
 
-    insert(:brand_link, user: user, link: nil)
+    insert(:brand_link, user: user)
+
     [
       user: user
     ]

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.UserRegistrationController do
   use PicselloWeb, :controller
 
-  alias Picsello.{Accounts, BrandLinks}
+  alias Picsello.Accounts
   alias PicselloWeb.UserAuth
 
   def create(%{req_cookies: cookies} = conn, %{"user" => user_params}) do
@@ -14,7 +14,6 @@ defmodule PicselloWeb.UserRegistrationController do
           )
 
         add_user_to_sendgrid(user)
-        add_brand_links(user)
 
         conn
         |> UserAuth.log_in_user(user)
@@ -41,72 +40,5 @@ defmodule PicselloWeb.UserRegistrationController do
       ]
     }
     |> SendgridClient.add_contacts()
-  end
-
-  defp add_brand_links(%{organization: %{id: organization_id}}) do
-    brand_links = [
-      %{
-        title: "Website",
-        link: nil,
-        link_id: "website",
-        organization_id: organization_id
-      },
-      %{
-        title: "Instagram",
-        link: "https://www.instagram.com/",
-        link_id: "instagram",
-        organization_id: organization_id
-      },
-      %{
-        title: "Twitter",
-        link: "https://www.twitter.com/",
-        link_id: "twitter",
-        organization_id: organization_id
-      },
-      %{
-        title: "TikTok",
-        link: "https://www.tiktok.com/",
-        link_id: "tiktok",
-        organization_id: organization_id
-      },
-      %{
-        title: "Facebook",
-        link: "https://www.facebook.com/",
-        link_id: "facebook",
-        organization_id: organization_id
-      },
-      %{
-        title: "Google Reviews",
-        link: "https://www.google.com/business",
-        link_id: "google-business",
-        organization_id: organization_id
-      },
-      %{
-        title: "Linkedin",
-        link: "https://www.linkedin.com/",
-        link_id: "linkedin",
-        organization_id: organization_id
-      },
-      %{
-        title: "Pinterest",
-        link: "https://www.pinterest.com/",
-        link_id: "pinterest",
-        organization_id: organization_id
-      },
-      %{
-        title: "Yelp",
-        link: "https://www.yelp.com/",
-        link_id: "yelp",
-        organization_id: organization_id
-      },
-      %{
-        title: "Snapchat",
-        link: "https://www.snapchat.com/",
-        link_id: "snapchat",
-        organization_id: organization_id
-      }
-    ]
-
-    BrandLinks.upsert_brand_links(brand_links)
   end
 end

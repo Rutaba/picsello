@@ -17,7 +17,7 @@ defmodule Picsello.UserOnboardsTest do
       }
     end)
 
-    insert(:brand_link, user: user, link: nil)
+    insert(:brand_link, user: user)
 
     insert(:cost_of_living_adjustment)
     insert(:cost_of_living_adjustment, state: "Non-US")
@@ -213,6 +213,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(css("label", text: "Portrait"))
     |> click(button("Next"))
     |> click(@second_color_field)
+    |> fill_in(@website_field, with: "example.com")
     |> click(button("Next"))
 
     user =
@@ -220,7 +221,7 @@ defmodule Picsello.UserOnboardsTest do
       |> Repo.reload()
       |> Repo.preload(organization: :brand_links)
 
-    assert %User{organization: %{brand_links: [%{link: nil}]}} = user
+    assert %User{organization: %{brand_links: [%{link: "https://example.com"}]}} = user
   end
 
   feature "user selects Non-US state", %{session: session, user: user} do

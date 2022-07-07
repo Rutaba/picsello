@@ -42,6 +42,7 @@ defmodule Picsello.SignUpTest do
     user = User |> Repo.one() |> Repo.preload(:organization)
     insert(:brand_link, user: user)
     user |> Repo.reload() |> Repo.preload(organization: :brand_links)
+
     assert %{
              name: "Mary Jane",
              email: "user@example.com",

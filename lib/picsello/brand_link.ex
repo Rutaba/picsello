@@ -24,14 +24,14 @@ defmodule Picsello.BrandLink do
       :show_on_profile?,
       :organization_id
     ])
-    |> validate_required([:title, :organization_id, :link_id])
+    |> validate_required([:title, :link, :organization_id, :link_id])
     |> validate_change(
       :link,
       &for(e <- Picsello.Profiles.Profile.url_validation_errors(&2), do: {&1, e})
     )
   end
 
-  def update_changeset(%__MODULE__{} = brand_link, attrs) do
+  def update_changeset(%__MODULE__{} = brand_link, attrs \\ %{}) do
     cast(brand_link, attrs, [
       :title,
       :link,
@@ -49,9 +49,8 @@ defmodule Picsello.BrandLink do
   end
 
   def brand_link_changeset(brand_link, attrs) do
-    cast(brand_link, attrs, [
-      :link
-    ])
+    brand_link
+    |> cast(attrs, [:link])
     |> validate_change(
       :link,
       &for(e <- Picsello.Profiles.Profile.url_validation_errors(&2), do: {&1, e})

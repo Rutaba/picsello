@@ -3,17 +3,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
-  alias Picsello.{
-    Repo,
-    JobType,
-    Onboardings,
-    Subscriptions,
-    Accounts.User
-  }
+  alias Picsello.{Repo, BrandLink, BrandLinks, JobType, Onboardings, Subscriptions, Accounts.User}
 
   @impl true
   def mount(params, _session, socket) do
     socket
+    |> assign_brand_links()
     |> assign_step(2)
     |> assign(:loading_stripe, false)
     |> assign(
@@ -64,18 +59,22 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
-  def handle_event("save", %{"user" => params}, %{assigns: %{step: step}} = socket) do
-    case socket |> build_changeset(params) |> Repo.update() do
-      {:ok, user} ->
-        socket
-        |> assign(current_user: user)
-        |> assign_step(step + 1)
-        |> assign_changeset()
+  def handle_event(
+        "save",
+        %{"user" => params},
+        %{assigns: %{current_user: %{organization: organization}, step: 4}} = socket
+      ) do
+    {brand_links_params, organization_params} = pop_in(params["organization"]["brand_links"])
 
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset)
+    case handle_brand_link(organization.brand_links, brand_links_params) do
+      :update -> save(socket, params)
+      _ -> save(socket, organization_params)
     end
-    |> noreply()
+  end
+
+  @impl true
+  def handle_event("save", %{"user" => params}, socket) do
+    save(socket, params)
   end
 
   @impl true
@@ -226,6 +225,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <% end %>
         <%= for b <- inputs_for(o, :brand_links) do %>
           <%= hidden_inputs_for b %>
+          <%= hidden_input b, :title, value: "Website" %>
+          <%= hidden_input b, :link_id, value: "website" %>
+          <%= hidden_input b, :organization_id, value: @current_user.organization.id %>
           <.website_field form={b} class="mt-4" />
         <% end %>
       <% end %>
@@ -449,6 +451,55 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
     socket
   end
+
+  defp assign_brand_links(
+         %{assigns: %{current_user: %{organization: organization} = user}} = socket
+       ) do
+    current_user =
+      case organization |> Repo.preload(:brand_links, force: true) do
+        %{brand_links: [%{id: id}]} = organization when not is_nil(id) ->
+          user |> Map.put(:organization, organization)
+
+        _ ->
+          user
+          |> Map.put(
+            :organization,
+            Map.put(organization, :brand_links, [
+              %BrandLink{
+                title: "Website",
+                link_id: "website",
+                organization_id: organization.id
+              }
+            ])
+          )
+      end
+
+    socket
+    |> assign(:current_user, current_user)
+  end
+
+  defp save(%{assigns: %{step: step}} = socket, params) do
+    case socket |> build_changeset(params) |> Repo.update() do
+      {:ok, user} ->
+        socket
+        |> assign(current_user: user)
+        |> assign_brand_links()
+        |> assign_step(step + 1)
+        |> assign_changeset()
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
+    |> noreply()
+  end
+
+  defp handle_brand_link([%{id: nil}], %{"0" => %{"link" => ""}}), do: :skip
+
+  defp handle_brand_link([brand_link], %{"0" => %{"link" => ""}}),
+    do: BrandLinks.delete_brand_link(brand_link)
+
+  defp handle_brand_link([%{id: nil}], %{"0" => params}), do: BrandLinks.insert_brand_link(params)
+  defp handle_brand_link(_, _), do: :update
 
   defdelegate job_types(), to: JobType, as: :all
   defdelegate colors(), to: Picsello.Profiles

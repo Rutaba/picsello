@@ -49,9 +49,9 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
             <.title_field form={f} class="mt-4" custom?={get_brand_link_icon(@brand_link.link_id) == "anchor"} link_id={@brand_link.link_id}/>
             <.link_field form={f} class="mt-5 pb-5" custom?={get_brand_link_icon(@brand_link.link_id) == "anchor"} link_id={@brand_link.link_id} placeholder="Add your link url…"/>
           </.form>
-          <.check_box target={@myself} field="active?" brand_link={@brand_link} class={classes(%{"hidden" => !@changeset.valid?})} label="Enable this link" content="You can only enable or disable prepoulated links"/>
-          <.check_box target={@myself} field="use_publicly?" brand_link={@brand_link} class={classes(%{"hidden" => !@brand_link.active?})} label="Use link publicly?" content="If you mark your link as private, you won’t be able to use this link in email. For example, you are using this as a way to login to your social platform"/>
-          <.check_box target={@myself} field="show_on_profile?" brand_link={@brand_link} class={classes(%{"hidden" => !@brand_link.active?})} label="Show link in your Public Profile?" content="This link will appear in the footer of your public profile if you turn this on"/>
+          <.check_box target={@myself} field="active?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@changeset.valid?})} label="Enable this link" content="You can only enable or disable prepoulated links"/>
+          <.check_box target={@myself} field="use_publicly?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Use link publicly?" content="If you mark your link as private, you won’t be able to use this link in email. For example, you are using this as a way to login to your social platform"/>
+          <.check_box target={@myself} field="show_on_profile?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Show link in your Public Profile?" content="This link will appear in the footer of your public profile if you turn this on"/>
           <div class={classes(%{"hidden" => get_brand_link_icon(@brand_link.link_id) != "anchor"})}>
             <div class="text-red-sales-300 mt-11 font-extrabold">
               Delete link
@@ -151,12 +151,11 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
           <%= input @form, @name,
               type: :url_input,
               phx_debounce: "500",
-              disabled: !@custom? && @link_id != "website",
               placeholder: @placeholder,
               autocomplete: "url",
               novalidate: true,
               phx_hook: "PrefixHttp",
-              class: classes("p-4", %{"bg-gray-200" => !@custom? && @link_id != "website"}) %>
+              class: "p-4" %>
           <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: @label %>
         </div>
       </label>
@@ -188,16 +187,13 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   def handle_event("add_brand_link", _, %{assigns: %{brand_links: brand_links}} = socket) do
     count = brand_links |> Enum.filter(&String.contains?(&1.link_id, "link_")) |> length()
 
-    {:ok, brand_link} =
-      %{
-        title: "New link #{count + 1}",
-        link_id: "link_#{count + 1}",
-        organization_id: List.first(brand_links) |> Map.get(:organization_id)
-      }
-      |> BrandLinks.insert_brand_link()
+    brand_link = %BrandLink{
+      title: "New link #{count + 1}",
+      link_id: "link_#{count + 1}",
+      organization_id: List.first(brand_links) |> Map.get(:organization_id)
+    }
 
     brand_links = brand_links ++ [brand_link]
-    send(socket.parent_pid, {:update_brand_links, brand_links, "created"})
 
     socket
     |> assign(:brand_link, brand_link)
@@ -216,13 +212,17 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     updated_brand_link = brand_links |> Enum.at(index - 1)
     {brand_link, remaining_brand_links} = brand_links |> List.pop_at(index)
 
-    BrandLinks.delete_brand_link(brand_link)
-    send(socket.parent_pid, {:update_brand_links, remaining_brand_links, "deleted"})
+    unless is_nil(brand_link.id) do
+      BrandLinks.delete_brand_link(brand_link)
+    end
+
+    updated_brand_links = update_link_ids(remaining_brand_links)
+
+    send(socket.parent_pid, {:update_brand_links, updated_brand_links, "deleted"})
 
     socket
     |> assign(:brand_link, updated_brand_link)
-    |> assign(:link_id, updated_brand_link.link_id)
-    |> assign(:brand_links, remaining_brand_links)
+    |> assign(:brand_links, updated_brand_links)
     |> assign_changeset()
     |> then(fn socket ->
       if is_mobile do
@@ -274,14 +274,18 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   def handle_event(
         "validate",
         %{"brand_link" => params},
-        %{assigns: %{brand_link: brand_link}} = socket
+        %{assigns: %{brand_link: brand_link, brand_links: brand_links}} = socket
       ) do
     socket
     |> assign_changeset(params)
     |> then(fn %{assigns: %{changeset: changeset}} = socket ->
       if changeset.valid? do
+        index = socket |> get_brand_link_index()
+        updated_brand_link = Map.merge(brand_link, changeset.changes)
+
         socket
-        |> assign(:brand_link, Map.merge(brand_link, changeset.changes))
+        |> assign(:brand_link, updated_brand_link)
+        |> assign(:brand_links, List.replace_at(brand_links, index, updated_brand_link))
       else
         socket
         |> assign(
@@ -310,11 +314,15 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   end
 
   defp save(%{assigns: %{brand_links: brand_links}} = socket) do
-    case BrandLinks.upsert_brand_links(struct_to_map(brand_links)) do
+    brand_links
+    |> struct_to_map()
+    |> remove_invalid_brand_links()
+    |> BrandLinks.upsert_brand_links()
+    |> case do
       [] ->
         socket
 
-      _ ->
+      brand_links ->
         send(socket.parent_pid, {:update_brand_links, brand_links, "updated"})
         socket
     end
@@ -349,6 +357,25 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   defp get_brand_link_index(%{assigns: %{brand_link: brand_link, brand_links: brand_links}}),
     do: brand_links |> Enum.find_index(&(&1.link_id == brand_link.link_id))
 
-  defp struct_to_map(brand_links),
-    do: brand_links |> Enum.map(&(Map.from_struct(&1) |> Map.drop([:__meta__, :organization])))
+  defp struct_to_map(brand_links) do
+    brand_links
+    |> Enum.map(fn %{id: id} = brand_link ->
+      case id do
+        nil -> Map.from_struct(brand_link) |> Map.drop([:id, :__meta__, :organization])
+        _ -> Map.from_struct(brand_link) |> Map.drop([:__meta__, :organization])
+      end
+    end)
+  end
+
+  defp update_link_ids(brand_links) do
+    [presets | custom] =
+      brand_links |> Enum.group_by(&String.contains?(&1.link_id, "link_")) |> Map.values()
+
+    presets ++ Enum.with_index(List.flatten(custom), &Map.put(&1, :link_id, "link_#{&2 + 1}"))
+  end
+
+  defp remove_invalid_brand_links(brand_links),
+    do:
+      brand_links
+      |> Enum.filter(&(BrandLink.create_changeset(%BrandLink{}, &1) |> Map.get(:valid?)))
 end

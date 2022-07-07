@@ -146,7 +146,7 @@ defmodule Picsello.Profiles do
     organization
     |> cast_assoc(:brand_links,
       required: true,
-      with: &BrandLink.brand_link_changeset(&1, &2)
+      with: &BrandLink.update_changeset(&1, &2)
     )
   end
 
@@ -230,13 +230,17 @@ defmodule Picsello.Profiles do
           ^slug
         ),
       limit: 1,
-      preload: [:user, :brand_links]
+      preload: [:user]
     )
     |> Repo.one!()
+    |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
   end
 
   def find_organization_by(user: %User{} = user) do
-    user |> Repo.preload(organization: :user) |> Map.get(:organization)
+    user
+    |> Repo.preload(organization: :user)
+    |> Map.get(:organization)
+    |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
   end
 
   def enabled?(%Organization{profile: profile}), do: Profile.enabled?(profile)
