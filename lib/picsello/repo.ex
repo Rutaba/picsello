@@ -1,9 +1,16 @@
 defmodule Picsello.Repo do
+  import Ecto.Query, only: [from: 2]
+
   use Ecto.Repo,
     otp_app: :picsello,
     adapter: Ecto.Adapters.Postgres
 
   use Paginator, include_total_count: true
+
+  def last(schema) do
+    from(s in schema, order_by: [desc: s.inserted_at], limit: 1)
+    |> one()
+  end
 
   defmodule CustomMacros do
     defmacro array_to_string(array, delimiter) do

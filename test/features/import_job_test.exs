@@ -18,11 +18,13 @@ defmodule Picsello.ImportJobTest do
     :ok
   end
 
-  def fill_in_client_form(session) do
+  def fill_in_client_form(session, opts \\ []) do
+    phone = Keyword.get(opts, :phone, "(210) 111-1234")
+
     session
     |> fill_in(text_field("Client Name"), with: @client_name)
     |> fill_in(text_field("Client Email"), with: @client_email)
-    |> fill_in(text_field("Client Phone"), with: "(210) 111-1234")
+    |> fill_in(text_field("Client Phone"), with: phone)
     |> click(css("label", text: "Wedding"))
   end
 
@@ -220,6 +222,53 @@ defmodule Picsello.ImportJobTest do
              name: "Elizabeth Taylor",
              email: "taylor@example.com",
              phone: "(210) 111-1234"
+           } = job.client
+  end
+
+  feature "user imports job with existing client and without phone", %{
+    session: session,
+    user: user
+  } do
+    client =
+      insert(:client,
+        user: user,
+        name: nil,
+        phone: nil,
+        email: @client_email
+      )
+
+    insert(:lead, client: client)
+
+    session
+    |> click(testid("jobs-card"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> fill_in_client_form(phone: "")
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in_package_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> fill_in_payments_form()
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> assert_text("During your job import, you marked this as an external document")
+
+    job = Repo.last(Job) |> Repo.preload([:client])
+
+    assert %Job{
+             type: "wedding"
+           } = job
+
+    assert %Client{
+             name: "Elizabeth Taylor",
+             email: "taylor@example.com",
+             phone: nil
            } = job.client
   end
 
