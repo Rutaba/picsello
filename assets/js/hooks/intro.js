@@ -38,6 +38,7 @@ function startIntroJsTour(component, introSteps, introId) {
 
 function addEventListeners() {
   document.querySelectorAll('.introjs-hint').forEach((el) => {
+    el.style.zIndex = 30;
     if (el) {
       const step = el.dataset.step;
       if (!step) return;
@@ -51,8 +52,7 @@ function addEventListeners() {
           // if this element exists, means the dialog is open
           // edge case that a rehover resets the DOM
           return;
-        } 
-        else {
+        } else {
           // We have to setup hints in order for them
           // to use the showHintDialog method
           introJs()

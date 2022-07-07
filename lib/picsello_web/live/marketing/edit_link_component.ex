@@ -9,7 +9,6 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     socket
     |> assign(assigns)
     |> assign(:brand_link, get_brand_link(assigns))
-    |> assign(:is_mobile, false)
     |> assign_changeset(assigns)
     |> ok()
   end
@@ -17,19 +16,28 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="modal">
+    <div class={classes("modal", %{"hidden" => is_nil(@is_mobile)})}>
       <div class="flex items-start justify-between flex-shrink-0">
         <h1 class="text-3xl font-bold">Edit Links</h1>
         <PicselloWeb.LiveModal.close_x />
       </div>
       <div class="flex">
-        <div id="side-nave" class={classes("lg:grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-xl grid-container w-full lg:w-2/5 gap-y-2", %{"hidden" => @is_mobile})}>
+        <div id="side-nave" class={classes("lg:grid grid-cols-1 p-5 mt-6 bg-gray-100 rounded-xl grid-container w-full lg:w-2/5 gap-y-2", %{"hidden" => !@is_mobile})}>
           <%= for entry <- @brand_links do %>
-            <div class="font-bold bg-gray-200 rounded-lg cursor-pointer grid-item">
-              <.bar class="hidden lg:block" is_mobile="no" entry={entry} target={@myself}/>
-              <.bar class="lg:hidden block" is_mobile="yes" entry={entry} target={@myself}/>
-              <span class={classes("hidden arrow", %{"lg:block" => entry.link_id == @brand_link.link_id})}>
-                <.icon name="arrow-filled" class="float-right w-8 h-8 -mt-10 -mr-10" />
+            <div class="font-bold bg-gray-200 text-base-250 rounded-lg cursor-pointer grid-item">
+              <div phx-click="switch" phx-value-link_id={entry.link_id} phx-target={@myself} class={classes("brand-links", %{"text-base-250" => !entry.link})}>
+                <div class={classes("flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 bg-blue-planning-300", %{"bg-base-250" => !entry.link})}>
+                  <.icon name={get_brand_link_icon(entry.link_id)} class="h-3 w-3 text-base-100" />
+                </div>
+                <div class={classes("ml-2 truncate", %{"text-blue-planning-300" => entry.active?})}>
+                  <span><%= entry.title %><span class={classes("font-normal", %{"hidden" => entry.use_publicly?})}> (private)</span></span>
+                </div>
+                <div class="flex items-center ml-auto">
+                  <.icon name="tick" class={classes("inline-block w-4 h-4 text-blue-planning-300", %{"hidden" => !entry.show_on_profile?})}/>
+                </div>
+              </div>
+              <span class={classes("hidden", %{"lg:block" => entry.link_id == @brand_link.link_id})}>
+                <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
             </div>
           <% end %>
@@ -42,17 +50,19 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
             </div>
           </div>
         </div>
-        <div class={classes("lg:block w-full lg:ml-16 lg:mr-8", %{"hidden" => !@is_mobile})}>
+        <div class={classes("lg:block w-full lg:ml-16 lg:mr-8", %{"hidden" => @is_mobile})}>
           <.form id="brand-link" let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
             <%= hidden_input f, :organization_id %>
             <%= hidden_input f, :link_id %>
-            <.title_field form={f} class="mt-4" custom?={get_brand_link_icon(@brand_link.link_id) == "anchor"} link_id={@brand_link.link_id}/>
-            <.link_field form={f} class="mt-5 pb-5" custom?={get_brand_link_icon(@brand_link.link_id) == "anchor"} link_id={@brand_link.link_id} placeholder="Add your link url…"/>
+            <.title_field form={f} class="mt-4" custom?={is_custom_brand_link(@brand_link.link_id)} link_id={@brand_link.link_id}/>
+            <.link_field form={f} class="mt-5 pb-5" custom?={is_custom_brand_link(@brand_link.link_id)} link_id={@brand_link.link_id} placeholder="Add your link url…"/>
           </.form>
-          <.check_box target={@myself} field="active?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@changeset.valid?})} label="Enable this link" content="You can only enable or disable prepoulated links"/>
+          <%= if !is_custom_brand_link(@brand_link.link_id) do %>
+            <.check_box target={@myself} field="active?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@changeset.valid?})} label="Enable this link" content="You can only enable or disable prepoulated links"/>
+          <% end %>
           <.check_box target={@myself} field="use_publicly?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Use link publicly?" content="If you mark your link as private, you won’t be able to use this link in email. For example, you are using this as a way to login to your social platform"/>
           <.check_box target={@myself} field="show_on_profile?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Show link in your Public Profile?" content="This link will appear in the footer of your public profile if you turn this on"/>
-          <div class={classes(%{"hidden" => get_brand_link_icon(@brand_link.link_id) != "anchor"})}>
+          <div class={classes(%{"hidden" => !is_custom_brand_link(@brand_link.link_id)})}>
             <div class="text-red-sales-300 mt-11 font-extrabold">
               Delete link
             </div>
@@ -72,35 +82,15 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
         <button disabled={!@changeset.valid?} id="save" phx-click="save" phx-target={@myself} class="lg:flex hidden btn-primary lg:w-auto w-full" title="save" type="button" phx-click="submit" phx-disable-with="Saving...">
           Save
         </button>
-        <button disabled={!@changeset.valid?} id="save_mobile" class={classes("lg:hidden btn-primary lg:w-auto w-full", %{"hidden" => !@is_mobile})} phx-click="save_mobile" phx-target={@myself} title="save" type="button" phx-click="submit" phx-disable-with="Saving...">
+        <button disabled={!@changeset.valid?} id="save_mobile" class={classes("lg:hidden btn-primary lg:w-auto w-full", %{"hidden" => @is_mobile})} phx-click="save_mobile" phx-target={@myself} title="save" type="button" phx-click="submit" phx-disable-with="Saving...">
           <span class="flex items-center justify-center">
             <.icon name="back" class="text-base-100 w-2 h-4 mr-2.5 stroke-2"/>
             Save & go back
           </span>
         </button>
-        <button id="close" class={classes("btn-secondary lg:w-auto w-full", %{"hidden lg:flex" => !@is_mobile})}  title="close" type="button" phx-click="modal" phx-value-action="close">
+        <button id="close" class={classes("btn-secondary lg:w-auto w-full", %{"hidden lg:flex" => @is_mobile})}  title="close" type="button" phx-click="modal" phx-value-action="close">
           Close
         </button>
-      </div>
-    </div>
-    """
-  end
-
-  defp bar(assigns) do
-    ~H"""
-    <div class={@class}>
-      <div phx-click="switch" phx-value-is_mobile={@is_mobile} phx-value-link_id={@entry.link_id} phx-target={@target} class={classes("brand-links text-blue-planning-300", %{"text-base-250" => !@entry.link})}>
-        <div class={classes("flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 bg-blue-planning-300", %{"bg-base-250" => !@entry.link})}>
-          <.icon name={get_brand_link_icon(@entry.link_id)} class="h-3 w-3 text-base-100" />
-        </div>
-        <div class="ml-2 truncate">
-          <span class={classes(%{"text-blue-planning-300" => !!@entry.link})}><%= @entry.title %>
-          <span class={classes("font-normal", %{"hidden" => @entry.use_publicly?})}> (private)</span>
-          </span>
-        </div>
-        <div class="flex items-center ml-auto">
-          <.icon name="tick" class={classes("inline-block w-4 h-4 text-blue-planning-300", %{"hidden" => !@entry.use_publicly?})}/>
-        </div>
       </div>
     </div>
     """
@@ -190,10 +180,11 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     brand_link = %BrandLink{
       title: "New link #{count + 1}",
       link_id: "link_#{count + 1}",
+      active?: true,
       organization_id: List.first(brand_links) |> Map.get(:organization_id)
     }
 
-    brand_links = brand_links ++ [brand_link]
+    brand_links = update_link_ids(brand_links) ++ [brand_link]
 
     socket
     |> assign(:brand_link, brand_link)
@@ -226,9 +217,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     |> assign_changeset()
     |> then(fn socket ->
       if is_mobile do
-        socket
-        |> save()
-        |> assign(:is_mobile, !is_mobile)
+        socket |> assign(:is_mobile, !is_mobile)
       else
         socket
       end
@@ -246,6 +235,13 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     field = field |> String.to_existing_atom()
     brand_link = Map.put(brand_link, field, !Map.get(brand_link, field))
 
+    brand_link =
+      if brand_link.active? do
+        brand_link
+      else
+        Map.merge(brand_link, %{use_publicly?: false, show_on_profile?: false})
+      end
+
     socket
     |> assign(:brand_link, brand_link)
     |> assign(:brand_links, List.replace_at(brand_links, index, brand_link))
@@ -256,13 +252,14 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   @impl true
   def handle_event(
         "switch",
-        %{"link_id" => link_id, "is_mobile" => is_mobile},
-        %{assigns: %{brand_link: brand_link, brand_links: brand_links}} = socket
+        %{"link_id" => link_id},
+        %{assigns: %{is_mobile: is_mobile, brand_link: brand_link, brand_links: brand_links}} =
+          socket
       ) do
     index = socket |> get_brand_link_index()
 
     socket
-    |> assign(:is_mobile, is_mobile == "yes")
+    |> assign(:is_mobile, !is_mobile)
     |> assign(:link_id, link_id)
     |> assign(:brand_link, Enum.find(brand_links, &(&1.link_id == link_id)))
     |> assign(:brand_links, List.replace_at(brand_links, index, brand_link))
@@ -279,22 +276,30 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     socket
     |> assign_changeset(params)
     |> then(fn %{assigns: %{changeset: changeset}} = socket ->
-      if changeset.valid? do
-        index = socket |> get_brand_link_index()
-        updated_brand_link = Map.merge(brand_link, changeset.changes)
+      updated_brand_link = Map.merge(brand_link, changeset.changes)
+      index = socket |> get_brand_link_index()
 
-        socket
-        |> assign(:brand_link, updated_brand_link)
-        |> assign(:brand_links, List.replace_at(brand_links, index, updated_brand_link))
-      else
-        socket
-        |> assign(
-          :brand_link,
-          Map.merge(brand_link, %{active?: false, use_publicly?: false, show_on_profile?: false})
-        )
-      end
+      updated_brand_link =
+        cond do
+          !changeset.valid? && !is_custom_brand_link(brand_link.link_id) ->
+            Map.merge(updated_brand_link, %{
+              active?: false,
+              use_publicly?: false,
+              show_on_profile?: false
+            })
+
+          !changeset.valid? ->
+            Map.merge(updated_brand_link, %{use_publicly?: false, show_on_profile?: false})
+
+          true ->
+            updated_brand_link
+        end
+
+      socket
+      |> assign(:brand_link, updated_brand_link)
+      |> assign(:brand_links, List.replace_at(brand_links, index, updated_brand_link))
+      |> noreply()
     end)
-    |> noreply()
   end
 
   @impl true
@@ -347,7 +352,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
       |> open_modal(
         __MODULE__,
         %{
-          assigns: assigns |> Map.take([:brand_links]) |> Map.put(:link_id, link_id)
+          assigns: assigns |> Map.take([:brand_links, :is_mobile]) |> Map.put(:link_id, link_id)
         }
       )
 

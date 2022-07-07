@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   use Phoenix.Component
-  alias Picsello.{Repo, Profiles}
+  alias Picsello.Profiles
 
   def update(assigns, socket) do
     socket

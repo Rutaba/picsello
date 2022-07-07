@@ -5,8 +5,9 @@ defmodule PicselloWeb.Live.Marketing do
   alias Picsello.{Repo, Marketing, Profiles, BrandLink}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket
+    |> is_mobile(params)
     |> assign(:page_title, "Marketing")
     |> assign_attention_items()
     |> assign_organization()
@@ -172,9 +173,13 @@ defmodule PicselloWeb.Live.Marketing do
     |> noreply()
   end
 
-  def handle_info({:update_brand_links, brand_links, message}, socket) do
+  def handle_info(
+        {:update_brand_links, brand_links, message},
+        %{assigns: %{organization: organization}} = socket
+      ) do
     socket
-    |> assign(:brand_links, brand_links)
+    |> assign(:organization, Map.put(organization, :brand_links, brand_links))
+    |> assign_brand_links()
     |> put_flash(:success, "Link #{message}")
     |> noreply()
   end
@@ -264,7 +269,6 @@ defmodule PicselloWeb.Live.Marketing do
     ]
 
     socket
-    # |> assign(:brand_links, Enum.flat_map(preset_brand_links, &map_brand_links(&1, brand_links)) ++ brand_links)
     |> assign(:brand_links, map_brand_links(preset_brand_links, brand_links))
   end
 
@@ -318,7 +322,9 @@ defmodule PicselloWeb.Live.Marketing do
   end
 
   def assign_organization(%{assigns: %{current_user: current_user}} = socket) do
-    organization = Profiles.find_organization_by(user: current_user) |> Repo.preload(:brand_links)
+    organization =
+      Profiles.find_organization_by(user: current_user) |> Repo.preload(:brand_links, force: true)
+
     socket |> assign(:organization, organization)
   end
 

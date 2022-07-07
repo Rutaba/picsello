@@ -3,7 +3,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
-  alias Picsello.{Repo, BrandLink, BrandLinks, JobType, Onboardings, Subscriptions, Accounts.User}
+  alias Ecto.Multi
+  alias Picsello.{Repo, BrandLink, JobType, Onboardings, Subscriptions, Accounts.User}
 
   @impl true
   def mount(params, _session, socket) do
@@ -68,7 +69,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
     case handle_brand_link(organization.brand_links, brand_links_params) do
       :update -> save(socket, params)
-      _ -> save(socket, organization_params)
+      data -> save(socket, organization_params, data)
     end
   end
 
@@ -478,27 +479,39 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(:current_user, current_user)
   end
 
-  defp save(%{assigns: %{step: step}} = socket, params) do
-    case socket |> build_changeset(params) |> Repo.update() do
-      {:ok, user} ->
+  defp save(%{assigns: %{step: step}} = socket, params, data \\ :skip) do
+    Multi.new()
+    |> Multi.put(:data, data)
+    |> Multi.update(:user, build_changeset(socket, params))
+    |> Multi.merge(fn
+      %{data: %BrandLink{} = data} ->
+        Multi.new() |> Multi.delete(:brand_link, data)
+
+      %{data: %{} = data} ->
+        Multi.new()
+        |> Multi.insert(:insert_brand_link, BrandLink.create_changeset(%BrandLink{}, data))
+
+      _ ->
+        Multi.new()
+    end)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{user: user}} ->
         socket
         |> assign(current_user: user)
         |> assign_brand_links()
         |> assign_step(step + 1)
         |> assign_changeset()
 
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset)
-    end
+      {:error, reason} ->
+        socket |> assign(changeset: reason)
+    end)
     |> noreply()
   end
 
   defp handle_brand_link([%{id: nil}], %{"0" => %{"link" => ""}}), do: :skip
-
-  defp handle_brand_link([brand_link], %{"0" => %{"link" => ""}}),
-    do: BrandLinks.delete_brand_link(brand_link)
-
-  defp handle_brand_link([%{id: nil}], %{"0" => params}), do: BrandLinks.insert_brand_link(params)
+  defp handle_brand_link([brand_link], %{"0" => %{"link" => ""}}), do: brand_link
+  defp handle_brand_link([%{id: nil}], %{"0" => params}), do: params
   defp handle_brand_link(_, _), do: :update
 
   defdelegate job_types(), to: JobType, as: :all
