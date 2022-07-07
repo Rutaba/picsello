@@ -206,6 +206,14 @@ defmodule Picsello.PaymentSchedulesTest do
         insert(:lead, type: "wedding", client: [email: "elizabeth2@example.com"])
         |> promote_to_job()
 
+      completed_job =
+        insert(:lead,
+          type: "wedding",
+          client: [email: "elizabeth+completed@example.com"],
+          completed_at: DateTime.utc_now()
+        )
+        |> promote_to_job()
+
       insert(:email_preset,
         state: :balance_due,
         job_type: "wedding",
@@ -231,6 +239,13 @@ defmodule Picsello.PaymentSchedulesTest do
           job: job2,
           price: ~M[5000]USD,
           due_at: DateTime.utc_now() |> DateTime.add(4 * :timer.hours(24), :millisecond)
+        )
+
+      _payment_from_completed_job =
+        insert(:payment_schedule,
+          job: completed_job,
+          price: ~M[5000]USD,
+          due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond)
         )
 
       already_reminded_at = DateTime.utc_now() |> DateTime.add(-100)

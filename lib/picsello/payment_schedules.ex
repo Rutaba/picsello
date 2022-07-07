@@ -57,7 +57,7 @@ defmodule Picsello.PaymentSchedules do
         is_nil(payment.paid_at) and
           is_nil(payment.reminded_at) and
           fragment("?.due_at <= now() + interval '3 days'", payment) and
-          not job_status.is_lead,
+          not job_status.is_lead and job_status.current_status != :completed,
       preload: :job
     )
     |> Repo.all()
