@@ -418,27 +418,27 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def preview(assigns) do
     ~H"""
-    <div class="fixed z-30 bg-white scroll-shadow">
-        <div class="absolute top-4 right-4">
+    <div class="fixed z-30 lg:h-[45%] bg-white scroll-shadow">
+        <div class="absolute 2xl:top-5 top-2 2xl:right-6 right-4">
             <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
             </button>
         </div>
-        <div class="flex items-center mx-24 mt-5 font-sans text-2xl font-bold text-base-300 lg:justify-start">
+        <div class="flex items-center mx-24 2xl:mt-7 mt-2 font-sans text-2xl font-bold text-base-300 lg:justify-start">
             <p><%= @page_title %></p>
         </div>
-        <h1 class="text-md mt-4 mx-24 font-sans text-base-300">
+        <h1 class="text-md 2xl:mt-5 mt-2 mx-24 font-sans text-base-300">
             <%= @title %>
         </h1>
-        <div class="flex pt-6 pb-6 mx-24 grid lg:grid-cols-3 grid-cols-1 lg:grid-rows-preview">
+        <div class="flex 2xl:pt-6 pt-3 pb-6 mx-24 grid lg:grid-cols-3 grid-cols-1 lg:grid-rows-preview">
           <%= render_slot(@inner_block) %>
           <div class="description lg:ml-11 row-span-2 col-span-2">
-              <p class="pt-3 font-sans text-base lg:pb-11 pb-6"><%= @description %></p>
+              <p class="2xl:pt-6 pt-3 font-sans text-base lg:pb-11 pb-6"><%= @description %></p>
               <button phx-click="save" phx-target={@myself} disabled={!@selected} class="w-full rounded-lg save-button btn-settings">Save</button>
           </div>
         </div>
     </div>
-    <div id="gallery_form" class="lg:pt-56 pt-80 pb-11 px-11 lg:mt-56 mt-72">
+    <div id="gallery_form" class="2xl:pt-60 lg:pt-40 pt-80 pb-20 px-11 lg:mt-56 mt-72">
       <div
           phx-hook="MasonryGrid"
           phx-update="append"
