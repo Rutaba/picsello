@@ -8,7 +8,7 @@ defmodule Picsello.Workers.Checkout do
   def perform(%Oban.Job{args: args}) do
     {order_id, opts} = Map.pop(args, "order_id")
     {helpers_module, opts} = Map.pop(opts, "helpers")
-
+    IO.inspect(args)
     case Checkouts.check_out(order_id, opts) do
       {:ok, %{cart: cart, session: %{url: url}}} ->
         Orders.broadcast(cart, {:checkout, :due, url})

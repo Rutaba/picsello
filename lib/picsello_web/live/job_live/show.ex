@@ -46,7 +46,7 @@ defmodule PicselloWeb.JobLive.Show do
       true ->
         %{
           button_text: "View orders",
-          button_click: "#",
+          button_click: "view-orders",
           button_disabled: false,
           text: "#{ngettext("1 order", "%{count} orders", orders_count)} to view from your client"
         }
@@ -115,6 +115,13 @@ defmodule PicselloWeb.JobLive.Show do
     do:
       socket
       |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, job.gallery.id))
+      |> noreply()
+
+      @impl true
+  def handle_event("view-orders", _, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.transaction_path(socket, :transactions, job.id))
       |> noreply()
 
   @impl true

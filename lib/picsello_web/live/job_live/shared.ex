@@ -657,4 +657,13 @@ defmodule PicselloWeb.JobLive.Shared do
     })
     |> noreply()
   end
+
+  def redirect_to_stripe(%{assigns: %{gallery: %{job: job}, current_user: current_user}} = socket) do
+    socket
+    |> redirect(
+      external:
+        "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/customers/#{job.client.stripe_customer_id}"
+    )
+    |> noreply()
+  end
 end
