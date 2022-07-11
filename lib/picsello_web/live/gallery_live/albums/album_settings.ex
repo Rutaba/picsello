@@ -156,8 +156,11 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
   @impl true
   def render(assigns) do
+    action = if is_nil(assigns.album), do: "Create new album", else: "Save"
+    assigns = Enum.into(assigns, %{action: action})
+
     ~H"""
-    <div class="flex flex-col modal sm:mb-8">
+    <div class="flex flex-col modal rounded-lg sm:mb-8">
       <div class="flex items-start justify-between flex-shrink-0">
         <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
@@ -168,9 +171,15 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
         <%= hidden_input f, :gallery_id%>
 
-        <div class="flex flex-col mt-4 font-bold">
+        <div class="flex flex-col mt-3">
+          <%= if is_nil(@album) do %>
+            <label class="flex items-center mb-4">
+              <%= checkbox f, :is_proofing, class: "w-5 h-5 mr-2.5 checkbox cursor-pointer" %>
+              Proofing album
+            </label>
+          <% end %>
           <h3 class="font-bold input-label">Password protection</h3>
-          <label id="setPassword" class="flex text-1xl">
+          <label id="setPassword" class="flex text-1xl font-bold">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
             <div class="hidden peer-checked:flex">
               <div class="flex font-sans cursor-pointer justify-end items-center w-12 h-6 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
@@ -231,7 +240,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <button type="button" phx-click="modal" phx-value-action="close" class="btn-settings-secondary" id="close">
             Close
           </button>
-          <%= submit "Save", class: "btn-settings ml-4 px-11", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
+          <%= submit @action, class: "btn-settings ml-4 px-11", disabled: !@changeset.valid?, phx_disable_with: "Saving..." %>
         </div>
       </.form>
     </div>

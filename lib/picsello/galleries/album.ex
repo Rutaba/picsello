@@ -10,6 +10,7 @@ defmodule Picsello.Galleries.Album do
     field :name, :string
     field :password, :string
     field :set_password, :boolean
+    field :is_proofing, :boolean, default: false
     belongs_to(:gallery, Gallery)
     belongs_to(:thumbnail_photo, Photo, on_replace: :nilify)
     has_many(:photos, Photo)
@@ -17,7 +18,7 @@ defmodule Picsello.Galleries.Album do
     timestamps(type: :utc_datetime)
   end
 
-  @attrs [:name, :set_password, :gallery_id, :password]
+  @attrs [:name, :set_password, :gallery_id, :password, :is_proofing]
   @required_attrs [:name, :set_password, :gallery_id]
 
   def create_changeset(attrs) do
