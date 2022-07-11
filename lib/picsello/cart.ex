@@ -327,6 +327,7 @@ defmodule Picsello.Cart do
       {:ok, _} -> :ok
       err -> err
     end
+    |> IO.inspect()
   end
 
   defdelegate lines_by_product(order), to: Order
