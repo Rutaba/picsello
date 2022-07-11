@@ -202,7 +202,6 @@ defmodule PicselloWeb.Live.Profile do
         _params,
         %{assigns: %{uploads: %{logo: %{entries: [entry]}}}} = socket
       ) do
-
     socket
     |> validate_entry(entry)
     |> assign(:entry, entry)
@@ -215,7 +214,6 @@ defmodule PicselloWeb.Live.Profile do
         _params,
         %{assigns: %{uploads: %{main_image: %{entries: [entry]}}}} = socket
       ) do
-
     socket
     |> validate_entry(entry)
     |> assign(:entry, entry)
