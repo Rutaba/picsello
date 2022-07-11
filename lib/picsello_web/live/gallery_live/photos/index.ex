@@ -709,20 +709,4 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     <% end %>
     """
   end
-
-  defp grid_padding(photos_error_count, album, gallery) do
-    cond do
-      photos_error_count > 0 ->
-        "pt-56"
-
-      !!album ->
-        "lg:pt-40 pt-48"
-
-      Enum.any?(gallery.albums) ->
-        "lg:pt-40 pt-32"
-
-      true ->
-        "pt-40"
-    end
-  end
 end

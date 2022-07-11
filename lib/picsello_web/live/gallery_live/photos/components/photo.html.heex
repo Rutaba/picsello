@@ -39,8 +39,8 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                         </div>
                     </button>
                 <% else %>
-                    <button class="likeBtn">
-                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
+                    <button class={classes("likeBtn", %{"hidden" => !@photo.client_liked})}>
+                        <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
                     </button>
                 <% end %>
 

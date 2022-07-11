@@ -6,7 +6,7 @@
     </div>
     <div class={classes("lg:block  w-full h-full lg:bg-gray-100 lg:pl-96", %{"hidden" => @is_mobile})}>
       <div id="page-scroll" phx-hook="PageScroll" class="lg:fixed absolute top-0 w-screen lg:w-auto lg:right-0 z-10 lg:pl-10 lg:pr-10 lg:bg-gray-100 pt-14 bg-base-200 lg:left-96">
-        <div class="flex flex-col lg:flex-row">          
+        <div class="flex flex-col">          
           <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
             <.mobile_banner albums={@album} title="Photos" class="items-center">
               <%= if Enum.any?(@gallery.albums) do %>
@@ -19,9 +19,8 @@
               <% end %>               
             </.mobile_banner> 
           </div>
-          <%= if @album do %>
-            <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= @album.name %></span>
-          <% end %>                     
+          <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
+
           <div class="lg:flex hidden items-center font-sans lg:justify-start">
             <%= if Enum.any?(@gallery.albums) do %>
               <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
@@ -30,27 +29,35 @@
               </.crumbs>
             <% end %>
           </div>
-          <div class="flex lg:ml-auto ml-10 lg:my-0 my-4 shrink-0">
+
+          <div class="flex lg:ml-0 ml-10 shrink-0">
+            <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
             <%= if @album do %>
-              <.icon_button {testid("edit-album-settings")} class="text-sm lg:ml-5 bg-white shadow-lg" title="Album settings" phx-click="album_settings_popup" color="blue-planning-300" icon="gear">
-                Album settings
-              </.icon_button>              
+              <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
+                  <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
+              </button>
               <%= if Enum.any?(@photos) do %>
-                <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 bg-white shadow-lg" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:mt-0 mt-2" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
                   Edit thumbnail
                 </.icon_button>
               <% end %>
-              <.add_album_button class="lg:hidden ml-2.5"/>
             <% end %>
-            <%= if @gallery.albums == [] do %>
-              <.add_album_button class="lg:ml-2.5 lg:py-1 py-1.5"/>
-            <% end %>            
+          </div>
+          <div class="flex lg:ml-0 ml-10 mt-2 shrink-0">                        
             <div class="lg:flex hidden">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
-            </div>            
+            </div>  
+            <%= if @album && @album.is_proofing do %>
+              <.icon_button class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
+                Send proofs to client
+              </.icon_button>
+            <% end %>
+            <%= unless @album do %>
+              <.add_album_button class="lg:ml-2.5 lg:py-2 py-1.5"/>
+            <% end %>          
           </div>
         </div>
-        <span class="hidden lg:flex items-center text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Photos") %></span>
+        
         <div class={"#{@photos_error_count == 0 && 'hidden'} flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400"}>
           <div class="flex justify-center pl-5">
             <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
@@ -61,8 +68,10 @@
             to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
           </div>
         </div>
+
         <%= if Enum.any?(@photos) || @favorites_filter do %>
-          <div class="lg:pt-8 grid lg:grid-cols-2">
+
+          <div class="pt-4 grid lg:grid-cols-2">
             <div class="flex flex-col text-sm justify-start md:flex-row">
               <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">
                 <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
@@ -84,6 +93,7 @@
                   </ul>
                 </div>
               </div>
+
               <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
                 <.actions id="actions" update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                   <%= if(is_nil(@album)) do %>
@@ -113,15 +123,20 @@
               </.actions>
               </div>
             </div>
+
             <div class="flex items-start min-w-0 flex-row">
               <%= if Enum.any?(@selected_photos) do %>
                 <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mx-0 mx-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
                   <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
                 </div>
               <% end %>
-              <label id="toggle_favorites" class="flex items-center lg:order-2 order-1 lg:mx-0 mx-10 lg:mb-0 mb-4 lg:ml-auto cursor-pointer">
-                <div class="font-sans text-sm">Show favorites only
-                </div>
+
+              <label id="toggle_favorites" class={classes("flex items-center lg:order-2 order-1 lg:mx-0 mx-10 lg:mb-0 mb-4 lg:ml-auto cursor-pointer", %{"pointer-events-none opacity-50" => @album && @album.is_proofing})}>
+                <%= if @album && @album.is_proofing do %>
+                  <div class="font-sans text-sm">Show client selection only</div>
+                <% else %>
+                  <div class="font-sans text-sm">Show favorites only</div>
+                <% end %>                
                 <div class="relative ml-3">
                   <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
                   <%= if @favorites_filter do %>
@@ -140,7 +155,7 @@
       <div class= "lg:pt-16 pt-60 pb-10 pl-10 pr-8">
         <%= case @photos == [] do %>
           <% true when not @favorites_filter -> %>
-            <div class="relative justify-between mt-20 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
+            <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
                 <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
             </div>
@@ -152,7 +167,7 @@
                 Oops, there's no liked photo!
             </div>
           <% false -> %>
-            <div class={"px-0 lg:pb-16 pb-20 mx-0 gallery__container #{grid_padding(@photos_error_count, @album, @gallery)}"} id="gallery">
+            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
               <div
                 phx-hook="MasonryGrid"
                 phx-update={@update_mode}
@@ -168,6 +183,21 @@
                 data-has-more-photos={ "#{@has_more_photos}" }
                 data-photo-width="300">
                 <%= for photo <- @photos do%>
+                  <%= if @album && @album.is_proofing do %>
+                  <%= live_component Photo,
+                      id: photo.id,
+                      photo: photo,
+                      album: @album,
+                      photo_width: 300,
+                      is_likable: false,
+                      is_removable: false,
+                      is_viewable: false,
+                      is_meatball: false,
+                      is_gallery_category_page: false,
+                      component: false,
+                      client_link_hash: @gallery.client_link_hash
+                  %>
+                  <% else %>
                   <%= live_component Photo,
                       id: photo.id,
                       photo: photo,
@@ -181,6 +211,7 @@
                       component: false,
                       client_link_hash: @gallery.client_link_hash
                   %>
+                  <% end %>
                 <% end %>
               </div>
               <div class="hidden">
