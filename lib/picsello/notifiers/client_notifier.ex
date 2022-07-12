@@ -131,13 +131,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
   defp body_html(%{body_html: body_html}), do: body_html
 
-  defp email_signature(organization) do
-    Phoenix.View.render_to_string(PicselloWeb.EmailSignatureView, "show.html",
-      organization: organization,
-      user: organization.user
-    )
-  end
-
   defp order_address(_, nil), do: nil
 
   defp order_address(name, %{state: state, city: city, zip: zip, addr1: addr1, addr2: addr2}),
