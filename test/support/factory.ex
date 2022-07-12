@@ -653,12 +653,12 @@ defmodule Picsello.Factory do
         code: "123456",
         trial_length: 90,
         active: false,
-        signup_title: "Let's get started!",
+        signup_title: "This is going to be a game changer!",
         signup_description:
-          "Grow your photography business with Picsello—3 months free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
+          "Start your 30-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
         onboarding_title: "Start your 90-day free trial",
         onboarding_description:
-          "After 90 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
+          "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever? Your 30-day free trial lets you explore and use all of our amazing features, all in one place- like at-your-fingertips business coaching and tips, our proprietary Smart Profit Calculator, beautiful galleries and products, our studio manager CRM for booking, invoicing and contracts.",
         success_title: "Your 90-day free trial has started!"
       }
       |> merge_attributes(attrs)

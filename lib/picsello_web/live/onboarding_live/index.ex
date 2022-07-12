@@ -267,13 +267,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <% end %>
 
     <hr class="mb-4" />
-    <p class="font-bold">Why do you need my credit card for a trial?</p>
-    <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
-    <hr class="my-4" />
-    <p class="font-bold">When will I be charged?</p>
-    <p><%= @subscription_plan_metadata.onboarding_description %></p>
-    <hr class="my-4" />
-    <p class="text-sm italic text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
+    <p class="mb-4"><%= @subscription_plan_metadata.onboarding_description %></p>
+    <p class="mb-4">To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.</p>
+    <p class="text-sm text-gray-400"><small>You can cancel at any time before the trial ends and you won’t be charged. Your subscription will automatically renew each month at the amazing Founder Rate and you can continue to keep growing your business with ease! Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
+
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
@@ -383,8 +380,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </a>
         </div>
 
-        <h1 class="text-3xl font-bold sm:text-4xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
-        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-xl"><%= @subtitle %></h2>
+        <h1 class="text-3xl font-bold mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
+        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-lg"><%= @subtitle %></h2>
         <%= render_block(@inner_block) %>
        </div>
     </div>
