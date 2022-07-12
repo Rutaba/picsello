@@ -268,7 +268,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
     <hr class="mb-4" />
     <p class="mb-4"><%= @subscription_plan_metadata.onboarding_description %></p>
-    <p class="mb-4">To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.</p>
     <p class="text-sm text-gray-400"><small>You can cancel at any time before the trial ends and you won’t be charged. Your subscription will automatically renew each month at the amazing Founder Rate and you can continue to keep growing your business with ease! Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
 
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
@@ -344,7 +343,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       color_class: "bg-blue-gallery-200",
       step_title: socket.assigns.subscription_plan_metadata.onboarding_title,
       subtitle:
-        "Explore and learn Picsello at your own pace. Pricing simplified. One plan, all features.",
+        "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever?",
       page_title: "Onboarding Step 6"
     )
   end

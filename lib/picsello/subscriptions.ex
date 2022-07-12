@@ -213,7 +213,7 @@ defmodule Picsello.Subscriptions do
     do: %Picsello.SubscriptionPlansMetadata{
       trial_length: 30,
       onboarding_description:
-        "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever? Your 30-day free trial lets you explore and use all of our amazing features, all in one place- like at-your-fingertips business coaching and tips, our proprietary Smart Profit Calculator, beautiful galleries and products, our studio manager CRM for booking, invoicing and contracts.",
+        "Your 30-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
       onboarding_title: "Start your 30-day free trial",
       signup_description:
         "Start your 30-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
