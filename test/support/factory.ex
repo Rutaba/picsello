@@ -655,10 +655,10 @@ defmodule Picsello.Factory do
         active: false,
         signup_title: "This is going to be a game changer!",
         signup_description:
-          "Start your 30-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
+          "Start your 90-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
         onboarding_title: "Start your 90-day free trial",
         onboarding_description:
-          "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever? Your 30-day free trial lets you explore and use all of our amazing features, all in one place- like at-your-fingertips business coaching and tips, our proprietary Smart Profit Calculator, beautiful galleries and products, our studio manager CRM for booking, invoicing and contracts.",
+          "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever? Your 90-day free trial lets you explore and use all of our amazing features, all in one place- like at-your-fingertips business coaching and tips, our proprietary Smart Profit Calculator, beautiful galleries and products, our studio manager CRM for booking, invoicing and contracts.",
         success_title: "Your 90-day free trial has started!"
       }
       |> merge_attributes(attrs)
