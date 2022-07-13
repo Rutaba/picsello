@@ -22,6 +22,8 @@ defmodule Picsello.MarketingTest do
       Tesla.Mock.mock(fn %{method: :post, body: body} ->
         send(pid, :post)
 
+        body_content = Jason.decode!(body)
+
         assert %{
                  "asm" => %{"group_id" => 123},
                  "from" => %{"email" => "noreply@picsello.com", "name" => "Photo 1"},
@@ -39,7 +41,14 @@ defmodule Picsello.MarketingTest do
                    }
                  ],
                  "template_id" => "marketing-xyz"
-               } = Jason.decode!(body)
+               } = body_content
+
+        assert "--JJPhoto 1" ==
+                 body_content
+                 |> Map.get("personalizations")
+                 |> List.first()
+                 |> get_in(["dynamic_template_data", "email_signature"])
+                 |> Floki.text(deep: true)
 
         %Tesla.Env{
           status: 200,
