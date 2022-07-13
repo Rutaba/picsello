@@ -12,7 +12,8 @@ defmodule PicselloWeb.JobLive.Shared do
     Messages,
     Notifiers.ClientNotifier,
     Package,
-    PaymentSchedules
+    PaymentSchedules,
+    Orders
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -248,6 +249,8 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def section(assigns) do
+    assigns = assigns |> Enum.into(%{badge: 0})
+
     ~H"""
     <section class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
       <div class="flex bg-base-200 px-4 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={@id}>
@@ -255,6 +258,11 @@ defmodule PicselloWeb.JobLive.Shared do
           <.icon name={@icon} class="w-5 h-5" />
         </div>
         <h2 class="text-2xl font-bold ml-3"><%= @title %></h2>
+        <%= if @badge > 0 do %>
+          <div {testid("section-badge")} class="ml-4 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs bg-base-300 text-white">
+            <%= @badge %>
+          </div>
+        <% end %>
         <div class="ml-auto">
           <%= if Enum.member?(@collapsed_sections, @id) do %>
             <.icon name="down" class="w-5 h-5 stroke-current stroke-2" />
@@ -278,7 +286,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
     ~H"""
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
-      <div class={"w-3 flex-shrink-0 border-r bg-#{@color}"} />
+      <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
         <h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
         <%= render_slot(@inner_block) %>
@@ -601,8 +609,7 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Repo.get!(job_id)
 
     if job.job_status.is_lead do
-      socket
-      |> do_assign_job(Map.put(job, :gallery, Galleries.get_gallery_by_job_id(job_id)))
+      socket |> do_assign_job(job)
     else
       push_redirect(socket, to: Routes.job_path(socket, :jobs, job_id))
     end
@@ -622,12 +629,16 @@ defmodule PicselloWeb.JobLive.Shared do
       ])
       |> Repo.get!(job_id)
 
-    do_assign_job(socket, Map.put(job, :gallery, Galleries.get_gallery_by_job_id(job_id)))
+    socket |> do_assign_job(job)
   end
 
   defp do_assign_job(socket, job) do
+    gallery = Galleries.get_gallery_by_job_id(job.id)
+    job = Map.put(job, :gallery, gallery)
+
     socket
     |> assign(
+      orders_count: Orders.placed_orders_count(gallery),
       job: job,
       page_title: job |> Job.name(),
       package: job.package
