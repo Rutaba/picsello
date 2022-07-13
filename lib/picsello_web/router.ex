@@ -139,7 +139,10 @@ defmodule PicselloWeb.Router do
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job
       live "/jobs/:id/transactions", JobLive.Transaction.Index, :transactions, as: :transaction
-      live "/jobs/:id/transactions/:order_number", JobLive.Transaction.OrderDetail, :transactions, as: :order_detail
+
+      live "/jobs/:id/transactions/:order_number", JobLive.Transaction.OrderDetail, :transactions,
+        as: :order_detail
+
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot

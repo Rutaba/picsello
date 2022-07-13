@@ -4,6 +4,7 @@ defmodule Picsello.Galleries do
   """
 
   import Ecto.Query, warn: false
+  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
   alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums}
   alias Picsello.Workers.CleanStore
@@ -288,8 +289,12 @@ defmodule Picsello.Galleries do
     )
     |> Repo.transaction()
     |> then(fn
-      {:ok, %{photos: photos}} -> {:ok, photos}
-      {:error, reason} -> reason
+      {:ok, %{photos: photos}} ->
+        prepare_gallery(get_gallery!(photo.gallery_id))
+        {:ok, photos}
+
+      {:error, reason} ->
+        reason
     end)
   end
 

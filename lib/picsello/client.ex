@@ -43,7 +43,7 @@ defmodule Picsello.Client do
     |> validate_required([:email])
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
-    |> validate_required_name_and_phone()
+    |> validate_required_name()
   end
 
   def assign_stripe_customer_changeset(%__MODULE__{} = client, "" <> stripe_customer_id),
@@ -63,11 +63,11 @@ defmodule Picsello.Client do
     end
   end
 
-  def validate_required_name_and_phone(changeset) do
+  def validate_required_name(changeset) do
     has_jobs = get_field(changeset, :id) |> Job.by_client_id() |> Repo.exists?()
 
     if has_jobs do
-      changeset |> validate_required([:name, :phone])
+      changeset |> validate_required([:name])
     else
       changeset
     end

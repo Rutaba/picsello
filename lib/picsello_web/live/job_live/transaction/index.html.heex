@@ -1,15 +1,15 @@
 <header>
   <div class="px-6 pt-6 pb-2 center-container">
     <div class="flex items-center">
-      <.live_link to={Routes.job_path(@socket, :jobs, @job_id)} class="rounded-full bg-base-200 flex items-center lg:hidden justify-center p-2.5 mt-2 mr-4">
+      <.live_link to={Routes.job_path(@socket, :jobs, @job.id)} class="rounded-full bg-base-200 flex items-center lg:hidden justify-center p-2.5 mt-2 mr-4">
         <.icon name="back" class="w-4 h-4 stroke-2"/>
       </.live_link>
       <.crumbs class="md:text-xs text-xl text-base-250">
         <:crumb to={Routes.job_path(@socket, :jobs)}>
           <%= action_name(:jobs, :plural) %>
         </:crumb>
-        <:crumb to={Routes.job_path(@socket, :jobs, @job_id)}>
-          <%= Job.name @gallery.job %>
+        <:crumb to={Routes.job_path(@socket, :jobs, @job.id)}>
+          <%= Job.name @job %>
         </:crumb>
         <:crumb> <%= action_name(@live_action, :plural) %> </:crumb>
       </.crumbs>
@@ -18,10 +18,10 @@
     <div class="flex flex-col justify-between md:flex-row">
       <h1 class="flex items-center justify-between mt-4 lg:text-4xl text-2xl font-bold md:justify-start">
         <div class="flex items-center font-bold">
-          <.live_link to={Routes.job_path(@socket, :jobs, @job_id)} class="rounded-full bg-base-200 lg:flex hidden items-center justify-center p-2.5 mt-2 mr-4">
+          <.live_link to={Routes.job_path(@socket, :jobs, @job.id)} class="rounded-full bg-base-200 lg:flex hidden items-center justify-center p-2.5 mt-2 mr-4">
             <.icon name="back" class="w-4 h-4 stroke-2"/>
           </.live_link>
-          <span>Transactions:<span class="font-normal pl-4"><%= Job.name @gallery.job %></span></span>
+          <span>Transactions:<span class="font-normal pl-4"><%= Job.name @job %></span></span>
         </div>
       </h1>
       <button phx-click="open-stripe" class="hidden md:block px-8 btn-primary">Go to Stripe</button>
@@ -32,23 +32,15 @@
 <div class="px-6 py-2 center-container">
   <hr class="border-base-200 my-6"/>
   <div class="px-6 justify-between font-bold my-5 md:grid md:grid-cols-5 hidden">
-    <div class="flex grid-cols">
-    Type
-    </div>
-    <div class="flex grid-cols">
-    Amount
-    </div>
-    <div class="flex grid-cols">
-    Date
-    </div>
-    <div class="flex grid-cols">
-    Status
-    </div>
+    <div class="flex grid-cols">Type</div>
+    <div class="flex grid-cols">Amount</div>
+    <div class="flex grid-cols">Date</div>
+    <div class="flex grid-cols">Status</div>
   </div>
 
   <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden"/>
   <%= for order <- @gallery.orders do %>
-    <div class="px-6 md:py-0 py-6 md:mt-0 mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">      
+    <div {testid("orders")} class="px-6 md:py-0 py-6 md:mt-0 mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">      
       <div class="mb-2">
         <span class="md:hidden grid-row mt-5 px-2 text-blue-planning-300 bg-blue-planning-100 rounded-lg"><%= order_status(order) %></span>
       </div>

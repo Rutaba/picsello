@@ -216,9 +216,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp item_id(item), do: item.editor_id
 
   defdelegate cart_count(order), to: Cart, as: :item_count
-  defdelegate item_image_url(item), to: Cart
   defdelegate lines_by_product(order), to: Cart
-  defdelegate product_name(product), to: Cart
   defdelegate product_quantity(product), to: Cart
   defdelegate summary(assigns), to: __MODULE__.Summary
 

@@ -61,6 +61,16 @@ defmodule Picsello.Orders do
 
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
 
+  def placed_orders_count(nil), do: 0
+
+  def placed_orders_count(gallery),
+    do:
+      from(o in Order,
+        select: count(o.id),
+        where: o.gallery_id == ^gallery.id and not is_nil(o.placed_at)
+      )
+      |> Repo.one()
+
   def get!(gallery, order_number) do
     watermarked_query = Picsello.Photos.watermarked_query()
 

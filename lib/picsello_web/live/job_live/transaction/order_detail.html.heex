@@ -1,123 +1,56 @@
 <header>
   <div class="px-6 pt-6 pb-2 center-container">
-    <div class="flex flex-col justify-between md:flex-row">
+    <div class="flex justify-between">
       <h1 class="flex items-center justify-between mt-4 text-4xl font-bold md:justify-start">
         <div class="flex items-center font-bold">
-          <.live_link to={Routes.transaction_path(@socket, :transactions, @job_id)} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
+          <.live_link to={Routes.transaction_path(@socket, :transactions, @job.id)} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
             <.icon name="back" class="w-4 h-4 stroke-2"/>
           </.live_link>
-          Gallery order:<p class="font-normal pl-4"><%= Job.name @gallery.job %></p>
+          Gallery Order:<p class="font-normal md:pl-4 pl-2"><%= Job.name @job %></p>
         </div>
       </h1>
-   
     </div>
   </div>
 </header>
 
-<div class="md:px-6 py-2 center-container">
-  <div class="justify-between border border-base-200 rounded-lg my-5 p-6 grid md:grid-cols-2">
-    <div class="grid-cols">
-        <div id="title" class="grid grid-row font-bold text-2xl">
-          Your client's order has been shipped to:
-        </div>
-        <div id="description" class="gird grid-row text-xl mt-4">
-          Harry potter <br> Cupboard under the stairs <br> Dudley's Home
-        </div>
-        
-        <div id="view_gallery" class="gird grid-row text-blue-planning-300 underline text-lg mt-2">
-          View gallery
-        </div>
-    </div>
-
-    <div class="grid-cols">
-        <div id="title" class="grid grid-row font-bold text-2xl">
-          Transaction Summary
-        </div>
-        <div id="description" class="gird grid-row text-xl my-4">
-          Use your Stripe dashboard to handle most finanical needs (taxes, refunds, payouts, etc.) You can always <span class="text-blue-planning-300 underline">contact us</span> if you need help!
-        </div>        
-        <div id="view_gallery" class="flex gird grid-row justify-between bg-base-200 text-lg my-2 py-2 px-4">
-          <div class="flex">
-          Total:
-          </div>
-          <div class="flex font-bold">
-          $2000.80
-          </div>
-        </div>
-        <button phx-click="open-stripe" class="gird grid-row mt-4 md:block px-8 btn-primary">Go to Stripe</button>
-    </div>
-  </div>
-
-
-  <div class="p-6 mt-10 border border-base-200 rounded-lg">
-
-    <div class="mt-0 mb-4 ml-0 md:ml-5 md:mt-2">
-      <h4 class="text-lg font-bold md:text-2xl">Order details</h4>
-
-      <p class="pt-3 md:text-lg md:pt-5">Order number: <span class="font-medium font-bold"><%= @order.number %></span></p>
-    </div>
-
-    <hr class="hidden md:block mt-7 border-t-base-200" />
-
-    <div class="divide-y divide-base-200">
-
-      <%= for item <- @order.products do %>
-        <div class="relative py-5 md:py-7 md:first:border-t md:border-base-200">
-          <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
-            <img src={item_image_url(item)} class="h-24 mx-auto md:h-40"/>
-
-            <div class="flex flex-col px-4 md:px-8 md:pt-4">
-              <span class="text-sm md:text-base md:font-medium"> <%= product_name(item) %></span>
-              <span class="pt-2 text-xs md:text-sm md:py-5">Quantity: <%= quantity(item) %></span>
-            </div>
-            <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= price_display(item) %></span>
-          </div>
-
-          <%= case tracking(@order, item) do %>
-          <% nil -> %>
-            <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
-              <.icon name="tracking-info" class="mr-2 w-7 h-7 md:mr-4"/>
-
-              <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
-            </div>
-
-          <% tracking -> %>
-            <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
-              <.icon name="order-shipped" class="mr-2 w-7 h-7 md:mr-4"/>
-
-              <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
-                <.tracking_link info={tracking} />
-              </p>
-            </div>
+<div class="px-6 py-2 center-container">
+  <div class={classes("justify-between border border-base-200 rounded-lg my-5 p-6", %{"grid md:grid-cols-2" => !is_nil(@shipping_address)})}>
+    <div class={classes("grid-cols", %{"hidden" => is_nil(@shipping_address)})}>
+      <div id="title" class="grid grid-row font-bold text-2xl">
+        Your client's order has been shipped to:
+      </div>
+      <div id="description" class="gird grid-row text-xl mt-4">
+        <%= @shipping_name %> 
+        <%= if @shipping_address do %> 
+          <br> 
+          <%= @shipping_address.addr1 %> 
+          <br> 
+          <%= case @shipping_address.addr2 do %>
+            <% nil -> %>
+            <% addr2 -> %> <%= addr2 %> <br>
           <% end %>
-        </div>
-      <% end %>
+          <%= "#{@shipping_address.city}, #{@shipping_address.state} #{@shipping_address.zip}" %>
+        <% end %>
+      </div>
+      
+      <div id="view_gallery" phx-click="view_gallery" class="gird grid-row cursor-pointer text-blue-planning-300 underline text-lg mt-2">
+        View gallery
+      </div>
+    </div>
+    
+    <hr class={classes("md:hidden block border-base-200 my-6", %{"hidden" => is_nil(@shipping_address)})}/>
 
-      <%= for digital <- @order.digitals do %>
-        <div class="flex items-center justify-between py-7 md:py-10 md:px-11">
-          <div class="flex items-center">
-            <img class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] object-contain mr-4 md:mr-14" src={item_image_url(digital)}/>
-
-            <span>Digital download</span>
-          </div>
-
-          <div class="font-bold"><%= price_display(digital) %></div>
-        </div>
-      <% end %>
-
-      <%= if @order.bundle_price do %>
-        <div class="flex items-center justify-between py-7 md:py-10 md:px-11">
-          <div class="flex items-center">
-            <div class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] mr-4 md:mr-14" >
-            <.bundle_image url={item_image_url({:bundle, @gallery})} />
-            </div>
-
-            <span>All digital downloads</span>
-          </div>
-
-          <div class="font-bold"><%= @order.bundle_price %></div>
-        </div>
-      <% end %>
+    <div class="grid-cols">
+      <div id="title" class="grid grid-row font-bold text-2xl">
+        Transaction Summary
+      </div>
+      <div id="description" class="gird grid-row text-xl my-4">
+        Use your Stripe dashboard to handle most finanical needs (taxes, refunds, payouts, etc.) You can always <a href="#" class="text-blue-planning-300 underline" {help_scout_output(@current_user, :help_scout_id)}>contact us</a> if you need help!
+      </div>        
+      <.summary order={@order} />
+      <button phx-click="open-stripe" class="gird grid-row md:block mt-4 md:mt-0 px-8 btn-primary">Go to Stripe</button>
     </div>
   </div>
+
+  <.order_details order={@order} gallery={@gallery} class="p-6 mt-10 border border-base-200 rounded-lg" />
 </div>

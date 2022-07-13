@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={"flex flex-col border border-base-225 #{@class}"}>
+    <div class={"client-transactions-summary flex flex-col font-sans rounded-lg md:border-0 border border-base-225 #{@class}"}>
       <button type="button" phx-click={toggle(@class)} class="block px-5 pt-4 text-base-250 lg:hidden">
         <div class="flex items-center pb-2">
           <.icon name="up" class="toggle w-5 h-2.5 stroke-2 stroke-current mr-2.5" />
@@ -34,16 +34,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         <hr class="mb-1 border-base-200">
       </button>
 
-      <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
+      <div class="grid grid-cols-[1fr,max-content] mt-6 px-5 md:px-0 gap-y-3 gap-x-0 md:mb-2 mb-5 detail">
         <dl class="text-lg contents">
           <%= for {label, value} <- @charges do %>
             <dt class="hidden toggle lg:block"><%= label %></dt>
 
-            <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
+            <dd class="self-center hidden toggle lg:block justify-self-end md:pr-4"><%= value %></dd>
           <% end %>
 
           <dt class="hidden text-2xl toggle lg:block">Subtotal</dt>
-          <dd class="self-center hidden text-2xl toggle lg:block justify-self-end"><%= @subtotal %></dd>
+          <dd class="self-center hidden text-2xl toggle lg:block justify-self-end md:pr-4"><%= @subtotal %></dd>
         </dl>
 
         <%= unless @discounts == [] do %>
@@ -53,17 +53,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
             <%= for {label, value} <- @discounts do %>
               <dt class="hidden toggle lg:block"><%= label %></dt>
 
-              <dd class="self-center hidden toggle lg:block justify-self-end">-<%= Money.neg(value) %></dd>
+              <dd class="self-center hidden toggle lg:block justify-self-end md:pr-4">-<%= Money.neg(value) %></dd>
             <% end %>
           </dl>
         <% end %>
 
-        <hr class="hidden mt-2 mb-3 col-span-2 border-base-200 toggle lg:block">
+        <hr class="hidden mt-2 col-span-2 border-base-200 toggle lg:block">
 
-        <dl class="contents">
-          <dt class="text-2xl font-extrabold">Total</dt>
+        <dl class="contents total">
+          <dt class="md:bg-base-200 md:my-2 md:py-2 md:px-4 text-2xl font-extrabold">Total</dt>
 
-          <dd class="self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
+          <dd class="md:bg-base-200 md:my-2 md:py-2 md:px-4 self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
         </dl>
       </div>
 

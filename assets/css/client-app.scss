@@ -25,6 +25,28 @@
 .client-app {
   @apply font-client;
 
+  .client-transactions-summary{
+    @apply font-client rounded-none md:border;
+    
+    dd{
+      @apply pr-0;
+    }
+    
+    .detail{
+      @apply gap-3 mb-5 md:px-5;
+    }
+  
+    hr:last-of-type{
+      @apply mb-3;
+    }
+  
+    .total{
+      dt, dd{
+        @apply md:bg-inherit md:my-2 md:py-2 md:px-0;
+      }  
+    }
+  }
+    
   .text-input,
   .select,
   .checkbox {
