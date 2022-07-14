@@ -1,6 +1,6 @@
 defmodule PicselloWeb.BookingProposalLive.Show do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_client"]
+  use PicselloWeb, live_view: [layout: "live_booking"]
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
 
