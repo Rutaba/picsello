@@ -20,7 +20,7 @@ defmodule PicselloWeb.UserRegisterLive do
       page_title: "Sign Up",
       meta_attrs: %{
         description:
-          "Let's get started! Get signed up and start growing your business. Register with Picsello and start managing, marketing, and monetizing your photography business today."
+          "This is going to be a game changer! Get signed up and start growing your business. Register with Picsello and start managing, marketing, and monetizing your photography business today."
       }
     })
     |> assign_changeset()
