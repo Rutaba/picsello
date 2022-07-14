@@ -532,7 +532,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def credits_footer(assigns) do
     ~H"""
     <%= unless @credits == [] do %>
-      <div class="fixed bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
+    <div class="relative">
+      <div class="absolute bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
         <div class="container flex items-center justify-between h-full mx-auto px-7">
           <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
             <%= for {label, value} <- @credits do %>
@@ -549,6 +550,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
           <.icon name="gallery-info" class="fill-current text-base-300 w-7 h-7" />
         </div>
       </div>
+    </div>
     <% end %>
     """
   end
