@@ -26,14 +26,14 @@
     </div>
 
     <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
-      <div class="flex flex-col px-4 py-2 mt-8 rounded-lg md:flex-row bg-red-sales-300/10 md:items-center">
+      <div class="flex flex-col px-4 py-2 mt-8 rounded-lg md:flex-row bg-red-sales-300/10 items-center text-center sm:text-left">
         <.icon name="warning-orange-dark" class="inline-block w-4 h-4 mr-2"/>
         It looks like you haven’t setup Stripe yet. You won’t be able to send out a proposal until that is setup.
-        <div class="flex-shrink-0 my-1 md:ml-auto">
+        <div class="flex-shrink-0 my-1 md:ml-auto sm:max-w-xs mt-4 sm:mt-0">
           <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_banner,
                 error_class: "text-center",
                 current_user: @current_user,
-                class: "btn-primary py-1 px-3 text-sm intro-stripe",
+                class: "btn-primary py-1 px-3 text-sm intro-stripe mx-auto block",
                 return_url: Routes.job_url(@socket, @live_action, @job.id),
                 stripe_status: @stripe_status %>
         </div>
