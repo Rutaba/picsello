@@ -18,13 +18,14 @@ defmodule Picsello.CreatePricingCalculationTest do
             name: "Mary Jane Photography",
             slug: "mary-jane-photos",
             profile: %{
-              job_types: ~w(portrait event),
-              website: "photos.example.com"
+              job_types: ~w(portrait event)
             }
           }
         )
         |> onboard!
     }
+
+    insert(:brand_link, user)
 
     user
   end

@@ -1,6 +1,6 @@
 defmodule Picsello.Onboardings do
   @moduledoc "context module for photographer onboarding"
-  alias Picsello.{Repo, Accounts.User, Organization, Profiles.Profile}
+  alias Picsello.{Repo, BrandLink, Accounts.User, Organization, Profiles.Profile}
   import Ecto.Changeset
   import Picsello.Accounts.User, only: [put_new_attr: 3, update_attr_in: 3]
   import Ecto.Query, only: [from: 2]
@@ -148,7 +148,18 @@ defmodule Picsello.Onboardings do
     organization
     |> Organization.registration_changeset(attrs)
     |> cast_embed(:profile, required: step > 2, with: &profile_onboarding_changeset(&1, &2, step))
+    |> brand_link_onboarding_changeset(step)
   end
+
+  defp brand_link_onboarding_changeset(organization, 4) do
+    organization
+    |> cast_assoc(:brand_links,
+      required: true,
+      with: &BrandLink.brand_link_changeset(&1, &2)
+    )
+  end
+
+  defp brand_link_onboarding_changeset(organization, _), do: organization
 
   defp profile_onboarding_changeset(profile, attrs, 2), do: Profile.changeset(profile, attrs)
 
@@ -163,7 +174,6 @@ defmodule Picsello.Onboardings do
     profile
     |> profile_onboarding_changeset(attrs, 3)
     |> validate_required([:color])
-    |> then(&if get_field(&1, :no_website), do: &1, else: validate_required(&1, [:website]))
   end
 
   defp onboarding_changeset(onboarding, attrs, 5) do

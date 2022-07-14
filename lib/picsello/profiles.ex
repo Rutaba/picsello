@@ -1,9 +1,11 @@
 defmodule Picsello.Profiles do
   @moduledoc "context module for public photographer profile"
+  import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
 
   alias Picsello.{
     Repo,
+    BrandLink,
     Organization,
     Job,
     JobType,
@@ -21,8 +23,8 @@ defmodule Picsello.Profiles do
     import Ecto.Changeset
 
     embedded_schema do
-      field(:url, :string)
-      field(:content_type, :string)
+      field :url, :string
+      field :content_type, :string
     end
 
     def changeset(profile_image, attrs) do
@@ -44,14 +46,12 @@ defmodule Picsello.Profiles do
 
     @primary_key false
     embedded_schema do
-      field :is_enabled, :boolean, default: true
+      field(:is_enabled, :boolean, default: true)
       field(:color, :string)
       field(:job_types, {:array, :string})
-      field(:no_website, :boolean, default: false)
-      field(:website, :string)
-      field(:website_login, :string)
       field(:description, :string)
       field(:job_types_description, :string)
+
       embeds_one(:logo, ProfileImage, on_replace: :update)
       embeds_one(:main_image, ProfileImage, on_replace: :update)
     end
@@ -62,21 +62,14 @@ defmodule Picsello.Profiles do
       profile
       |> cast(
         attrs,
-        ~w[no_website website website_login color job_types description job_types_description]a
-      )
-      |> then(
-        &if get_field(&1, :no_website),
-          do: put_change(&1, :website, nil),
-          else: &1
+        ~w[color job_types description job_types_description]a
       )
       |> cast_embed(:logo)
       |> cast_embed(:main_image)
       |> prepare_changes(&clean_job_types/1)
-      |> validate_change(:website, &for(e <- url_validation_errors(&2), do: {&1, e}))
-      |> validate_change(:website_login, &for(e <- url_validation_errors(&2), do: {&1, e}))
     end
 
-    defp url_validation_errors(url) do
+    def url_validation_errors(url) do
       case URI.parse(url) do
         %{scheme: nil} ->
           ("https://" <> url) |> url_validation_errors()
@@ -149,8 +142,20 @@ defmodule Picsello.Profiles do
     Contact.changeset(%Contact{}, %{})
   end
 
+  defp brand_link_profile_changeset(organization, %{"brand_links" => _}) do
+    organization
+    |> cast_assoc(:brand_links,
+      required: true,
+      with: &BrandLink.update_changeset(&1, &2)
+    )
+  end
+
+  defp brand_link_profile_changeset(organization, _), do: organization
+
   def edit_organization_profile_changeset(%Organization{} = organization, attrs) do
-    Organization.edit_profile_changeset(organization, attrs)
+    organization
+    |> Organization.edit_profile_changeset(attrs)
+    |> brand_link_profile_changeset(attrs)
   end
 
   def update_organization_profile(%Organization{} = organization, attrs) do
@@ -228,10 +233,14 @@ defmodule Picsello.Profiles do
       preload: [:user]
     )
     |> Repo.one!()
+    |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
   end
 
   def find_organization_by(user: %User{} = user) do
-    user |> Repo.preload(organization: :user) |> Map.get(:organization)
+    user
+    |> Repo.preload(organization: :user)
+    |> Map.get(:organization)
+    |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
   end
 
   def enabled?(%Organization{profile: profile}), do: Profile.enabled?(profile)

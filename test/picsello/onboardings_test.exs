@@ -1,7 +1,7 @@
 defmodule Picsello.OnboardingsTest do
   use Picsello.DataCase, async: true
 
-  alias Picsello.{Onboardings, Accounts.User}
+  alias Picsello.{Onboardings, BrandLink}
   alias Ecto.Changeset
 
   describe "changeset" do
@@ -74,7 +74,6 @@ defmodule Picsello.OnboardingsTest do
                organization: %{
                  name: [:required],
                  profile: %{
-                   website: [:required],
                    job_types: [:required],
                    color: [:required]
                  }
@@ -103,7 +102,6 @@ defmodule Picsello.OnboardingsTest do
                organization: %{
                  name: [:required],
                  profile: %{
-                   website: [:required],
                    job_types: [:required],
                    color: [:required]
                  }
@@ -129,10 +127,10 @@ defmodule Picsello.OnboardingsTest do
                    "https://bad!.hostname"
                  ],
                  do:
-                   %User{}
-                   |> Onboardings.changeset(%{organization: %{profile: %{website: url}}})
+                   %BrandLink{}
+                   |> BrandLink.brand_link_changeset(%{link: url})
                    |> errors_on()
-                   |> get_in([:organization, :profile, :website])
+                   |> get_in([:link])
                )
     end
   end

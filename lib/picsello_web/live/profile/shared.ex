@@ -60,19 +60,24 @@ defmodule PicselloWeb.Live.Profile.Shared do
   end
 
   def assign_organization(socket, organization) do
-    %{profile: profile, user: user} = organization
+    %{profile: profile, user: user, brand_links: brand_links} = organization
 
     assign(socket,
       organization: organization,
       color: profile.color,
       description: profile.description,
       job_types_description: profile.job_types_description,
-      website: profile.website,
+      website: get_website_link(brand_links),
       photographer: user,
       job_types: profile.job_types,
       url: Profiles.public_url(organization)
     )
   end
+
+  defp get_website_link([]), do: nil
+
+  defp get_website_link(brand_links),
+    do: Enum.find(brand_links, &(&1.link_id == "website")) |> Map.get(:link)
 
   def photographer_logo(assigns) do
     ~H"""

@@ -14,6 +14,8 @@ defmodule Picsello.UserSettingsTest do
       )
       |> onboard!
 
+    insert(:brand_link, user: user)
+
     [
       user: user
     ]
@@ -33,7 +35,7 @@ defmodule Picsello.UserSettingsTest do
     |> within_modal(&click(&1, button("Yes, change name")))
     |> assert_flash(:success, text: "Business name changed successfully")
 
-    organization = user |> Repo.preload(:organization, force: true) |> Map.get(:organization)
+    organization = user |> Repo.reload() |> Repo.preload(:organization) |> Map.get(:organization)
 
     assert %{
              name: "MJ Photography",
