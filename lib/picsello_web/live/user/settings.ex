@@ -6,6 +6,8 @@ defmodule PicselloWeb.Live.User.Settings do
     Accounts,
     Accounts.User,
     Organization,
+    Onboardings,
+    Onboardings.Onboarding,
     Repo,
     Subscription,
     Subscriptions
@@ -20,6 +22,7 @@ defmodule PicselloWeb.Live.User.Settings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
+    # IO.inspect user
     socket
     |> assign(
       case user.sign_up_auth_provider do
@@ -34,6 +37,7 @@ defmodule PicselloWeb.Live.User.Settings do
         sign_out: false,
         page_title: "Settings",
         organization_name_changeset: organization_name_changeset(user),
+        phone_changeset: phone_changeset(user),
         time_zone_changeset: time_zone_changeset(user)
       )
     )
@@ -51,6 +55,13 @@ defmodule PicselloWeb.Live.User.Settings do
     user
     |> Ecto.Changeset.cast(params, [:password])
     |> User.validate_password([])
+  end
+
+  defp phone_changeset(%{onboarding: onboarding}, params \\ %{}) do
+    # IO.inspect(onboarding)
+    # IO.inspect(params)
+    onboarding
+    |> Onboarding.phone_changeset(params)
   end
 
   defp organization_name_changeset(user, params \\ %{}) do
@@ -127,6 +138,22 @@ defmodule PicselloWeb.Live.User.Settings do
       |> Map.put(:action, :validate)
 
     socket |> assign(:time_zone_changeset, changeset) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_phone",
+          "onboarding" => phone_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset =
+      phone_changeset(user, phone_params)
+      |> Map.put(:action, :validate)
+
+    socket |> assign(:phone_changeset, changeset) |> noreply()
   end
 
   @impl true
@@ -216,6 +243,28 @@ defmodule PicselloWeb.Live.User.Settings do
 
       {:error, changeset} ->
         socket |> assign(time_zone_changeset: changeset) |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_phone",
+          "onboarding" => phone_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+        changeset =
+          phone_changeset(user, phone_params)
+          |> Onboarding.validate_current_phone_number(phone_params |> Map.get("current_phone_number"))
+          |> Map.put(:action, :validate)
+
+    if changeset.valid? do
+      socket
+      |> save_phone(user, Map.put(phone_params, "phone", Map.get(phone_params, "new_phone_number")))
+    else
+      socket |> assign(phone_changeset: changeset) |> noreply()
     end
   end
 
@@ -356,6 +405,21 @@ defmodule PicselloWeb.Live.User.Settings do
 
       true ->
         nil
+    end
+  end
+
+  defp save_phone(socket, user, phone_params) do
+    case Onboardings.save_phone(user, phone_params) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Phone number updated successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        IO.inspect("changeset")
+        IO.inspect(changeset)
+        IO.inspect("changeset")
+        socket |> assign(phone_changeset: changeset) |> noreply()
     end
   end
 end

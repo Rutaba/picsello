@@ -35,6 +35,8 @@ defmodule Picsello.Onboardings do
     @primary_key false
     embedded_schema do
       field(:phone, :string)
+      field(:current_phone_number, :string, virtual: true)
+      field(:new_phone_number, :string, virtual: true)
       field(:photographer_years, :integer)
 
       field(:switching_from_softwares, {:array, Ecto.Enum},
@@ -59,6 +61,24 @@ defmodule Picsello.Onboardings do
       |> validate_required([:state, :photographer_years, :schedule])
       |> validate_change(:phone, &valid_phone/2)
     end
+
+    def phone_changeset(%__MODULE__{} = onboarding, attrs) do
+      onboarding
+      |> cast(attrs, [:phone, :current_phone_number, :new_phone_number])
+      |> validate_required([:current_phone_number, :new_phone_number])
+      |> validate_change(:new_phone_number, &valid_phone/2)
+    end
+
+  @doc """
+  Validates the current phone number otherwise adds an error to the changeset.
+  """
+  def validate_current_phone_number(changeset, current_phone_number, field \\ :current_phone_number) do
+    if changeset.data.phone == current_phone_number do
+      changeset
+    else
+      add_error(changeset, field, "is not valid")
+    end
+  end
 
     def completed?(%__MODULE__{completed_at: nil}), do: false
     def completed?(%__MODULE__{}), do: true
@@ -131,6 +151,13 @@ defmodule Picsello.Onboardings do
         ])
       end
     )
+    |> Repo.update!()
+  end
+
+  def save_phone(current_user, attr) do
+    current_user
+    |> cast(%{onboarding: attr}, [])
+    |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
     |> Repo.update!()
   end
 
