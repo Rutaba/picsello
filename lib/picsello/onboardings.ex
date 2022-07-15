@@ -35,8 +35,6 @@ defmodule Picsello.Onboardings do
     @primary_key false
     embedded_schema do
       field(:phone, :string)
-      field(:current_phone_number, :string, virtual: true)
-      field(:new_phone_number, :string, virtual: true)
       field(:photographer_years, :integer)
 
       field(:switching_from_softwares, {:array, Ecto.Enum},
@@ -64,9 +62,9 @@ defmodule Picsello.Onboardings do
 
     def phone_changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
-      |> cast(attrs, [:phone, :current_phone_number, :new_phone_number])
-      |> validate_required([:current_phone_number, :new_phone_number])
-      |> validate_change(:new_phone_number, &valid_phone/2)
+      |> cast(attrs, [:phone])
+      |> validate_required([:phone])
+      |> validate_change(:phone, &valid_phone/2)
     end
 
   @doc """
@@ -154,11 +152,10 @@ defmodule Picsello.Onboardings do
     |> Repo.update!()
   end
 
-  def save_phone(current_user, attr) do
+  def user_onboarding_phone_changeset(current_user, attr) do
     current_user
     |> cast(%{onboarding: attr}, [])
     |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
-    |> Repo.update!()
   end
 
   def show_intro?(current_user, intro_id) do

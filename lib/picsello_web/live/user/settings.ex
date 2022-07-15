@@ -7,7 +7,6 @@ defmodule PicselloWeb.Live.User.Settings do
     Accounts.User,
     Organization,
     Onboardings,
-    Onboardings.Onboarding,
     Repo,
     Subscription,
     Subscriptions
@@ -57,11 +56,9 @@ defmodule PicselloWeb.Live.User.Settings do
     |> User.validate_password([])
   end
 
-  defp phone_changeset(%{onboarding: onboarding}, params \\ %{}) do
-    # IO.inspect(onboarding)
-    # IO.inspect(params)
-    onboarding
-    |> Onboarding.phone_changeset(params)
+  defp phone_changeset(user, params \\ %{}) do
+    user
+    |> Onboardings.user_onboarding_phone_changeset(params)
   end
 
   defp organization_name_changeset(user, params \\ %{}) do
@@ -145,7 +142,7 @@ defmodule PicselloWeb.Live.User.Settings do
         "validate",
         %{
           "action" => "update_phone",
-          "onboarding" => phone_params
+          "user" => phone_params
         },
         %{assigns: %{current_user: user}} = socket
       ) do
@@ -251,20 +248,22 @@ defmodule PicselloWeb.Live.User.Settings do
         "save",
         %{
           "action" => "update_phone",
-          "onboarding" => phone_params
+          "user" => phone_params
         },
         %{assigns: %{current_user: user}} = socket
       ) do
-        changeset =
-          phone_changeset(user, phone_params)
-          |> Onboarding.validate_current_phone_number(phone_params |> Map.get("current_phone_number"))
-          |> Map.put(:action, :validate)
+    case phone_changeset(user, phone_params) |> Repo.update() do
+      {:ok, updated_user} ->
+        socket
+        |> assign(current_user: updated_user)
+        |> put_flash(:success, "Phone number updated successfully")
+        |> noreply()
 
-    if changeset.valid? do
-      socket
-      |> save_phone(user, Map.put(phone_params, "phone", Map.get(phone_params, "new_phone_number")))
-    else
-      socket |> assign(phone_changeset: changeset) |> noreply()
+      {:error, changeset} ->
+        IO.inspect("changeset")
+        IO.inspect(changeset)
+        IO.inspect("changeset")
+        socket |> assign(phone_changeset: changeset) |> noreply()
     end
   end
 
@@ -405,21 +404,6 @@ defmodule PicselloWeb.Live.User.Settings do
 
       true ->
         nil
-    end
-  end
-
-  defp save_phone(socket, user, phone_params) do
-    case Onboardings.save_phone(user, phone_params) do
-      {:ok, _} ->
-        socket
-        |> put_flash(:success, "Phone number updated successfully")
-        |> noreply()
-
-      {:error, changeset} ->
-        IO.inspect("changeset")
-        IO.inspect(changeset)
-        IO.inspect("changeset")
-        socket |> assign(phone_changeset: changeset) |> noreply()
     end
   end
 end

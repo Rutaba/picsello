@@ -74,10 +74,11 @@
       <.card title="Change your phone number">
         <.form let={f} for={@phone_changeset} phx-change="validate" phx-submit="save" id="phone_form">
           <%= hidden_input f, :action, name: "action", value: "update_phone" %>
-
-          <%= labeled_input f, :new_phone_number, type: :telephone_input, placeholder: "Enter new phone number…", phx_hook: "Phone", phx_debounce: "500" %>
-          <%= labeled_input f, :current_phone_number, type: :telephone_input,placeholder: "Enter current phone number…", phx_hook: "Phone", phx_debounce: "500" %>
-
+          
+          <%= for o <- inputs_for(f, :onboarding) do %>
+            <%= labeled_input o, :phone, type: :telephone_input,placeholder: "Enter new phone number…", phx_hook: "Phone", phx_debounce: "500" %>
+          <% end %>
+          
           <div class="mt-5 text-right">
             <%= submit "Change number", class: "btn-primary mx-1", disabled: !@phone_changeset.valid?, phx_disable_with: "Changing number..." %>
           </div>
