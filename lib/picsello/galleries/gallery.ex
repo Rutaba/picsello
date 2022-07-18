@@ -12,7 +12,7 @@ defmodule Picsello.Galleries.Gallery do
 
   @session_opts [
     foreign_key: :resource_id,
-    where: [resource_type: :album],
+    where: [resource_type: :gallery],
     on_delete: :delete_all
   ]
 

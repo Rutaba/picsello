@@ -66,7 +66,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(button("Delete"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(css(placeholder_background_image(), count: 1))
+    |> assert_has(css(placeholder_background_image(), count: 2))
   end
 
   test "Albums, Action dropdown disabled when no photo selected", %{
@@ -102,14 +102,14 @@ defmodule Picsello.GalleryAlbumTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(css(placeholder_background_image(), count: 2))
+    |> assert_has(css(placeholder_background_image(), count: 3))
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}/")
     |> click(testid("edit-album-thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))
     |> assert_has(css("p", text: "Album thumbnail successfully updated"))
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(css(placeholder_background_image(), count: 1))
+    |> assert_has(css(placeholder_background_image(), count: 2))
   end
 
   def placeholder_background_image,
@@ -223,11 +223,11 @@ defmodule Picsello.GalleryAlbumTest do
 
   test "Albums, render proofing album", %{
     session: session,
-    proof_album: proof_album,
+    proofing_album: proofing_album,
     gallery: %{id: gallery_id}
   } do
     session
-    |> visit("/galleries/#{gallery_id}/albums/#{proof_album.id}")
+    |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
     |> assert_has(testid("edit-album-settings"))
     |> assert_has(testid("send-proofs-popup"))
     |> assert_has(css("#addPhoto"))
@@ -235,12 +235,11 @@ defmodule Picsello.GalleryAlbumTest do
 
   test "Albums, send proofs to client", %{
     session: session,
-    proof_album: proof_album,
+    proofing_album: proofing_album,
     gallery: %{id: gallery_id}
   } do
-
     session
-    |> visit("/galleries/#{gallery_id}/albums/#{proof_album.id}")
+    |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
     |> assert_has(css("button", count: 1, text: "Send proofs to client"))
     |> click(css("button", text: "Send proofs to client"))
     |> assert_has(css("button", text: "Send Email"))

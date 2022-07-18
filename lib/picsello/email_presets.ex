@@ -5,7 +5,8 @@ defmodule Picsello.EmailPresets do
   import Ecto.Query
   import Picsello.Repo.CustomMacros
 
-  alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Galleries.Gallery, Galleries.Album}
+  alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset}
+  alias Picsello.Galleries.{Gallery, Album}
 
   def for(%Gallery{}, state) do
     from(preset in gallery_presets(), where: preset.state == ^state)

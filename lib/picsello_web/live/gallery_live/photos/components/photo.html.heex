@@ -22,7 +22,7 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
             </.photo_wrapper>
             <% end %>
             <%= if !@is_gallery_category_page do %>
-                <%= if @is_likable do %>
+                <%= if @proofing_photo_icons && @is_likable do %>
                     <button
                         class="likeBtn"
                         phx-click={js_like_click(@id, @myself)}
@@ -44,13 +44,13 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                     </button>
                 <% end %>
 
-                <%= if @is_removable do %>
+                <%= if @proofing_photo_icons && @is_removable do %>
                     <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
                 <% end %>
-                <%= if @is_viewable do %>
+                <%= if @proofing_photo_icons && @is_viewable do %>
                     <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
                 <% end %>
-                <%= if @is_meatball do %>
+                <%= if @proofing_photo_icons && @is_meatball do %>
                     <div id={"meatball-photo-#{@id}"} data-offset-y="-100" data-offset-x="20" phx-hook="Select">
                         <button class="absolute right-3 top-2 z-10">
                             <.icon name="meatballs" class="text-gray-200 w-7 h-7 meatballs open-icon" />

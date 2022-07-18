@@ -41,6 +41,7 @@ defmodule PicselloWeb.LiveAuth do
     |> then(&authenticate_gallery(&1, %{"id" => &1.assigns.album.gallery_id}))
     |> authenticate_gallery_expiry()
     |> authenticate_album_client(session)
+    |> authenticate_gallery_for_photographer(session)
     |> maybe_redirect_to_client_login(params)
   end
 
@@ -134,7 +135,7 @@ defmodule PicselloWeb.LiveAuth do
   defp authenticate_gallery_client(socket, _), do: socket
 
   defp authenticate_album_client(
-         %{assigns: %{album: album}} = socket,
+         %{assigns: %{album: %{set_password: true} = album}} = socket,
          session
        ) do
     if Galleries.session_exists_with_token?(
@@ -147,6 +148,8 @@ defmodule PicselloWeb.LiveAuth do
       assign(socket, authenticated: false)
     end
   end
+
+  defp authenticate_album_client(socket, _session), do: assign(socket, authenticated: true)
 
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),

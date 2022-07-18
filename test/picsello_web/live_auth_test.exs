@@ -221,9 +221,9 @@ defmodule PicselloWeb.LiveAuthTest do
       {:ok, token} = Galleries.build_album_session_token(album, album.password)
 
       assert {:ok, _view, _html} =
-                conn
-                |> Plug.Conn.put_session("album_session_token", token)
-                |> live(show_path)
+               conn
+               |> Plug.Conn.put_session("album_session_token", token)
+               |> live(show_path)
     end
 
     test "/album/:hash not authenticated client or user", %{
@@ -253,9 +253,9 @@ defmodule PicselloWeb.LiveAuthTest do
       user: user
     } do
       assert {:ok, _view, _html} =
-                conn
-                |> log_in_user(onboard!(user))
-                |> live(show_path)
+               conn
+               |> log_in_user(onboard!(user))
+               |> live(show_path)
     end
 
     test "/album/:hash authenticated photographer, not your album", %{
@@ -269,9 +269,9 @@ defmodule PicselloWeb.LiveAuthTest do
         Routes.gallery_client_show_login_path(conn, :album_login, album.client_link_hash)
 
       assert {:error, {:live_redirect, %{flash: %{}, to: ^album_login_path}}} =
-                conn
-                |> log_in_user(onboard!(user))
-                |> live(show_path)
+               conn
+               |> log_in_user(onboard!(user))
+               |> live(show_path)
     end
 
     test "/album/:hash with no album is 404", %{conn: conn} do
