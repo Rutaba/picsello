@@ -3,11 +3,12 @@ defmodule Picsello.EmailPresets.EmailPreset do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @types ~w(job gallery)a
+  @types ~w(job gallery album)a
   @states_by_type %{
-    job:
-      ~w(post_shoot booking_proposal booking_proposal_sent balance_due job lead payment_confirmation_client)a,
-    gallery: ~w[gallery_send_link gallery_shipping_to_client gallery_shipping_to_photographer]a
+
+    job: ~w(post_shoot booking_proposal booking_proposal_sent balance_due job lead)a,
+    gallery: ~w[gallery_send_link gallery_shipping_to_client gallery_shipping_to_photographer]a,
+    album: ~w[album_send_link]a
   }
   @states @states_by_type |> Map.values() |> List.flatten()
 

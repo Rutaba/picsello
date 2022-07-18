@@ -224,7 +224,21 @@ defmodule PicselloWeb.Router do
 
       live "/cart", GalleryLive.ClientShow.Cart, :cart
       live "/cart/address", GalleryLive.ClientShow.Cart, :address
-      post "/login", GallerySessionController, :post
+      post "/gallery-login", GallerySessionController, :gallery_login
+      post "/album-login", GallerySessionController, :album_login
+    end
+  end
+
+  scope "/album", PicselloWeb do
+    pipe_through [:browser]
+
+    live_session :proofing_album_client, on_mount: {PicselloWeb.LiveAuth, :proofing_album_client} do
+      live "/:hash", GalleryLive.ClientIndex, :album
+    end
+
+    live_session :proofing_album_client_login,
+      on_mount: {PicselloWeb.LiveAuth, :proofing_album_client_login} do
+      live "/:hash/login", GalleryLive.ClientShow.Login, :album_login
     end
   end
 
@@ -239,7 +253,7 @@ defmodule PicselloWeb.Router do
     live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
       pipe_through [:browser]
 
-      live "/:hash/login", GalleryLive.ClientShow.Login, :login
+      live "/:hash/login", GalleryLive.ClientShow.Login, :gallery_login
     end
   end
 end

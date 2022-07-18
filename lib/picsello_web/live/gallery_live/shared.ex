@@ -315,12 +315,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
     _ -> :error
   end
 
-  def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset) do
+  def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset, shared_item)
+      when shared_item in ~w(gallery album) do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
       |> close_modal()
-      |> put_flash(:success, "Gallery shared!")
+      |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
       |> noreply()
     else
       _error ->

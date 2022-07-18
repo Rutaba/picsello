@@ -2,12 +2,18 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album}
+  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken}
   alias Picsello.{Job, Cart.Order}
 
   @status_options [
     values: ~w(draft active expired),
     default: "draft"
+  ]
+
+  @session_opts [
+    foreign_key: :resource_id,
+    where: [resource_type: :album],
+    on_delete: :delete_all
   ]
 
   schema "galleries" do
@@ -24,6 +30,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:gallery_products, GalleryProduct)
     has_many(:albums, Album)
     has_many(:orders, Order)
+    has_many(:session_tokens, SessionToken, @session_opts)
     has_one(:watermark, Watermark)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])

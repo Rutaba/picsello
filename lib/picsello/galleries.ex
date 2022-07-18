@@ -9,7 +9,7 @@ defmodule Picsello.Galleries do
   alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums}
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}
   import Repo.CustomMacros
 
   @doc """
@@ -425,7 +425,7 @@ defmodule Picsello.Galleries do
   end
 
   defp gallery_session_tokens_query(gallery) do
-    from(st in SessionToken, where: st.gallery_id == ^gallery.id)
+    from(st in SessionToken, where: st.resource_id == ^gallery.id and st.resource_type == :gallery)
   end
 
   @doc """
@@ -758,7 +758,8 @@ defmodule Picsello.Galleries do
   """
   def build_gallery_session_token(%Gallery{id: id, password: gallery_password}, password) do
     with true <- gallery_password == password,
-         {:ok, %{token: token}} <- %{gallery_id: id} |> SessionToken.changeset() |> Repo.insert() do
+         {:ok, %{token: token}} <-
+           insert_session_token(%{resource_id: id, resource_type: :gallery}) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -769,18 +770,34 @@ defmodule Picsello.Galleries do
     hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
   end
 
-  @doc """
-  Check if the client session token is suitable for the gallery.
-  """
-  def session_exists_with_token?(_gallery_id, nil), do: false
+  def build_album_session_token(%Album{id: id, password: album_password}, password) do
+    with true <- album_password == password,
+         {:ok, %{token: token}} <- insert_session_token(%{resource_id: id, resource_type: :album}) do
+      {:ok, token}
+    else
+      _ -> {:error, "cannot log in with that password"}
+    end
+  end
 
-  def session_exists_with_token?(gallery_id, token) do
+  def insert_session_token(attrs) do
+    attrs
+    |> SessionToken.changeset()
+    |> Repo.insert()
+  end
+
+  @doc """
+  Check if the client session token is suitable for the resource.
+  """
+  def session_exists_with_token?(_resource_id, nil, _resource_type), do: false
+
+  def session_exists_with_token?(resource_id, token, resource_type) do
     session_validity_in_days = SessionToken.session_validity_in_days()
 
     from(token in SessionToken,
       where:
-        token.gallery_id == ^gallery_id and token.token == ^token and
-          token.inserted_at > ago(^session_validity_in_days, "day")
+        token.resource_id == ^resource_id and token.token == ^token and
+          token.inserted_at > ago(^session_validity_in_days, "day") and
+          token.resource_type == ^resource_type
     )
     |> Repo.exists?()
   end
