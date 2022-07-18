@@ -426,6 +426,47 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_event("send_proofs_popup", _, %{assigns: assigns} = socket) do
+    %{gallery: gallery, album: album} = assigns
+
+    gallery.id
+    |> Galleries.get_album_photo_count(album.id)
+    |> then(&(&1 > 0))
+    |> case do
+      true ->
+        gallery = Repo.preload(gallery, job: :client)
+        album = Albums.set_album_hash(album)
+
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(album, :album_send_link) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery, album},
+              PicselloWeb.Helpers
+            )
+          end
+
+        socket
+        |> assign(:job, gallery.job)
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          modal_title: "Share proofing album",
+          subject: subject,
+          body_html: body_html,
+          presets: [],
+          enable_image: true,
+          enable_size: true,
+          composed_event: :message_composed_for_album
+        })
+        |> noreply()
+
+      false ->
+        socket
+        |> put_flash(:error, "Please add photos to the gallery before sharing")
+        |> noreply()
+    end
+  end
+
+  @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do
     socket
     |> close_modal()
@@ -647,7 +688,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset)
+    add_message_and_notify(socket, message_changeset, "gallery")
+  end
+
+  @impl true
+  def handle_info({:message_composed_for_album, message_changeset}, socket) do
+    add_message_and_notify(socket, message_changeset, "album")
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do

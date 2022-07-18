@@ -88,4 +88,18 @@ defmodule Picsello.Albums do
       update: [set: [thumbnail_photo_id: nil]]
     )
   end
+
+  def set_album_hash(%Album{client_link_hash: nil} = album) do
+    album
+    |> Album.update_changeset(%{client_link_hash: UUID.uuid4()})
+    |> Repo.update!()
+  end
+
+  def set_album_hash(%Album{} = album), do: album
+
+  def get_album_by_hash!(hash), do: Repo.get_by!(Album, client_link_hash: hash)
+
+  def album_password_change(attrs \\ %{}) do
+    Album.password_changeset(%Album{}, attrs)
+  end
 end

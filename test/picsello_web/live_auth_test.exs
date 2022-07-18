@@ -117,7 +117,7 @@ defmodule PicselloWeb.LiveAuthTest do
       show_path: show_path
     } do
       gallery_login_path =
-        Routes.gallery_client_show_login_path(conn, :login, gallery.client_link_hash)
+        Routes.gallery_client_show_login_path(conn, :gallery_login, gallery.client_link_hash)
 
       assert {:error, {:live_redirect, %{to: ^gallery_login_path}}} = live(conn, show_path)
     end
@@ -130,7 +130,7 @@ defmodule PicselloWeb.LiveAuthTest do
       user = insert(:user)
 
       gallery_login_path =
-        Routes.gallery_client_show_login_path(conn, :login, gallery.client_link_hash)
+        Routes.gallery_client_show_login_path(conn, :gallery_login, gallery.client_link_hash)
 
       assert {:error, {:live_redirect, %{flash: %{}, to: ^gallery_login_path}}} =
                conn
@@ -182,7 +182,8 @@ defmodule PicselloWeb.LiveAuthTest do
 
       assert Galleries.session_exists_with_token?(
                gallery.id,
-               get_session(conn, "gallery_session_token")
+               get_session(conn, "gallery_session_token"),
+               :gallery
              )
     end
 
@@ -195,7 +196,8 @@ defmodule PicselloWeb.LiveAuthTest do
 
       refute Galleries.session_exists_with_token?(
                gallery.id,
-               get_session(conn, "gallery_session_token")
+               get_session(conn, "gallery_session_token"),
+               :gallery
              )
     end
   end

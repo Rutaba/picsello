@@ -1,8 +1,8 @@
 defmodule Picsello.EmailPresets.GalleryResolver do
   @moduledoc "resolves gallery mustache variables"
 
-  defstruct [:gallery, :order, :helpers]
-  alias Picsello.{Galleries.Gallery, Cart.Order}
+  defstruct [:gallery, :order, :album, :helpers]
+  alias Picsello.{Galleries.Gallery, Galleries.Album, Cart.Order}
 
   def new({%Gallery{} = gallery}, helpers),
     do: %__MODULE__{
@@ -17,6 +17,13 @@ defmodule Picsello.EmailPresets.GalleryResolver do
       helpers: helpers
     }
 
+  def new({%Gallery{} = gallery, %Album{} = album}, helpers),
+    do: %__MODULE__{
+      gallery: preload_gallery(gallery),
+      album: album,
+      helpers: helpers
+    }
+
   defp preload_gallery(gallery),
     do:
       Picsello.Repo.preload(gallery,
@@ -26,6 +33,8 @@ defmodule Picsello.EmailPresets.GalleryResolver do
   defp gallery(%__MODULE__{gallery: gallery}), do: gallery
 
   defp order(%__MODULE__{order: order}), do: order
+
+  defp album(%__MODULE__{album: album}), do: album
 
   defp job(%__MODULE__{gallery: gallery}),
     do: gallery |> Picsello.Repo.preload(:job) |> Map.get(:job)
@@ -69,6 +78,16 @@ defmodule Picsello.EmailPresets.GalleryResolver do
         &with(
           %Order{delivery_info: %{name: "" <> name}} <- order(&1),
           do: name
+        ),
+      "album_link" =>
+        &with(
+          %Album{client_link_hash: "" <> client_link_hash} <- album(&1),
+          do: helpers(&1).album_url(client_link_hash)
+        ),
+      "album_password" =>
+        &with(
+          %Album{set_password: set_password, password: password} <- album(&1),
+          do: if(set_password, do: password)
         )
     }
 end

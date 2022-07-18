@@ -49,6 +49,19 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Your client {{order_full_name}}’s order has shipped!</p>
         <p>Cheers!</p>
         """
+      },
+      %{
+        type: "album",
+        state: "album_send_link",
+        position: 0,
+        name: "Share Proofing Album",
+        subject_template: "Your Proofing Album is Ready!",
+        body_template: """
+        <p>Hi {{client_first_name}},</p>
+        <p>Your proofs are ready to view! You can view your proofing album here: <a href="{{album_link}}">{{album_link}}</a></p>
+        {{#album_password}}<p>Your photos are password-protected, so you will need to use this password to view: <b>{{album_password}}</b></p>{{/album_password}}
+        <p>These photos have not been retouched. To select the photos you’d like to purchase to be fully edited, simply favorite the photo. When you’re done selecting your images, select "Send to Photographer." Then I’ll get these fully edited and sent  over to you.</p>
+        """
       }
     ]
     |> Enum.each(fn attrs ->
