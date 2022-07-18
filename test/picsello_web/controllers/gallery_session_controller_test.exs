@@ -8,7 +8,7 @@ defmodule PicselloWeb.GallerySessionControllerTest do
   describe "POST /gallery/:hash/login" do
     test "puts session token and redirects to gallery", %{conn: conn, gallery: gallery} do
       conn =
-        post(conn, "/gallery/#{gallery.client_link_hash}/login", %{
+        post(conn, "/gallery/#{gallery.client_link_hash}/gallery-login", %{
           "login" => %{"session_token" => "token"}
         })
 
