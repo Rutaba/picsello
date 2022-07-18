@@ -67,17 +67,6 @@ defmodule Picsello.Onboardings do
       |> validate_change(:phone, &valid_phone/2)
     end
 
-  @doc """
-  Validates the current phone number otherwise adds an error to the changeset.
-  """
-  def validate_current_phone_number(changeset, current_phone_number, field \\ :current_phone_number) do
-    if changeset.data.phone == current_phone_number do
-      changeset
-    else
-      add_error(changeset, field, "is not valid")
-    end
-  end
-
     def completed?(%__MODULE__{completed_at: nil}), do: false
     def completed?(%__MODULE__{}), do: true
     defdelegate valid_phone(field, value), to: Picsello.Client
@@ -154,7 +143,7 @@ defmodule Picsello.Onboardings do
 
   def user_onboarding_phone_changeset(current_user, attr) do
     current_user
-    |> cast(%{onboarding: attr}, [])
+    |> cast(attr, [])
     |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
   end
 

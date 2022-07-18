@@ -21,7 +21,6 @@ defmodule PicselloWeb.Live.User.Settings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
-    # IO.inspect user
     socket
     |> assign(
       case user.sign_up_auth_provider do
@@ -260,9 +259,6 @@ defmodule PicselloWeb.Live.User.Settings do
         |> noreply()
 
       {:error, changeset} ->
-        IO.inspect("changeset")
-        IO.inspect(changeset)
-        IO.inspect("changeset")
         socket |> assign(phone_changeset: changeset) |> noreply()
     end
   end

@@ -41,7 +41,7 @@ defmodule PicselloWeb.Live.User.SettingsTest do
 
       {:ok, _view, html} = live(conn, Routes.user_settings_path(conn, :edit))
 
-      assert ["update_name", "update_time_zone"] =
+      assert ["update_name", "update_time_zone", "update_phone"] =
                html
                |> Floki.parse_fragment!()
                |> Floki.attribute("input[name='action']", "value")

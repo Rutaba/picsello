@@ -76,10 +76,10 @@
           <%= hidden_input f, :action, name: "action", value: "update_phone" %>
           
           <%= for o <- inputs_for(f, :onboarding) do %>
-            <%= labeled_input o, :phone, type: :telephone_input,placeholder: "Enter new phone number…", phx_hook: "Phone", phx_debounce: "500" %>
+            <%= labeled_input o, :phone, type: :telephone_input, label: "Phone number", placeholder: "Enter new phone number…", phx_hook: "Phone", phx_debounce: "500" %>
           <% end %>
           
-          <div class="mt-5 text-right">
+          <div class="mt-5 md:mt-28 text-right">
             <%= submit "Change number", class: "btn-primary mx-1", disabled: !@phone_changeset.valid?, phx_disable_with: "Changing number..." %>
           </div>
         </.form>
