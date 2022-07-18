@@ -72,6 +72,15 @@ defmodule Picsello.WHCC.Product do
     end
   end
 
+  def selection_unit_price(%{attribute_categories: attribute_categories}, selections) do
+    for {category_id, _value} <- selections,
+        %{"_id" => ^category_id} = category <- attribute_categories,
+        reduce: ~M[0] do
+      total ->
+        Money.add(total, AttributeCategory.price(category, selections))
+    end
+  end
+
   def selection_details(
         %{attribute_categories: attribute_categories} = _product,
         %{} = selections

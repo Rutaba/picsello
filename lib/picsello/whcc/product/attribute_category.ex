@@ -1,13 +1,42 @@
 defmodule Picsello.WHCC.Product.AttributeCategory do
   @moduledoc "find the cheapest set of selections for a product's attribute categories"
 
+  import Money.Sigils
+
   @spec cheapest_selections(%{}, %{}) :: Picsello.WHCC.Product.SelectionSummary.t()
-  def cheapest_selections(%{"attributes" => attributes} = category, valid_selections) do
-    attributes
-    |> Enum.flat_map(&selections(&1, category, valid_selections))
-    |> Enum.min_by(&Map.get(&1, :price), fn -> %{selections: %{}, price: 0} end)
-    |> then(&Map.update!(&1, :price, fn price -> Money.new(round(price * 100)) end))
+  def cheapest_selections(attribute_category, valid_selections) do
+    attribute_category
+    |> selections(valid_selections)
+    |> Enum.min_by(&Map.get(&1, :price), fn -> %{selections: %{}, price: ~M[0]USD} end)
   end
+
+  def price(
+        %{"attributes" => attributes, "_id" => category_id} = category,
+        selections
+      ) do
+    attributes
+    |> Enum.find(&(Map.get(&1, "id") == Map.get(selections, category_id)))
+    |> attribute_price(category, selections)
+  end
+
+  defp attribute_price(
+         %{"pricingRefs" => pricing_refs},
+         %{"pricingRefsKey" => %{"keys" => keys, "separator" => separator}},
+         selections
+       ) do
+    key = keys |> Enum.map(&Map.get(selections, &1)) |> Enum.join(separator)
+
+    case Map.get(pricing_refs, key) do
+      nil -> ~M[0]USD
+      value -> to_price(value)
+    end
+  end
+
+  defp attribute_price(%{"pricing" => pricing}, _, _), do: to_price(pricing)
+  defp attribute_price(_, _, _), do: ~M[0]USD
+
+  def selections(%{"attributes" => attributes} = category, valid_selections),
+    do: Enum.flat_map(attributes, &selections(&1, category, valid_selections))
 
   defp selections(%{"pricing" => price, "id" => value}, %{"_id" => category}, _),
     do: [%{selections: %{category => value}, price: to_price(price)}]
@@ -40,5 +69,5 @@ defmodule Picsello.WHCC.Product.AttributeCategory do
 
   defp selections(_, _, _), do: []
 
-  defp to_price(%{"base" => %{"value" => cents}}), do: cents
+  defp to_price(%{"base" => %{"value" => dollars}}), do: Money.new(floor(dollars * 100), :USD)
 end
