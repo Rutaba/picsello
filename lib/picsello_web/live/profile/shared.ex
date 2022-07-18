@@ -90,9 +90,21 @@ defmodule PicselloWeb.Live.Profile.Shared do
 
   def profile_footer(assigns) do
     ~H"""
-     <footer class="px-6 md:px-16 mt-10 center-container">
-      <div class="flex justify-center py-8 md:justify-start md:py-14"><.photographer_logo {assigns} /></div>
-
+    <footer class="mx-6 md:mx-16 mt-10 center-container">
+      <div class="flex flex-col md:flex-row">
+        <div class="flex justify-center py-8 md:justify-start md:py-14"><.photographer_logo {assigns} /></div>
+        <div class="flex items-center justify-center md:ml-auto flex-wrap">
+          <%= for %{link: link, link_id: link_id, show_on_profile?: true, active?: true} <- Profiles.get_brand_links_by_organization(@organization) do %>
+            <div {testid("marketing-links")} class="flex items-center mb-4">
+              <a href={link} target="_blank" rel="noopener noreferrer">
+                <div class="flex items-center justify-center w-10 h-10 mx-1 rounded-full flex-shrink-0 bg-base-200 p-3">
+                  <.icon name={get_brand_link_icon(link_id)} />
+                </div>
+              </a>
+            </div>
+          <% end %>
+        </div>
+      </div>
       <div class="flex flex-col items-center justify-start pt-6 mb-8 border-t md:flex-row md:justify-between border-base-250 text-base-300 opacity-30">
         <span>© <%= Date.utc_today().year %> <%= @organization.name %></span>
 

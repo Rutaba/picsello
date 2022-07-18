@@ -243,6 +243,9 @@ defmodule Picsello.Profiles do
     |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
   end
 
+  def get_brand_links_by_organization(organization),
+    do: Repo.preload(organization, :brand_links, force: true) |> Map.get(:brand_links)
+
   def enabled?(%Organization{profile: profile}), do: Profile.enabled?(profile)
 
   def toggle(%Organization{} = organization) do
