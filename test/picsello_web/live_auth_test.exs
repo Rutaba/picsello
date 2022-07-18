@@ -65,11 +65,7 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :gallery_client" do
     setup %{conn: conn} do
-      conn = conn |> Phoenix.ConnTest.init_test_session(%{})
-
-      user = insert(:user)
-      job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
-      gallery = insert(:gallery, %{name: "Test Client Weeding", job: job})
+      {conn, user, gallery} = build_defaults(conn)
 
       [
         conn: conn,
@@ -200,5 +196,99 @@ defmodule PicselloWeb.LiveAuthTest do
                :gallery
              )
     end
+  end
+
+  describe "mount :proofing_album_client" do
+    setup %{conn: conn} do
+      {conn, user, gallery} = build_defaults(conn)
+      album = insert(:proofing_album, %{gallery_id: gallery.id})
+      un_protected_album = insert(:proofing_album, %{gallery_id: gallery.id, set_password: false})
+
+      [
+        conn: conn,
+        user: user,
+        un_protected_album: un_protected_album,
+        album: album,
+        show_path: Routes.gallery_client_index_path(conn, :album, album.client_link_hash)
+      ]
+    end
+
+    test "/album/:hash authenticated client for protected album", %{
+      conn: conn,
+      album: album,
+      show_path: show_path
+    } do
+      {:ok, token} = Galleries.build_album_session_token(album, album.password)
+
+      assert {:ok, _view, _html} =
+                conn
+                |> Plug.Conn.put_session("album_session_token", token)
+                |> live(show_path)
+    end
+
+    test "/album/:hash not authenticated client or user", %{
+      conn: conn,
+      album: album,
+      show_path: show_path
+    } do
+      album_login_path =
+        Routes.gallery_client_show_login_path(conn, :album_login, album.client_link_hash)
+
+      assert {:error, {:live_redirect, %{to: ^album_login_path}}} = live(conn, show_path)
+    end
+
+    test "/album/:hash, show unprotected album without client authentication", %{
+      conn: conn,
+      un_protected_album: un_protected_album
+    } do
+      show_path =
+        Routes.gallery_client_index_path(conn, :album, un_protected_album.client_link_hash)
+
+      assert {:ok, _view, _html} = live(conn, show_path)
+    end
+
+    test "/album/:hash authenticated photographer, your album", %{
+      conn: conn,
+      show_path: show_path,
+      user: user
+    } do
+      assert {:ok, _view, _html} =
+                conn
+                |> log_in_user(onboard!(user))
+                |> live(show_path)
+    end
+
+    test "/album/:hash authenticated photographer, not your album", %{
+      conn: conn,
+      album: album,
+      show_path: show_path
+    } do
+      user = insert(:user)
+
+      album_login_path =
+        Routes.gallery_client_show_login_path(conn, :album_login, album.client_link_hash)
+
+      assert {:error, {:live_redirect, %{flash: %{}, to: ^album_login_path}}} =
+                conn
+                |> log_in_user(onboard!(user))
+                |> live(show_path)
+    end
+
+    test "/album/:hash with no album is 404", %{conn: conn} do
+      show_path = Routes.gallery_client_index_path(conn, :album, "wrong-hash")
+
+      assert_raise Ecto.NoResultsError, fn ->
+        conn |> live(show_path)
+      end
+    end
+  end
+
+  def build_defaults(conn) do
+    conn = conn |> Phoenix.ConnTest.init_test_session(%{})
+    user = insert(:user)
+    job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
+    gallery = insert(:gallery, %{name: "Test Client Weeding", job: job})
+
+    {conn, user, gallery}
   end
 end

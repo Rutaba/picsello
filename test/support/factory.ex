@@ -408,6 +408,18 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def proofing_album_factory(attrs) do
+    %Album{
+      name: "Test proof album",
+      is_proofing: true,
+      set_password: true,
+      password: Gallery.generate_password(),
+      client_link_hash: UUID.uuid4()
+    }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def gallery_factory(attrs) do
     {lead_attrs, attrs} = Map.split(attrs, [:package])
 
