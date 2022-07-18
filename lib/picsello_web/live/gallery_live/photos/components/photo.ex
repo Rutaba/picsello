@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
 
   @impl true
   def update(assigns, socket) do
+    album = Map.get(assigns, :album)
+
     socket
     |> assign(
       preview_photo_id: nil,
@@ -13,6 +15,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_removable: false,
       is_viewable: false,
       is_meatball: false,
+      proofing_photo_icons: if(album && album.is_proofing, do: false, else: true),
       is_gallery_category_page: false,
       is_client_gallery: false,
       album: nil,

@@ -184,21 +184,6 @@
                 data-inprogress-photos={ "#{length(@inprogress_photos)}" }
                 data-photo-width="300">
                 <%= for photo <- @photos do%>
-                  <%= if @album && @album.is_proofing do %>
-                  <%= live_component Photo,
-                      id: photo.id,
-                      photo: photo,
-                      album: @album,
-                      photo_width: 300,
-                      is_likable: false,
-                      is_removable: false,
-                      is_viewable: false,
-                      is_meatball: false,
-                      is_gallery_category_page: false,
-                      component: false,
-                      client_link_hash: @gallery.client_link_hash
-                  %>
-                  <% else %>
                   <%= live_component Photo,
                     id: photo.id,
                     photo: photo,
@@ -210,7 +195,6 @@
                     is_meatball: true,
                     client_link_hash: @gallery.client_link_hash
                   %>
-                  <% end %>
                 <% end %>
                 <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />
               </div>
