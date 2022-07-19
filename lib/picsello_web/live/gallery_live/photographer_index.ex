@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
 
-  alias Phoenix.PubSub
   alias Picsello.{Galleries, Messages, Notifiers.ClientNotifier}
 
   alias PicselloWeb.GalleryLive.{
@@ -46,10 +45,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     gallery =
       Galleries.get_gallery!(id)
       |> Galleries.load_watermark_in_gallery()
-
-    if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
-    end
 
     prepare_gallery(gallery)
 
@@ -210,6 +205,11 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> close_modal()
     |> preload_watermark()
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:upload_success_message, success_message}, socket) do
+    socket |> put_flash(:success, success_message) |> noreply()
   end
 
   @impl true
