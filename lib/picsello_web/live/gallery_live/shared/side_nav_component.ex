@@ -24,6 +24,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "gallery_progress:#{gallery.id}")
       PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")
+      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
     end
 
     album = Map.get(params, :selected_album, nil)
