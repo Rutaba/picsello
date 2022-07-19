@@ -34,9 +34,7 @@ defmodule PicselloWeb.Live.Admin.ProductPricing do
       product_id,
       category_id,
       attribute_id,
-      jsonb_object_agg(
-        jsonb_build_object(refs.key, (refs.value -> 'base' -> 'value'))
-      ) as pricing_key
+      jsonb_object_agg(refs.key, refs.value -> 'base' -> 'value') as pricing_key
     from
       attribute_categories,
       jsonb_each(pricing_refs) as refs
