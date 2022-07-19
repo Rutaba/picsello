@@ -106,7 +106,7 @@ defmodule Picsello.Orders.Confirmations do
       {:error, :paid, _, %{order: order}} ->
         {:ok, order, :already_confirmed}
 
-      {:ok, %{order: order}} ->
+      {:ok, %{place_order: order}} ->
         {:ok, order, :confirmed}
 
       {:error, _, _, %{session: %{payment_intent: intent_id}, stripe_options: stripe_options}} =
