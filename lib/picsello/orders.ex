@@ -8,7 +8,7 @@ defmodule Picsello.Orders do
     Galleries.Gallery,
     Galleries.Photo,
     Intents,
-    Invoices,
+    Invoices.Invoice,
     Repo
   }
 
@@ -44,6 +44,12 @@ defmodule Picsello.Orders do
   def client_paid?(%{id: order_id}),
     do: Repo.exists?(from orders in client_paid_query(), where: orders.id == ^order_id)
 
+  def photographer_paid?(%{id: order_id}),
+    do:
+      not Repo.exists?(
+        from invoice in Invoice, where: invoice.order_id == ^order_id and invoice.status != :paid
+      )
+
   def client_paid_query, do: client_paid_query(orders())
 
   def client_paid_query(source),
@@ -52,14 +58,6 @@ defmodule Picsello.Orders do
         left_join: intents in subquery(Intents.unpaid_query()),
         on: intents.order_id == orders.id,
         where: is_nil(intents.id)
-      )
-
-  def photographer_paid_query(source),
-    do:
-      from(orders in source,
-        left_join: invoices in subquery(Invoices.unpaid_query()),
-        on: invoices.order_id == orders.id,
-        where: is_nil(invoices.id)
       )
 
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
