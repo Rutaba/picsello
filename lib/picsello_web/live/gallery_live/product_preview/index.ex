@@ -84,7 +84,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket |> put_flash(:success, success_message) |> noreply()
   end
 
-
   @impl true
   def handle_info(
         {:photos_error, %{photos_error_count: photos_error_count, entries: entries}},
