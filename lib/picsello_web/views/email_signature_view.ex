@@ -1,8 +1,16 @@
 defmodule PicselloWeb.EmailSignatureView do
   use PicselloWeb, :view
+  import PicselloWeb.LiveHelpers, only: [get_brand_link_icon: 1, testid: 1]
+
   alias Picsello.Accounts.User
+  alias Picsello.Profiles
 
   def render("show.html", assigns) do
+    {first_brand_link, remaining_brand_links} =
+      Profiles.get_brand_links_by_organization(assigns.organization)
+      |> Enum.filter(&(&1.use_publicly? && &1.active?))
+      |> List.pop_at(0)
+
     ~H"""
     <table style="font-family: sans-serif, Arial;line-height:22px;border-collapse: collapse;" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
       <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -35,6 +43,33 @@ defmodule PicselloWeb.EmailSignatureView do
         </tr>
       <% end %>
     </table>
+    <div style="margin-top:15px;display:flex;flex-direction:column;">
+      <div style="display:flex;flex-wrap:wrap;">
+          <%= case first_brand_link do %>
+            <% nil -> %>
+            <% %{link: link, link_id: link_id} -> %>
+              <.brand_link link={link} link_id={link_id} style="padding:16px 16px 16px 0px;"></.brand_link>
+          <% end %>
+          <%= for %{link: link, link_id: link_id} <- remaining_brand_links do %>
+            <.brand_link link={link} link_id={link_id} style="padding:16px;"><span style="border-left:1px solid #898989;height:15px"></span></.brand_link>
+          <% end %>
+        </div>
+      </div>
+    """
+  end
+
+  defp brand_link(assigns) do
+    ~H"""
+    <div {testid("marketing-links")} style="display:flex;align-items:center;margin-bottom:16px;">
+      <a style="display:flex;align-items:center;justify-content:center;" href={@link} target="_blank" rel="noopener noreferrer">
+        <%= render_block(@inner_block) %>
+        <div style={"display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;#{@style}"}>
+          <span style="fill:currentColor;color:#898989;">
+            <img src={"#{PicselloWeb.Endpoint.static_url()}/images/social_icons/#{get_brand_link_icon(@link_id)}.png"} />
+          </span>
+        </div>
+      </a>
+    </div>
     """
   end
 end

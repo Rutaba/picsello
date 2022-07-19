@@ -7,6 +7,9 @@ defmodule Picsello.EmailSignatureTest do
   setup %{user: user} do
     lead = insert(:lead, user: user)
 
+    insert(:brand_link, user: user)
+    insert(:brand_link, user: user, use_publicly?: true, show_on_profile?: true, active?: true)
+
     [lead: lead]
   end
 
@@ -15,6 +18,11 @@ defmodule Picsello.EmailSignatureTest do
     |> click(link("Settings"))
     |> click(link("Brand"))
     |> assert_inner_text(testid("signature-preview"), "MJCamera User Group(918) 555-1234")
+    |> assert_has(testid("marketing-links", count: 1))
+    |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
+      card
+      |> assert_has(css("a[href='photos.example.com']"))
+    end)
     |> click(button("Change signature"))
     |> click(css("label", text: "Show your phone number?"))
     |> click(css("div.ql-editor"))
