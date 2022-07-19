@@ -210,7 +210,7 @@ defmodule Picsello.PaymentSchedules do
       ) do
     with %BookingProposal{} = proposal <-
            Repo.get(BookingProposal, proposal_id) |> Repo.preload(job: :job_status),
-         %PaymentSchedule{} = payment_schedule <-
+         %PaymentSchedule{paid_at: nil} = payment_schedule <-
            Repo.get(PaymentSchedule, payment_schedule_id),
          {:ok, _} = update_result <-
            payment_schedule
@@ -222,6 +222,7 @@ defmodule Picsello.PaymentSchedules do
 
       update_result
     else
+      %PaymentSchedule{paid_at: %DateTime{}} -> {:ok, :already_paid}
       {:error, _} = error -> error
       error -> {:error, error}
     end
