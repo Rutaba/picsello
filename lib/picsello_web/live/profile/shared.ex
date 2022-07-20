@@ -5,17 +5,36 @@ defmodule PicselloWeb.Live.Profile.Shared do
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   use Phoenix.Component
-  alias Picsello.Profiles
+  alias Picsello.{Profiles, BrandLinks, BrandLink}
 
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_brand_links()
     |> assign_changeset()
     |> ok()
   end
 
   def handle_event("validate", %{"organization" => params}, socket) do
     socket |> assign_changeset(params) |> noreply()
+  end
+
+  def handle_event(
+        "save",
+        %{"organization" => %{"brand_links" => %{"0" => brand_link_params}}},
+        %{assigns: %{organization: organization}} = socket
+      ) do
+    case handle_brand_link(organization, brand_link_params) do
+      [] ->
+        socket |> noreply()
+
+      brand_links ->
+        organization = Map.put(organization, :brand_links, brand_links)
+
+        send(socket.parent_pid, {:update, organization})
+
+        socket |> close_modal() |> noreply()
+    end
   end
 
   def handle_event(
@@ -72,6 +91,59 @@ defmodule PicselloWeb.Live.Profile.Shared do
       job_types: profile.job_types,
       url: Profiles.public_url(organization)
     )
+  end
+
+  defp handle_brand_link(%{brand_links: [brand_link]}, params) do
+    changeset = BrandLink.brand_link_changeset(brand_link, params)
+    link = changeset |> Ecto.Changeset.get_field(:link)
+
+    cond do
+      !is_nil(link) && is_nil(brand_link.id) ->
+        brand_link |> upsert_brand_link(link, [:id])
+
+      changeset.valid? && !is_nil(link) ->
+        brand_link |> upsert_brand_link(link)
+
+      true ->
+        delete_brand_link(brand_link)
+    end
+  end
+
+  defp delete_brand_link(brand_link) do
+    case BrandLinks.delete_brand_link(brand_link) do
+      {:ok, _} -> Map.put(brand_link, :link, nil) |> List.wrap()
+      _ -> []
+    end
+  end
+
+  defp upsert_brand_link(brand_link, link, params \\ []) do
+    brand_link
+    |> Map.put(:link, link)
+    |> Map.from_struct()
+    |> Map.drop(params ++ [:__meta__, :organization])
+    |> List.wrap()
+    |> BrandLinks.upsert_brand_links()
+    |> Enum.filter(&(&1.link_id == "website"))
+  end
+
+  defp assign_brand_links(%{assigns: %{organization: organization}} = socket) do
+    organization =
+      case organization do
+        %{brand_links: []} = organization ->
+          Map.put(organization, :brand_links, [
+            %BrandLink{
+              title: "Website",
+              link_id: "website",
+              organization_id: organization.id
+            }
+          ])
+
+        organization ->
+          organization
+      end
+
+    socket
+    |> assign(:organization, organization)
   end
 
   defp get_website_link([]), do: nil

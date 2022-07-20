@@ -84,7 +84,8 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
     |> click(button("Edit Link"))
     |> fill_in(text_field("organization_brand_links_0_link"), with: "")
-    |> assert_has(css("span", text: "Website URL can't be blank"))
+    |> click(button("Save"))
+    |> assert_has(css("a[href='#']", text: "See our full portfolio"))
   end
 
   feature "user edits description", %{session: session} do
