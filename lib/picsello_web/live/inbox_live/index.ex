@@ -268,7 +268,7 @@ defmodule PicselloWeb.InboxLive.Index do
 
     client_messages =
       from(message in ClientMessage,
-        where: message.job_id == ^job.id,
+        where: message.job_id == ^job.id and is_nil(message.deleted_at),
         order_by: [asc: message.inserted_at]
       )
       |> Repo.all()

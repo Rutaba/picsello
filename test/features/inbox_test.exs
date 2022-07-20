@@ -151,4 +151,23 @@ defmodule Picsello.InboxTest do
     |> click(link("view job"))
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :jobs, job.id))
   end
+
+  feature "archive chat", %{session: session, job: job} do
+    session
+    |> click(testid("inbox-card"))
+    |> click(testid("thread-card", count: 2, at: 0))
+    |> scroll_to_bottom()
+    |> click(button("Reply"))
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+    |> send_keys(["This is my response"])
+    |> within_modal(&wait_for_enabled_submit_button/1)
+    |> click(button("Send Email"))
+    |> assert_has(testid("thread-message", count: 3))
+    |> assert_text("This is my response")
+    |> click(button("Delete"))
+    |> click(button("Yes, delete"))
+    |> visit("/jobs/#{job.id}")
+    |> click(button("Go to inbox"))
+    |> assert_has(testid("thread-message", count: 0))
+  end
 end
