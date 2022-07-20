@@ -14,7 +14,7 @@ defmodule Picsello.Cart.Order do
 
     has_one :package, through: [:gallery, :package]
     has_one :invoice, Picsello.Invoices.Invoice
-    has_one :intent, Picsello.Intents.Intent
+    has_one :intent, Picsello.Intents.Intent, on_delete: :delete_all
 
     has_many :digitals, Digital,
       on_replace: :delete,
