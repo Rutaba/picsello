@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientOrder do
   @moduledoc "Order display to client"
 
-  use PicselloWeb, live_view: [layout: "live_client"]
+  use PicselloWeb, live_view: [layout: "live_gallery_client"]
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.{Cart, Orders}
