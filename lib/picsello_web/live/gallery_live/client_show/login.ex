@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Login do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_gallery_client"]
+  use PicselloWeb, live_view: [layout: "live_client"]
   alias PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent
   alias Picsello.Galleries
 

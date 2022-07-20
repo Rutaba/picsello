@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
-  use PicselloWeb, live_view: [layout: "live_gallery_client"]
+  use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   import PicselloWeb.GalleryLive.Shared

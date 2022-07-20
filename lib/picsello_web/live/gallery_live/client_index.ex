@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   use PicselloWeb,
     live_view: [
-      layout: "live_gallery_client"
+      layout: "live_client"
     ]
 
   import PicselloWeb.GalleryLive.Shared
