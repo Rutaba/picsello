@@ -1,19 +1,29 @@
 defmodule Picsello.EmailPresets.JobResolver do
   @moduledoc "resolves job/lead mustache variables"
 
-  defstruct [:job, :helpers]
+  defstruct [:job, :payment_schedule, :helpers]
 
   def new({%Picsello.Job{} = job}, helpers),
     do: %__MODULE__{
-      job:
-        Picsello.Repo.preload(job, [
-          :booking_proposals,
-          :package,
-          :shoots,
-          client: [organization: :user]
-        ]),
+      job: preload_job(job),
       helpers: helpers
     }
+
+  def new({%Picsello.Job{} = job, %Picsello.PaymentSchedule{} = payment_schedule}, helpers),
+    do: %__MODULE__{
+      job: preload_job(job),
+      payment_schedule: payment_schedule,
+      helpers: helpers
+    }
+
+  defp preload_job(job),
+    do:
+      Picsello.Repo.preload(job, [
+        :booking_proposals,
+        :package,
+        :shoots,
+        client: [organization: :user]
+      ])
 
   defp client(%__MODULE__{job: job}), do: Picsello.Repo.preload(job, :client).client
 
@@ -86,7 +96,13 @@ defmodule Picsello.EmailPresets.JobResolver do
           %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
           do: Picsello.BookingProposal.url(proposal_id)
         ),
+      "job_name" => &Picsello.Job.name(&1.job),
       "mini_session_link" => &noop/1,
+      "payment_amount" =>
+        &case &1.payment_schedule do
+          %Picsello.PaymentSchedule{price: price} -> price
+          _ -> nil
+        end,
       "photographer_cell" =>
         &case photographer(&1) do
           %Picsello.Accounts.User{onboarding: %{phone: "" <> phone}} -> phone
@@ -99,6 +115,7 @@ defmodule Picsello.EmailPresets.JobResolver do
           resolver.job.type
         )
       end,
+      "remaining_amount" => &Picsello.PaymentSchedules.owed_price(&1.job),
       "review_link" => &noop/1,
       "session_date" =>
         &with(

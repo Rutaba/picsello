@@ -66,6 +66,19 @@ defmodule Picsello.Notifiers.ClientNotifier do
     end
   end
 
+  def deliver_payment_schedule_confirmation(job, payment_schedule, helpers) do
+    with client <- job |> Repo.preload(:client) |> Map.get(:client),
+         [preset | _] <- Picsello.EmailPresets.for(job, :payment_confirmation_client),
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {job, payment_schedule}, helpers) do
+      deliver_transactional_email(
+        %{subject: subject, headline: subject, body: body},
+        client.email,
+        job
+      )
+    end
+  end
+
   def deliver_order_confirmation(
         %{
           gallery: %{job: %{client: %{organization: organization}}} = gallery,

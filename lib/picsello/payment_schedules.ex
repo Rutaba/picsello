@@ -10,6 +10,7 @@ defmodule Picsello.PaymentSchedules do
     PaymentSchedule,
     Payments,
     Notifiers.UserNotifier,
+    Notifiers.ClientNotifier,
     BookingProposal,
     Client,
     Shoot
@@ -62,7 +63,7 @@ defmodule Picsello.PaymentSchedules do
     )
     |> Repo.all()
     |> Enum.each(fn payment ->
-      Picsello.Notifiers.ClientNotifier.deliver_balance_due_email(payment.job, helpers)
+      ClientNotifier.deliver_balance_due_email(payment.job, helpers)
 
       payment
       |> PaymentSchedule.reminded_at_changeset()
@@ -212,7 +213,7 @@ defmodule Picsello.PaymentSchedules do
            Repo.get(BookingProposal, proposal_id) |> Repo.preload(job: :job_status),
          %PaymentSchedule{paid_at: nil} = payment_schedule <-
            Repo.get(PaymentSchedule, payment_schedule_id),
-         {:ok, _} = update_result <-
+         {:ok, payment_schedule} <-
            payment_schedule
            |> PaymentSchedule.paid_changeset()
            |> Repo.update() do
@@ -220,7 +221,13 @@ defmodule Picsello.PaymentSchedules do
         UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
       end
 
-      update_result
+      ClientNotifier.deliver_payment_schedule_confirmation(
+        proposal.job,
+        payment_schedule,
+        helpers
+      )
+
+      {:ok, payment_schedule}
     else
       %PaymentSchedule{paid_at: %DateTime{}} -> {:ok, :already_paid}
       {:error, _} = error -> error

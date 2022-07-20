@@ -274,12 +274,14 @@ defmodule Picsello.PaymentSchedulesTest do
   end
 
   describe "handle_payment/2" do
-    test "updates paid_at and sends email to photographer" do
+    test "updates paid_at and sends email to photographer and client" do
       Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
       user = insert(:user, email: "photographer@example.com")
 
       lead =
         insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
+
+      insert(:email_preset, job_type: lead.type, state: :payment_confirmation_client)
 
       proposal = insert(:proposal, job: lead)
 
@@ -303,6 +305,7 @@ defmodule Picsello.PaymentSchedulesTest do
       assert %{paid_at: %DateTime{}} = payment_schedule |> Repo.reload!()
 
       assert_receive {:delivered_email, %{to: [nil: "photographer@example.com"]}}
+      assert_receive {:delivered_email, %{to: [nil: "elizabeth-lead@example.com"]}}
     end
 
     test "it does not update paid_at if already paid" do
