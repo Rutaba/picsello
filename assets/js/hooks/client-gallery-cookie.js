@@ -7,7 +7,9 @@ export default {
     if(Cookies.get(name)) {
       this.pushEvent('view_gallery', {});
     }else {
-      el.classList.remove("hidden");
+      const footer = document.querySelector('.footer-cookie');
+      footer.classList.add('hidden'); 
+      el.classList.remove('hidden');
     }
   },
 
