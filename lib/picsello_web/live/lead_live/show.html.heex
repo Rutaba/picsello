@@ -1,65 +1,65 @@
 <div {intro(@current_user, "intro_leads_new")}>
-<header>
-  <div class="px-6 pt-6 pb-2 center-container">
-    <.crumbs>
-      <:crumb to={Routes.job_path(@socket, @live_action)}>
-        <%= action_name(@live_action, :plural) %>
-      </:crumb>
+  <header>
+    <div class="px-6 pt-6 pb-2 center-container">
+      <.crumbs>
+        <:crumb to={Routes.job_path(@socket, @live_action)}>
+          <%= action_name(@live_action, :plural) %>
+        </:crumb>
 
-      <:crumb><%= Job.name @job %></:crumb>
-    </.crumbs>
+        <:crumb><%= Job.name @job %></:crumb>
+      </.crumbs>
 
-    <%= case next_reminder_on(@proposal) do %>
-      <% %DateTime{} = date -> %>
-        <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300 mt-8">
-          Email scheduled for <%= strftime(@current_user.time_zone, date, "%B %d, %Y") %>
-        </span>
-      <% _ -> %>
-    <% end %>
+      <%= case next_reminder_on(@proposal) do %>
+        <% %DateTime{} = date -> %>
+          <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300 mt-8">
+            Email scheduled for <%= strftime(@current_user.time_zone, date, "%B %d, %Y") %>
+          </span>
+        <% _ -> %>
+      <% end %>
 
-    <div class="flex flex-col justify-between md:flex-row">
-      <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
-      
-      <%= unless @proposal do %>
-        <.send_proposal_button package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
+      <div class="flex flex-col justify-between md:flex-row">
+        <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
+
+        <%= unless @proposal do %>
+          <.send_proposal_button package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
+        <% end %>
+      </div>
+
+      <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
+        <div class="flex flex-col items-center px-4 py-2 mt-8 text-center rounded-lg md:flex-row bg-red-sales-300/10 sm:text-left">
+          <.icon name="warning-orange-dark" class="inline-block w-4 h-4 mr-2"/>
+          It looks like you haven’t setup Stripe yet. You won’t be able to send out a proposal until that is setup.
+          <div class="flex-shrink-0 my-1 mt-4 md:ml-auto sm:max-w-xs sm:mt-0">
+            <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_banner,
+                  error_class: "text-center",
+                  current_user: @current_user,
+                  class: "btn-primary py-1 px-3 text-sm intro-stripe mx-auto block",
+                  return_url: Routes.job_url(@socket, @live_action, @job.id),
+                  stripe_status: @stripe_status %>
+          </div>
+        </div>
       <% end %>
     </div>
+  </header>
 
-    <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
-      <div class="flex flex-col px-4 py-2 mt-8 rounded-lg md:flex-row bg-red-sales-300/10 items-center text-center sm:text-left">
-        <.icon name="warning-orange-dark" class="inline-block w-4 h-4 mr-2"/>
-        It looks like you haven’t setup Stripe yet. You won’t be able to send out a proposal until that is setup.
-        <div class="flex-shrink-0 my-1 md:ml-auto sm:max-w-xs mt-4 sm:mt-0">
-          <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_banner,
-                error_class: "text-center",
-                current_user: @current_user,
-                class: "btn-primary py-1 px-3 text-sm intro-stripe mx-auto block",
-                return_url: Routes.job_url(@socket, @live_action, @job.id),
-                stripe_status: @stripe_status %>
+  <div class="py-2 md:px-6 center-container">
+    <.section id="details-communications" icon="envelope" title="Details & communications" collapsed_sections={@collapsed_sections}>
+      <div class="flex flex-col md:flex-row md:items-start">
+        <div class="flex-1 grid md:grid-cols-2 gap-5">
+          <.communications_card job={@job} inbox_count={@inbox_count} />
+          <.package_details_card package={@package} job={@job} proposal={@proposal} />
+          <.private_notes_card job={@job} />
         </div>
+        <.history_card job={@job} current_user={@current_user} steps_title="Steps to book" steps={["Send an email","Add shoot details","Review contract","Review questionnaire","Review payment terms","Send proposal"]} />
       </div>
-    <% end %>
+    </.section>
+
+    <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
+
+    <.booking_details_section proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} include_questionnaire={@include_questionnaire} collapsed_sections={@collapsed_sections}>
+      <:send_proposal_button>
+        <.send_proposal_button package={@package} shoots={@shoots} stripe_status={@stripe_status} show_message={false} />
+      </:send_proposal_button>
+    </.booking_details_section>
   </div>
-</header>
-
-<div class="py-2 md:px-6 center-container">
-  <.section id="details-communications" icon="envelope" title="Details & communications" collapsed_sections={@collapsed_sections}>
-    <div class="flex flex-col md:flex-row md:items-start">
-      <div class="flex-1 grid md:grid-cols-2 gap-5">
-        <.communications_card job={@job} inbox_count={@inbox_count} />
-        <.package_details_card package={@package} job={@job} proposal={@proposal} />
-        <.private_notes_card job={@job} />
-      </div>
-      <.history_card job={@job} current_user={@current_user} steps_title="Steps to book" steps={["Send an email","Add shoot details","Review contract","Review questionnaire","Review payment terms","Send proposal"]} />
-    </div>
-  </.section>
-
-  <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
-
-  <.booking_details_section proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} include_questionnaire={@include_questionnaire} collapsed_sections={@collapsed_sections}>
-    <:send_proposal_button>
-      <.send_proposal_button package={@package} shoots={@shoots} stripe_status={@stripe_status} show_message={false} />
-    </:send_proposal_button>
-  </.booking_details_section>
-</div>
 </div>

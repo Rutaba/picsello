@@ -8,7 +8,13 @@ defmodule Picsello.EditLeadPackageTest do
 
   @price_text_field css("#form-pricing_base_price")
 
-  setup %{session: session, user: user} do
+  setup %{session: session, user: %{organization: organization} = user} do
+    organization |> Picsello.Organization.assign_stripe_account_changeset("123") |> Repo.update!()
+
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+
     lead =
       insert(:lead, %{
         user: user,
