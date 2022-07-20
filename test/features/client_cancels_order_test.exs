@@ -20,7 +20,13 @@ defmodule Picsello.ClientCancelsOrderTest do
     end)
     |> Mox.stub(:expire_session, fn _id, _opts ->
       {:ok,
-       build(:stripe_session, payment_intent: build(:stripe_payment_intent, status: "canceled"))}
+       build(:stripe_session,
+         status: "expired",
+         payment_intent: build(:stripe_payment_intent, status: "requires_payment_method")
+       )}
+    end)
+    |> Mox.stub(:retrieve_payment_intent, fn _id, _opts ->
+      {:ok, build(:stripe_payment_intent, status: "canceled")}
     end)
 
     [gallery: gallery]

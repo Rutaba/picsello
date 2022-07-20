@@ -117,7 +117,11 @@ defmodule Picsello.Cart.CheckoutsTest do
     end
 
     test "exipres previous session", %{order: order} do
-      Mox.expect(MockPayments, :expire_session, fn id, _ ->
+      MockPayments
+      |> Mox.expect(:retrieve_payment_intent, fn id, _ ->
+        {:ok, build(:stripe_payment_intent, id: id)}
+      end)
+      |> Mox.expect(:expire_session, fn id, _ ->
         {:ok, build(:stripe_session, id: id, status: "expired")}
       end)
 
