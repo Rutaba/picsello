@@ -1,11 +1,11 @@
 <div>
-  <div class="px-6 mx-auto max-w-screen-xl lg:px-14">
+  <div class="px-4 mx-auto max-w-screen-xl">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
   </div>
 
   <hr>
 
-  <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 max-w-screen-xl">
+  <div class="px-4 pt-5 pb-10 mx-auto lg:pt-9 max-w-screen-xl">
     <%= if @orders == [] do %>
       <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
         <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
@@ -17,7 +17,7 @@
     <h3 class="text-lg font-bold lg:text-3xl">My orders</h3>
 
     <%= if @orders == [] do %>
-      <p class="mt-10 text-2xl font-bold">You haven’t ordered anything yet!</p>
+      <p class="mt-10 pb-64 text-2xl font-bold">You haven’t ordered anything yet!</p>
     <% end %>
 
     <%= for order <- @orders do %>
