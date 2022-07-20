@@ -118,10 +118,10 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     ~H"""
     <div class={"#{@class}"}>
       <%= live_redirect to: @route do %>
-        <li class="albumList">
-          <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}>
+        <li class="group">
+          <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap group-hover:!text-blue-planning-300"}>
             <%= if @is_proofing do %>
-              <.icon name="proofing" class={"w-4 h-4 stroke-2 fill-currentColor #{@button_class} mr-2"}/>
+              <.icon name="proofing" class={"w-4 h-4 stroke-2 fill-current #{@button_class} mr-2 group-hover:!text-blue-planning-300"}/>
             <% end %>
             <%= @title%>
           </button>

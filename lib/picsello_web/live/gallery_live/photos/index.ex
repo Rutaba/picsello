@@ -438,7 +438,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         album = Albums.set_album_hash(album)
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(album, :album_send_link) do
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, :album_send_link) do
             Picsello.EmailPresets.resolve_variables(
               preset,
               {gallery, album},
