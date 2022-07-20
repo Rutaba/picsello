@@ -60,6 +60,13 @@ defmodule Picsello.Onboardings do
       |> validate_change(:phone, &valid_phone/2)
     end
 
+    def phone_changeset(%__MODULE__{} = onboarding, attrs) do
+      onboarding
+      |> cast(attrs, [:phone])
+      |> validate_required([:phone])
+      |> validate_change(:phone, &valid_phone/2)
+    end
+
     def completed?(%__MODULE__{completed_at: nil}), do: false
     def completed?(%__MODULE__{}), do: true
     defdelegate valid_phone(field, value), to: Picsello.Client
@@ -132,6 +139,12 @@ defmodule Picsello.Onboardings do
       end
     )
     |> Repo.update!()
+  end
+
+  def user_onboarding_phone_changeset(current_user, attr) do
+    current_user
+    |> cast(attr, [])
+    |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
   end
 
   def show_intro?(current_user, intro_id) do

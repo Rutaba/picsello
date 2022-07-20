@@ -62,6 +62,7 @@ defmodule Picsello.Orders do
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
 
   def placed_orders_count(nil), do: 0
+
   def placed_orders_count(gallery),
     do:
       from(o in Order,
