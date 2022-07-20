@@ -282,14 +282,6 @@
     max-width: 500px;
   }
 
-  .albumList {
-    @apply flex
-  }
-
-  .albumList button:hover svg {
-    @apply text-blue-planning-300
-  }
-
   .bottomBar_gallery {
     @apply bottom-0 left-0 right-0 z-10 lg:bg-base-300 bg-base-100 opacity-95;
   }

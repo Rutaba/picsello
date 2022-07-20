@@ -51,7 +51,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        type: "album",
+        type: "gallery",
         state: "album_send_link",
         position: 0,
         name: "Share Proofing Album",

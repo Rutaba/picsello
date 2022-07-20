@@ -1,16 +1,18 @@
 defmodule Picsello.Repo.Migrations.AltergallerySessionTokens do
   use Ecto.Migration
 
+  @old_table :gallery_session_tokens
+  @new_table :session_tokens
+
   def up do
-    alter table(:gallery_session_tokens) do
+    alter table(@old_table) do
       add(:resource_type, :string)
     end
 
-    rename(table(:gallery_session_tokens), to: table(:session_tokens))
-    rename(table(:session_tokens), :gallery_id, to: :resource_id)
+    rename(table(@old_table), to: table(@new_table))
+    rename(table(@new_table), :gallery_id, to: :resource_id)
 
-    drop(index(:gallery_session_tokens, [:gallery_id, :token]))
-    create(unique_index(:session_tokens, [:resource_id, :resource_type, :token]))
+    create(unique_index(@new_table, [:resource_id, :resource_type, :token]))
 
     execute("ALTER TABLE session_tokens DROP CONSTRAINT gallery_session_tokens_gallery_id_fkey")
 
@@ -27,10 +29,10 @@ defmodule Picsello.Repo.Migrations.AltergallerySessionTokens do
   end
 
   def down do
-    rename(table(:session_tokens), to: table(:gallery_session_tokens))
-    rename(table(:gallery_session_tokens), :resource_id, to: :gallery_id)
+    rename(table(@new_table), to: table(@old_table))
+    rename(table(@old_table), :resource_id, to: :gallery_id)
 
-    alter table(:gallery_session_tokens) do
+    alter table(@old_table) do
       remove(:resource_type)
       modify(:gallery_id, references(:galleries, on_delete: :delete_all), null: false)
     end
@@ -43,6 +45,6 @@ defmodule Picsello.Repo.Migrations.AltergallerySessionTokens do
       "ALTER INDEX session_tokens_resource_id_index RENAME TO gallery_session_tokens_gallery_id_index"
     )
 
-    create(unique_index(:gallery_session_tokens, [:gallery_id, :token]))
+    create(unique_index(@old_table, [:gallery_id, :token]))
   end
 end

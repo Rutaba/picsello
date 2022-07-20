@@ -6,15 +6,10 @@ defmodule Picsello.EmailPresets do
   import Picsello.Repo.CustomMacros
 
   alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset}
-  alias Picsello.Galleries.{Gallery, Album}
+  alias Picsello.Galleries.Gallery
 
   def for(%Gallery{}, state) do
     from(preset in gallery_presets(), where: preset.state == ^state)
-    |> Repo.all()
-  end
-
-  def for(%Album{}, state) do
-    from(preset in album_presets(), where: preset.state == ^state)
     |> Repo.all()
   end
 
@@ -67,9 +62,7 @@ defmodule Picsello.EmailPresets do
 
   defp job_presets(), do: presets(:job)
 
-  defp gallery_presets(), do: presets(:gallery)
-
-  defp album_presets(), do: presets(:album)
+  defp gallery_presets(), do: presets(:gallery) 
 
   defp presets(type),
     do: from(preset in EmailPreset, where: preset.type == ^type, order_by: :position)
