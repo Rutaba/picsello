@@ -16,7 +16,21 @@ defmodule Picsello.EditLeadContractTest do
     [lead: lead]
   end
 
-  feature "user saves contract from default template", %{session: session, lead: lead} do
+  feature "user sees message when package is missing", %{
+    session: session,
+    lead: lead
+  } do
+    session
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> find(testid("contract"), fn element ->
+      element
+      |> assert_text("You haven’t selected a package yet.")
+    end)
+  end
+
+  feature "user saves contract from default template", %{session: session, lead: lead, user: user} do
+    insert_package(user, lead)
+
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> find(testid("contract"), fn element ->
@@ -50,7 +64,9 @@ defmodule Picsello.EditLeadContractTest do
     end)
   end
 
-  feature "user adds new contract", %{session: session, lead: lead} do
+  feature "user adds new contract", %{session: session, lead: lead, user: user} do
+    insert_package(user, lead)
+
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> click(@edit_contract_button)
@@ -89,6 +105,7 @@ defmodule Picsello.EditLeadContractTest do
     lead: lead
   } do
     insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+    insert_package(user, lead)
 
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
@@ -111,6 +128,7 @@ defmodule Picsello.EditLeadContractTest do
     lead: lead
   } do
     insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+    insert_package(user, lead)
 
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
@@ -139,6 +157,7 @@ defmodule Picsello.EditLeadContractTest do
     lead: lead,
     user: user
   } do
+    insert_package(user, lead)
     insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
     insert(:contract_template, user: user, job_type: "family", name: "Contract 2")
     other_user = insert(:user)
@@ -154,5 +173,13 @@ defmodule Picsello.EditLeadContractTest do
     end)
     |> fill_in(text_field("Contract Name"), with: "Contract 1")
     |> assert_text("Contract Name has already been taken")
+  end
+
+  defp insert_package(user, lead) do
+    package = insert(:package, user: user)
+
+    lead
+    |> Picsello.Job.add_package_changeset(%{package_id: package.id})
+    |> Picsello.Repo.update!()
   end
 end

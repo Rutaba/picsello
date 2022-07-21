@@ -445,6 +445,11 @@ defmodule PicselloWeb.JobLive.Shared do
           <div class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Contract:</h3>
             <%= cond do %>
+              <% !@package -> %>
+                <p class="my-2">You haven’t selected a package yet.</p>
+                <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
+                  Add a package
+                </button>
               <% !@proposal -> %>
                 <p class="mt-2">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
                 <div class="border rounded-lg px-4 py-2 mt-4">

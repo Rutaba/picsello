@@ -21,7 +21,7 @@ defmodule Picsello.Contracts do
       :contract,
       default_contract
       |> Map.take([:content, :name])
-      |> Map.put(:job_id, job.id)
+      |> Map.put(:package_id, job.package_id)
       |> Map.put(:contract_template_id, default_contract.id)
       |> Contract.changeset()
     )
@@ -43,12 +43,12 @@ defmodule Picsello.Contracts do
         :contract,
         fn changes ->
           params
-          |> Map.put("job_id", job.id)
+          |> Map.put("package_id", job.package_id)
           |> Map.put("contract_template_id", changes.contract_template.id)
           |> Contract.changeset()
         end,
         on_conflict: :replace_all,
-        conflict_target: ~w[job_id]a
+        conflict_target: ~w[package_id]a
       )
       |> Repo.transaction()
 
@@ -72,13 +72,13 @@ defmodule Picsello.Contracts do
         :contract,
         fn changes ->
           params
-          |> Map.put("job_id", job.id)
+          |> Map.put("package_id", job.package_id)
           |> Map.put("contract_template_id", changes.contract_template.id)
           |> Map.put("name", changes.contract_template.name)
           |> Contract.changeset()
         end,
         on_conflict: :replace_all,
-        conflict_target: ~w[job_id]a
+        conflict_target: ~w[package_id]a
       )
       |> Repo.transaction()
 
@@ -92,7 +92,7 @@ defmodule Picsello.Contracts do
   def default_contract(job) do
     job
     |> for_job_query()
-    |> where([contract], is_nil(contract.organization_id) and is_nil(contract.job_id))
+    |> where([contract], is_nil(contract.organization_id) and is_nil(contract.package_id))
     |> Repo.one!()
   end
 
@@ -118,7 +118,7 @@ defmodule Picsello.Contracts do
       where:
         (client.id == ^job.client_id and contract.organization_id == organization.id and
            ^job.type == contract.job_type) or
-          (is_nil(contract.organization_id) and is_nil(contract.job_id)),
+          (is_nil(contract.organization_id) and is_nil(contract.package_id)),
       order_by: contract.name
     )
   end

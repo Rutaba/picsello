@@ -2,14 +2,14 @@ defmodule Picsello.Contract do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Organization, Job}
+  alias Picsello.{Organization, Package}
 
   schema "contracts" do
     field :content, :string
     field :name, :string
     field :job_type, :string
     belongs_to(:organization, Organization)
-    belongs_to(:job, Job)
+    belongs_to(:package, Package)
     belongs_to(:contract_template, __MODULE__)
 
     timestamps()
@@ -20,8 +20,8 @@ defmodule Picsello.Contract do
       Keyword.get(opts, :validate_unique_name_on_organization)
 
     contract
-    |> cast(attrs, [:name, :content, :job_id, :contract_template_id])
-    |> validate_required([:content, :job_id])
+    |> cast(attrs, [:name, :content, :package_id, :contract_template_id])
+    |> validate_required([:content, :package_id])
     |> then(fn changeset ->
       if validate_unique_name_on_organization do
         changeset

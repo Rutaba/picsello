@@ -143,7 +143,7 @@ defmodule PicselloWeb.ContractFormComponent do
          action,
          params
        ) do
-    attrs = params |> Map.put("job_id", job.id)
+    attrs = params |> Map.put("package_id", job.package_id)
 
     changeset =
       contract

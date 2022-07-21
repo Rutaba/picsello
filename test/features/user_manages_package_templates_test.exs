@@ -172,7 +172,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_flash(:success, text: "The package has been archived")
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("Add a package"))
+    |> click(button("Add a package", at: 0, count: 2))
     |> find(testid("template-card", count: 1), &assert_text(&1, "deluxe"))
   end
 end
