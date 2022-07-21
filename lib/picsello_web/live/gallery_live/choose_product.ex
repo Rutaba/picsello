@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   use PicselloWeb, :live_component
   alias Picsello.{Cart, Galleries, GalleryProducts}
   alias Cart.Digital
+  alias PicselloWeb.GalleryLive.Photos.PhotoView
   import PicselloWeb.GalleryLive.Shared, only: [credits_footer: 1, credits: 1]
 
   @impl true
@@ -56,6 +57,14 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     socket
     |> close_modal()
     |> noreply()
+  end
+
+  def handle_event("photo_view", %{"photo_id" => photo_id}, %{assigns: assigns} = socket) do
+    assigns = %{photo_id: photo_id, photo_ids: assigns.photo_ids, from: :choose_product}
+
+    socket
+    |> open_modal(PhotoView, %{assigns: assigns})
+    |> noreply
   end
 
   defp move_carousel(%{assigns: %{photo_ids: photo_ids}} = socket, fun) do

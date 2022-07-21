@@ -188,6 +188,10 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     socket |> add_to_cart_assigns(order)
   end
 
+  def handle_info({:open_choose_product, photo_id}, socket) do
+    socket |> client_photo_click(photo_id)
+  end
+
   defp place_product_in_cart(
          %{
            assigns: %{

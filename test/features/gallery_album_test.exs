@@ -119,7 +119,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> visit("/galleries/#{gallery_id}/albums/#{album_id}")
     |> assert_has(css(".item", count: photos_count))
     |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-view"))
-    |> click(css("#wrapper a"))
+    |> assert_has(css("span", text: "/images/print.png"))
   end
 
   test "Album, delete single photo", %{

@@ -135,9 +135,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_event("photo_view", %{"photo_id" => photo_id}, socket) do
+  def handle_event("photo_view", %{"photo_id" => photo_id}, %{assigns: assigns} = socket) do
     socket
-    |> open_modal(PhotoView, %{photo_id: photo_id})
+    |> open_modal(
+      PhotoView,
+      %{
+        photo_id: photo_id,
+        photo_ids:
+          assigns.photo_ids
+          |> CLL.init()
+          |> CLL.next(Enum.find_index(assigns.photo_ids, &(&1 == photo_id)) || 0)
+      }
+    )
     |> noreply
   end
 
@@ -612,6 +621,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       products: Galleries.products(gallery)
     )
     |> assign_photos(@per_page)
+    |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
     |> noreply()
   end
 
