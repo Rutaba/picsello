@@ -16,9 +16,12 @@ defmodule Picsello.Repo.Migrations.CreateBrandLinks do
 
     create(index(@table, [:organization_id]))
 
-    execute("""
-    insert into brand_links (title, link_id, "active?", "use_publicly?", "show_on_profile?", organization_id, link)
-    select 'Website', 'website', true, true, true, id, profile->>'website' from organizations where profile->>'website' is not null;
-    """)
+    execute(
+      """
+      insert into brand_links (title, link_id, "active?", "use_publicly?", "show_on_profile?", organization_id, link)
+      select 'Website', 'website', true, true, true, id, profile->>'website' from organizations where profile->>'website' is not null;
+      """,
+      ""
+    )
   end
 end

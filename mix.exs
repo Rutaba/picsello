@@ -60,7 +60,7 @@ defmodule Picsello.MixProject do
         {:phoenix_live_view, "~> 0.17.6"},
         {:plug_cowboy, "~> 2.5.2"},
         {:postgrex, ">= 0.0.0"},
-        {:stripity_stripe, "~> 2.12.1"},
+        {:stripity_stripe, "~> 2.15.0"},
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 0.5.1"},
         {:tesla, "~> 1.4.3"},

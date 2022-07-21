@@ -18,63 +18,128 @@ defmodule Picsello.Cart.Checkouts do
   import Picsello.Cart,
     only: [product_name: 1, product_quantity: 1, item_image_url: 1, preload_digitals: 1]
 
-  import Ecto.Multi, only: [new: 0, run: 3, merge: 2, insert: 3, update: 3, append: 2]
+  import Ecto.Multi, only: [new: 0, run: 3, merge: 2, insert: 3, update: 3, append: 2, put: 3]
 
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
 
   @doc """
+  1. order already has a session?
+      1. expire session
+      2. update intent
   1. contains products?
-    1. create whcc order (needed for fee amount)
-    1. outstanding whcc charges?
-      1. create invoice
-      1. client does not owe?
-        1. finalize invoice
-  1. client owes?
-    1. create checkout session (with fee amount)
-    1. insert intent
-  1. client does not owe?
-    1. place picsello order
+      1. create whcc order (needed for fee amount)
+      2. outstanding whcc charges?
+          2. client does not owe?
+              1. create invoice
+              2. finalize invoice
+  2. client owes?
+      2. create checkout session (with fee amount)
+      3. insert intent
+  3. client does not owe?
+      1. place picsello order
   """
 
   @spec check_out(integer(), map()) ::
           {:ok, map()} | {:error, any(), any(), map()}
   def check_out(order_id, opts) do
-    new()
-    |> run(:cart, :load_cart, [order_id])
-    |> run(:client_total, &client_total/2)
-    |> merge(fn
-      %{client_total: ~M[0]USD, cart: %{products: []} = cart} ->
-        update(new(), :order, place_order(cart))
+    order_id
+    |> handle_previous_session()
+    |> append(
+      new()
+      |> run(:cart, :load_cart, [order_id])
+      |> run(:client_total, &client_total/2)
+      |> merge(fn
+        %{client_total: ~M[0]USD, cart: %{products: []} = cart} ->
+          update(new(), :order, place_order(cart))
 
-      %{cart: %{products: []} = cart} ->
-        create_session(cart, opts)
+        %{cart: %{products: []} = cart} ->
+          create_session(cart, opts)
 
-      %{client_total: ~M[0]USD, cart: %{products: [_ | _]} = cart} ->
-        new()
-        |> append(create_whcc_order(cart))
-        |> run(:stripe_invoice, &create_stripe_invoice/2)
-        |> run(:finalize_invoice, &finalize_invoice/2)
-        |> insert(:invoice, &insert_invoice/1)
-        |> update(:order, place_order(cart))
+        %{client_total: ~M[0]USD, cart: %{products: [_ | _]} = cart} ->
+          new()
+          |> append(create_whcc_order(cart))
+          |> run(:stripe_invoice, &create_stripe_invoice/2)
+          |> insert(:invoice, &insert_invoice/1)
+          |> update(:order, place_order(cart))
 
-      %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
-        new()
-        |> append(create_whcc_order(cart))
-        |> merge(
-          &create_session(
-            cart,
-            opts |> Map.merge(&1) |> Map.put(:client_total, client_total)
+        %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
+          new()
+          |> append(create_whcc_order(cart))
+          |> merge(
+            &create_session(
+              cart,
+              opts |> Map.merge(&1) |> Map.put(:client_total, client_total)
+            )
           )
-        )
-        |> merge(&handle_invoice/1)
-    end)
+      end)
+    )
     |> Repo.transaction()
+  end
+
+  defp handle_previous_session(order_id) do
+    new()
+    |> merge(fn _ ->
+      case load_previous_intent(order_id) do
+        nil ->
+          new()
+
+        intent ->
+          new()
+          |> put(:previous_intent, intent)
+          |> run(:previous_stripe_intent, &fetch_previous_stripe_intent/2)
+          |> run(:expire_previous_session, &expire_previous_session/2)
+          |> update(:updated_previous_intent, &update_previous_intent/1)
+      end
+    end)
+  end
+
+  defp load_previous_intent(order_id),
+    do:
+      from(intent in Intents.unresolved_for_order(order_id),
+        join: order in assoc(intent, :order),
+        join: gallery in assoc(order, :gallery),
+        join: organization in assoc(gallery, :organization),
+        preload: [order: {order, [gallery: {gallery, [organization: organization]}]}]
+      )
+      |> Repo.one()
+
+  defp expire_previous_session(_repo, %{previous_stripe_intent: %{status: "canceled"} = intent}) do
+    {:ok, %{payment_intent: intent}}
+  end
+
+  defp expire_previous_session(_repo, %{
+         previous_intent: %{
+           stripe_session_id: id,
+           order: %{gallery: %{organization: %{stripe_account_id: connect_account}}}
+         }
+       }) do
+    Payments.expire_session(id, connect_account: connect_account, expand: [:payment_intent])
+    |> case do
+      {:ok, %{status: "expired", payment_intent: intent} = session} ->
+        {:ok, %{session | payment_intent: %{intent | status: "canceled"}}}
+
+      error ->
+        error
+    end
+  end
+
+  defp update_previous_intent(%{
+         previous_intent: intent,
+         expire_previous_session: %{payment_intent: stripe_intent}
+       }) do
+    Intents.changeset(intent, stripe_intent)
   end
 
   def load_cart(repo, _multi, order_id) do
     from(order in Order,
-      preload: [gallery: [organization: :user], products: :whcc_product],
+      join: gallery in assoc(order, :gallery),
+      join: organization in assoc(gallery, :organization),
+      join: user in assoc(organization, :user),
+      preload: [
+        gallery: {gallery, [organization: {organization, [user: user]}]},
+        products: :whcc_product
+      ],
       where: order.id == ^order_id and is_nil(order.placed_at)
     )
     |> preload_digitals()
@@ -151,30 +216,9 @@ defmodule Picsello.Cart.Checkouts do
         connect_account: stripe_account_id
       )
     end)
-    |> insert(:intent, fn %{session: %{payment_intent: intent}} ->
-      Intents.changeset(intent, order)
+    |> insert(:intent, fn %{session: %{id: session_id, payment_intent: intent}} ->
+      Intents.changeset(intent, order_id: order.id, session_id: session_id)
     end)
-  end
-
-  defp handle_invoice(
-         %{
-           whcc_order: whcc_order,
-           save_whcc_order: order,
-           intent: %{application_fee_amount: application_fee_amount}
-         } = state
-       ) do
-    whcc_order
-    |> WHCCOrder.total()
-    |> Money.subtract(application_fee_amount)
-    |> case do
-      ~M[0]USD ->
-        new()
-
-      outstanding ->
-        new()
-        |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, outstanding) end)
-        |> insert(:invoice, &insert_invoice(Map.merge(state, &1)))
-    end
   end
 
   defp create_stripe_invoice(
@@ -185,37 +229,29 @@ defmodule Picsello.Cart.Checkouts do
 
   defp create_stripe_invoice(
          %{gallery: %{organization: %{user: user}}} = invoice_order,
-         %{amount: outstanding_cents}
+         outstanding
        ) do
-    with "" <> customer <- Picsello.Subscriptions.user_customer_id(user),
-         {:ok, _invoice_item} <-
-           Payments.create_invoice_item(%{
-             customer: customer,
-             amount: outstanding_cents,
-             currency: "USD"
-           }),
-         {:ok, invoice} <-
-           Payments.create_invoice(%{
-             customer: customer,
-             description:
-               "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}",
-             auto_advance: true
-           }) do
-      {:ok, invoice}
-    end
+    Invoices.invoice_user(user, outstanding,
+      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
+    )
   end
-
-  defp insert_invoice(%{save_whcc_order: order, finalize_invoice: stripe_invoice}),
-    do: Invoices.changeset(stripe_invoice, order)
 
   defp insert_invoice(%{save_whcc_order: order, stripe_invoice: stripe_invoice}),
     do: Invoices.changeset(stripe_invoice, order)
 
-  defp finalize_invoice(_repo, %{stripe_invoice: stripe_invoice}),
-    do: Picsello.Payments.finalize_invoice(stripe_invoice, %{auto_advance: true})
-
   defp place_order(cart), do: Order.placed_changeset(cart)
   defp client_total(_repo, %{cart: cart}), do: {:ok, Order.total_cost(cart)}
+
+  defp fetch_previous_stripe_intent(
+         _repo,
+         %{
+           previous_intent: %{
+             stripe_payment_intent_id: id,
+             order: %{gallery: %{organization: %{stripe_account_id: stripe_account_id}}}
+           }
+         }
+       ),
+       do: Payments.retrieve_payment_intent(id, connect_account: stripe_account_id)
 
   defp build_line_items(%Order{digitals: digitals, products: products} = order) do
     for item <- Enum.concat([products, digitals, [order]]), reduce: [] do

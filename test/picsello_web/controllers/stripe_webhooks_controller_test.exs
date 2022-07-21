@@ -119,7 +119,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
           delivery_info: %{email: "client@example.com"}
         )
 
-      insert(:intent, order: order, stripe_id: intent().id)
+      insert(:intent, order: order, stripe_payment_intent_id: intent().id)
 
       stub_event(
         client_reference_id: "order_number_#{Order.number(order)}",

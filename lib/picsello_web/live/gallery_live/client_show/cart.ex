@@ -88,7 +88,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
             socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
 
           _error ->
-            socket |> put_flash(:error, "something wen't wrong")
+            socket |> put_flash(:error, "something went wrong")
         end
         |> noreply()
 
@@ -193,6 +193,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @impl true
   def handle_info({:checkout, :due, stripe_url}, socket) do
     socket |> redirect(external: stripe_url) |> noreply()
+  end
+
+  def handle_info({:checkout, :error, _error}, socket) do
+    socket
+    |> put_flash(:error, "something went wrong")
+    |> assign(:checking_out, false)
+    |> push_event("scroll:unlock", %{})
+    |> noreply()
   end
 
   defp continue_summary(assigns) do

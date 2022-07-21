@@ -2,6 +2,7 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
+  import Picsello.TestSupport.ClientGallery, only: [click_photo: 2]
   alias Picsello.{Repo, Cart.Order, Package, Galleries.Photo}
 
   setup do
@@ -53,10 +54,6 @@ defmodule Picsello.ClientOrdersTest do
     [gallery: gallery, organization: organization, package: package]
   end
 
-  def click_photo(session, position) do
-    session |> click(css("#muuri-grid .muuri-item-shown:nth-child(#{position}) *[id^='img']"))
-  end
-
   setup :authenticated_gallery_client
 
   def payment_intent,
@@ -88,7 +85,7 @@ defmodule Picsello.ClientOrdersTest do
       send(test_pid, {:checkout_link, params})
 
       {:ok,
-       %{
+       build(:stripe_session,
          url:
            success_url
            |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
@@ -96,7 +93,7 @@ defmodule Picsello.ClientOrdersTest do
          payment_intent:
            %{payment_intent() | id: payment_intent_id, amount: amount}
            |> Map.merge(payment_intent_data)
-       }}
+       )}
     end)
   end
 

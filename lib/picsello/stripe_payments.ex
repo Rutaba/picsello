@@ -9,6 +9,12 @@ defmodule Picsello.StripePayments do
   defdelegate create_session(params, opts), to: Stripe.Session, as: :create
 
   @impl Payments
+  defdelegate retrieve_session(id, opts), to: Stripe.Session, as: :retrieve
+
+  @impl Payments
+  defdelegate expire_session(id, opts), to: Stripe.Session, as: :expire
+
+  @impl Payments
   defdelegate retrieve_account(account_id, opts), to: Stripe.Account, as: :retrieve
 
   @impl Payments
@@ -31,9 +37,6 @@ defmodule Picsello.StripePayments do
 
   @impl Payments
   defdelegate create_customer(params, opts), to: Stripe.Customer, as: :create
-
-  @impl Payments
-  defdelegate retrieve_session(id, opts), to: Stripe.Session, as: :retrieve
 
   @impl Payments
   defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
