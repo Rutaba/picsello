@@ -163,7 +163,7 @@ defmodule Picsello.Orders.Confirmations do
           gallery: [organization: :user]
         ]
       )
-      |> repo.one!()
+      |> repo.one()
 
     {:ok, order}
   end
@@ -208,18 +208,11 @@ defmodule Picsello.Orders.Confirmations do
 
   defp update_intent(_, %{
          session: %{payment_intent: intent_id},
-         order: order,
          stripe_options: stripe_options
        }) do
-    %{amount: total} = Order.total_cost(order)
-
     case Payments.retrieve_payment_intent(intent_id, stripe_options) do
-      {:ok, %{amount_capturable: ^total} = intent} ->
-        Picsello.Intents.update(intent)
-
       {:ok, intent} ->
-        {:error,
-         "cart total (#{Money.new(total)}) does not match payment intent:\n#{inspect(intent)}"}
+        Picsello.Intents.update(intent)
 
       error ->
         error

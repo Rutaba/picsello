@@ -11,6 +11,7 @@ defmodule Picsello.Cart do
     Cart.Order,
     Galleries,
     Galleries.Gallery,
+    Intents.Intent,
     Orders,
     Repo,
     WHCC
@@ -162,7 +163,14 @@ defmodule Picsello.Cart do
           ),
         reduce:
           from(order in Order,
-            where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
+            as: :order,
+            where:
+              order.gallery_id == ^gallery_id and is_nil(order.placed_at) and
+                not exists(
+                  from(intent in Intent,
+                    where: intent.order_id == parent_as(:order).id and intent.status != :canceled
+                  )
+                )
           ) do
       query ->
         fun.(query)

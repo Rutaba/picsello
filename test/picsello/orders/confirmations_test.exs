@@ -315,12 +315,11 @@ defmodule Picsello.Orders.ConfirmationsTest do
   end
 
   describe "handle_session - order does not exist" do
-    test "raises" do
-      assert_raise(Ecto.NoResultsError, fn ->
-        handle_session(%Stripe.Session{
-          client_reference_id: "order_number_404"
-        })
-      end)
+    test "fails" do
+      assert {:error, _x, _y, _z} =
+               handle_session(%Stripe.Session{
+                 client_reference_id: "order_number_404"
+               })
     end
   end
 
@@ -348,7 +347,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
     test "cancels payment intent", %{order: order} do
       Picsello.MockPayments
       |> Mox.expect(:retrieve_payment_intent, fn "intent-id", _stripe_options ->
-        {:ok, %{amount_capturable: Order.total_cost(Repo.preload(order, :products)).amount + 1}}
+        {:error, nil}
       end)
       |> Mox.expect(:cancel_payment_intent, fn "intent-id", _stripe_options -> nil end)
 

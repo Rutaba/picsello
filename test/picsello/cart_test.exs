@@ -331,6 +331,18 @@ defmodule Picsello.CartTest do
       assert {:ok, %{products: [%{whcc_product: %{whcc_id: "abc"}}]}} =
                Cart.get_unconfirmed_order(gallery_id, preload: [:products])
     end
+
+    test "does not find an order that has an unresolved intent" do
+      %{gallery_id: gallery_id} = order = insert(:order)
+      insert(:intent, order: order)
+      assert {:error, _} = Cart.get_unconfirmed_order(gallery_id)
+    end
+
+    test "finds an order that has a canceled intent" do
+      %{gallery_id: gallery_id} = order = insert(:order)
+      insert(:intent, order: order, status: :canceled)
+      assert {:ok, _} = Cart.get_unconfirmed_order(gallery_id)
+    end
   end
 
   def create_gallery(opts \\ []),
