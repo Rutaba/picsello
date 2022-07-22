@@ -77,7 +77,7 @@ defmodule Picsello.Cart.Checkouts do
     |> Repo.transaction()
   end
 
-  defp handle_previous_session(order_id) do
+  def handle_previous_session(order_id) do
     new()
     |> merge(fn _ ->
       case load_previous_intent(order_id) do
