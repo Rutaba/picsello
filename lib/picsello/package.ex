@@ -43,15 +43,16 @@ defmodule Picsello.Package do
   end
 
   def import_changeset(package \\ %__MODULE__{}, attrs) do
+    base_price = package |> cast(attrs, [:base_price]) |> get_field(:base_price) || Money.new(0)
+    skip_base_price = Money.zero?(base_price)
+
     package
     |> create_details(attrs, skip_description: true)
-    |> update_pricing(attrs)
+    |> update_pricing(attrs, skip_base_price: skip_base_price)
     |> cast(attrs, ~w[collected_price]a)
-    |> validate_required(~w[collected_price]a)
     |> then(fn changeset ->
-      base_price = get_field(changeset, :base_price) || Money.new(0)
-
       changeset
+      |> put_change(:collected_price, get_field(changeset, :collected_price) || Money.new(0))
       |> validate_money(:collected_price,
         greater_than_or_equal_to: 0,
         less_than_or_equal_to: base_price.amount
@@ -109,14 +110,25 @@ defmodule Picsello.Package do
     end)
   end
 
-  defp update_pricing(package, attrs, _opts \\ []) do
+  defp update_pricing(package, attrs, opts \\ []) do
     package
     |> cast(
       attrs,
       ~w[base_price download_count download_each_price base_multiplier print_credits buy_all]a
     )
     |> validate_required(~w[base_price download_count download_each_price]a)
-    |> validate_money(:base_price, greater_than_or_equal_to: 200)
+    |> then(fn changeset ->
+      if Keyword.get(opts, :skip_base_price) do
+        changeset
+        |> put_change(:base_price, Money.new(0))
+        |> put_change(:print_credits, Money.new(0))
+      else
+        changeset
+        |> validate_required(~w[base_price]a)
+        |> put_change(:print_credits, get_field(changeset, :print_credits) || Money.new(0))
+        |> validate_money(:base_price, greater_than_or_equal_to: 200)
+      end
+    end)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
     |> then(fn changeset ->

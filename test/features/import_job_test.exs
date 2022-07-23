@@ -33,11 +33,18 @@ defmodule Picsello.ImportJobTest do
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in(text_field("Image Turnaround Time"), with: "2")
-    |> fill_in(text_field("The amount you’ve charged for your job"), with: "$1000")
-    |> fill_in(text_field("How much of the creative session fee is for print credits"),
-      with: "$100"
+    |> find(
+      text_field("The amount you’ve charged for your job"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$1000.00"))
     )
-    |> fill_in(text_field("The amount you’ve already collected"), with: "$200")
+    |> find(
+      text_field("How much of the creative session fee is for print credits"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$100.00"))
+    )
+    |> find(
+      text_field("The amount you’ve already collected"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
+    )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
     |> scroll_into_view(css("#download_is_enabled_false"))
     |> click(checkbox("Set my own download price"))
@@ -321,9 +328,16 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> fill_in_package_form()
-    |> fill_in(text_field("The amount you’ve already collected"), with: "$1000")
+    |> find(
+      text_field("The amount you’ve already collected"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$1000"))
+    )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$0.00"))
-    |> wait_for_enabled_submit_button(text: "Save")
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> assert_text("Since your remaining balance is $0.00")
+    |> assert_text("Remaining to collect: $0.00")
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
@@ -338,6 +352,33 @@ defmodule Picsello.ImportJobTest do
            } = job.package
 
     assert [] = job.payment_schedules
+  end
+
+  feature "user imports job with zero base price", %{session: session} do
+    session
+    |> click(testid("jobs-card"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> fill_in_client_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> fill_in(text_field("Image Turnaround Time"), with: "2")
+    |> fill_in(text_field("The amount you’ve charged for your job"), with: "$0.00")
+    |> assert_disabled(text_field("How much of the creative session fee is for print credits"))
+    |> assert_disabled(text_field("The amount you’ve already collected"))
+    |> assert_has(definition("Remaining balance to collect with Picsello", text: "$0.00"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> assert_text("Since your remaining balance is $0.00")
+    |> assert_text("Remaining to collect: $0.00")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
   end
 
   feature "user sees validation errors when importing job", %{session: session} do
