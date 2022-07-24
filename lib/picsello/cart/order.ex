@@ -2,7 +2,14 @@ defmodule Picsello.Cart.Order do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Cart.Product, Cart.DeliveryInfo, Cart.Digital, Galleries.Gallery}
+
+  alias Picsello.{
+    Cart.OrderNumber,
+    Cart.Product,
+    Cart.DeliveryInfo,
+    Cart.Digital,
+    Galleries.Gallery
+  }
 
   schema "gallery_orders" do
     field :bundle_price, Money.Ecto.Amount.Type
@@ -112,8 +119,8 @@ defmodule Picsello.Cart.Order do
     |> put_embed(:delivery_info, delivery_info_changeset)
   end
 
-  def number(%__MODULE__{id: id}), do: Picsello.Cart.OrderNumber.to_number(id)
-  def number(id), do: Picsello.Cart.OrderNumber.to_number(id)
+  def number(%__MODULE__{id: id}), do: OrderNumber.to_number(id)
+  def number(id), do: OrderNumber.to_number(id)
 
   @spec delete_product_changeset(t(),
           bundle: true,

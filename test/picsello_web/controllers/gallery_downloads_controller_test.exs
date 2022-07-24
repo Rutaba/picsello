@@ -2,6 +2,8 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
   use PicselloWeb.ConnCase, async: true
   import Money.Sigils
 
+  alias Picsello.Cart.OrderNumber
+
   def add_photos(order, photos) do
     for(photo <- photos, reduce: order) do
       order ->
@@ -71,7 +73,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
           conn,
           :download,
           gallery.client_link_hash,
-          Picsello.Cart.OrderNumber.to_number(order.id)
+          OrderNumber.to_number(order.id)
         )
       )
     end
@@ -124,7 +126,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
                Enum.into(conn.resp_headers, %{})
 
-      assert "org name - #{Picsello.Cart.OrderNumber.to_number(order.id)}.zip" ==
+      assert "org name - #{OrderNumber.to_number(order.id)}.zip" ==
                URI.decode(download_filename)
 
       assert ["original name (1).jpg", "original name (2).jpg"] =
@@ -151,7 +153,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
                Enum.into(conn.resp_headers, %{})
 
-      assert "org name - #{Picsello.Cart.OrderNumber.to_number(order.id)}.zip" ==
+      assert "org name - #{OrderNumber.to_number(order.id)}.zip" ==
                URI.decode(download_filename)
 
       assert ["original name (1).jpg", "original name (2).jpg", "original name (3).jpg"] =
