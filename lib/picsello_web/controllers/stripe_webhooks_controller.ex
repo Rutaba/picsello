@@ -4,12 +4,12 @@ defmodule PicselloWeb.StripeWebhooksController do
   alias Picsello.{Orders, PaymentSchedules}
 
   def connect_webhooks(%Plug.Conn{assigns: %{stripe_event: stripe_event}} = conn, _params) do
-    :ok = handle_webhook(:connect, stripe_event)
+    handle_webhook(:connect, stripe_event)
     success_response(conn)
   end
 
   def app_webhooks(%Plug.Conn{assigns: %{stripe_event: stripe_event}} = conn, _params) do
-    :ok = handle_webhook(:app, stripe_event)
+    handle_webhook(:app, stripe_event)
     success_response(conn)
   end
 
@@ -37,7 +37,11 @@ defmodule PicselloWeb.StripeWebhooksController do
       end
 
     Logger.info("handled webhook")
-    :ok
+  catch
+    kind, value ->
+      message = "unhandled error in webhook: #{inspect(kind)}:\n#{inspect(value)}"
+      Sentry.capture_message(message, stacktrace: __STACKTRACE__)
+      Logger.error(message)
   end
 
   def handle_webhook(:app, %{type: type, data: %{object: subscription}})
@@ -47,7 +51,6 @@ defmodule PicselloWeb.StripeWebhooksController do
              "customer.subscription.deleted"
            ] do
     {:ok, _} = Picsello.Subscriptions.handle_stripe_subscription(subscription)
-    :ok
   end
 
   def handle_webhook(:app, %{type: type, data: %{object: %Stripe.Invoice{subscription: "" <> _}}})
@@ -55,7 +58,7 @@ defmodule PicselloWeb.StripeWebhooksController do
              "invoice.payment_succeeded",
              "invoice.payment_failed"
            ] do
-    :ok
+    Logger.info("ignored subscription #{type} webhook")
   end
 
   def handle_webhook(:app, %{type: type, data: %{object: invoice}})
@@ -64,7 +67,6 @@ defmodule PicselloWeb.StripeWebhooksController do
              "invoice.payment_failed"
            ] do
     {:ok, _} = Orders.handle_invoice(invoice)
-    :ok
   end
 
   defp success_response(conn) do
