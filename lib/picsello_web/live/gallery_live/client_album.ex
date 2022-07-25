@@ -112,8 +112,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     order = Cart.place_product(digital, gallery.id)
-
-    socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
+    socket |> add_to_cart_assigns(order)
   end
 
   def handle_info(
@@ -121,8 +120,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     order = Cart.place_product({:bundle, bundle_price}, gallery.id)
-
-    socket |> assign(order: order) |> assign_cart_count(gallery) |> close_modal() |> noreply()
+    socket |> add_to_cart_assigns(order)
   end
 
   defp photos_count(nil), do: "photo"

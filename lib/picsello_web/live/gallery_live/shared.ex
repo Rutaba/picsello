@@ -357,6 +357,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def add_to_cart_assigns(%{assigns: %{gallery: gallery}} = socket, order) do
+    socket
+    |> assign(credits: credits(gallery))
+    |> assign(order: order)
+    |> assign_cart_count(gallery)
+    |> close_modal()
+    |> put_flash(:success, "Added!")
+    |> noreply()
+  end
+
   def inprogress_upload_broadcast(gallery_id, entries) do
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
