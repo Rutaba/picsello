@@ -66,6 +66,19 @@ defmodule Picsello.Notifiers.ClientNotifier do
     end
   end
 
+  def deliver_payment_schedule_confirmation(job, payment_schedule, helpers) do
+    with client <- job |> Repo.preload(:client) |> Map.get(:client),
+         [preset | _] <- Picsello.EmailPresets.for(job, :payment_confirmation_client),
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {job, payment_schedule}, helpers) do
+      deliver_transactional_email(
+        %{subject: subject, headline: subject, body: body},
+        client.email,
+        job
+      )
+    end
+  end
+
   def deliver_order_confirmation(
         %{
           gallery: %{job: %{client: %{organization: organization}}} = gallery,
@@ -130,13 +143,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
     do: body_text |> Phoenix.HTML.Format.text_to_html() |> Phoenix.HTML.safe_to_string()
 
   defp body_html(%{body_html: body_html}), do: body_html
-
-  defp email_signature(organization) do
-    Phoenix.View.render_to_string(PicselloWeb.EmailSignatureView, "show.html",
-      organization: organization,
-      user: organization.user
-    )
-  end
 
   defp order_address(_, nil), do: nil
 

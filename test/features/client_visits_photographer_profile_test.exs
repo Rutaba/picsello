@@ -11,12 +11,20 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
           slug: "mary-jane-photos",
           profile: %{
             color: Picsello.Profiles.Profile.colors() |> hd,
-            job_types: ~w(portrait event),
-            website: "http://photos.example.com"
+            job_types: ~w(portrait event)
           }
         }
       )
       |> onboard!
+
+    insert(:brand_link, user: user, link: "http://photos.example.com", active?: true)
+
+    insert(:brand_link,
+      user: user,
+      link: "http://photos.example1.com",
+      show_on_profile?: true,
+      active?: true
+    )
 
     insert(:package_template,
       name: "Gold",
@@ -194,5 +202,15 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> visit(profile_url)
     |> assert_inner_text(testid("package-detail", count: 2, at: 0), "Silver$20 silver desc")
     |> assert_inner_text(testid("package-detail", count: 2, at: 1), "Gold$30gold desc")
+  end
+
+  feature "brand links show on public profile", %{session: session, profile_url: profile_url} do
+    session
+    |> visit(profile_url)
+    |> assert_has(testid("marketing-links", count: 1))
+    |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
+      card
+      |> assert_has(css("a[href='http://photos.example1.com']"))
+    end)
   end
 end

@@ -118,7 +118,7 @@ defmodule PicselloWeb.PackageLive.Shared do
                 <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
                 Include download credits
               </label>
-              <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
+              <%= if d |> current() |> Map.get(:includes_credits), do: input(d, :count, type: :number_input, phx_debounce: 200, step: 1, min: 1, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center") %>
             </div>
           </div>
           <label class="flex items-center mt-3">

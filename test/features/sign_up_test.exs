@@ -40,6 +40,8 @@ defmodule Picsello.SignUpTest do
     |> assert_path("/onboarding")
 
     user = User |> Repo.one() |> Repo.preload(:organization)
+    insert(:brand_link, user: user)
+    user |> Repo.reload() |> Repo.preload(organization: :brand_links)
 
     assert %{
              name: "Mary Jane",
@@ -143,7 +145,7 @@ defmodule Picsello.SignUpTest do
     |> visit("/users/register?code=#{random_code}")
     |> assert_has(
       css("h2",
-        text: "3 months free"
+        text: "90-day free"
       )
     )
   end
@@ -156,7 +158,7 @@ defmodule Picsello.SignUpTest do
     |> visit("/users/register?code=#{random_code}")
     |> assert_has(
       css("h2",
-        text: "1 month free"
+        text: "30-day free"
       )
     )
   end

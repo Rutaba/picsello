@@ -68,13 +68,16 @@ defmodule Picsello.Payments do
   @callback create_customer(create_customer(), Stripe.options()) ::
               {:ok, Stripe.Customer.t()} | {:error, Stripe.Error.t()}
 
-  @callback create_session(Stripe.Session.create_params(), Stripe.options()) ::
-              {:ok, Stripe.Session.t()} | {:error, any}
-
   @callback construct_event(String.t(), String.t(), String.t()) ::
               {:ok, Stripe.Event.t()} | {:error, any}
 
+  @callback create_session(Stripe.Session.create_params(), Stripe.options()) ::
+              {:ok, Stripe.Session.t()} | {:error, any}
+
   @callback retrieve_session(String.t(), keyword(binary())) ::
+              {:ok, Stripe.Session.t()} | {:error, Stripe.Error.t()}
+
+  @callback expire_session(String.t(), keyword(binary())) ::
               {:ok, Stripe.Session.t()} | {:error, Stripe.Error.t()}
 
   @callback retrieve_account(binary(), Stripe.options()) ::
@@ -165,8 +168,9 @@ defmodule Picsello.Payments do
     end
   end
 
-  def create_customer(params, opts), do: impl().create_customer(params, opts)
   def retrieve_session(id, opts), do: impl().retrieve_session(id, opts)
+  def expire_session(id, opts), do: impl().expire_session(id, opts)
+  def create_customer(params, opts), do: impl().create_customer(params, opts)
   def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
   def retrieve_subscription(id, opts), do: impl().retrieve_subscription(id, opts)
   def list_prices(params), do: impl().list_prices(params)

@@ -77,8 +77,7 @@ defmodule Picsello.PricingCalculationsTest do
         profile: %{
           name: "Mary Jane Photography",
           slug: "mary-jane-photos",
-          job_types: ~w(portrait event),
-          website: "photos.example.com"
+          job_types: ~w(portrait event)
         }
       )
 

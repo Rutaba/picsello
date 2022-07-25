@@ -26,7 +26,8 @@ defmodule Picsello.Factory do
     Galleries.Album,
     Galleries.Watermark,
     Galleries.Photo,
-    Profiles.Profile
+    Profiles.Profile,
+    BrandLink
   }
 
   def valid_user_password(), do: "hello world!"
@@ -97,8 +98,7 @@ defmodule Picsello.Factory do
     do: %{
       color: Profile.colors() |> hd,
       is_enabled: true,
-      job_types: ["event", "wedding", "newborn"],
-      no_website: true
+      job_types: ["event", "wedding", "newborn"]
     }
 
   def valid_user_attributes(attrs \\ %{}),
@@ -159,6 +159,28 @@ defmodule Picsello.Factory do
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
           _ -> build(:organization, Map.get(attrs, :organization, %{}))
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
+    |> evaluate_lazy_attributes()
+  end
+
+  def brand_link_factory(attrs) do
+    %BrandLink{
+      title: "Website",
+      link: "photos.example.com",
+      link_id: "website",
+      organization_id: fn ->
+        case attrs do
+          %{user: user} ->
+            user
+            |> Repo.preload(:organization)
+            |> Map.get(:organization)
+            |> Map.get(:id)
+
+          _ ->
+            build(:organization, Map.get(attrs, :organization, %{})) |> Map.get(:id)
         end
       end
     }
@@ -653,12 +675,12 @@ defmodule Picsello.Factory do
         code: "123456",
         trial_length: 90,
         active: false,
-        signup_title: "Let's get started!",
+        signup_title: "This is going to be a game changer!",
         signup_description:
-          "Grow your photography business with Picsello—3 months free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
+          "Start your 90-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
         onboarding_title: "Start your 90-day free trial",
         onboarding_description:
-          "After 90 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
+          "Your 90-day free trial lets you explore and use all of our amazing features.",
         success_title: "Your 90-day free trial has started!"
       }
       |> merge_attributes(attrs)
@@ -774,7 +796,8 @@ defmodule Picsello.Factory do
       application_fee_amount: ~M[0]USD,
       order: fn -> build(:order) end,
       status: :requires_payment_method,
-      stripe_id: sequence(:payment_intent, &"payment-intent-#{&1}")
+      stripe_payment_intent_id: sequence(:payment_intent, &"payment-intent-#{&1}"),
+      stripe_session_id: sequence(:session, &"session-#{&1}")
     }
     |> evaluate_lazy_attributes()
   end
@@ -794,16 +817,20 @@ defmodule Picsello.Factory do
 
   def stripe_payment_intent_factory() do
     %Stripe.PaymentIntent{
-      amount: ~M[0]USD,
-      amount_received: ~M[0]USD,
-      amount_capturable: ~M[0]USD,
+      amount: 0,
+      amount_received: 0,
+      amount_capturable: 0,
+      application_fee_amount: 0,
       status: "requires_payment_method",
       id: sequence(:payment_intent_stripe_id, &"payment-intent-stripe-id-#{&1}")
     }
   end
 
   def stripe_session_factory do
-    %Stripe.Session{payment_intent: build(:stripe_payment_intent)}
+    %Stripe.Session{
+      id: sequence(:session, &"session-#{&1}"),
+      payment_intent: build(:stripe_payment_intent)
+    }
   end
 
   def stripe_invoice_factory() do

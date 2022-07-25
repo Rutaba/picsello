@@ -1,6 +1,6 @@
 defmodule Picsello.Invoices do
   @moduledoc "context module for invoicing photographers for outstanding whcc costs"
-  alias Picsello.Cart.Order
+  alias Picsello.{Cart.Order, Subscriptions, Payments}
   import Ecto.Query, only: [from: 2]
   import Picsello.Package, only: [validate_money: 2]
 
@@ -34,7 +34,6 @@ defmodule Picsello.Invoices do
       )
       |> validate_required(attrs)
       |> foreign_key_constraint(:order_id)
-      |> unique_constraint(:order_id)
       |> validate_money([:amount_due, :amount_paid, :amount_remaining])
       |> validate_inclusion(:status, @statuses)
     end
@@ -67,5 +66,23 @@ defmodule Picsello.Invoices do
       where: organization.id == ^organization_id
     )
     |> Picsello.Repo.exists?()
+  end
+
+  def invoice_user(user, %Money{amount: outstanding_cents, currency: :USD}, opts \\ []) do
+    with "" <> customer <- Subscriptions.user_customer_id(user),
+         {:ok, _invoice_item} <-
+           Payments.create_invoice_item(%{
+             customer: customer,
+             amount: outstanding_cents,
+             currency: "USD"
+           }),
+         {:ok, %{id: invoice_id}} <-
+           Payments.create_invoice(%{
+             customer: customer,
+             description: Keyword.get(opts, :description, "Outstanding charges"),
+             auto_advance: true
+           }) do
+      Payments.finalize_invoice(invoice_id, %{auto_advance: true})
+    end
   end
 end

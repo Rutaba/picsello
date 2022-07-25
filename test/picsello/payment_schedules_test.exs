@@ -272,4 +272,71 @@ defmodule Picsello.PaymentSchedulesTest do
       assert [%{job_id: ^job_id, body_text: "$50.00"}] = Repo.all(Picsello.ClientMessage)
     end
   end
+
+  describe "handle_payment/2" do
+    test "updates paid_at and sends email to photographer and client" do
+      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+      user = insert(:user, email: "photographer@example.com")
+
+      lead =
+        insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
+
+      insert(:email_preset, job_type: lead.type, state: :payment_confirmation_client)
+
+      proposal = insert(:proposal, job: lead)
+
+      payment_schedule =
+        insert(:payment_schedule,
+          job: lead,
+          price: ~M[5000]USD
+        )
+
+      result =
+        PaymentSchedules.handle_payment(
+          %Stripe.Session{
+            client_reference_id: "proposal_#{proposal.id}",
+            metadata: %{"paying_for" => payment_schedule.id}
+          },
+          PicselloWeb.Helpers
+        )
+
+      assert {:ok, _} = result
+
+      assert %{paid_at: %DateTime{}} = payment_schedule |> Repo.reload!()
+
+      assert_receive {:delivered_email, %{to: [nil: "photographer@example.com"]}}
+      assert_receive {:delivered_email, %{to: [nil: "elizabeth-lead@example.com"]}}
+    end
+
+    test "it does not update paid_at if already paid" do
+      user = insert(:user, email: "photographer@example.com")
+
+      lead =
+        insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
+
+      proposal = insert(:proposal, job: lead)
+
+      paid_at = DateTime.utc_now() |> DateTime.truncate(:second)
+
+      payment_schedule =
+        insert(:payment_schedule,
+          job: lead,
+          price: ~M[5000]USD,
+          paid_at: paid_at
+        )
+
+      result =
+        PaymentSchedules.handle_payment(
+          %Stripe.Session{
+            client_reference_id: "proposal_#{proposal.id}",
+            metadata: %{"paying_for" => payment_schedule.id}
+          },
+          PicselloWeb.Helpers
+        )
+
+      assert {:ok, :already_paid} = result
+
+      assert %{paid_at: ^paid_at} = payment_schedule |> Repo.reload!()
+    end
+  end
 end

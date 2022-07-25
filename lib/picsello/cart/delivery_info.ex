@@ -153,36 +153,8 @@ defmodule Picsello.Cart.DeliveryInfo do
       struct
       |> cast(attrs, [:city, :state, :zip, :addr1, :addr2])
       |> validate_required([:city, :state, :zip, :addr1])
-      |> validate_address_data_relation()
     end
 
     def states, do: @states
-
-    defp validate_address_data_relation(changeset) do
-      validate_change(changeset, :zip, fn :zip, zip ->
-        with {:ok, %{city: city, state: state}} <- ExZipcodes.lookup(zip),
-             {:state, :equal} <- compare_zip_change(changeset, :state, state),
-             {:city, :equal} <- compare_zip_change(changeset, :city, city) do
-          []
-        else
-          {:error, "Zip code not found"} ->
-            [zip: "not found"]
-
-          {:error, reason} ->
-            [zip: reason]
-
-          error ->
-            [error]
-        end
-      end)
-    end
-
-    defp compare_zip_change(changeset, field, change) do
-      if get_field(changeset, field) == change do
-        {field, :equal}
-      else
-        {field, "does not match the zip code"}
-      end
-    end
   end
 end

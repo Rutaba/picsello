@@ -30,6 +30,7 @@ defmodule Picsello.Organization do
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:campaigns, Campaign)
+    has_many(:brand_links, Picsello.BrandLink)
     has_many(:clients, Client)
     has_one(:user, User)
 

@@ -270,6 +270,11 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
+  def handle_info({:upload_success_message, success_message}, socket) do
+    socket |> put_flash(:success, success_message) |> noreply()
+  end
+
+  @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset)
   end

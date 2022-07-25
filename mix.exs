@@ -60,7 +60,7 @@ defmodule Picsello.MixProject do
         {:phoenix_live_view, "~> 0.17.6"},
         {:plug_cowboy, "~> 2.5.2"},
         {:postgrex, ">= 0.0.0"},
-        {:stripity_stripe, "~> 2.12.1"},
+        {:stripity_stripe, "~> 2.15.0"},
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 0.5.1"},
         {:tesla, "~> 1.4.3"},
@@ -80,7 +80,6 @@ defmodule Picsello.MixProject do
         {:struct_access, "~> 1.1"},
         {:size, "~> 0.1.0"},
         {:cll, "~> 0.1.0"},
-        {:ex_zipcodes, "~> 0.1.1"},
         {:ecto_commons, "~> 0.3.3"},
         {:cors_plug, "~> 2.0"},
         {:floki, "~> 0.32"}

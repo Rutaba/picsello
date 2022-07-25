@@ -213,11 +213,11 @@ defmodule Picsello.Subscriptions do
     do: %Picsello.SubscriptionPlansMetadata{
       trial_length: 30,
       onboarding_description:
-        "After 30 days, your subscription will be $20/month. (You can change to annual if you prefer in account settings.)",
+        "Your 30-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
       onboarding_title: "Start your 30-day free trial",
       signup_description:
-        "Grow your photography business with Picsello—1 month free at signup and you secure the Founder Rate of $20 a month OR $200 a year",
-      signup_title: "Let's get started!",
+        "Start your 30-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
+      signup_title: "This is going to be a game changer!",
       success_title: "Your 30-day free trial has started!"
     }
 

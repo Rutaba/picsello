@@ -130,18 +130,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
       Picsello.MockPayments
       |> Mox.expect(:create_session, fn _params, _opts ->
         {:ok,
-         %{
+         build(:stripe_session,
            url: "https://stripe.com",
-           payment_intent: %Stripe.PaymentIntent{
-             amount: 100,
-             amount_capturable: 0,
-             amount_received: 0,
-             application_fee_amount: 0,
-             description: "i dont know what this will be",
-             id: "payment-intent-id",
-             status: "requires_payment_method"
-           }
-         }}
+           payment_intent:
+             build(:stripe_payment_intent,
+               amount: 100,
+               description: "i dont know what this will be",
+               id: "payment-intent-id",
+               status: "requires_payment_method"
+             )
+         )}
       end)
 
       {:ok, view, _html} = live(conn, cart_path)

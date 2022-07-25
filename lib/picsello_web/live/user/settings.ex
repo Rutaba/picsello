@@ -6,6 +6,7 @@ defmodule PicselloWeb.Live.User.Settings do
     Accounts,
     Accounts.User,
     Organization,
+    Onboardings,
     Repo,
     Subscription,
     Subscriptions
@@ -34,6 +35,7 @@ defmodule PicselloWeb.Live.User.Settings do
         sign_out: false,
         page_title: "Settings",
         organization_name_changeset: organization_name_changeset(user),
+        phone_changeset: phone_changeset(user),
         time_zone_changeset: time_zone_changeset(user)
       )
     )
@@ -51,6 +53,11 @@ defmodule PicselloWeb.Live.User.Settings do
     user
     |> Ecto.Changeset.cast(params, [:password])
     |> User.validate_password([])
+  end
+
+  defp phone_changeset(user, params \\ %{}) do
+    user
+    |> Onboardings.user_onboarding_phone_changeset(params)
   end
 
   defp organization_name_changeset(user, params \\ %{}) do
@@ -127,6 +134,22 @@ defmodule PicselloWeb.Live.User.Settings do
       |> Map.put(:action, :validate)
 
     socket |> assign(:time_zone_changeset, changeset) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_phone",
+          "user" => phone_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    changeset =
+      phone_changeset(user, phone_params)
+      |> Map.put(:action, :validate)
+
+    socket |> assign(:phone_changeset, changeset) |> noreply()
   end
 
   @impl true
@@ -216,6 +239,27 @@ defmodule PicselloWeb.Live.User.Settings do
 
       {:error, changeset} ->
         socket |> assign(time_zone_changeset: changeset) |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_phone",
+          "user" => phone_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    case phone_changeset(user, phone_params) |> Repo.update() do
+      {:ok, updated_user} ->
+        socket
+        |> assign(current_user: updated_user)
+        |> put_flash(:success, "Phone number updated successfully")
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(phone_changeset: changeset) |> noreply()
     end
   end
 

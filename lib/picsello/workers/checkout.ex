@@ -1,6 +1,9 @@
 defmodule Picsello.Workers.Checkout do
   @moduledoc "Background job to check out an order"
-  use Oban.Worker, queue: :default, unique: [period: :infinity]
+  use Oban.Worker,
+    queue: :default,
+    unique: [states: ~w[available scheduled executing retryable]a, period: :infinity]
+
   alias Picsello.{Orders, Cart.Checkouts}
 
   require Logger

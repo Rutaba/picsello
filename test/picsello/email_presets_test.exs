@@ -149,10 +149,13 @@ defmodule Picsello.EmailPresetsTest do
                "invoice_amount" => "$10.00",
                "invoice_due_date" => ^due_date,
                "invoice_link" => proposal_link,
+               "job_name" => "Johann Zahn Wedding",
                "mini_session_link" => "",
+               "payment_amount" => "",
                "photographer_cell" => "(918) 555-1234",
                "photography_company_s_name" => "Kloster Oberzell",
                "pricing_guide_link" => pricing_guide_link,
+               "remaining_amount" => "$10.00",
                "review_link" => "",
                "session_date" => ^session_date,
                "session_location" => "In Studio",
@@ -170,10 +173,13 @@ defmodule Picsello.EmailPresetsTest do
                  "invoice_amount": "{{invoice_amount}}",
                  "invoice_due_date": "{{invoice_due_date}}",
                  "invoice_link": "{{invoice_link}}",
+                 "job_name": "{{job_name}}",
                  "mini_session_link": "{{mini_session_link}}",
+                 "payment_amount": "{{payment_amount}}",
                  "photographer_cell": "{{photographer_cell}}",
                  "photography_company_s_name": "{{photography_company_s_name}}",
                  "pricing_guide_link": "{{pricing_guide_link}}",
+                 "remaining_amount": "{{remaining_amount}}",
                  "review_link": "{{review_link}}",
                  "scheduling_page_link": "{{scheduling_page_link}}",
                  "session_date": "{{session_date}}",
@@ -192,6 +198,34 @@ defmodule Picsello.EmailPresetsTest do
       assert String.ends_with?(pricing_guide_link, "/photographer/kloster-oberzell#wedding")
 
       assert_proposal_link(proposal_link, proposal_id)
+    end
+
+    test "resolve strings for job with payment" do
+      job = insert(:lead)
+
+      payment =
+        insert(:payment_schedule, job: job, price: ~M[2000]USD, paid_at: DateTime.utc_now())
+
+      insert(:payment_schedule, job: job, price: ~M[1000]USD)
+      insert(:payment_schedule, job: job, price: ~M[4000]USD)
+
+      assert %{
+               "payment_amount" => "$20.00",
+               "remaining_amount" => "$50.00"
+             } =
+               resolve_variables(
+                 "hi",
+                 """
+                 {
+                 "payment_amount": "{{payment_amount}}",
+                 "remaining_amount": "{{remaining_amount}}"
+                 }
+                 """,
+                 :job,
+                 {job, payment}
+               )
+               |> Map.get(:body_template)
+               |> Jason.decode!()
     end
 
     test "resolve gallery strings" do

@@ -116,11 +116,10 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       order =
         insert(:order,
           gallery: gallery,
-          delivery_info: %{email: "client@example.com"},
-          placed_at: DateTime.utc_now()
+          delivery_info: %{email: "client@example.com"}
         )
 
-      insert(:intent, order: order, stripe_id: intent().id)
+      insert(:intent, order: order, stripe_payment_intent_id: intent().id)
 
       stub_event(
         client_reference_id: "order_number_#{Order.number(order)}",
@@ -199,6 +198,8 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       expect_retrieve(~M[1000]USD)
       expect_capture()
+
+      refute order.placed_at
 
       make_request(conn)
 

@@ -4,7 +4,7 @@ defmodule Picsello.UserCopiesLeadEmbedTest do
   setup do
     color = Picsello.Profiles.Profile.colors() |> hd
 
-    %{
+    user = %{
       user:
         insert(:user,
           organization: %{
@@ -12,13 +12,16 @@ defmodule Picsello.UserCopiesLeadEmbedTest do
             slug: "mary-jane-photos",
             profile: %{
               color: color,
-              job_types: ~w(portrait event),
-              website: "photos.example.com"
+              job_types: ~w(portrait event)
             }
           }
         )
         |> onboard!
     }
+
+    insert(:brand_link, user)
+
+    user
   end
 
   setup :authenticated

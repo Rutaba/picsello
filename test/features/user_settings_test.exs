@@ -14,6 +14,8 @@ defmodule Picsello.UserSettingsTest do
       )
       |> onboard!
 
+    insert(:brand_link, user: user)
+
     [
       user: user
     ]
@@ -33,7 +35,7 @@ defmodule Picsello.UserSettingsTest do
     |> within_modal(&click(&1, button("Yes, change name")))
     |> assert_flash(:success, text: "Business name changed successfully")
 
-    organization = user |> Repo.preload(:organization, force: true) |> Map.get(:organization)
+    organization = user |> Repo.reload() |> Repo.preload(:organization) |> Map.get(:organization)
 
     assert %{
              name: "MJ Photography",
@@ -59,6 +61,27 @@ defmodule Picsello.UserSettingsTest do
 
     assert %{
              time_zone: "America/New_York"
+           } = user
+  end
+
+  feature "updates phone number", %{session: session, user: user} do
+    session
+    |> click(link("Settings"))
+    |> fill_in(text_field("Phone number"), with: "")
+    |> assert_text("Phone number can't be blank")
+    |> fill_in(text_field("Phone number"), with: "12232")
+    |> assert_text("Phone number is invalid")
+    |> fill_in(text_field("Phone number"), with: "(222) 222-2225")
+    |> assert_has(css("label", text: "Phone number is invalid", count: 0))
+    |> fill_in(text_field("Phone number"), with: "(222) 222-2222")
+    |> wait_for_enabled_submit_button(text: "Change number")
+    |> click(button("Change number"))
+    |> assert_flash(:success, text: "Phone number updated successfully")
+
+    user = user |> Repo.reload()
+
+    assert %{
+             onboarding: %{phone: "(222) 222-2222"}
            } = user
   end
 end

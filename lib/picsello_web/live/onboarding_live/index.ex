@@ -3,17 +3,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
-  alias Picsello.{
-    Repo,
-    JobType,
-    Onboardings,
-    Subscriptions,
-    Accounts.User
-  }
+  alias Ecto.Multi
+  alias Picsello.{Repo, BrandLink, JobType, Onboardings, Subscriptions, Accounts.User}
 
   @impl true
   def mount(params, _session, socket) do
     socket
+    |> assign_brand_links()
     |> assign_step(2)
     |> assign(:loading_stripe, false)
     |> assign(
@@ -64,18 +60,22 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
-  def handle_event("save", %{"user" => params}, %{assigns: %{step: step}} = socket) do
-    case socket |> build_changeset(params) |> Repo.update() do
-      {:ok, user} ->
-        socket
-        |> assign(current_user: user)
-        |> assign_step(step + 1)
-        |> assign_changeset()
-        |> noreply()
+  def handle_event(
+        "save",
+        %{"user" => params},
+        %{assigns: %{current_user: %{organization: organization}, step: 4}} = socket
+      ) do
+    {brand_links_params, organization_params} = pop_in(params["organization"]["brand_links"])
 
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+    case handle_brand_link(organization.brand_links, brand_links_params) do
+      :update -> save(socket, params)
+      data -> save(socket, organization_params, data)
     end
+  end
+
+  @impl true
+  def handle_event("save", %{"user" => params}, socket) do
+    save(socket, params)
   end
 
   @impl true
@@ -223,8 +223,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <% end %>
             </ul>
           </label>
-
-          <.website_field form={p} class="mt-4" />
+        <% end %>
+        <%= for b <- inputs_for(o, :brand_links) do %>
+          <%= hidden_inputs_for b %>
+          <%= hidden_input b, :title, value: "Website" %>
+          <%= hidden_input b, :link_id, value: "website" %>
+          <%= hidden_input b, :organization_id, value: @current_user.organization.id %>
+          <.website_field form={b} class="mt-4" />
         <% end %>
       <% end %>
     """
@@ -267,13 +272,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <% end %>
 
     <hr class="mb-4" />
-    <p class="font-bold">Why do you need my credit card for a trial?</p>
-    <p>We want to keep Picsello as secure and fraud free as possible. You can cancel your plan at anytime during and after your trial.</p>
-    <hr class="my-4" />
-    <p class="font-bold">When will I be charged?</p>
-    <p><%= @subscription_plan_metadata.onboarding_description %></p>
-    <hr class="my-4" />
-    <p class="text-sm italic text-gray-400"><small>Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
+    <p class="mb-4"><%= @subscription_plan_metadata.onboarding_description %></p>
+    <p class="text-sm text-gray-400"><small>You can cancel at any time before the trial ends and you won’t be charged. Your subscription will automatically renew each month at the amazing Founder Rate and you can continue to keep growing your business with ease! Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
+
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
     <%= if User.onboarded?(@current_user) do %>
@@ -347,7 +348,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       color_class: "bg-blue-gallery-200",
       step_title: socket.assigns.subscription_plan_metadata.onboarding_title,
       subtitle:
-        "Explore and learn Picsello at your own pace. Pricing simplified. One plan, all features.",
+        "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever?",
       page_title: "Onboarding Step 6"
     )
   end
@@ -383,8 +384,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </a>
         </div>
 
-        <h1 class="text-3xl font-bold sm:text-4xl mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
-        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-xl"><%= @subtitle %></h2>
+        <h1 class="text-3xl font-bold mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
+        <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-lg"><%= @subtitle %></h2>
         <%= render_block(@inner_block) %>
        </div>
     </div>
@@ -447,6 +448,67 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
     socket
   end
+
+  defp assign_brand_links(
+         %{assigns: %{current_user: %{organization: organization} = user}} = socket
+       ) do
+    current_user =
+      case organization |> Repo.preload(:brand_links, force: true) do
+        %{brand_links: [%{id: id}]} = organization when not is_nil(id) ->
+          user |> Map.put(:organization, organization)
+
+        _ ->
+          user
+          |> Map.put(
+            :organization,
+            Map.put(organization, :brand_links, [
+              %BrandLink{
+                title: "Website",
+                link_id: "website",
+                organization_id: organization.id
+              }
+            ])
+          )
+      end
+
+    socket
+    |> assign(:current_user, current_user)
+  end
+
+  defp save(%{assigns: %{step: step}} = socket, params, data \\ :skip) do
+    Multi.new()
+    |> Multi.put(:data, data)
+    |> Multi.update(:user, build_changeset(socket, params))
+    |> Multi.merge(fn
+      %{data: %BrandLink{} = data} ->
+        Multi.new() |> Multi.delete(:brand_link, data)
+
+      %{data: %{} = data} ->
+        Multi.new()
+        |> Multi.insert(:insert_brand_link, BrandLink.create_changeset(%BrandLink{}, data))
+
+      _ ->
+        Multi.new()
+    end)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{user: user}} ->
+        socket
+        |> assign(current_user: user)
+        |> assign_brand_links()
+        |> assign_step(step + 1)
+        |> assign_changeset()
+
+      {:error, reason} ->
+        socket |> assign(changeset: reason)
+    end)
+    |> noreply()
+  end
+
+  defp handle_brand_link([%{id: nil}], %{"0" => %{"link" => ""}}), do: :skip
+  defp handle_brand_link([brand_link], %{"0" => %{"link" => ""}}), do: brand_link
+  defp handle_brand_link([%{id: nil}], %{"0" => params}), do: params
+  defp handle_brand_link(_, _), do: :update
 
   defdelegate job_types(), to: JobType, as: :all
   defdelegate colors(), to: Picsello.Profiles

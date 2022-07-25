@@ -23,6 +23,13 @@ defmodule Picsello.Notifiers do
       {:error, exception}
   end
 
+  def email_signature(organization) do
+    Phoenix.View.render_to_string(PicselloWeb.EmailSignatureView, "show.html",
+      organization: organization,
+      user: organization.user
+    )
+  end
+
   defmacro __using__(_) do
     quote do
       import Picsello.Notifiers
