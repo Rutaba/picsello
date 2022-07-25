@@ -45,7 +45,6 @@ defmodule Picsello.ViewLeadTest do
     leads: [lead | _]
   } do
     insert(:proposal, job: lead)
-    add_contract(lead)
 
     first_reminder_on =
       DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60) |> Calendar.strftime("%B %d, %Y")

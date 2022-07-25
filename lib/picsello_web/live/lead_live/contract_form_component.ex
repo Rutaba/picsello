@@ -5,19 +5,19 @@ defmodule PicselloWeb.ContractFormComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   @impl true
-  def update(%{job: job} = assigns, socket) do
+  def update(%{package: package} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign(:content_edited, false)
     |> assign_options()
     |> assign_new(:contract, fn ->
-      if job.contract do
-        struct(Contract, job.contract |> Map.take([:contract_template_id, :content]))
+      if package.contract do
+        struct(Contract, package.contract |> Map.take([:contract_template_id, :content]))
       else
-        default_contract = Contracts.default_contract(job)
+        default_contract = Contracts.default_contract(package)
 
         %Contract{
-          content: Contracts.contract_content(default_contract, job, PicselloWeb.Helpers),
+          content: Contracts.contract_content(default_contract, package, PicselloWeb.Helpers),
           contract_template_id: default_contract.id
         }
       end
@@ -74,7 +74,7 @@ defmodule PicselloWeb.ContractFormComponent do
           "contract" => %{"contract_template_id" => template_id},
           "_target" => ["contract", "contract_template_id"]
         },
-        %{assigns: %{job: job}} = socket
+        %{assigns: %{package: package}} = socket
       ) do
     content =
       case template_id do
@@ -82,9 +82,9 @@ defmodule PicselloWeb.ContractFormComponent do
           ""
 
         id ->
-          job
+          package
           |> Contracts.find_by!(id)
-          |> Contracts.contract_content(job, PicselloWeb.Helpers)
+          |> Contracts.contract_content(package, PicselloWeb.Helpers)
       end
 
     socket
@@ -104,18 +104,18 @@ defmodule PicselloWeb.ContractFormComponent do
   def handle_event(
         "save",
         %{"contract" => params},
-        %{assigns: %{job: job}} = socket
+        %{assigns: %{package: package}} = socket
       ) do
     save_fn =
       if template_edit?(socket, params),
         do: &Contracts.save_template_and_contract/2,
         else: &Contracts.save_contract/2
 
-    case save_fn.(job, params) do
+    case save_fn.(package, params) do
       {:ok, contract} ->
         send(
           socket.parent_pid,
-          {:contract_saved, %{job | contract: contract}}
+          {:contract_saved, contract}
         )
 
         socket |> noreply()
@@ -134,16 +134,16 @@ defmodule PicselloWeb.ContractFormComponent do
         socket,
         __MODULE__,
         %{
-          assigns: Enum.into(opts, Map.take(assigns, [:job]))
+          assigns: Enum.into(opts, Map.take(assigns, [:job, :package]))
         }
       )
 
   defp assign_changeset(
-         %{assigns: %{contract: contract, job: job, current_user: current_user}} = socket,
+         %{assigns: %{contract: contract, package: package, current_user: current_user}} = socket,
          action,
          params
        ) do
-    attrs = params |> Map.put("package_id", job.package_id)
+    attrs = params |> Map.put("package_id", package.id)
 
     changeset =
       contract
@@ -166,12 +166,12 @@ defmodule PicselloWeb.ContractFormComponent do
     String.trim(name) != ""
   end
 
-  defp assign_options(%{assigns: %{job: job}} = socket) do
+  defp assign_options(%{assigns: %{package: package}} = socket) do
     options =
       [
         {"New Contract", ""}
       ]
-      |> Enum.concat(job |> Contracts.for_job() |> Enum.map(&{&1.name, &1.id}))
+      |> Enum.concat(package |> Contracts.for_package() |> Enum.map(&{&1.name, &1.id}))
 
     socket |> assign(options: options)
   end

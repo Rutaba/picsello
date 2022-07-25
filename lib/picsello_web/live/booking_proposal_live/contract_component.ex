@@ -64,7 +64,7 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
       contract_content:
         Contracts.contract_content(
           contract,
-          job,
+          package,
           PicselloWeb.Helpers
         ),
       proposal: proposal,
