@@ -207,16 +207,16 @@ defmodule Picsello.Cart do
     DeliveryInfo.selected_state(delivery_info_change)
   end
 
-  def delivery_info_change(attrs \\ %{}) do
-    DeliveryInfo.changeset(%DeliveryInfo{}, attrs)
+  def delivery_info_change(order, attrs) do
+    DeliveryInfo.changeset(%DeliveryInfo{}, attrs, order: order)
   end
 
-  def delivery_info_change(delivery_info, attrs) do
-    DeliveryInfo.changeset(delivery_info, attrs)
+  def delivery_info_change(order, delivery_info, attrs) do
+    DeliveryInfo.changeset(delivery_info, attrs, order: order)
   end
 
-  def order_delivery_info_change(%Order{delivery_info: delivery_info}, attrs \\ %{}) do
-    DeliveryInfo.changeset(delivery_info, attrs)
+  def delivery_info_change(%Order{delivery_info: delivery_info} = order) do
+    DeliveryInfo.changeset(delivery_info, %{}, order: order)
   end
 
   def store_order_delivery_info(order, delivery_info_change) do
