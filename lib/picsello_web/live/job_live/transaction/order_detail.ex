@@ -39,7 +39,7 @@ defmodule PicselloWeb.JobLive.Transaction.OrderDetail do
   def handle_event("open-stripe", _, %{assigns: %{order: %{intent: intent}, current_user: current_user}} = socket), do:
     socket |> redirect(
       external:
-        "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments/#{intent.stripe_id}"
+        "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments/#{intent.stripe_payment_intent_id}"
     )
     |> noreply()
 

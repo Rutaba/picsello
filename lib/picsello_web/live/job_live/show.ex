@@ -65,7 +65,7 @@ defmodule PicselloWeb.JobLive.Show do
 
       :deactivated ->
         %{
-          button_text: "View Gallery",
+          button_text: "View gallery",
           button_click: "view-gallery",
           button_disabled: true,
           text: "Gallery is disabled"
@@ -73,7 +73,7 @@ defmodule PicselloWeb.JobLive.Show do
 
       _ ->
         %{
-          button_text: "View Gallery",
+          button_text: "View gallery",
           button_click: "view-gallery",
           button_disabled: false,
           text: "#{gallery.total_count || 0} photos"

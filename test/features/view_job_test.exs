@@ -120,7 +120,7 @@ defmodule Picsello.ViewJobTest do
     session
     |> visit("/jobs/#{job.id}")
     |> find(testid("card-Gallery"))
-    |> assert_has(button("View Gallery"))
+    |> assert_has(button("View gallery"))
   end
 
   feature "collapse and expand sections", %{session: session} do

@@ -11,7 +11,7 @@
         <:crumb to={Routes.job_path(@socket, :jobs, @job.id)}>
           <%= Job.name @job %>
         </:crumb>
-        <:crumb> <%= action_name(@live_action, :plural) %> </:crumb>
+        <:crumb> <%= String.capitalize(action_name(@live_action, :plural)) %> </:crumb>
       </.crumbs>
     </div>  
 
