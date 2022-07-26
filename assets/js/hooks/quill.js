@@ -45,7 +45,7 @@ Quill.register(ImageBlot, true);
 
 export default {
   mounted() {
-    const editorEl = this.el.querySelector('#editor');
+    const editorEl = this.el.querySelector('.editor');
     const {
       placeholder = 'Compose message...',
       textFieldName,

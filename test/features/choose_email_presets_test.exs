@@ -69,7 +69,7 @@ defmodule Picsello.ChooseEmailPresetsTest do
         |> assert_has(css("option", text: "please"))
         |> click(css("option", text: "please")))
     )
-    |> assert_has(css("#editor strong", text: user.onboarding.phone))
+    |> assert_has(css(".editor strong", text: user.onboarding.phone))
     |> assert_value(text_field("Subject line"), "You owe me $50.00, Elizab&th.")
     |> within_modal(&wait_for_enabled_submit_button/1)
     |> take_screenshot()

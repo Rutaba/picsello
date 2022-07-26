@@ -9,6 +9,7 @@ defmodule PicselloWeb.Shared.Quill do
     assigns =
       assigns
       |> Enum.into(%{
+        id: "editor",
         html_field: nil,
         text_field: nil,
         placeholder: nil,
@@ -21,7 +22,7 @@ defmodule PicselloWeb.Shared.Quill do
       })
 
     ~H"""
-    <div id="editor-wrapper" class={@class} phx-hook="Quill" phx-update="ignore" class="mt-2"
+    <div id={"#{@id}-wrapper"} class={@class} phx-hook="Quill" phx-update="ignore" class="mt-2"
       data-placeholder={@placeholder}
       data-html-field-name={input_name(@f, @html_field)}
       data-text-field-name={input_name(@f, @text_field)}
@@ -34,7 +35,7 @@ defmodule PicselloWeb.Shared.Quill do
       <%= if @track_quill_source do %>
         <%= hidden_input @f, :quill_source %>
       <% end %>
-      <div id="editor" class={@editor_class}></div>
+      <div class={"#{@editor_class} editor"}></div>
       <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: "500" %>
       <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: "500" %>
     </div>
@@ -43,7 +44,7 @@ defmodule PicselloWeb.Shared.Quill do
 
   def quill_input(assigns) do
     ~H"""
-    <.live_component module={__MODULE__} id="quill_input" {assigns} />
+    <.live_component module={__MODULE__} id={assigns[:id] || "quill_input"} {assigns} />
     """
   end
 

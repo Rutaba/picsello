@@ -49,7 +49,7 @@ defmodule PicselloWeb.ContractFormComponent do
               <.badge color={:gray}>No edits made</.badge>
           <% end %>
         </div>
-        <.quill_input f={f} html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
+        <.quill_input f={f} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
         <PicselloWeb.LiveModal.footer>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
             Save
