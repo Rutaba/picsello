@@ -5,7 +5,7 @@
 
   <hr>
 
-  <div class="gallery__container">
+  <div class="gallery__container mb-10">
     <%= case @live_action do %>
       <% :cart -> %>
         <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>

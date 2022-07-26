@@ -13,6 +13,9 @@ defmodule PicselloWeb.LayoutView do
       help_scout_output: 2
     ]
 
+  import Picsello.Profiles, only: [public_url: 1]
+  import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
+
   use Phoenix.Component
 
   defp default_meta_tags do
@@ -201,4 +204,6 @@ defmodule PicselloWeb.LayoutView do
         """
     end
   end
+
+  defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end

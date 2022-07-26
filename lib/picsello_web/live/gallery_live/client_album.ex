@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   use PicselloWeb,
     live_view: [
-      layout: "live_client"
+      layout: "live_gallery_client"
     ]
 
   import PicselloWeb.GalleryLive.Shared
