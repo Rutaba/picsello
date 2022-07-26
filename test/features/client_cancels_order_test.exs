@@ -46,6 +46,7 @@ defmodule Picsello.ClientCancelsOrderTest do
     |> click(link("View Gallery"))
     |> add_digital(1)
     |> add_digital(2)
+    |> click(css("p", text: "Added!"))
     |> click(link("cart"))
     |> click(link("Continue"))
     |> fill_in(text_field("Email"), with: "zach@example.com")
