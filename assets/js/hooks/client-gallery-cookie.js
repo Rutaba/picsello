@@ -8,7 +8,7 @@ export default {
       this.pushEvent('view_gallery', {});
     }else {
       const footer = document.querySelector('.footer-cookie');
-      footer.classList.add('hidden'); 
+      footer.classList.add('md:hidden'); 
       el.classList.remove('hidden');
     }
   },
