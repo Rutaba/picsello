@@ -237,13 +237,13 @@ defmodule PicselloWeb.LeadLive.Show do
     case result do
       {:ok, %{message: message}} ->
         %{client: client} =
-          job = job |> Repo.preload([:client, :job_status, :contract], force: true)
+          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
 
         ClientNotifier.deliver_booking_proposal(message, client.email)
 
         socket
         |> assign_proposal()
-        |> assign(:job, job)
+        |> assign(job: job, package: job.package)
         |> PicselloWeb.ConfirmationComponent.open(%{
           title: "Email sent",
           subtitle: "Yay! Your email has been successfully sent"
@@ -281,9 +281,8 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info({:contract_saved, contract}, %{assigns: %{job: job, package: package}} = socket) do
+  def handle_info({:contract_saved, contract}, %{assigns: %{package: package}} = socket) do
     socket
-    |> assign(job: %{job | contract: contract})
     |> assign(package: %{package | contract: contract})
     |> put_flash(:success, "New contract added successfully")
     |> close_modal()

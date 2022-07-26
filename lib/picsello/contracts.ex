@@ -28,68 +28,68 @@ defmodule Picsello.Contracts do
   end
 
   def save_template_and_contract(package, params) do
-    %{organization_id: organization_id} = package
-
-    result =
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(
-        :contract_template,
-        params
-        |> Map.put("organization_id", organization_id)
-        |> Map.put("job_type", job_type(package))
-        |> Contract.template_changeset()
-      )
-      |> Ecto.Multi.insert(
-        :contract,
-        fn changes ->
-          params
-          |> Map.put("package_id", package.id)
-          |> Map.put("contract_template_id", changes.contract_template.id)
-          |> Contract.changeset()
-        end,
-        on_conflict: :replace_all,
-        conflict_target: ~w[package_id]a
-      )
-      |> Repo.transaction()
-
-    case result do
+    case insert_template_and_contract_multi(package, params) |> Repo.transaction() do
       {:ok, %{contract: contract}} -> {:ok, contract}
       {:error, :contract, changeset, _} -> {:error, changeset}
       _ -> {:error}
     end
   end
 
+  def insert_template_and_contract_multi(package, params) do
+    %{organization_id: organization_id} = package
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(
+      :contract_template,
+      params
+      |> Map.put("organization_id", organization_id)
+      |> Map.put("job_type", job_type(package))
+      |> Contract.template_changeset()
+    )
+    |> Ecto.Multi.insert(
+      :contract,
+      fn changes ->
+        params
+        |> Map.put("package_id", package.id)
+        |> Map.put("contract_template_id", changes.contract_template.id)
+        |> Contract.changeset()
+      end,
+      on_conflict: :replace_all,
+      conflict_target: ~w[package_id]a
+    )
+  end
+
   def save_contract(package, params) do
-    template_id = Map.get(params, "contract_template_id")
-
-    result =
-      Ecto.Multi.new()
-      |> Ecto.Multi.put(
-        :contract_template,
-        package
-        |> for_package_query()
-        |> where([contract], contract.id == ^template_id)
-        |> Repo.one!()
-      )
-      |> Ecto.Multi.insert(
-        :contract,
-        fn changes ->
-          params
-          |> Map.put("package_id", package.id)
-          |> Map.put("contract_template_id", changes.contract_template.id)
-          |> Map.put("name", changes.contract_template.name)
-          |> Contract.changeset()
-        end,
-        on_conflict: :replace_all,
-        conflict_target: ~w[package_id]a
-      )
-      |> Repo.transaction()
-
-    case result do
+    case insert_contract_multi(package, params) |> Repo.transaction() do
       {:ok, %{contract: contract}} -> {:ok, contract}
       {:error, :contract, changeset, _} -> {:error, changeset}
       _ -> {:error}
     end
+  end
+
+  def insert_contract_multi(package, params) do
+    template_id = Map.get(params, "contract_template_id")
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.put(
+      :contract_template,
+      package
+      |> for_package_query()
+      |> where([contract], contract.id == ^template_id)
+      |> Repo.one!()
+    )
+    |> Ecto.Multi.insert(
+      :contract,
+      fn changes ->
+        params
+        |> Map.put("package_id", package.id)
+        |> Map.put("contract_template_id", changes.contract_template.id)
+        |> Map.put("name", changes.contract_template.name)
+        |> Contract.changeset()
+      end,
+      on_conflict: :replace_all,
+      conflict_target: ~w[package_id]a
+    )
   end
 
   def default_contract(package) do

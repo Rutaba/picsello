@@ -135,12 +135,14 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket),
-    do:
-      socket
-      |> assign(package: package, job: %{job | package: package, package_id: package.id})
-      |> assign_shoots()
-      |> noreply()
+  def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
+    package = package |> Repo.preload(:contract, force: true)
+
+    socket
+    |> assign(package: package, job: %{job | package: package, package_id: package.id})
+    |> assign_shoots()
+    |> noreply()
+  end
 
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
@@ -453,15 +455,15 @@ defmodule PicselloWeb.JobLive.Shared do
               <% !@proposal -> %>
                 <p class="mt-2">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
                 <div class="border rounded-lg px-4 py-2 mt-4">
-                  <span class="font-bold">Selected contract:</span> <%= if @job.contract, do: @job.contract.name, else: "Picsello Default Contract" %>
+                  <span class="font-bold">Selected contract:</span> <%= if @package.contract, do: @package.contract.name, else: "Picsello Default Contract" %>
                 </div>
                 <button phx-click="edit-contract" class="mt-4 btn-primary self-end">
                   Edit or Select New
                 </button>
               <% @package && @package.collected_price -> %>
                 <p class="mt-2">During your job import, you marked this as an external document.</p>
-              <% @job.contract -> %>
-                <p class="mt-2">You sent the <%= @job.contract.name %> to your client.</p>
+              <% @package.contract -> %>
+                <p class="mt-2">You sent the <%= @package.contract.name %> to your client.</p>
                 <button {testid("view-contract")} phx-click="open-proposal" phx-value-action="contract" class="mt-4 btn-primary self-end">
                   View
                 </button>
@@ -625,7 +627,7 @@ defmodule PicselloWeb.JobLive.Shared do
     job =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload([:client, :package, :job_status, :contract])
+      |> Ecto.Query.preload([:client, :job_status, package: :contract])
       |> Repo.get!(job_id)
 
     if job.job_status.is_lead do
@@ -642,10 +644,9 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Job.not_leads()
       |> Ecto.Query.preload([
         :client,
-        :package,
         :job_status,
-        :contract,
-        :payment_schedules
+        :payment_schedules,
+        package: :contract
       ])
       |> Repo.get!(job_id)
 

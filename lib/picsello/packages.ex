@@ -224,6 +224,21 @@ defmodule Picsello.Packages do
       |> Ecto.Multi.update(:job, fn changes ->
         Job.add_package_changeset(job, %{package_id: changes.package.id})
       end)
+      |> Ecto.Multi.merge(fn %{package: package} ->
+        case package |> Repo.preload(package_template: :contract) do
+          %{package_template: %{contract: %Picsello.Contract{} = contract}} ->
+            contract_params = %{
+              "name" => contract.name,
+              "content" => contract.content,
+              "contract_template_id" => contract.contract_template_id
+            }
+
+            Picsello.Contracts.insert_contract_multi(package, contract_params)
+
+          _ ->
+            Ecto.Multi.new()
+        end
+      end)
       |> Repo.transaction()
 
   def build_package_changeset(
@@ -245,8 +260,29 @@ defmodule Picsello.Packages do
     )
   end
 
-  def insert_or_update_package(changeset),
-    do: Repo.insert_or_update(changeset)
+  def insert_or_update_package(changeset, contract_params) do
+    result =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert_or_update(:package, changeset)
+      |> Ecto.Multi.merge(fn %{package: package} ->
+        cond do
+          is_nil(contract_params) ->
+            Ecto.Multi.new()
+
+          Map.get(contract_params, "edited") ->
+            Picsello.Contracts.insert_template_and_contract_multi(package, contract_params)
+
+          !Map.get(contract_params, "edited") ->
+            Picsello.Contracts.insert_contract_multi(package, contract_params)
+        end
+      end)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{package: package}} -> {:ok, package}
+      _ -> {:error}
+    end
+  end
 
   defdelegate job_types(), to: JobType, as: :all
 

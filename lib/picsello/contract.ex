@@ -8,6 +8,7 @@ defmodule Picsello.Contract do
     field :content, :string
     field :name, :string
     field :job_type, :string
+    field :edited, :boolean, virtual: true
     belongs_to(:organization, Organization)
     belongs_to(:package, Package)
     belongs_to(:contract_template, __MODULE__)
@@ -19,9 +20,14 @@ defmodule Picsello.Contract do
     validate_unique_name_on_organization =
       Keyword.get(opts, :validate_unique_name_on_organization)
 
+    skip_package_id = Keyword.get(opts, :skip_package_id)
+
     contract
     |> cast(attrs, [:name, :content, :package_id, :contract_template_id])
-    |> validate_required([:content, :package_id])
+    |> validate_required([:content])
+    |> then(fn changeset ->
+      if skip_package_id, do: changeset, else: validate_required(changeset, [:package_id])
+    end)
     |> then(fn changeset ->
       if validate_unique_name_on_organization do
         changeset

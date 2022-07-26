@@ -24,7 +24,6 @@ defmodule Picsello.Job do
     field(:completed_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
-    has_one(:contract, through: [:package, :contract])
     has_one(:job_status, JobStatus)
     has_one(:gallery, Gallery)
     has_many(:payment_schedules, PaymentSchedule, preload_order: [asc: :due_at])

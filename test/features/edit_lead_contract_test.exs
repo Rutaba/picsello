@@ -35,7 +35,7 @@ defmodule Picsello.EditLeadContractTest do
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> find(testid("contract"), fn element ->
       element
-      |> assert_text("Picsello Default Contract")
+      |> assert_text("Selected contract: Picsello Default Contract")
       |> click(@edit_contract_button)
     end)
     |> assert_text("Add Custom Wedding Contract")
@@ -49,7 +49,7 @@ defmodule Picsello.EditLeadContractTest do
     |> assert_flash(:success, text: "New contract added successfully")
     |> find(testid("contract"), fn element ->
       element
-      |> assert_text("My greatest wedding contract")
+      |> assert_text("Selected contract: My greatest wedding contract")
       |> click(@edit_contract_button)
     end)
     |> within_modal(fn modal ->
