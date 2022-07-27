@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Messages}
+  alias Picsello.{Repo, Cart, Galleries, GalleryProducts, Messages}
   alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent, Photos.Upload}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -375,6 +375,27 @@ defmodule PicselloWeb.GalleryLive.Shared do
     )
   end
 
+  def tracking_link(assigns) do
+    ~H"""
+    <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- @info.shipping_info do %>
+      <a href={url} target="_blank" class="underline cursor-pointer">
+        <%= carrier %>
+        <%= tracking_number %>
+      </a>
+    <% end %>
+    """
+  end
+
+  def tracking(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
+    Enum.find_value(sub_orders, fn
+      %{editor_id: ^editor_id, whcc_tracking: tracking} ->
+        tracking
+
+      _ ->
+        nil
+    end)
+  end
+
   def actions(assigns) do
     assigns = assigns |> Enum.into(%{photo_selected: true})
 
@@ -493,8 +514,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     """
   end
 
-  defdelegate price_display(product), to: Picsello.Cart
-
   def product_option(assigns) do
     assigns = Enum.into(assigns, %{min_price: nil})
 
@@ -612,4 +631,85 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
     """
   end
+
+  def order_details(assigns) do
+    ~H"""
+    <div class={@class}>
+      <div class="mt-0 mb-4 ml-0 md:ml-5 md:mt-2">
+        <h4 class="text-lg font-bold md:text-2xl">Order details</h4>
+        <p class="pt-3 md:text-lg md:pt-5">Order number: <span class="font-medium"><%= @order.number %></span></p>
+      </div>
+
+      <hr class="hidden md:block mt-7 border-t-base-200" />
+
+      <div class="divide-y divide-base-200">
+
+        <%= for item <- @order.products do %>
+          <div class="relative py-5 md:py-7 md:first:border-t md:border-base-200">
+            <div class="grid grid-rows-1 grid-cols-cart md:grid-cols-cartWide">
+              <img src={item_image_url(item)} class="h-24 mx-auto md:h-40"/>
+
+              <div class="flex flex-col px-4 md:px-8 md:pt-4">
+                <span class="text-sm md:text-base md:font-medium"> <%= product_name(item) %></span>
+
+                <span class="pt-2 text-xs md:text-sm md:py-5">Quantity: <%= quantity(item) %></span>
+              </div>
+
+              <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= price_display(item) %></span>
+            </div>
+
+            <%= case tracking(@order, item) do %>
+            <% nil -> %>
+              <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
+                <.icon name="tracking-info" class="mr-2 w-7 h-7 md:mr-4"/>
+
+                <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
+              </div>
+
+            <% tracking -> %>
+              <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
+                <.icon name="order-shipped" class="mr-2 w-7 h-7 md:mr-4"/>
+
+                <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
+                  <.tracking_link info={tracking} />
+                </p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%= for digital <- @order.digitals do %>
+          <div class="flex items-center justify-between py-7 md:py-10 md:px-11">
+            <div class="flex items-center">
+              <img class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] object-contain mr-4 md:mr-14" src={item_image_url(digital)}/>
+
+              <span>Digital download</span>
+            </div>
+
+            <div class="font-bold"><%= price_display(digital) %></div>
+          </div>
+        <% end %>
+
+        <%= if @order.bundle_price do %>
+          <div class="flex items-center justify-between py-7 md:py-10 md:px-11">
+            <div class="flex items-center">
+              <div class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] mr-4 md:mr-14" >
+              <.bundle_image url={item_image_url({:bundle, @gallery})} />
+              </div>
+
+              <span>All digital downloads</span>
+            </div>
+
+            <div class="font-bold"><%= @order.bundle_price %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  defdelegate item_image_url(item), to: Cart
+  defdelegate product_name(order), to: Cart
+  defdelegate quantity(item), to: Cart.Product
+  defdelegate price_display(product), to: Cart
 end

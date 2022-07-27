@@ -601,6 +601,21 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
+  def assign_job(
+        %{assigns: %{current_user: current_user, live_action: :transactions}} = socket,
+        job_id
+      ) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Job.not_leads()
+      |> Ecto.Query.preload([:client])
+      |> Repo.get!(job_id)
+
+    socket
+    |> assign(:job, job)
+  end
+
   def assign_job(%{assigns: %{current_user: current_user, live_action: :leads}} = socket, job_id) do
     job =
       current_user
