@@ -146,7 +146,7 @@ defmodule Picsello.Profiles do
     organization
     |> cast_assoc(:brand_links,
       required: true,
-      with: &BrandLink.update_changeset(&1, &2)
+      with: &BrandLink.brand_link_changeset(&1, &2)
     )
   end
 
