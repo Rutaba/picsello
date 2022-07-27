@@ -37,14 +37,14 @@
         <% end %>
       </nav>
 
-      <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer z-30" phx-hook="ToggleContent">
+      <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
         <%= if @current_user do %>
         <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
           <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
           </div>
 
-          <div class="bg-gray-100 rounded-lg shadow-md">
+          <div class="bg-gray-100 rounded-lg shadow-md z-30">
             <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-6 py-4 bg-white" do %>
               <.initials_circle user={@current_user} />
               <div class="ml-2 font-semibold">Account</div>
