@@ -133,7 +133,8 @@ defmodule PicselloWeb.Router do
       live "/pricing/calculator", Live.Pricing.Calculator.Index, :index, as: :calculator
       live "/profile/settings", Live.Profile.Settings, :index, as: :profile_settings
       live "/profile/settings/edit", Live.Profile, :edit, as: :profile_settings
-      live "/calendar", Live.Calendar, :index
+      live "/calendar", Live.Calendar.Index, :index
+      live "/calendar/settings", Live.Calendar.Settings, :settings
       get "/calendar-feed", CalendarFeedController, :index
 
       live "/home", HomeLive.Index, :index, as: :home

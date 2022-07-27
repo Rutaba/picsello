@@ -59,6 +59,16 @@ defmodule Picsello.CalendarTest do
     [session: session]
   end
 
+  feature "Calendar header test", %{session: session} do
+    session
+    |> visit("/calendar")
+    |> assert_text("Calendar")
+    |> assert_has(css("a[href*='/home']", count: 2))
+    |> assert_has(css("a[href*='/calendar/settings']", text: "Settings"))
+    |> click(css("a[href*='/calendar/settings']", text: "Settings"))
+    |> assert_url_contains("settings")
+  end
+
   feature "displays the shoot in the calendar", %{session: session} do
     session
     |> visit("/calendar")
