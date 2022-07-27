@@ -45,6 +45,9 @@ defmodule PicselloWeb.FormHelpers do
 
           opts |> Keyword.put(:value, value)
 
+        :number_input ->
+          opts |> Keyword.put_new(:inputmode, "numeric") |> Keyword.put_new(:pattern, "[0-9]*")
+
         _ ->
           opts
       end
