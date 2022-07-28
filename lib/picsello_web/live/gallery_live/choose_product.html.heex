@@ -7,17 +7,24 @@
     <p class="px-5 pt-10 pb-5 text-2xl font-bold text-base-300 lg:hidden">Select an option below</p>
 
     <div class="flex-row w-full px-5 pb-20 select-none grid lg:flex lg:h-full lg:overflow-y-auto lg:justify-between lg:px-0 lg:pl-16 xl:pl-20">
-      <div class="relative w-full mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
-        <div id="wrapper" class="flex flex-row justify-center h-full wrapper">
-          <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="left-0 choose-product__btn top-1/2 -translate-y-1/2 -translate-x-1/4 swiper-button-prev">
-            <.icon name="back" class="w-8 h-8 cursor-pointer text-blue-planning-300 stroke-2" />
+      <div class="flex items-center justify-center relative w-full mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
+        <div id="wrapper" class="flex flex-row lg:justify-center lg:h-[450px] wrapper">          
+           <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="left-0 choose-product__btn top-1/2 -translate-y-1/2 -translate-x-1/4 swiper-button-prev">
+            <.icon name="back" class="w-8 h-8 cursor-pointer text-base-300" />
           </div>
-
           <div phx-click="next" phx-target={@myself} class="right-0 choose-product__btn top-1/2 -translate-y-1/2 translate-x-1/4 swiper-button-next">
-            <.icon name="forth" class="w-8 h-8 cursor-pointer text-blue-planning-300 stroke-2" />
+            <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-300" />
           </div>
+          <div class="flex relative h-full items-center">           
+            <div phx-click="photo_view" phx-value-photo_id={@photo.id} phx-target={@myself} class="cursor-pointer absolute opacity-100 removeBtn">
+              <.icon name={"eye"} class="h-6 z-1 text-white w-7"/>
+            </div>
+            <div class="flex relative lg:h-[450px] items-center">
+              <img src={ preview_url(@photo) } class="lg:h-full lg:max-h-max max-h-96">
+            </div> 
+          </div>
+          
 
-          <img src={ preview_url(@photo) } class="object-contain">
         </div>
       </div>
 

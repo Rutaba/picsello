@@ -123,6 +123,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket |> add_to_cart_assigns(order)
   end
 
+  def handle_info({:open_choose_product, photo_id}, socket) do
+    socket |> client_photo_click(photo_id)
+  end
+
   defp photos_count(nil), do: "photo"
   defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
 end
