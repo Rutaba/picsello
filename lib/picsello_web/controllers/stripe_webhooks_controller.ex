@@ -58,7 +58,7 @@ defmodule PicselloWeb.StripeWebhooksController do
              "invoice.payment_succeeded",
              "invoice.payment_failed"
            ] do
-    Logger.info("ignored subscription #{type} webhook")
+    Logger.debug("ignored subscription #{type} webhook")
   end
 
   def handle_webhook(:app, %{type: type, data: %{object: invoice}})
