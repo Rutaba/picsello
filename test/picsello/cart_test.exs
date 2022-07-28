@@ -21,12 +21,54 @@ defmodule Picsello.CartTest do
     [gallery: insert(:gallery, job: insert(:lead, package: package))]
   end
 
+  defp insert_gallery(ctx), do: ctx |> Map.put(:package, build(:package)) |> insert_gallery()
+
   defp insert_order(%{gallery: gallery}) do
     [order: insert(:order, gallery: gallery)]
   end
 
   setup do
     Mox.verify_on_exit!()
+  end
+
+  def check_out(order) do
+    Picsello.MockWHCCClient
+    |> Mox.stub(:editors_export, fn _, _, _ -> build(:whcc_editor_export) end)
+    |> Mox.stub(:create_order, fn _, _ -> {:ok, build(:whcc_order_created)} end)
+
+    Picsello.MockPayments
+    |> Mox.stub(:create_session, fn _, _ -> {:ok, build(:stripe_session, id: "expire-me")} end)
+    |> Mox.stub(:retrieve_payment_intent, fn _, _ -> {:ok, build(:stripe_payment_intent)} end)
+
+    {:ok, order} =
+      Cart.store_order_delivery_info(
+        order,
+        Cart.delivery_info_change(%{name: "brian", email: "brian@example.com"})
+      )
+
+    Picsello.Cart.Checkouts.check_out(order.id, %{"success_url" => "", "cancel_url" => ""})
+  end
+
+  def expect_expire_session() do
+    Mox.expect(Picsello.MockPayments, :expire_session, fn "expire-me", _ ->
+      {:ok, build(:stripe_session, status: "expired")}
+    end)
+  end
+
+  describe "place_product - while checking out" do
+    setup :insert_gallery
+
+    test "expires previous stripe session", %{gallery: gallery} do
+      product = build(:cart_product)
+
+      order = Cart.place_product(product, gallery)
+
+      check_out(order)
+
+      expect_expire_session()
+
+      Cart.place_product(product, gallery)
+    end
   end
 
   describe "place_product - whcc" do
@@ -183,6 +225,19 @@ defmodule Picsello.CartTest do
 
     setup [:insert_gallery, :insert_order]
 
+    test "with a previous checkout attempt expires previous session", %{order: order} do
+      order
+      |> Repo.preload(:products)
+      |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
+      |> Repo.update!()
+
+      check_out(order)
+
+      expect_expire_session()
+
+      Cart.delete_product(order, editor_id: "abc")
+    end
+
     test "with an editor id and multiple products removes the product", %{order: order} do
       order
       |> Repo.preload(:products)
@@ -191,7 +246,6 @@ defmodule Picsello.CartTest do
       |> Repo.preload([products: :whcc_product], force: true)
       |> Order.update_changeset(cart_product(editor_id: "123", price: ~M[200]USD))
       |> Repo.update!()
-      |> Repo.preload([:digitals, products: :whcc_product], force: true)
 
       assert {:loaded,
               %Order{

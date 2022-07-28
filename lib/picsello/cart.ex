@@ -127,6 +127,7 @@ defmodule Picsello.Cart do
       order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
 
     order
+    |> expire_previous_session()
     |> item_count()
     |> case do
       1 ->
@@ -162,6 +163,7 @@ defmodule Picsello.Cart do
           ),
         reduce:
           from(order in Order,
+            as: :order,
             where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
           ) do
       query ->
@@ -307,8 +309,17 @@ defmodule Picsello.Cart do
     |> set_order_number()
   end
 
-  defp place_product_in_order(order, product, opts),
-    do: order |> Order.update_changeset(product, %{}, opts) |> Repo.update!()
+  defp expire_previous_session(order) do
+    {:ok, _} = order.id |> __MODULE__.Checkouts.handle_previous_session() |> Repo.transaction()
+    order
+  end
+
+  defp place_product_in_order(order, product, opts) do
+    order
+    |> expire_previous_session()
+    |> Order.update_changeset(product, %{}, opts)
+    |> Repo.update!()
+  end
 
   def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
   def price_display(%Digital{price: price}), do: price
