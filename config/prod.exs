@@ -17,6 +17,11 @@ config :picsello, PicselloWeb.Endpoint,
     port: 443,
     scheme: "https"
   ],
+  http: [
+    protocol_options: [
+      idle_timeout: String.to_integer(System.get_env("IDLE_TIMEOUT") || "#{:timer.minutes(1)}")
+    ]
+  ],
   debug_errors: System.get_env("DEBUG_ERRORS") == "true",
   cache_static_manifest: "priv/static/cache_manifest.json"
 
