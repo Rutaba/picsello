@@ -5,8 +5,11 @@ defmodule PicselloWeb.Helpers do
   alias Picsello.Cart.Order
 
   def jobs_url(), do: Routes.job_url(Endpoint, :jobs)
+
   def job_url(id), do: Routes.job_url(Endpoint, :jobs, id)
+
   def lead_url(id), do: Routes.job_url(Endpoint, :leads, id)
+
   def inbox_thread_url(id), do: Routes.inbox_url(Endpoint, :show, id)
 
   def gallery_url("" <> hash),

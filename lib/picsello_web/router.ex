@@ -167,6 +167,8 @@ defmodule PicselloWeb.Router do
   scope "/", PicselloWeb do
     pipe_through [:browser]
 
+    get "/calendar/:token", ICalendarController, :index
+
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
