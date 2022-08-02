@@ -3,6 +3,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
   use PicselloWeb, :live_component
   alias Picsello.{Shoot, Repo}
+  import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -32,36 +33,13 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
             <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "sm:col-span-3", class: "w-full" %>
-            <%= labeled_select f, :duration_minutes, for(duration <- Shoot.durations(), do: {dyn_gettext("duration-#{duration}"), duration }),
+            <%= labeled_select f, :duration_minutes, duration_options(),
                   label: "Shoot Duration",
                   prompt: "Select below",
                   wrapper_class: classes("",%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
             %>
 
-            <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field} |> Map.merge(select_invalid_classes(f, :location)))}>
-              <div class="flex items-center justify-between">
-                <%= label_for f, :location, label: "Shoot Location" %>
-
-                <%= unless @address_field do %>
-                  <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
-                <% end %>
-              </div>
-
-            <%= select_field f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below" %>
-            </div>
-
-            <%= if @address_field do %>
-              <div class="flex flex-col sm:col-span-2">
-                <div class="flex items-center justify-between">
-                  <%= label_for f, :address, label: "Shoot Address" %>
-
-                  <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
-                </div>
-
-                <%= input f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off" %>
-                <div class="relative autocomplete-wrapper" phx-update="ignore"></div>
-              </div>
-            <% end %>
+            <.location f={f} address_field={@address_field} myself={@myself} />
 
             <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "e.g. Anything you'd like to remember", wrapper_class: "sm:col-span-6" %>
           </div>
