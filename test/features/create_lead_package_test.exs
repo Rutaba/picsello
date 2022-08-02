@@ -133,6 +133,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
+    |> assert_text("Selected contract: Picsello Default Contract")
   end
 
   feature "user with package templates uses one as-is", %{session: session, user: user} do
@@ -181,6 +182,42 @@ defmodule Picsello.CreateLeadPackageTest do
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
   end
 
+  feature "user with package templates with contract uses one as-is", %{
+    session: session,
+    user: user
+  } do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    template =
+      insert(:package_template,
+        user: user,
+        job_type: "wedding",
+        name: "best wedding"
+      )
+
+    contract_template =
+      insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+
+    insert(:contract, package_id: template.id, contract_template_id: contract_template.id)
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(@add_package_button)
+    |> click(testid("template-card"))
+    |> click(button("Use template"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("best wedding")
+    |> assert_text("Selected contract: Contract 1")
+
+    lead = lead |> Repo.reload() |> Repo.preload(package: :contract)
+    assert %Package{name: "best wedding"} = lead.package
+
+    contract_template_id = contract_template.id
+
+    assert %Picsello.Contract{name: "Contract 1", contract_template_id: ^contract_template_id} =
+             lead.package.contract
+  end
+
   feature "user customizes package template", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
@@ -222,6 +259,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
+    |> assert_text("Selected contract: Picsello Default Contract")
 
     template_id = template.id
     base_price = Money.new(20_000)
@@ -238,6 +276,52 @@ defmodule Picsello.CreateLeadPackageTest do
              download_each_price: ^download_each_price,
              package_template_id: ^template_id
            } = lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
+  end
+
+  feature "user customizes package template that contains contract", %{
+    session: session,
+    user: user
+  } do
+    lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
+
+    template =
+      insert(:package_template,
+        user: user,
+        job_type: "wedding",
+        name: "best wedding"
+      )
+
+    contract_template =
+      insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+
+    insert(:contract, package_id: template.id, contract_template_id: contract_template.id)
+
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(@add_package_button)
+    |> click(testid("template-card"))
+    |> click(button("Customize"))
+    |> assert_value(text_field("Title"), "best wedding")
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Add a Package: Set Pricing")
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> assert_text("Selected contract: Contract 1")
+
+    template_id = template.id
+
+    lead = lead |> Repo.reload() |> Repo.preload(package: :contract)
+
+    assert %Package{name: "Wedding Deluxe", package_template_id: ^template_id} = lead.package
+
+    contract_template_id = contract_template.id
+
+    assert %Picsello.Contract{name: "Contract 1", contract_template_id: ^contract_template_id} =
+             lead.package.contract
   end
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do

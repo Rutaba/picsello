@@ -8,7 +8,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Packages,
     Packages.Multiplier,
     Packages.Download,
-    Packages.PackagePricing
+    Packages.PackagePricing,
+    Contracts,
+    Contract
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
@@ -30,12 +32,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
-    |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
+    |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> choose_initial_step()
+    |> assign_new(:contract_changeset, fn -> nil end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
+    |> choose_initial_step()
     |> assign_changeset(%{})
     |> ok()
+  end
+
+  defp choose_initial_step(%{assigns: %{is_template: true}} = socket) do
+    socket |> assign(templates: [], step: :details, steps: [:details, :contract, :pricing])
   end
 
   defp choose_initial_step(%{assigns: %{current_user: user, job: job, package: package}} = socket) do
@@ -89,12 +96,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
-        <.wizard_state form={f} />
+        <.wizard_state form={f} contract_changeset={@contract_changeset} />
 
         <.step name={@step} f={f} {assigns} />
 
         <.footer>
-          <.step_buttons name={@step} form={f} is_valid={Enum.all?([@download, @package_pricing, @multiplier, @changeset], &(&1.valid?))} myself={@myself} />
+          <.step_buttons name={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
@@ -105,12 +112,26 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
+  defp step_valid?(%{step: :contract, contract_changeset: contract}), do: contract.valid?
+
+  defp step_valid?(assigns),
+    do:
+      Enum.all?(
+        [assigns.download, assigns.package_pricing, assigns.multiplier, assigns.changeset],
+        & &1.valid?
+      )
+
   def wizard_state(assigns) do
     fields = @all_fields
 
     ~H"""
       <%= for field <- fields, input_value(@form, field) do %>
         <%= hidden_input @form, field, id: nil %>
+      <% end %>
+
+      <% c = form_for(@contract_changeset, "#") %>
+      <%= for field <- [:name, :content, :contract_template_id, :edited], input_value(c, field) do %>
+        <%= hidden_input c, field, id: nil %>
       <% end %>
     """
   end
@@ -133,6 +154,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Map.get(
       %{
         details: "Provide Details",
+        contract: "Choose a Contract",
         pricing: "Set Pricing"
       },
       step
@@ -168,7 +190,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step_buttons(%{name: :details} = assigns) do
+  def step_buttons(%{name: step} = assigns) when step in [:details, :contract] do
     ~H"""
     <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
       Next
@@ -230,6 +252,28 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
         </div>
       <% end %>
+    """
+  end
+
+  def step(%{name: :contract} = assigns) do
+    ~H"""
+      <% c = form_for(@contract_changeset, "#") %>
+      <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
+        <%= labeled_select c, :contract_template_id, @contract_options, label: "Select a Contract Template" %>
+        <%= labeled_input c, :name, label: "Contract Name", placeholder: "Enter new contract name", phx_debounce: "500" %>
+      </div>
+
+      <div class="flex justify-between items-end pb-2">
+        <label class="block mt-4 input-label" for={input_id(c, :content)}>Contract Language</label>
+        <%= cond do %>
+          <% !input_value(c, :contract_template_id) -> %>
+          <% input_value(c, :edited) -> %>
+            <.badge color={:blue}>Edited—new template will be saved</.badge>
+          <% !input_value(c, :edited) -> %>
+            <.badge color={:gray}>No edits made</.badge>
+        <% end %>
+      </div>
+      <.quill_input f={c} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
     """
   end
 
@@ -322,6 +366,56 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
+  def handle_event(
+        "validate",
+        %{"package" => %{"job_type" => _}, "_target" => ["package", "job_type"]} = params,
+        socket
+      ) do
+    socket
+    |> assign_changeset(params |> Map.drop(["contract"]), :validate)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "contract" => %{"contract_template_id" => template_id},
+          "_target" => ["contract", "contract_template_id"]
+        },
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    content =
+      case template_id do
+        "" ->
+          ""
+
+        id ->
+          package = changeset |> current()
+
+          package
+          |> Contracts.find_by!(id)
+          |> Contracts.contract_content(package, PicselloWeb.Helpers)
+      end
+
+    socket
+    |> assign_contract_changeset(%{"edited" => false})
+    |> push_event("quill:update", %{"html" => content})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("validate", %{"contract" => contract} = params, socket) do
+    contract = contract |> Map.put_new("edited", Map.get(contract, "quill_source") == "user")
+    params = params |> Map.put("contract", contract)
+
+    socket
+    |> assign_changeset(params, :validate)
+    |> assign_contract_changeset(params)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", params, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
@@ -344,6 +438,22 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event("submit", %{"step" => "details"} = params, socket) do
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
+        socket
+        |> assign(step: next_step(socket.assigns))
+        |> assign_changeset(params)
+        |> assign_contract_changeset(params)
+        |> assign_contract_options()
+
+      socket ->
+        socket
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("submit", %{"step" => "contract"} = params, socket) do
+    case socket |> assign_changeset(params, :validate) |> assign_contract_changeset(params) do
+      %{assigns: %{contract_changeset: %{valid?: true}}} ->
         socket |> assign(step: :pricing) |> assign_changeset(params)
 
       socket ->
@@ -368,14 +478,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{"step" => "pricing"} = params,
         socket
       ) do
-    socket = assign_changeset(socket, params)
+    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
-    case Packages.insert_or_update_package(socket.assigns.changeset) do
+    case Packages.insert_or_update_package(changeset, Map.get(params, "contract")) do
       {:ok, package} ->
         successfull_save(socket, package)
 
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+      _ ->
+        socket |> noreply()
     end
   end
 
@@ -528,11 +638,64 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
+  defp next_step(%{step: step, steps: steps}) do
+    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
+  end
+
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}
       %Money{} = value -> %{is_enabled: Money.positive?(value)}
       %{} -> %{}
+    end
+  end
+
+  defp assign_contract_changeset(%{assigns: %{step: :contract}} = socket, params) do
+    contract_params = Map.get(params, "contract", %{})
+
+    contract_changeset =
+      socket.assigns.changeset
+      |> current()
+      |> package_contract()
+      |> Contract.changeset(contract_params,
+        skip_package_id: true,
+        validate_unique_name_on_organization:
+          if(Map.get(contract_params, "edited"), do: socket.assigns.current_user.organization_id)
+      )
+      |> Map.put(:action, :validate)
+
+    socket |> assign(contract_changeset: contract_changeset)
+  end
+
+  defp assign_contract_changeset(socket, _params), do: socket
+
+  defp assign_contract_options(%{assigns: %{step: :contract}} = socket) do
+    options =
+      [
+        {"New Contract", ""}
+      ]
+      |> Enum.concat(
+        socket.assigns.changeset
+        |> current()
+        |> Contracts.for_package()
+        |> Enum.map(&{&1.name, &1.id})
+      )
+
+    socket |> assign(contract_options: options)
+  end
+
+  defp assign_contract_options(socket), do: socket
+
+  defp package_contract(package) do
+    if package.contract do
+      package.contract
+    else
+      default_contract = Contracts.default_contract(package)
+
+      %Contract{
+        content: Contracts.contract_content(default_contract, package, PicselloWeb.Helpers),
+        contract_template_id: default_contract.id
+      }
     end
   end
 end

@@ -187,7 +187,9 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def handle_event("edit-contract", %{}, socket) do
     socket
-    |> PicselloWeb.ContractFormComponent.open(Map.take(socket.assigns, [:job, :current_user]))
+    |> PicselloWeb.ContractFormComponent.open(
+      Map.take(socket.assigns, [:package, :job, :current_user])
+    )
     |> noreply()
   end
 
@@ -210,7 +212,8 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def handle_info(
         {:proposal_message_composed, message_changeset},
-        %{assigns: %{job: job, include_questionnaire: include_questionnaire}} = socket
+        %{assigns: %{job: job, package: package, include_questionnaire: include_questionnaire}} =
+          socket
       ) do
     questionnaire_id =
       if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
@@ -224,7 +227,7 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
         PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
       end)
-      |> maybe_create_contract(job)
+      |> maybe_create_contract(package)
       |> Ecto.Multi.insert(
         :message,
         Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
@@ -234,13 +237,13 @@ defmodule PicselloWeb.LeadLive.Show do
     case result do
       {:ok, %{message: message}} ->
         %{client: client} =
-          job = job |> Repo.preload([:client, :job_status, :contract], force: true)
+          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
 
         ClientNotifier.deliver_booking_proposal(message, client.email)
 
         socket
         |> assign_proposal()
-        |> assign(:job, job)
+        |> assign(job: job, package: job.package)
         |> PicselloWeb.ConfirmationComponent.open(%{
           title: "Email sent",
           subtitle: "Yay! Your email has been successfully sent"
@@ -278,9 +281,9 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info({:contract_saved, job}, socket) do
+  def handle_info({:contract_saved, contract}, %{assigns: %{package: package}} = socket) do
     socket
-    |> assign(job: job)
+    |> assign(package: %{package | contract: contract})
     |> put_flash(:success, "New contract added successfully")
     |> close_modal()
     |> noreply()
@@ -296,13 +299,13 @@ defmodule PicselloWeb.LeadLive.Show do
     socket |> assign(stripe_status: Payments.status(current_user))
   end
 
-  defp maybe_create_contract(multi, job) do
-    contract = job |> Repo.preload(:contract) |> Map.get(:contract)
+  defp maybe_create_contract(multi, package) do
+    contract = package |> Repo.preload(:contract) |> Map.get(:contract)
 
     if contract do
       multi
     else
-      Contracts.add_default_contract_to_job(multi, job)
+      Contracts.add_default_contract_to_package(multi, package)
     end
   end
 end

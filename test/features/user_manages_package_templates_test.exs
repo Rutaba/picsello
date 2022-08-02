@@ -60,6 +60,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
+    |> assert_text("Add a Package: Choose a Contract")
+    |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> fill_in(text_field("Package Price"), with: "$100")
     |> click(checkbox("Apply a discount or surcharge"))
@@ -95,6 +97,50 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
            } = user |> Package.templates_for_user() |> Repo.one!()
   end
 
+  feature "add with new contract", %{session: session, user: user} do
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> click(button("Add a package"))
+    |> assert_text("Add a Package: Provide Details")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> click(css("div.ql-editor"))
+    |> send_keys(["My greatest wedding package"])
+    |> scroll_into_view(testid("modal-buttons"))
+    |> click(css("label", text: "Portrait"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> assert_text("Add a Package: Choose a Contract")
+    |> find(select("Select a Contract Template"), &click(&1, option("New Contract")))
+    |> fill_in(text_field("Contract Name"), with: "My custom contract")
+    |> click(css("div.ql-editor[data-placeholder='Paste contract text here']"))
+    |> send_keys(["content of my new contract"])
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> assert_text("Add a Package: Set Pricing")
+    |> fill_in(text_field("Package Price"), with: "$100")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> assert_flash(:success, text: "The package has been successfully saved")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
+
+    package = user |> Package.templates_for_user() |> Repo.one!() |> Repo.preload(:contract)
+
+    assert %Package{
+             name: "Wedding Deluxe",
+             job_type: "portrait"
+           } = package
+
+    assert %Picsello.Contract{
+             name: "My custom contract",
+             content: "<p>content of my new contract</p>"
+           } = package.contract
+  end
+
   feature "edit", %{session: session, user: user} do
     template = insert(:package_template, user: user, print_credits: 20)
 
@@ -113,6 +159,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> assert_value(text_field("Title"), template.name)
         |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
         |> wait_for_enabled_submit_button()
+        |> click(button("Next"))
+        |> assert_text("Edit Package: Choose a Contract")
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> scroll_into_view(testid("download"))
@@ -142,8 +190,88 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       }
       |> Map.take([:id | form_fields])
 
-    assert ^updated =
-             user |> Package.templates_for_user() |> Repo.one!() |> Map.take([:id | form_fields])
+    package = user |> Package.templates_for_user() |> Repo.one!() |> Repo.preload(:contract)
+
+    assert ^updated = package |> Map.take([:id | form_fields])
+
+    %{id: contract_id} = Picsello.Contracts.default_contract(package)
+
+    assert %Picsello.Contract{contract_template_id: ^contract_id} = package.contract
+  end
+
+  feature "edit with contract", %{session: session, user: user} do
+    template = insert(:package_template, job_type: "wedding", user: user)
+
+    contract_template =
+      insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
+
+    insert(:contract, package_id: template.id, contract_template_id: contract_template.id)
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> find(testid("package-template-card"))
+    |> click(button("Manage"))
+    |> click(button("Edit"))
+
+    session
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
+    |> within_modal(
+      &(&1
+        |> assert_text("Edit Package: Provide Details")
+        |> assert_value(text_field("Title"), template.name)
+        |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
+        |> wait_for_enabled_submit_button()
+        |> click(button("Next"))
+        |> assert_text("Edit Package: Choose a Contract")
+        |> assert_has(css("*[role='status']", text: "No edits made"))
+        |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
+        |> replace_inner_content(css("div.ql-editor"), "updated content")
+        |> fill_in(text_field("Contract Name"), with: "Contract 2")
+        |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
+        |> click(link("back"))
+        |> assert_text("Edit Package: Provide Details")
+        |> click(button("Next"))
+        |> assert_text("Edit Package: Choose a Contract")
+        |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
+        |> assert_value(text_field("Contract Name"), "Contract 2")
+        |> assert_text("updated content")
+        # this sleep is intentional since the quill editor takes time to reset
+        |> sleep(500)
+        |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
+        |> click(button("Next"))
+        |> assert_text("Edit Package: Set Pricing")
+        |> wait_for_enabled_submit_button()
+        |> click(button("Save")))
+    )
+    |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
+    |> assert_flash(:success, text: "The package has been successfully saved")
+    |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
+
+    form_fields =
+      ~w(base_price job_type name download_count download_each_price shoot_count buy_all print_credits)a
+
+    updated =
+      %{template | name: "Wedding Super Deluxe"}
+      |> Map.take([:id | form_fields])
+
+    package =
+      user
+      |> Package.templates_for_user()
+      |> Repo.one!()
+      |> Repo.preload(contract: :contract_template)
+
+    assert ^updated = package |> Map.take([:id | form_fields])
+
+    assert %Picsello.Contract{
+             content: "<p>updated content</p>",
+             name: "Contract 2",
+             job_type: nil,
+             contract_template: %{
+               name: "Contract 2",
+               job_type: "wedding"
+             }
+           } = package.contract
   end
 
   feature "archive", %{session: session, user: user} do
@@ -172,7 +300,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_flash(:success, text: "The package has been archived")
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("Add a package"))
+    |> click(button("Add a package", at: 0, count: 2))
     |> find(testid("template-card", count: 1), &assert_text(&1, "deluxe"))
   end
 end

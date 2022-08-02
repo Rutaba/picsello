@@ -50,11 +50,11 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
     %{
       job:
         %{
-          package: %{organization: %{user: photographer} = organization} = package,
-          client: client,
-          contract: contract
+          package:
+            %{contract: contract, organization: %{user: photographer} = organization} = package,
+          client: client
         } = job
-    } = proposal |> Repo.preload(job: [:client, :contract, package: [organization: :user]])
+    } = proposal |> Repo.preload(job: [:client, package: [:contract, organization: :user]])
 
     socket
     |> open_modal(__MODULE__, %{
@@ -64,7 +64,7 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
       contract_content:
         Contracts.contract_content(
           contract,
-          job,
+          package,
           PicselloWeb.Helpers
         ),
       proposal: proposal,

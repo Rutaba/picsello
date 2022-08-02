@@ -70,6 +70,21 @@ defmodule Picsello.FeatureCase do
       end
     end
 
+    def replace_inner_content(session, query, content) do
+      case Wallaby.Query.compile(query) do
+        {:css, css_selector} ->
+          session
+          |> execute_script("""
+          document.querySelector(`#{css_selector}`).innerHTML = "#{content}";
+          """)
+      end
+    end
+
+    def sleep(session, milliseconds) do
+      :timer.sleep(milliseconds)
+      session
+    end
+
     def post(session, path, body, headers \\ []) do
       HTTPoison.post(
         PicselloWeb.Endpoint.url() <> path,

@@ -70,7 +70,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
       |> assert_value(text_field("Subject line"), "here is what I propose")
-      |> assert_has(css("#editor", text: "let us party."))
+      |> assert_has(css(".editor", text: "let us party."))
       |> click(@send_email_button)
       |> click(button("Close"))
       |> find(
@@ -146,7 +146,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_disabled(@invoice_button)
       |> assert_text("Let’s get your shoot booked")
       |> click(link("Message Photography LLC"))
-      |> fill_in(css("#editor > div"), with: "actual message")
+      |> fill_in(css(".editor > div"), with: "actual message")
       |> wait_for_enabled_submit_button()
       |> click(button("Send"))
       |> assert_text("Your message has been sent")

@@ -29,7 +29,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
       gallery: %{id: gallery_id} = gallery
     } do
       from(package in Picsello.Package,
-        join: jobs in assoc(package, :jobs),
+        join: jobs in assoc(package, :job),
         join: g in assoc(jobs, :gallery),
         where: g.id == ^gallery_id
       )
