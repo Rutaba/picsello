@@ -23,7 +23,7 @@ defmodule PicselloWeb.Live.Calendar.Index do
           Settings
         </.live_link>
         <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto sm:ml-auto">
-          <.live_link to={Routes.calendar_booking_events_path(@socket, :booking_events)} class="w-full md:w-auto btn-primary text-center">
+          <.live_link to={Routes.calendar_booking_events_path(@socket, :index)} class="w-full md:w-auto btn-primary text-center">
             Manage booking events
           </.live_link>
         </div>

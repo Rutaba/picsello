@@ -11,6 +11,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   end
 
   @impl true
+  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket) do
+    socket
+    |> open_wizard()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_params(_, _, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="pt-6 px-6 py-2 center-container">
@@ -40,11 +52,28 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any booking events created at the moment. Booking events allow you to create events and pages to send to your clients so they can sign up for mini-sessions shoots.</p>
       </div>
       <div class="lg:inline-flex">
-        <a title="add booking event" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary">
+        <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="flex justify-center mt-5 text-lg px-7 btn-primary">
           Add booking event
-        </a>
+        </.live_link>
       </div>
     </div>
     """
+  end
+
+  @impl true
+  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.get(:flash, %{})
+    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+    |> push_patch(to: Routes.calendar_booking_events_path(socket, :index))
+    |> noreply()
+  end
+
+  defp open_wizard(socket, assigns \\ %{}) do
+    socket
+    |> open_modal(PicselloWeb.Live.Calendar.BookingEventWizard, %{
+      close_event: :wizard_closed,
+      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
+    })
   end
 end

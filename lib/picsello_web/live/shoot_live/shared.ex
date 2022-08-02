@@ -13,12 +13,14 @@ defmodule PicselloWeb.ShootLive.Shared do
   end
 
   def location(assigns) do
+    assigns = assign_new(assigns, :allow_address_toggle, fn -> true end)
+
     ~H"""
     <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field} |> Map.merge(select_invalid_classes(@f, :location)))}>
       <div class="flex items-center justify-between">
         <%= label_for @f, :location, label: "Shoot Location" %>
 
-        <%= unless @address_field do %>
+        <%= if @allow_address_toggle && !@address_field do %>
           <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
         <% end %>
       </div>
@@ -31,7 +33,9 @@ defmodule PicselloWeb.ShootLive.Shared do
         <div class="flex items-center justify-between">
           <%= label_for @f, :address, label: "Shoot Address" %>
 
-          <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
+          <%= if @allow_address_toggle do %>
+            <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
+          <% end %>
         </div>
 
         <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off" %>
