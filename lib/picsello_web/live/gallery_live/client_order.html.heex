@@ -42,9 +42,15 @@
         </ol>
       </nav>
 
-      <h3 class="text-lg font-bold md:text-3xl">
-        Order number <%= @order.number %>
-      </h3>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold md:text-3xl">
+          Order number <%= @order.number %>
+        </h3>
+
+        <%= if canceled?(@order) do %>
+          <div class="px-5 pt-2 pb-1 text-lg font-extrabold text-red-sales-300 bg-red-sales-100">Order Canceled</div>
+        <% end %>
+      </div>
     <% end %>
     <%= if has_download?(@order) do %>
       <div class="flex flex-col items-start justify-between px-5 py-5 mt-5 border border-base-225 md:px-7 md:flex-row md:items-center md:pr-16">
@@ -78,6 +84,8 @@
 
     <.order_details order={@order} gallery={@gallery} class="px-5 pt-5 mt-5 border border-base-225"/>
 
-    <div class="py-7"><.summary order={@order} /></div>
+    <%= unless canceled?(@order) do %>
+      <div class="py-7"><.summary order={@order} /></div>
+    <% end %>
   </div>
 </div>

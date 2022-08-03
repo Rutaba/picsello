@@ -146,6 +146,26 @@ defmodule Picsello.Notifiers.UserNotifier do
     |> deliver_later()
   end
 
+  def deliver_order_cancelation(
+        %{gallery: %{job: %{client: %{organization: %{user: user}}} = job} = gallery} = order,
+        helpers
+      ) do
+    params = %{
+      client_charge: Picsello.Cart.Order.total_cost(order),
+      client_order_url: helpers.order_url(gallery, order),
+      gallery_name: gallery.name,
+      job_name: Picsello.Job.name(job),
+      order_date: helpers.strftime(user.time_zone, order.placed_at, "%-m/%-d/%y"),
+      order_number: Picsello.Cart.Order.number(order)
+    }
+
+    sendgrid_template(:photographer_order_canceled_template, params)
+    |> to(user.email)
+    |> from("noreply@picsello.com")
+    |> subject("Order canceled")
+    |> deliver_later()
+  end
+
   @spec order_confirmation_params(Picsello.Cart.Order.t(), module()) :: %{
           :gallery_name => String.t(),
           :job_name => String.t(),

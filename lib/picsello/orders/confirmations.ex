@@ -8,14 +8,15 @@ defmodule Picsello.Orders.Confirmations do
   """
 
   alias Picsello.{
+    Cart.Order,
+    Cart.OrderNumber,
+    Galleries,
+    Intents,
     Invoices,
     Invoices.Invoice,
-    Galleries,
-    Cart.Order,
     Payments,
-    Cart.OrderNumber,
-    WHCC,
-    Repo
+    Repo,
+    WHCC
   }
 
   import Ecto.Query, only: [from: 2]
@@ -30,13 +31,11 @@ defmodule Picsello.Orders.Confirmations do
   1. maybe fetch the session
   1. update intent
   1. is client paid up?
-     1. send confirmation email
-     1. is the order all paid for?
-        1. capture the stripe funds
-        1. confirm with whcc
-     1. photographer still owes?
-        1. insert photographer invoice
-        1. finalize photographer invoice
+    1. is the order all paid for?
+      1. capture the stripe funds
+      1. confirm with whcc
+    1. photographer still owes?
+      1. finalize photographer invoice
   """
   @spec handle_session(Stripe.Session.t()) ::
           {:ok, Order.t(), :confirmed | :already_confirmed} | {:error, any()}
@@ -64,6 +63,7 @@ defmodule Picsello.Orders.Confirmations do
       1. capture client funds
       1. confirm with whcc
   """
+  @spec handle_invoice(Stripe.Invoice.t()) :: {:ok, map()} | {:error, atom(), any(), map()}
   def handle_invoice(invoice) do
     new()
     |> put(:stripe_invoice, invoice)
@@ -81,6 +81,50 @@ defmodule Picsello.Orders.Confirmations do
     end)
     |> Repo.transaction()
   end
+
+  @doc """
+    Handles intent cancelled event.
+    Most likely because the clock ran out on the hold.
+
+    1. query for intent
+    1. update intent
+    1. is there an unpaid invoice?
+       1. cancel invoice
+
+  """
+  @spec handle_intent(Stripe.PaymentIntent.t()) :: any()
+  def handle_intent(intent) do
+    new()
+    |> put(:stripe_intent, intent)
+    |> update(:intent, &update_intent/1)
+    |> run(:order, &load_order/2)
+    |> run(:open_invoice, &load_open_invoice/2)
+    |> merge(fn
+      %{open_invoice: nil} ->
+        new()
+
+      %{open_invoice: invoice} ->
+        new()
+        |> put(:invoice, invoice)
+        |> run(:void_stripe_invoice, &void_invoice/2)
+        |> update(:voided_invoice, &update_invoice/1)
+    end)
+    |> Repo.transaction()
+  end
+
+  defp load_open_invoice(repo, %{order: order}) do
+    {:ok, order |> Invoices.open_invoice_for_order_query() |> repo.one()}
+  end
+
+  defp void_invoice(_repo, %{invoice: %{stripe_id: invoice_stripe_id}}) do
+    Payments.void_invoice(invoice_stripe_id)
+  end
+
+  defp update_invoice(%{invoice: invoice, void_stripe_invoice: stripe_invoice}) do
+    Invoices.changeset(invoice, stripe_invoice)
+  end
+
+  defp update_intent(%{stripe_intent: stripe_intent}), do: Intents.update_changeset(stripe_intent)
 
   defp handle_capture(nil, _), do: new()
 
@@ -152,20 +196,27 @@ defmodule Picsello.Orders.Confirmations do
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
 
   defp load_order(repo, %{order_number: order_number}) do
-    order_id = OrderNumber.from_number(order_number)
+    load_order(repo, OrderNumber.from_number(order_number))
+  end
 
-    order =
-      from(order in Order,
-        where: order.id == ^order_id,
-        preload: [
-          products: :whcc_product,
-          digitals: :photo,
-          gallery: [organization: :user]
-        ]
-      )
-      |> repo.one()
+  defp load_order(repo, %{intent: %{order_id: order_id}}) do
+    load_order(repo, order_id)
+  end
 
-    {:ok, order}
+  defp load_order(repo, order_id) do
+    from(order in Order,
+      where: order.id == ^order_id,
+      preload: [
+        products: :whcc_product,
+        digitals: :photo,
+        gallery: [organization: :user]
+      ]
+    )
+    |> repo.one()
+    |> case do
+      nil -> {:error, "cannot load order"}
+      order -> {:ok, order}
+    end
   end
 
   defp stripe_options(_, %{order: order}) do
@@ -248,6 +299,18 @@ defmodule Picsello.Orders.Confirmations do
       invoice -> {:ok, repo.preload(invoice, order: [:intent, gallery: :organization])}
     end
   end
+
+  defp load_invoice(repo, %Order{id: order_id}) do
+    Invoice
+    |> repo.get_by(order_id: order_id)
+    |> case do
+      nil -> {:error, "no invoice"}
+      invoice -> {:ok, invoice}
+    end
+  end
+
+  defp load_invoice(repo, %{intent: %{order_id: order_id}}),
+    do: load_invoice(repo, %Order{id: order_id})
 
   defp update_invoice_changeset(%{stripe_invoice: stripe_invoice, invoice: invoice}) do
     Invoice.changeset(invoice, stripe_invoice)

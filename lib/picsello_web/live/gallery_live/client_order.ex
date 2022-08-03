@@ -17,17 +17,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery, live_action: :paid}} = socket
       ) do
-    case Orders.handle_session(
-           order_number,
-           session_id
-         ) do
-      {:ok, _order, :already_confirmed} ->
+    order_number
+    |> Orders.handle_session(session_id)
+    |> Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(PicselloWeb.Helpers)
+    |> case do
+      {:ok, _email} ->
         Orders.get!(gallery, order_number)
-
-      {:ok, _order, :confirmed} ->
-        order = Orders.get!(gallery, order_number)
-        Picsello.Notifiers.OrderNotifier.deliver_order_emails(order, PicselloWeb.Helpers)
-        order
     end
     |> then(fn order ->
       if connected?(socket) do
@@ -77,6 +72,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> assign_cart_count(gallery)
   end
 
+  defdelegate canceled?(order), to: Picsello.Orders
   defdelegate has_download?(order), to: Picsello.Orders
   defdelegate summary(assigns), to: PicselloWeb.GalleryLive.ClientShow.Cart.Summary
 end

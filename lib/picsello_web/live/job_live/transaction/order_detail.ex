@@ -28,21 +28,32 @@ defmodule PicselloWeb.JobLive.Transaction.OrderDetail do
   end
 
   @impl true
-  def handle_event("open-stripe", _, %{assigns: %{order: %{intent: nil}, current_user: current_user}} = socket), do:
-    socket |> redirect(
-      external:
-        "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments"
-    )
-    |> noreply()
+  def handle_event(
+        "open-stripe",
+        _,
+        %{assigns: %{order: %{intent: nil}, current_user: current_user}} = socket
+      ),
+      do:
+        socket
+        |> redirect(
+          external:
+            "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments"
+        )
+        |> noreply()
 
   @impl true
-  def handle_event("open-stripe", _, %{assigns: %{order: %{intent: intent}, current_user: current_user}} = socket), do:
-    socket |> redirect(
-      external:
-        "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments/#{intent.stripe_payment_intent_id}"
-    )
-    |> noreply()
-
+  def handle_event(
+        "open-stripe",
+        _,
+        %{assigns: %{order: %{intent: intent}, current_user: current_user}} = socket
+      ),
+      do:
+        socket
+        |> redirect(
+          external:
+            "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments/#{intent.stripe_payment_intent_id}"
+        )
+        |> noreply()
 
   @impl true
   def handle_event("view_gallery", _, %{assigns: %{gallery: gallery}} = socket),

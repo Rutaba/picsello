@@ -45,10 +45,12 @@ defmodule Picsello.GalleryShareTest do
 
     session
     |> visit("/galleries/#{gallery.id}")
-    |> assert_has(css("button", count: 1, text: "Share gallery"))
-    |> click(css("button", text: "Share gallery"))
-    |> assert_has(css("button", text: "Send Email"))
-    |> click(css("button", text: "Send Email"))
+    |> click(button("Share gallery"))
+    |> within_modal(fn modal ->
+      modal
+      |> wait_for_enabled_submit_button(text: "Send Email")
+      |> click(button("Send Email"))
+    end)
 
     assert_enqueued([worker: Picsello.Workers.ScheduleEmail], 100)
     refute_receive {:delivered_email, _}

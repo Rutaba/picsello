@@ -49,21 +49,15 @@ defmodule Picsello.Invoices do
 
   alias __MODULE__.Invoice
 
-  defdelegate changeset(stripe_invoice, order), to: __MODULE__.Invoice
-
-  def unpaid_query() do
-    from(invoices in Invoice,
-      where: invoices.status != :paid
-    )
-  end
+  defdelegate changeset(stripe_invoice, order), to: Invoice
 
   def pending_invoices?(organization_id) do
     from(
-      invoice in unpaid_query(),
+      invoice in Invoice,
       join: order in assoc(invoice, :order),
       join: gallery in assoc(order, :gallery),
       join: organization in assoc(gallery, :organization),
-      where: organization.id == ^organization_id
+      where: organization.id == ^organization_id and invoice.status == :open
     )
     |> Picsello.Repo.exists?()
   end
@@ -85,4 +79,7 @@ defmodule Picsello.Invoices do
       Payments.finalize_invoice(invoice_id, %{auto_advance: true})
     end
   end
+
+  def open_invoice_for_order_query(%{id: order_id}),
+    do: from(invoice in Invoice, where: invoice.order_id == ^order_id and invoice.status == :open)
 end

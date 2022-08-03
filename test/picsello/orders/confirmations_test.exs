@@ -74,27 +74,35 @@ defmodule Picsello.Orders.ConfirmationsTest do
     :ok
   end
 
-  def insert_intent(%{order: order}) do
+  def insert_intent(%{order: order, stripe_intent: stripe_intent}) do
     intent =
       insert(:intent,
-        stripe_payment_intent_id: "payment-intent-id",
+        stripe_payment_intent_id: stripe_intent.id,
         order: order,
         amount: Order.total_cost(order),
         status: :requires_payment_method
       )
 
-    %{amount: total_cents} = Order.total_cost(order)
-
     [
       intent: intent,
-      stripe_intent:
-        build(:stripe_payment_intent,
-          id: intent.stripe_payment_intent_id,
-          amount: total_cents,
-          status: "requires_capture",
-          amount_capturable: total_cents
-        )
+      stripe_intent: stripe_intent
     ]
+  end
+
+  def insert_intent(%{order: order} = context) do
+    %{amount: total_cents} = Order.total_cost(order)
+
+    context
+    |> Map.put(
+      :stripe_intent,
+      build(:stripe_payment_intent,
+        id: "payment-intent-id",
+        amount: total_cents,
+        status: "requires_capture",
+        amount_capturable: total_cents
+      )
+    )
+    |> insert_intent()
   end
 
   def stub_retrieve_intent(%{stripe_intent: stripe_intent}) do
@@ -103,6 +111,20 @@ defmodule Picsello.Orders.ConfirmationsTest do
     end)
 
     :ok
+  end
+
+  def stub_void_invoice(%{invoice: %{stripe_id: invoice_stripe_id}}) do
+    Mox.stub(MockPayments, :void_invoice, fn ^invoice_stripe_id, _ ->
+      {:ok, build(:stripe_invoice, id: invoice_stripe_id, status: "void")}
+    end)
+
+    :ok
+  end
+
+  def updates_intent(%{intent: intent, stripe_intent: stripe_intent}) do
+    Confirmations.handle_intent(stripe_intent)
+
+    assert %{status: :canceled} = Repo.reload!(intent)
   end
 
   def updates_invoice(%{stripe_invoice: stripe_invoice}) do
@@ -315,8 +337,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
   end
 
   describe "handle_session - order does not exist" do
-    test "fails" do
-      assert {:error, _x, _y, _z} =
+    test "is an error" do
+      assert {:error, :order, _, _} =
                handle_session(%Stripe.Session{
                  client_reference_id: "order_number_404"
                })
@@ -355,6 +377,38 @@ defmodule Picsello.Orders.ConfirmationsTest do
         client_reference_id: "order_number_#{Order.number(order)}",
         payment_intent: "intent-id"
       })
+    end
+  end
+
+  describe "handle_intent - canceled, no invoice" do
+    setup do
+      [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
+    end
+
+    setup [:insert_order, :insert_intent]
+
+    test("updates the intent", context, do: updates_intent(context))
+  end
+
+  describe "handle_intent - cancelled, invoice" do
+    setup do
+      [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
+    end
+
+    setup [:insert_order, :insert_intent]
+
+    setup %{intent: %{order: order}} do
+      [invoice: insert(:invoice, order: order, status: :open)]
+    end
+
+    setup :stub_void_invoice
+
+    test("updates the intent", context, do: updates_intent(context))
+
+    test "voids the invoice", %{stripe_intent: stripe_intent, invoice: invoice} do
+      Confirmations.handle_intent(stripe_intent)
+
+      assert %{status: :void} = Repo.reload!(invoice)
     end
   end
 end

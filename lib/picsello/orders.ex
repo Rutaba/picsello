@@ -8,7 +8,7 @@ defmodule Picsello.Orders do
     Galleries.Gallery,
     Galleries.Photo,
     Intents,
-    Invoices,
+    Invoices.Invoice,
     Repo
   }
 
@@ -19,7 +19,13 @@ defmodule Picsello.Orders do
 
     from(order in orders(),
       where: order.gallery_id == ^gallery_id,
-      preload: [:package, digitals: [photo: ^photo_query], products: :whcc_product],
+      preload: [
+        :package,
+        :intent,
+        :canceled_intents,
+        digitals: [photo: ^photo_query],
+        products: :whcc_product
+      ],
       order_by: [desc: order.placed_at]
     )
     |> Repo.all()
@@ -38,6 +44,12 @@ defmodule Picsello.Orders do
   def client_paid?(%{id: order_id}),
     do: Repo.exists?(from orders in client_paid_query(), where: orders.id == ^order_id)
 
+  def photographer_paid?(%{id: order_id}),
+    do:
+      not Repo.exists?(
+        from invoice in Invoice, where: invoice.order_id == ^order_id and invoice.status != :paid
+      )
+
   def client_paid_query, do: client_paid_query(orders())
 
   def client_paid_query(source),
@@ -46,14 +58,6 @@ defmodule Picsello.Orders do
         left_join: intents in subquery(Intents.unpaid_query()),
         on: intents.order_id == orders.id,
         where: is_nil(intents.id)
-      )
-
-  def photographer_paid_query(source),
-    do:
-      from(orders in source,
-        left_join: invoices in subquery(Invoices.unpaid_query()),
-        on: invoices.order_id == orders.id,
-        where: is_nil(invoices.id)
       )
 
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
@@ -73,11 +77,11 @@ defmodule Picsello.Orders do
 
     gallery
     |> placed_order_query(order_number)
-    |> preload(
-      gallery: :organization,
-      products: :whcc_product,
-      digitals: [photo: ^watermarked_query]
-    )
+    |> preload([
+      :intent,
+      :canceled_intents,
+      [gallery: :organization, products: :whcc_product, digitals: [photo: ^watermarked_query]]
+    ])
     |> Repo.one!()
   end
 
@@ -171,6 +175,8 @@ defmodule Picsello.Orders do
 
   defdelegate handle_session(session), to: __MODULE__.Confirmations
   defdelegate handle_invoice(invoice), to: __MODULE__.Confirmations
+  defdelegate handle_intent(intent), to: __MODULE__.Confirmations
+  defdelegate canceled?(order), to: Order
 
   defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
     from(photo in Photo, where: photo.gallery_id == ^order.gallery_id)

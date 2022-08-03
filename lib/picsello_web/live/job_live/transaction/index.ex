@@ -50,7 +50,9 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
     end
   end
 
-  defp order_status(%{intent: %{status: status}}) when is_binary(status), do: String.capitalize(status)
+  defp order_status(%{intent: %{status: status}}) when is_binary(status),
+    do: String.capitalize(status)
+
   defp order_status(_), do: "Processed"
 
   defdelegate total_cost(order), to: Cart

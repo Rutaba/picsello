@@ -58,4 +58,7 @@ defmodule Picsello.StripePayments do
 
   @impl Payments
   defdelegate create_invoice_item(params, opts), to: Stripe.Invoiceitem, as: :create
+
+  @impl Payments
+  defdelegate void_invoice(id, opts), to: Stripe.Invoice, as: :void
 end

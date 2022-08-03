@@ -9,15 +9,15 @@ defmodule Picsello.Intents do
     import Ecto.Changeset
     alias Picsello.Cart.Order
 
+    @statuses ~w[requires_payment_method requires_confirmation requires_capture requires_action processing succeeded canceled]a
+
     schema "gallery_order_intents" do
       field :amount, Money.Ecto.Type
       field :amount_capturable, Money.Ecto.Type
       field :amount_received, Money.Ecto.Type
       field :application_fee_amount, Money.Ecto.Type
 
-      field :status, Ecto.Enum,
-        values:
-          ~w[requires_payment_method requires_confirmation requires_capture requires_action processing succeeded canceled]a
+      field :status, Ecto.Enum, values: @statuses
 
       field :stripe_payment_intent_id, :string
       field :stripe_session_id, :string
@@ -60,17 +60,22 @@ defmodule Picsello.Intents do
         message: "only one uncancelled intent per order"
       )
     end
+
+    def statuses, do: @statuses
   end
 
   alias __MODULE__.Intent
 
   defdelegate changeset(stripe_intent, order), to: Intent
 
-  def update(%Stripe.PaymentIntent{id: "" <> stripe_id} = intent) do
+  def update_changeset(%Stripe.PaymentIntent{id: "" <> stripe_id} = intent) do
     Intent
     |> Repo.get_by(stripe_payment_intent_id: stripe_id)
     |> Intent.changeset(intent)
-    |> Repo.update()
+  end
+
+  def update(intent) do
+    intent |> update_changeset() |> Repo.update()
   end
 
   def capture(%Intent{stripe_payment_intent_id: stripe_id}, stripe_options) do

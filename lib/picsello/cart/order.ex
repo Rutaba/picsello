@@ -4,11 +4,12 @@ defmodule Picsello.Cart.Order do
   import Ecto.Changeset
 
   alias Picsello.{
-    Cart.OrderNumber,
-    Cart.Product,
     Cart.DeliveryInfo,
     Cart.Digital,
-    Galleries.Gallery
+    Cart.OrderNumber,
+    Cart.Product,
+    Galleries.Gallery,
+    Intents.Intent
   }
 
   schema "gallery_orders" do
@@ -21,7 +22,12 @@ defmodule Picsello.Cart.Order do
 
     has_one :package, through: [:gallery, :package]
     has_one :invoice, Picsello.Invoices.Invoice
-    has_one :intent, Picsello.Intents.Intent, on_delete: :delete_all
+
+    has_one :intent, Intent,
+      where: [status: {:fragment, "? != 'canceled'"}],
+      on_delete: :delete_all
+
+    has_many :canceled_intents, Intent, where: [status: :canceled], on_delete: :delete_all
 
     has_many :digitals, Digital,
       on_replace: :delete,
@@ -184,6 +190,11 @@ defmodule Picsello.Cart.Order do
     Money.add(digital_total(order), product_total(order))
   end
 
+  def lines_by_product(%__MODULE__{products: products}), do: products |> sort_products()
+
+  def canceled?(%__MODULE__{canceled_intents: [_ | _], intent: nil}), do: true
+  def canceled?(%__MODULE__{canceled_intents: []}), do: false
+
   defp remaining_products(products, editor_id, opts) do
     case Enum.split_with(products, &(&1.editor_id == editor_id)) do
       {[], products} ->
@@ -223,8 +234,6 @@ defmodule Picsello.Cart.Order do
 
     Enum.reverse(products)
   end
-
-  def lines_by_product(%__MODULE__{products: products}), do: products |> sort_products()
 
   defp sort_products(products) do
     products
