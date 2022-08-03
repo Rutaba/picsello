@@ -375,18 +375,33 @@ defmodule PicselloWeb.GalleryLive.Shared do
     )
   end
 
-  def tracking_link(assigns) do
+  def tracking(assigns) do
+    assigns = assign_new(assigns, :class, fn -> "" end)
+
     ~H"""
-    <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- @info.shipping_info do %>
-      <a href={url} target="_blank" class="underline cursor-pointer">
-        <%= carrier %>
-        <%= tracking_number %>
-      </a>
-    <% end %>
+    <div class={"flex items-center pt-3 md:px-8 #{@class}"}>
+      <%= case tracking_info(@order, @item) do %>
+        <% nil -> %>
+          <.icon name="tracking-info" class="mr-2 w-7 h-7 md:mr-4"/>
+          <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
+
+        <% %{shipping_info: info} -> %>
+          <.icon name="order-shipped" class="mr-2 w-7 h-7 md:mr-4"/>
+
+          <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
+            <%= for %{carrier: carrier, tracking_url: url, tracking_number: tracking_number} <- info do %>
+              <a href={url} target="_blank" class="underline cursor-pointer">
+                <%= carrier %>
+                <%= tracking_number %>
+              </a>
+            <% end %>
+          </p>
+      <% end %>
+    </div>
     """
   end
 
-  def tracking(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
+  defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
     Enum.find_value(sub_orders, fn
       %{editor_id: ^editor_id, whcc_tracking: tracking} ->
         tracking
@@ -408,7 +423,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         <.icon name="down" class="w-3 h-3 ml-auto mr-1 stroke-current stroke-2 open-icon" />
         <.icon name="up" class="hidden w-3 h-3 ml-auto mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden mt-2 w-full bg-white rounded-md popover-content border border-base-200">
+      <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
         <li class="flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75">
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
@@ -455,21 +470,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
             </button>
         </div>
-        <div class="flex items-center mx-24 2xl:mt-7 mt-2 font-sans text-2xl font-bold text-base-300 lg:justify-start">
+        <div class="flex items-center mx-24 mt-2 font-sans text-2xl font-bold 2xl:mt-7 text-base-300 lg:justify-start">
             <p><%= @page_title %></p>
         </div>
-        <h1 class="text-md 2xl:mt-5 mt-2 mx-24 font-sans text-base-300">
+        <h1 class="mx-24 mt-2 font-sans text-md 2xl:mt-5 text-base-300">
             <%= @title %>
         </h1>
-        <div class="flex 2xl:pt-6 pt-3 pb-6 mx-24 grid lg:grid-cols-3 grid-cols-1 lg:grid-rows-preview">
+        <div class="flex pt-3 pb-6 mx-24 2xl:pt-6 grid lg:grid-cols-3 grid-cols-1 lg:grid-rows-preview">
           <%= render_slot(@inner_block) %>
           <div class="description lg:ml-11 row-span-2 col-span-2">
-              <p class="2xl:pt-6 pt-3 font-sans text-base lg:pb-11 pb-6"><%= @description %></p>
+              <p class="pt-3 pb-6 font-sans text-base 2xl:pt-6 lg:pb-11"><%= @description %></p>
               <button phx-click="save" phx-target={@myself} disabled={!@selected} class="w-full rounded-lg save-button btn-settings">Save</button>
           </div>
         </div>
     </div>
-    <div id="gallery_form" class="2xl:pt-60 lg:pt-40 pt-80 pb-20 px-11 lg:mt-56 mt-72">
+    <div id="gallery_form" class="pb-20 2xl:pt-60 lg:pt-40 pt-80 px-11 lg:mt-56 mt-72">
       <div
           phx-hook="MasonryGrid"
           phx-update="append"
@@ -595,8 +610,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def mobile_gallery_header(assigns) do
     ~H"""
-      <div class="lg:hidden absolute top-0 left-0 h-20 px-10 py-6 z-20 shrink-0 w-screen bg-base-200">
-        <p class="font-sans font-bold text-2xl"><%= @gallery_name %></p>
+      <div class="absolute top-0 left-0 z-20 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200">
+        <p class="font-sans text-2xl font-bold"><%= @gallery_name %></p>
       </div>
     """
   end
@@ -621,8 +636,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def mobile_banner(assigns) do
     ~H"""
       <div class={"lg:hidden flex flex-row items-center #{@class}"}>
-        <div class="flex w-10 h-10 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
-          <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+          <.icon name="back" class="items-center w-5 h-5 ml-auto mr-auto text-white stroke-current" />
         </div>
         <div class="flex flex-col ml-4">
           <div class="flex font-sans text-2xl font-bold"><%= @title %></div>
@@ -658,23 +673,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
               <span class="text-base font-bold lg:text-2xl md:pr-8 md:self-center"><%= price_display(item) %></span>
             </div>
 
-            <%= case tracking(@order, item) do %>
-            <% nil -> %>
-              <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
-                <.icon name="tracking-info" class="mr-2 w-7 h-7 md:mr-4"/>
-
-                <p class="text-xs md:text-sm">We’ll provide tracking info once your item ships</p>
-              </div>
-
-            <% tracking -> %>
-              <div class="flex items-center pt-3 md:absolute md:left-64 md:bottom-12 md:px-8">
-                <.icon name="order-shipped" class="mr-2 w-7 h-7 md:mr-4"/>
-
-                <p class="text-xs md:text-sm"><span class="font-bold">Item shipped:</span>
-                  <.tracking_link info={tracking} />
-                </p>
-              </div>
-            <% end %>
+            <.tracking order={@order} item={item} class="md:absolute md:left-64 md:bottom-12" />
           </div>
         <% end %>
 

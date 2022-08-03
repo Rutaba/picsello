@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   alias Cart.Order
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [assign_cart_count: 2, price_display: 1, bundle_image: 1]
+    only: [assign_cart_count: 2, price_display: 1, bundle_image: 1, tracking: 1]
 
   def handle_params(_, _, %{assigns: %{gallery: gallery}} = socket) do
     orders = Orders.all(gallery.id)
