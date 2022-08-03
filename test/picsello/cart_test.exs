@@ -43,7 +43,11 @@ defmodule Picsello.CartTest do
     {:ok, order} =
       Cart.store_order_delivery_info(
         order,
-        Cart.delivery_info_change(%{name: "brian", email: "brian@example.com"})
+        Cart.delivery_info_change(order, %{
+          address: %{state: "IL", zip: "60661", addr1: "661 w lake", city: "Chicago"},
+          name: "brian",
+          email: "brian@example.com"
+        })
       )
 
     Picsello.Cart.Checkouts.check_out(order.id, %{"success_url" => "", "cancel_url" => ""})

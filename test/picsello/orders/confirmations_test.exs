@@ -74,17 +74,10 @@ defmodule Picsello.Orders.ConfirmationsTest do
     :ok
   end
 
-  def insert_invoice(%{order: order}) do
-    [
-      invoice: insert(:invoice, order: order, status: :open, stripe_id: "invoice-stripe-id"),
-      stripe_invoice: build(:stripe_invoice, status: "paid", id: "invoice-stripe-id")
-    ]
-  end
-
   def insert_intent(%{order: order, stripe_intent: stripe_intent}) do
     intent =
       insert(:intent,
-        stripe_id: stripe_intent.id,
+        stripe_payment_intent_id: stripe_intent.id,
         order: order,
         amount: Order.total_cost(order),
         status: :requires_payment_method
@@ -392,7 +385,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
       [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
     end
 
-    setup :insert_intent
+    setup [:insert_order, :insert_intent]
 
     test("updates the intent", context, do: updates_intent(context))
   end
@@ -402,7 +395,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
       [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
     end
 
-    setup :insert_intent
+    setup [:insert_order, :insert_intent]
 
     setup %{intent: %{order: order}} do
       [invoice: insert(:invoice, order: order, status: :open)]

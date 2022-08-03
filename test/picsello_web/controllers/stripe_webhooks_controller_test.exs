@@ -289,7 +289,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       assert fn -> make_request(conn) end
              |> capture_log()
-             |> String.contains?("Error: {:error, :confirm_order, \"oops\"")
+             |> String.contains?("{:error, :confirm_order, \"oops\"")
     end
   end
 

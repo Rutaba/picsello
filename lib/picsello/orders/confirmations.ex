@@ -209,7 +209,7 @@ defmodule Picsello.Orders.Confirmations do
       preload: [
         products: :whcc_product,
         digitals: :photo,
-        gallery: [job: [client: [organization: :user]]]
+        gallery: [organization: :user]
       ]
     )
     |> repo.one()
@@ -311,10 +311,6 @@ defmodule Picsello.Orders.Confirmations do
 
   defp load_invoice(repo, %{intent: %{order_id: order_id}}),
     do: load_invoice(repo, %Order{id: order_id})
-
-  defp finalize_invoice(_repo, %{invoice: %{stripe_id: stripe_invoice_id}}) do
-    Payments.finalize_invoice(stripe_invoice_id, %{auto_advance: true})
-  end
 
   defp update_invoice_changeset(%{stripe_invoice: stripe_invoice, invoice: invoice}) do
     Invoice.changeset(invoice, stripe_invoice)
