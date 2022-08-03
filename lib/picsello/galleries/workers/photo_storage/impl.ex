@@ -8,8 +8,13 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
 
   @impl PhotoStorage
   def path_to_url(path, bucket \\ @bucket) do
-    sign_opts = [bucket: bucket, key: path, expires_in: 604_800]
-    GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
+    path =
+      path
+      |> Path.split()
+      |> List.update_at(-1, &URI.encode/1)
+      |> Path.join()
+
+    GCSSign.sign_url_v4(gcp_credentials(), bucket: bucket, key: path, expires_in: 604_800)
   end
 
   @impl PhotoStorage
