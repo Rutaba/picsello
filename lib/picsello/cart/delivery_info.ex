@@ -20,6 +20,13 @@ defmodule Picsello.Cart.DeliveryInfo do
           address: Address.t()
         }
 
+  def changeset(delivery_info, attrs, opts) do
+    case Keyword.get(opts, :order) do
+      %{products: [_ | _]} -> delivery_info |> changeset(attrs) |> validate_required([:address])
+      _ -> changeset(delivery_info, attrs)
+    end
+  end
+
   def changeset(nil, attrs), do: changeset(%__MODULE__{}, attrs)
 
   def changeset(%Ecto.Changeset{} = delivery_info, %{"address_components" => _} = google_place) do

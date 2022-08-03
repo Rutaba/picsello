@@ -462,4 +462,28 @@ defmodule Picsello.CartTest do
       assert_receive({:checkout, :complete, _order})
     end
   end
+
+  describe "delivery_info_change" do
+    test "requires address when order includes products" do
+      gallery = insert(:gallery)
+      order = Cart.place_product(build(:cart_product), gallery)
+
+      changeset = Cart.delivery_info_change(order)
+
+      refute changeset.valid?
+
+      assert [_] = Keyword.get_values(changeset.errors, :address)
+    end
+
+    test "does not require address when order is only digitals" do
+      gallery = insert(:gallery)
+      order = Cart.place_product(build(:digital), gallery)
+
+      changeset = Cart.delivery_info_change(order)
+
+      refute changeset.valid?
+
+      assert [] = Keyword.get_values(changeset.errors, :address)
+    end
+  end
 end

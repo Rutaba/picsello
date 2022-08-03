@@ -41,7 +41,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       ) do
     socket
     |> assign(
-      delivery_info_changeset: Cart.order_delivery_info_change(order),
+      delivery_info_changeset: Cart.delivery_info_change(order),
       organization: organization,
       checking_out: false
     )
@@ -150,11 +150,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end
   end
 
-  def handle_event("validate_delivery_info", %{"delivery_info" => params}, socket) do
+  def handle_event(
+        "validate_delivery_info",
+        %{"delivery_info" => params},
+        %{assigns: %{order: order}} = socket
+      ) do
     socket
     |> assign(
       :delivery_info_changeset,
-      params |> Cart.delivery_info_change() |> Map.put(:action, :validate)
+      order |> Cart.delivery_info_change(params) |> Map.put(:action, :validate)
     )
     |> noreply()
   end
@@ -162,10 +166,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "place_changed",
         params,
-        %{assigns: %{delivery_info_changeset: changeset}} = socket
+        %{assigns: %{order: order, delivery_info_changeset: changeset}} = socket
       ) do
     socket
-    |> assign(delivery_info_changeset: Cart.delivery_info_change(changeset, params))
+    |> assign(delivery_info_changeset: Cart.delivery_info_change(order, changeset, params))
     |> noreply()
   end
 

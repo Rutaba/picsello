@@ -4,14 +4,15 @@ defmodule Picsello.Cart.OrderDeliveryInfoTest do
 
   describe "changesets casting" do
     test "valid struct without address casted" do
-      changeset = Cart.delivery_info_change(%{name: "David", email: "david@mail.ua"})
+      changeset =
+        Cart.delivery_info_change(insert(:order), %{name: "David", email: "david@mail.ua"})
 
       assert changeset.valid?
     end
 
     test "works with google places" do
       changeset =
-        Cart.delivery_info_change(%{
+        Cart.delivery_info_change(insert(:order), %{
           "name" => "David",
           "email" => "david@mail.ua",
           "address" => %{}
@@ -20,7 +21,7 @@ defmodule Picsello.Cart.OrderDeliveryInfoTest do
       refute changeset.valid?
 
       changeset =
-        Cart.delivery_info_change(changeset, %{
+        Cart.delivery_info_change(insert(:order), changeset, %{
           "address_components" => [
             %{"short_name" => "123", "types" => ["street_number"]},
             %{"short_name" => "main st", "types" => ["route"]},
