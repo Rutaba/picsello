@@ -2,9 +2,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.BookingEvent
+  alias Picsello.{BookingEvent, Packages}
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -15,6 +16,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     |> assign_new(:collapsed_dates, fn -> [] end)
     |> assign_new(:booking_event, fn -> %BookingEvent{} end)
     |> assign_changeset(%{"dates" => [%{"time_blocks" => [%{}]}]})
+    |> assign_package_templates()
     |> ok()
   end
 
@@ -152,6 +154,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step(%{name: :package} = assigns) do
     ~H"""
+    <div class="grid grid-cols-1 my-4 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+      <%= for package <- @package_templates do %>
+        <% checked = input_value(@f, :package_template_id) == package.id %>
+
+        <label {testid("template-card")}>
+          <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: package.id} />
+          <.package_card package={package} class={classes(%{"bg-blue-planning-100 border-blue-planning-300" => checked})} />
+        </label>
+      <% end %>
+    </div>
     """
   end
 
@@ -364,13 +376,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   defp assign_changeset(
-         %{assigns: %{booking_event: booking_event}} = socket,
+         %{assigns: %{booking_event: booking_event, step: step}} = socket,
          params,
          action \\ nil
        ) do
-    changeset = booking_event |> BookingEvent.changeset(params) |> Map.put(:action, action)
+    changeset =
+      booking_event |> BookingEvent.changeset(params, step: step) |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
+  end
+
+  defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
+    packages = Packages.templates_for_user(current_user, "mini")
+
+    socket |> assign(package_templates: packages)
   end
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1

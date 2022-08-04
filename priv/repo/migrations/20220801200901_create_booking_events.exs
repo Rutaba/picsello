@@ -10,12 +10,12 @@ defmodule Picsello.Repo.Migrations.CreateBookingEvents do
       add(:buffer_minutes, :integer)
       add(:description, :string, null: false)
       add(:thumbnail_url, :string, null: false)
-      add(:package_id, references(:packages, on_delete: :nothing), null: false)
+      add(:package_template_id, references(:packages, on_delete: :nothing), null: false)
       add(:dates, {:array, :map}, null: false)
 
       timestamps()
     end
 
-    create(index(:booking_events, [:package_id]))
+    create(index(:booking_events, [:package_template_id]))
   end
 end

@@ -12,7 +12,11 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("You don’t have any booking events created at the moment")
   end
 
-  feature "creates new booking event", %{session: session} do
+  feature "creates new booking event", %{session: session, user: user} do
+    insert(:package_template, user: user, job_type: "wedding")
+    insert(:package_template, user: user, job_type: "mini", name: "Mini 1")
+    insert(:package_template, user: user, job_type: "mini", name: "Mini 2")
+
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
@@ -39,5 +43,11 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
+    |> assert_disabled_submit(text: "Next")
+    |> assert_has(testid("template-card", count: 2))
+    |> click(testid("template-card", text: "Mini 1"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Add booking event: Customize")
   end
 end

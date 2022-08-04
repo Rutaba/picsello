@@ -77,23 +77,35 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
-    belongs_to :package, Picsello.Package
+    belongs_to :package_template, Picsello.Package
     embeds_many :dates, EventDate
 
     timestamps()
   end
 
   @doc false
-  def changeset(booking_event, attrs) do
+  def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
+    steps = [
+      details: &update_details/2,
+      package: &update_package_template/2,
+      customize: &update_customize/2
+    ]
+
+    step = Keyword.get(opts, :step, :customize)
+
+    Enum.reduce_while(steps, booking_event, fn {step_name, initializer}, changeset ->
+      {if(step_name == step, do: :halt, else: :cont), initializer.(changeset, attrs)}
+    end)
+  end
+
+  defp update_details(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
       :name,
       :location,
       :address,
       :duration_minutes,
-      :buffer_minutes,
-      :description,
-      :thumbnail_url
+      :buffer_minutes
     ])
     |> cast_embed(:dates, required: true)
     |> validate_required([
@@ -122,5 +134,23 @@ defmodule Picsello.BookingEvent do
     else
       changeset |> add_error(:dates, "can't be the same")
     end
+  end
+
+  defp update_package_template(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [:package_template_id])
+    |> validate_required([:package_template_id])
+  end
+
+  defp update_customize(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [
+      :description,
+      :thumbnail_url
+    ])
+    |> validate_required([
+      :description,
+      :thumbnail_url
+    ])
   end
 end
