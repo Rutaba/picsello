@@ -260,6 +260,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp maybe_redirect(%{assigns: %{checkout_routes: checkout_routes}} = socket) do
+
     push_redirect(socket, to: checkout_routes.home_page)
   end
 

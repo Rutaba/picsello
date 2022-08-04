@@ -17,6 +17,23 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
   @impl true
   def handle_params(
+        %{"order_number" => order_number},
+        _,
+        %{assigns: %{gallery: gallery, live_action: :proofing_album_paid}} = socket
+      ) do
+    order = Orders.get!(gallery, order_number)
+
+    socket
+    |> assign(
+      from_checkout: true,
+      photographer: Galleries.gallery_photographer(gallery)
+    )
+    |> assign_details(order)
+    |> then(&push_patch(&1, to: &1.assigns.checkout_routes.order, replace: true))
+    |> noreply()
+  end
+
+  def handle_params(
         %{"order_number" => order_number, "session_id" => session_id},
         _,
         %{assigns: %{gallery: gallery, live_action: live_action}} = socket
@@ -89,7 +106,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
   defp assign_details(socket, order) do
     gallery = order.gallery
-
     socket
     |> assign(
       gallery: gallery,

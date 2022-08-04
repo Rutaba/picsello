@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
   alias Picsello.{Cart, Orders, Galleries}
   alias Cart.Order
-
   alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
   import PicselloWeb.GalleryLive.Shared,
@@ -21,7 +20,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   @impl true
   def handle_params(_, _, %{assigns: %{gallery: gallery}} = socket) do
     orders = Orders.all(gallery.id)
-
     Enum.each(orders, &Orders.subscribe/1)
 
     gallery = Galleries.populate_organization_user(gallery)
@@ -33,7 +31,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     |> assign_checkout_routes()
     |> noreply()
   end
-
+  
   @impl true
   def handle_info({:pack, :ok, %{order_id: order_id, path: path}}, socket) do
     DownloadLinkComponent.update_path(%{id: order_id}, path)
