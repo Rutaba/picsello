@@ -62,7 +62,7 @@ defmodule Picsello.EmailPresets do
 
   defp job_presets(), do: presets(:job)
 
-  defp gallery_presets(), do: presets(:gallery) 
+  defp gallery_presets(), do: presets(:gallery)
 
   defp presets(type),
     do: from(preset in EmailPreset, where: preset.type == ^type, order_by: :position)

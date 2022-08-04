@@ -36,7 +36,7 @@
               <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
                   <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
               </button>
-              <%= if Enum.any?(@photos) do %>
+              <%= if Enum.any?(@photos) && !@album.is_proofing do %>
                 <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:mt-0 mt-2" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
                   Edit thumbnail
                 </.icon_button>

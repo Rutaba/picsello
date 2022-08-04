@@ -80,7 +80,11 @@ defmodule Picsello.Orders do
     |> preload([
       :intent,
       :canceled_intents,
-      [gallery: :organization, products: :whcc_product, digitals: [photo: ^watermarked_query]]
+      [
+        gallery: [:organization, :package],
+        products: :whcc_product,
+        digitals: [photo: ^watermarked_query]
+      ]
     ])
     |> Repo.one!()
   end

@@ -209,7 +209,7 @@ defmodule PicselloWeb.LiveAuthTest do
         user: user,
         un_protected_album: un_protected_album,
         album: album,
-        show_path: Routes.gallery_client_index_path(conn, :album, album.client_link_hash)
+        show_path: Routes.gallery_client_album_path(conn, :proofing_album, album.client_link_hash)
       ]
     end
 
@@ -241,8 +241,7 @@ defmodule PicselloWeb.LiveAuthTest do
       conn: conn,
       un_protected_album: un_protected_album
     } do
-      show_path =
-        Routes.gallery_client_index_path(conn, :album, un_protected_album.client_link_hash)
+      show_path = Routes.gallery_client_album_path(conn, :proofing_album, un_protected_album.client_link_hash)
 
       assert {:ok, _view, _html} = live(conn, show_path)
     end
@@ -275,7 +274,7 @@ defmodule PicselloWeb.LiveAuthTest do
     end
 
     test "/album/:hash with no album is 404", %{conn: conn} do
-      show_path = Routes.gallery_client_index_path(conn, :album, "wrong-hash")
+      show_path = Routes.gallery_client_album_path(conn, :proofing_album, "wrong-hash")
 
       assert_raise Ecto.NoResultsError, fn ->
         conn |> live(show_path)

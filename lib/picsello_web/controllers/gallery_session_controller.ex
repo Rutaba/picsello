@@ -8,6 +8,6 @@ defmodule PicselloWeb.GallerySessionController do
 
   def album_login(conn, %{"hash" => hash, "login" => %{"session_token" => token}}) do
     conn = conn |> put_session("album_session_token", token)
-    conn |> redirect(to: Routes.gallery_client_index_path(conn, :album, hash))
+    conn |> redirect(to: Routes.gallery_client_album_path(conn, :proofing_album, hash))
   end
 end

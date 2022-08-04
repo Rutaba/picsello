@@ -5,16 +5,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
   import Money.Sigils
+  import PicselloWeb.GalleryLive.Shared, only: [credits: 1]
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> then(fn %{assigns: %{id: id, order: order}} = socket ->
+    |> assign_new(:caller, fn -> false end)
+    |> then(fn %{assigns: %{id: id, order: order, caller: caller}} = socket ->
       socket
       |> assign_new(:class, fn -> id end)
       |> assign_new(:inner_block, fn -> [] end)
-      |> assign(details(order))
+      |> assign(details(order, caller))
     end)
     |> ok()
   end
@@ -33,49 +35,82 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         </div>
         <hr class="mb-1 border-base-200">
       </button>
-
-      <div class="grid grid-cols-[1fr,max-content] mt-6 px-5 md:px-0 gap-y-3 gap-x-0 md:mb-2 mb-5 detail">
-        <dl class="text-lg contents">
-          <%= for {label, value} <- @charges do %>
-            <dt class="hidden toggle lg:block"><%= label %></dt>
-
-            <dd class="self-center hidden toggle lg:block justify-self-end md:pr-4"><%= value %></dd>
-          <% end %>
-
-          <dt class="hidden text-2xl toggle lg:block">Subtotal</dt>
-          <dd class="self-center hidden text-2xl toggle lg:block justify-self-end md:pr-4"><%= @subtotal %></dd>
-        </dl>
-
-        <%= unless @discounts == [] do %>
-          <hr class="hidden mt-2 mb-3 toggle lg:block col-span-2 border-base-200">
-
-          <dl class="text-lg contents text-green-finances-300">
-            <%= for {label, value} <- @discounts do %>
-              <dt class="hidden toggle lg:block"><%= label %></dt>
-
-              <dd class="self-center hidden toggle lg:block justify-self-end md:pr-4">-<%= Money.neg(value) %></dd>
-            <% end %>
-          </dl>
-        <% end %>
-
-        <hr class="hidden mt-2 col-span-2 border-base-200 toggle lg:block">
-
-        <dl class="contents total">
-          <dt class="md:bg-base-200 md:my-2 md:py-2 md:px-4 text-2xl font-extrabold">Total</dt>
-
-          <dd class="md:bg-base-200 md:my-2 md:py-2 md:px-4 self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
-        </dl>
-      </div>
+      <.inner_content {assigns} />
 
       <%= render_slot(@inner_block) %>
     </div>
     """
   end
 
-  def details(%{products: products, digitals: digitals} = order)
+  defp inner_content(%{caller: caller} = assigns)
+       when caller in ~w(order cart proofing_album_order)a do
+    assigns = Map.put(assigns, :is_proofing, caller == :proofing_album_order)
+
+    ~H"""
+    <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
+    <dl class="text-lg contents">
+      <%= for {label, value} <- @charges do %>
+        <dt class="hidden toggle lg:block"><%= label %></dt>
+
+        <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
+      <% end %>
+
+      <dt class={"hidden #{!@is_proofing && 'text-2xl'} toggle lg:block"}>
+        <%= if @is_proofing, do: "Purchased", else: "Subtotal" %>
+      </dt>
+      <dd class={"self-center hidden #{!@is_proofing && 'text-2xl'} toggle lg:block justify-self-end"}>
+        <%= @subtotal %>
+      </dd>
+    </dl>
+
+    <%= unless @discounts == [] or @is_proofing do %>
+      <hr class="hidden mt-2 mb-3 toggle lg:block col-span-2 border-base-200">
+      <.discounts_content discounts={@discounts} class="text-lg text-green-finances-300" />
+    <% end %>
+
+    <hr class="hidden mt-2 mb-3 col-span-2 border-base-200 toggle lg:block">
+
+    <dl class="contents">
+      <dt class="text-2xl font-extrabold">Total</dt>
+
+      <dd class="self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
+    </dl>
+    </div>
+    """
+  end
+
+  defp inner_content(%{caller: :proofing_album_cart} = assigns) do
+    ~H"""
+    <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
+      <dl class="text-lg contents">
+        <%= unless @discounts == [] do %>
+        <.discounts_content discounts={@discounts} class="text-base" />
+        <% end %>
+      </dl>
+      <hr class="hidden mt-2 mb-3 col-span-2 border-base-200 toggle lg:block">
+      <dl class="contents">
+        <dt class="text-2xl font-extrabold">Total</dt>
+        <dd class="self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
+      </dl>
+    </div>
+    """
+  end
+
+  defp discounts_content(assigns) do
+    ~H"""
+    <dl class={"#{@class} contents"}>
+      <%= for {label, value} <- @discounts do %>
+        <dt class="hidden toggle lg:block"><%= label %></dt>
+        <dd class="self-center hidden toggle lg:block justify-self-end">-<%= Money.neg(value) %></dd>
+      <% end %>
+    </dl>
+    """
+  end
+
+  def details(%{products: products, digitals: digitals} = order, caller)
       when is_list(products) and is_list(digitals) do
-    charges = charges(order)
-    discounts = discounts(order)
+    charges = charges(order, caller)
+    discounts = discounts(order, caller)
 
     %{
       charges: charges,
@@ -109,19 +144,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     end
   end
 
-  defp discounts(order),
-    do:
-      Enum.flat_map(
-        [&product_discount_lines/1, &print_credit_lines/1, &digital_discount_lines/1],
-        & &1.(order)
-      )
+  defp discounts(order, caller) do
+    product_discount_lines(order) ++
+      print_credit_lines(order) ++ digital_discount_lines(order, caller)
+  end
 
-  defp charges(order),
-    do:
-      Enum.flat_map(
-        [&product_charge_lines/1, &digital_charge_lines/1, &bundle_charge_lines/1],
-        & &1.(order)
-      )
+  defp charges(order, caller) do
+    product_charge_lines(order) ++
+      digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
+  end
 
   defp product_charge_lines(%{products: []}), do: []
 
@@ -131,10 +162,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       {"Shipping & handling", "Included"}
     ]
 
-  defp digital_charge_lines(%{digitals: []}), do: []
+  defp digital_charge_lines(%{digitals: []}, _), do: []
 
-  defp digital_charge_lines(%{digitals: digitals}),
-    do: [{"Digital downloads (#{length(digitals)})", sum_prices(digitals)}]
+  @proofing_album_calls ~w(proofing_album_cart proofing_album_order)a
+  defp digital_charge_lines(%{digitals: digitals}, caller)
+       when caller in @proofing_album_calls do
+    [{"Digitals (#{length(digitals)})", sum_prices(digitals)}]
+  end
+
+  defp digital_charge_lines(%{digitals: digitals}, _caller) do
+    [{"Digital downloads (#{length(digitals)})", sum_prices(digitals)}]
+  end
 
   defp bundle_charge_lines(%{bundle_price: nil}), do: []
 
@@ -151,14 +189,21 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     end
   end
 
-  defp digital_discount_lines(order) do
+  defp digital_discount_lines(order, caller) do
     case Enum.filter(order.digitals, & &1.is_credit) do
       [] ->
         []
 
       credited ->
+        credit = length(credited)
+
+        {_, remainig} =
+          order.gallery
+          |> credits()
+          |> find_digital()
+
         [
-          {"Digital download credit (#{length(credited)})",
+          {credit(remainig, credit, caller),
            credited |> Enum.reduce(~M[0]USD, &Money.subtract(&2, &1.price))}
         ]
     end
@@ -172,4 +217,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       credit -> [{"Print credits used", Money.neg(credit)}]
     end
   end
+
+  defp credit(remainig, credit, :proofing_album_order),
+    do: "#{credit} credit used - #{remainig} credits remainig"
+
+  defp credit(_remainig, credit, :proofing_album_cart),
+    do: "Selected for retouching (#{credit})"
+
+  defp credit(_, credit, _caller), do: "Digital download credit (#{credit})"
+
+  defp find_digital([{:digital, value} | _]), do: {:digital, value}
+  defp find_digital(_credits), do: {:digital, 0}
 end

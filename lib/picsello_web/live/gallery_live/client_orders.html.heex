@@ -1,20 +1,20 @@
 <div>
   <div class="px-4 mx-auto max-w-screen-xl">
-    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
+    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery, album: assigns[:album], is_proofing: @is_proofing %>
   </div>
 
   <hr>
 
   <div class="px-4 pt-5 pb-10 mx-auto lg:pt-9 max-w-screen-xl">
     <%= if @orders == [] do %>
-      <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
+      <%= live_redirect to: @checkout_routes.home_page, class: "flex font-extrabold text-base-250 items-center mb-7" do %>
         <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
 
-        <p class="mt-1">Back to gallery</p>
+        <p class="mt-1">Back to <%= if @is_proofing, do: "album", else: "gallery" %></p>
       <% end %>
     <% end %>
 
-    <h3 class="text-lg font-bold lg:text-3xl">My orders</h3>
+    <h3 class="text-lg font-bold lg:text-3xl">My <%= if @is_proofing, do: "Selections", else: "Orders" %></h3>
 
     <%= if @orders == [] do %>
       <p class="pb-64 mt-10 text-2xl font-bold">You haven’t ordered anything yet!</p>
@@ -47,14 +47,14 @@
             <dd class="font-semibold lg:font-normal"><%= order.number %></dd>
           </dl>
 
-          <%= live_redirect to: Routes.gallery_client_order_path(@socket, :show, @gallery.client_link_hash, Order.number(order)), class: "text-xl justify-self-end text-base-250 font-extrabold col-start-2 lg:col-start-4 lg:row-span-1 row-span-3 jusify-self-end" do %>
+          <%= live_redirect to: order_route(assigns, order), class: "text-xl justify-self-end text-base-250 font-extrabold col-start-2 lg:col-start-4 lg:row-span-1 row-span-3 jusify-self-end" do %>
             View details
           <% end %>
         </div>
 
         <div class="px-6 py-4 border border-t-0 border-base-225 lg:px-16 divide-y lg:divide-y-0 divide-base-200">
           <%= for item <- order.products do %>
-            <.item_frame item={item} price={price_display(item)} >
+            <.item_frame item={item} price={price_display(item)} is_proofing={@is_proofing} >
               <:quantity>
                 <span class="text-sm mt-1.5">Quantity: <%= quantity(item) %></span>
               </:quantity>
@@ -68,20 +68,24 @@
           <%= if has_download?(order) do %>
             <div class="relative divide-y lg:divide-y-0 divide-base-200">
               <%= for item <- order.digitals do %>
-                <.item_frame item={item} price={price_display(item)} />
+                <.item_frame item={item} price={price_display(item)} is_proofing={@is_proofing} />
               <% end %>
 
               <%= if order.bundle_price do %>
-                <.item_frame item={{:bundle, order}} price={order.bundle_price} />
+                <.item_frame item={{:bundle, order}} price={order.bundle_price} is_proofing={@is_proofing} />
               <% end %>
-
+              <%= unless @is_proofing do %>
               <div class="pt-6 pb-6 lg:pt-16 lg:absolute lg:top-0 lg:right-0 lg:w-1/3">
                 <.live_component module={DownloadLinkComponent} id={order.id} order={order} />
               </div>
+              <% end %>
             </div>
           <% end %>
         </div>
       </div>
     <% end %>
   </div>
+  <%= if @is_proofing do %>
+    <.credits_footer for={:proofing_album_order} credits={[]} />
+  <% end %>
 </div>

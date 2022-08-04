@@ -6,7 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
-  alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums}
+  alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums, Cart.Digital}
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}
@@ -134,6 +134,12 @@ defmodule Picsello.Galleries do
   def get_gallery_photos(id, opts \\ []) do
     from(photo in Photos.watermarked_query())
     |> where(^conditions(id, opts))
+    |> then(
+      &case Keyword.get(opts, :selected_filter) do
+        true -> selected_photo_query(&1)
+        _ -> &1
+      end
+    )
     |> order_by(asc: :position)
     |> then(
       &case Keyword.get(opts, :offset) do
@@ -323,7 +329,7 @@ defmodule Picsello.Galleries do
           album_id :: integer,
           favorites_filter :: boolean
         ) :: integer
-  def get_album_photo_count(gallery_id, album_id, client_liked \\ false) do
+  def get_album_photo_count(gallery_id, album_id, client_liked \\ false, selected \\ false) do
     conditions = dynamic([p], p.gallery_id == ^gallery_id and p.album_id == ^album_id)
 
     Photos.active_photos()
@@ -333,6 +339,7 @@ defmodule Picsello.Galleries do
         else: conditions
       )
     )
+    |> then(&if selected, do: selected_photo_query(&1), else: &1)
     |> select([p], count(p.id))
     |> Repo.one()
   end
@@ -858,6 +865,10 @@ defmodule Picsello.Galleries do
     |> Picsello.WHCC.min_price_details()
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
+  end
+
+  defp selected_photo_query(query) do
+    join(query, :inner, [photo], digital in Digital, on: photo.id == digital.photo_id)
   end
 
   defp active_galleries, do: from(g in Gallery, where: g.active == true)

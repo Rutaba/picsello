@@ -7,15 +7,6 @@ defmodule Picsello.OrderTransactionsTest do
   setup :authenticated
   setup :authenticated_gallery
 
-  # def intent,
-  #   do: %Stripe.PaymentIntent{
-  #     amount: 0,
-  #     amount_capturable: 0,
-  #     amount_received: 0,
-  #     id: "order-payment-intent-id",
-  #     status: "requires_capture"
-  #   }
-
   setup %{user: user, gallery: gallery} do
     order =
       insert(:order,

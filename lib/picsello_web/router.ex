@@ -233,7 +233,16 @@ defmodule PicselloWeb.Router do
     pipe_through [:browser]
 
     live_session :proofing_album_client, on_mount: {PicselloWeb.LiveAuth, :proofing_album_client} do
-      live "/", GalleryLive.ClientIndex, :album
+      live "/", GalleryLive.ClientAlbum, :proofing_album
+
+      live "/cart", GalleryLive.ClientShow.Cart, :proofing_album
+      live "/cart/address", GalleryLive.ClientShow.Cart, :proofing_album_address
+
+      scope "/orders" do
+        live "/", GalleryLive.ClientOrders, :proofing_album
+        live "/:order_number", GalleryLive.ClientOrder, :proofing_album
+        live "/:order_number/paid", GalleryLive.ClientOrder, :proofing_album_paid
+      end
     end
 
     live_session :proofing_album_client_login,
