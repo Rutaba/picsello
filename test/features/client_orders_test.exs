@@ -32,14 +32,15 @@ defmodule Picsello.ClientOrdersTest do
 
     insert(:watermark, gallery: gallery)
 
-    for %{id: category_id} = category <- Picsello.Repo.all(Picsello.Category) do
+    for {%{id: category_id} = category, index} <- Enum.with_index(Picsello.Repo.all(Picsello.Category)) do
       preview_photo =
         insert(:photo,
           gallery: gallery,
           preview_url: "/#{category_id}/preview.jpg",
           original_url: "/#{category_id}/original.jpg",
           watermarked_preview_url: "/#{category_id}/watermarked_preview.jpg",
-          watermarked_url: "/#{category_id}/watermarked.jpg"
+          watermarked_url: "/#{category_id}/watermarked.jpg",
+          position: index + 1
         )
 
       insert(:gallery_product,
@@ -300,8 +301,7 @@ defmodule Picsello.ClientOrdersTest do
     )
 
     session
-    |> assert_has(css("h3", text: "Thank you for your order!"))
-    |> click(link("My orders"))
+    |> click(testid("My orders"))
     |> find(definition("Order total:"), &assert(Element.text(&1) == "$10.00"))
   end
 
@@ -444,7 +444,6 @@ defmodule Picsello.ClientOrdersTest do
       assert String.ends_with?(product_image, "watermarked_preview.jpg")
 
       session
-      |> assert_has(css("h3", text: "Thank you for your order!"))
       |> assert_has(css("img[src$='/preview.jpg']"))
       |> assert_text("Digital download")
       |> assert_has(css("*[title='cart']", text: "0"))
@@ -609,7 +608,6 @@ defmodule Picsello.ClientOrdersTest do
       assert String.ends_with?(product_image, "/watermarked_preview.jpg")
 
       session
-      |> assert_has(css("h3", text: "Thank you for your order!"))
       |> assert_has(css("img[src$='/preview.jpg']", count: 3))
       |> assert_text("All digital downloads")
       |> assert_has(css("*[title='cart']", text: "0"))

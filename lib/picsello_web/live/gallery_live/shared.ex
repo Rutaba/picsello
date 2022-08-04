@@ -5,9 +5,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
-  alias Picsello.{Repo, Cart, Galleries, GalleryProducts, Messages}
-  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart}
+  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent, Photos.Upload}
   alias Picsello.Notifiers.ClientNotifier
+  alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def toggle_favorites(
@@ -31,12 +32,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def client_photo_click(
         %{
-          assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites_filter
-          }
+          assigns:
+            %{
+              gallery: gallery,
+              favorites_filter: favorites_filter
+            } = assigns
         } = socket,
-        photo_id
+        photo_id,
+        config \\ %{}
       ) do
     photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
 
@@ -45,14 +48,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.ChooseProduct,
-      %{
+      Map.put(config, :assigns, %{
+        is_proofing: assigns[:is_proofing] || false,
         gallery: gallery,
         photo_id: photo_id,
         photo_ids:
           photo_ids
           |> CLL.init()
           |> CLL.next(Enum.find_index(photo_ids, &(&1 == photo_id)) || 0)
-      }
+      })
     )
     |> noreply
   end
@@ -167,6 +171,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         per_page,
         exclude_all \\ nil
       ) do
+    selected_filter = assigns[:selected_filter] || false
+
     if exclude_all do
       []
     else
@@ -177,7 +183,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
       else
         [exclude_album: true]
       end ++
-        [favorites_filter: filter, limit: per_page + 1, offset: per_page * page]
+        [
+          favorites_filter: filter,
+          selected_filter: selected_filter,
+          limit: per_page + 1,
+          offset: per_page * page
+        ]
     end
   end
 
@@ -531,7 +542,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def product_option(assigns) do
-    assigns = Enum.into(assigns, %{min_price: nil})
+    assigns = Enum.into(assigns, %{min_price: nil, selected: nil})
 
     ~H"""
     <div {testid("product_option_#{@testid}")} class="p-5 mb-4 border rounded xl:p-7 border-base-225 lg:mb-7">
@@ -544,9 +555,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
           <% end %>
         </div>
 
-        <%= for button <- @button do %>
-          <.button {button}><%= render_slot(button) %></.button>
-        <% end %>
+        <div class="flex flex-col">
+          <span class={"#{!@selected && 'hidden'} ml-16 text-xs font-medium italic"}>Selected</span>
+          <%= for button <- @button do %>
+            <.button {button}><%= render_slot(button) %></.button>
+          <% end %>
+        </div>
       </div>
     </div>
     """
@@ -565,28 +579,41 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def credits_footer(assigns) do
+    assigns =
+      Enum.into(
+        assigns,
+        %{
+          expanded?: false,
+          is_proofing: false,
+          cart_count: 0,
+          total_count: 0,
+          for: nil
+        }
+      )
+
     ~H"""
-    <%= unless @credits == [] do %>
-    <div class="relative">
-      <div class="absolute bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
-        <div class="container flex items-center justify-between h-full mx-auto px-7">
-          <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
-            <%= for {label, value} <- @credits do %>
-              <dl class="flex items-center sm:mr-5" >
-                <dt class="mr-2 font-extrabold">
-                  <%= label %><span class="hidden sm:inline"> available</span>:
-                </dt>
+      <div class={"relative #{@for == :proofing_album_order && 'hidden'}"}>
+          <div class="absolute bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
+            <div class="container flex items-center justify-between h-full mx-auto px-7">
+              <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
+                <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
+                  <div>
+                    <dl class="flex items-center sm:mr-5" >
+                      <dt class="mr-2 font-extrabold">
+                        <%= label %><span class="hidden sm:inline"> available</span>:
+                      </dt>
 
-                <dd class="font-semibold"><%= value %></dd>
-              </dl>
-            <% end %>
+                      <dd class="font-semibold"><%= value %></dd>
+                    </dl>
+                    <div {testid("selections")} class={!@for && "hidden"}>Selections <%= @cart_count %></div>
+                  </div>
+                <% end %>
+              </div>
+
+              <.icon name="gallery-info" class="fill-current text-base-300 w-7 h-7" />
+            </div>
           </div>
-
-          <.icon name="gallery-info" class="fill-current text-base-300 w-7 h-7" />
-        </div>
       </div>
-    </div>
-    <% end %>
     """
   end
 
@@ -640,11 +667,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def order_details(assigns) do
+    assigns = Enum.into(assigns, %{is_proofing: false})
+
     ~H"""
     <div class={@class}>
       <div class="mt-0 mb-4 ml-0 md:ml-5 md:mt-2">
-        <h4 class="text-lg font-bold md:text-2xl">Order details</h4>
-        <p class="pt-3 md:text-lg md:pt-5">Order number: <span class="font-medium"><%= @order.number %></span></p>
+      <h4 class="text-lg font-bold md:text-2xl"><%= if @is_proofing, do: "Your Selected Favourites", else: "Order details" %></h4>
+        <%= unless @is_proofing do %>
+          <p class="pt-3 md:text-lg md:pt-5">Order number: <span class="font-medium"><%= @order.number %></span></p>
+        <% end %>
       </div>
 
       <hr class="hidden md:block mt-7 border-t-base-200" />
@@ -674,14 +705,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
             <div class="flex items-center">
               <img class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] object-contain mr-4 md:mr-14" src={item_image_url(digital)}/>
 
-              <span>Digital download</span>
+              <span><%= product_name(digital, @is_proofing) %></span>
             </div>
 
             <div class="font-bold"><%= price_display(digital) %></div>
           </div>
         <% end %>
 
-        <%= if @order.bundle_price do %>
+        <%= if @order.bundle_price && !@is_proofing do %>
           <div class="flex items-center justify-between py-7 md:py-10 md:px-11">
             <div class="flex items-center">
               <div class="w-[120px] h-[80px] md:w-[194px] md:h-[130px] mr-4 md:mr-14" >
@@ -697,6 +728,69 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
     </div>
     """
+  end
+
+  def product_name(item, is_proofing), do: name(item, is_proofing)
+
+  defp build_credits(nil, credits, _cart_count), do: credits
+
+  defp build_credits(_, credits, total_count) do
+    {_, remaining} = Enum.find(credits, &(elem(&1, 0) == "Download Credits")) || {"", 0}
+    [{"Digital Image Credits", "#{remaining} out of #{total_count}"}]
+  end
+
+  defp name(%Digital{photo: photo}, true), do: "Select for retouching - #{photo.name}"
+  defp name(%Digital{}, false), do: "Digital download"
+  defp name({:bundle, _}, false), do: "All digital downloads"
+  defp name(item, false), do: Cart.product_name(item)
+
+  # routes to use for proofing_album and gallery checkout flow
+  def assign_checkout_routes(
+        %{assigns: %{is_proofing: true, album: %{client_link_hash: hash}, order: order}} = socket
+      ) do
+    order_num = order && Order.number(order)
+
+    assign(socket, :checkout_routes, %{
+      orders: orders_path(socket, :proofing_album, hash),
+      order: order && order_path(socket, :proofing_album, hash, order_num),
+      order_paid: order && order_path(socket, :proofing_album_paid, hash, order_num),
+      cart: cart_path(socket, :proofing_album, hash),
+      cart_address: cart_path(socket, :proofing_album_address, hash),
+      home_page: Routes.gallery_client_album_path(socket, :proofing_album, hash)
+    })
+  end
+
+  def assign_checkout_routes(
+        %{assigns: %{gallery: %{client_link_hash: hash}, order: order}} = socket
+      ) do
+    order_num = order && Order.number(order)
+
+    assign(socket, :checkout_routes, %{
+      orders: orders_path(socket, :show, hash),
+      order: order && order_path(socket, :show, hash, order_num),
+      order_paid: order && order_path(socket, :paid, hash, order_num),
+      cart: cart_path(socket, :cart, hash),
+      cart_address: cart_path(socket, :address, hash),
+      home_page: Routes.gallery_client_index_path(socket, :index, hash)
+    })
+  end
+
+  def assign_checkout_routes(%{assigns: %{gallery: _gallery}} = socket) do
+    socket
+    |> assign(:order, nil)
+    |> assign_checkout_routes()
+  end
+
+  defp orders_path(socket, method, client_link_hash) do
+    Routes.gallery_client_orders_path(socket, method, client_link_hash)
+  end
+
+  defp order_path(socket, method, client_link_hash, order_number) do
+    Routes.gallery_client_order_path(socket, method, client_link_hash, order_number)
+  end
+
+  defp cart_path(socket, method, client_link_hash) do
+    Routes.gallery_client_show_cart_path(socket, method, client_link_hash)
   end
 
   defdelegate item_image_url(item), to: Cart

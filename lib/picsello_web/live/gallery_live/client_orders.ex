@@ -8,7 +8,15 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [assign_cart_count: 2, price_display: 1, bundle_image: 1, tracking: 1]
+    only: [
+      assign_cart_count: 2,
+      price_display: 1,
+      bundle_image: 1,
+      product_name: 2,
+      tracking: 1,
+      credits_footer: 1,
+      assign_checkout_routes: 1
+    ]
 
   @impl true
   def handle_params(_, _, %{assigns: %{gallery: gallery}} = socket) do
@@ -20,7 +28,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
     socket
     |> assign(gallery: gallery, orders: orders)
+    |> assign(:is_proofing, socket.assigns.live_action == :proofing_album)
     |> assign_cart_count(gallery)
+    |> assign_checkout_routes()
     |> noreply()
   end
 
@@ -29,6 +39,19 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     DownloadLinkComponent.update_path(%{id: order_id}, path)
 
     socket |> noreply()
+  end
+
+  def order_route(%{gallery: gallery, socket: socket, is_proofing: false}, order) do
+    Routes.gallery_client_order_path(socket, :show, gallery.client_link_hash, Order.number(order))
+  end
+
+  def order_route(%{album: album, socket: socket, is_proofing: true}, order) do
+    Routes.gallery_client_order_path(
+      socket,
+      :proofing_album,
+      album.client_link_hash,
+      Order.number(order)
+    )
   end
 
   defp order_date(
@@ -48,7 +71,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
           <div class="flex flex-col justify-center py-2 align-self-center">
             <div class="flex items-baseline lg:flex-col">
-              <span class="mr-2 text-lg lg:text-base lg:font-medium"><%= product_name(@item) %></span>
+            <span class="mr-2 text-lg lg:text-base lg:font-medium"><%= product_name(@item, @is_proofing) %></span>
               <span class="text-lg font-extrabold lg:mt-2"><%= @price %></span>
             </div>
 
@@ -77,11 +100,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   end
 
   defdelegate canceled?(order), to: Orders
-
-  defp product_name(%Picsello.Cart.Digital{}), do: "Digital download"
-  defp product_name({:bundle, _}), do: "All digital downloads"
-  defp product_name(item), do: Cart.product_name(item)
-
   defdelegate has_download?(order), to: Orders
   defdelegate item_image_url(item), to: Cart
   defdelegate quantity(item), to: Cart.Product

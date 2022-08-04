@@ -20,6 +20,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
+      is_proofing: assigns[:is_proofing],
       client_link_hash: Map.get(assigns, :client_link_hash),
       url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
     )

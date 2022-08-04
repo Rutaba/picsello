@@ -15,7 +15,7 @@
        </div>
 
        <ul class="flex flex-col text-xl sm:text-base sm:flex-row">
-         <%= for %{title: title, path: path} <- get_menu_items(@socket, @gallery) do %>
+          <%= for %{title: title, path: path} <- get_menu_items(assigns) do %>
            <li>
              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action}
                class="flex items-center p-4" active_class="bg-blue-planning-100 sm:bg-base-100 font-extrabold">
@@ -31,10 +31,10 @@
   <div class="pl-2 justify-self-end">
     <%= if @cart do %>
       <div class="relative">
-        <.cart_wrapper route={@cart_route} count={@cart_count} >
+        <.cart_wrapper route={@checkout_routes.cart} count={@cart_count} >
           <.icon name="shopping-cart" class="w-8 h-8 text-base-300" />
 
-          <span class="absolute -top-1 -left-1.5 border-base-300 border-2 bg-base-100 text-base-300 font-bold rounded-full flex items-center justify-center w-5 h-5 pt-0.5 text-[12px]">
+          <span {testid("cart-count")} class="absolute -top-1 -left-1.5 border-base-300 border-2 bg-base-100 text-base-300 font-bold rounded-full flex items-center justify-center w-5 h-5 pt-0.5 text-[12px]">
             <%= @cart_count %>
           </span>
         </.cart_wrapper>

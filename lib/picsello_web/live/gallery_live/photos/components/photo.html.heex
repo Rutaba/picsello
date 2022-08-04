@@ -21,7 +21,7 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                 <% end %>
             </.photo_wrapper>
             <% end %>
-            <%= if !@is_gallery_category_page do %>
+            <%= if !@is_proofing && !@is_gallery_category_page do %>
                 <%= if @proofing_photo_icons && @is_likable do %>
                     <button
                         class="likeBtn"
@@ -59,6 +59,10 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                         <.ul id={@id} entries={meatball(@album, @id)} socket={@socket} client_link_hash={@client_link_hash}} />
                     </div>
                 <% end %>
+                <% else %>
+                <button class={"absolute opacity-100 z-10 right-3 bottom-3 #{!@photo.is_selected && 'hidden'}"}>
+                    <.icon name="star" class="text-gray-200 w-7 h-7"/>
+                </button>
             <% end %>
         </div>
     </div>

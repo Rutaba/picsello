@@ -133,7 +133,7 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp authenticate_gallery_client(socket, _), do: socket
-  
+
   defp authenticate_album_client(
          %{assigns: %{album: %{set_password: true} = album}} = socket,
          session

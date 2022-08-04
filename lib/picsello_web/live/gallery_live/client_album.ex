@@ -16,25 +16,30 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign(
-      photo_updates: "false",
-      download_all_visible: false
-    )
+    |> assign(:photo_updates, "false")
+    |> assign(:download_all_visible, false)
+    |> assign(:selected_filter, false)
     |> ok()
   end
 
   @impl true
-  def handle_params(
-        %{"album_id" => album_id},
-        _,
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
+  def handle_params(%{"album_id" => album_id}, _, socket) do
+    socket
+    |> assign(:album, Albums.get_album!(album_id))
+    |> assign(:is_proofing, false)
+    |> assigns()
+  end
+
+  def handle_params(%{"hash" => hash}, _, socket) do
+    socket
+    |> assign(:album, Albums.get_album_by_hash!(hash))
+    |> assign(:is_proofing, true)
+    |> assigns()
+  end
+
+  defp assigns(%{assigns: %{album: album, gallery: gallery}} = socket) do
+    album = album |> Repo.preload(:photos)
     gallery = Galleries.populate_organization_user(gallery)
-    album = Albums.get_album!(album_id) |> Repo.preload(:photos)
 
     socket
     |> assign(
@@ -47,7 +52,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       page_title: "Show Album",
       download_all_visible: Orders.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
-      update_mode: "append"
+      update_mode: "append",
+      credits: Cart.credit_remaining(gallery) |> credits()
     )
     |> assign_cart_count(gallery)
     |> assign_photos(@per_page)
@@ -72,16 +78,24 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   @impl true
-  def handle_event("toggle_favorites", _, %{assigns: %{gallery: gallery, album: album}} = socket) do
-    socket
-    |> case do
-      %{assigns: %{favorites_filter: false}} = socket ->
-        assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id, true))
-
-      socket ->
-        assign(socket, photos_count: Galleries.get_album_photo_count(gallery.id, album.id))
-    end
+  def handle_event("toggle_favorites", _, %{assigns: assigns} = socket) do
+    %{gallery: gallery, album: album, favorites_filter: favorites_filter} = assigns
+    Galleries.get_album_photo_count(gallery.id, album.id, !favorites_filter)
+    |> then(&assign(socket, :photos_count, &1))
     |> toggle_favorites(@per_page)
+  end
+
+  def handle_event("toggle_selected", _, %{assigns: assigns} = socket) do
+    %{gallery: gallery, album: album, selected_filter: selected_filter} = assigns
+    gallery.id
+    |> Galleries.get_album_photo_count(album.id, false, !selected_filter)
+    |> then(&assign(socket, :photos_count, &1))
+    |> assign(:page, 0)
+    |> assign(:selected_filter, !selected_filter)
+    |> assign(:update_mode, "replace")
+    |> push_event("reload_grid", %{})
+    |> assign_photos(@per_page)
+    |> noreply()
   end
 
   @impl true
@@ -100,7 +114,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   @impl true
   def handle_event("click", %{"preview_photo_id" => photo_id}, socket) do
-    socket |> client_photo_click(photo_id)
+    socket |> client_photo_click(photo_id, %{close_event: :update_assigns_state})
   end
 
   def handle_info({:customize_and_buy_product, whcc_product, photo, size}, socket) do
@@ -113,6 +127,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       ) do
     order = Cart.place_product(digital, gallery.id)
     socket |> add_to_cart_assigns(order)
+    update_assigns(socket, gallery, order)
   end
 
   def handle_info(
@@ -121,12 +136,115 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       ) do
     order = Cart.place_product({:bundle, bundle_price}, gallery.id)
     socket |> add_to_cart_assigns(order)
+    update_assigns(socket, gallery, order)
   end
 
   def handle_info({:open_choose_product, photo_id}, socket) do
     socket |> client_photo_click(photo_id)
   end
 
+  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(:order, nil)
+    |> assign_cart_count(gallery)
+    |> noreply()
+  end
+
+  def handle_info({:update_assigns_state, _modal}, socket) do
+    socket
+    |> assigns()
+    |> elem(1)
+    |> assign(:update_mode, "replace")
+    |> push_event("reload_grid", %{})
+    |> noreply()
+  end
+
+  defp update_assigns(socket, gallery, order) do
+    socket
+    |> assign_cart_count(gallery)
+    |> assign(
+      order: order,
+      credits: Cart.credit_remaining(gallery) |> credits()
+    )
+    |> close_modal()
+    |> noreply()
+  end
+
+  defp top_section(%{is_proofing: false} = assigns) do
+    ~H"""
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
+      <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
+      <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} />
+    </div>
+    <.photos_count {assigns} class="mb-8 lg:mb-16" />
+    """
+  end
+
+  defp top_section(%{is_proofing: true} = assigns) do
+    ~H"""
+      <h3 {testid("album-title")} class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
+      <p class="font-normal text-lg mt-2">Select your favourite photos below
+        and then send those selections to your photographer for retouching.
+      </p>
+    <.photos_count {assigns} />
+    """
+  end
+
+  defp toggle_empty_state(assigns) do
+    ~H"""
+      <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
+        <%= if @favorites_filter do %>
+          Oops, there's no liked photo!
+        <% else %>
+          Oops, there's no selected photo!
+        <% end %>
+      </div>
+    """
+  end
+
+  defp photos_count(%{is_proofing: true, album: album, socket: socket} = assigns) do
+    cart_route =
+      Routes.gallery_client_show_cart_path(socket, :proofing_album, album.client_link_hash)
+
+    ~H"""
+    <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
+      <div class="flex items-center">
+        <%= live_redirect to: cart_route do %>
+          <button class="btn-primary py-8">Review my Selections</button>
+        <% end %>
+        <.photos_count photos_count={@photos_count} class="ml-4" />
+      </div>
+      <.toggle_filter title="Show selected only" event="toggle_selected" applied?={@selected_filter} />
+    </div>
+    """
+  end
+
+  defp photos_count(%{photos_count: count} = assigns) do
+    count = (count && "#{count} #{ngettext("photo", "photos", count)}") || "photo"
+
+    ~H[<div class={"text-sm lg:text-xl text-base-250 #{@class}"}> <%= count %></div>]
+  end
+
   defp photos_count(nil), do: "photo"
   defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
+
+  defp toggle_filter(%{applied?: applied?} = assigns) do
+    class_1 = if applied?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)
+    class_2 = if applied?, do: ~s(right-1), else: ~s(left-1)
+
+    ~H"""
+    <div class="flex mt-4 lg:mt-0">
+      <label id="toggle_favorites" class="flex items-center cursor-pointer">
+        <div class="text-sm lg:text-xl text-base-250"><%= @title %></div>
+
+        <div class="relative ml-3">
+          <input type="checkbox" class="sr-only" phx-click={@event}>
+
+          <div class={"block h-8 border rounded-full w-14 border-blue-planning-300 #{class_1}"}></div>
+          <div class={"absolute w-6 h-6 rounded-full dot top-1 bg-blue-planning-300 transition #{class_2}"}></div>
+        </div>
+      </label>
+    </div>
+    """
+  end
 end

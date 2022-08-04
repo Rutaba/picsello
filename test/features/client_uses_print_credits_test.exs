@@ -537,7 +537,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
         intent
         | status: "canceled"
       })
-      |> click(link("My orders"))
+      |> click(testid("My orders"))
       |> assert_text("Order Canceled")
       |> click(link("View details"))
       |> assert_text("Order Canceled")

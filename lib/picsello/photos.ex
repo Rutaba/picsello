@@ -58,18 +58,27 @@ defmodule Picsello.Photos do
         select: %{gallery_id: order.gallery_id}
       )
 
-    from(photo in active_photos(),
-      left_join: watermarked in subquery(watermark),
-      on: watermarked.gallery_id == photo.gallery_id,
-      left_join: digital in subquery(digital),
-      on: digital.gallery_id == photo.gallery_id and digital.photo_id == photo.id,
-      left_join: bundle in subquery(bundle_order),
-      on: bundle.gallery_id == photo.gallery_id,
-      select: %{
-        photo
-        | watermarked:
-            not is_nil(watermarked.gallery_id) and is_nil(digital.photo_id) and
-              is_nil(bundle.gallery_id)
+    photo_query =
+      from(photo in active_photos(),
+        left_join: watermarked in subquery(watermark),
+        on: watermarked.gallery_id == photo.gallery_id,
+        left_join: digital in subquery(digital),
+        on: digital.gallery_id == photo.gallery_id and digital.photo_id == photo.id,
+        left_join: bundle in subquery(bundle_order),
+        on: bundle.gallery_id == photo.gallery_id,
+        select: %{
+          photo
+          | watermarked:
+              not is_nil(watermarked.gallery_id) and is_nil(digital.photo_id) and
+                is_nil(bundle.gallery_id)
+        }
+      )
+
+    from(photo in photo_query,
+      left_join: digital in Digital,
+      on: digital.photo_id == photo.id,
+      select_merge: %{
+        is_selected: digital.photo_id == photo.id
       }
     )
   end
