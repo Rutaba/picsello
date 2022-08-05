@@ -134,36 +134,38 @@ defmodule PicselloWeb do
              %{gallery_id: gallery_id, success_message: success_message}},
             %{assigns: %{current_user: user}} = socket
           ) do
-        PicselloWeb.Cache.delete(user.id, gallery_id)
-        PicselloWeb.Cache.delete("total-progress-#{gallery_id}")
+        PicselloWeb.LiveHelpers.remove_cache(user.id, gallery_id)
 
         socket
-        |> assign(galleries_count: length(PicselloWeb.Cache.get(user.id)))
+        |> assign(galleries_count: length(PicselloWeb.UploaderCache.get(user.id)))
         |> put_flash(:success, success_message)
         |> noreply()
       end
 
-      @impl true
       def handle_info(
             {:galleries_progress, %{total_progress: total_progress, gallery_id: gallery_id}},
             %{assigns: %{current_user: user}} = socket
           ) do
-        PicselloWeb.Cache.update("total-progress-#{gallery_id}", total_progress)
-
-        gallery_ids = PicselloWeb.Cache.get(user.id)
-
-        sum =
-          Enum.reduce(gallery_ids, 0, fn gallery_id, acc ->
-            PicselloWeb.Cache.get("total-progress-#{gallery_id}") + acc
+        upload_data =
+          PicselloWeb.UploaderCache.get(user.id)
+          |> Enum.filter(fn {pid, _, _} -> Process.alive?(pid) end)
+          |> Enum.map(fn {pid, id, _} = entry ->
+            if gallery_id == id do
+              {pid, id, total_progress}
+            else
+              entry
+            end
           end)
 
-        accumulated_progress = Float.ceil(sum / Enum.count(gallery_ids))
+        PicselloWeb.UploaderCache.update(user.id, upload_data)
 
-        accumulated_progress >= 100 &&
-          Enum.each(gallery_ids, &PicselloWeb.Cache.delete(user.id, &1))
+        sum = Enum.reduce(upload_data, 0, fn {_, _, progress}, acc -> progress + acc end)
+        total_progress == 100 && PicselloWeb.LiveHelpers.remove_cache(user.id, gallery_id)
+        galleries_count = length(upload_data)
 
         socket
-        |> assign(:accumulated_progress, accumulated_progress)
+        |> assign(galleries_count: galleries_count)
+        |> assign(:accumulated_progress, Float.ceil(sum / galleries_count))
         |> noreply()
       end
     end

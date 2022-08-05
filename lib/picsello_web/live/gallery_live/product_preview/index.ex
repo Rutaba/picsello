@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     ]
 
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Repo}
   alias PicselloWeb.GalleryLive.ProductPreview.Preview

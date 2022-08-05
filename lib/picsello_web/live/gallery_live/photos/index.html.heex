@@ -170,21 +170,20 @@
                 data-photo-width="300">
                 <%= for photo <- @photos do%>
                   <%= live_component Photo,
-                      id: photo.id,
-                      photo: photo,
-                      album: @album,
-                      photo_width: 300,
-                      is_likable: true,
-                      is_removable: true,
-                      is_viewable: true,
-                      is_meatball: true,
-                      is_gallery_category_page: false,
-                      component: false,
-                      client_link_hash: @gallery.client_link_hash
+                    id: photo.id,
+                    photo: photo,
+                    album: @album,
+                    photo_width: 300,
+                    is_likable: true,
+                    is_removable: true,
+                    is_viewable: true,
+                    is_meatball: true,
+                    client_link_hash: @gallery.client_link_hash
                   %>
                 <% end %>
+                <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />
               </div>
-              
+
               <div class="hidden">
                 <div id="selected-mode" class={@select_mode}></div>
                 <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
@@ -194,7 +193,7 @@
       </div>
     </div>
   </div>
-  <.sticky_upload socket={@socket} current_user={@current_user} exclude_gallery_id={@gallery.id} />
+  <.sticky_upload current_user={@current_user} exclude_gallery_id={@gallery.id} />
   <div class={classes("z-30 lg:h-14", %{"relative" => !@is_mobile})}>
     <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>

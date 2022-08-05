@@ -72,16 +72,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> update_progress()
     |> assign(:update_mode, "append")
     |> assign(:gallery, gallery)
-    |> then(fn %{assigns: %{inprogress_photos: inprogress_photos}} = socket ->
-      uploading_broadcast(socket, gallery.id, inprogress_photos, true)
-
-      if Enum.empty?(inprogress_photos) do
-        socket
-      else
-        socket
-        |> photos_error_broadcast()
-      end
-    end)
     |> noreply()
   end
 
@@ -112,9 +102,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   @impl true
   def handle_info(
         {:upload_update, %{album_id: album_id}},
-        %{assigns: %{photos_error_count: photos_error_count}} = socket
+        socket
       ) do
-    photos_error_count > 0 && photos_error_broadcast(socket)
+    photos_error_broadcast(socket)
 
     socket
     |> assign(:album_id, album_id)
@@ -283,17 +273,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
          } = socket,
          entries \\ []
        ) do
-    PubSub.broadcast(
-      Picsello.PubSub,
-      "photos_error:#{gallery.id}",
-      {:photos_error,
-       %{
-         photos_error_count: photos_error_count,
-         invalid_photos: invalid_photos,
-         pending_photos: pending_photos,
-         entries: entries
-       }}
-    )
+    photos_error_count > 0 &&
+      PubSub.broadcast(
+        Picsello.PubSub,
+        "photos_error:#{gallery.id}",
+        {:photos_error,
+         %{
+           photos_error_count: photos_error_count,
+           invalid_photos: invalid_photos,
+           pending_photos: pending_photos,
+           entries: entries
+         }}
+      )
 
     socket
   end
@@ -321,7 +312,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       Picsello.PubSub,
       "uploading:#{gallery_id}",
       {:uploading,
-       %{uploading: uploading, entries: entries, success_message: upload_success_message(socket)}}
+       %{
+         pid: self(),
+         uploading: uploading,
+         entries: entries,
+         success_message: upload_success_message(socket)
+       }}
     )
   end
 
@@ -440,10 +436,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> assign(:uploads, put_in(socket.assigns.uploads, [:photo], photo))
   end
 
-  defp update_progress(
-         %{assigns: %{inprogress_photos: inprogress_photos, entries: entries}} = socket
-       ) do
-    Enum.empty?(inprogress_photos) && !Enum.empty?(entries) && photos_error_broadcast(socket)
+  defp update_progress(%{assigns: %{inprogress_photos: inprogress_photos}} = socket) do
+    photos_error_broadcast(socket)
 
     socket
     |> assign(

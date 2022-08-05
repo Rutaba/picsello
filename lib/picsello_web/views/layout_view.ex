@@ -11,13 +11,12 @@ defmodule PicselloWeb.LayoutView do
       nav_link: 1,
       classes: 1,
       initials_circle: 1,
-      help_scout_output: 2,
-      sticky_upload: 1,
-      gallery_top_banner: 1
+      help_scout_output: 2
     ]
 
   import Picsello.Profiles, only: [public_url: 1]
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1, gallery_top_banner: 1]
 
   use Phoenix.Component
 

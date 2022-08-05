@@ -35,7 +35,7 @@
       </div>
     </div>
   </div>
-  <.sticky_upload socket={@socket} current_user={@current_user} />
+  <.sticky_upload current_user={@current_user} />
   <div class={classes("z-40 lg:h-14", %{"relative" => !@is_mobile})}>
     <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
   </div>

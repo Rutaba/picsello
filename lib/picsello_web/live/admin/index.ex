@@ -25,7 +25,7 @@ defmodule PicselloWeb.Live.Admin.Index do
           <div class="grid border flex items-center justify-center rounded-lg py-4 px-8">
             Current photo Uploaders
             <div class="flex items-center justify-center text-red-500 pt-2">
-              <%= PicselloWeb.Cache.current_uploaders() %>
+              <%= PicselloWeb.UploaderCache.current_uploaders() %>
             </div>
           </div>
         </li>

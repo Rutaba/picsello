@@ -1,8 +1,10 @@
 defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_photographer"]
+
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Messages, Notifiers.ClientNotifier}
 

@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Cache do
+defmodule PicselloWeb.UploaderCache do
   @moduledoc false
 
   def current_uploaders() do
@@ -25,9 +25,11 @@ defmodule PicselloWeb.Cache do
   end
 
   def delete(key, value) do
-    case List.delete(get(key), value) do
+    case Enum.filter(get(key), fn {pid, gallery_id, _} ->
+           Process.alive?(pid) && gallery_id != value
+         end) do
       [] -> ConCache.delete(:cache, key)
-      values -> ConCache.put(:cache, key, values)
+      values -> update(key, values)
     end
   end
 end

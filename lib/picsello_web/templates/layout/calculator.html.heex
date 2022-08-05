@@ -2,7 +2,5 @@
 <main role="main">
   <%= flash(@flash) %>
   <%= @inner_content %>
-  <%= if @current_user do %>
-    <.sticky_upload socket={@socket} current_user={@current_user} />
-  <% end %>
+  <.sticky_upload current_user={@current_user} />
 </main>
