@@ -208,7 +208,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  def handle_info({:upload_success_message, success_message}, socket) do
+  def handle_info({:uploading, %{success_message: success_message}}, socket) do
     socket |> put_flash(:success, success_message) |> noreply()
   end
 
@@ -227,8 +227,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  def handle_info({:total_progress, total_progress}, socket) do
-    socket |> assign(:total_progress, total_progress) |> noreply()
+  def handle_info({:gallery_progress, %{total_progress: total_progress}}, socket) do
+    socket
+    |> assign(:total_progress, if(total_progress == 0, do: 1, else: total_progress))
+    |> noreply()
   end
 
   @impl true

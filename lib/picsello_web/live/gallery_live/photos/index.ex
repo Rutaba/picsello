@@ -26,6 +26,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       favorites_filter: false,
       page: 0,
       photos_error_count: 0,
+      inprogress_photos: [],
+      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg"),
       invalid_photos: [],
       pending_photos: [],
       photo_updates: "false",
@@ -431,20 +433,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, socket) do
-    photo_update =
-      %{
-        id: photo.id,
-        url: preview_url(photo)
-      }
-      |> Jason.encode!()
-
-    socket
-    |> assign(:photo_updates, photo_update)
-    |> noreply()
-  end
-
-  @impl true
   def handle_info(
         {:confirm_event, "delete_photo", %{photo_id: id}},
         socket
@@ -550,8 +538,57 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:total_progress, total_progress}, socket) do
-    socket |> assign(:total_progress, total_progress) |> noreply()
+  def handle_info(
+        {:gallery_progress, %{total_progress: total_progress}},
+        %{assigns: %{inprogress_photos: inprogress_photos}} = socket
+      ) do
+    if inprogress_photos == [] do
+      socket
+      |> assign(:update_mode, "append")
+    else
+      socket
+      |> assign(:update_mode, "ignore")
+    end
+    |> assign(:total_progress, if(total_progress == 0, do: 1, else: total_progress))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:uploading, %{entries: entries, uploading: true}}, socket) do
+    if entries == [] do
+      remove_cache(socket)
+    else
+      add_cache(socket)
+    end
+
+    socket
+    |> assign(:update_mode, "append")
+    |> assign(:total_progress, 1)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:uploading, %{success_message: success_message}}, socket) do
+    socket
+    |> assign(:update_mode, "append")
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
+    |> put_flash(:success, success_message)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:photo_processed, _, photo}, socket) do
+    photo_update =
+      %{
+        id: photo.id,
+        url: preview_url(photo)
+      }
+      |> Jason.encode!()
+
+    socket
+    |> assign(:photo_updates, photo_update)
+    |> noreply()
   end
 
   @impl true
@@ -565,26 +602,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
          }},
         socket
       ) do
-    socket
+    if photos_error_count == 0 do
+      socket
+      |> assign(:total_progress, 0)
+    else
+      socket
+    end
     |> assign(:entries, entries)
     |> assign(:invalid_photos, invalid_photos)
     |> assign(:pending_photos, pending_photos)
     |> assign(:photos_error_count, photos_error_count)
     |> noreply()
-  end
-
-  @impl true
-  def handle_info(:photo_upload_completed, socket) do
-    socket
-    |> assign(:update_mode, "append")
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info({:upload_success_message, success_message}, socket) do
-    socket |> put_flash(:success, success_message) |> noreply()
   end
 
   @impl true
@@ -608,8 +636,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> Galleries.load_watermark_in_gallery()
 
     if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery.id}")
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery_id}")
-      PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
     end
 
     socket
@@ -694,6 +722,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   defp get_class(string), do: if(String.length(string) > @string_length, do: "tooltip", else: nil)
+
+  defp add_cache(%{assigns: %{current_user: user, gallery: gallery}}) do
+    gallery_ids = PicselloWeb.Cache.get(user.id)
+
+    if gallery.id not in gallery_ids do
+      PicselloWeb.Cache.put(user.id, [gallery.id | gallery_ids])
+      PicselloWeb.Cache.put("total-progress-#{gallery.id}", 0)
+    end
+  end
+
+  defp remove_cache(%{assigns: %{current_user: user, gallery: gallery}}) do
+    PicselloWeb.Cache.delete(user.id, gallery.id)
+    PicselloWeb.Cache.delete("total-progress-#{gallery.id}")
+  end
 
   defp album_actions(assigns) do
     assigns = assigns |> Enum.into(%{exclude_album_id: nil})

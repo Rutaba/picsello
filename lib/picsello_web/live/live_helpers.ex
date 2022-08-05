@@ -2,10 +2,13 @@ defmodule PicselloWeb.LiveHelpers do
   @moduledoc "used in both views and components"
   use Phoenix.Component
 
+  alias Phoenix.PubSub
   alias Picsello.Onboardings
+  alias PicselloWeb.GalleryLive.Photos.Upload
 
   import Phoenix.LiveView, only: [get_connect_params: 1, assign: 2, assign_new: 3]
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
+  import PicselloWeb.Helpers, only: [ngettext: 3]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
   def live_modal(_socket, component, opts) do
@@ -299,6 +302,51 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def sticky_upload(assigns) do
+    assigns = assigns |> Enum.into(%{exclude_gallery_id: true})
+    gallery_ids = PicselloWeb.Cache.get(assigns.current_user.id)
+    gallery_ids |> subscribe_upload()
+
+    ~H"""
+    <%= for gallery_id <- gallery_ids do %>
+      <%= if @exclude_gallery_id && @exclude_gallery_id != gallery_id do %>
+        <div class="hidden">
+          <%= live_render(@socket, Upload, id: "upload-button-#{gallery_id}", class: "hidden", session: %{"gallery_id" => gallery_id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
+          <%= live_render(@socket, Upload, id: "drag-drop-#{gallery_id}", class: "hidden", session: %{"gallery_id" => gallery_id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
+        </div>
+      <% end %>
+    <% end %>
+    """
+  end
+
+  def gallery_top_banner(assigns) do
+    assigns = assigns |> Enum.into(%{class: ""})
+
+    ~H"""
+    <div class={classes("flex justify-center py-2 #{@class}", %{"hidden" => @accumulated_progress == 100 || @accumulated_progress == 0})}>
+      <div class="flex items-start">
+        <img class="w-8 pr-2" src={static_path(PicselloWeb.Endpoint, "/images/gallery-icon-white.svg")} />
+        <%= ngettext("1 gallery is", "%{count} galleries are", @galleries_count) %> uploading - <%= @accumulated_progress %>%
+      </div>
+      <div class="flex pl-2 items-center">  
+        <.total_progress class="" progress={@accumulated_progress}/>
+      </div>
+    </div>
+    """
+  end
+
+  def total_progress(assigns) do
+    assigns = assigns |> Enum.into(%{class: ""})
+
+    ~H"""
+    <div class={@class}>
+      <div class={"w-52 h-2 rounded-lg bg-[#0094ad]"}>
+        <div class="h-full rounded-lg bg-white" style={"width: #{@progress}%"}></div>
+      </div>
+    </div>
+    """
+  end
+
   def show_intro?(current_user, intro_id),
     do: current_user |> Onboardings.show_intro?(intro_id) |> inspect()
 
@@ -367,4 +415,12 @@ defmodule PicselloWeb.LiveHelpers do
 
   def is_custom_brand_link("link_" <> _), do: true
   def is_custom_brand_link(_), do: false
+
+  defp subscribe_upload(gallery_ids) do
+    gallery_ids
+    |> Enum.each(fn gallery_id ->
+      PubSub.subscribe(Picsello.PubSub, "galleries_progress:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "photo_upload_completed:#{gallery_id}")
+    end)
+  end
 end

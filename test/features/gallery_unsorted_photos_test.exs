@@ -21,7 +21,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> visit("/galleries/#{gallery_id}/photos")
     |> refute_has(testid("edit-album-settings"))
     |> refute_has(testid("edit-album-thumbnail"))
-    |> assert_has(css("#addPhoto"))
+    |> assert_has(css("#addPhoto-form-#{gallery_id}"))
   end
 
   test "Unsorted Photos, pagination", %{
@@ -107,7 +107,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(css("#actions li button", text: "Delete"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(css("p", text: "#{photos_count} photos deleted successfully"))
-    |> assert_has(css("#dragDrop-upload-form"))
+    |> assert_has(css("#dragDrop-upload-form-#{gallery_id}"))
   end
 
   test "Unsorted Photos, move unsorted photos and album", %{
@@ -124,7 +124,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(button("Move to #{album.name}"))
     |> within_modal(&click(&1, button("Yes, move photos")))
     |> assert_has(css("p", text: "#{photos_count} photos successfully moved to #{album.name}"))
-    |> assert_has(css("#drag-drop"))
+    |> assert_has(css("#drag-drop-#{gallery_id}"))
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> assert_has(css(".item", count: photos_count))
   end

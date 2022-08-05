@@ -137,6 +137,18 @@ defmodule PicselloWeb.Router do
       live "/calendar/settings", Live.Calendar.Settings, :settings
       get "/calendar-feed", CalendarFeedController, :index
 
+      scope "/galleries/:id", GalleryLive do
+        live "/", PhotographerIndex, :index
+        live "/photos", Photos.Index, :index
+        live "/product-previews", ProductPreview.Index, :index
+        live "/orders", PhotographerOrders, :orders
+      end
+
+      scope "/galleries/:id/albums", GalleryLive do
+        live "/", Albums.Index, :index
+        live "/:album_id", Photos.Index, :index
+      end
+
       live "/home", HomeLive.Index, :index, as: :home
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
@@ -178,23 +190,6 @@ defmodule PicselloWeb.Router do
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
 
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
-  end
-
-  scope "/galleries/:id", PicselloWeb.GalleryLive do
-    live_session :gallery_photographer, on_mount: {PicselloWeb.LiveAuth, :gallery_photographer} do
-      pipe_through :browser
-
-      live "/", PhotographerIndex, :index
-
-      live "/photos", Photos.Index, :index
-      live "/product-previews", ProductPreview.Index, :index
-      live "/orders", PhotographerOrders, :orders
-
-      scope "/albums" do
-        live "/", Albums.Index, :index
-        live "/:album_id", Photos.Index, :index
-      end
-    end
   end
 
   scope "/gallery/:hash", PicselloWeb do

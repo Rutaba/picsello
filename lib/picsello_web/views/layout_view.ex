@@ -1,5 +1,6 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
+
   alias Picsello.Accounts.User
 
   import PicselloWeb.LiveHelpers,
@@ -10,7 +11,9 @@ defmodule PicselloWeb.LayoutView do
       nav_link: 1,
       classes: 1,
       initials_circle: 1,
-      help_scout_output: 2
+      help_scout_output: 2,
+      sticky_upload: 1,
+      gallery_top_banner: 1
     ]
 
   import Picsello.Profiles, only: [public_url: 1]
@@ -109,7 +112,7 @@ defmodule PicselloWeb.LayoutView do
   def help_scout_menu(assigns) do
     ~H"""
     <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
-    <div id="float-menu-help" class="hidden cursor-pointer md:blockhidden md:block" phx-hook="ToggleContent">
+    <div id="float-menu-help" class="hidden cursor-pointer md:blockhidden md:block" phx-update="ignore" phx-hook="ToggleContent">
       <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
         <.icon name="question-mark-help-scout" class="w-6 h-6" />
       </div>

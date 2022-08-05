@@ -1,9 +1,12 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 <main role="main" class="flex flex-col min-h-screen">
+  <%= if @current_user do %>
+    <.gallery_top_banner class="text-white bg-blue-planning-300" socket={@socket} current_user={@current_user} accumulated_progress={@accumulated_progress} galleries_count={if(@galleries_count == 0, do: length(PicselloWeb.Cache.get(@current_user.id)), else: @galleries_count)}/>
+  <% end %>
   <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex lg:pl-20 px-6 items-center bg-blue-planning-100 py-2"/>
   <header class="border-b">
     <div class="flex items-center px-6 center-container">
-      <div id="hamburger-menu" class="relative cursor-pointer" phx-hook="ToggleContent">
+      <div id="hamburger-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
         <%= if @current_user do %>
         <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default -top-2 toggle-content">
           <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
@@ -37,7 +40,7 @@
         <% end %>
       </nav>
 
-      <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-hook="ToggleContent">
+      <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
         <%= if @current_user do %>
         <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
           <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
@@ -92,5 +95,7 @@
     </div>
   </footer>
 </main>
-
+<%= if @current_user do %>
+  <.sticky_upload socket={@socket} current_user={@current_user} />
+<% end %>
 <.help_scout_menu current_user={@current_user} />

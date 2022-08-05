@@ -57,6 +57,9 @@ defmodule PicselloWeb.Live.Profile do
   def render(assigns) do
     ~H"""
     <div class="flex-grow md:mx-32 client-app">
+      <%= if @current_user do %>
+        <.sticky_upload socket={@socket} current_user={@current_user} />
+      <% end %>
       <div class="flex flex-wrap items-center justify-between px-6 py-2 md:py-4 md:px-12">
         <.logo_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :logo)} uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
