@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         |> Cart.get_unconfirmed_order(preload: [:products, :digitals, :package])
         |> case do
           {:ok, order} -> assign(&1, :order, order)
-          {:error, _} -> assign_checkout_routes(&1) |> may_be_redirect()
+          {:error, _} -> assign_checkout_routes(&1) |> maybe_redirect()
         end)
     )
     |> assign_credits()
@@ -84,7 +84,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
             socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
 
           _error ->
-            socket |> put_flash(:error, "something wen't wrong")
+            socket |> put_flash(:error, "Something went wrong")
         end
         |> noreply()
 
@@ -134,7 +134,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       {:deleted, _} ->
         socket
         |> assign(order: nil)
-        |> may_be_redirect()
+        |> maybe_redirect()
 
       {:loaded, order} ->
         send_update(ClientMenuComponent, id: client_menu_id, cart_count: count - 1)
@@ -196,7 +196,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp continue_summary(assigns) do
     ~H"""
-    <.summary caller={caller(@is_proofing)} order={@order} id={@id}>
+    <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id}>
       <%= live_patch to: @checkout_routes.cart_address, class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
         Continue
       <% end %>
@@ -255,11 +255,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     """
   end
 
-  defp may_be_redirect(%{assigns: %{is_proofing: true}} = socket) do
+  defp maybe_redirect(%{assigns: %{is_proofing: true}} = socket) do
     assign(socket, :order, nil)
   end
 
-  defp may_be_redirect(%{assigns: %{checkout_routes: checkout_routes}} = socket) do
+  defp maybe_redirect(%{assigns: %{checkout_routes: checkout_routes}} = socket) do
     push_redirect(socket, to: checkout_routes.home_page)
   end
 
@@ -269,8 +269,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp assign_credits(%{assigns: %{is_proofing: false}} = socket), do: socket
 
-  defp caller(true), do: :proofing_album_cart
-  defp caller(false), do: :cart
+  defp checkout_type(true), do: :proofing_album_cart
+  defp checkout_type(false), do: :cart
   defp only_digitals?(%{products: []} = order), do: digitals?(order)
   defp only_digitals?(%{products: [_ | _]}), do: false
   defp digitals?(%{digitals: [_ | _]}), do: true

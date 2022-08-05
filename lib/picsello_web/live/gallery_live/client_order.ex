@@ -136,8 +136,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   def message_heading(true), do: "Your Selections were Sent!"
   def message_heading(false), do: "Thank you for your order!"
 
-  defp caller(true), do: :proofing_album_order
-  defp caller(false), do: :order
+  defp checkout_type(true), do: :proofing_album_order
+  defp checkout_type(false), do: :order
   defdelegate has_download?(order), to: Picsello.Orders
   defdelegate summary(assigns), to: PicselloWeb.GalleryLive.ClientShow.Cart.Summary
   defdelegate canceled?(order), to: Picsello.Orders
