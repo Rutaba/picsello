@@ -60,7 +60,7 @@
     <% end %>
     <.order_details order={@order} gallery={@gallery} is_proofing={@is_proofing} class="px-5 pt-5 mt-5 border border-base-225" />
       <%= unless canceled?(@order) do %>
-      <div class="py-7"><.summary order={@order} caller={caller(@is_proofing)} /></div>
+      <div class="py-7"><.summary order={@order} caller={checkout_type(@is_proofing)} /></div>
       <% end %>
   </div>
   <%= if @is_proofing do %>
