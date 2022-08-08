@@ -34,20 +34,38 @@ defmodule Picsello.Orders.Pack do
               {[iodata], to_acc([])}
 
             length when length > size ->
-              {head, rest} = split_iodata(iodata, size)
-              {chunks, rest} = rest |> chunk_every(size) |> Enum.split(-1)
+              {head, rest} = split(iodata, size)
+              {chunks, rest} = [rest] |> chunk_every(size) |> Enum.split(-1)
               {[head | chunks], to_acc(rest)}
           end
       end
 
-    @spec split_iodata(iodata(), pos_integer()) :: {iodata(), iodata()}
-    defp split_iodata(iodata, size) do
-      <<head::binary-size(size), rest::binary>> = IO.iodata_to_binary(iodata)
-      {[head], [rest]}
+    @spec split(iodata(), pos_integer()) :: {iodata(), iodata()}
+    def split([_ | _] = iodata, size) do
+      {{_, head}, rest} =
+        for datum <- iodata, reduce: {to_acc([]), []} do
+          {{^size, _} = acc, rest} ->
+            {acc, [datum | rest]}
+
+          {{acc_length, acc_iodata}, []} ->
+            datum_length = IO.iodata_length([datum])
+            length = acc_length + datum_length
+
+            if length <= size do
+              {{length, [datum | acc_iodata]}, []}
+            else
+              gap = size - acc_length
+              <<head::binary-size(gap), rest::binary>> = IO.iodata_to_binary([datum])
+
+              {{size, [head | acc_iodata]}, [rest]}
+            end
+        end
+
+      {Enum.reverse(head), Enum.reverse(rest)}
     end
 
     defp to_acc([]), do: {0, []}
-    defp to_acc(iodata), do: {IO.iodata_length(iodata), iodata}
+    defp to_acc([_ | _] = iodata), do: {IO.iodata_length(iodata), iodata}
   end
 
   alias Picsello.{Orders, Repo, Cart.Order, Galleries.Workers.PhotoStorage}

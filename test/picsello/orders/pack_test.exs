@@ -133,7 +133,7 @@ defmodule Picsello.Orders.PackTest do
     end
   end
 
-  describe "chunk_every" do
+  describe "IodataStream.chunk_every" do
     def chunk_every(iodata, size) do
       iodata
       |> Picsello.Orders.Pack.IodataStream.chunk_every(size)
@@ -148,6 +148,30 @@ defmodule Picsello.Orders.PackTest do
     test "chunks when stream iodata elements are larger or smaller than size" do
       assert ["br", "ia", "np", "at", "ri", "ck", "du", "n"] ==
                ['brian', 'patr', 'ick', 'du', 'n'] |> chunk_every(2)
+    end
+  end
+
+  describe "IodataStream.split" do
+    def split(iodata, size), do: Picsello.Orders.Pack.IodataStream.split(iodata, size)
+
+    test "may not create new binaries" do
+      assert {'br', [["ian"], ?d]} ==
+               [?b, ?r, ["ian"], ?d] |> split(2)
+    end
+
+    test "can split 1 binary" do
+      assert {["br"], ["ian"]} ==
+               ["brian"] |> split(2)
+    end
+
+    test "returns iodata if smaller than size" do
+      assert {['bri', 'a'], []} ==
+               ['bri', 'a'] |> split(5)
+    end
+
+    test "only creates binary when split point is spanned" do
+      assert {[?b, "r"], ["ian", ?d]} ==
+               [?b, ["rian"], ?d] |> split(2)
     end
   end
 end
