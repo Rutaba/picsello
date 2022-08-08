@@ -5,11 +5,16 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   alias Picsello.{Cart, Orders, Galleries}
   alias Cart.Order
 
+  alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
+
   import PicselloWeb.GalleryLive.Shared,
     only: [assign_cart_count: 2, price_display: 1, bundle_image: 1, tracking: 1]
 
+  @impl true
   def handle_params(_, _, %{assigns: %{gallery: gallery}} = socket) do
     orders = Orders.all(gallery.id)
+
+    Enum.each(orders, &Orders.subscribe/1)
 
     gallery = Galleries.populate_organization_user(gallery)
 
@@ -17,6 +22,13 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     |> assign(gallery: gallery, orders: orders)
     |> assign_cart_count(gallery)
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:pack, :ok, %{order_id: order_id, path: path}}, socket) do
+    DownloadLinkComponent.update_path(%{id: order_id}, path)
+
+    socket |> noreply()
   end
 
   defp order_date(

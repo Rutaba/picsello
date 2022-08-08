@@ -183,6 +183,13 @@ defmodule Picsello.Orders.ConfirmationsTest do
     end
   end
 
+  def digitals_available_for_download?(order) do
+    Picsello.Orders.client_paid_query()
+    |> Repo.get(order.id)
+    |> Picsello.Orders.get_order_photos()
+    |> Repo.exists?()
+  end
+
   describe "handle_session - paid, with products" do
     setup do
       [placed_at: nil]
@@ -226,13 +233,13 @@ defmodule Picsello.Orders.ConfirmationsTest do
     end
 
     test "makes digitals available", %{
-      order: %{gallery: gallery} = order,
+      order: order,
       session: session
     } do
       handle_session(session)
       assert Picsello.Orders.client_paid?(order)
 
-      Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
+      assert digitals_available_for_download?(order)
     end
 
     test "confirms order", %{order: order, session: session} do
@@ -305,13 +312,10 @@ defmodule Picsello.Orders.ConfirmationsTest do
       assert %{status: :requires_capture} = Repo.reload!(intent)
     end
 
-    test "makes digitals available", %{
-      order: %{gallery: gallery} = order,
-      session: session
-    } do
+    test "makes digitals available", %{order: order, session: session} do
       handle_session(session)
 
-      Picsello.Orders.get_purchased_photos!(Order.number(order), gallery)
+      assert digitals_available_for_download?(order)
     end
 
     test "creates and finalizes invoice", %{

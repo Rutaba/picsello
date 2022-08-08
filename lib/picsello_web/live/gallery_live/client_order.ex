@@ -5,13 +5,16 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
 
   alias Picsello.Orders
+  alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
+  @impl true
   def mount(_, _, socket) do
     socket
     |> assign(from_checkout: false)
     |> ok()
   end
 
+  @impl true
   def handle_params(
         %{"order_number" => order_number, "session_id" => session_id},
         _,
@@ -52,10 +55,18 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     order = Orders.get!(gallery, order_number)
+    Orders.subscribe(order)
 
     socket
     |> assign_details(order)
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:pack, :ok, %{path: path}}, %{assigns: %{order: order}} = socket) do
+    DownloadLinkComponent.update_path(order, path)
+
+    socket |> noreply()
   end
 
   defp assign_details(socket, order) do
