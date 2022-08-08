@@ -15,7 +15,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   alias Galleries.{
     CoverPhoto,
-    Gallery,
     Workers.PhotoStorage,
     PhotoProcessing.ProcessingManager,
     PhotoProcessing.Waiter
