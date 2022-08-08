@@ -2,10 +2,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{BookingEvent, Packages}
+  alias Picsello.{BookingEvent, BookingEvents, Packages}
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
+  import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
+  import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -169,6 +171,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step(%{name: :customize} = assigns) do
     ~H"""
+    <div class="flex flex-col mt-4">
+      <h2 class="text-xl font-bold">Customize your package</h2>
+      <p>Upload an image and write a short description to entice your clients to book your event.</p>
+
+      <div class="grid sm:grid-cols-2 gap-7 mt-2">
+        <div>
+          <label for={input_name(@f, :thumbnail_url)} class="input-label">Thumbnail</label>
+          <.image_upload_input
+            current_user={@current_user}
+            upload_folder="booking_event_image"
+            name={input_name(@f, :thumbnail_url)}
+            url={input_value(@f, :thumbnail_url)}
+            class="aspect-[2/1] mt-2"
+          />
+        </div>
+        <div>
+          <label for={input_name(@f, :description)} class="input-label">Short Description</label>
+          <.quill_input
+            f={@f}
+            html_field={:description}
+            current_user={@current_user}
+            class="aspect-[7/3] mt-2"
+            placeholder="Type your event description…"
+          />
+        </div>
+      </div>
+    </div>
     """
   end
 
@@ -356,10 +385,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "customize"} = params, socket) do
+  def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
-    case BookingEvents.upsert_booking_event(changeset, params) do
+    case BookingEvents.upsert_booking_event(changeset) do
       {:ok, booking_event} ->
         successfull_save(socket, booking_event)
 
@@ -370,9 +399,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp successfull_save(socket, booking_event) do
     send(self(), {:update, %{booking_event: booking_event}})
-    close_modal(socket)
 
-    socket |> noreply()
+    socket
+    |> close_modal()
+    |> noreply()
   end
 
   defp assign_changeset(

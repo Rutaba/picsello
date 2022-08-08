@@ -61,18 +61,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   end
 
   @impl true
-  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
-    assigns
-    |> Map.get(:flash, %{})
-    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+  def handle_info({:update, %{booking_event: _booking_event}}, socket) do
+    socket
     |> push_patch(to: Routes.calendar_booking_events_path(socket, :index))
+    |> put_flash(:success, "Booking event saved successfully")
     |> noreply()
   end
 
   defp open_wizard(socket, assigns \\ %{}) do
     socket
     |> open_modal(PicselloWeb.Live.Calendar.BookingEventWizard, %{
-      close_event: :wizard_closed,
       assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
     })
   end

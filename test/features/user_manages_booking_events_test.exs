@@ -14,8 +14,13 @@ defmodule Picsello.UserManagesBookingEventsTest do
 
   feature "creates new booking event", %{session: session, user: user} do
     insert(:package_template, user: user, job_type: "wedding")
-    insert(:package_template, user: user, job_type: "mini", name: "Mini 1")
+
+    template_id =
+      insert(:package_template, user: user, job_type: "mini", name: "Mini 1") |> Map.get(:id)
+
     insert(:package_template, user: user, job_type: "mini", name: "Mini 2")
+    bypass = Bypass.open()
+    mock_image_upload(bypass)
 
     session
     |> visit("/calendar")
@@ -49,5 +54,66 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Customize")
+    |> assert_disabled_submit(text: "Save")
+    |> attach_file(testid("image-upload-input", visible: false),
+      path: "assets/static/favicon-128.png"
+    )
+    |> click(css("div.ql-editor"))
+    |> send_keys(["My custom description"])
+    |> wait_for_enabled_submit_button(text: "Save")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_flash(:success, text: "Booking event saved successfully")
+    |> assert_path("/booking-events")
+
+    thumbnail_url = "http://localhost:#{bypass.port}/image.jpg"
+
+    assert [
+             %{
+               name: "My event",
+               location: "on_location",
+               address: "320 1st St N, Jax Beach, FL",
+               duration_minutes: 45,
+               buffer_minutes: 15,
+               dates: [
+                 %{
+                   date: ~D[2050-10-10],
+                   time_blocks: [
+                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
+                     %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
+                   ]
+                 },
+                 %{
+                   date: ~D[2050-10-11],
+                   time_blocks: [%{end_time: ~T[10:00:00], start_time: ~T[09:00:00]}]
+                 }
+               ],
+               package_template_id: ^template_id,
+               thumbnail_url: ^thumbnail_url,
+               description: "<p>My custom description</p>"
+             }
+           ] = Picsello.Repo.all(Picsello.BookingEvent)
+  end
+
+  defp mock_image_upload(%{port: port} = bypass) do
+    upload_url = "http://localhost:#{port}"
+
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:params_for_upload, fn options ->
+      assert %{key: key, field: %{"content-type" => "image/jpeg"}} = Enum.into(options, %{})
+      assert key =~ "favicon-128.jpg"
+      %{url: upload_url, fields: %{key: "image.jpg"}}
+    end)
+
+    Bypass.expect_once(bypass, "POST", "/", fn conn ->
+      conn
+      |> Plug.Conn.put_resp_header("Access-Control-Allow-Origin", "*")
+      |> Plug.Conn.resp(204, "")
+    end)
+
+    Bypass.expect_once(bypass, "GET", "/image.jpg", fn conn ->
+      conn
+      |> Plug.Conn.resp(200, "")
+    end)
   end
 end
