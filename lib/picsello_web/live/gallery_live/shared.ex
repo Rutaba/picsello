@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart}
-  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent, Photos.Upload}
+  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -50,6 +50,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       PicselloWeb.GalleryLive.ChooseProduct,
       Map.put(config, :assigns, %{
         is_proofing: assigns[:is_proofing] || false,
+        album: assigns[:album],
         gallery: gallery,
         photo_id: photo_id,
         photo_ids:
@@ -360,7 +361,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def assign_cart_count(socket, gallery) do
-    case Picsello.Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals]) do
+    case get_unconfirmed_order(socket, preload: [:products, :digitals]) do
       {:ok, order} ->
         socket |> assign(order: order) |> assign_cart_count(gallery)
 
@@ -731,6 +732,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def product_name(item, is_proofing), do: name(item, is_proofing)
+
+  def get_unconfirmed_order(
+        %{assigns: %{gallery: gallery, is_proofing: true, album: album}},
+        opts
+      ) do
+    opts = Keyword.put(opts, :album_id, album.id)
+    Cart.get_unconfirmed_order(gallery.id, opts)
+  end
+
+  def get_unconfirmed_order(%{assigns: %{gallery: gallery}}, opts) do
+    Cart.get_unconfirmed_order(gallery.id, opts)
+  end
 
   defp build_credits(nil, credits, _cart_count), do: credits
 

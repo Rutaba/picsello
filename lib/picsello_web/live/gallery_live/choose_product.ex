@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   alias PicselloWeb.GalleryLive.Photos.PhotoView
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [credits_footer: 1, credits: 1, assign_cart_count: 2]
+    only: [credits_footer: 1, credits: 1, assign_cart_count: 2, get_unconfirmed_order: 2]
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
@@ -61,10 +61,10 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   def handle_event(
         "remove_digital_from_cart",
         %{},
-        %{assigns: %{photo: photo, gallery: gallery}} = socket
+        %{assigns: %{photo: photo}} = socket
       ) do
-    gallery.id
-    |> Picsello.Cart.get_unconfirmed_order(preload: [:products, :digitals])
+    socket
+    |> get_unconfirmed_order(preload: [:products, :digitals])
     |> then(fn {:ok, order} ->
       digital = Enum.find(order.digitals, &(&1.photo_id == photo.id))
       Cart.delete_product(order, digital_id: digital.id)
@@ -96,7 +96,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
         updated_at: DateTime.truncate(DateTime.utc_now(), :second)
       },
-      gallery
+      gallery,
+      photo.album_id
     )
 
     assign_details(socket, photo.id)
@@ -123,7 +124,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
 
     socket
     |> assign(
-      digital_status: Cart.digital_status(gallery, photo),
+      digital_status: Cart.digital_status(gallery, photo, photo.album_id),
       digital_credit: digital_credit,
       photo: photo,
       credits: credits(credits)

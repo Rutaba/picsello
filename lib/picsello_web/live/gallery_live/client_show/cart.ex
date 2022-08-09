@@ -13,16 +13,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def mount(_params, _session, %{assigns: %{gallery: gallery, live_action: live_action}} = socket) do
     socket
     |> assign(gallery: gallery, client_menu_id: "clientMenu")
-    |> assign_cart_count(gallery)
     |> assign(is_proofing: live_action in [:proofing_album, :proofing_album_address])
     |> then(
-      &(gallery.id
-        |> Cart.get_unconfirmed_order(preload: [:products, :digitals, :package])
+      &(socket
+        |> get_unconfirmed_order(preload: [:products, :digitals, :package])
         |> case do
           {:ok, order} -> assign(&1, :order, order)
           {:error, _} -> assign_checkout_routes(&1) |> maybe_redirect()
         end)
     )
+    |> assign_cart_count(gallery)
     |> assign_credits()
     |> assign_checkout_routes()
     |> ok()

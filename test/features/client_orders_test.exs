@@ -32,7 +32,8 @@ defmodule Picsello.ClientOrdersTest do
 
     insert(:watermark, gallery: gallery)
 
-    for {%{id: category_id} = category, index} <- Enum.with_index(Picsello.Repo.all(Picsello.Category)) do
+    for {%{id: category_id} = category, index} <-
+          Enum.with_index(Picsello.Repo.all(Picsello.Category)) do
       preview_photo =
         insert(:photo,
           gallery: gallery,
