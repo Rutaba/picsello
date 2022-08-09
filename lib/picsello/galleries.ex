@@ -6,7 +6,17 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
-  alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums, Cart.Digital}
+  alias Picsello.{
+    Repo,
+    Photos,
+    Category,
+    GalleryProducts,
+    Galleries,
+    Albums,
+    Orders,
+    Cart.Digital
+  }
+
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}
@@ -632,17 +642,16 @@ defmodule Picsello.Galleries do
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
 
   def gallery_current_status(%Gallery{} = gallery) do
-    gallery = Repo.preload(gallery, [:photos])
+    gallery = Repo.preload(gallery, [:photos, :organization])
 
-    gallery
-    |> Map.get(:photos, [])
-    |> Enum.any?(fn photo ->
-      is_nil(photo.aspect_ratio) ||
-        is_nil(photo.preview_url)
+    gallery.organization.id
+    |> Orders.get_all_proofing_album_orders()
+    |> Enum.any?(fn %{gallery: %{id: id}} ->
+      id == gallery.id
     end)
     |> then(fn
-      false -> :ready
-      true -> :upload_in_progress
+      true -> :selections_available
+      false -> uploading_status(gallery)
     end)
   end
 
@@ -869,6 +878,19 @@ defmodule Picsello.Galleries do
 
   defp selected_photo_query(query) do
     join(query, :inner, [photo], digital in Digital, on: photo.id == digital.photo_id)
+  end
+
+  defp uploading_status(gallery) do
+    gallery
+    |> Map.get(:photos, [])
+    |> Enum.any?(fn photo ->
+      is_nil(photo.aspect_ratio) ||
+        is_nil(photo.preview_url)
+    end)
+    |> then(fn
+      false -> :ready
+      true -> :upload_in_progress
+    end)
   end
 
   defp active_galleries, do: from(g in Gallery, where: g.active == true)

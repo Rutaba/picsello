@@ -1,6 +1,6 @@
 defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
-  alias Picsello.{Orders, Photos, Galleries, Galleries.Workers.PhotoStorage}
+  alias Picsello.{Orders, Photos, Galleries, Galleries.Workers.PhotoStorage, Repo}
 
   def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids} = _params) do
     gallery = Galleries.get_gallery_by_hash!(hash)
@@ -43,6 +43,45 @@ defmodule PicselloWeb.GalleryDownloadsController do
     photo = Orders.get_purchased_photo!(gallery, photo_id)
 
     process_photo(conn, photo)
+  end
+
+  def download_csv(conn, %{"hash" => hash, "order_number" => order_number}) do
+    %{job: %{client: client}} =
+      gallery = Galleries.get_gallery_by_hash!(hash) |> Repo.preload(job: [:client])
+
+    %{digitals: digitals, album: album} = Orders.get!(gallery, order_number)
+
+    csv_data = Enum.map(digitals, & &1.photo) |> csv_content()
+
+    file_name =
+      ~s(#{Date.utc_today() |> Date.to_string()}_#{client.name}_#{gallery.name}_#{album.name}.csv)
+
+    conn
+    |> put_resp_content_type("text/csv")
+    |> put_resp_header("content-disposition", "attachment; filename=#{file_name}")
+    |> send_resp(200, csv_data)
+  end
+
+  @headers [:photo_name, :size]
+  defp csv_content(photos) do
+    photos
+    |> Enum.map(fn %{original_url: url} = photo ->
+      Task.async(fn ->
+        {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
+        Map.put(photo, :size, byte_size(body) |> Size.humanize!())
+      end)
+    end)
+    |> Enum.map(&Task.await/1)
+    |> Enum.map(fn photo ->
+      [
+        photo.name,
+        photo.size
+      ]
+    end)
+    |> then(&[@headers | &1])
+    |> CSV.encode()
+    |> Enum.to_list()
+    |> to_string()
   end
 
   defp process_photos(conn, photos, file_name) do

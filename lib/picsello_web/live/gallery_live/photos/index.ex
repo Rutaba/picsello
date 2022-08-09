@@ -8,9 +8,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.GalleryLive.Photos.Toggle, only: [toggle: 1]
+  import PicselloWeb.GalleryLive.Photos.ProofingGrid, only: [proofing_grid: 1]
 
   alias Phoenix.PubSub
-  alias Picsello.{Repo, Galleries, Albums}
+  alias Picsello.{Repo, Galleries, Albums, Orders}
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
@@ -31,16 +33,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       photo_updates: "false",
       select_mode: "selected_none",
       update_mode: "append",
-      selected_photos: []
+      selected_photos: [],
+      selections: [],
+      selection_filter: false,
+      orders: []
     )
     |> ok()
   end
 
   @impl true
-  def handle_params(%{"id" => gallery_id, "album_id" => album_id} = params, _, socket) do
+  def handle_params(
+        %{"id" => gallery_id, "album_id" => album_id} = params,
+        _,
+        %{assigns: %{current_user: %{organization: organization}}} = socket
+      ) do
     album = Albums.get_album!(album_id) |> Repo.preload(:photos)
+    orders = Orders.get_proofing_order_photos(album.id, organization.id)
 
     socket
+    |> assign(orders: orders)
+    |> assign(selection_filter: if(orders == [], do: false, else: true))
     |> is_mobile(params)
     |> assigns(gallery_id, album)
   end
@@ -259,6 +271,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(:update_mode, "append")
     |> assign(page: page + 1)
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "toggle_selections",
+        _,
+        %{
+          assigns: %{selection_filter: selection_filter}
+        } = socket
+      ) do
+    socket
+    |> assign(:selected_photos, [])
+    |> push_event("select_mode", %{"mode" => "selected_none"})
+    |> assign(:select_mode, "selected_none")
+    |> assign(:selection_filter, !selection_filter)
+    |> assign(:page, 0)
+    |> assign(:update_mode, "replace")
     |> assign_photos(@per_page)
     |> push_event("reload_grid", %{})
     |> noreply()
@@ -747,7 +779,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     ~H"""
     <%= for album <- @albums do %>
       <%= if @exclude_album_id != album.id do %>
-        <li class={"relative py-1 hover:bg-blue-planning-100 #{get_class(album.name)}"}>
+        <li class={"relative py-1 hover:bg-blue-planning-100 hover:rounded-md #{get_class(album.name)}"}>
           <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
           <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
         </li>

@@ -11,7 +11,8 @@ defmodule PicselloWeb.HomeLive.Index do
     Shoot,
     Accounts.User,
     ClientMessage,
-    Subscriptions
+    Subscriptions,
+    Orders
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
@@ -185,7 +186,7 @@ defmodule PicselloWeb.HomeLive.Index do
         %{
           assigns: %{
             stripe_status: stripe_status,
-            current_user: current_user,
+            current_user: %{organization_id: organization_id} = current_user,
             leads_empty?: leads_empty?
           }
         } = socket
@@ -194,110 +195,138 @@ defmodule PicselloWeb.HomeLive.Index do
 
     items =
       for(
-        {true, item} <- [
-          {!User.confirmed?(current_user),
-           %{
-             action: "send-confirmation-email",
-             title: "Confirm your email",
-             body: "Check your email to confirm your account before you can start anything.",
-             icon: "envelope",
-             button_label: "Resend email",
-             button_class: "btn-primary",
-             external_link: "",
-             color: "red-sales-300",
-             class: "intro-confirmation border-red-sales-300"
-           }},
-          {!subscription.hidden?,
-           %{
-             action: "open-user-settings",
-             title: "Subscription ending soon",
-             body:
-               "You have #{ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Map.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
-             icon: "clock-filled",
-             button_label: "Go to acccount settings",
-             button_class: "btn-secondary",
-             external_link: "",
-             color: "red-sales-300",
-             class: "intro-confirmation border-red-sales-300"
-           }},
-          {Application.get_env(:picsello, :help_scout_id) != nil,
-           %{
-             action: "external-link",
-             title: "Getting started with Picsello guide",
-             body:
-               "Check out our guide on how best to start running your business with Picsello.",
-             icon: "question-mark",
-             button_label: "Open guide",
-             button_class: "btn-secondary",
-             external_link:
-               "https://support.picsello.com/article/117-getting-started-with-picsello-guide",
-             color: "blue-planning-300",
-             class: "intro-help-scout"
-           }},
-          {stripe_status != :charges_enabled,
-           %{
-             action: "set-up-stripe",
-             title: "Set up Stripe",
-             body: "We use Stripe to make payment collection as seamless as possible for you.",
-             icon: "money-bags",
-             button_label: "Setup your Stripe Account",
-             button_class: "btn-secondary",
-             external_link: "",
-             color: "blue-planning-300",
-             class: "intro-stripe"
-           }},
-          {Picsello.Invoices.pending_invoices?(current_user.organization_id),
-           %{
-             action: "open-billing-portal",
-             title: "Balance(s) Due",
-             body:
-               "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
-             icon: "money-bags",
-             button_label: "Open Billing Portal",
-             button_class: "btn-primary",
-             external_link: "",
-             color: "red-sales-300",
-             class: "border-red-sales-300"
-           }},
-          {true,
-           %{
-             action: "gallery-links",
-             title: "Preview the gallery experience",
-             body:
-               "We’ve created some clickable previews to see what you and your clients will use without having to book a job first!",
-             icon: "add-photos",
-             button_label: "Preview client",
-             button_class: "btn-secondary",
-             external_link: "",
-             color: "blue-planning-300",
-             class: "intro-resources"
-           }},
-          {leads_empty?,
-           %{
-             action: "create-lead",
-             title: "Create your first lead",
-             body: "Leads are the first step to getting started with Picsello.",
-             icon: "three-people",
-             button_label: "Create your first lead",
-             button_class: "btn-secondary",
-             external_link: "",
-             color: "blue-planning-300",
-             class: "intro-first-lead"
-           }},
-          {true,
-           %{
-             action: "external-link",
-             title: "Helpful resources",
-             body: "Stuck? We have a variety of resources to help you out.",
-             icon: "question-mark",
-             button_label: "See available resources",
-             button_class: "btn-secondary",
-             external_link: "https://support.picsello.com/",
-             color: "blue-planning-300",
-             class: "intro-resources"
-           }}
-        ],
+        {true, item} <-
+          [
+            {!User.confirmed?(current_user),
+             %{
+               action: "send-confirmation-email",
+               title: "Confirm your email",
+               body: "Check your email to confirm your account before you can start anything.",
+               icon: "envelope",
+               button_label: "Resend email",
+               button_class: "btn-primary",
+               external_link: "",
+               color: "red-sales-300",
+               class: "intro-confirmation border-red-sales-300"
+             }},
+            {!subscription.hidden?,
+             %{
+               action: "open-user-settings",
+               title: "Subscription ending soon",
+               body:
+                 "You have #{ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Map.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
+               icon: "clock-filled",
+               button_label: "Go to acccount settings",
+               button_class: "btn-secondary",
+               external_link: "",
+               color: "red-sales-300",
+               class: "intro-confirmation border-red-sales-300"
+             }},
+            {Application.get_env(:picsello, :help_scout_id) != nil,
+             %{
+               action: "external-link",
+               title: "Getting started with Picsello guide",
+               body:
+                 "Check out our guide on how best to start running your business with Picsello.",
+               icon: "question-mark",
+               button_label: "Open guide",
+               button_class: "btn-secondary",
+               external_link:
+                 "https://support.picsello.com/article/117-getting-started-with-picsello-guide",
+               color: "blue-planning-300",
+               class: "intro-help-scout"
+             }},
+            {stripe_status != :charges_enabled,
+             %{
+               action: "set-up-stripe",
+               title: "Set up Stripe",
+               body: "We use Stripe to make payment collection as seamless as possible for you.",
+               icon: "money-bags",
+               button_label: "Setup your Stripe Account",
+               button_class: "btn-secondary",
+               external_link: "",
+               color: "blue-planning-300",
+               class: "intro-stripe"
+             }},
+            {Picsello.Invoices.pending_invoices?(current_user.organization_id),
+             %{
+               action: "open-billing-portal",
+               title: "Balance(s) Due",
+               body:
+                 "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
+               icon: "money-bags",
+               button_label: "Open Billing Portal",
+               button_class: "btn-primary",
+               external_link: "",
+               color: "red-sales-300",
+               class: "border-red-sales-300"
+             }},
+            {true,
+             %{
+               action: "gallery-links",
+               title: "Preview the gallery experience",
+               body:
+                 "We’ve created some clickable previews to see what you and your clients will use without having to book a job first!",
+               icon: "add-photos",
+               button_label: "Preview client",
+               button_class: "btn-secondary",
+               external_link: "",
+               color: "blue-planning-300",
+               class: "intro-resources"
+             }},
+            {leads_empty?,
+             %{
+               action: "create-lead",
+               title: "Create your first lead",
+               body: "Leads are the first step to getting started with Picsello.",
+               icon: "three-people",
+               button_label: "Create your first lead",
+               button_class: "btn-secondary",
+               external_link: "",
+               color: "blue-planning-300",
+               class: "intro-first-lead"
+             }},
+            {true,
+             %{
+               action: "external-link",
+               title: "Helpful resources",
+               body: "Stuck? We have a variety of resources to help you out.",
+               icon: "question-mark",
+               button_label: "See available resources",
+               button_class: "btn-secondary",
+               external_link: "https://support.picsello.com/",
+               color: "blue-planning-300",
+               class: "intro-resources"
+             }}
+          ],
         do: item
+      )
+
+    items =
+      Enum.concat(
+        organization_id
+        |> Orders.get_all_proofing_album_orders()
+        |> Enum.map(fn %{number: number, album: album, gallery: %{job: %{client: %{name: name}}} = gallery} ->
+          %{
+            action: "proofing-album",
+            title: "A client selected their proofs!",
+            body: "Your client, #{name}, has sent their selection from their proofing album!",
+            icon: "proof_notifier",
+            button_label: "Go to Proof list",
+            button_class: "btn-secondary",
+            params: %{album: album},
+            external_link:
+              Routes.gallery_downloads_url(
+                socket,
+                :download_csv,
+                gallery.client_link_hash,
+                number
+              ),
+            color: "blue-planning-300",
+            class: "intro-resources"
+          }
+        end),
+        items
       )
 
     socket

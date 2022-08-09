@@ -71,6 +71,14 @@ defmodule PicselloWeb.JobLive.Show do
           text: "Gallery is disabled"
         }
 
+      :selections_available ->
+        %{
+          button_text: "Go to gallery",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "Your client's prooflist is in!"
+        }
+
       _ ->
         %{
           button_text: "View gallery",

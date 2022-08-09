@@ -61,10 +61,10 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   def handle_event(
         "remove_digital_from_cart",
         %{},
-        %{assigns: %{photo: photo, gallery: gallery}} = socket
+        %{assigns: %{photo: photo}} = socket
       ) do
-    gallery.id
-    |> Picsello.Cart.get_unconfirmed_order(preload: [:products, :digitals])
+    socket
+    |> get_unconfirmed_order(preload: [:products, :digitals])
     |> then(fn {:ok, order} ->
       digital = Enum.find(order.digitals, &(&1.photo_id == photo.id))
       Cart.delete_product(order, digital_id: digital.id)

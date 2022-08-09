@@ -15,7 +15,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(gallery: gallery, client_menu_id: "clientMenu")
     |> assign(is_proofing: live_action in [:proofing_album, :proofing_album_address])
     |> then(
-      &(socket
+      &(&1
         |> get_unconfirmed_order(preload: [:products, :digitals, :package])
         |> case do
           {:ok, order} -> assign(&1, :order, order)

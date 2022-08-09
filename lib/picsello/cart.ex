@@ -158,7 +158,7 @@ defmodule Picsello.Cart do
           preload: [:digitals | :products | :package]
         ) ::
           {:ok, Order.t()} | {:error, :no_unconfirmed_order}
-  def get_unconfirmed_order(gallery_id, opts \\ []) do
+  def get_unconfirmed_order(gallery_id, opts) do
     preloads = Keyword.get(opts, :preload, [])
 
     for assoc <- preloads,
