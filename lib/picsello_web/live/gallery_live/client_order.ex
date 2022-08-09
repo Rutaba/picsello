@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
   alias Picsello.{Orders, Galleries}
 
+  @impl true
   def mount(_, _, %{assigns: %{live_action: live_action}} = socket) do
     socket
     |> assign(from_checkout: false)
@@ -16,6 +17,33 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
   @impl true
   def handle_params(
+        %{"order_number" => order_number, "session_id" => session_id},
+        _,
+        %{assigns: %{gallery: gallery, live_action: live_action}} = socket
+      )
+      when live_action in ~w(paid proofing_album_paid)a do
+    case Orders.handle_session(order_number, session_id) do
+      {:ok, _order, :already_confirmed} ->
+        Orders.get!(gallery, order_number)
+
+      {:ok, _order, :confirmed} ->
+        order = Orders.get!(gallery, order_number)
+
+        Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
+          order,
+          PicselloWeb.Helpers
+        )
+
+        order
+    end
+    |> then(fn order ->
+      socket
+      |> assign_details(order)
+      |> process_checkout_order()
+    end)
+  end
+
+  def handle_params(
         %{"order_number" => order_number},
         _,
         %{assigns: %{gallery: gallery, live_action: :proofing_album_paid}} = socket
@@ -23,38 +51,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     order = Orders.get!(gallery, order_number)
 
     socket
-    |> assign(
-      from_checkout: true,
-      photographer: Galleries.gallery_photographer(gallery)
-    )
     |> assign_details(order)
-    |> then(&push_patch(&1, to: &1.assigns.checkout_routes.order, replace: true))
-    |> noreply()
-  end
-
-  def handle_params(
-        %{"order_number" => order_number, "session_id" => session_id},
-        _,
-        %{assigns: %{gallery: gallery, live_action: :paid}} = socket
-      ) do
-    order_number
-    |> Orders.handle_session(session_id)
-    |> Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(PicselloWeb.Helpers)
-    |> case do
-      {:ok, _email} ->
-        Orders.get!(gallery, order_number)
-    end
-    |> then(fn order ->
-      if connected?(socket) do
-        socket
-        |> assign(from_checkout: true)
-      else
-        socket
-      end
-      |> assign_details(order)
-      |> then(&push_patch(&1, to: &1.assigns.checkout_routes.order, replace: true))
-      |> noreply()
-    end)
+    |> process_checkout_order()
   end
 
   def handle_params(
@@ -77,8 +75,21 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     socket |> noreply()
   end
 
+  defp process_checkout_order(%{assigns: %{gallery: gallery}} = socket) do
+    if connected?(socket) do
+      socket
+      |> push_patch(to: socket.assigns.checkout_routes.order, replace: true)
+    else
+      socket
+    end
+    |> assign(:photographer, Galleries.gallery_photographer(gallery))
+    |> assign(from_checkout: true)
+    |> noreply()
+  end
+
   defp assign_details(socket, order) do
     gallery = order.gallery
+
     socket
     |> assign(
       gallery: gallery,

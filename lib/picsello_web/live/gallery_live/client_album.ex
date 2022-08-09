@@ -80,6 +80,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @impl true
   def handle_event("toggle_favorites", _, %{assigns: assigns} = socket) do
     %{gallery: gallery, album: album, favorites_filter: favorites_filter} = assigns
+
     Galleries.get_album_photo_count(gallery.id, album.id, !favorites_filter)
     |> then(&assign(socket, :photos_count, &1))
     |> toggle_favorites(@per_page)
@@ -87,6 +88,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_event("toggle_selected", _, %{assigns: assigns} = socket) do
     %{gallery: gallery, album: album, selected_filter: selected_filter} = assigns
+
     gallery.id
     |> Galleries.get_album_photo_count(album.id, false, !selected_filter)
     |> then(&assign(socket, :photos_count, &1))

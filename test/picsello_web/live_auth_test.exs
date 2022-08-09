@@ -241,7 +241,12 @@ defmodule PicselloWeb.LiveAuthTest do
       conn: conn,
       un_protected_album: un_protected_album
     } do
-      show_path = Routes.gallery_client_album_path(conn, :proofing_album, un_protected_album.client_link_hash)
+      show_path =
+        Routes.gallery_client_album_path(
+          conn,
+          :proofing_album,
+          un_protected_album.client_link_hash
+        )
 
       assert {:ok, _view, _html} = live(conn, show_path)
     end

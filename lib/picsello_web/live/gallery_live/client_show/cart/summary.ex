@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   """
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
+  alias Picsello.Galleries.Gallery
   import Money.Sigils
   import PicselloWeb.GalleryLive.Shared, only: [credits: 1]
 
@@ -189,7 +190,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     end
   end
 
-  defp digital_discount_lines(order, caller) do
+  defp digital_discount_lines(%{gallery_id: gallery_id} = order, caller) do
     case Enum.filter(order.digitals, & &1.is_credit) do
       [] ->
         []
@@ -197,13 +198,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       credited ->
         credit = length(credited)
 
-        {_, remainig} =
-          order.gallery
-          |> credits()
-          |> find_digital()
-
         [
-          {credit(remainig, credit, caller),
+          {credit(%Gallery{id: gallery_id}, credit, caller),
            credited |> Enum.reduce(~M[0]USD, &Money.subtract(&2, &1.price))}
         ]
     end
@@ -218,13 +214,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     end
   end
 
-  defp credit(remainig, credit, :proofing_album_order),
-    do: "#{credit} credit used - #{remainig} credits remainig"
+  defp credit(gallery, credit, caller) do
+    case caller do
+      :proofing_album_order ->
+        remainig_credit = gallery |> credits() |> find_digital() |> elem(1)
 
-  defp credit(_remainig, credit, :proofing_album_cart),
-    do: "Selected for retouching (#{credit})"
+        "#{credit} credit used - #{remainig_credit} credits remainig"
 
-  defp credit(_, credit, _caller), do: "Digital download credit (#{credit})"
+      :proofing_album_cart ->
+        "Selected for retouching (#{credit})"
+
+      _ ->
+        "Digital download credit (#{credit})"
+    end
+  end
 
   defp find_digital([{:digital, value} | _]), do: {:digital, value}
   defp find_digital(_credits), do: {:digital, 0}
