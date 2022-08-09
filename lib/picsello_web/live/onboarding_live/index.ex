@@ -209,7 +209,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <p class="py-2 font-extrabold">Choose your color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
             <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
               <%= for(color <- colors()) do %>
-                <li class="aspect-h-1 aspect-w-1">
+                <li class="aspect-square">
                   <label>
                     <%= radio_button p, :color, color, class: "hidden" %>
                     <div class={classes(

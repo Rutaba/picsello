@@ -44,7 +44,7 @@ defmodule Picsello.UserOnboardsTest do
   @org_name_field text_field("onboarding-step-2_organization_name")
   @phone_field text_field("onboarding-step-2_onboarding_phone")
   @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
-  @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
+  @second_color_field css("li.aspect-square:nth-child(2)")
   @website_field text_field("onboarding-step-4_organization_brand_links_0_link")
 
   def fill_in_step(session, 2) do
