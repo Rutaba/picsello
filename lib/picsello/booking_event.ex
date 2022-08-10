@@ -54,11 +54,11 @@ defmodule Picsello.BookingEvent do
       blocks = changeset |> get_field(:time_blocks)
 
       overlap_times =
-        for {block, index} when index > 0 <- blocks |> Enum.with_index() do
-          previous_time = blocks |> Enum.at(index - 1) |> Map.get(:end_time)
-          start_time = block |> Map.get(:start_time)
-          !!previous_time && !!start_time && Time.compare(previous_time, start_time) == :gt
-        end
+        for(
+          [%{end_time: previous_time}, %{start_time: start_time}] <-
+            Enum.chunk_every(blocks, 2, 1),
+          do: Time.compare(previous_time, start_time) == :gt
+        )
         |> Enum.any?()
 
       if overlap_times do

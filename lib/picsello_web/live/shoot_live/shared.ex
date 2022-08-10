@@ -38,7 +38,7 @@ defmodule PicselloWeb.ShootLive.Shared do
           <% end %>
         </div>
 
-        <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off" %>
+        <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off", placeholder: "Enter a location" %>
         <div class="relative autocomplete-wrapper" phx-update="ignore"></div>
       </div>
     <% end %>

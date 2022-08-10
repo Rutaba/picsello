@@ -1,6 +1,6 @@
 const pica = require('pica')();
 
-const imageToBlob = (imageFile, height) => {
+export const imageToBlob = (imageFile, height) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.addEventListener('load', (e) => {
@@ -8,7 +8,7 @@ const imageToBlob = (imageFile, height) => {
       img.crossOrigin = 'Anonymous';
       img.onload = function () {
         const canvas = document.createElement('canvas');
-        canvas.height = height;
+        canvas.height = Math.min(height, this.naturalHeight);
         canvas.width = (canvas.height * this.naturalWidth) / this.naturalHeight;
 
         pica
@@ -69,26 +69,27 @@ export default {
               new File([blob], normalizedName, { type: 'image/jpeg' })
             );
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', url, true);
-            xhr.onload = () => {
-              const status = xhr.status;
-              if (status === 204) {
-                const uploadedUrl = `${url}/${fields.key}`;
-                this.pushEventTo(target, 'upload_finished', {
-                  url: uploadedUrl,
-                });
-                hiddenInput.value = uploadedUrl;
-                hiddenInput.dispatchEvent(
-                  new Event('input', { bubbles: true })
-                );
-              } else {
+            fetch(url, {
+              method: 'POST',
+              body: formData,
+            })
+              .then((response) => {
+                if (response.status === 204) {
+                  const uploadedUrl = `${url}/${fields.key}`;
+                  this.pushEventTo(target, 'upload_finished', {
+                    url: uploadedUrl,
+                  });
+                  hiddenInput.value = uploadedUrl;
+                  hiddenInput.dispatchEvent(
+                    new Event('input', { bubbles: true })
+                  );
+                } else {
+                  alert('Something went wrong!');
+                }
+              })
+              .catch(() => {
                 alert('Something went wrong!');
-              }
-            };
-
-            xhr.onerror = () => alert('Something went wrong!');
-            xhr.send(formData);
+              });
           });
         }
       );

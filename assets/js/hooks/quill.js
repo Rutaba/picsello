@@ -1,4 +1,5 @@
 import Quill from 'quill';
+import { imageToBlob } from './image-upload-input';
 
 const Link = Quill.import('formats/link');
 
@@ -94,11 +95,12 @@ export default {
     const uploadImage = (file, onSuccess) => {
       const normalizedName = file.name
         .replace(/[^a-z0-9.-]/gi, '_')
+        .replace(/\.\w+$/, '.jpg')
         .toLowerCase();
       this.pushEventTo(
         target,
         'get_signed_url',
-        { name: normalizedName, type: file.type },
+        { name: normalizedName, type: 'image/jpeg' },
         (reply) => {
           const formData = new FormData();
           const { url, fields } = reply;
@@ -106,21 +108,25 @@ export default {
           Object.entries(fields).forEach(([key, val]) =>
             formData.append(key, val)
           );
-          formData.append('file', file, normalizedName);
 
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', url, true);
-          xhr.onload = () => {
-            const status = xhr.status;
-            if (status === 204) {
-              onSuccess(`${url}/${fields.key}`);
-            } else {
-              alert('Something went wrong!');
-            }
-          };
+          imageToBlob(file, 600).then((blob) => {
+            formData.append(
+              'file',
+              new File([blob], normalizedName, { type: 'image/jpeg' })
+            );
 
-          xhr.onerror = () => alert('Something went wrong!');
-          xhr.send(formData);
+            fetch(url, { method: 'POST', body: formData })
+              .then((response) => {
+                if (response.status === 204) {
+                  onSuccess(`${url}/${fields.key}`);
+                } else {
+                  alert('Something went wrong!');
+                }
+              })
+              .catch(() => {
+                alert('Something went wrong!');
+              });
+          });
         }
       );
     };

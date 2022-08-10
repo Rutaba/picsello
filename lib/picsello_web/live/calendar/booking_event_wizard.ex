@@ -207,7 +207,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-date" phx-value-index={@f.index} phx-target={@myself}>
         <h2 class="text-lg font-bold py-1">Day <%= @f.index + 1 %></h2>
         <%= if @f.index > 0 do %>
-          <.icon_button class="ml-4" title="remove" phx-click="remove-date" phx-value-index={@f.index} phx-target={@myself} color="red-sales-300" icon="trash">
+          <.icon_button class="ml-4" title="remove date" phx-click="remove-date" phx-value-index={@f.index} phx-target={@myself} color="red-sales-300" icon="trash">
             Remove
           </.icon_button>
         <% end %>
@@ -230,7 +230,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
               <p class="mx-2">-</p>
               <%= input t, :end_time, type: :time_input %>
               <%= if t.index > 0 do %>
-                <.icon_button class="ml-4" title="remove" phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
+                <.icon_button class="ml-4" title="remove time" phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
               <% end %>
             </div>
           <% end %>
@@ -291,7 +291,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     dates = changeset |> Ecto.Changeset.get_field(:dates) |> List.delete_at(index)
     changeset = changeset |> Ecto.Changeset.put_embed(:dates, dates)
 
-    collapsed_dates = Enum.filter(collapsed_dates, &(&1 != index))
+    collapsed_dates = collapsed_dates |> List.delete_at(index)
 
     socket
     |> assign(changeset: changeset, collapsed_dates: collapsed_dates)
@@ -309,13 +309,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     dates =
       changeset
       |> Ecto.Changeset.get_field(:dates)
-      |> Enum.with_index()
-      |> Enum.map(fn {date, i} ->
-        if i == index do
-          date |> Map.from_struct() |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{}])
-        else
-          date |> Map.from_struct()
-        end
+      |> Enum.map(&Map.from_struct/1)
+      |> List.update_at(index, fn date ->
+        date |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{}])
       end)
 
     changeset =
@@ -339,19 +335,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     dates =
       changeset
       |> Ecto.Changeset.get_field(:dates)
-      |> Enum.with_index()
-      |> Enum.map(fn {date, i} ->
-        if i == index do
-          time_blocks =
-            date.time_blocks
-            |> Enum.with_index()
-            |> Enum.filter(&(elem(&1, 1) != time_block_index))
-            |> Enum.map(&(elem(&1, 0) |> Map.from_struct()))
+      |> Enum.map(&Map.from_struct/1)
+      |> List.update_at(index, fn date ->
+        time_blocks =
+          date.time_blocks
+          |> Enum.map(&Map.from_struct/1)
+          |> List.delete_at(time_block_index)
 
-          date |> Map.from_struct() |> Map.put(:time_blocks, time_blocks)
-        else
-          date |> Map.from_struct()
-        end
+        date |> Map.put(:time_blocks, time_blocks)
       end)
 
     changeset =

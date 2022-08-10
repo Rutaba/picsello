@@ -122,6 +122,60 @@ defmodule Picsello.UserManagesBookingEventsTest do
            ] = Picsello.Repo.all(Picsello.BookingEvent)
   end
 
+  feature "validation errors", %{session: session} do
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(link("Add booking event"))
+    |> assert_text("Add booking event: Details")
+    |> fill_in(text_field("Title"), with: " ")
+    |> assert_text("Title can't be blank")
+    |> fill_in(text_field("Shoot Address"), with: " ")
+    |> assert_text("Shoot Address can't be blank")
+    |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][0][start_time]"), with: "09:00AM")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][0][end_time]"), with: "01:00PM")
+    |> scroll_into_view(testid("add-date"))
+    |> click(button("Add block"))
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][1][start_time]"), with: "11:00AM")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][1][end_time]"), with: "05:00PM")
+    |> assert_text("Times can't be overlapping")
+    |> click(button("Add another date"))
+    |> assert_has(testid("event-date", count: 2))
+    |> scroll_into_view(testid("add-date"))
+    |> fill_in(text_field("booking_event[dates][1][date]"), with: "10/10/2050")
+    |> assert_text("Dates can't be the same")
+  end
+
+  feature "removes dates and times", %{session: session} do
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(link("Add booking event"))
+    |> assert_text("Add booking event: Details")
+    |> assert_has(testid("event-date", count: 1))
+    |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][0][start_time]"), with: "09:00AM")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][0][end_time]"), with: "01:00PM")
+    |> assert_has(css("input[type=time]", count: 2))
+    |> scroll_into_view(testid("add-date"))
+    |> click(button("Add block"))
+    |> assert_has(css("input[type=time]", count: 4))
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][1][start_time]"), with: "02:00AM")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][1][end_time]"), with: "05:00PM")
+    |> click(button("remove time"))
+    |> assert_has(css("input[type=time]", count: 2))
+    |> assert_value(text_field("booking_event[dates][0][time_blocks][0][start_time]"), "09:00")
+    |> assert_value(text_field("booking_event[dates][0][time_blocks][0][end_time]"), "13:00")
+    |> click(button("Add another date"))
+    |> assert_has(testid("event-date", count: 2))
+    |> scroll_into_view(testid("add-date"))
+    |> fill_in(text_field("booking_event[dates][1][date]"), with: "12/10/2050")
+    |> click(button("remove date"))
+    |> assert_has(testid("event-date", count: 1))
+    |> assert_value(text_field("booking_event[dates][0][date]"), "2050-10-10")
+  end
+
   defp mock_image_upload(%{port: port} = bypass) do
     upload_url = "http://localhost:#{port}"
 
