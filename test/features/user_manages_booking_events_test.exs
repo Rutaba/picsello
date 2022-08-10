@@ -12,6 +12,32 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("You don’t have any booking events created at the moment")
   end
 
+  feature "sees list of events", %{session: session, user: user} do
+    template = insert(:package_template, user: user, job_type: "mini", name: "My custom package")
+
+    insert(:booking_event,
+      name: "Event 1",
+      package_template_id: template.id,
+      duration_minutes: 45,
+      dates: [
+        %{
+          date: ~D[2050-12-10],
+          time_blocks: [
+            %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
+          ]
+        }
+      ]
+    )
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> assert_text("Event 1")
+    |> assert_text("My custom package")
+    |> assert_text("45 minutes")
+    |> assert_text("12/10/2050")
+  end
+
   feature "creates new booking event", %{session: session, user: user} do
     insert(:package_template, user: user, job_type: "wedding")
 
@@ -65,6 +91,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_flash(:success, text: "Booking event saved successfully")
     |> assert_path("/booking-events")
+    |> assert_text("My event")
 
     thumbnail_url = "http://localhost:#{bypass.port}/image.jpg"
 
@@ -111,7 +138,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
       |> Plug.Conn.resp(204, "")
     end)
 
-    Bypass.expect_once(bypass, "GET", "/image.jpg", fn conn ->
+    Bypass.expect(bypass, "GET", "/image.jpg", fn conn ->
       conn
       |> Plug.Conn.resp(200, "")
     end)

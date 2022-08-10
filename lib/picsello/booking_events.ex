@@ -1,6 +1,7 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.Repo
+  alias Picsello.{Repo, BookingEvent}
+  import Ecto.Query
 
   def upsert_booking_event(changeset) do
     changeset
@@ -9,5 +10,14 @@ defmodule Picsello.BookingEvents do
       conflict_target: [:id],
       returning: true
     )
+  end
+
+  def get_booking_events(organization_id) do
+    from(event in BookingEvent,
+      join: package in assoc(event, :package_template),
+      where: package.organization_id == ^organization_id
+    )
+    |> Repo.all()
+    |> Repo.preload(:package_template)
   end
 end
