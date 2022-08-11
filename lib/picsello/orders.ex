@@ -85,17 +85,6 @@ defmodule Picsello.Orders do
     |> Repo.one!()
   end
 
-  @spec get_purchased_photos!(String.t(), %{client_link_hash: String.t()}) ::
-          %{organization: %Picsello.Organization{}, photos: [%Photo{}]}
-  def get_purchased_photos!(order_number, %{client_link_hash: gallery_hash} = gallery) do
-    order = gallery |> placed_order_query(order_number) |> client_paid_query() |> Repo.one!()
-
-    %{
-      organization: get_organization!(gallery_hash),
-      photos: get_order_photos!(order)
-    }
-  end
-
   def get_purchased_photo!(gallery, photo_id) do
     if can_download_all?(gallery) do
       from(photo in Photo, where: photo.gallery_id == ^gallery.id and photo.id == ^photo_id)
@@ -170,6 +159,16 @@ defmodule Picsello.Orders do
     |> Repo.exists?()
   end
 
+  def pack(order) do
+    %{
+      order_id: order.id
+    }
+    |> Picsello.Workers.PackDigitals.new()
+    |> Oban.insert()
+  end
+
+  defdelegate pack_url(order), to: __MODULE__.Pack, as: :url
+
   defdelegate handle_session(order_number, stripe_session_id),
     to: __MODULE__.Confirmations
 
@@ -177,20 +176,23 @@ defmodule Picsello.Orders do
   defdelegate handle_invoice(invoice), to: __MODULE__.Confirmations
   defdelegate handle_intent(intent), to: __MODULE__.Confirmations
   defdelegate canceled?(order), to: Order
+  defdelegate number(order), to: Order
 
-  defp get_order_photos!(%Order{bundle_price: %Money{}} = order) do
-    from(photo in Photo, where: photo.gallery_id == ^order.gallery_id)
-    |> some!()
+  def get_order_photos(%Order{bundle_price: %Money{}} = order) do
+    from(photo in Photo,
+      where: photo.gallery_id == ^order.gallery_id,
+      order_by: [asc: photo.inserted_at]
+    )
   end
 
-  defp get_order_photos!(%Order{id: order_id}) do
+  def get_order_photos(%Order{id: order_id}) do
     from(order in Order,
       join: digital in assoc(order, :digitals),
       join: photo in assoc(digital, :photo),
       where: order.id == ^order_id,
+      order_by: [asc: photo.inserted_at],
       select: photo
     )
-    |> some!()
   end
 
   defp some!(query),

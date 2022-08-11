@@ -1,6 +1,8 @@
 defmodule Picsello.ClientViewsOrdersTest do
   use Picsello.FeatureCase, async: true
+  use Oban.Testing, repo: Picsello.Repo
   import Money.Sigils
+  alias Picsello.Orders
 
   setup :authenticated_gallery_client
 
@@ -13,7 +15,7 @@ defmodule Picsello.ClientViewsOrdersTest do
     |> assert_text("ordered anything")
   end
 
-  feature "an order", %{session: session, gallery: gallery} do
+  feature "an order - shows delivery details", %{session: session, gallery: gallery} do
     insert(:order,
       gallery: gallery,
       placed_at: DateTime.utc_now(),
@@ -69,5 +71,76 @@ defmodule Picsello.ClientViewsOrdersTest do
     )
     |> visit(current_path(session))
     |> assert_text("Item shipped:")
+  end
+
+  def stub_storage() do
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:get, fn _ -> :error end)
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:initiate_resumable, fn _, _ ->
+      {:ok, %{status: 200, headers: [{"location", "https://example.com"}]}}
+    end)
+    |> Mox.stub(:continue_resumable, fn _, _, _ ->
+      {:ok, %{status: 200}}
+    end)
+  end
+
+  def insert_order(gallery) do
+    original_url =
+      PicselloWeb.Endpoint.struct_url()
+      |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
+      |> URI.to_string()
+
+    order =
+      insert(:order,
+        gallery: gallery,
+        placed_at: DateTime.utc_now(),
+        delivery_info: %Picsello.Cart.DeliveryInfo{}
+      )
+
+    insert(:digital,
+      order: order,
+      photo: insert(:photo, gallery: gallery, original_url: original_url)
+    )
+
+    order
+  end
+
+  feature "order list - shows download status", %{session: session, gallery: gallery} do
+    insert_order(gallery)
+    stub_storage()
+
+    session
+    |> click(css("a", text: "View Gallery"))
+    |> click(link("My orders"))
+    |> assert_text("Preparing Download")
+
+    assert_enqueued(worker: Picsello.Workers.PackDigitals)
+
+    assert [%{errors: []}] = run_jobs()
+
+    session
+    |> assert_has(link("Download photos"))
+  end
+
+  feature "order details - shows download status", %{session: session, gallery: gallery} do
+    order = insert_order(gallery)
+    stub_storage()
+
+    session
+    |> visit(
+      Routes.gallery_client_order_path(
+        PicselloWeb.Endpoint,
+        :show,
+        gallery.client_link_hash,
+        Orders.number(order)
+      )
+    )
+    |> assert_has(css("h3", text: "Order number #{Orders.number(order)}"))
+    |> assert_text("Preparing Download")
+
+    assert [%{errors: []}] = run_jobs()
+
+    assert_has(session, link("Download photos"))
   end
 end

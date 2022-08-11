@@ -2,14 +2,20 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
   @moduledoc false
 
   alias Picsello.Galleries.Workers.PhotoStorage
+  alias GoogleApi.Storage.V1.{Api.Objects, Connection, Model.Object}
   @behaviour PhotoStorage
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl PhotoStorage
   def path_to_url(path, bucket \\ @bucket) do
-    sign_opts = [bucket: bucket, key: path, expires_in: 604_800]
-    GCSSign.sign_url_v4(gcp_credentials(), sign_opts)
+    path =
+      path
+      |> Path.split()
+      |> List.update_at(-1, &URI.encode/1)
+      |> Path.join()
+
+    GCSSign.sign_url_v4(gcp_credentials(), bucket: bucket, key: path, expires_in: 604_800)
   end
 
   @impl PhotoStorage
@@ -24,14 +30,32 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
   def delete(nil, _), do: :ignored
 
   def delete(path, bucket) do
-    {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
-
-    token.token
-    |> GoogleApi.Storage.V1.Connection.new()
-    |> GoogleApi.Storage.V1.Api.Objects.storage_objects_delete(bucket, path)
+    {:ok, _} = Objects.storage_objects_delete(connection(), bucket, path)
+    :ok
   rescue
-    _ -> :ignored
+    _ -> :error
   end
+
+  @impl PhotoStorage
+  def get(path), do: get(path, @bucket)
+
+  @impl PhotoStorage
+  def get(path, bucket),
+    do: Objects.storage_objects_get(connection(), bucket, path)
+
+  @impl PhotoStorage
+  def initiate_resumable(name, content_type) do
+    Objects.storage_objects_insert_resumable(
+      connection(),
+      @bucket,
+      "resumable",
+      name: name,
+      body: %Object{contentType: content_type}
+    )
+  end
+
+  @impl PhotoStorage
+  defdelegate continue_resumable(url, body, opts), to: Connection, as: :put
 
   defp gcp_credentials() do
     {:ok, private_key} = Goth.Config.get("private_key")
@@ -41,5 +65,12 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
       "private_key" => private_key,
       "client_id" => client_id
     }
+  end
+
+  defp connection do
+    {:ok, %{token: token}} =
+      Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
+
+    Connection.new(token)
   end
 end
