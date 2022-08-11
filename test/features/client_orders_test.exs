@@ -49,7 +49,9 @@ defmodule Picsello.ClientOrdersTest do
       )
     end
 
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:get, &{:ok, %{name: &1}})
 
     [gallery: gallery, organization: organization, package: package]
   end
@@ -146,6 +148,14 @@ defmodule Picsello.ClientOrdersTest do
       end
     )
   end
+
+  def assert_download_link(session, label, order_number),
+    do:
+      session
+      |> find(
+        link(label),
+        &assert(Element.attr(&1, "href") |> String.ends_with?("#{order_number}.zip"))
+      )
 
   feature "order product", %{
     session: session,
@@ -438,10 +448,7 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(css("img[src$='/preview.jpg']"))
       |> assert_text("Digital download")
       |> assert_has(css("*[title='cart']", text: "0"))
-      |> find(
-        link("Download photos"),
-        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
-      )
+      |> assert_download_link("Download photos", order_number)
       |> click(link("Home"))
       |> click_photo(1)
       |> assert_has(testid("product_option_digital_download", text: "Download"))
@@ -453,13 +460,7 @@ defmodule Picsello.ClientOrdersTest do
           src = Element.attr(img, "src")
           assert String.ends_with?(src, "/preview.jpg")
         end)
-        |> find(
-          link("Download photos"),
-          &assert(
-            Element.attr(&1, "href") ==
-              Path.join([current_url(session), Element.text(number), "zip"])
-          )
-        )
+        |> assert_download_link("Download photos", Element.text(number))
       end)
     end
 
@@ -612,10 +613,7 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(css("img[src$='/preview.jpg']", count: 3))
       |> assert_text("All digital downloads")
       |> assert_has(css("*[title='cart']", text: "0"))
-      |> find(
-        link("Download photos"),
-        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
-      )
+      |> assert_download_link("Download photos", order_number)
       |> click(link("Home"))
       |> find(
         link("Download all photos"),
@@ -636,16 +634,10 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> refute_has(button("Buy now"))
       |> click(link("My orders"))
-      |> find(definition("Order number:"), fn number ->
-        session
-        |> find(
-          link("Download photos"),
-          &assert(
-            Element.attr(&1, "href") ==
-              Path.join([current_url(session), Element.text(number), "zip"])
-          )
-        )
-      end)
+      |> find(
+        definition("Order number:"),
+        &assert_download_link(session, "Download photos", Element.text(&1))
+      )
     end
   end
 end

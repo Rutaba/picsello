@@ -3,7 +3,7 @@ defmodule Picsello.Organization do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Package, Campaign, Client, Accounts.User, Repo, Profiles.Profile}
+  alias Picsello.{PackagePaymentPreset, Package, Campaign, Client, Accounts.User, Repo, Profiles.Profile}
 
   defmodule EmailSignature do
     @moduledoc false
@@ -30,6 +30,7 @@ defmodule Picsello.Organization do
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:campaigns, Campaign)
+    has_many(:package_payment_presets, PackagePaymentPreset)
     has_many(:brand_links, Picsello.BrandLink)
     has_many(:clients, Client)
     has_one(:user, User)

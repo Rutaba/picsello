@@ -8,7 +8,8 @@ defmodule Picsello.Packages do
     Job,
     JobType,
     Packages.BasePrice,
-    Packages.CostOfLivingAdjustment
+    Packages.CostOfLivingAdjustment,
+    PackagePayments
   }
 
   import Picsello.Repo.CustomMacros
@@ -217,12 +218,19 @@ defmodule Picsello.Packages do
   def templates_for_organization(%Organization{id: id}),
     do: id |> Package.templates_for_organization_id() |> Repo.all()
 
-  def insert_package_and_update_job(changeset, job),
+  def insert_package_and_update_job(changeset, job, opts \\ %{}),
     do:
       Ecto.Multi.new()
       |> Ecto.Multi.insert(:package, changeset)
       |> Ecto.Multi.update(:job, fn changes ->
         Job.add_package_changeset(job, %{package_id: changes.package.id})
+      end)
+      |> Ecto.Multi.merge(fn %{package: package} ->
+        if Map.get(opts, :action) in [:insert, :insert_preset] do
+          PackagePayments.insert_schedules(package, opts)
+        else 
+          Ecto.Multi.new()
+        end
       end)
       |> Ecto.Multi.merge(fn %{package: package} ->
         case package |> Repo.preload(package_template: :contract) do
@@ -260,10 +268,26 @@ defmodule Picsello.Packages do
     )
   end
 
-  def insert_or_update_package(changeset, contract_params) do
+  def insert_or_update_package(changeset, contract_params, opts \\ %{}) do
+    action = Map.get(opts, :action)
+
     result =
       Ecto.Multi.new()
       |> Ecto.Multi.insert_or_update(:package, changeset)
+      |> Ecto.Multi.merge(fn %{package: %{id: id}} ->
+        if action in [:insert, :insert_preset, :update, :update_preset] do
+          PackagePayments.delete_schedules(id, Map.get(opts, :payment_preset))
+        else 
+          Ecto.Multi.new()
+        end
+      end)
+      |> Ecto.Multi.merge(fn %{package: package} ->
+        if action in [:insert, :insert_preset, :update, :update_preset] do
+          PackagePayments.insert_schedules(package, opts)
+        else 
+          Ecto.Multi.new()
+        end
+      end)
       |> Ecto.Multi.merge(fn %{package: package} ->
         cond do
           is_nil(contract_params) ->

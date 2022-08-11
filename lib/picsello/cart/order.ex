@@ -193,7 +193,7 @@ defmodule Picsello.Cart.Order do
   def lines_by_product(%__MODULE__{products: products}), do: products |> sort_products()
 
   def canceled?(%__MODULE__{canceled_intents: [_ | _], intent: nil}), do: true
-  def canceled?(%__MODULE__{canceled_intents: []}), do: false
+  def canceled?(_), do: false
 
   defp remaining_products(products, editor_id, opts) do
     case Enum.split_with(products, &(&1.editor_id == editor_id)) do

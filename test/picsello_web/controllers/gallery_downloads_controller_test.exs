@@ -2,8 +2,6 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
   use PicselloWeb.ConnCase, async: true
   import Money.Sigils
 
-  alias Picsello.Cart.OrderNumber
-
   def add_photos(order, photos) do
     for(photo <- photos, reduce: order) do
       order ->
@@ -35,9 +33,8 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
   end
 
   setup %{original_url: original_url} do
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, fn path ->
-      assert path == original_url
-      path
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, fn ^original_url ->
+      original_url
     end)
 
     :ok
@@ -63,102 +60,6 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
             insert(:package, organization: organization, download_each_price: download_each_price)
         )
     )
-  end
-
-  describe "Get /galleries/:gallery_id/order/:order_id/zip" do
-    def get_zip(conn, gallery, order) do
-      get(
-        conn,
-        Routes.gallery_downloads_path(
-          conn,
-          :download,
-          gallery.client_link_hash,
-          OrderNumber.to_number(order.id)
-        )
-      )
-    end
-
-    test "no such gallery", %{conn: conn} do
-      order = add_photos(insert(:order), [insert(:photo)])
-
-      assert_raise(Ecto.NoResultsError, fn ->
-        get_zip(conn, %{client_link_hash: "abc"}, order)
-      end)
-    end
-
-    test "no such order in gallery", %{conn: conn} do
-      gallery = insert_gallery()
-      order = add_photos(insert(:order, gallery: gallery), [insert(:photo, gallery: gallery)])
-
-      assert_raise(Ecto.NoResultsError, fn ->
-        get_zip(conn, gallery, %{id: order.id + 1})
-      end)
-    end
-
-    test "order has no digitals", %{conn: conn} do
-      gallery = insert_gallery()
-      order = insert(:order, gallery: gallery)
-
-      assert_raise(Ecto.NoResultsError, fn ->
-        get_zip(conn, gallery, order)
-      end)
-    end
-
-    test "sends a zip of all purchased originals in order", %{
-      conn: conn,
-      original_url: original_url
-    } do
-      gallery = insert_gallery(organization_name: "org name")
-
-      order = insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
-
-      [_skipped | ordered_photos] =
-        insert_list(3, :photo,
-          gallery: gallery,
-          original_url: original_url,
-          name: "original name.jpg"
-        )
-
-      order = add_photos(order, ordered_photos)
-
-      conn = get_zip(conn, gallery, order)
-
-      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
-               Enum.into(conn.resp_headers, %{})
-
-      assert "org name - #{OrderNumber.to_number(order.id)}.zip" ==
-               URI.decode(download_filename)
-
-      assert ["original name (1).jpg", "original name (2).jpg"] =
-               conn.resp_body |> get_zip_files() |> Enum.sort()
-    end
-
-    test "sends a zip of all photos when bundle is purchased", %{
-      conn: conn,
-      original_url: original_url
-    } do
-      gallery = insert_gallery(organization_name: "org name")
-
-      order =
-        insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
-
-      insert_list(3, :photo,
-        gallery: gallery,
-        original_url: original_url,
-        name: "original name.jpg"
-      )
-
-      conn = get_zip(conn, gallery, order)
-
-      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
-               Enum.into(conn.resp_headers, %{})
-
-      assert "org name - #{OrderNumber.to_number(order.id)}.zip" ==
-               URI.decode(download_filename)
-
-      assert ["original name (1).jpg", "original name (2).jpg", "original name (3).jpg"] =
-               conn.resp_body |> get_zip_files() |> Enum.sort()
-    end
   end
 
   describe "Get /galleries/:gallery_id/zip" do

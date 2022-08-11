@@ -219,7 +219,6 @@ defmodule PicselloWeb.Router do
           end
 
           live "/paid", GalleryLive.ClientOrder, :paid
-          get "/zip", GalleryDownloadsController, :download
         end
       end
 
