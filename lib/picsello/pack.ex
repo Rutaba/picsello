@@ -1,4 +1,4 @@
-defmodule Picsello.Orders.Pack do
+defmodule Picsello.Pack do
   @moduledoc """
   context module for creating a zip of an order's digitals
   """

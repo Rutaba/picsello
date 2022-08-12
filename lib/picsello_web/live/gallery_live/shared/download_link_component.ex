@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared.DownloadLinkComponent do
   """
 
   use PicselloWeb, :live_component
-  alias Picsello.Orders.Pack
+  alias Picsello.Pack
 
   @impl true
   def update(%{status: _status} = assigns, socket) do

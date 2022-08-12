@@ -2,7 +2,7 @@ defmodule Picsello.Workers.PackDigitals do
   @moduledoc "Background job to create zip of digitals"
 
   use Oban.Worker, unique: [fields: [:args, :worker]]
-  alias Picsello.{Galleries, Galleries.Gallery, Orders, Cart.Order, Orders.Pack}
+  alias Picsello.{Galleries, Galleries.Gallery, Orders, Cart.Order, Pack}
 
   def perform(%Oban.Job{args: %{"packable" => module_name, "id" => id}}) do
     packable = module_name |> String.to_existing_atom() |> struct(id: id)

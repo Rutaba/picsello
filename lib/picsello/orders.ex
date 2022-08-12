@@ -164,16 +164,6 @@ defmodule Picsello.Orders do
     |> Repo.exists?()
   end
 
-  def pack(order) do
-    %{
-      order_id: order.id
-    }
-    |> Picsello.Workers.PackDigitals.new()
-    |> Oban.insert()
-  end
-
-  defdelegate pack_url(order), to: __MODULE__.Pack, as: :url
-
   defdelegate handle_session(order_number, stripe_session_id),
     to: __MODULE__.Confirmations
 

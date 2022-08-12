@@ -1,4 +1,4 @@
-defmodule Picsello.Orders.PackTest do
+defmodule Picsello.PackTest do
   use Picsello.DataCase, async: true
 
   def get_zip_files(target) do
@@ -49,11 +49,11 @@ defmodule Picsello.Orders.PackTest do
       insert(:digital, order: order)
       insert(:intent, order: order, status: :requires_payment_method)
 
-      assert {:error, "no client paid order" <> _} = Picsello.Orders.Pack.upload(order)
+      assert {:error, "no client paid order" <> _} = Picsello.Pack.upload(order)
     end
 
     test "no digitals in order - is an error", %{order: order} do
-      assert {:error, "no photos in order" <> _} = Picsello.Orders.Pack.upload(order)
+      assert {:error, "no photos in order" <> _} = Picsello.Pack.upload(order)
     end
 
     test "streams the upload to GCS", %{order: order, original_url: original_url} do
@@ -83,7 +83,7 @@ defmodule Picsello.Orders.PackTest do
 
       add_digital(order, original_url)
 
-      assert {:ok, _} = Picsello.Orders.Pack.upload(order)
+      assert {:ok, _} = Picsello.Pack.upload(order)
 
       assert_receive {:chunk, chunk}
 
@@ -116,7 +116,7 @@ defmodule Picsello.Orders.PackTest do
         {:ok, %{status: 200}}
       end)
 
-      assert {:ok, _} = Picsello.Orders.Pack.upload(order, chunk_size: 128)
+      assert {:ok, _} = Picsello.Pack.upload(order, chunk_size: 128)
 
       assert_receive {:last_chunk, last_chunk}, 1000
       {:messages, messages} = :erlang.process_info(test_pid, :messages)
@@ -136,7 +136,7 @@ defmodule Picsello.Orders.PackTest do
   describe "IodataStream.chunk_every" do
     def chunk_every(iodata, size) do
       iodata
-      |> Picsello.Orders.Pack.IodataStream.chunk_every(size)
+      |> Picsello.Pack.IodataStream.chunk_every(size)
       |> Enum.map(&IO.iodata_to_binary/1)
     end
 
@@ -152,7 +152,7 @@ defmodule Picsello.Orders.PackTest do
   end
 
   describe "IodataStream.split" do
-    def split(iodata, size), do: Picsello.Orders.Pack.IodataStream.split(iodata, size)
+    def split(iodata, size), do: Picsello.Pack.IodataStream.split(iodata, size)
 
     test "may not create new binaries" do
       assert {'br', [["ian"], ?d]} ==

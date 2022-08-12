@@ -92,7 +92,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   defp process_photos(conn, photos, file_name) do
     photos
-    |> Picsello.Orders.Pack.stream()
+    |> Picsello.Pack.stream()
     |> Packmatic.Conn.send_chunked(conn, file_name)
   end
 
