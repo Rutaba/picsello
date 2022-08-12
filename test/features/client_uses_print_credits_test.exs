@@ -129,6 +129,11 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     :ok
   end
 
+  def expect_get_object(_) do
+    Mox.expect(Picsello.PhotoStorageMock, :get, fn _ -> {:ok, %{name: ""}} end)
+    :ok
+  end
+
   def trigger_stripe_webhook(session, category, type, object) do
     Mox.expect(Picsello.MockPayments, :construct_event, fn _body, _str, _sig ->
       {:ok, %Stripe.Event{type: type, data: %{object: object}}}
@@ -405,7 +410,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       ]
     end
 
-    setup [:stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout, :expect_get_object]
 
     feature("only charges client", %{session: session}) do
       session

@@ -68,7 +68,7 @@ defmodule Picsello.Orders.Pack do
     defp to_acc([_ | _] = iodata), do: {IO.iodata_length(iodata), iodata}
   end
 
-  alias Picsello.{Orders, Repo, Cart.Order, Galleries.Workers.PhotoStorage}
+  alias Picsello.{Galleries.Gallery, Orders, Repo, Cart.Order, Galleries.Workers.PhotoStorage}
 
   @chunk_size Integer.pow(2, 18) *
                 trunc(Application.compile_env(:picsello, :chunks_per_request, 32))
@@ -79,14 +79,15 @@ defmodule Picsello.Orders.Pack do
     |> Packmatic.build_stream()
   end
 
-  def url(order) do
-    case order |> path() |> PhotoStorage.get() do
+  @spec url(Order.t() | Gallery.t()) :: {:ok, String.t()} | {:error, any()}
+  def url(packable) do
+    case packable |> path() |> PhotoStorage.get() do
       {:ok, %{name: name}} -> {:ok, PhotoStorage.path_to_url(name)}
       error -> error
     end
   end
 
-  def path(%{gallery: %{name: gallery_name}} = order) do
+  def path(%Order{gallery: %{name: gallery_name}} = order) do
     Path.join([
       "galleries",
       to_string(order.gallery_id),
@@ -95,34 +96,60 @@ defmodule Picsello.Orders.Pack do
     ])
   end
 
-  def upload(order_id, opts \\ []) when is_integer(order_id) do
+  def path(%Gallery{name: gallery_name, id: id}) do
+    Path.join([
+      "galleries",
+      to_string(id),
+      "#{gallery_name}.zip"
+    ])
+  end
+
+  @spec upload(Gallery.t() | Order.t()) :: {:ok, String.t()} | {:error, any()}
+  @spec upload(Gallery.t() | Order.t(), Keyword.t()) :: {:ok, String.t()} | {:error, any()}
+  def upload(packable, opts \\ [])
+
+  def upload(%Gallery{} = gallery, opts),
+    do:
+      if(Orders.can_download_all?(gallery),
+        do:
+          gallery
+          |> Ecto.assoc(:photos)
+          |> Repo.all()
+          |> stream()
+          |> do_upload(path(gallery), opts),
+        else: {:error, "cannot download all photos in gallery #{gallery.id}"}
+      )
+
+  def upload(%Order{id: order_id}, opts) when is_integer(order_id) do
     with %Order{} = order <-
            Orders.client_paid_query() |> Repo.get(order_id) |> Repo.preload(:gallery),
          [_ | _] = photos <-
            order |> Orders.get_order_photos() |> Repo.all() do
-      photos |> stream() |> do_upload(path(order), Keyword.get(opts, :chunk_size, @chunk_size))
+      photos |> stream() |> do_upload(path(order), opts)
     else
       nil -> {:error, "no client paid order with id #{order_id}"}
       [] -> {:error, "no photos in order #{order_id}"}
     end
   end
 
-  defp do_upload(stream, path, chunk_size),
-    do:
-      with(
-        {:ok, _, _} = acc <- initialize_resumable(path),
-        {:ok, _size, _resumable_url} <-
-          stream
-          |> IodataStream.chunk_every(chunk_size)
-          |> Stream.map(&to_sized_binary/1)
-          |> Enum.reduce_while(acc, fn chunk, {:ok, first_byte_index, location} ->
-            case continue_resumable(location, chunk, first_byte_index, chunk_size) do
-              {:ok, last_byte_index} -> {:cont, {:ok, last_byte_index, location}}
-              error -> {:halt, error}
-            end
-          end),
-        do: {:ok, path}
-      )
+  defp do_upload(stream, path, opts) do
+    chunk_size = Keyword.get(opts, :chunk_size, @chunk_size)
+
+    with(
+      {:ok, _, _} = acc <- initialize_resumable(path),
+      {:ok, _size, _resumable_url} <-
+        stream
+        |> IodataStream.chunk_every(chunk_size)
+        |> Stream.map(&to_sized_binary/1)
+        |> Enum.reduce_while(acc, fn chunk, {:ok, first_byte_index, location} ->
+          case continue_resumable(location, chunk, first_byte_index, chunk_size) do
+            {:ok, last_byte_index} -> {:cont, {:ok, last_byte_index, location}}
+            error -> {:halt, error}
+          end
+        end),
+      do: {:ok, path}
+    )
+  end
 
   def to_sized_binary(iodata) do
     binary = IO.iodata_to_binary(iodata)

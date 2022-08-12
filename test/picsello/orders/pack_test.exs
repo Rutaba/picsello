@@ -49,11 +49,11 @@ defmodule Picsello.Orders.PackTest do
       insert(:digital, order: order)
       insert(:intent, order: order, status: :requires_payment_method)
 
-      assert {:error, "no client paid order" <> _} = Picsello.Orders.Pack.upload(order.id)
+      assert {:error, "no client paid order" <> _} = Picsello.Orders.Pack.upload(order)
     end
 
     test "no digitals in order - is an error", %{order: order} do
-      assert {:error, "no photos in order" <> _} = Picsello.Orders.Pack.upload(order.id)
+      assert {:error, "no photos in order" <> _} = Picsello.Orders.Pack.upload(order)
     end
 
     test "streams the upload to GCS", %{order: order, original_url: original_url} do
@@ -83,7 +83,7 @@ defmodule Picsello.Orders.PackTest do
 
       add_digital(order, original_url)
 
-      assert {:ok, _} = Picsello.Orders.Pack.upload(order.id)
+      assert {:ok, _} = Picsello.Orders.Pack.upload(order)
 
       assert_receive {:chunk, chunk}
 
@@ -116,7 +116,7 @@ defmodule Picsello.Orders.PackTest do
         {:ok, %{status: 200}}
       end)
 
-      assert {:ok, _} = Picsello.Orders.Pack.upload(order.id, chunk_size: 128)
+      assert {:ok, _} = Picsello.Orders.Pack.upload(order, chunk_size: 128)
 
       assert_receive {:last_chunk, last_chunk}, 1000
       {:messages, messages} = :erlang.process_info(test_pid, :messages)

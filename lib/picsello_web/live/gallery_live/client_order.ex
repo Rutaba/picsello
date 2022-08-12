@@ -72,8 +72,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   @impl true
-  def handle_info({:pack, :ok, %{path: path}}, %{assigns: %{order: order}} = socket) do
-    DownloadLinkComponent.update_path(order, path)
+  def handle_info({:pack, :ok, %{path: path}}, %{assigns: %{order: %{id: id}}} = socket) do
+    DownloadLinkComponent.update_path(id, path)
 
     socket |> noreply()
   end
@@ -168,4 +168,5 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   defdelegate has_download?(order), to: Picsello.Orders
   defdelegate summary(assigns), to: PicselloWeb.GalleryLive.ClientShow.Cart.Summary
   defdelegate canceled?(order), to: Picsello.Orders
+  defdelegate download_link(assigns), to: DownloadLinkComponent
 end
