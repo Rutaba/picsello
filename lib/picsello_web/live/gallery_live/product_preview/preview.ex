@@ -13,16 +13,12 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
           <%= @category.name %>
 
         </div>
-        <div>
+        <label class="toggle">
+          <input class="toggle-checkbox" type="checkbox" phx-click="" checked>
+          <div class="toggle-switch"></div>
+          <span class="toggle-label">Product Enabled</span>
+        </label>
 
-          <label class="items-center cursor-pointer mt-4 switch" id="toggleSwitch" >
-           <div class=" ml-3">
-              <input id="toggle" type="checkbox" phx-click="" checked>
-              <span class="slider round toggle-switch-handle" data-label-off="Product disabled" data-label-on="Product enabled"></span>
-            </div>
-            </label>
-            <div class="text-sm lg:text-xl text-base-250">Product enabled</div>
-        </div>
 
         <div class={classes("mt-4 pb-14 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
 
