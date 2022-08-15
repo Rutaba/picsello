@@ -42,9 +42,13 @@ defmodule Picsello.UserManagesBookingEventsTest do
     insert(:package_template, user: user, job_type: "wedding")
 
     template_id =
-      insert(:package_template, user: user, job_type: "mini", name: "Mini 1") |> Map.get(:id)
+      insert(:package_template, user: user, job_type: "mini", name: "Mini 1", shoot_count: 1)
+      |> Map.get(:id)
 
-    insert(:package_template, user: user, job_type: "mini", name: "Mini 2")
+    insert(:package_template, user: user, job_type: "mini", name: "Mini 2", shoot_count: 2)
+
+    insert(:package_template, user: user, job_type: "portrait", name: "Portrait 1", shoot_count: 1)
+
     bypass = Bypass.open()
     mock_image_upload(bypass)
 
@@ -76,6 +80,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("Add booking event: Select package")
     |> assert_disabled_submit(text: "Next")
     |> assert_has(testid("template-card", count: 2))
+    |> assert_text("Portrait 1")
     |> click(testid("template-card", text: "Mini 1"))
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))

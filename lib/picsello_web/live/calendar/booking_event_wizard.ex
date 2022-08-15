@@ -408,7 +408,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
-    packages = Packages.templates_for_user(current_user, "mini")
+    packages = Packages.templates_with_single_shoot(current_user)
 
     socket |> assign(package_templates: packages)
   end

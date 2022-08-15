@@ -211,6 +211,13 @@ defmodule Picsello.Packages do
     end
   end
 
+  def templates_with_single_shoot(%User{organization_id: organization_id}) do
+    query = Package.templates_for_organization_id(organization_id)
+
+    from(package in query, where: package.shoot_count == 1)
+    |> Repo.all()
+  end
+
   def templates_for_user(user, job_type),
     do: user |> Package.templates_for_user(job_type) |> Repo.all()
 
