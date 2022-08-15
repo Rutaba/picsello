@@ -77,8 +77,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <%= for event <- @booking_events do %>
           <div class="grid sm:grid-cols-4 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
             <.details_cell booking_event={event} />
-            <hr class="sm:hidden border-gray-100" />
+            <hr class="sm:hidden border-gray-100 my-2" />
             <.bookings_cell booking_event={event} />
+            <hr class="sm:hidden border-gray-100 my-2" />
             <.actions_cell booking_event={event} />
           </div>
         <% end %>
@@ -89,7 +90,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp details_cell(assigns) do
     ~H"""
-    <div class="sm:col-span-2 grid sm:flex gap-4 sm:gap-0">
+    <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
       <img class="h-32 aspect-[3/2] object-cover rounded-lg" src={@booking_event.thumbnail_url} />
       <div class="flex flex-col justify-center sm:ml-4">
         <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
@@ -111,7 +112,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp actions_cell(assigns) do
     ~H"""
-    <div>
+    <div class="flex flex-col justify-center items-start">
+      <.icon_button icon="anchor" color="blue-planning-300" class="grow-0 transition-colors text-blue-planning-300" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+        <span>Copy link</span>
+        <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+          Copied!
+        </div>
+      </.icon_button>
     </div>
     """
   end
@@ -149,6 +156,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         |> Map.take([:id, :name, :thumbnail_url, :duration_minutes])
         |> Map.put(:date, booking_event.dates |> hd |> Map.get(:date))
         |> Map.put(:package_name, booking_event.package_template.name)
+        |> Map.put(
+          :url,
+          Routes.client_booking_event_url(
+            socket,
+            :index,
+            current_user.organization.slug,
+            booking_event.id
+          )
+        )
       end)
 
     socket

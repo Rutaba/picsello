@@ -15,19 +15,20 @@ defmodule Picsello.UserManagesBookingEventsTest do
   feature "sees list of events", %{session: session, user: user} do
     template = insert(:package_template, user: user, job_type: "mini", name: "My custom package")
 
-    insert(:booking_event,
-      name: "Event 1",
-      package_template_id: template.id,
-      duration_minutes: 45,
-      dates: [
-        %{
-          date: ~D[2050-12-10],
-          time_blocks: [
-            %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
-          ]
-        }
-      ]
-    )
+    event =
+      insert(:booking_event,
+        name: "Event 1",
+        package_template_id: template.id,
+        duration_minutes: 45,
+        dates: [
+          %{
+            date: ~D[2050-12-10],
+            time_blocks: [
+              %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
+            ]
+          }
+        ]
+      )
 
     session
     |> visit("/calendar")
@@ -36,6 +37,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("My custom package")
     |> assert_text("45 minutes")
     |> assert_text("12/10/2050")
+    |> assert_has(css("button[data-clipboard-text*='/event/#{event.id}']", text: "Copy link"))
   end
 
   feature "creates new booking event", %{session: session, user: user} do
