@@ -55,7 +55,7 @@ defmodule Picsello.BookingEvent do
 
       overlap_times =
         for(
-          [%{end_time: previous_time}, %{start_time: start_time}] <-
+          [%{end_time: %Time{} = previous_time}, %{start_time: %Time{} = start_time}] <-
             Enum.chunk_every(blocks, 2, 1),
           do: Time.compare(previous_time, start_time) == :gt
         )
