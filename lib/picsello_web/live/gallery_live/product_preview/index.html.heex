@@ -29,12 +29,6 @@
 
         <div class="2xl:grid-cols-3 lg:grid-cols-2 grid-cols-1 gap-7 lg:px-0 px-6 grid">
           <%= for product <- @products do %>
-            <div>
-              <label class="switch" id="toggleSwitch" checked>
-                <input type="checkbox">
-                <span class="slider round"></span>
-              </label>
-            </div>
             <.live_component id={product.id} category={product.category} product_id={product.id} module={Preview} photo={product.preview_photo} />
           <% end %>
         </div>
