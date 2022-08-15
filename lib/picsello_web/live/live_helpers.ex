@@ -102,6 +102,22 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def icon_button(%{href: href} = assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class]))
+      |> Enum.into(%{class: "", inner_block: nil})
+
+    ~H"""
+    <a href={href} class={"flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-#{@color} #{@class}"} {@rest}>
+      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-1" => @inner_block})} />
+      <%= if @inner_block do %>
+        <%= render_block(@inner_block) %>
+      <% end %>
+    </a>
+    """
+  end
+
   def icon_button(assigns) do
     assigns =
       assigns

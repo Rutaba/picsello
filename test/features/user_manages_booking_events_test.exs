@@ -38,6 +38,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("45 minutes")
     |> assert_text("12/10/2050")
     |> assert_has(css("button[data-clipboard-text*='/event/#{event.id}']", text: "Copy link"))
+    |> assert_has(css("a[href*='/event/#{event.id}']", text: "Preview"))
   end
 
   feature "creates new booking event", %{session: session, user: user} do

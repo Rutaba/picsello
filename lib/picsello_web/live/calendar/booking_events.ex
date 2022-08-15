@@ -112,8 +112,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp actions_cell(assigns) do
     ~H"""
-    <div class="flex flex-col justify-center items-start">
-      <.icon_button icon="anchor" color="blue-planning-300" class="grow-0 transition-colors text-blue-planning-300" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+    <div class="flex items-center justify-start">
+      <.icon_button icon="eye" color="blue-planning-300" class="flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+        Preview
+      </.icon_button>
+      <.icon_button icon="anchor" color="blue-planning-300" class="ml-2 flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
