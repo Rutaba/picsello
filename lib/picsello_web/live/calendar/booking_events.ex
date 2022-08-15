@@ -77,6 +77,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <%= for event <- @booking_events do %>
           <div class="grid sm:grid-cols-4 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
             <.details_cell booking_event={event} />
+            <hr class="sm:hidden border-gray-100" />
             <.bookings_cell booking_event={event} />
             <.actions_cell booking_event={event} />
           </div>
@@ -88,9 +89,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp details_cell(assigns) do
     ~H"""
-    <div class="sm:col-span-2 flex">
-      <img class="h-32 aspect-[4/3] object-cover rounded-lg" src={@booking_event.thumbnail_url} />
-      <div class="ml-4 flex flex-col justify-center">
+    <div class="sm:col-span-2 grid sm:flex gap-4 sm:gap-0">
+      <img class="h-32 aspect-[3/2] object-cover rounded-lg" src={@booking_event.thumbnail_url} />
+      <div class="flex flex-col justify-center sm:ml-4">
         <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <p class="text-xl font-semibold underline text-blue-planning-300"><%= @booking_event.name %></p>
         <p class="text-gray-400"><%= @booking_event.package_name %></p>

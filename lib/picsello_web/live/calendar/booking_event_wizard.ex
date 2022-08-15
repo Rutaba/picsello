@@ -146,7 +146,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         <% end %>
 
         <div class="mt-8">
-          <.icon_button {testid("add-date")} phx-click="add-date" phx-target={@myself} class="py-1 px-4" title="Add another date" color="blue-planning-300" icon="plus">
+          <.icon_button {testid("add-date")} phx-click="add-date" phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add another date" color="blue-planning-300" icon="plus">
             Add another date
           </.icon_button>
         </div>
@@ -234,7 +234,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
               <% end %>
             </div>
           <% end %>
-          <.icon_button class="py-1 px-4 mt-4" title="Add block" phx-click="add-time-block" phx-value-index={@f.index} phx-target={@myself} color="blue-planning-300" icon="plus">
+          <.icon_button class="py-1 px-4 mt-4 w-full sm:w-auto justify-center" title="Add block" phx-click="add-time-block" phx-value-index={@f.index} phx-target={@myself} color="blue-planning-300" icon="plus">
             Add block
           </.icon_button>
         </div>
