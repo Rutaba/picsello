@@ -13,14 +13,28 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
           <%= @category.name %>
 
         </div>
+        <div class=" mx-4 pt-4 flex flex-col justify-between" >
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox" phx-click="" checked>
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Product Enabled</span>
+          </label>
+        </div>
+
+
+        <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
+        <div class=" mx-4 pt-4 flex flex-col justify-between">
         <label class="toggle">
           <input class="toggle-checkbox" type="checkbox" phx-click="" checked>
           <div class="toggle-switch"></div>
-          <span class="toggle-label">Product Enabled</span>
+          <span class="toggle-label">Show product preview in gallery</span>
         </label>
+      </div>
 
 
-        <div class={classes("mt-4 pb-14 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
+          <div class="flex items-center justify-center mt-4">
+            <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)}/>
+          </div>
 
           <div class="flex justify-start pt-4 pl-4">
 
@@ -36,13 +50,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
               phx-click="edit"
               phx-value-product_id={@product_id}>
                 <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
-                <span>Edit this</span>
+                <span>Edit product preview</span>
               </button>
             <% end %>
-          </div>
-
-          <div class="flex items-center justify-center mt-4">
-            <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)}/>
           </div>
         </div>
       </div>
