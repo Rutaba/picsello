@@ -104,5 +104,17 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
   end
 
+    test "Toggle disable product in gallery", %{
+      session: session,
+      gallery: %{id: gallery_id} = gallery,
+      products: products
+    } do
+      session
+      |> visit("/galleries/#{gallery_id}/product-previews")
+      |> assert_text("Product Previews")
+      |> take_screenshot()
+      |> click(checkbox("Product enabled to sell", visible: false, count: 4, at: 2, selected: true))
+      |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 2), fn checkbox -> assert Element.selected?(checkbox) end)
 
+    end
 end
