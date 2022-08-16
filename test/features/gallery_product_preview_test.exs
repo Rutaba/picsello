@@ -63,7 +63,7 @@ defmodule Picsello.GalleryProductPreviewTest do
 
     session
     |> visit("/galleries/#{gallery.id}/product-previews")
-    |> assert_has(css("button", text: "Edit this", count: 4))
+    |> assert_has(css("button", text: "Edit product preview", count: 4))
     |> assert_has(css("button:disabled", text: "Coming soon!", count: 4))
   end
 
@@ -103,4 +103,6 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
   end
+
+
 end
