@@ -306,7 +306,11 @@ defmodule PicselloWeb.HomeLive.Index do
       Enum.concat(
         organization_id
         |> Orders.get_all_proofing_album_orders()
-        |> Enum.map(fn %{number: number, album: album, gallery: %{job: %{client: %{name: name}}} = gallery} ->
+        |> Enum.map(fn %{
+                         number: number,
+                         album: album,
+                         gallery: %{job: %{client: %{name: name}}} = gallery
+                       } ->
           %{
             action: "proofing-album",
             title: "A client selected their proofs!",

@@ -37,9 +37,13 @@ defmodule Picsello.Cart do
     opts = [credits: credit_remaining(gallery)]
 
     order_opts = [preload: [:products, :digitals]]
+
     case get_unconfirmed_order(gallery_id, Keyword.put(order_opts, :album_id, album_id)) do
-      {:ok, order} -> place_product_in_order(order, product, opts)
-      {:error, _} -> create_order_with_product(product, %{gallery_id: gallery_id, album_id: album_id}, opts)
+      {:ok, order} ->
+        place_product_in_order(order, product, opts)
+
+      {:error, _} ->
+        create_order_with_product(product, %{gallery_id: gallery_id, album_id: album_id}, opts)
     end
   end
 

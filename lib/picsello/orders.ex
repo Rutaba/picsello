@@ -235,7 +235,7 @@ defmodule Picsello.Orders do
       where:
         not is_nil(order.album_id) and not is_nil(order.placed_at) and
           order.inserted_at > ago(@filtered_days, "day"),
-          preload: [:album, gallery: [job: [:client]]]
+      preload: [:album, gallery: [job: [:client]]]
     )
     |> Repo.all()
   end

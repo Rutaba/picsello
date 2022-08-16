@@ -31,7 +31,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     |> assign_checkout_routes()
     |> noreply()
   end
-  
+
   @impl true
   def handle_info({:pack, :ok, %{order_id: order_id, path: path}}, socket) do
     DownloadLinkComponent.update_path(%{id: order_id}, path)

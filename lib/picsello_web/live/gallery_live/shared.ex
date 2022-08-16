@@ -678,6 +678,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def order_details(assigns) do
     assigns = Enum.into(assigns, %{is_proofing: false})
+
     ~H"""
     <div class={@class}>
       <div class="mt-0 mb-4 ml-0 md:ml-5 md:mt-2">

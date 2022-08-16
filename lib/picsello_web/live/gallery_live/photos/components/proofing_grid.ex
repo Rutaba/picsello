@@ -69,10 +69,10 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
     """
   end
 
-  def toggle_border(js \\ %JS{}, id) do
-      js
-      |> JS.dispatch("click", to: "#photo-#{id} > img")
-      |> JS.add_class("item-border", to: "#item-#{id}")
+  defp toggle_border(js \\ %JS{}, id) do
+    js
+    |> JS.dispatch("click", to: "#photo-#{id} > img")
+    |> JS.add_class("item-border", to: "#item-#{id}")
   end
 
   def proofing_grid(assigns) do

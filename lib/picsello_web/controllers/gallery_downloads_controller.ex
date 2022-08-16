@@ -58,7 +58,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
     conn
     |> put_resp_content_type("text/csv")
-    |> put_resp_header("content-disposition", "attachment; filename=#{file_name}")
+    |> put_resp_header("content-disposition", encode_header_value(file_name))
     |> send_resp(200, csv_data)
   end
 
