@@ -9,8 +9,8 @@ config :bcrypt_elixir, :log_rounds, 1
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :picsello, Picsello.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "morganziegler",
+  password: "tgre",
   database: "picsello_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox,
@@ -28,7 +28,7 @@ config :logger, level: :warn
 config :wallaby,
   chromedriver:
     [
-      headless: System.get_env("HEADLESS", "true") == "true"
+      headless: true
     ]
     |> then(
       &case System.get_env("CHROME_BINARY") do

@@ -2,9 +2,24 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
   @moduledoc "no doc"
 
   use PicselloWeb, :live_component
+  alias Picsello.GalleryProducts
 
   import PicselloWeb.GalleryLive.Shared, only: [cards_width: 1]
 
+  def update(%{product: product} = assigns, socket) do
+    socket
+    |> assign(assigns)
+    |> assign(category: product.category, photo: product.preview_photo, product_id: product.id)
+    |> ok()
+  end
+
+  def handle_event("enabled", _, %{assigns: %{product: product}} = socket) do
+    socket
+    |> assign(product: GalleryProducts.toggle_enabled(product))
+    |> noreply()
+  end
+
+  @spec render(any) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <div class="flex flex-col justify-between">
@@ -15,7 +30,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
         <div class=" mx-4 pt-4 flex flex-col justify-between" >
           <label class="toggle">
-            <input id = "enable_sell_toggle" class="toggle-checkbox" type="checkbox" phx-click="" checked>
+            <input class="toggle-checkbox" type="checkbox" phx-click="enabled" checked={@product.enabled} phx-target={@myself}>
             <div class="toggle-switch"></div>
             <span class="toggle-label">Product enabled to sell</span>
           </label>
@@ -24,12 +39,14 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
         <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
         <div class=" mx-4 pt-4 flex flex-col justify-between">
 
-        <label class="toggle">
-          <input id="preview_toggle" class="toggle-checkbox" type="checkbox" phx-click="" checked>
-          <div class="toggle-switch"></div>
-          <span class="toggle-label">Show product preview in gallery</span>
-        </label>
-      </div>
+        <%= if @product.enabled do %>
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox" phx-click="" checked>
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Show product preview in gallery</span>
+          </label>
+        <% end %>
+        </div>
 
           <div class="flex items-center justify-center mt-4">
             <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)}/>
