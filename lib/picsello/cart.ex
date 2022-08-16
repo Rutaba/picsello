@@ -37,11 +37,9 @@ defmodule Picsello.Cart do
     opts = [credits: credit_remaining(gallery)]
 
     order_opts = [preload: [:products, :digitals]]
-    order_opts = if album_id, do: Keyword.put(order_opts, :album_id, album_id), else: order_opts
-
-    case get_unconfirmed_order(gallery_id, order_opts) do
+    case get_unconfirmed_order(gallery_id, Keyword.put(order_opts, :album_id, album_id)) do
       {:ok, order} -> place_product_in_order(order, product, opts)
-      {:error, _} -> create_order_with_product(product, %{gallery_id: gallery_id}, opts)
+      {:error, _} -> create_order_with_product(product, %{gallery_id: gallery_id, album_id: album_id}, opts)
     end
   end
 
@@ -158,7 +156,7 @@ defmodule Picsello.Cart do
           preload: [:digitals | :products | :package]
         ) ::
           {:ok, Order.t()} | {:error, :no_unconfirmed_order}
-  def get_unconfirmed_order(gallery_id, opts) do
+  def get_unconfirmed_order(gallery_id, opts \\ []) do
     preloads = Keyword.get(opts, :preload, [])
 
     for assoc <- preloads,
@@ -173,20 +171,11 @@ defmodule Picsello.Cart do
           ),
         reduce:
           Order
-          |> join(:left, [order], digital in assoc(order, :digitals))
-          |> join(:left, [_, digital], photo in assoc(digital, :photo))
-          |> join(:left, [_, _, photo], album in assoc(photo, :album), as: :album)
-          |> distinct(true)
           |> where([order], order.gallery_id == ^gallery_id and is_nil(order.placed_at))
           |> then(
             &case Keyword.get(opts, :album_id) do
-              nil ->
-                where(&1, [album: album], album.is_proofing != true)
-
-              album_id ->
-                &1
-                |> where([album: album], album.id == ^album_id)
-                |> where([album: album], album.is_proofing == true)
+              nil -> where(&1, [order], is_nil(order.album_id))
+              album_id -> where(&1, [order], order.album_id == ^album_id)
             end
           ) do
       query ->

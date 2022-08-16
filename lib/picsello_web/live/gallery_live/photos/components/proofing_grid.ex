@@ -16,7 +16,7 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
     <div class="md:mt-0 md:mb-0 mt-16 mb-6">
       <%= for order <- @orders do%>
         <div class="flex my-2">
-          <div class="flex items-center z-10 text-base-250">Client Selection - <%= DateTime.to_date(order.placed_at) %></div>
+          <div {testid("selection-name")} class="flex items-center z-10 text-base-250">Client Selection - <%= DateTime.to_date(order.placed_at) %></div>
           <div id={"meatball-order-#{order.id}"} data-offset-y="0" data-offset-x="0" phx-hook="Select" class="ml-auto items-center flex">
             <button class="sticky">
               <.icon name="meatballs" class="w-4 h-4 text-base-225 stroke-current stroke-2 opacity-100 open-icon" />

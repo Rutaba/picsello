@@ -107,7 +107,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     %{photo: photo, download_each_price: price} = assigns
 
     send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}})
-    socket
+    socket 
   end
 
   defp move_carousel(%{assigns: %{photo_ids: photo_ids}} = socket, fun) do
