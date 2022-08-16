@@ -164,7 +164,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           :url,
           Routes.client_booking_event_url(
             socket,
-            :index,
+            :show,
             current_user.organization.slug,
             booking_event.id
           )

@@ -191,7 +191,7 @@ defmodule PicselloWeb.Router do
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
 
-    live "/photographer/:organization_slug/event/:id", Live.ClientBookingEvent, :index,
+    live "/photographer/:organization_slug/event/:id", ClientBookingEventLive.Show, :show,
       as: :client_booking_event
 
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
