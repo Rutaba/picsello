@@ -8,6 +8,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -183,8 +184,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
             upload_folder="booking_event_image"
             name={input_name(@f, :thumbnail_url)}
             url={input_value(@f, :thumbnail_url)}
-            class="aspect-[2/1] mt-2"
-          />
+            class="aspect-[3/2] mt-2"
+          >
+            <:image_slot>
+              <.blurred_thumbnail class="h-full w-full" url={input_value(@f, :thumbnail_url)} />
+            </:image_slot>
+          </.image_upload_input>
         </div>
         <div>
           <label for={input_name(@f, :description)} class="input-label">Short Description</label>
@@ -192,7 +197,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
             f={@f}
             html_field={:description}
             current_user={@current_user}
-            class="aspect-[7/3] mt-2"
+            class="aspect-[5/3] mt-2"
             placeholder="Type your event description…"
           />
         </div>

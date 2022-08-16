@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   use PicselloWeb, :live_view
 
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   alias Picsello.BookingEvents
 
   @impl true
@@ -91,7 +92,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp details_cell(assigns) do
     ~H"""
     <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
-      <img class="h-32 aspect-[3/2] object-cover rounded-lg" src={@booking_event.thumbnail_url} />
+      <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
       <div class="flex flex-col justify-center sm:ml-4">
         <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <p class="text-xl font-semibold underline text-blue-planning-300"><%= @booking_event.name %></p>

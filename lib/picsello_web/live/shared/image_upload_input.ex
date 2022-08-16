@@ -30,7 +30,11 @@ defmodule PicselloWeb.Shared.ImageUploadInput do
           </div>
         <% @url -> %>
           <div class="w-full h-full flex items-center justify-center relative">
-            <img src={@url} class="h-full w-full object-cover" />
+            <%= if assigns[:image_slot] do %>
+              <%= render_slot(@image_slot) %>
+            <% else %>
+              <img src={@url} class="h-full w-full object-cover" />
+            <% end %>
             <div class="upload-button absolute top-2 right-2 rounded-3xl bg-white shadow-lg cursor-pointer flex p-3 items-center justify-center">
               <span class="font-semibold text-blue-planning-300 hover:opacity-75">
                 Choose a new image
