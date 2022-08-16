@@ -58,14 +58,14 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex-grow md:mx-32 client-app">
+    <div class="flex-grow center-container client-app">
       <.sticky_upload current_user={@current_user} />
       <div class="flex flex-wrap items-center justify-between px-6 py-2 md:py-4 md:px-12">
         <.logo_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :logo)} uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
       </div>
 
-      <hr class="border-base-300">
+      <hr class="border-base-200 mt-2">
 
       <div class="flex flex-col justify-center max-w-screen-lg px-6 mx-auto mt-10 md:px-16">
         <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />

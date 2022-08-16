@@ -6,7 +6,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
-      photographer_logo: 1
+      assign_organization: 2,
+      photographer_logo: 1,
+      profile_footer: 1
     ]
 
   @max_age 60 * 60 * 24 * 365 * 10
@@ -179,7 +181,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
                :job_status,
                :payment_schedules,
                :shoots,
-               package: [organization: :user]
+               package: [organization: [:user, :brand_links]]
              ]
            ]) do
       %{
@@ -204,6 +206,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         read_only: photographer == current_user,
         token: token
       )
+      |> assign_organization(organization)
     else
       _ ->
         socket

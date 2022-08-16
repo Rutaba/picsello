@@ -96,9 +96,6 @@
         </button>
       </div>
     </div>
-    <footer class="mt-auto px-8 center-container">
-      <hr class="border-gray-100">
-      <p class="uppercase mt-6 text-xs mb-8">© <%= Date.utc_today().year %> by <%= @organization.name %></p>
-    </footer>
+    <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
   </div>
 <% end %>
