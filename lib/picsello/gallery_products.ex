@@ -29,6 +29,12 @@ defmodule Picsello.GalleryProducts do
     |> Repo.update!()
   end
 
+  def toggle_preview_enabled(product) do
+    product
+    |> GalleryProduct.changeset(%{preview_enabled: !product.preview_enabled})
+    |> Repo.update!()
+  end
+
   @doc """
   Get all the gallery products that are ready for review
   """

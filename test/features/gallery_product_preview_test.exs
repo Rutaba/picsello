@@ -107,7 +107,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     test "Toggle disable product in gallery", %{
       session: session,
       gallery: %{id: gallery_id} = gallery,
-      products: products
+
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
@@ -115,6 +115,16 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> take_screenshot()
       |> click(checkbox("Product enabled to sell", visible: false, count: 4, at: 2, selected: true))
       |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 2), fn checkbox -> assert Element.selected?(checkbox) end)
+      |> click(checkbox("Show product preview in gallery", visible: false, count: 4, at: 3, selected: true))
+      |> find(checkbox("Show product preview in gallery", visible: false, count: 4, at: 3), fn checkbox -> assert Element.selected?(checkbox) end)
+      #|> click(button("Preview Gallery"))
+      #|> assert_text("Home")
+      #|> take_screenshot()
+      #|> find(css("*[id^='/images']", count: length(products)))
+
+
 
     end
+
+
 end

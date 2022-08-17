@@ -19,6 +19,12 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
     |> noreply()
   end
 
+  def handle_event("preview_enabled", _, %{assigns: %{product: product}} = socket) do
+    socket
+    |> assign(product: GalleryProducts.toggle_preview_enabled(product))
+    |> noreply()
+  end
+
   @spec render(any) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
@@ -41,7 +47,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
         <%= if @product.enabled do %>
           <label class="toggle">
-            <input class="toggle-checkbox" type="checkbox" phx-click="" checked>
+            <input class="toggle-checkbox" type="checkbox" phx-click="preview_enabled" checked={@product.preview_enabled} phx-target={@myself}>
             <div class="toggle-switch"></div>
             <span class="toggle-label">Show product preview in gallery</span>
           </label>
