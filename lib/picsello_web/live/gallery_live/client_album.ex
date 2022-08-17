@@ -10,6 +10,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   alias Picsello.{Repo, Galleries, GalleryProducts, Albums, Cart, Orders}
   alias PicselloWeb.GalleryLive.Photos.Photo
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias Picsello.Galleries.Watermark
 
   @per_page 12
 
@@ -39,7 +41,15 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp assigns(%{assigns: %{album: album, gallery: gallery}} = socket) do
     album = album |> Repo.preload(:photos)
+    gallery = gallery |> Repo.preload(:watermark)
     gallery = Galleries.populate_organization_user(gallery)
+
+    if album.is_proofing && is_nil(gallery.watermark) do
+      %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
+
+      album.photos
+      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
+    end
 
     socket
     |> assign(

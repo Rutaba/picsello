@@ -60,12 +60,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
        do: strftime(time_zone, placed_at, format)
 
   defp item_frame(assigns) do
-    assigns = Enum.into(assigns, %{quantity: [], shipping: []})
+    assigns = Enum.into(assigns, %{quantity: [], shipping: [], is_proofing: false})
 
     ~H"""
       <div class="block py-6 lg:justify-between lg:py-8 lg:flex">
         <div class="grid gap-4 grid-cols-[120px,1fr,min-content] lg:grid-cols-[147px,1fr]">
-          <.item_image item={@item} />
+          <.item_image item={@item} is_proofing={@is_proofing}/>
 
           <div class="flex flex-col justify-center py-2 align-self-center">
             <div class="flex items-baseline lg:flex-col">
@@ -93,13 +93,14 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
   defp item_image(assigns) do
     ~H"""
-      <img src={item_image_url(@item)} class="object-contain h-32 lg:h-[120px] place-self-center"/>
+    <img src={item_image_url(@item, proofing_client_view?: @is_proofing)} class="object-contain h-32 lg:h-[120px] place-self-center"/>
     """
   end
 
   defdelegate canceled?(order), to: Orders
   defdelegate has_download?(order), to: Orders
   defdelegate item_image_url(item), to: Cart
+  defdelegate item_image_url(item, opts), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate total_cost(order), to: Cart
 end

@@ -695,17 +695,28 @@ defmodule Picsello.Galleries do
   """
   def clear_watermarks(gallery_id) do
     get_gallery!(gallery_id)
-    |> Repo.preload(:photos)
-    |> Map.get(:photos)
-    |> Enum.each(fn photo ->
-      [photo.watermarked_preview_url, photo.watermarked_url]
-      |> Enum.each(fn path ->
-        %{path: path}
-        |> CleanStore.new()
-        |> Oban.insert()
-      end)
 
-      update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+    %{job: %{client: %{organization: %{name: name}}}} =
+      gallery =
+      gallery_id
+      |> get_gallery!()
+      |> populate_organization()
+
+    gallery
+    |> Repo.preload(photos: [:album])
+    |> Enum.each(fn
+      %{album: %{is_proofing: true}} = photo ->
+        ProcessingManager.start(photo, Watermark.build(name))
+
+      photo ->
+        [photo.watermarked_preview_url, photo.watermarked_url]
+        |> Enum.each(fn path ->
+          %{path: path}
+          |> CleanStore.new()
+          |> Oban.insert()
+        end)
+
+        update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
     end)
   end
 

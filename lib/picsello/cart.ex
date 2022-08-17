@@ -298,6 +298,12 @@ defmodule Picsello.Cart do
               _ -> %{}
             end)
 
+  def item_image_url(%Digital{photo: photo}, opts),
+    do: Picsello.Photos.preview_url(photo, opts)
+
+  def item_image_url(item, _opts),
+    do: item_image_url(item)
+
   def item_image_url(%CartProduct{preview_url: url}), do: url
 
   def item_image_url(%Digital{photo: photo}),
