@@ -6,6 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
+  alias Ecto.Multi
 
   alias Picsello.{
     Galleries,
@@ -699,27 +700,42 @@ defmodule Picsello.Galleries do
   """
   def clear_watermarks(gallery_id) do
     %{job: %{client: %{organization: %{name: name}}}} =
-      gallery =
-      gallery_id
-      |> get_gallery!()
-      |> populate_organization()
+      gallery = get_gallery!(gallery_id) |> populate_organization()
 
     gallery
     |> Repo.preload(photos: [:album])
     |> Map.get(:photos)
-    |> Enum.each(fn
-      %{album: %{is_proofing: true}} = photo ->
+    |> Enum.reduce({[], []}, fn
+      %{album: %{is_proofing: true}} = photo, acc ->
         ProcessingManager.start(photo, Watermark.build(name))
+        acc
 
-      photo ->
-        [photo.watermarked_preview_url, photo.watermarked_url]
-        |> Enum.each(fn path ->
-          %{path: path}
-          |> CleanStore.new()
-          |> Oban.insert()
-        end)
+      photo, {photo_ids, oban_jobs} ->
+        {
+          [photo.id | photo_ids],
+          [photo.watermarked_preview_url, photo.watermarked_url]
+          |> Enum.map(fn path -> CleanStore.new(%{path: path}) end)
+          |> Enum.concat(oban_jobs)
+        }
+    end)
+    |> then(fn
+      {[], []} ->
+        :ok
 
-        update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+      {photo_ids, oban_jobs} ->
+        Multi.new()
+        |> Multi.update_all(
+          :photos,
+          fn _ ->
+            from(p in Photo,
+              where: p.id in ^photo_ids,
+              update: [set: [watermarked_url: nil, watermarked_preview_url: nil]]
+            )
+          end,
+          []
+        )
+        |> Oban.insert_all(:clean_store, oban_jobs)
+        |> Repo.transaction()
     end)
   end
 

@@ -166,8 +166,6 @@ defmodule Picsello.Photos do
 
   def active_photos, do: from(p in Photo, where: p.active == true)
 
-  defdelegate path_to_url(path), to: PhotoStorage
-
   def update_photos_in_bulk(photos, new_values) when is_list(photos) and is_list(new_values) do
     new_values = Map.new(new_values, &{&1.id, &1})
 
@@ -193,4 +191,6 @@ defmodule Picsello.Photos do
     |> Enum.to_list()
     |> to_string()
   end
+
+  defdelegate path_to_url(path), to: PhotoStorage
 end

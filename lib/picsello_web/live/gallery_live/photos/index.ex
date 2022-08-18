@@ -13,8 +13,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.GalleryLive.Photos.ProofingGrid, only: [proofing_grid: 1]
 
   alias Phoenix.PubSub
-  alias Picsello.{Repo, Galleries, Albums, Orders}
+  alias Picsello.{Repo, Galleries, Albums, Orders, Galleries.Watermark}
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
@@ -278,6 +279,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
+    |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(
       selected_photos: [],
       select_mode: "selected_none",
@@ -595,6 +597,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
     Galleries.move_to_album(String.to_integer(album_id), selected_photos)
+    album = Albums.get_album!(album_id)
+
+    if album.is_proofing && is_nil(gallery.watermark) do
+      %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
+
+      gallery
+      |> Galleries.get_photos_by_ids(selected_photos)
+      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
+    end
 
     socket
     |> close_modal()
