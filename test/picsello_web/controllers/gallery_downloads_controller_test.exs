@@ -24,12 +24,7 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
   end
 
   setup do
-    [
-      original_url:
-        PicselloWeb.Endpoint.struct_url()
-        |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
-        |> URI.to_string()
-    ]
+    [original_url: image_url()]
   end
 
   setup %{original_url: original_url} do

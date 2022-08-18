@@ -1,6 +1,8 @@
 defmodule Picsello.PackTest do
   use Picsello.DataCase, async: true
 
+  @original_url image_url()
+
   def get_zip_files(target) do
     {:ok, zip_handle} = :zip.zip_open(target)
     {:ok, zip_list} = :zip.zip_list_dir(zip_handle)
@@ -81,7 +83,7 @@ defmodule Picsello.PackTest do
         {:ok, %{status: 200}}
       end)
 
-      add_digital(order, original_url)
+      add_digital(order, @original_url)
 
       assert {:ok, _} = Picsello.Pack.upload(order)
 
@@ -90,9 +92,9 @@ defmodule Picsello.PackTest do
       assert ["my photo.png"] = get_zip_files(chunk)
     end
 
-    test "chunks the upload to GCS", %{order: order, original_url: original_url} do
+    test "chunks the upload to GCS", %{order: order} do
       test_pid = self()
-      add_digital(order, original_url)
+      add_digital(order, @original_url)
 
       Picsello.PhotoStorageMock
       |> Mox.stub(:initiate_resumable, fn _, _ ->

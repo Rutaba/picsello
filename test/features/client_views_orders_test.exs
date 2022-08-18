@@ -86,11 +86,6 @@ defmodule Picsello.ClientViewsOrdersTest do
   end
 
   def insert_order(gallery) do
-    original_url =
-      PicselloWeb.Endpoint.struct_url()
-      |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
-      |> URI.to_string()
-
     order =
       insert(:order,
         gallery: gallery,
@@ -100,7 +95,7 @@ defmodule Picsello.ClientViewsOrdersTest do
 
     insert(:digital,
       order: order,
-      photo: insert(:photo, gallery: gallery, original_url: original_url)
+      photo: insert(:photo, gallery: gallery, original_url: image_url())
     )
 
     order
