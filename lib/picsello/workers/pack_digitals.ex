@@ -13,8 +13,15 @@ defmodule Picsello.Workers.PackDigitals do
     broadcast(packable, :ok, %{packable: packable, status: :uploading})
 
     case Pack.upload(packable) do
-      {:ok, path} ->
-        broadcast(packable, :ok, %{packable: packable, status: {:ready, path}})
+      {:ok, url} ->
+        broadcast(packable, :ok, %{packable: packable, status: {:ready, url}})
+
+        Picsello.Notifiers.ClientNotifier.deliver_download_ready(
+          packable,
+          url,
+          PicselloWeb.Helpers
+        )
+
         :ok
 
       {:error, :empty} ->

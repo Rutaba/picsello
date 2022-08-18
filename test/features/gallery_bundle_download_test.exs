@@ -89,6 +89,8 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackDigitals", state: "completed"}
            ] = run_jobs(with_scheduled: true)
 
+    assert_receive({:delivered_email, %{subject: "Download Ready"}})
+
     client_session
     |> assert_has(link("Download all"))
 
