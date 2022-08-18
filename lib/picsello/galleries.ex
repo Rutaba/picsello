@@ -7,7 +7,6 @@ defmodule Picsello.Galleries do
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
   alias Ecto.Multi
-
   alias Picsello.{
     Galleries,
     Repo,

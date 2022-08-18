@@ -232,7 +232,6 @@ defmodule Picsello.Orders do
     from(order in get_all_proofing_album_orders_query(organization_id),
       where: order.inserted_at > ago(@filtered_days, "day")
     )
-    |> Repo.all()
   end
 
   def get_all_proofing_album_orders_query(organization_id) do
@@ -258,6 +257,19 @@ defmodule Picsello.Orders do
       join: client in assoc(job, :client),
       join: organization in assoc(client, :organization),
       where: organization.id == ^organization_id
+    )
+  end
+
+  def get_all_proofing_album_orders(organization_id) do
+    get_all_proofing_album_orders_query(organization_id)
+    |> Repo.all()
+  end
+
+  def has_proofing_album_orders?(gallery) do
+    Repo.exists?(
+      from(order in get_all_proofing_album_orders_query(gallery.organization.id),
+        where: order.gallery_id == ^gallery.id
+      )
     )
   end
 
