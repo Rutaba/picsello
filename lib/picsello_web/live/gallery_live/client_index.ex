@@ -53,7 +53,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  @impl true
   def handle_params(
         _params,
         _,
@@ -102,7 +101,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  @impl true
   def handle_event("toggle_favorites", _, socket) do
     socket
     |> case do
@@ -115,7 +113,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> toggle_favorites(@per_page)
   end
 
-  @impl true
   def handle_event("view_gallery", _, socket) do
     socket
     |> push_event("reload_grid", %{})
@@ -123,12 +120,10 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  @impl true
   def handle_event("product_preview_photo_popup", %{"params" => product_id}, socket) do
     socket |> product_preview_photo_popup(product_id)
   end
 
-  @impl true
   def handle_event(
         "product_preview_photo_popup",
         %{"photo-id" => photo_id, "template-id" => template_id},
@@ -137,19 +132,16 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     socket |> product_preview_photo_popup(photo_id, template_id)
   end
 
-  @impl true
   def handle_event("buy-all-digitals", _, socket) do
     socket
     |> open_modal(PicselloWeb.GalleryLive.ChooseBundle, Map.take(socket.assigns, [:gallery]))
     |> noreply()
   end
 
-  @impl true
   def handle_event("click", %{"preview_photo_id" => photo_id}, socket) do
     socket |> client_photo_click(photo_id)
   end
 
-  @impl true
   def handle_event(
         "go_to_album",
         %{"album" => album_id},
@@ -168,6 +160,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
+  @impl true
   def handle_info({:customize_and_buy_product, whcc_product, photo, size}, socket) do
     socket |> customize_and_buy_product(whcc_product, photo, size)
   end
