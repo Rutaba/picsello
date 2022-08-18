@@ -66,7 +66,7 @@ defmodule Picsello.PackTest do
 
         assert "#{order.gallery.name} - #{Picsello.Orders.number(order)}.zip" == filename
 
-        {:ok, %{headers: [{"location", "http://example.com"}], status: 200}}
+        {:ok, %Tesla.Env{headers: [{"location", "http://example.com"}], status: 200}}
       end)
       |> Mox.expect(:continue_resumable, fn "http://example.com", chunk, opts ->
         assert is_binary(chunk)
@@ -96,7 +96,7 @@ defmodule Picsello.PackTest do
 
       Picsello.PhotoStorageMock
       |> Mox.stub(:initiate_resumable, fn _, _ ->
-        {:ok, %{headers: [{"location", ""}], status: 200}}
+        {:ok, %Tesla.Env{headers: [{"location", ""}], status: 200}}
       end)
       |> Mox.stub(:continue_resumable, fn _, chunk, opts ->
         range =
@@ -113,7 +113,7 @@ defmodule Picsello.PackTest do
 
         send(test_pid, message)
 
-        {:ok, %{status: 200}}
+        {:ok, %Tesla.Env{status: 200}}
       end)
 
       assert {:ok, _} = Picsello.Pack.upload(order, chunk_size: 128)

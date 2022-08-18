@@ -136,18 +136,18 @@ defmodule Picsello.Pack do
     chunk_size = Keyword.get(opts, :chunk_size, @chunk_size)
 
     with(
-      {:ok, _, _} = acc <- initialize_resumable(path),
-      {:ok, _size, _resumable_url} <-
+      {:ok, location} <- initialize_resumable(path),
+      bytes when is_integer(bytes) <-
         stream
         |> IodataStream.chunk_every(chunk_size)
         |> Stream.map(&to_sized_binary/1)
-        |> Enum.reduce_while(acc, fn chunk, {:ok, first_byte_index, location} ->
+        |> Enum.reduce_while(0, fn chunk, first_byte_index ->
           case continue_resumable(location, chunk, first_byte_index, chunk_size) do
-            {:ok, last_byte_index} -> {:cont, {:ok, last_byte_index, location}}
+            {:ok, last_byte_index} -> {:cont, last_byte_index}
             error -> {:halt, error}
           end
         end),
-      do: {:ok, path}
+      do: {:ok, PhotoStorage.path_to_url(path)}
     )
   end
 
@@ -181,10 +181,10 @@ defmodule Picsello.Pack do
   end
 
   defp initialize_resumable(name) do
-    with {:ok, %{headers: headers, status: 200}} <-
+    with {:ok, %{status: 200} = response} <-
            PhotoStorage.initiate_resumable(name, "application/zip"),
-         ["" <> location] <- for({"location", location} <- headers, do: location) do
-      {:ok, 0, location}
+         "" <> location <- Tesla.get_header(response, "location") do
+      {:ok, location}
     else
       {:error, _} = error -> error
       error -> {:error, error}

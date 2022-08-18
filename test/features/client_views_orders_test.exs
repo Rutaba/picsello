@@ -78,10 +78,10 @@ defmodule Picsello.ClientViewsOrdersTest do
     |> Mox.stub(:get, fn _ -> :error end)
     |> Mox.stub(:path_to_url, & &1)
     |> Mox.stub(:initiate_resumable, fn _, _ ->
-      {:ok, %{status: 200, headers: [{"location", "https://example.com"}]}}
+      {:ok, %Tesla.Env{status: 200, headers: [{"location", "https://example.com"}]}}
     end)
     |> Mox.stub(:continue_resumable, fn _, _, _ ->
-      {:ok, %{status: 200}}
+      {:ok, %Tesla.Env{status: 200}}
     end)
   end
 
