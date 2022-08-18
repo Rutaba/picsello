@@ -17,6 +17,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   }
 
   alias PicselloWeb.GalleryLive.Photos.Photo
+  alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
   @per_page 12
   @max_age 7
@@ -25,6 +26,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
+    if connected?(socket), do: Galleries.subscribe(gallery)
+
     socket
     |> assign(
       photo_updates: "false",
@@ -185,6 +188,16 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     socket |> client_photo_click(photo_id)
   end
 
+  def handle_info({:pack, :ok, %{packable: %{id: packable_id}, status: status}}, socket) do
+    DownloadLinkComponent.update_status(packable_id, status)
+
+    noreply(socket)
+  end
+
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
+  def handle_info({:upload_success_message, _}, socket), do: noreply(socket)
+  def handle_info({:photo_processed, _, _}, socket), do: noreply(socket)
+
   defp place_product_in_cart(
          %{
            assigns: %{
@@ -238,4 +251,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> Picsello.Repo.preload(:photos)
     |> Enum.filter(&(Enum.count(&1.photos) > 0 && !&1.is_proofing && !&1.is_finals))
   end
+
+  defdelegate download_link(assigns), to: DownloadLinkComponent
 end

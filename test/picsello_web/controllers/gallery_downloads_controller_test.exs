@@ -57,67 +57,6 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     )
   end
 
-  describe "Get /galleries/:gallery_id/zip" do
-    def get_zip(conn, gallery) do
-      get(
-        conn,
-        Routes.gallery_downloads_path(
-          conn,
-          :download_all,
-          gallery.client_link_hash
-        )
-      )
-    end
-
-    test "sends a zip of all photos when bundle is purchased", %{
-      conn: conn,
-      original_url: original_url
-    } do
-      gallery = insert_gallery(organization_name: "org name")
-
-      insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
-
-      insert_list(3, :photo,
-        gallery: gallery,
-        original_url: original_url,
-        name: "original name.jpg"
-      )
-
-      conn = get_zip(conn, gallery)
-
-      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
-               Enum.into(conn.resp_headers, %{})
-
-      assert "org name.zip" == URI.decode(download_filename)
-
-      assert ["original name (1).jpg", "original name (2).jpg", "original name (3).jpg"] =
-               conn.resp_body |> get_zip_files() |> Enum.sort()
-    end
-
-    test "sends a zip of all photos when package does not charge for downloads", %{
-      conn: conn,
-      original_url: original_url
-    } do
-      gallery = insert_gallery(organization_name: "org name", charge_for_downloads: false)
-
-      insert_list(3, :photo,
-        gallery: gallery,
-        original_url: original_url,
-        name: "original name.jpg"
-      )
-
-      conn = get_zip(conn, gallery)
-
-      assert %{"content-disposition" => "attachment; filename*=UTF-8''" <> download_filename} =
-               Enum.into(conn.resp_headers, %{})
-
-      assert "org name.zip" == URI.decode(download_filename)
-
-      assert ["original name (1).jpg", "original name (2).jpg", "original name (3).jpg"] =
-               conn.resp_body |> get_zip_files() |> Enum.sort()
-    end
-  end
-
   describe "Get /galleries/:gallery_id/photos/:photo_id/download" do
     def get_photo(conn, gallery, photo_id) do
       get(

@@ -51,7 +51,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     Picsello.PhotoStorageMock
     |> Mox.stub(:path_to_url, & &1)
-    |> Mox.stub(:get, &{:ok, %{name: &1}})
+    |> Mox.stub(:get, fn _ -> {:error, nil} end)
 
     Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
@@ -126,11 +126,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       {:ok, :confirmed}
     end)
 
-    :ok
-  end
-
-  def expect_get_object(_) do
-    Mox.expect(Picsello.PhotoStorageMock, :get, fn _ -> {:ok, %{name: ""}} end)
     :ok
   end
 
@@ -410,7 +405,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       ]
     end
 
-    setup [:stub_whcc, :expect_stripe_checkout, :expect_get_object]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature("only charges client", %{session: session}) do
       session

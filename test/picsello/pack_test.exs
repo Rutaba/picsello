@@ -1,5 +1,7 @@
 defmodule Picsello.PackTest do
   use Picsello.DataCase, async: true
+  import Money.Sigils
+  alias Picsello.Pack
 
   @original_url image_url()
 
@@ -20,24 +22,74 @@ defmodule Picsello.PackTest do
     )
   end
 
-  describe "upload" do
-    setup do
-      [
-        original_url:
-          PicselloWeb.Endpoint.struct_url()
-          |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
-          |> URI.to_string()
-      ]
+  def insert_gallery(opts \\ []) do
+    {charge_for_downloads, opts} = Keyword.pop(opts, :charge_for_downloads, true)
+    download_each_price = if charge_for_downloads, do: ~M[1]USD, else: ~M[0]USD
+
+    org_attrs =
+      case Keyword.get(opts, :organization_name) do
+        nil -> %{}
+        name -> %{name: name}
+      end
+
+    organization = insert(:organization, org_attrs)
+
+    insert(:gallery,
+      job:
+        insert(:lead,
+          client: insert(:client, organization: organization),
+          package:
+            insert(:package, organization: organization, download_each_price: download_each_price)
+        )
+    )
+  end
+
+  setup do
+    Mox.verify_on_exit!()
+
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, fn _ -> @original_url end)
+    |> Mox.stub(:initiate_resumable, fn _, _ ->
+      {:ok, %Tesla.Env{headers: [{"location", "http://example.com"}], status: 200}}
+    end)
+    |> Mox.stub(:continue_resumable, fn "http://example.com", _chunk, _opts ->
+      {:ok, %Tesla.Env{status: 200}}
+    end)
+
+    :ok
+  end
+
+  describe "upload - gallery" do
+    test "zips all photos when bundle is purchased", %{} do
+      gallery = insert_gallery(organization_name: "org name")
+
+      insert_list(3, :photo,
+        gallery: gallery,
+        original_url: @original_url,
+        name: "original name.jpg"
+      )
+
+      assert {:error, _} = Pack.upload(gallery)
+
+      insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+
+      assert {:ok, _} = Pack.upload(gallery)
     end
 
-    setup %{original_url: original_url} do
-      Mox.stub(Picsello.PhotoStorageMock, :path_to_url, fn ^original_url ->
-        original_url
-      end)
+    test "sends a zip of all photos when package does not charge for downloads", %{} do
+      gallery = insert_gallery(organization_name: "org name", charge_for_downloads: false)
 
-      :ok
+      insert_list(3, :photo,
+        gallery: gallery,
+        original_url: @original_url,
+        name: "original name.jpg"
+      )
+
+      assert {:ok, _} = Pack.upload(gallery)
     end
+  end
 
+  describe "upload - order" do
     setup do
       [order: :order |> insert(placed_at: DateTime.utc_now()) |> Repo.preload(:gallery)]
     end
@@ -55,10 +107,10 @@ defmodule Picsello.PackTest do
     end
 
     test "no digitals in order - is an error", %{order: order} do
-      assert {:error, "no photos in order" <> _} = Picsello.Pack.upload(order)
+      assert {:error, :empty} = Picsello.Pack.upload(order)
     end
 
-    test "streams the upload to GCS", %{order: order, original_url: original_url} do
+    test "streams the upload to GCS", %{order: order} do
       test_pid = self()
 
       Picsello.PhotoStorageMock

@@ -780,6 +780,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     add_message_and_notify(socket, message_changeset, "album")
   end
 
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery =
       Galleries.get_gallery!(gallery_id)
@@ -787,9 +789,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> Galleries.load_watermark_in_gallery()
 
     if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery_id}")
+      Galleries.subscribe(gallery)
       PubSub.subscribe(Picsello.PubSub, "clear_photos_error:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
     end
 
     socket

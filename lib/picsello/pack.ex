@@ -87,6 +87,10 @@ defmodule Picsello.Pack do
     end
   end
 
+  def delete(packable), do: packable |> path |> PhotoStorage.delete()
+
+  def path(%Order{bundle_price: %Money{}} = order), do: path(order.gallery)
+
   def path(%Order{gallery: %{name: gallery_name}} = order) do
     Path.join([
       "galleries",
@@ -108,17 +112,22 @@ defmodule Picsello.Pack do
   @spec upload(Gallery.t() | Order.t(), Keyword.t()) :: {:ok, String.t()} | {:error, any()}
   def upload(packable, opts \\ [])
 
-  def upload(%Gallery{} = gallery, opts),
-    do:
-      if(Orders.can_download_all?(gallery),
-        do:
-          gallery
-          |> Ecto.assoc(:photos)
-          |> Repo.all()
-          |> stream()
-          |> do_upload(path(gallery), opts),
-        else: {:error, "cannot download all photos in gallery #{gallery.id}"}
-      )
+  def upload(%Gallery{} = gallery, opts) do
+    gallery
+    |> Orders.get_all_photos()
+    |> case do
+      {:ok, %{photos: [_ | _] = photos}} ->
+        photos
+        |> stream()
+        |> do_upload(path(gallery), opts)
+
+      {:error, %Ecto.NoResultsError{}} ->
+        {:error, :empty}
+
+      error ->
+        error
+    end
+  end
 
   def upload(%Order{id: order_id}, opts) when is_integer(order_id) do
     with %Order{} = order <-
@@ -128,7 +137,7 @@ defmodule Picsello.Pack do
       photos |> stream() |> do_upload(path(order), opts)
     else
       nil -> {:error, "no client paid order with id #{order_id}"}
-      [] -> {:error, "no photos in order #{order_id}"}
+      [] -> {:error, :empty}
     end
   end
 

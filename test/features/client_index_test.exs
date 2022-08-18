@@ -1,6 +1,14 @@
 defmodule Picsello.ClientIndexTest do
   use Picsello.FeatureCase, async: true
 
+  setup do
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:get, fn _ -> {:ok, %{name: "example.png"}} end)
+    |> Mox.stub(:path_to_url, & &1)
+
+    :ok
+  end
+
   setup :authenticated_gallery_client
 
   feature "Client gallery, cover photo cookie test", %{session: session} do

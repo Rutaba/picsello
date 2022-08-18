@@ -71,9 +71,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> noreply()
   end
 
-  @impl true
-  def handle_info({:pack, :ok, %{path: path}}, %{assigns: %{order: %{id: id}}} = socket) do
-    DownloadLinkComponent.update_path(id, path)
+  def handle_info({:pack, :ok, %{packable: %{id: id}, status: status}}, socket) do
+    DownloadLinkComponent.update_status(id, status)
 
     socket |> noreply()
   end

@@ -78,14 +78,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> noreply()
   end
 
-  @impl true
   def handle_event("close", _, socket) do
     send(self(), :close_upload_popup)
 
     socket |> noreply()
   end
 
-  @impl true
   def handle_event(
         "cancel-upload",
         %{"ref" => ref},
@@ -114,12 +112,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> noreply()
   end
 
-  @impl true
   def handle_info({:inprogress_upload_update, %{entries: entries}}, socket) do
     socket |> apply_limits(entries) |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:delete_photos, %{index: index, delete_from: delete_from}},
         %{assigns: %{photos_error_count: photos_error_count} = assigns} = socket
@@ -137,7 +133,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:upload_pending_photos, %{index: index}},
         %{
@@ -253,6 +248,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       uploading_broadcast(socket, gallery.id)
       Galleries.update_gallery_photo_count(gallery.id)
       Galleries.normalize_gallery_photo_positions(gallery.id)
+      Galleries.refresh_bundle(gallery)
+    end
 
       socket
       |> assign(:inprogress_photos, [])

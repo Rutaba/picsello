@@ -20,12 +20,10 @@ defmodule PicselloWeb.GalleryLive.Shared.DownloadLinkComponent do
 
   @impl true
   def render(assigns) do
-    assigns = assign_new(assigns, :class, fn -> "" end)
-
     ~H"""
     <div class={"flex items-center justify-center font-medium font-client text-base-300 bg-base-100 border border-base-300 min-w-[12rem]
                 hover:text-base-100 hover:bg-base-300
-                w-full #{@class}"}>
+                #{@class}"}>
       <%= case @status do %>
         <% :loading -> %>
           <p class="p-2 text-base-225">Checking...</p>
@@ -41,8 +39,10 @@ defmodule PicselloWeb.GalleryLive.Shared.DownloadLinkComponent do
   end
 
   def download_link(assigns) do
+    assigns = assign_new(assigns, :class, fn -> "" end)
+
     ~H"""
-    <.live_component module={__MODULE__} id={@packable.id} packable={@packable}><%= render_slot(@inner_block) %></.live_component>
+    <.live_component class={@class} module={__MODULE__} id={@packable.id} packable={@packable}><%= render_slot(@inner_block) %></.live_component>
     """
   end
 
@@ -60,12 +60,6 @@ defmodule PicselloWeb.GalleryLive.Shared.DownloadLinkComponent do
     send_update(pid, __MODULE__, status: status, id: packable.id)
   end
 
-  def update_path(id, path) do
-    send_update(__MODULE__,
-      id: id,
-      status: {:ready, Picsello.Galleries.Workers.PhotoStorage.path_to_url(path)}
-    )
-  end
-
+  def update_status(id, status), do: send_update(__MODULE__, id: id, status: status)
   defdelegate enqueue(packable), to: Picsello.Workers.PackDigitals
 end
