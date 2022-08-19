@@ -101,5 +101,9 @@ defmodule Picsello.ClientViewsBookingEventTest do
     |> assert_disabled_submit(text: "Next")
     |> click(css("label", text: "11:00am"))
     |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text(
+      "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
+    )
   end
 end

@@ -58,7 +58,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
     job = socket |> build_changeset(params) |> Ecto.Changeset.apply_changes()
 
     case Ecto.Multi.new()
-         |> Jobs.maybe_upsert_client(job, current_user)
+         |> Jobs.maybe_upsert_client(job.client, current_user)
          |> Ecto.Multi.insert(
            :lead,
            &Job.create_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})

@@ -449,7 +449,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
     result =
       Ecto.Multi.new()
-      |> Jobs.maybe_upsert_client(job, current_user)
+      |> Jobs.maybe_upsert_client(job.client, current_user)
       |> Ecto.Multi.insert(:job, fn changes ->
         assigns.job_changeset
         |> Changeset.delete_change(:client)

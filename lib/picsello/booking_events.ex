@@ -92,4 +92,52 @@ defmodule Picsello.BookingEvents do
       preload: [package_template: package]
     )
   end
+
+  def save_booking(booking_event, %{
+        email: email,
+        name: name,
+        phone: phone,
+        date: date,
+        time: time
+      }) do
+    %{package_template: %{organization: %{user: photographer}} = package_template} =
+      booking_event
+      |> Repo.preload(package_template: [organization: :user])
+
+    Ecto.Multi.new()
+    |> Picsello.Jobs.maybe_upsert_client(
+      %Picsello.Client{email: email, name: name, phone: phone},
+      photographer
+    )
+    |> Ecto.Multi.insert(:job, fn changes ->
+      Picsello.Job.create_changeset(%{
+        type: package_template.job_type,
+        client_id: changes.client.id
+      })
+      |> Ecto.Changeset.put_change(:booking_event_id, booking_event.id)
+    end)
+    |> Ecto.Multi.merge(fn %{job: job} ->
+      package_template
+      |> Picsello.Packages.changeset_from_template()
+      |> Picsello.Packages.insert_package_and_update_job_multi(job)
+    end)
+    |> Ecto.Multi.insert(:shoot, fn changes ->
+      starts_at = DateTime.new!(date, time, photographer.time_zone)
+
+      Picsello.Shoot.create_changeset(
+        booking_event
+        |> Map.take([:name, :duration_minutes, :location, :address])
+        |> Map.put(:starts_at, starts_at)
+        |> Map.put(:job_id, changes.job.id)
+      )
+    end)
+    |> Ecto.Multi.insert(:proposal, fn changes ->
+      Picsello.BookingProposal.create_changeset(%{job_id: changes.job.id})
+    end)
+    |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn changes ->
+      Picsello.PaymentSchedules.build_payment_schedules_for_lead(changes.job)
+      |> Map.get(:payments)
+    end)
+    |> Repo.transaction()
+  end
 end

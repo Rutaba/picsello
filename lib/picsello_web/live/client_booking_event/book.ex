@@ -140,6 +140,26 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
+  @impl true
+  def handle_event("save", %{"booking" => params}, socket) do
+    %{assigns: %{changeset: changeset, booking_event: booking_event}} =
+      socket |> assign_changeset(params, :validate)
+
+    booking = current(changeset)
+
+    case BookingEvents.save_booking(booking_event, booking) do
+      {:ok, %{proposal: proposal}} ->
+        socket
+        |> push_redirect(to: Picsello.BookingProposal.path(proposal.id))
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Couldn't book this event.")
+        |> noreply()
+    end
+  end
+
   defp assign_changeset(socket, params, action \\ nil) do
     changeset = params |> Booking.changeset() |> Map.put(:action, action)
     assign(socket, changeset: changeset)
