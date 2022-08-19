@@ -65,7 +65,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
               Coming soon!
               </button>
             <% else %>
-
+            <%= if @product.preview_enabled do %>
               <button
               class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
               phx-click="edit"
@@ -74,6 +74,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
                 <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
                 <span>Edit product preview</span>
               </button>
+            <% end %>
             <% end %>
           </div>
         </div>
