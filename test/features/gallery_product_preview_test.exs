@@ -147,7 +147,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
-      photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+      insert_photo(%{gallery: gallery, total_photos: 20})
       session
       |> assert_text("Product Previews")
       |> scroll_to_bottom()
