@@ -87,6 +87,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           {:update, socket.assigns |> Map.take([:shoot_number]) |> Map.put(:shoot, shoot)}
         )
 
+        Picsello.Shoots.broadcast_shoot_change(shoot)
+
         socket |> assign(shoot: shoot) |> close_modal() |> noreply()
 
       {:error, changeset} ->

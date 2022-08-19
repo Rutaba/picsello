@@ -106,4 +106,30 @@ defmodule Picsello.ClientViewsBookingEventTest do
       "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
     )
   end
+
+  feature "client tries to book unavailable time", %{
+    session: session,
+    booking_event_url: booking_event_url,
+    photographer: photographer
+  } do
+    session
+    |> visit(booking_event_url)
+    |> click(link("Book now"))
+    |> fill_in(text_field("Your name"), with: "Chad Smith")
+    |> fill_in(text_field("Your email"), with: "chad@example.com")
+    |> fill_in(text_field("Your phone number"), with: "987 123 4567")
+    |> click(css("label", text: "11:00am"))
+    |> wait_for_enabled_submit_button(text: "Next")
+
+    job = insert(:lead, %{user: photographer})
+
+    insert(:shoot,
+      job: job,
+      starts_at: DateTime.new!(~D[2050-12-10], ~T[11:00:00], photographer.time_zone)
+    )
+
+    session
+    |> click(button("Next"))
+    |> assert_flash(:error, text: "This time is not available anymore")
+  end
 end

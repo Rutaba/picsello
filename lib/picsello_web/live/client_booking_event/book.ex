@@ -43,6 +43,8 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     |> assign_organization_by_slug(slug)
     |> assign_booking_event(event_id)
     |> then(fn socket ->
+      Picsello.Shoots.subscribe_shoot_change(socket.assigns.organization.id)
+
       socket
       |> assign_changeset(%{
         "date" => socket.assigns.booking_event |> available_dates() |> Enum.at(0)
@@ -142,15 +144,30 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   @impl true
   def handle_event("save", %{"booking" => params}, socket) do
-    %{assigns: %{changeset: changeset, booking_event: booking_event}} =
-      socket |> assign_changeset(params, :validate)
+    %{
+      assigns: %{
+        changeset: changeset,
+        booking_event: booking_event,
+        available_times: available_times
+      }
+    } =
+      socket
+      |> assign_changeset(params, :validate)
+      |> assign_available_times()
 
-    booking = current(changeset)
+    with booking <- current(changeset),
+         {:available, true} <- {:available, time_available?(booking, available_times)},
+         {:ok, %{proposal: proposal, shoot: shoot}} <-
+           BookingEvents.save_booking(booking_event, booking) do
+      Picsello.Shoots.broadcast_shoot_change(shoot)
 
-    case BookingEvents.save_booking(booking_event, booking) do
-      {:ok, %{proposal: proposal}} ->
+      socket
+      |> push_redirect(to: Picsello.BookingProposal.path(proposal.id))
+      |> noreply()
+    else
+      {:available, false} ->
         socket
-        |> push_redirect(to: Picsello.BookingProposal.path(proposal.id))
+        |> put_flash(:error, "This time is not available anymore")
         |> noreply()
 
       _ ->
@@ -158,6 +175,12 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         |> put_flash(:error, "Couldn't book this event.")
         |> noreply()
     end
+  end
+
+  def handle_info({:shoot_updated, _shoot}, socket) do
+    socket
+    |> assign_available_times()
+    |> noreply()
   end
 
   defp assign_changeset(socket, params, action \\ nil) do
@@ -173,6 +196,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     |> Enum.filter(fn date ->
       Date.compare(date, Date.utc_today()) != :lt
     end)
+  end
+
+  defp time_available?(booking, available_times) do
+    Enum.any?(available_times, &(Time.compare(&1, booking.time) == :eq))
   end
 
   defp assign_available_times(
