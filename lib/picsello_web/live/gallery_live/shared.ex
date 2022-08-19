@@ -283,24 +283,22 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def maybe_set_cover_photo(gallery, photo) do
-    case gallery.cover_photo do
-      nil ->
-        gallery
-        |> Galleries.save_gallery_cover_photo(%{
-          cover_photo: %{
-            id: photo.original_url,
-            aspect_ratio: photo.aspect_ratio,
-            width: photo.width,
-            height: photo.height
-          }
-        })
-        |> then(fn %{cover_photo: photo} -> {:ok, photo} end)
-
-      _ ->
-        {:ok, :already_set}
+    with nil <- gallery.cover_photo,
+         {:ok, %{cover_photo: photo}} <-
+           Galleries.save_gallery_cover_photo(
+             gallery,
+             %{
+               cover_photo:
+                 photo
+                 |> Map.take([:aspect_ratio, :width, :height])
+                 |> Map.put(:id, photo.original_url)
+             }
+           ) do
+      {:ok, photo}
+    else
+      %{} -> {:ok, :already_set}
+      _ -> :error
     end
-  rescue
-    _ -> :error
   end
 
   def maybe_set_product_previews(gallery, photo) do
