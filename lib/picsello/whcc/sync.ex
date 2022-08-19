@@ -93,30 +93,37 @@ defmodule Picsello.WHCC.Sync do
   defp sync_table(rows, schema, to_row, replace_fields \\ []) do
     updated_at = DateTime.truncate(DateTime.utc_now(), :second)
 
-    rows =
-      for({%{id: id, name: name} = row, position} <- Enum.with_index(rows)) do
-        row
-        |> to_row.()
-        |> Enum.into(%{
-          whcc_id: id,
-          whcc_name: name,
-          deleted_at: nil,
-          position: position,
-          updated_at: updated_at
-        })
-      end
-
     schema.active()
     |> Repo.update_all(set: [deleted_at: DateTime.utc_now()])
 
-    {_number, records} =
-      Repo.insert_all(schema, rows,
-        conflict_target: [:whcc_id],
-        on_conflict: {:replace, replace_fields ++ [:whcc_name, :deleted_at, :updated_at]},
-        returning: true
-      )
+    for(
+      chunk <-
+        rows |> Stream.with_index() |> Stream.chunk_every(100),
+      reduce: []
+    ) do
+      acc ->
+        rows =
+          for {%{id: id, name: name} = row, position} <- chunk do
+            row
+            |> to_row.()
+            |> Enum.into(%{
+              whcc_id: id,
+              whcc_name: name,
+              deleted_at: nil,
+              position: position,
+              updated_at: updated_at
+            })
+          end
 
-    records
+        {_number, records} =
+          Repo.insert_all(schema, rows,
+            conflict_target: [:whcc_id],
+            on_conflict: {:replace, replace_fields ++ [:whcc_name, :deleted_at, :updated_at]},
+            returning: true
+          )
+
+        acc ++ Enum.map(records, &Map.take(&1, [:id, :whcc_id]))
+    end
   end
 
   defp async_stream(enum, f) do
