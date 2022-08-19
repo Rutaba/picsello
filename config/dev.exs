@@ -2,8 +2,8 @@ use Mix.Config
 
 # Configure your database
 config :picsello, Picsello.Repo,
-  username: "morganziegler",
-  password: "tgre",
+  username: "postgres",
+  password: "postgres",
   database: "picsello_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,

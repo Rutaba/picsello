@@ -33,7 +33,6 @@
           <p class="hidden mb-6 text-2xl font-bold text-base-300 lg:pt-2 lg:block">Select an option below</p>
 
           <%= for %{category: category, id: gallery_product_id} <- @products do %>
-            
             <.option
               testid={gallery_product_id}
               title={category.name}
@@ -48,7 +47,6 @@
               </:button>
             </.option>
           <% end %>
-           
 
           <%= case @digital_status do %>
             <% :in_cart -> %>
