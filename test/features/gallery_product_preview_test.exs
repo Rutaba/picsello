@@ -95,7 +95,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> find(css("*[id^='/images']", count: length(products)))
 
     assert current_path(session) == "/galleries/#{gallery_id}/product-previews"
-    insert_photo(%{gallery: gallery, total_photos: 20})
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
     session
     |> visit("/galleries/#{gallery_id}/photos")
