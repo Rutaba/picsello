@@ -120,8 +120,7 @@ defmodule Picsello.GalleryProductPreviewTest do
 
     test "Toggle disable product and view in client preview", %{
       session: session,
-      gallery: %{id: gallery_id} = gallery,
-      products: [%{id: product_id, category: category} | _]
+      gallery: %{id: gallery_id} = gallery
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
@@ -133,7 +132,6 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> click(css("label", text: "Product enabled to sell", count: 4, at: 2))
       |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
       |> click(css("label", text: "Show product preview in gallery", count: 2, at: 0))
-      |> take_screenshot()
       |> find(checkbox("Show product preview in gallery", visible: false, count: 2, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
       |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
       |> visit("/gallery/#{gallery.client_link_hash}")
@@ -141,8 +139,6 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> assert_text("Test Client Wedding Gallery")
       |> assert_text("cool shirts")
       |> scroll_into_view(css("Test Client Wedding Gallery"))
-      #then check for 3 options to buy
-      |> take_screenshot()
     end
 
     test "Toggle disable product preview and product available for purchase", %{
