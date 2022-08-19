@@ -138,6 +138,7 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> click(css("a", text: "View Gallery"))
       |> take_screenshot()
       |> assert_text("Test Client Wedding Gallery")
+      |> scroll_into_view(css("20 photos"))
       |> assert_text("cool shirts")
     end
 
