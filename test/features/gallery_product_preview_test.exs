@@ -136,9 +136,9 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(css("a", text: "View Gallery"))
+      |> take_screenshot()
       |> assert_text("Test Client Wedding Gallery")
       |> assert_text("cool shirts")
-      |> scroll_into_view(css("Test Client Wedding Gallery"))
     end
 
     test "Toggle disable product preview and product available for purchase", %{
@@ -161,6 +161,8 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(css("a", text: "View Gallery"))
       |> assert_text("Test Client Wedding Gallery")
+      |> scroll_into_view(css("20 photos"))
+      |> take_screenshot()
       |> click_photo(1)
       |> assert_text("Select an option")
       |> assert_text("cool shirts")
