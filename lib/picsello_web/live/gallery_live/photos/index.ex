@@ -182,6 +182,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
+        "add_finals_album_popup",
+        %{},
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      selected_photos: selected_photos,
+      is_finals: true
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "edit_album_thumbnail_popup",
         _,
         %{
