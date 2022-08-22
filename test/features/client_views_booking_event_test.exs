@@ -128,6 +128,10 @@ defmodule Picsello.ClientViewsBookingEventTest do
     |> assert_text(
       "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
     )
+    |> assert_text("Event 1")
+    |> assert_text("3 images include | 45 min session | In Studio")
+    |> assert_text("Sunday, December 11 @ 11:00 am")
+    |> assert_text("320 1st St N")
     |> click(button("To-Do Review your proposal"))
     |> assert_has(definition("Total", text: "$15.00"))
     |> click(button("Accept Quote"))

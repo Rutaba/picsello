@@ -33,6 +33,17 @@
         <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#">Message <%= @organization.name %></a>
       </div>
       <div class="md:border md:border-gray-100 sm:px-10 lg:px-20 py-12">
+        <%= if @job.booking_event do %>
+          <div class="p-3 bg-base-200 mb-8">
+            <p class="font-bold"><%= @job.booking_event.name %></p>
+            <p><%= Picsello.Package.price(@package) %></p>
+            <.subtitle_display booking_event={@job.booking_event} package={@package} class="mt-0" />
+            <div class="mt-1 flex flex-col">
+              <.date_display date={formatted_date(@job, @photographer)} />
+              <.address_display booking_event={@job.booking_event} class="mt-1" />
+            </div>
+          </div>
+        <% end %>
         <h3 class="text-3xl md:mr-20">Here’s how to officially book your photo session:</h3>
 
         <%= unless Job.imported?(@job) do %>

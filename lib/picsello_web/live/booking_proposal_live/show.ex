@@ -11,6 +11,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       profile_footer: 1
     ]
 
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [subtitle_display: 1, date_display: 1, address_display: 1]
+
   @max_age 60 * 60 * 24 * 365 * 10
 
   @pages ~w(details contract questionnaire invoice)
@@ -180,6 +183,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
                :client,
                :job_status,
                :payment_schedules,
+               :booking_event,
                :shoots,
                package: [organization: [:user, :brand_links]]
              ]
@@ -266,5 +270,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> put_flash(:error, "Payment is not enabled yet. Please contact your photographer.")
     end
+  end
+
+  defp formatted_date(%Job{shoots: [shoot | _]}, photographer) do
+    strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
   end
 end
