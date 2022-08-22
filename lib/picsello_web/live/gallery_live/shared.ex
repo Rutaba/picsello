@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{Repo, Cart, Galleries, GalleryProducts, Messages}
-  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent, Photos.Upload}
+  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -612,15 +612,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <div class="absolute top-0 left-0 z-20 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200">
         <p class="font-sans text-2xl font-bold"><%= @gallery_name %></p>
-      </div>
-    """
-  end
-
-  def sticky_upload(assigns) do
-    ~H"""
-      <div class="hidden">
-        <%= live_render(@socket, Upload, id: "upload-button", session: %{"gallery_id" => @gallery_id, "album_id" => nil, "view" => "add_button"}, sticky: true) %>
-        <%= live_render(@socket, Upload, id: "drag-drop", session: %{"gallery_id" => @gallery_id, "album_id" => nil, "view" => "drag_drop"}, sticky: true) %>
       </div>
     """
   end

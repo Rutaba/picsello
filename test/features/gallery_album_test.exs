@@ -23,7 +23,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> visit("/galleries/#{gallery_id}/albums/#{album_id}")
     |> assert_has(testid("edit-album-settings"))
     |> assert_has(testid("edit-album-thumbnail"))
-    |> assert_has(css("#addPhoto"))
+    |> assert_has(css("#addPhoto-form-#{gallery_id}"))
   end
 
   test "Album, album settings, update name and password", %{
@@ -156,7 +156,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(css("#actions li button", text: "Delete"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> assert_has(css("p", text: "#{photos_count} photos deleted successfully"))
-    |> assert_has(css("#dragDrop-upload-form"))
+    |> assert_has(css("#dragDrop-upload-form-#{gallery_id}"))
   end
 
   test "Album, move photos album to unsorted photos", %{
@@ -175,7 +175,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(
       css("p", text: "#{photos_count} photos successfully removed from #{album.name}")
     )
-    |> assert_has(css("#drag-drop"))
+    |> assert_has(css("#drag-drop-#{gallery_id}"))
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: photos_count))
   end

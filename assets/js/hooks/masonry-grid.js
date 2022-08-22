@@ -225,8 +225,23 @@ export default {
   init_listeners() {
     this.handleEvent('remove_item', ({ id: id }) => this.remove_item(id));
     this.handleEvent('reload_grid', ({}) => this.reload_masonry());
+    this.handleEvent('remove_loader', ({}) => this.remove_loader());
     this.handleEvent('remove_items', ({ ids: ids }) => this.remove_items(ids));
     this.handleEvent('select_mode', ({ mode: mode }) => this.select_mode(mode));
+  },
+
+  remove_loader() { 
+    const items_class = '#' + this.el.dataset.id + ' .photo-loader';
+    const elements = document.querySelectorAll(items_class)
+    const grid = this.get_grid();
+    let items = [];
+    elements.forEach((item) => {
+      items.push(grid.getItem(item));
+    });
+    if (items.length > 0) {
+      grid.remove(items, { removeElements: true });
+      this.reload_masonry();
+    }
   },
 
   remove_item(id) {
@@ -306,13 +321,13 @@ export default {
   reconnected() {
     this.pending = this.page();
   },
-
+  
   /**
    * Updated callback
    */
   updated() {
     this.pending = this.page();
-
+    
     if (this.pending === '0') {
       this.load_more();
     } else {

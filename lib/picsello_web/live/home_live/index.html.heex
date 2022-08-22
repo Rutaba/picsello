@@ -90,7 +90,7 @@
 
       <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
         <p class="my-2">
-          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= link("calculate your pricing", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300") %>.
+          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %>.
         </p>
       </.card>
     </ul>
@@ -116,7 +116,7 @@
     </ul>
   </div>
 
-  <div id="float-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
+  <div id="float-menu" class="cursor-pointer sm:hidden" phx-update="ignore" phx-hook="ToggleContent">
     <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
       <.icon name="close-x" class="w-6 h-6 rotate-45 stroke-current stroke-2" />
     </div>

@@ -83,7 +83,8 @@ defmodule Picsello.MixProject do
         {:ecto_commons, "~> 0.3.3"},
         {:cors_plug, "~> 2.0"},
         {:floki, "~> 0.32"},
-        {:icalendar, "~> 1.1.0"}
+        {:icalendar, "~> 1.1.0"},
+        {:con_cache, "~> 0.13"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
