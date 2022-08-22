@@ -133,12 +133,13 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
       |> click(css("label", text: "Show product preview in gallery", count: 2, at: 0))
       |> find(checkbox("Show product preview in gallery", visible: false, count: 2, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
+      |> take_screenshot()
       |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(css("a", text: "View Gallery"))
       |> take_screenshot()
-      |> assert_has(css("*[data-testid='products'] li", count: 1))
       |> assert_text("Test Client Wedding Gallery")
+      |> assert_has(css("*[data-testid='products'] li", count: 1))
       |> scroll_into_view(css("20 photos"))
     end
 
