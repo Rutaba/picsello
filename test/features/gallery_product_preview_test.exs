@@ -137,9 +137,9 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(css("a", text: "View Gallery"))
       |> take_screenshot()
+      |> assert_has(css("*[data-testid='products'] li", count: 1))
       |> assert_text("Test Client Wedding Gallery")
       |> scroll_into_view(css("20 photos"))
-      |> assert_has(css("*[data-testid='products'] li", count: 1))
     end
 
     test "Toggle disable product preview and product available for purchase", %{
@@ -162,12 +162,13 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(css("a", text: "View Gallery"))
       |> assert_text("Test Client Wedding Gallery")
+      |> assert_has(css("*[data-testid='products'] li", count: 0))
       |> scroll_into_view(css("20 photos"))
       |> take_screenshot()
       |> click_photo(1)
       |> find(css("*[data-testid^='product_option']", count: 2), fn options ->
         assert [
-                 {"cool shirts", "$80.00"},
+                 {"cool shirts", "$80.00"}, {"Digital Download", "$25.00"}
                ] =
                  options
                  |> Enum.map(fn option ->
