@@ -227,7 +227,9 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
         PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
       end)
-      |> maybe_create_contract(package)
+      |> Ecto.Multi.merge(fn _ ->
+        Contracts.maybe_add_default_contract_to_package_multi(package)
+      end)
       |> Ecto.Multi.insert(
         :message,
         Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
@@ -297,15 +299,5 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
-  end
-
-  defp maybe_create_contract(multi, package) do
-    contract = package |> Repo.preload(:contract) |> Map.get(:contract)
-
-    if contract do
-      multi
-    else
-      Contracts.add_default_contract_to_package(multi, package)
-    end
   end
 end

@@ -121,6 +121,9 @@ defmodule Picsello.BookingEvents do
       |> Picsello.Packages.changeset_from_template()
       |> Picsello.Packages.insert_package_and_update_job_multi(job)
     end)
+    |> Ecto.Multi.merge(fn %{package: package} ->
+      Picsello.Contracts.maybe_add_default_contract_to_package_multi(package)
+    end)
     |> Ecto.Multi.insert(:shoot, fn changes ->
       starts_at = DateTime.new!(date, time, photographer.time_zone)
 
@@ -134,9 +137,13 @@ defmodule Picsello.BookingEvents do
     |> Ecto.Multi.insert(:proposal, fn changes ->
       Picsello.BookingProposal.create_changeset(%{job_id: changes.job.id})
     end)
-    |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn changes ->
-      Picsello.PaymentSchedules.build_payment_schedules_for_lead(changes.job)
-      |> Map.get(:payments)
+    |> Ecto.Multi.insert(:payment_schedule, fn changes ->
+      Picsello.PaymentSchedule.create_changeset(%{
+        job_id: changes.job.id,
+        price: Picsello.Package.price(changes.package),
+        due_at: DateTime.utc_now(),
+        description: "100% retainer"
+      })
     end)
     |> Repo.transaction()
   end

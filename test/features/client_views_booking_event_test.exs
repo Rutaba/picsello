@@ -1,5 +1,6 @@
 defmodule Picsello.ClientViewsBookingEventTest do
   use Picsello.FeatureCase, async: true
+  import Money.Sigils
   require Ecto.Query
 
   setup do
@@ -12,12 +13,17 @@ defmodule Picsello.ClientViewsBookingEventTest do
       )
       |> onboard!
 
+    user.organization
+    |> Picsello.Organization.assign_stripe_account_changeset("stripe_id")
+    |> Picsello.Repo.update!()
+
     template =
       insert(:package_template,
         user: user,
         job_type: "mini",
         name: "My custom package",
-        download_count: 3
+        download_count: 3,
+        base_price: ~M[1500]USD
       )
 
     event =
@@ -70,6 +76,23 @@ defmodule Picsello.ClientViewsBookingEventTest do
   end
 
   feature "client books event", %{session: session, booking_event_url: booking_event_url} do
+    Picsello.MockPayments
+    |> Mox.stub(:retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+    |> Mox.stub(:create_customer, fn _, _ ->
+      {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
+    end)
+    |> Mox.stub(:create_session, fn _, _ ->
+      {:ok,
+       %{
+         url:
+           PicselloWeb.Endpoint.struct_url()
+           |> Map.put(:fragment, "stripe-checkout")
+           |> URI.to_string()
+       }}
+    end)
+
     session
     |> visit(booking_event_url)
     |> click(link("Book now"))
@@ -105,6 +128,17 @@ defmodule Picsello.ClientViewsBookingEventTest do
     |> assert_text(
       "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
     )
+    |> click(button("To-Do Review your proposal"))
+    |> assert_has(definition("Total", text: "$15.00"))
+    |> click(button("Accept Quote"))
+    |> click(button("To-Do Read and agree to your contract"))
+    |> fill_in(text_field("Type your full legal name"), with: "Chad Smith")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Accept Contract"))
+    |> click(button("To-Do Pay your invoice"))
+    |> assert_has(definition("100% retainer due today", text: "$15.00"))
+    |> click(button("Pay Invoice"))
+    |> assert_url_contains("stripe-checkout")
   end
 
   feature "client tries to book unavailable time", %{

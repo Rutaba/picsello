@@ -14,6 +14,12 @@ defmodule Picsello.PaymentSchedule do
     timestamps(type: :utc_datetime)
   end
 
+  def create_changeset(attrs \\ %{}) do
+    %__MODULE__{}
+    |> cast(attrs, ~w[price due_at description job_id]a)
+    |> validate_required(~w[price due_at description job_id]a)
+  end
+
   def paid_changeset(payment_schedule) do
     change(payment_schedule, %{paid_at: DateTime.truncate(DateTime.utc_now(), :second)})
   end
