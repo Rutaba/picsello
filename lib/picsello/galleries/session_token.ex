@@ -7,17 +7,18 @@ defmodule Picsello.Galleries.SessionToken do
   @rand_size 64
   @session_validity_in_days 7
 
-  schema "gallery_session_tokens" do
+  schema "session_tokens" do
     field :token, :string
-    belongs_to :gallery, Picsello.Galleries.Gallery
+    field :resource_id, :integer
+    field :resource_type, Ecto.Enum, values: [:gallery, :album]
 
     timestamps(updated_at: false)
   end
 
   def changeset(attrs \\ %{}) do
     %SessionToken{}
-    |> cast(attrs, [:gallery_id])
-    |> validate_required([:gallery_id])
+    |> cast(attrs, [:resource_id, :resource_type])
+    |> validate_required([:resource_id, :resource_type])
     |> put_token()
     |> foreign_key_constraint(:gallery_id)
   end

@@ -8,12 +8,12 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
             class="galleryItem"
             phx-click={toggle_border(@id, @is_gallery_category_page)}
             phx-click-away={JS.remove_class("item-border", to: "#item-#{@id}")}>
-                <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo)}/>                 
+                <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
             </div>
             <% else %>
             <.photo_wrapper id={@id} is_client_gallery={@is_client_gallery}>
                 <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
-                    <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo)}/>
+                    <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
                 <% else %>
                     <div class="galleryLoader">
                         <.photo target={@component} preview={@url} photo_id={@photo.id} url={@url}/>
@@ -21,8 +21,8 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                 <% end %>
             </.photo_wrapper>
             <% end %>
-            <%= if !@is_gallery_category_page do %>
-                <%= if @is_likable do %>
+            <%= if !@is_proofing && !@is_gallery_category_page do %>
+                <%= if @proofing_photo_icons && @is_likable do %>
                     <button
                         class="likeBtn"
                         phx-click={js_like_click(@id, @myself)}
@@ -39,19 +39,19 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                         </div>
                     </button>
                 <% else %>
-                    <button class="likeBtn">
-                        <.icon name={@photo.client_liked && "heart-filled" || "heart"} class="text-gray-200 w-7 h-7"/>
+                    <button class={classes("likeBtn", %{"hidden" => !@photo.client_liked})}>
+                        <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
                     </button>
                 <% end %>
 
-                <%= if @is_removable do %>
+                <%= if @proofing_photo_icons && @is_removable do %>
                     <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
                 <% end %>
-                <%= if @is_viewable do %>
+                <%= if @proofing_photo_icons && @is_viewable do %>
                     <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
                 <% end %>
-                <%= if @is_meatball do %>
-                    <div id={"meatball-photo-#{@id}"} data-offset-y="-100" phx-update="ignore" data-offset-x="20" phx-hook="Select">
+                <%= if @proofing_photo_icons && @is_meatball do %>
+                    <div id={"meatball-photo-#{@id}"} data-offset-y="-100" data-offset-x="20" phx-hook="Select">
                         <button class="absolute right-3 top-2 z-10">
                             <.icon name="meatballs" class="text-gray-200 w-7 h-7 meatballs open-icon" />
                             <.icon name="close-x" class="hidden absolute right-2 top-1 w-4 h-4 text-white stroke-current stroke-2 close-icon opacity-100"/>
@@ -59,6 +59,10 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                         <.ul id={@id} entries={meatball(@album, @id)} socket={@socket} client_link_hash={@client_link_hash}} />
                     </div>
                 <% end %>
+                <% else %>
+                <button class={"absolute opacity-100 z-10 right-3 bottom-3 #{!@photo.is_selected && 'hidden'}"}>
+                    <.icon name="star" class="text-gray-200 w-7 h-7"/>
+                </button>
             <% end %>
         </div>
     </div>

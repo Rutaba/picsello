@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [assign_checkout_routes: 1]
 
   alias Picsello.Profiles
   alias Phoenix.LiveView.JS
@@ -10,36 +11,32 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
   @defaults %{
     cart_count: 0,
     cart_route: nil,
-    cart: true
+    cart: true,
+    is_proofing: false
   }
+  @menu_items ["Home", "My orders", "Help"]
 
   def update(assigns, socket) do
     socket
     |> assign(Map.merge(@defaults, assigns))
     |> then(fn %{assigns: %{gallery: gallery}} = socket ->
-      assign(socket,
-        organization: gallery.job.client.organization,
-        cart_route: Routes.gallery_client_show_cart_path(socket, :cart, gallery.client_link_hash)
-      )
+      socket
+      |> assign(:organization, gallery.job.client.organization)
     end)
+    |> assign_checkout_routes()
     |> ok()
   end
 
-  def get_menu_items(socket, gallery) do
-    [
-      %{
-        title: "Home",
-        path: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
-      },
-      %{
-        title: "My orders",
-        path: Routes.gallery_client_orders_path(socket, :show, gallery.client_link_hash)
-      },
-      %{
-        title: "Help",
-        path: extract_organization(gallery) |> Profiles.public_url()
-      }
-    ]
+  def get_menu_items(assigns) do
+    assigns
+    |> get_items_paths()
+    |> Enum.with_index()
+    |> Enum.map(fn {path, i} -> %{title: Enum.at(@menu_items, i), path: path} end)
+  end
+
+  def get_items_paths(%{checkout_routes: checkout_routes, gallery: gallery}) do
+    help_path = extract_organization(gallery) |> Profiles.public_url()
+    [checkout_routes.home_page, checkout_routes.orders, help_path]
   end
 
   def cart_wrapper(assigns) do

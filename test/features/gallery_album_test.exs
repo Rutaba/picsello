@@ -9,9 +9,18 @@ defmodule Picsello.GalleryAlbumTest do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     album = insert(:album, %{gallery_id: gallery.id})
+    proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
 
-    [album: album, photo_ids: photo_ids, photos_count: length(photo_ids)]
+    insert_photo(%{gallery: gallery, album: proofing_album, total_photos: 1})
+    insert(:email_preset, type: :gallery, state: :album_send_link)
+
+    [
+      album: album,
+      photo_ids: photo_ids,
+      photos_count: length(photo_ids),
+      proofing_album: proofing_album
+    ]
   end
 
   test "Album, render album", %{
@@ -57,7 +66,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> click(button("Delete"))
     |> within_modal(&click(&1, button("Yes, delete")))
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(css(placeholder_background_image(), count: 1))
+    |> assert_has(css(placeholder_background_image(), count: 2))
   end
 
   test "Albums, Action dropdown disabled when no photo selected", %{
@@ -93,14 +102,14 @@ defmodule Picsello.GalleryAlbumTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(css(placeholder_background_image(), count: 2))
+    |> assert_has(css(placeholder_background_image(), count: 3))
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}/")
     |> click(testid("edit-album-thumbnail"))
     |> click(css("#photo-#{List.first(photo_ids)}"))
     |> click(button("Save"))
     |> assert_has(css("p", text: "Album thumbnail successfully updated"))
     |> visit("/galleries/#{gallery_id}/albums")
-    |> assert_has(css(placeholder_background_image(), count: 1))
+    |> assert_has(css(placeholder_background_image(), count: 2))
   end
 
   def placeholder_background_image,
@@ -195,5 +204,46 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(css(".item", count: 1))
     |> click(css("#toggle_favorites"))
     |> assert_has(css(".item", count: photos_count))
+  end
+
+  test "Albums, create proofing album", %{
+    session: session,
+    gallery: %{id: gallery_id}
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums")
+    |> click(testid("add-album-popup"))
+    |> click(css("span", text: "Off"))
+    |> click(css("label", text: "Proofing album"))
+    |> fill_in(css("#album_name"), with: "Test Proofing album")
+    |> click(css("#toggle-visibility"))
+    |> click(button("Create new album"))
+    |> assert_has(css("p", text: "Album successfully created"))
+  end
+
+  test "Albums, render proofing album", %{
+    session: session,
+    proofing_album: proofing_album,
+    gallery: %{id: gallery_id}
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
+    |> assert_has(testid("edit-album-settings"))
+    |> assert_has(testid("send-proofs-popup"))
+    |> assert_has(css("#addPhoto-form-#{gallery_id}"))
+  end
+
+  test "Albums, send proofs to client", %{
+    session: session,
+    proofing_album: proofing_album,
+    gallery: %{id: gallery_id}
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
+    |> assert_has(css("button", count: 1, text: "Send proofs to client"))
+    |> click(css("button", text: "Send proofs to client"))
+    |> assert_has(css("button", text: "Send Email"))
+    |> click(css("button", text: "Send Email"))
+    |> assert_has(css("p", text: "Album shared!"))
   end
 end

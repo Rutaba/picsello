@@ -286,6 +286,32 @@ defmodule Picsello.FeatureCase do
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
+    def authenticated_proofing_album_client(%{session: session, proofing_album: proofing_album}) do
+      proofing_album_login(session, proofing_album, proofing_album.password)
+
+      [session: session, proofing_album: proofing_album]
+    end
+
+    def authenticated_proofing_album_client(%{session: session}) do
+      organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
+      insert(:user, organization: organization)
+      package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+
+      gallery =
+        insert(:gallery,
+          job:
+            insert(:lead,
+              client: insert(:client, organization: organization),
+              package: package
+            )
+        )
+
+      authenticated_proofing_album_client(%{
+        session: session,
+        proofing_album: insert(:proofing_album, %{gallery_id: gallery.id})
+      })
+    end
+
     def authenticated_gallery(%{session: session, user: user}) do
       organization = insert(:organization, user: user)
       client = insert(:client, organization: organization)
@@ -317,6 +343,16 @@ defmodule Picsello.FeatureCase do
         |> insert()
         |> Map.get(:id)
       end)
+    end
+
+    defp proofing_album_login(session, proofing_album, password) do
+      path = "/album/#{proofing_album.client_link_hash}"
+
+      session
+      |> visit(path)
+      |> fill_in(css("#login_password"), with: password)
+      |> click(button("Submit"))
+      |> then(&wait_for_path_to_change_from(&1, path <> "/login"))
     end
 
     defp gallery_login(session, gallery, password \\ valid_gallery_password()) do

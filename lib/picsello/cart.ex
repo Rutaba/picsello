@@ -3,7 +3,7 @@ defmodule Picsello.Cart do
   Context for cart and order related functions
   """
 
-  import Ecto.Query, only: [from: 2, preload: 2]
+  import Ecto.Query
 
   alias Picsello.{
     Cart.DeliveryInfo,
@@ -27,36 +27,44 @@ defmodule Picsello.Cart do
   """
   @spec place_product(
           {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
-          %Gallery{id: integer()} | integer()
+          %Gallery{id: integer()} | integer(),
+          integer() | nil
         ) ::
           Order.t()
-  def place_product(product, %Gallery{id: gallery_id} = gallery) do
+  def place_product(product, gallery, album_id \\ nil)
+
+  def place_product(product, %Gallery{id: gallery_id} = gallery, album_id) do
     opts = [credits: credit_remaining(gallery)]
 
-    case get_unconfirmed_order(gallery_id, preload: [:products, :digitals]) do
-      {:ok, order} -> place_product_in_order(order, product, opts)
-      {:error, _} -> create_order_with_product(product, %{gallery_id: gallery_id}, opts)
+    order_opts = [preload: [:products, :digitals]]
+
+    case get_unconfirmed_order(gallery_id, Keyword.put(order_opts, :album_id, album_id)) do
+      {:ok, order} ->
+        place_product_in_order(order, product, opts)
+
+      {:error, _} ->
+        create_order_with_product(product, %{gallery_id: gallery_id, album_id: album_id}, opts)
     end
   end
 
-  def place_product(product, gallery_id) when is_integer(gallery_id),
-    do: place_product(product, %Gallery{id: gallery_id})
+  def place_product(product, gallery_id, album_id) when is_integer(gallery_id),
+    do: place_product(product, %Gallery{id: gallery_id}, album_id)
 
-  def bundle_status(gallery) do
+  def bundle_status(gallery, album_id \\ nil) do
     cond do
       Orders.bundle_purchased?(gallery) -> :purchased
-      contains_bundle?(gallery) -> :in_cart
+      contains_bundle?(gallery, album_id) -> :in_cart
       true -> :available
     end
   end
 
-  def digital_status(gallery, photo) do
+  def digital_status(gallery, photo, album_id \\ nil) do
     cond do
       Orders.bundle_purchased?(gallery) -> :purchased
       digital_purchased?(gallery, photo) -> :purchased
       Galleries.do_not_charge_for_download?(gallery) -> :purchased
-      contains_bundle?(gallery) -> :in_cart
-      contains_digital?(gallery, photo) -> :in_cart
+      contains_bundle?(gallery, album_id) -> :in_cart
+      contains_digital?(gallery, photo, album_id) -> :in_cart
       true -> :available
     end
   end
@@ -83,27 +91,28 @@ defmodule Picsello.Cart do
     |> Repo.one()
   end
 
-  defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}) when is_integer(photo_id),
-    do:
-      Enum.any?(digitals, fn
-        %{photo: %{id: id}} ->
-          id == photo_id
+  defp contains_digital?(%Order{digitals: digitals}, %{id: photo_id}, _album_id)
+       when is_integer(photo_id),
+       do:
+         Enum.any?(digitals, fn
+           %{photo: %{id: id}} ->
+             id == photo_id
 
-        %{photo_id: photo_fk} ->
-          photo_fk == photo_id
-      end)
+           %{photo_id: photo_fk} ->
+             photo_fk == photo_id
+         end)
 
-  defp contains_digital?(%{id: gallery_id}, photo) do
+  defp contains_digital?(%{id: gallery_id}, photo, album_id) do
     gallery_id
-    |> get_unconfirmed_order(preload: [:digitals])
+    |> get_unconfirmed_order(album_id: album_id, preload: [:digitals])
     |> case do
-      {:ok, order} -> contains_digital?(order, photo)
+      {:ok, order} -> contains_digital?(order, photo, album_id)
       _ -> false
     end
   end
 
-  defp contains_bundle?(%{id: gallery_id}) do
-    case(get_unconfirmed_order(gallery_id)) do
+  defp contains_bundle?(%{id: gallery_id}, album_id) do
+    case(get_unconfirmed_order(gallery_id, album_id: album_id)) do
       {:ok, order} -> order.bundle_price != nil
       _ -> false
     end
@@ -146,7 +155,10 @@ defmodule Picsello.Cart do
   @doc """
   Gets the current order for gallery.
   """
-  @spec get_unconfirmed_order(integer(), preload: [:digitals | :products | :package]) ::
+  @spec get_unconfirmed_order(integer(),
+          album_id: integer(),
+          preload: [:digitals | :products | :package]
+        ) ::
           {:ok, Order.t()} | {:error, :no_unconfirmed_order}
   def get_unconfirmed_order(gallery_id, opts \\ []) do
     preloads = Keyword.get(opts, :preload, [])
@@ -162,9 +174,13 @@ defmodule Picsello.Cart do
             assoc
           ),
         reduce:
-          from(order in Order,
-            as: :order,
-            where: order.gallery_id == ^gallery_id and is_nil(order.placed_at)
+          Order
+          |> where([order], order.gallery_id == ^gallery_id and is_nil(order.placed_at))
+          |> then(
+            &case Keyword.get(opts, :album_id) do
+              nil -> where(&1, [order], is_nil(order.album_id))
+              album_id -> where(&1, [order], order.album_id == ^album_id)
+            end
           ) do
       query ->
         fun.(query)
@@ -281,6 +297,12 @@ defmodule Picsello.Cart do
               %{"size" => %{} = size} -> size
               _ -> %{}
             end)
+
+  def item_image_url(%Digital{photo: photo}, opts),
+    do: Picsello.Photos.preview_url(photo, opts)
+
+  def item_image_url(item, _opts),
+    do: item_image_url(item)
 
   def item_image_url(%CartProduct{preview_url: url}), do: url
 

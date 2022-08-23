@@ -3,7 +3,7 @@ defmodule PicselloWeb.LiveAuth do
   import Phoenix.LiveView
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{Accounts, Accounts.User, Subscriptions}
-  alias Picsello.Galleries
+  alias Picsello.{Galleries, Albums}
 
   def on_mount(:default, params, session, socket) do
     socket |> allow_sandbox() |> mount(params, session)
@@ -19,10 +19,36 @@ defmodule PicselloWeb.LiveAuth do
     |> maybe_redirect_to_client_login(params)
   end
 
+  def on_mount(:gallery_photographer, params, session, socket) do
+    socket
+    |> allow_sandbox()
+    |> authenticate_gallery(params)
+    |> authenticate_gallery_for_photographer(session)
+    |> maybe_redirect_to_login()
+  end
+
   def on_mount(:gallery_client_login, params, _session, socket) do
     socket
     |> allow_sandbox()
     |> authenticate_gallery(params)
+    |> cont()
+  end
+
+  def on_mount(:proofing_album_client, params, session, socket) do
+    socket
+    |> allow_sandbox()
+    |> authenticate_album(params)
+    |> then(&authenticate_gallery(&1, %{"gallery_id" => &1.assigns.album.gallery_id}))
+    |> authenticate_gallery_expiry()
+    |> authenticate_album_client(session)
+    |> authenticate_gallery_for_photographer(session)
+    |> maybe_redirect_to_client_login(params)
+  end
+
+  def on_mount(:proofing_album_client_login, params, _session, socket) do
+    socket
+    |> allow_sandbox()
+    |> authenticate_album(params)
     |> cont()
   end
 
@@ -74,6 +100,10 @@ defmodule PicselloWeb.LiveAuth do
 
   defp authenticate_gallery(socket, _), do: socket
 
+  defp authenticate_album(socket, %{"hash" => hash}) do
+    assign_new(socket, :album, fn -> Albums.get_album_by_hash!(hash) end)
+  end
+
   defp authenticate_gallery_expiry(%{assigns: %{gallery: gallery}} = socket) do
     subscription_expired =
       gallery |> Galleries.gallery_photographer() |> Subscriptions.subscription_expired?()
@@ -100,7 +130,8 @@ defmodule PicselloWeb.LiveAuth do
        ) do
     if Galleries.session_exists_with_token?(
          gallery.id,
-         Map.get(session, "gallery_session_token")
+         Map.get(session, "gallery_session_token"),
+         :gallery
        ) do
       Sentry.Context.set_user_context(client)
       assign(socket, authenticated: true)
@@ -110,6 +141,23 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp authenticate_gallery_client(socket, _), do: socket
+
+  defp authenticate_album_client(
+         %{assigns: %{album: %{set_password: true} = album}} = socket,
+         session
+       ) do
+    if Galleries.session_exists_with_token?(
+         album.id,
+         Map.get(session, "album_session_token"),
+         :album
+       ) do
+      assign(socket, authenticated: true)
+    else
+      assign(socket, authenticated: false)
+    end
+  end
+
+  defp authenticate_album_client(socket, _session), do: assign(socket, authenticated: true)
 
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),
@@ -121,11 +169,11 @@ defmodule PicselloWeb.LiveAuth do
     socket
   end
 
-  defp maybe_redirect_to_client_login(socket, %{"hash" => hash}) do
+  defp maybe_redirect_to_client_login(socket, %{"hash" => _hash}) do
     with %{assigns: %{authenticated: authenticated}} <- socket,
          false <- authenticated do
       socket
-      |> push_redirect(to: Routes.gallery_client_show_login_path(socket, :login, hash))
+      |> push_redirect(to: build_login_link(socket))
       |> halt()
     else
       true ->
@@ -193,6 +241,20 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp authenticate_gallery_for_photographer(socket, _), do: socket
+
+  defp build_login_link(socket) do
+    socket
+    |> get_connect_info(:uri)
+    |> Map.get(:path)
+    |> String.split("/", trim: true)
+    |> case do
+      ["gallery", hash] ->
+        Routes.gallery_client_show_login_path(socket, :gallery_login, hash)
+
+      ["album", hash] ->
+        Routes.gallery_client_show_login_path(socket, :album_login, hash)
+    end
+  end
 
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}

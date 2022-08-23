@@ -137,10 +137,9 @@ defmodule Picsello.Notifiers.UserNotifier do
         %{gallery: %{job: %{client: %{organization: %{user: user}}}}} = order,
         helpers
       ) do
-    sendgrid_template(
-      :photographer_order_confirmation_template,
-      order_confirmation_params(order, helpers)
-    )
+    order.album_id
+    |> maybe_proofing_album_selection()
+    |> sendgrid_template(order_confirmation_params(order, helpers))
     |> to({User.first_name(user), user.email})
     |> from("noreply@picsello.com")
     |> deliver_later()
@@ -180,7 +179,8 @@ defmodule Picsello.Notifiers.UserNotifier do
   def order_confirmation_params(
         %{
           gallery: %{job: job} = gallery,
-          intent: intent
+          intent: intent,
+          album_id: nil
         } = order,
         helpers
       ) do
@@ -205,6 +205,18 @@ defmodule Picsello.Notifiers.UserNotifier do
       params ->
         Map.merge(params, fun.(order))
     end
+  end
+
+  def order_confirmation_params(
+        %{gallery: %{job: job} = gallery, album: album} = order,
+        helpers
+      ) do
+    %{
+      job_url: helpers.job_url(job.id),
+      gallery_name: gallery.name,
+      job_name: Job.name(job),
+      order_url: helpers.proofing_album_selections_url(album, order)
+    }
   end
 
   defp print_credit(%{products: products, gallery: gallery}) do
@@ -241,4 +253,9 @@ defmodule Picsello.Notifiers.UserNotifier do
     |> from("noreply@picsello.com")
     |> deliver_later()
   end
+
+  defp maybe_proofing_album_selection(nil), do: :photographer_order_confirmation_template
+
+  defp maybe_proofing_album_selection(_),
+    do: :photographer_proofing_selection_confirmation_template
 end
