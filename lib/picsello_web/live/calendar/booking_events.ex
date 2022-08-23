@@ -106,7 +106,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp bookings_cell(assigns) do
     ~H"""
     <div class="flex flex-col justify-center">
-      <p>0 bookings so far</p>
+      <p><%= ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) %> so far</p>
     </div>
     """
   end
@@ -157,9 +157,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       BookingEvents.get_booking_events(current_user.organization_id)
       |> Enum.map(fn booking_event ->
         booking_event
-        |> Map.take([:id, :name, :thumbnail_url, :duration_minutes])
         |> Map.put(:date, booking_event.dates |> hd |> Map.get(:date))
-        |> Map.put(:package_name, booking_event.package_template.name)
+        |> Map.drop([:dates])
         |> Map.put(
           :url,
           Routes.client_booking_event_url(

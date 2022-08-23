@@ -79,6 +79,7 @@ defmodule Picsello.BookingEvent do
     field :thumbnail_url, :string
     belongs_to :package_template, Picsello.Package
     embeds_many :dates, EventDate
+    has_many :jobs, Picsello.Job
 
     timestamps()
   end

@@ -37,8 +37,17 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("My custom package")
     |> assert_text("45 minutes")
     |> assert_text("12/10/2050")
+    |> assert_text("0 bookings so far")
     |> assert_has(css("button[data-clipboard-text*='/event/#{event.id}']", text: "Copy link"))
     |> assert_has(css("a[href*='/event/#{event.id}']", text: "Preview"))
+
+    insert(:lead, user: user, booking_event_id: event.id) |> promote_to_job()
+    insert(:lead, user: user, booking_event_id: event.id)
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> assert_text("1 booking so far")
   end
 
   feature "creates new booking event", %{session: session, user: user} do

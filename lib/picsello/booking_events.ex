@@ -37,14 +37,32 @@ defmodule Picsello.BookingEvents do
   end
 
   def get_booking_events(organization_id) do
-    organization_id
-    |> booking_events_query()
+    from(event in BookingEvent,
+      left_join: job in assoc(event, :jobs),
+      left_join: status in assoc(job, :job_status),
+      join: package in assoc(event, :package_template),
+      where: package.organization_id == ^organization_id,
+      select: %{
+        booking_count: fragment("sum(case when ?.is_lead = false then 1 else 0 end)", status),
+        package_name: package.name,
+        id: event.id,
+        name: event.name,
+        thumbnail_url: event.thumbnail_url,
+        duration_minutes: event.duration_minutes,
+        dates: event.dates
+      },
+      group_by: [event.id, package.name],
+      order_by: [desc: event.id]
+    )
     |> Repo.all()
   end
 
   def get_booking_event!(organization_id, event_id) do
-    organization_id
-    |> booking_events_query()
+    from(event in BookingEvent,
+      join: package in assoc(event, :package_template),
+      where: package.organization_id == ^organization_id,
+      preload: [package_template: package]
+    )
     |> Repo.get!(event_id)
   end
 
@@ -107,14 +125,6 @@ defmodule Picsello.BookingEvents do
              DateTime.compare(slot_end, end_time) in [:lt, :eq])
       end)
     end)
-  end
-
-  defp booking_events_query(organization_id) do
-    from(event in BookingEvent,
-      join: package in assoc(event, :package_template),
-      where: package.organization_id == ^organization_id,
-      preload: [package_template: package]
-    )
   end
 
   def save_booking(booking_event, %Booking{
