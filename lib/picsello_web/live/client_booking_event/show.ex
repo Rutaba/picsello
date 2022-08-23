@@ -14,11 +14,12 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
     only: [blurred_thumbnail: 1, subtitle_display: 1, date_display: 1, address_display: 1]
 
   @impl true
-  def mount(%{"organization_slug" => slug, "id" => event_id}, session, socket) do
+  def mount(%{"organization_slug" => slug, "id" => event_id} = params, session, socket) do
     socket
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
     |> assign_booking_event(event_id)
+    |> maybe_show_expired_message(params)
     |> ok()
   end
 
@@ -75,4 +76,14 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
     |> Enum.uniq()
     |> Enum.join(" - ")
   end
+
+  defp maybe_show_expired_message(socket, %{"booking_expired" => "true"}),
+    do:
+      socket
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        title: "Your reservation has expired. You'll have to start over.",
+        icon: "warning-orange"
+      })
+
+  defp maybe_show_expired_message(socket, _), do: socket
 end

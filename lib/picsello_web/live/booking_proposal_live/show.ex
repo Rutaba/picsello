@@ -25,6 +25,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_proposal(token)
     |> assign_stripe_status()
     |> maybe_confetti(params)
+    |> maybe_set_booking_countdown()
     |> ok()
   end
 
@@ -137,6 +138,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @impl true
   def handle_info({:confirm_event, "send_another"}, socket), do: open_compose(socket)
+
+  @impl true
+  def handle_info(:booking_countdown, socket) do
+    socket
+    |> maybe_archive_booking()
+    |> noreply()
+  end
 
   def open_page_modal(%{assigns: %{proposal: proposal}} = socket, page, read_only \\ false)
       when page in @pages do
@@ -274,5 +282,55 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp formatted_date(%Job{shoots: [shoot | _]}, photographer) do
     strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
+  end
+
+  defp maybe_set_booking_countdown(%{assigns: %{job: job}} = socket) do
+    if show_booking_countdown?(job) && connected?(socket),
+      do: Process.send_after(self(), :booking_countdown, 1000)
+
+    socket
+    |> assign_booking_countdown()
+  end
+
+  defp maybe_set_booking_countdown(socket), do: socket
+
+  defp assign_booking_countdown(%{assigns: %{job: job}} = socket) do
+    reservation_seconds = Application.get_env(:picsello, :booking_reservation_seconds)
+
+    countdown =
+      job.inserted_at |> DateTime.add(reservation_seconds) |> DateTime.diff(DateTime.utc_now())
+
+    socket
+    |> assign(booking_countdown: countdown)
+  end
+
+  def show_booking_countdown?(job), do: job.booking_event && !PaymentSchedules.all_paid?(job)
+
+  defp maybe_archive_booking(
+         %{assigns: %{booking_countdown: booking_countdown, job: job, organization: organization}} =
+           socket
+       ) do
+    if booking_countdown <= 0 do
+      case Picsello.Jobs.archive_lead(job) do
+        {:ok, _} ->
+          socket
+          |> push_redirect(
+            to:
+              Routes.client_booking_event_path(
+                socket,
+                :show,
+                organization.slug,
+                job.booking_event.id,
+                booking_expired: true
+              )
+          )
+
+        _ ->
+          socket |> put_flash(:error, "Unexpected error")
+      end
+    else
+      socket
+      |> maybe_set_booking_countdown()
+    end
   end
 end

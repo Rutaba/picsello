@@ -261,7 +261,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info({:confirm_event, "archive"}, %{assigns: %{job: job}} = socket) do
-    case job |> Job.archive_changeset() |> Repo.update() do
+    case Picsello.Jobs.archive_lead(job) do
       {:ok, job} ->
         socket
         |> assign_job(job.id)

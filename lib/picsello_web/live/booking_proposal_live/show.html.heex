@@ -1,4 +1,10 @@
 <%= if @proposal do %>
+  <%= if show_booking_countdown?(@job) do %>
+    <div class="bg-black text-white flex py-4 px-20 items-center justify-center text-lg font-semibold">
+      <.icon name="clock" class="w-7 h-7 text-white" />
+      <span class="mt-1 ml-2 text-center">Your booking reservation expires in <%= @booking_countdown |> Time.from_seconds_after_midnight() |> Calendar.strftime("%-M:%S") %> minutes!</span>
+    </div>
+  <% end %>
   <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
     <div class="flex">
       <.photographer_logo organization={@organization} />
