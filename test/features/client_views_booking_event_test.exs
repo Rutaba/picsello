@@ -53,6 +53,7 @@ defmodule Picsello.ClientViewsBookingEventTest do
 
     [
       photographer: user,
+      template: template,
       booking_event_url:
         Routes.client_booking_event_path(
           PicselloWeb.Endpoint,
@@ -136,6 +137,7 @@ defmodule Picsello.ClientViewsBookingEventTest do
     |> assert_has(definition("Total", text: "$15.00"))
     |> click(button("Accept Quote"))
     |> click(button("To-Do Read and agree to your contract"))
+    |> assert_text("Retainer and Payment")
     |> fill_in(text_field("Type your full legal name"), with: "Chad Smith")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
@@ -143,6 +145,54 @@ defmodule Picsello.ClientViewsBookingEventTest do
     |> assert_has(definition("100% retainer due today", text: "$15.00"))
     |> click(button("Pay Invoice"))
     |> assert_url_contains("stripe-checkout")
+  end
+
+  feature "client books event and package has contract", %{
+    session: session,
+    booking_event_url: booking_event_url,
+    photographer: photographer,
+    template: template
+  } do
+    contract_template = insert(:contract_template, user: photographer, job_type: "mini")
+
+    insert(:contract,
+      package_id: template.id,
+      contract_template_id: contract_template.id,
+      content: "my custom contract desc"
+    )
+
+    Picsello.MockPayments
+    |> Mox.stub(:retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+    |> Mox.stub(:create_customer, fn _, _ ->
+      {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
+    end)
+    |> Mox.stub(:create_session, fn _, _ ->
+      {:ok,
+       %{
+         url:
+           PicselloWeb.Endpoint.struct_url()
+           |> Map.put(:fragment, "stripe-checkout")
+           |> URI.to_string()
+       }}
+    end)
+
+    session
+    |> visit(booking_event_url)
+    |> click(link("Book now"))
+    |> fill_in(text_field("Your name"), with: "Chad Smith")
+    |> fill_in(text_field("Your email"), with: "chad@example.com")
+    |> fill_in(text_field("Your phone number"), with: "987 123 4567")
+    |> click(css("#date_picker-wrapper label", text: "11"))
+    |> click(css("label", text: "11:00am"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text(
+      "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
+    )
+    |> click(button("To-Do Read and agree to your contract"))
+    |> assert_text("my custom contract desc")
   end
 
   feature "client tries to book unavailable time", %{

@@ -12,30 +12,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   import PicselloWeb.ClientBookingEventLive.DatePicker, only: [date_picker: 1]
 
-  defmodule Booking do
-    @moduledoc false
-    use Ecto.Schema
-    import Ecto.Changeset
-
-    @primary_key false
-    embedded_schema do
-      field :name, :string
-      field :email, :string
-      field :phone, :string
-      field :date, :date
-      field :time, :time
-    end
-
-    def changeset(attrs \\ %{}) do
-      %__MODULE__{}
-      |> cast(attrs, [:name, :email, :phone, :date, :time])
-      |> validate_required([:name, :email, :phone, :date, :time])
-      |> validate_change(:phone, &valid_phone/2)
-    end
-
-    defdelegate valid_phone(field, value), to: Picsello.Client
-  end
-
   @impl true
   def mount(%{"organization_slug" => slug, "id" => event_id}, session, socket) do
     socket
@@ -184,7 +160,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
   end
 
   defp assign_changeset(socket, params, action \\ nil) do
-    changeset = params |> Booking.changeset() |> Map.put(:action, action)
+    changeset = params |> BookingEvents.Booking.changeset() |> Map.put(:action, action)
     assign(socket, changeset: changeset)
   end
 

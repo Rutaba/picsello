@@ -3,6 +3,30 @@ defmodule Picsello.BookingEvents do
   alias Picsello.{Repo, BookingEvent}
   import Ecto.Query
 
+  defmodule Booking do
+    @moduledoc false
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @primary_key false
+    embedded_schema do
+      field :name, :string
+      field :email, :string
+      field :phone, :string
+      field :date, :date
+      field :time, :time
+    end
+
+    def changeset(attrs \\ %{}) do
+      %__MODULE__{}
+      |> cast(attrs, [:name, :email, :phone, :date, :time])
+      |> validate_required([:name, :email, :phone, :date, :time])
+      |> validate_change(:phone, &valid_phone/2)
+    end
+
+    defdelegate valid_phone(field, value), to: Picsello.Client
+  end
+
   def upsert_booking_event(changeset) do
     changeset
     |> Repo.insert(
@@ -25,18 +49,18 @@ defmodule Picsello.BookingEvents do
   end
 
   def available_times(%BookingEvent{} = booking_event, date) do
+    duration = (booking_event.duration_minutes + (booking_event.buffer_minutes || 0)) * 60
+
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
-        time_blocks
-        |> Enum.map(fn %{start_time: start_time, end_time: end_time} ->
-          duration = (booking_event.duration_minutes + (booking_event.buffer_minutes || 0)) * 60
-          available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
-
-          for slot <- 0..(available_slots - 1), available_slots > 0 do
-            start_time |> Time.add(duration * slot)
-          end
-        end)
-        |> List.flatten()
+        for(
+          %{start_time: start_time, end_time: end_time} <- time_blocks,
+          available_slots = (Time.diff(end_time, start_time) / duration) |> trunc(),
+          slot <- 0..(available_slots - 1),
+          available_slots > 0
+        ) do
+          start_time |> Time.add(duration * slot)
+        end
         |> filter_overlapping_shoots(booking_event, date)
 
       _ ->
@@ -93,7 +117,7 @@ defmodule Picsello.BookingEvents do
     )
   end
 
-  def save_booking(booking_event, %{
+  def save_booking(booking_event, %Booking{
         email: email,
         name: name,
         phone: phone,

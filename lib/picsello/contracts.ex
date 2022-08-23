@@ -14,17 +14,16 @@ defmodule Picsello.Contracts do
   end
 
   def maybe_add_default_contract_to_package_multi(package) do
-    contract = package |> Repo.preload(:contract, force: true) |> Map.get(:contract)
+    contract = package |> Ecto.assoc(:contract) |> Repo.one()
 
     if contract do
       Ecto.Multi.new()
-      |> Ecto.Multi.put(:contract, contract)
     else
       default_contract = default_contract(package)
 
       Ecto.Multi.new()
       |> Ecto.Multi.insert(
-        :contract,
+        :default_contract,
         default_contract
         |> Map.take([:content, :name])
         |> Map.put(:package_id, package.id)
