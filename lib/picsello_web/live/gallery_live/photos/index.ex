@@ -768,7 +768,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> close_modal()
     |> put_flash(:success, message)
     |> assign_photos(@per_page)
-    |> noreply
+    |> noreply()
   end
 
   def handle_info({:message_composed, message_changeset}, socket) do

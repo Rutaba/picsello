@@ -1,6 +1,7 @@
 defmodule Picsello.GalleryBundleDownloadTest do
   use Picsello.FeatureCase, async: true
   import Mox
+  use Oban.Testing, repo: Picsello.Repo
 
   setup :verify_on_exit!
 
@@ -75,6 +76,8 @@ defmodule Picsello.GalleryBundleDownloadTest do
       path: "assets/static/images/phoenix.png"
     )
     |> assert_has(css(".muuri-item"))
+
+    assert_enqueued([worker: Picsello.Workers.PackGallery], 500)
 
     assert [
              %{worker: "Picsello.Workers.PackDigitals", state: "scheduled"},
