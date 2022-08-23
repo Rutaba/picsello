@@ -127,6 +127,7 @@ defmodule Picsello.GalleryProductPreviewTest do
       insert_photo(%{gallery: gallery, total_photos: 20})
       session
       |> assert_text("Product Previews")
+      |> take_screenshot()
       |> scroll_to_bottom()
       |> click(css("label", text: "Product enabled to sell", count: 4, at: 0))
       |> click(css("label", text: "Product enabled to sell", count: 4, at: 2))
