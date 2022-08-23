@@ -209,7 +209,7 @@
                 data-has-more-photos={ "#{@has_more_photos}" }
                 data-inprogress-photos={ "#{length(@inprogress_photos)}" }
                 data-photo-width="300">
-                <%= for photo <- @photos do%>
+                <%= for photo <- @sorted_photos do%>
                   <%= live_component Photo,
                     is_mobile: @is_mobile,
                     id: photo.id,

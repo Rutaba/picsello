@@ -79,14 +79,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(selection_filter: orders != [])
     |> is_mobile(params)
     |> assigns(gallery_id, album)
-    |> may_be_has_selected_photo(params)
+    |> maybe_has_selected_photo(params)
   end
 
   def handle_params(%{"id" => gallery_id} = params, _, socket) do
     socket
     |> is_mobile(params)
     |> assigns(gallery_id)
-    |> may_be_has_selected_photo(params)
+    |> maybe_has_selected_photo(params)
   end
 
   @impl true
@@ -956,7 +956,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  defp may_be_has_selected_photo({:noreply, socket}, params) do
+  defp maybe_has_selected_photo({:noreply, socket}, params) do
     params
     |> case do
       %{"go_to_original" => "true", "photo_id" => photo_id} ->
