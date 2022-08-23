@@ -167,6 +167,7 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> scroll_into_view(css("20 photos"))
       |> take_screenshot()
       |> click_photo(1)
+      |> take_screenshot()
       |> find(css("*[data-testid^='product_option']", count: 2), fn options ->
         assert [
                  {"cool shirts", "$80.00"}, {"Digital Download", "$25.00"}
