@@ -128,4 +128,15 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> click(link("Go to Proof list"))
     |> assert_has(testid("selection-complete", text: "Client selection complete"))
   end
+
+  feature "gallery card changes when proofing selections are in", %{
+    session: session,
+    gallery: %{job: job},
+  } do
+    session
+    |> visit("/jobs/#{job.id}")
+    |> find(testid("card-Gallery"))
+    |> assert_has(css("p", text: "Your client's prooflist is in!"))
+    |> assert_has(button("Go to gallery"))
+  end
 end

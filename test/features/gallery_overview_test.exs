@@ -65,6 +65,7 @@ defmodule Picsello.GalleryOverviewTest do
 
     session
     |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
     |> scroll_to_bottom()
     |> click(css("#togglePasswordVisibility"))
     |> click(css("#regeneratePasswordButton"))

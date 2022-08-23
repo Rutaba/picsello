@@ -302,7 +302,7 @@ defmodule Picsello.ClientOrdersTest do
     )
 
     session
-    |> click(testid("My orders"))
+    |> click(link("My orders"))
     |> find(definition("Order total:"), &assert(Element.text(&1) == "$10.00"))
   end
 

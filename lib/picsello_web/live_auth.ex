@@ -19,6 +19,14 @@ defmodule PicselloWeb.LiveAuth do
     |> maybe_redirect_to_client_login(params)
   end
 
+  def on_mount(:gallery_photographer, params, session, socket) do
+    socket
+    |> allow_sandbox()
+    |> authenticate_gallery(params)
+    |> authenticate_gallery_for_photographer(session)
+    |> maybe_redirect_to_login()
+  end
+
   def on_mount(:gallery_client_login, params, _session, socket) do
     socket
     |> allow_sandbox()
@@ -131,6 +139,8 @@ defmodule PicselloWeb.LiveAuth do
       assign(socket, authenticated: false)
     end
   end
+
+  defp authenticate_gallery_client(socket, _), do: socket
 
   defp authenticate_album_client(
          %{assigns: %{album: %{set_password: true} = album}} = socket,

@@ -230,7 +230,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
     |> assert_has(testid("edit-album-settings"))
     |> assert_has(testid("send-proofs-popup"))
-    |> assert_has(css("#addPhoto"))
+    |> assert_has(css("#addPhoto-form-#{gallery_id}"))
   end
 
   test "Albums, send proofs to client", %{

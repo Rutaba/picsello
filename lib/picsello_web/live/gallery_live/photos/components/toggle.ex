@@ -12,7 +12,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Toggle do
   @impl true
   def render(assigns) do
     ~H"""
-    <label id="toggle_selections" class={"flex items-center lg:order-2 order-1 lg:mx-0 mx-10 lg:mb-0 mb-4 lg:ml-auto cursor-pointer #{@class}"}>
+    <label id={@id} class={"flex items-center lg:order-2 order-1 lg:mx-0 mx-10 lg:mb-0 mb-4 lg:ml-auto cursor-pointer #{@class}"}>
       <div class="font-sans text-sm"><%= @title %></div>
       <div class="relative ml-3">
         <input type="checkbox" class="sr-only" phx-click={@action}>

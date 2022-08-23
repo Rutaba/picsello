@@ -132,9 +132,9 @@
                 </div>
               <% end %>
               <%= if @album && @album.is_proofing do %>
-                <.toggle id="toggle-selection" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
+                <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
               <% else %>  
-                <.toggle id="toggle-favorite" filter={@favorites_filter} action="toggle_favorites" title="Show favorites only" class={classes(%{"pointer-events-none opacity-50" => @album})}/>
+                <.toggle id="toggle_favorites" filter={@favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
               <% end %>
             </div>
           </div>
