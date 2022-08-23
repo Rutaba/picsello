@@ -33,6 +33,7 @@ defmodule Picsello.Photos do
       _ -> url
     end
   end
+
   def preview_url(%{is_finals: true, preview_url: "" <> path}) do
     path_to_url(path)
   end
