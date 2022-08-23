@@ -29,7 +29,8 @@ defmodule Picsello.Application do
       # Gallery workers
       Picsello.Galleries.Workers.PositionNormalizer,
       {Picsello.Galleries.PhotoProcessing.ProcessedConsumer, [producer_module: producer_module]},
-      Picsello.Galleries.PhotoProcessing.Waiter
+      Picsello.Galleries.PhotoProcessing.Waiter,
+      {ConCache, [name: :cache, ttl_check_interval: false]}
     ]
 
     events = [[:oban, :job, :start], [:oban, :job, :stop], [:oban, :job, :exception]]

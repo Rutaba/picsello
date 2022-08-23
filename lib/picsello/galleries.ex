@@ -6,10 +6,20 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
-  alias Picsello.{Repo, Photos, Category, GalleryProducts, Galleries, Albums}
+  alias Picsello.{
+    Repo,
+    Photos,
+    Category,
+    GalleryProducts,
+    Galleries,
+    Albums,
+    Orders,
+    Cart.Digital
+  }
+
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct}
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}
   import Repo.CustomMacros
 
   @doc """
@@ -134,6 +144,12 @@ defmodule Picsello.Galleries do
   def get_gallery_photos(id, opts \\ []) do
     from(photo in Photos.watermarked_query())
     |> where(^conditions(id, opts))
+    |> then(
+      &case Keyword.get(opts, :selected_filter) do
+        true -> selected_photo_query(&1)
+        _ -> &1
+      end
+    )
     |> order_by(asc: :position)
     |> then(
       &case Keyword.get(opts, :offset) do
@@ -323,7 +339,7 @@ defmodule Picsello.Galleries do
           album_id :: integer,
           favorites_filter :: boolean
         ) :: integer
-  def get_album_photo_count(gallery_id, album_id, client_liked \\ false) do
+  def get_album_photo_count(gallery_id, album_id, client_liked \\ false, selected \\ false) do
     conditions = dynamic([p], p.gallery_id == ^gallery_id and p.album_id == ^album_id)
 
     Photos.active_photos()
@@ -333,6 +349,7 @@ defmodule Picsello.Galleries do
         else: conditions
       )
     )
+    |> then(&if selected, do: selected_photo_query(&1), else: &1)
     |> select([p], count(p.id))
     |> Repo.one()
   end
@@ -425,7 +442,7 @@ defmodule Picsello.Galleries do
   end
 
   defp gallery_session_tokens_query(gallery) do
-    from(st in SessionToken, where: st.gallery_id == ^gallery.id)
+    from(st in SessionToken, where: st.resource_id == ^gallery.id and st.resource_type == :gallery)
   end
 
   @doc """
@@ -625,17 +642,16 @@ defmodule Picsello.Galleries do
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
 
   def gallery_current_status(%Gallery{} = gallery) do
-    gallery = Repo.preload(gallery, [:photos])
+    gallery = Repo.preload(gallery, [:photos, :organization])
 
-    gallery
-    |> Map.get(:photos, [])
-    |> Enum.any?(fn photo ->
-      is_nil(photo.aspect_ratio) ||
-        is_nil(photo.preview_url)
+    gallery.organization.id
+    |> Orders.get_all_proofing_album_orders()
+    |> Enum.any?(fn %{gallery: %{id: id}} ->
+      id == gallery.id
     end)
     |> then(fn
-      false -> :ready
-      true -> :upload_in_progress
+      true -> :selections_available
+      false -> uploading_status(gallery)
     end)
   end
 
@@ -679,17 +695,28 @@ defmodule Picsello.Galleries do
   """
   def clear_watermarks(gallery_id) do
     get_gallery!(gallery_id)
-    |> Repo.preload(:photos)
-    |> Map.get(:photos)
-    |> Enum.each(fn photo ->
-      [photo.watermarked_preview_url, photo.watermarked_url]
-      |> Enum.each(fn path ->
-        %{path: path}
-        |> CleanStore.new()
-        |> Oban.insert()
-      end)
 
-      update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+    %{job: %{client: %{organization: %{name: name}}}} =
+      gallery =
+      gallery_id
+      |> get_gallery!()
+      |> populate_organization()
+
+    gallery
+    |> Repo.preload(photos: [:album])
+    |> Enum.each(fn
+      %{album: %{is_proofing: true}} = photo ->
+        ProcessingManager.start(photo, Watermark.build(name))
+
+      photo ->
+        [photo.watermarked_preview_url, photo.watermarked_url]
+        |> Enum.each(fn path ->
+          %{path: path}
+          |> CleanStore.new()
+          |> Oban.insert()
+        end)
+
+        update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
     end)
   end
 
@@ -758,7 +785,8 @@ defmodule Picsello.Galleries do
   """
   def build_gallery_session_token(%Gallery{id: id, password: gallery_password}, password) do
     with true <- gallery_password == password,
-         {:ok, %{token: token}} <- %{gallery_id: id} |> SessionToken.changeset() |> Repo.insert() do
+         {:ok, %{token: token}} <-
+           insert_session_token(%{resource_id: id, resource_type: :gallery}) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -769,18 +797,34 @@ defmodule Picsello.Galleries do
     hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
   end
 
-  @doc """
-  Check if the client session token is suitable for the gallery.
-  """
-  def session_exists_with_token?(_gallery_id, nil), do: false
+  def build_album_session_token(%Album{id: id, password: album_password}, password) do
+    with true <- album_password == password,
+         {:ok, %{token: token}} <- insert_session_token(%{resource_id: id, resource_type: :album}) do
+      {:ok, token}
+    else
+      _ -> {:error, "cannot log in with that password"}
+    end
+  end
 
-  def session_exists_with_token?(gallery_id, token) do
+  def insert_session_token(attrs) do
+    attrs
+    |> SessionToken.changeset()
+    |> Repo.insert()
+  end
+
+  @doc """
+  Check if the client session token is suitable for the resource.
+  """
+  def session_exists_with_token?(_resource_id, nil, _resource_type), do: false
+
+  def session_exists_with_token?(resource_id, token, resource_type) do
     session_validity_in_days = SessionToken.session_validity_in_days()
 
     from(token in SessionToken,
       where:
-        token.gallery_id == ^gallery_id and token.token == ^token and
-          token.inserted_at > ago(^session_validity_in_days, "day")
+        token.resource_id == ^resource_id and token.token == ^token and
+          token.inserted_at > ago(^session_validity_in_days, "day") and
+          token.resource_type == ^resource_type
     )
     |> Repo.exists?()
   end
@@ -841,6 +885,23 @@ defmodule Picsello.Galleries do
     |> Picsello.WHCC.min_price_details()
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
+  end
+
+  defp selected_photo_query(query) do
+    join(query, :inner, [photo], digital in Digital, on: photo.id == digital.photo_id)
+  end
+
+  defp uploading_status(gallery) do
+    gallery
+    |> Map.get(:photos, [])
+    |> Enum.any?(fn photo ->
+      is_nil(photo.aspect_ratio) ||
+        is_nil(photo.preview_url)
+    end)
+    |> then(fn
+      false -> :ready
+      true -> :upload_in_progress
+    end)
   end
 
   defp active_galleries, do: from(g in Gallery, where: g.active == true)

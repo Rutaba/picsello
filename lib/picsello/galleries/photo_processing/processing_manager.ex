@@ -16,7 +16,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
     Waiter.start_tracking(photo.gallery_id, photo.id)
   end
 
-  def start(%Photo{} = photo, %Watermark{} = watermark) do
+  def start(%Photo{} = photo, watermark) do
     Context.full_task_by_photo(photo, watermark) |> send()
     Waiter.start_tracking(photo.gallery_id, photo.id)
   end

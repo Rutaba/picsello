@@ -16,7 +16,11 @@ defmodule Picsello.Photos do
   @card_blank "/images/card_gray.png"
 
   def preview_url(%{watermarked: _} = photo, opts) do
-    url = preview_url(photo)
+    url =
+      case Keyword.get(opts, :proofing_client_view?) do
+        true -> preview_url(%{photo | watermarked: true})
+        _ -> preview_url(photo)
+      end
 
     with true <- url == @gallery_icon,
          true <- Keyword.get(opts, :blank, false) do
@@ -26,10 +30,12 @@ defmodule Picsello.Photos do
     end
   end
 
-  def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}),
-    do: path_to_url(path)
+  def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}) do
+    path_to_url(path)
+  end
 
-  def preview_url(%{watermarked: false, preview_url: "" <> path}), do: path_to_url(path)
+  def preview_url(%{watermarked: false, preview_url: "" <> path}),
+    do: path_to_url(path)
 
   def preview_url(_), do: @gallery_icon
 
@@ -58,18 +64,27 @@ defmodule Picsello.Photos do
         select: %{gallery_id: order.gallery_id}
       )
 
-    from(photo in active_photos(),
-      left_join: watermarked in subquery(watermark),
-      on: watermarked.gallery_id == photo.gallery_id,
-      left_join: digital in subquery(digital),
-      on: digital.gallery_id == photo.gallery_id and digital.photo_id == photo.id,
-      left_join: bundle in subquery(bundle_order),
-      on: bundle.gallery_id == photo.gallery_id,
-      select: %{
-        photo
-        | watermarked:
-            not is_nil(watermarked.gallery_id) and is_nil(digital.photo_id) and
-              is_nil(bundle.gallery_id)
+    photo_query =
+      from(photo in active_photos(),
+        left_join: watermarked in subquery(watermark),
+        on: watermarked.gallery_id == photo.gallery_id,
+        left_join: digital in subquery(digital),
+        on: digital.gallery_id == photo.gallery_id and digital.photo_id == photo.id,
+        left_join: bundle in subquery(bundle_order),
+        on: bundle.gallery_id == photo.gallery_id,
+        select: %{
+          photo
+          | watermarked:
+              not is_nil(watermarked.gallery_id) and is_nil(digital.photo_id) and
+                is_nil(bundle.gallery_id)
+        }
+      )
+
+    from(photo in photo_query,
+      left_join: digital in Digital,
+      on: digital.photo_id == photo.id,
+      select_merge: %{
+        is_selected: digital.photo_id == photo.id
       }
     )
   end

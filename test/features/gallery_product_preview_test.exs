@@ -90,7 +90,7 @@ defmodule Picsello.GalleryProductPreviewTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/photos")
-    |> assert_has(css("#dragDrop-upload-form span", text: "Drag your images or"))
+    |> assert_has(css("#dragDrop-upload-form-#{gallery_id} span", text: "Drag your images or"))
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images']", count: length(products)))
 
@@ -100,7 +100,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: length(photo_ids)))
-    |> refute_has(css("#dragDrop-upload-form span", text: "Drag your images or"))
+    |> refute_has(css("#dragDrop-upload-form-#{gallery_id} span", text: "Drag your images or"))
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
   end

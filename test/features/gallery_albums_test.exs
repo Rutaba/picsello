@@ -37,7 +37,7 @@ defmodule Picsello.GalleryAlbumsTest do
     |> click(css("span", text: "Off"))
     |> fill_in(css("#album_name"), with: "Test album 2")
     |> click(css("#toggle-visibility"))
-    |> click(button("Save"))
+    |> click(button("Create new album"))
     |> assert_has(css("p", text: "Album successfully created"))
     |> find(css("#albums .album", count: 3))
   end

@@ -132,7 +132,7 @@ defmodule PicselloWeb.JobLive.Index do
 
   def select(assigns) do
     ~H"""
-    <div id="page-dropdown" class="flex items-center px-2 py-1 border rounded cursor-pointer border-blue-planning-300" data-offset-y="10" phx-hook="Select">
+    <div id="page-dropdown" class="flex items-center px-2 py-1 border rounded cursor-pointer border-blue-planning-300" phx-update="ignore" data-offset-y="10" phx-hook="Select">
       <div class="hidden border shadow popover-content">
         <%= for(option <- @options) do %>
           <label class={"p-2 pr-6 flex items-center cursor-pointer hover:bg-blue-planning-100 #{if @value == option, do: "bg-blue-planning-100", else: "bg-white"}"}>

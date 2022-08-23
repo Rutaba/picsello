@@ -18,7 +18,7 @@ defmodule Picsello.ClientAlbumTest do
       )
 
     album = insert(:album, %{gallery_id: gallery.id})
-    photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
+    photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 5})
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
@@ -45,10 +45,5 @@ defmodule Picsello.ClientAlbumTest do
     |> assert_has(css(".item", count: Enum.count(photo_ids)))
     |> click(css("#img-#{List.first(photo_ids)}"))
     |> click(button("Add to cart"))
-    |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
-    |> click(css("#toggle_favorites"))
-    |> assert_has(css(".item", count: 1))
-    |> click(css("#toggle_favorites"))
-    |> assert_has(css(".item", count: Enum.count(photo_ids)))
   end
 end

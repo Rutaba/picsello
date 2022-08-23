@@ -22,9 +22,8 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     albums = Albums.get_albums_by_gallery_id(gallery.id)
 
     if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "gallery_progress:#{gallery.id}")
       PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")
-      PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery.id}")
+      PubSub.subscribe(Picsello.PubSub, "gallery_progress:#{gallery.id}")
     end
 
     album = Map.get(params, :selected_album, nil)
@@ -117,8 +116,11 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     ~H"""
     <div class={"#{@class}"}>
       <%= live_redirect to: @route do %>
-        <li>
-          <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap hover:text-blue-planning-300"}><%= @title%></button>
+        <li class="group">
+          <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap group-hover:!text-blue-planning-300"}>
+              <.icon name={@name} class={"w-4 h-4 stroke-2 fill-current #{@button_class} mr-2 group-hover:!text-blue-planning-300"}/>
+              <%= @title%>
+          </button>
         </li>
       <% end %>
     </div>

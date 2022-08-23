@@ -48,9 +48,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
             <%= if Enum.empty? @templates do %>
               You don’t have any packages at the moment.
               (A package is a reusable template to use when creating a potential photoshoot.)
-              Go ahead and create your first one! If you need help with calculating your pricing, we have a handy calculator for you to <%= link("use here", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300") %>!
+              Go ahead and create your first one! If you need help with calculating your pricing, we have a handy calculator for you to <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "use here", class: "underline text-blue-planning-300" do %>use here<% end %>!
             <% else %>
-              Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= link("Check out our helpful calculator!", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300 intro-calculator") %>
+              Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "Check out our helpful calculator!", class: "underline text-blue-planning-300 intro-calculator" do %>Check out our helpful calculator!<% end %>
             <% end %>
           </p>
         </div>
@@ -66,7 +66,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         <%= for template <- @templates do %>
           <div {testid("package-template-card")} class="relative">
-            <div class="absolute z-10 top-6 right-5" data-offset="0" phx-hook="Select" id={"mange-template-#{template.id}"}>
+            <div class="absolute z-10 top-6 right-5" phx-update="ignore" data-offset="0" phx-hook="Select" id={"mange-template-#{template.id}"}>
               <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
                 <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
 
