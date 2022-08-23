@@ -9,8 +9,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(css("div.ql-editor"))
     |> send_keys([text])
-    # this sleep is intentional since the quill editor takes time to reset
-    |> sleep(500)
   end
 
   feature "navigate", %{session: session} do
@@ -68,8 +66,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Choose a Contract")
-    # this sleep is intentional since the quill editor takes time to reset
-    |> sleep(500)
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> fill_in(text_field("Package Price"), with: "$100")
@@ -235,21 +231,15 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> assert_has(css("*[role='status']", text: "No edits made"))
         |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
         |> replace_inner_content(css("div.ql-editor"), "updated content")
-        # this sleep is intentional since the quill editor takes time to reset
-        |> sleep(500)
         |> fill_in(text_field("Contract Name"), with: "Contract 2")
         |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
         |> click(link("back"))
         |> assert_text("Edit Package: Provide Details")
-        # this sleep is intentional since the quill editor takes time to reset
-        |> sleep(500)
         |> click(button("Next"))
         |> assert_text("Edit Package: Choose a Contract")
         |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
         |> assert_value(text_field("Contract Name"), "Contract 2")
         |> assert_text("updated content")
-        # this sleep is intentional since the quill editor takes time to reset
-        |> sleep(500)
         |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
