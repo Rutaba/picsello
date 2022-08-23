@@ -12,19 +12,22 @@
            <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="left-0 choose-product__btn top-1/2 -translate-y-1/2 -translate-x-1/4 swiper-button-prev">
             <.icon name="back" class="w-8 h-8 cursor-pointer text-base-300" />
           </div>
-          <div phx-click="next" phx-target={@myself} class="right-0 choose-product__btn top-1/2 -translate-y-1/2 translate-x-1/4 swiper-button-next">
+          <div {testid("next")} phx-click="next" phx-target={@myself} class="right-0 choose-product__btn top-1/2 -translate-y-1/2 translate-x-1/4 swiper-button-next">
             <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-300" />
           </div>
           <div class="flex relative h-full items-center">           
             <div phx-click="photo_view" phx-value-photo_id={@photo.id} phx-target={@myself} class="cursor-pointer absolute opacity-100 removeBtn">
               <.icon name={"eye"} class="h-6 z-1 text-white w-7"/>
             </div>
+            <%= if @is_proofing && @photo.is_selected do %>
+              <div class="cursor-pointer absolute opacity-100 likeBtn">
+                <.icon name="star" class="h-6 z-1 text-white w-7"/>
+              </div>
+            <% end %>
             <div class="flex relative lg:h-[450px] items-center">
-              <img src={ preview_url(@photo) } class="lg:h-full lg:max-h-max max-h-96">
+              <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="lg:h-full lg:max-h-max max-h-96">
             </div> 
           </div>
-          
-
         </div>
       </div>
 
@@ -32,50 +35,29 @@
         <div class="flex flex-col ml-auto lg:w-11/12">
           <p class="hidden mb-6 text-2xl font-bold text-base-300 lg:pt-2 lg:block">Select an option below</p>
 
-          <%= for %{category: category, id: gallery_product_id} <- @products do %>
-            <.option
-              testid={gallery_product_id}
-              title={category.name}
-              min_price={min_price(category)}
-            }>
-              <:button
-                phx-click="product_preview_photo_popup"
-                phx-target="*[role=main]"
-                phx-value-template-id={gallery_product_id}
-                phx-value-photo-id={@photo.id}>
-                Select
-              </:button>
-            </.option>
+          <%= unless @is_proofing do %>
+            <%= for %{category: category, id: gallery_product_id} <- @products do %>
+              <.option
+                testid={gallery_product_id}
+                title={category.name}
+                min_price={min_price(category)}
+              }>
+                <:button
+                  phx-click="product_preview_photo_popup"
+                  phx-target="*[role=main]"
+                  phx-value-template-id={gallery_product_id}
+                  phx-value-photo-id={@photo.id}>
+                  Select
+                </:button>
+              </.option>
+            <% end %>
           <% end %>
 
-          <%= case @digital_status do %>
-            <% :in_cart -> %>
-              <.option testid={"digital_download"} title="Digital Download">
-                <:button disabled>In cart</:button>
-              </.option>
-            <% :purchased -> %>
-              <.option testid={"digital_download"} title="Digital Download">
-                <:button
-                  element="a"
-                  download
-                  icon="download"
-                  icon_class="h-4 w-4 fill-current"
-                  class="my-4 mr-4 py-1.5 px-8"
-                  href={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}>
-                  Download
-                </:button>
-              </.option>
-            <% _ -> %>
-              <.option testid={"digital_download"} title="Digital Download" min_price={if @digital_credit <= 0, do: @download_each_price}>
-                <:button phx-target={@myself} phx-click="digital_add_to_cart">
-                  Add to cart
-                </:button>
-              </.option>
-          <% end %>
+          <.button_option {assigns} />
         </div>
       </div>
     </div>
   </div>
-  <.credits_footer credits={@credits}/>
+  <.credits_footer total_count={@gallery.package.download_count} for={:proofing_album_product_modal} cart_count={@cart_count} credits={@credits}/>
 </div>
 

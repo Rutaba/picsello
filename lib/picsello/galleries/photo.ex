@@ -18,6 +18,7 @@ defmodule Picsello.Galleries.Photo do
     field :height, :integer
     field :width, :integer
     field :watermarked, :boolean, virtual: true
+    field :is_selected, :boolean, virtual: true
     field :active, :boolean, default: true
 
     belongs_to(:gallery, Gallery)

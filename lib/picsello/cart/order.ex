@@ -9,6 +9,7 @@ defmodule Picsello.Cart.Order do
     Cart.OrderNumber,
     Cart.Product,
     Galleries.Gallery,
+    Galleries.Album,
     Intents.Intent
   }
 
@@ -19,6 +20,7 @@ defmodule Picsello.Cart.Order do
     field :total_credits_amount, :integer, default: 0
 
     belongs_to(:gallery, Gallery)
+    belongs_to(:album, Album)
 
     has_one :package, through: [:gallery, :package]
     has_one :invoice, Picsello.Invoices.Invoice
@@ -63,6 +65,7 @@ defmodule Picsello.Cart.Order do
   def create_changeset(%Digital{} = digital, attrs, opts) do
     attrs
     |> do_create_changeset()
+    |> cast(attrs, [:album_id])
     |> put_assoc(:digitals, [%{digital | is_credit: is_credit(opts)}])
   end
 

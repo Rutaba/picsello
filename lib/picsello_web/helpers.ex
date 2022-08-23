@@ -21,6 +21,14 @@ defmodule PicselloWeb.Helpers do
   def order_url(%{client_link_hash: hash, password: password}, order),
     do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password)
 
+  def proofing_album_selections_url(%{client_link_hash: hash, password: password}, order),
+    do:
+      Routes.gallery_client_order_url(Endpoint, :proofing_album, hash, Order.number(order),
+        pw: password
+      )
+
+  def album_url("" <> hash), do: Routes.gallery_client_album_url(Endpoint, :proofing_album, hash)
+
   def profile_pricing_job_type_url(slug, type),
     do:
       Endpoint

@@ -5,7 +5,8 @@ defmodule Picsello.EmailPresets do
   import Ecto.Query
   import Picsello.Repo.CustomMacros
 
-  alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Galleries.Gallery}
+  alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset}
+  alias Picsello.Galleries.Gallery
 
   def for(%Gallery{}, state) do
     from(preset in gallery_presets(), where: preset.state == ^state)
@@ -59,17 +60,18 @@ defmodule Picsello.EmailPresets do
     )
   end
 
-  defp job_presets(),
-    do: from(preset in EmailPreset, where: preset.type == :job, order_by: :position)
+  defp job_presets(), do: presets(:job)
 
-  defp gallery_presets(),
-    do: from(preset in EmailPreset, where: preset.type == :gallery, order_by: :position)
+  defp gallery_presets(), do: presets(:gallery)
+
+  defp presets(type),
+    do: from(preset in EmailPreset, where: preset.type == ^type, order_by: :position)
 
   def resolve_variables(%EmailPreset{} = preset, schemas, helpers) do
     resolver_module =
       case preset.type do
         :job -> Picsello.EmailPresets.JobResolver
-        :gallery -> Picsello.EmailPresets.GalleryResolver
+        _ -> Picsello.EmailPresets.GalleryResolver
       end
 
     resolver = schemas |> resolver_module.new(helpers)

@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     ]
 
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Repo}
   alias PicselloWeb.GalleryLive.ProductPreview.Preview
@@ -59,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
 
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset)
+    add_message_and_notify(socket, message_changeset, "gallery")
   end
 
   @impl true
@@ -75,12 +76,14 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
-  def handle_info({:total_progress, total_progress}, socket) do
-    socket |> assign(:total_progress, total_progress) |> noreply()
+  def handle_info({:gallery_progress, %{total_progress: total_progress}}, socket) do
+    socket
+    |> assign(:total_progress, if(total_progress == 0, do: 1, else: total_progress))
+    |> noreply()
   end
 
   @impl true
-  def handle_info({:upload_success_message, success_message}, socket) do
+  def handle_info({:uploading, %{success_message: success_message}}, socket) do
     socket |> put_flash(:success, success_message) |> noreply()
   end
 

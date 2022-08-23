@@ -2,6 +2,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   @moduledoc false
   use PicselloWeb, :live_component
 
+  alias Phoenix.PubSub
+
   @string_length 35
 
   @impl true
@@ -27,6 +29,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     |> then(fn %{assigns: %{invalid_photos: invalid_photos, pending_photos: pending_photos}} =
                  socket ->
       if Enum.empty?(pending_photos ++ invalid_photos) do
+        error_broadcast(assigns.gallery.id)
+
         socket |> close_modal()
       else
         socket
@@ -38,6 +42,7 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   @impl true
   def handle_event("delete_all_photos", _, %{assigns: %{gallery: gallery}} = socket) do
     delete_broadcast(gallery.id, [], "delete_all")
+    error_broadcast(gallery.id)
 
     socket
     |> close_modal()
@@ -62,6 +67,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     upload_broadcast(gallery.id, index)
 
     if Enum.empty?(pending_entries ++ invalid_photos) do
+      error_broadcast(gallery.id)
+
       socket |> close_modal()
     else
       socket
@@ -73,6 +80,7 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   @impl true
   def handle_event("upload_all_pending_photos", _, %{assigns: %{gallery: gallery}} = socket) do
     upload_broadcast(gallery.id, [])
+    error_broadcast(gallery.id)
 
     socket
     |> close_modal()
@@ -87,15 +95,18 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   end
 
   defp upload_broadcast(gallery_id, index) do
-    Phoenix.PubSub.broadcast(
+    PubSub.broadcast(
       Picsello.PubSub,
       "upload_pending_photos:#{gallery_id}",
       {:upload_pending_photos, %{index: index}}
     )
   end
 
+  defp error_broadcast(gallery_id),
+    do: PubSub.broadcast(Picsello.PubSub, "clear_photos_error:#{gallery_id}", :clear_photos_error)
+
   defp delete_broadcast(gallery_id, index, delete_from) do
-    Phoenix.PubSub.broadcast(
+    PubSub.broadcast(
       Picsello.PubSub,
       "delete_photos:#{gallery_id}",
       {:delete_photos, %{index: index, delete_from: delete_from}}

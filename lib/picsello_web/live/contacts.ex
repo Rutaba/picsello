@@ -50,7 +50,7 @@ defmodule PicselloWeb.Live.Contacts do
               <td class="p-3 truncate border border-grey-light sm:border-none"><%= contact.email || "-" %></td>
               <td class="relative p-3 border border-grey-light sm:border-none">
                 &nbsp;
-                <div class="absolute top-3 left-3 sm:left-8" data-offset="0" data-placement="bottom-end" phx-hook="Select" id={"manage-contact-#{contact.id}"}>
+                <div class="absolute top-3 left-3 sm:left-8" data-offset="0" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-contact-#{contact.id}"}>
                   <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
                     <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
 

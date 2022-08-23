@@ -1,5 +1,6 @@
 defmodule PicselloWeb.LayoutView do
   use PicselloWeb, :view
+
   alias Picsello.Accounts.User
 
   import PicselloWeb.LiveHelpers,
@@ -15,6 +16,7 @@ defmodule PicselloWeb.LayoutView do
 
   import Picsello.Profiles, only: [public_url: 1]
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1, gallery_top_banner: 1]
 
   use Phoenix.Component
 
@@ -109,7 +111,7 @@ defmodule PicselloWeb.LayoutView do
   def help_scout_menu(assigns) do
     ~H"""
     <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
-    <div id="float-menu-help" class="hidden cursor-pointer md:blockhidden md:block" phx-hook="ToggleContent">
+    <div id="float-menu-help" class="hidden cursor-pointer md:blockhidden md:block" phx-update="ignore" phx-hook="ToggleContent">
       <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
         <.icon name="question-mark-help-scout" class="w-6 h-6" />
       </div>
@@ -203,6 +205,38 @@ defmodule PicselloWeb.LayoutView do
         </div>
         """
     end
+  end
+
+  defp footer_nav(assigns) do
+    organization = load_organization(assigns.gallery)
+
+    ~H"""
+    <nav class="flex text-lg font-bold">
+      <div class="font-bold">
+        <.photographer_logo organization={organization} />
+      </div>
+      <div class="ml-auto pt-3">
+        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={public_url(organization)}>
+          <.icon name="envelope" class="mr-2 w-4 h-4 fill-current"/>
+          Contact
+        </a>
+      </div>
+    </nav>
+    <hr class="my-8 opacity-40 border-base-300" />
+    <div class="flex text-base-250 flex-col sm:flex-row">
+      <div class="flex justify-center">© <%= DateTime.utc_now.year %> <span class="font-base-300 font-bold"><%= organization.name %></span>. All Rights Reserved</div>
+      <div class="flex md:ml-auto justify-center">
+        Powered by
+        <a href="https://www.picsello.com/terms-conditions" class="underline ml-1" target="_blank" rel="noopener noreferrer"> <b>Picsello</b></a>
+      </div>
+    </div>
+    """
+  end
+
+  defp load_organization(gallery) do
+    gallery
+    |> Picsello.Repo.preload([job: [client: :organization]], force: true)
+    |> extract_organization()
   end
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization

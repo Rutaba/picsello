@@ -57,6 +57,7 @@ defmodule PicselloWeb do
 
       unquote(view_helpers())
       unquote(modal_helpers())
+      unquote(gallery_helpers())
     end
   end
 
@@ -122,6 +123,51 @@ defmodule PicselloWeb do
           socket
           |> assign(modal_pid: pid)
           |> noreply()
+    end
+  end
+
+  defp gallery_helpers do
+    quote do
+      @impl true
+      def handle_info(
+            {:photo_upload_completed,
+             %{gallery_id: gallery_id, success_message: success_message}},
+            %{assigns: %{current_user: user}} = socket
+          ) do
+        PicselloWeb.LiveHelpers.remove_cache(user.id, gallery_id)
+
+        socket
+        |> assign(galleries_count: length(PicselloWeb.UploaderCache.get(user.id)))
+        |> put_flash(:success, success_message)
+        |> noreply()
+      end
+
+      def handle_info(
+            {:galleries_progress, %{total_progress: total_progress, gallery_id: gallery_id}},
+            %{assigns: %{current_user: user}} = socket
+          ) do
+        upload_data =
+          PicselloWeb.UploaderCache.get(user.id)
+          |> Enum.filter(fn {pid, _, _} -> Process.alive?(pid) end)
+          |> Enum.map(fn {pid, id, _} = entry ->
+            if gallery_id == id do
+              {pid, id, total_progress}
+            else
+              entry
+            end
+          end)
+
+        PicselloWeb.UploaderCache.update(user.id, upload_data)
+
+        sum = Enum.reduce(upload_data, 0, fn {_, _, progress}, acc -> progress + acc end)
+        total_progress == 100 && PicselloWeb.LiveHelpers.remove_cache(user.id, gallery_id)
+        galleries_count = length(upload_data)
+
+        socket
+        |> assign(galleries_count: galleries_count)
+        |> assign(:accumulated_progress, Float.ceil(sum / galleries_count))
+        |> noreply()
+      end
     end
   end
 

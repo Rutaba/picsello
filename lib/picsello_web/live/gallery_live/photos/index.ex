@@ -8,9 +8,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
+  import PicselloWeb.GalleryLive.Photos.Toggle, only: [toggle: 1]
+  import PicselloWeb.GalleryLive.Photos.ProofingGrid, only: [proofing_grid: 1]
 
   alias Phoenix.PubSub
-  alias Picsello.{Repo, Galleries, Albums}
+  alias Picsello.{Repo, Galleries, Albums, Orders}
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
@@ -26,21 +29,33 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       favorites_filter: false,
       page: 0,
       photos_error_count: 0,
+      inprogress_photos: [],
+      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg"),
       invalid_photos: [],
       pending_photos: [],
       photo_updates: "false",
       select_mode: "selected_none",
       update_mode: "append",
-      selected_photos: []
+      selected_photos: [],
+      selections: [],
+      selection_filter: false,
+      orders: []
     )
     |> ok()
   end
 
   @impl true
-  def handle_params(%{"id" => gallery_id, "album_id" => album_id} = params, _, socket) do
+  def handle_params(
+        %{"id" => gallery_id, "album_id" => album_id} = params,
+        _,
+        %{assigns: %{current_user: %{organization: organization}}} = socket
+      ) do
     album = Albums.get_album!(album_id) |> Repo.preload(:photos)
+    orders = Orders.get_proofing_order_photos(album.id, organization.id)
 
     socket
+    |> assign(orders: orders)
+    |> assign(selection_filter: if(orders == [], do: false, else: true))
     |> is_mobile(params)
     |> assigns(gallery_id, album)
   end
@@ -265,9 +280,30 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_event(
+        "toggle_selections",
+        _,
+        %{
+          assigns: %{selection_filter: selection_filter}
+        } = socket
+      ) do
+    socket
+    |> assign(:selected_photos, [])
+    |> push_event("select_mode", %{"mode" => "selected_none"})
+    |> assign(:select_mode, "selected_none")
+    |> assign(:selection_filter, !selection_filter)
+    |> assign(:page, 0)
+    |> assign(:update_mode, "replace")
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("toggle_favorites", _, socket) do
     socket
     |> assign(:selected_photos, [])
+    |> assign(:inprogress_photos, [])
     |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
     |> toggle_favorites(@per_page)
@@ -422,25 +458,52 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_event("send_proofs_popup", _, %{assigns: assigns} = socket) do
+    %{gallery: gallery, album: album} = assigns
+
+    gallery.id
+    |> Galleries.get_album_photo_count(album.id)
+    |> then(&(&1 > 0))
+    |> case do
+      true ->
+        gallery = Repo.preload(gallery, job: :client)
+        album = Albums.set_album_hash(album)
+
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, :album_send_link) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery, album},
+              PicselloWeb.Helpers
+            )
+          end
+
+        socket
+        |> assign(:job, gallery.job)
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          modal_title: "Share proofing album",
+          subject: subject,
+          body_html: body_html,
+          presets: [],
+          enable_image: true,
+          enable_size: true,
+          composed_event: :message_composed_for_album
+        })
+        |> noreply()
+
+      false ->
+        socket
+        |> put_flash(:error, "Please add photos to the gallery before sharing")
+        |> noreply()
+    end
+  end
+
+  @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do
     socket
     |> close_modal()
     |> assign(:album, album |> Repo.preload(:photos))
     |> put_flash(:success, message)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info({:photo_processed, _, photo}, socket) do
-    photo_update =
-      %{
-        id: photo.id,
-        url: preview_url(photo)
-      }
-      |> Jason.encode!()
-
-    socket
-    |> assign(:photo_updates, photo_update)
     |> noreply()
   end
 
@@ -550,8 +613,81 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:total_progress, total_progress}, socket) do
-    socket |> assign(:total_progress, total_progress) |> noreply()
+  def handle_info(
+        {:gallery_progress, %{total_progress: total_progress, entries: entries}},
+        %{assigns: %{inprogress_photos: inprogress_photos}} = socket
+      ) do
+    cond do
+      inprogress_photos == [] ->
+        socket
+        |> assign(:update_mode, "ignore")
+        |> assign(:inprogress_photos, entries)
+        |> push_event("reload_grid", %{})
+
+      total_progress == 100 ->
+        socket |> assign(:update_mode, "append")
+
+      true ->
+        socket |> assign(:update_mode, "ignore")
+    end
+    |> assign(:total_progress, total_progress)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:uploading, %{pid: pid, entries: entries, uploading: true}},
+        %{assigns: %{current_user: user, gallery: gallery}} = socket
+      ) do
+    remove_cache(user.id, gallery.id)
+    add_cache(socket, pid)
+
+    socket
+    |> assign(:update_mode, "ignore")
+    |> assign(:inprogress_photos, entries)
+    |> push_event("reload_grid", %{})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:uploading, %{success_message: success_message}}, socket) do
+    socket
+    |> push_event("remove_loader", %{})
+    |> assign(:update_mode, "append")
+    |> assign(:inprogress_photos, [])
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
+    |> put_flash(:success, success_message)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:photo_processed, _, photo}, socket) do
+    photo_update =
+      %{
+        id: photo.id,
+        url: preview_url(photo)
+      }
+      |> Jason.encode!()
+
+    socket
+    |> assign(:photo_updates, photo_update)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(:clear_photos_error, %{assigns: %{total_progress: total_progress}} = socket) do
+    if total_progress == 0 do
+      socket
+      |> assign(:inprogress_photos, [])
+      |> assign(:update_mode, "append")
+      |> push_event("remove_loader", %{})
+      |> assign(:photos_error_count, 0)
+    else
+      socket
+      |> assign(:photos_error_count, 0)
+    end
+    |> noreply()
   end
 
   @impl true
@@ -574,20 +710,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info(:photo_upload_completed, socket) do
-    socket
-    |> assign(:update_mode, "append")
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info({:upload_success_message, success_message}, socket) do
-    socket |> put_flash(:success, success_message) |> noreply()
-  end
-
-  @impl true
   def handle_info({:save, %{message: message}}, socket) do
     socket
     |> close_modal()
@@ -598,7 +720,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset)
+    add_message_and_notify(socket, message_changeset, "gallery")
+  end
+
+  @impl true
+  def handle_info({:message_composed_for_album, message_changeset}, socket) do
+    add_message_and_notify(socket, message_changeset, "album")
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -608,8 +735,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> Galleries.load_watermark_in_gallery()
 
     if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "gallery:#{gallery_id}")
-      PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "clear_photos_error:#{gallery_id}")
     end
 
     socket
@@ -695,13 +823,22 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   defp get_class(string), do: if(String.length(string) > @string_length, do: "tooltip", else: nil)
 
+  defp add_cache(%{assigns: %{current_user: user, gallery: gallery}}, pid) do
+    upload_data = PicselloWeb.UploaderCache.get(user.id)
+    gallery_ids = upload_data |> Enum.map(fn {_, gallery_id, _} -> gallery_id end)
+
+    if gallery.id not in gallery_ids do
+      PicselloWeb.UploaderCache.put(user.id, [{pid, gallery.id, 0} | upload_data])
+    end
+  end
+
   defp album_actions(assigns) do
     assigns = assigns |> Enum.into(%{exclude_album_id: nil})
 
     ~H"""
     <%= for album <- @albums do %>
       <%= if @exclude_album_id != album.id do %>
-        <li class={"relative py-1 hover:bg-blue-planning-100 #{get_class(album.name)}"}>
+        <li class={"relative py-1 hover:bg-blue-planning-100 hover:rounded-md #{get_class(album.name)}"}>
           <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
           <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
         </li>
@@ -710,19 +847,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     """
   end
 
-  defp grid_padding(photos_error_count, album, gallery) do
-    cond do
-      photos_error_count > 0 ->
-        "pt-56"
-
-      !!album ->
-        "lg:pt-40 pt-48"
-
-      Enum.any?(gallery.albums) ->
-        "lg:pt-40 pt-32"
-
-      true ->
-        "pt-40"
-    end
+  defp photo_loader(assigns) do
+    ~H"""
+    <%= for {_, index} <- Enum.with_index(@inprogress_photos) do%>
+      <div id={"photo-loader-#{index}"} class="item photo-loader flex bg-gray-200">
+        <div class="relative cursor-pointer item-content preview">
+          <div class="galleryLoader">
+            <img src={@url} class="relative" />
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
   end
 end

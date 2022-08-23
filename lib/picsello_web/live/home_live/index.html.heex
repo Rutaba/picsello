@@ -10,7 +10,7 @@
         <% items -> %>
           <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
           <ul class={classes("flex px-6 pb-4 overflow-auto lg:pb-0 intro-next-up", %{"xl:overflow-none" => !@should_attention_items_overflow })}>
-            <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} <- items do %>
+            <%= for %{title: title, body: body, icon: icon, button_label: button_label, button_class: button_class, color: color, action: action, class: class, external_link: external_link} = item <- items do %>
             <li {testid("attention-item")} class={classes("flex-shrink-0 flex flex-col justify-between max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !@should_attention_items_overflow})}>
               <div>
                 <div class="flex">
@@ -40,6 +40,15 @@
                     </a>
                     <a href="https://www.figma.com/proto/x5u7Fod9H9BsUOvYYutNLb/Photographer-facing-gallery?page-id=661%3A3370&node-id=1825%3A22729&viewport=183%2C1589%2C0.11&scaling=scale-down-width&starting-point-node-id=1825%3A22729" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
                       Preview yours
+                    </a>
+                  </div>
+                <% "proofing-album" -> %>
+                  <div class="flex gap-4">
+                    <a href={Routes.gallery_photos_index_path(@socket, :index, item.params.album.gallery_id, item.params.album.id)} class={"#{button_class} text-center text-sm w-full py-2 mt-2"} rel="noopener noreferrer">
+                      <%= button_label %>
+                    </a>
+                    <a href={external_link} class={"#{button_class} text-center text-sm w-full py-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                      Download .CSV
                     </a>
                   </div>
                 <% _ -> %>
@@ -90,7 +99,7 @@
 
       <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
         <p class="my-2">
-          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= link("calculate your pricing", to: Routes.calculator_path(@socket, :index), class: "underline text-blue-planning-300") %>.
+          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %>.
         </p>
       </.card>
     </ul>
@@ -116,7 +125,7 @@
     </ul>
   </div>
 
-  <div id="float-menu" class="cursor-pointer sm:hidden" phx-hook="ToggleContent">
+  <div id="float-menu" class="cursor-pointer sm:hidden" phx-update="ignore" phx-hook="ToggleContent">
     <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
       <.icon name="close-x" class="w-6 h-6 rotate-45 stroke-current stroke-2" />
     </div>

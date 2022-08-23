@@ -1,15 +1,15 @@
   <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
-    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
+    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery, album: @album, is_proofing: @is_proofing %>
   </div>
 
   <hr>
 
-  <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 max-w-screen-xl">
-    <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
-      <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
-
-      <p class="mt-1">Back to gallery</p>
-    <% end %>
+  <%= unless @is_proofing do %>
+    <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 max-w-screen-xl">
+      <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
+        <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
+        <p class="mt-1">Back to gallery</p>
+      <% end %>
     
     <h3 class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
   </div>
@@ -22,40 +22,27 @@
           <% end %>
         <% end %>
       </ul>
+
     </div>
-  <% end %>
+    <%= unless Enum.empty?(@products) do %>
+      <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+        <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
+          <%= for product <- @products do %>
+            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} photo={product.preview_photo} category={product.category} click_params={product.id} />
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
     <hr class="lg:mx-16 mt-8 mx-8">
+  <% end %>
 
-  <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+  <div class={"my-0 py-0 mx-auto h-full px-7 sm:px-16 #{@is_proofing && 'mb-56'}"}>
     <div class="pt-5 lg:pt-16" id="gallery">
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
-        <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-        <div>
-          <label id="toggle_favorites" class="flex items-center cursor-pointer mt-4">
-            <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
-
-            <div class="relative ml-3">
-              <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
-
-              <%= if @favorites_filter do %>
-                <div class="block h-8 border rounded-full bg-blue-planning-100 w-14 border-blue-planning-300"></div>
-
-                <div class="absolute w-6 h-6 rounded-full dot right-1 top-1 bg-blue-planning-300 transition"></div>
-              <% else %>
-                <div class="block h-8 bg-gray-200 border rounded-full w-14 border-blue-planning-300"></div>
-
-                <div class="absolute w-6 h-6 rounded-full dot left-1 top-1 bg-blue-planning-300 transition"></div>
-              <% end %>
-            </div>
-          </label>
-        </div>
-      </div>
-      <div class="text-sm lg:text-xl text-base-250 mb-8 lg:mb-16"> <%= photos_count(@photos_count) %></div>
-      <%= if(Enum.empty?(@photos) && @favorites_filter) do %>
-        <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
-            Oops, there's no liked photo!
-        </div>
+      <.top_section {assigns} />
+      
+      <%= if Enum.empty?(@photos) do %>
+        <.toggle_empty_state {assigns} />
       <% else %>
         <!-- images -->
         <div
@@ -77,7 +64,8 @@
                 photo: photo,
                 photo_width: 300,
                 is_client_gallery: true,
-                is_likable: true
+                is_likable: false,
+                is_proofing: @is_proofing
             %>
           <% end %>
         </div>
@@ -92,3 +80,6 @@
 
     </div>
   </div>
+  <%= if @is_proofing do %>
+    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits}/>
+  <% end %>
