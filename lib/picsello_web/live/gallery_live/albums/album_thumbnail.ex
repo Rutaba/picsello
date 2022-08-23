@@ -98,12 +98,20 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumThumbnail do
         selected={@selected}
         myself={@myself}
         title={@title}>
-        <div class="flex items-start justify-center row-span-2 previewImg bg-gray-300">
-          <.framed_preview photo={@thumbnail} item_id={@album.id} category={%{frame_image: "card_blank.png"}} />
+        <div class="flex items-start justify-center bg-gray-300 row-span-2 previewImg">
+          <.framed_preview photo={@thumbnail || album_placeholder()} item_id={@album.id} />
         </div>
       </.preview>
     </div>
     """
+  end
+
+  def album_placeholder() do
+    %Picsello.Galleries.Photo{
+      original_url: PicselloWeb.Endpoint.static_path("/images/album_placeholder.png"),
+      height: 1330,
+      width: 1630
+    }
   end
 
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent

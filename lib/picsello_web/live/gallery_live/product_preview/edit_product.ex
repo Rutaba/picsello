@@ -120,7 +120,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
         myself={@myself}
         title={@title}>
         <div class="flex items-start justify-center row-span-2 previewImg">
-          <.framed_preview category={@category} photo={@photo} id="framed-edit-preview" width={cards_width(@category.frame_image)} />
+          <.framed_preview category={@category} photo={@photo} id="framed-edit-preview" />
         </div>
       </.preview>
     </div>

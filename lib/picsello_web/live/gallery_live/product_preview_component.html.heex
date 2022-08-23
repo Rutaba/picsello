@@ -2,17 +2,17 @@
   <%= if @click_params do %>
     <div phx-click="product_preview_photo_popup" phx-value-params={@click_params} class="productPreview-photo">
       <div class="flex items-center justify-center p-4 photos__rect sm:p-8">
-        <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)} height="170" />
+        <.framed_preview category={@category} photo={@photo} height="170" />
       </div>
     </div>
   <% else %>
     <%= if @has_product_info do %>
       <div class="flex items-center justify-center p-4 photos__rect sm:p-8">
-        <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)} height="170" />
+        <.framed_preview category={@category} photo={@photo} height="170" />
       </div>
     <% else %>
       <div class="flex items-center justify-center photos__rect xl:h-96">
-        <.framed_preview category={@category} photo={@photo} width="452" height="384" />
+        <.framed_preview category={@category} photo={@photo} height="384" />
       </div>
     <% end %>
   <% end %>

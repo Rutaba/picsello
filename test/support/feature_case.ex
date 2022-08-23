@@ -338,7 +338,9 @@ defmodule Picsello.FeatureCase do
           original_url: photo_url,
           name: photo_url,
           aspect_ratio: 2,
-          position: index + 100
+          position: index + 100,
+          width: 487,
+          height: 358
         }
         |> insert()
         |> Map.get(:id)

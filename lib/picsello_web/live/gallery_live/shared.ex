@@ -639,8 +639,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  def cards_width(frame_image), do: if(frame_image == "card.png", do: "198")
-
   def mobile_gallery_header(assigns) do
     ~H"""
       <div class="absolute top-0 left-0 z-30 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200">
