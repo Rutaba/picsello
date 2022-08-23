@@ -242,5 +242,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   defp get_albums(id) do
     Albums.get_albums_by_gallery_id(id)
     |> Enum.filter(&(Galleries.get_album_photo_count(id, &1.id) > 0))
+    |> Enum.filter(fn album -> album.is_proofing == false end)
   end
 end

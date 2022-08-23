@@ -5,8 +5,8 @@ defmodule PicselloWeb.LiveAuth do
   alias Picsello.{Accounts, Accounts.User, Subscriptions}
   alias Picsello.{Galleries, Albums}
 
-  def on_mount(:default, _params, session, socket) do
-    socket |> allow_sandbox() |> mount(session)
+  def on_mount(:default, params, session, socket) do
+    socket |> allow_sandbox() |> mount(params, session)
   end
 
   def on_mount(:gallery_client, params, session, socket) do
@@ -17,14 +17,6 @@ defmodule PicselloWeb.LiveAuth do
     |> authenticate_gallery_client(session)
     |> authenticate_gallery_for_photographer(session)
     |> maybe_redirect_to_client_login(params)
-  end
-
-  def on_mount(:gallery_photographer, params, session, socket) do
-    socket
-    |> allow_sandbox()
-    |> authenticate_gallery(params)
-    |> authenticate_gallery_for_photographer(session)
-    |> maybe_redirect_to_login()
   end
 
   def on_mount(:gallery_client_login, params, _session, socket) do
@@ -38,7 +30,7 @@ defmodule PicselloWeb.LiveAuth do
     socket
     |> allow_sandbox()
     |> authenticate_album(params)
-    |> then(&authenticate_gallery(&1, %{"id" => &1.assigns.album.gallery_id}))
+    |> then(&authenticate_gallery(&1, %{"gallery_id" => &1.assigns.album.gallery_id}))
     |> authenticate_gallery_expiry()
     |> authenticate_album_client(session)
     |> authenticate_gallery_for_photographer(session)
@@ -52,8 +44,10 @@ defmodule PicselloWeb.LiveAuth do
     |> cont()
   end
 
-  defp mount(socket, %{"user_token" => _user_token} = session) do
+  defp mount(socket, params, %{"user_token" => _user_token} = session) do
     socket
+    |> assign(galleries_count: 0)
+    |> assign(accumulated_progress: 0)
     |> assign_current_user(session)
     |> then(fn
       %{assigns: %{current_user: nil}} = socket ->
@@ -62,9 +56,13 @@ defmodule PicselloWeb.LiveAuth do
       socket ->
         maybe_redirect_to_onboarding(socket)
     end)
+    |> authenticate_gallery(params)
+    |> authenticate_gallery_for_photographer(session)
+    |> maybe_redirect_to_login()
   end
 
-  defp mount(socket, _session), do: socket |> halt()
+  defp mount(socket, _params, _session),
+    do: socket |> assign(galleries_count: 0) |> assign(accumulated_progress: 0) |> halt()
 
   defp assign_current_user(socket, %{"user_token" => user_token}) do
     socket
@@ -85,12 +83,14 @@ defmodule PicselloWeb.LiveAuth do
     end)
   end
 
-  defp authenticate_gallery(socket, %{"id" => gallery_id}) do
+  defp authenticate_gallery(socket, %{"gallery_id" => gallery_id}) do
     socket
     |> assign_new(:gallery, fn ->
       Galleries.get_gallery!(gallery_id) |> Galleries.populate_organization_user()
     end)
   end
+
+  defp authenticate_gallery(socket, _), do: socket
 
   defp authenticate_album(socket, %{"hash" => hash}) do
     assign_new(socket, :album, fn -> Albums.get_album_by_hash!(hash) end)

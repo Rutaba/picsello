@@ -52,6 +52,46 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
     socket
     |> assign_details(order)
+    |> then(&push_patch(&1, to: &1.assigns.checkout_routes.order, replace: true))
+    |> noreply()
+  end
+
+  def handle_params(
+        %{"order_number" => order_number, "session_id" => session_id},
+        _,
+        %{assigns: %{gallery: gallery, live_action: live_action}} = socket
+      )
+      when live_action in ~w(paid proofing_album_paid)a do
+    case Orders.handle_session(order_number, session_id) do
+      {:ok, _order, :already_confirmed} ->
+        Orders.get!(gallery, order_number)
+
+      {:ok, _order, :confirmed} ->
+        order = Orders.get!(gallery, order_number)
+
+        Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
+          order,
+          PicselloWeb.Helpers
+        )
+
+        order
+    end
+    |> then(fn order ->
+      socket
+      |> assign_details(order)
+      |> process_checkout_order()
+    end)
+  end
+
+  def handle_params(
+        %{"order_number" => order_number},
+        _,
+        %{assigns: %{gallery: gallery, live_action: :proofing_album_paid}} = socket
+      ) do
+    order = Orders.get!(gallery, order_number)
+
+    socket
+    |> assign_details(order)
     |> process_checkout_order()
   end
 

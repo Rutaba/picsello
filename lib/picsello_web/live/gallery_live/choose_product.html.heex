@@ -25,7 +25,7 @@
               </div>
             <% end %>
             <div class="flex relative lg:h-[450px] items-center">
-              <img src={ preview_url(@photo) } class="lg:h-full lg:max-h-max max-h-96">
+              <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="lg:h-full lg:max-h-max max-h-96">
             </div> 
           </div>
         </div>

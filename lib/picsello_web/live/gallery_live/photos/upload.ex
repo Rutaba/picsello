@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Photo
+  alias Picsello.Galleries.Watermark
   alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias Picsello.Galleries.Workers.PhotoStorage
@@ -191,7 +192,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       {:ok, photo} = create_photo(gallery, entry, persisted_album_id)
 
       {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count + 1})
-      start_photo_processing(photo, gallery.watermark)
+
+      photo
+      |> Picsello.Repo.preload(:album)
+      |> start_photo_processing(gallery)
 
       socket
       |> assign(
@@ -338,7 +342,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     "#{uploaded}/#{total(entries)} #{ngettext("photo", "photos", uploaded)} uploaded successfully"
   end
 
-  defp start_photo_processing(photo, watermark) do
+  defp start_photo_processing(%{album: %{is_proofing: true}} = photo, %{watermark: nil} = gallery) do
+    %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
+    ProcessingManager.start(photo, Watermark.build(name))
+  end
+
+  defp start_photo_processing(photo, %{watermark: watermark}) do
     ProcessingManager.start(photo, watermark)
   end
 

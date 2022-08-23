@@ -39,4 +39,8 @@ defmodule Picsello.Galleries.Watermark do
   defp nilify_fields(changeset, fields) do
     Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
   end
+
+  def build(organization_name) do
+    %Watermark{type: "text", text: organization_name}
+  end
 end

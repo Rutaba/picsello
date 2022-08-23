@@ -16,7 +16,11 @@ defmodule Picsello.Photos do
   @card_blank "/images/card_gray.png"
 
   def preview_url(%{watermarked: _} = photo, opts) do
-    url = preview_url(photo)
+    url =
+      case Keyword.get(opts, :proofing_client_view?) do
+        true -> preview_url(%{photo | watermarked: true})
+        _ -> preview_url(photo)
+      end
 
     with true <- url == @gallery_icon,
          true <- Keyword.get(opts, :blank, false) do
@@ -26,10 +30,12 @@ defmodule Picsello.Photos do
     end
   end
 
-  def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}),
-    do: path_to_url(path)
+  def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}) do
+    path_to_url(path)
+  end
 
-  def preview_url(%{watermarked: false, preview_url: "" <> path}), do: path_to_url(path)
+  def preview_url(%{watermarked: false, preview_url: "" <> path}),
+    do: path_to_url(path)
 
   def preview_url(_), do: @gallery_icon
 

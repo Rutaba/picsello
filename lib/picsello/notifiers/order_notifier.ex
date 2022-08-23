@@ -13,6 +13,7 @@ defmodule Picsello.Notifiers.OrderNotifier do
         :digitals,
         :invoice,
         :intent,
+        :album,
         gallery: [job: [:package, client: [organization: :user]]]
       ])
 

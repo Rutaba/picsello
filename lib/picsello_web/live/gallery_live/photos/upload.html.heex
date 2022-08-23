@@ -24,10 +24,8 @@
                     <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer" alt="add photos icon"/>
                     <div class="flex flex-col items-center justify-center dragDrop__content">
                         <p class="text-center">
-                            <.add_photo_button pending_photos={Enum.empty?(@pending_photos)} class="flex items-center text-sm bg-white lg:justify-end px-2 py-2 border font-sans rounded-lg shadow-lg border-blue-planning-300 hover:opacity-75"> 
-                                <.icon name="plus" class="w-4 h-4 mr-1 fill-current text-blue-planning-300" />
-                                Add photos
-                            </.add_photo_button>
+                            <span class="font-bold">Drag your images or </span>
+                            <span class="font-bold cursor-pointer primary">browse</span>
                             <%= live_file_input @uploads.photo, class: "dragDropInput" %>
                         </p>
                         <p class="text-center gray">Supports JPEG or PNG</p>

@@ -1,7 +1,9 @@
 defmodule Picsello.ViewJobTest do
   use Picsello.FeatureCase, async: true
 
+  import Money.Sigils
   alias Picsello.{Repo, BookingProposal, PaymentSchedule}
+  alias Picsello.Cart.{Digital, DeliveryInfo}
   import Ecto.Query
 
   def with_completed_questionnaire(
@@ -130,5 +132,36 @@ defmodule Picsello.ViewJobTest do
     |> assert_has(testid("card-Communications", count: 0))
     |> click(css("h2", text: "Details & communications"))
     |> assert_has(testid("card-Communications", count: 1))
+  end
+
+  setup :authenticated_gallery
+
+  feature "gallery card changes when proofing selections are in", %{
+    session: session,
+    gallery: %{job: job} = gallery
+  } do
+    proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
+    photo_ids = insert_photo(%{gallery: gallery, album: proofing_album, total_photos: 5})
+
+    insert(:order,
+      gallery: gallery,
+      placed_at: DateTime.utc_now(),
+      delivery_info: %DeliveryInfo{
+        address: %DeliveryInfo.Address{
+          addr1: "661 w lake st",
+          city: "Chicago",
+          state: "IL",
+          zip: "60661"
+        }
+      },
+      album: proofing_album,
+      digitals: [%Digital{photo_id: List.first(photo_ids), price: ~M[0]USD}]
+    )
+
+    session
+    |> visit("/jobs/#{job.id}")
+    |> find(testid("card-Gallery"))
+    |> assert_has(css("p", text: "Your client's prooflist is in!"))
+    |> assert_has(button("Go to gallery"))
   end
 end
