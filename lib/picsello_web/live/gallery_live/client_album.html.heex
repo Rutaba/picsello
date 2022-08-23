@@ -10,9 +10,10 @@
         <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
         <p class="mt-1">Back to gallery</p>
       <% end %>
-    <% end %>
     <h3 class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
   </div>
+  <% end %>
+
   <%= unless Enum.empty?(@products) do %>
     <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
       <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
