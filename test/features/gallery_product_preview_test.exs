@@ -137,16 +137,16 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> take_screenshot()
       |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
       |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("a", text: "View Gallery"))
+      |> click(link("View Gallery"))
       |> take_screenshot()
       |> assert_text("Test Client Wedding Gallery")
-      |> assert_has(css("*[data-testid='products'] li", count: 1))
-      |> scroll_into_view(css("20 photos"))
+      |> assert_has(css("*[data-testid] li", count: 1))
     end
 
     test "Toggle disable product preview and product available for purchase", %{
       session: session,
-      gallery: %{id: gallery_id} = gallery
+      gallery: %{id: gallery_id} = gallery,
+      products: products
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
@@ -165,9 +165,10 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> click(css("a", text: "View Gallery"))
       |> assert_text("Test Client Wedding Gallery")
       |> assert_has(css("*[data-testid='products'] li", count: 0))
-      |> scroll_into_view(css("20 photos"))
+      |> scroll_to_bottom()
       |> take_screenshot()
       |> click_photo(1)
+      |> assert_text("Select an option")
       |> take_screenshot()
       |> find(css("*[data-testid^='product_option']", count: 2), fn options ->
         assert [
