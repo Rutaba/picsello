@@ -734,9 +734,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def product_name(item, is_proofing), do: name(item, is_proofing)
 
   def get_unconfirmed_order(
-        %{assigns: %{gallery: gallery, is_proofing: true, album: album}},
+        %{assigns: %{gallery: gallery, album: album}},
         opts
-      ) do
+        )
+      when album.is_finals or album.is_proofing do
     opts = Keyword.put(opts, :album_id, album.id)
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
@@ -759,8 +760,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   # routes to use for proofing_album and gallery checkout flow
   def assign_checkout_routes(
-        %{assigns: %{is_proofing: true, album: %{client_link_hash: hash}, order: order}} = socket
-      ) do
+    %{assigns: %{album: %{client_link_hash: hash} = album, order: order}} = socket
+    )
+    when album.is_finals or album.is_proofing do
     order_num = order && Order.number(order)
 
     assign(socket, :checkout_routes, %{
@@ -805,6 +807,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp cart_path(socket, method, client_link_hash) do
     Routes.gallery_client_show_cart_path(socket, method, client_link_hash)
   end
+
+  def assign_is_proofing(%{assigns: %{album: album}} = socket) do
+    assign(socket, is_proofing: album.is_proofing)
+  end
+
+  def assign_is_proofing(socket), do: assign(socket, is_proofing: false)
 
   defdelegate item_image_url(item), to: Cart
   defdelegate item_image_url(item, opts), to: Cart

@@ -14,19 +14,20 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
       product_name: 2,
       tracking: 1,
       credits_footer: 1,
-      assign_checkout_routes: 1
+      assign_checkout_routes: 1,
+      assign_is_proofing: 1
     ]
 
   @impl true
-  def handle_params(_, _, %{assigns: %{gallery: gallery}} = socket) do
-    orders = Orders.all(gallery.id)
+  def handle_params(_, _, %{assigns: %{gallery: gallery} = assigns} = socket) do
+    orders = Orders.all(gallery.id) |> may_be_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 
     gallery = Galleries.populate_organization_user(gallery)
 
     socket
     |> assign(gallery: gallery, orders: orders)
-    |> assign(:is_proofing, socket.assigns.live_action == :proofing_album)
+    |> assign_is_proofing()
     |> assign_cart_count(gallery)
     |> assign_checkout_routes()
     |> noreply()
@@ -39,17 +40,18 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     socket |> noreply()
   end
 
-  def order_route(%{gallery: gallery, socket: socket, is_proofing: false}, order) do
-    Routes.gallery_client_order_path(socket, :show, gallery.client_link_hash, Order.number(order))
-  end
-
-  def order_route(%{album: album, socket: socket, is_proofing: true}, order) do
+  def order_route(%{socket: socket, album: album}, order)
+    when album.is_proofing or album.is_finals do
     Routes.gallery_client_order_path(
       socket,
       :proofing_album,
       album.client_link_hash,
       Order.number(order)
     )
+  end
+
+  def order_route(%{gallery: gallery, socket: socket, is_proofing: false}, order) do
+    Routes.gallery_client_order_path(socket, :show, gallery.client_link_hash, Order.number(order))
   end
 
   defp order_date(
@@ -96,6 +98,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     <img src={item_image_url(@item, proofing_client_view?: @is_proofing)} class="object-contain h-32 lg:h-[120px] place-self-center"/>
     """
   end
+
+  defp may_be_filter(orders, %{album: album}) when album.is_proofing or album.is_finals do
+    Enum.filter(orders, &(&1.album_id == album.id))
+  end
+
+  defp may_be_filter(orders, %{album: _album}), do: orders
 
   defdelegate canceled?(order), to: Orders
   defdelegate has_download?(order), to: Orders

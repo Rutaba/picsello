@@ -106,7 +106,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   defp add_to_cart(%{assigns: assigns, root_pid: root_pid} = socket) do
     %{photo: photo, download_each_price: price} = assigns
 
-    send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}})
+    finals_album_id = get_finals_album_id(assigns[:album])
+
+    send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}, finals_album_id})
     socket
   end
 
@@ -196,6 +198,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       <% end %>
     """
   end
+
+  defp get_finals_album_id(%{is_finals: true, id: album_id}), do: album_id
+  defp get_finals_album_id(_album), do: nil
 
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
   defdelegate min_price(category), to: Galleries

@@ -437,7 +437,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   @impl true
   def handle_event(
         "add_finals_album_popup",
-        %{},
+        _,
         %{
           assigns: %{
             gallery: gallery,

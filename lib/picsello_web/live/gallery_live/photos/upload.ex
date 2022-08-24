@@ -358,7 +358,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
              invalid_photos: invalid_photos,
              gallery: gallery,
             album_id: album_id
-          } = assigns
+          }
          } = socket
        ) do
     if Enum.empty?(pending_photos) do

@@ -4,6 +4,7 @@ defmodule Picsello.Galleries.Album do
 
   import Ecto.Changeset
   alias Picsello.Galleries.{Gallery, SessionToken, Photo}
+  alias Picsello.Cart.Order
 
   @session_opts [
     foreign_key: :resource_id,
@@ -22,6 +23,7 @@ defmodule Picsello.Galleries.Album do
     belongs_to(:thumbnail_photo, Photo, on_replace: :nilify)
     has_many(:photos, Photo)
     has_many(:session_tokens, SessionToken, @session_opts)
+    has_many(:orders, Order, on_delete: :nilify_all)
 
     timestamps(type: :utc_datetime)
   end

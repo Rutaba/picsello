@@ -8,10 +8,10 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   alias Picsello.{Orders, Galleries}
 
   @impl true
-  def mount(_, _, %{assigns: %{live_action: live_action}} = socket) do
+  def mount(_params, _session, socket) do
     socket
     |> assign(from_checkout: false)
-    |> assign(is_proofing: live_action in [:proofing_album, :proofing_album_paid])
+    |> assign_is_proofing()
     |> ok()
   end
 

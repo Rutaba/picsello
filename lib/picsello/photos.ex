@@ -33,11 +33,11 @@ defmodule Picsello.Photos do
     end
   end
 
-  def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}) do
+  def preview_url(%{is_finals: true, preview_url: "" <> path}) do
     path_to_url(path)
   end
 
-  def preview_url(%{is_finals: true, preview_url: "" <> path}) do
+  def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}) do
     path_to_url(path)
   end
 
@@ -95,11 +95,12 @@ defmodule Picsello.Photos do
           is_selected: digital.photo_id == photo.id
         }
       )
+
     from(photo in photo_query,
       left_join: album in Picsello.Galleries.Album,
       on: album.id == photo.album_id,
       select_merge: %{
-      is_finals: album.is_finals
+        is_finals: album.is_finals
       }
     )
   end

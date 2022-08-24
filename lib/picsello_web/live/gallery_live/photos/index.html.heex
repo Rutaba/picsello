@@ -47,11 +47,11 @@
             <div class="lg:flex hidden">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
             </div>  
-            <%= if @album && @album.is_proofing do %>
+            <%= if @album && (@album.is_proofing || @album.is_finals) do %>
               <.icon_button {testid("send-proofs-popup")} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
-                Send proofs to client
+                Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
               </.icon_button>
-              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
                 Add finals album
               </.icon_button> 
             <% end %>
