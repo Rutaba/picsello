@@ -120,8 +120,7 @@ defmodule Picsello.GalleryProductPreviewTest do
 
     test "Toggle disable product and view in client preview", %{
       session: session,
-      gallery: %{id: gallery_id} = gallery,
-      products: [%{id: product_id, category: category} | _]
+      gallery: %{id: gallery_id} = gallery
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
