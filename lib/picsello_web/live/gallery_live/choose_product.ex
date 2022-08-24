@@ -89,12 +89,14 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     %{gallery: gallery, photo: photo, download_each_price: price} = assigns
     send(self(), :update_cart_count)
 
+    date_time = DateTime.truncate(DateTime.utc_now(), :second)
+
     Cart.place_product(
       %Digital{
         photo: photo,
         price: price,
-        inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
-        updated_at: DateTime.truncate(DateTime.utc_now(), :second)
+        inserted_at: date_time,
+        updated_at: date_time
       },
       gallery,
       photo.album_id
@@ -108,7 +110,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
            socket
        ) do
     finals_album_id = get_finals_album_id(album)
-
     send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}, finals_album_id})
     socket
   end
@@ -135,6 +136,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign(:order, nil)
     |> assign_cart_count(gallery)
   end
+
+  defp get_finals_album_id(%{is_finals: true, id: album_id}), do: album_id
+  defp get_finals_album_id(_album), do: nil
 
   defp button_option(%{is_proofing: false} = assigns) do
     opts = [testid: "digital_download", title: "Digital Download"]

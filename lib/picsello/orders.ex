@@ -261,9 +261,25 @@ defmodule Picsello.Orders do
     )
   end
 
+  @filtered_days 7
+  def get_all_proofing_album_orders(organization_id) do
+    from(order in get_all_proofing_album_orders_query(organization_id),
+      where: order.inserted_at > ago(@filtered_days, "day")
+    )
+    |> Repo.all()
+  end
+
+  def has_proofing_album_orders?(gallery) do
+    Repo.exists?(
+      from(order in get_all_proofing_album_orders_query(gallery.organization.id),
+        where: order.gallery_id == ^gallery.id
+      )
+    )
+  end
+
   def get_proofing_order(album_id, organization_id) do
-    from(order in get_all_orders_query(organization_id),
-      where: order.album_id == ^album_id and not is_nil(order.placed_at),
+    from(order in get_all_proofing_album_orders_query(organization_id),
+      where: order.album_id == ^album_id,
       preload: [gallery: [job: [:client]]]
     )
     |> Repo.all()
@@ -272,8 +288,8 @@ defmodule Picsello.Orders do
   def get_proofing_order_photos(album_id, organization_id) do
     photo_query = from(photo in Photo, select: %{photo | watermarked: false})
 
-    from(order in get_all_orders_query(organization_id),
-      where: order.album_id == ^album_id and not is_nil(order.placed_at),
+    from(order in get_all_proofing_album_orders_query(organization_id),
+      where: order.album_id == ^album_id,
       preload: [
         digitals: [photo: ^photo_query]
       ],
