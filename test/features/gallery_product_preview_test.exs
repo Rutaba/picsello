@@ -140,7 +140,7 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> click(link("View Gallery"))
       |> take_screenshot()
       |> assert_text("Test Client Wedding Gallery")
-      |> assert_has(css("*[data-testid] li", count: 1))
+      |> assert_has(css("*[data-testid='products'] li", count: 1))
     end
 
     test "Toggle disable product preview and product available for purchase", %{
@@ -162,7 +162,7 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 3), fn checkbox -> refute Element.selected?(checkbox) end)
       |> click(css("label", text: "Show product preview in gallery", count: 1, at: 0))
       |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("a", text: "View Gallery"))
+      |> click(link("View Gallery"))
       |> assert_text("Test Client Wedding Gallery")
       |> assert_has(css("*[data-testid='products'] li", count: 0))
       |> scroll_to_bottom()
