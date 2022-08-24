@@ -146,7 +146,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     test "Toggle disable product preview and product available for purchase", %{
       session: session,
       gallery: %{id: gallery_id} = gallery,
-      products: products
+
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
