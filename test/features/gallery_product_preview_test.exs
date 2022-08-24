@@ -120,7 +120,8 @@ defmodule Picsello.GalleryProductPreviewTest do
 
     test "Toggle disable product and view in client preview", %{
       session: session,
-      gallery: %{id: gallery_id} = gallery
+      gallery: %{id: gallery_id} = gallery,
+      products: [%{id: product_id, category: category} | _]
     } do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
@@ -130,17 +131,16 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> take_screenshot()
       |> scroll_to_bottom()
       |> click(css("label", text: "Product enabled to sell", count: 4, at: 0))
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 2))
       |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> click(css("label", text: "Show product preview in gallery", count: 2, at: 0))
-      |> find(checkbox("Show product preview in gallery", visible: false, count: 2, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
+      |> click(css("label", text: "Show product preview in gallery", count: 3, at: 1))
+      |> find(checkbox("Show product preview in gallery", visible: false, count: 3, at: 1), fn checkbox -> refute Element.selected?(checkbox) end)
       |> take_screenshot()
       |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(link("View Gallery"))
       |> take_screenshot()
       |> assert_text("Test Client Wedding Gallery")
-      |> assert_has(css("*[data-testid='products'] li", count: 1))
+      |> assert_has(css("*[data-testid='products'] li", count: 2))
     end
 
     test "Toggle disable product preview and product available for purchase", %{
@@ -164,12 +164,13 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> visit("/gallery/#{gallery.client_link_hash}")
       |> click(link("View Gallery"))
       |> assert_text("Test Client Wedding Gallery")
-      |> assert_has(css("*[data-testid='products'] li", count: 0))
+      |> assert_has(css("*[data-testid='products']", count: 0))
       |> scroll_to_bottom()
       |> take_screenshot()
       |> click_photo(1)
       |> assert_text("Select an option")
       |> take_screenshot()
+      #fails here
       |> find(css("*[data-testid^='product_option']", count: 2), fn options ->
         assert [
                  {"cool shirts", "$80.00"}, {"Digital Download", "$25.00"}
