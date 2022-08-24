@@ -55,7 +55,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     socket
     |> assign(orders: orders)
-    |> assign(selection_filter: if(orders == [], do: false, else: true))
+    |> assign(selection_filter: orders != [])
     |> is_mobile(params)
     |> assigns(gallery_id, album)
   end
@@ -288,13 +288,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
-    |> assign(:selected_photos, [])
-    |> push_event("select_mode", %{"mode" => "selected_none"})
-    |> assign(:select_mode, "selected_none")
-    |> assign(:selection_filter, !selection_filter)
-    |> assign(:page, 0)
-    |> assign(:update_mode, "replace")
+    |> assign(
+      selected_photos: [],
+      select_mode: "selected_none",
+      selection_filter: !selection_filter,
+      page: 0,
+      update_mode: "replace"
+    )
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> push_event("reload_grid", %{})
     |> noreply()
   end
@@ -750,7 +752,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
+    |> sorted_photos()
     |> noreply()
+  end
+
+  defp sorted_photos(%{assigns: %{orders: orders, photos: photos}} = socket) do
+    case orders do
+      [] ->
+        socket |> assign(:photos, photos)
+
+      orders ->
+        selected_photo_ids =
+          Enum.flat_map(orders, fn %{digitals: digitals} ->
+            Enum.map(digitals, & &1.photo.id)
+          end)
+
+        photos = Enum.reject(photos, fn photo -> photo.id in selected_photo_ids end)
+        socket |> assign(:photos, photos)
+    end
   end
 
   defp delete_photos(%{assigns: %{gallery: gallery}} = socket, selected_photos) do
