@@ -117,4 +117,36 @@ defmodule Picsello.BookingEventsTest do
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
     end
   end
+
+  describe "expire_booking/1" do
+    test "does not archive when lead is already converted to job" do
+      lead = insert(:lead) |> promote_to_job()
+      assert {:ok, _} = BookingEvents.expire_booking(lead)
+      assert %{archived_at: nil} = lead |> Repo.reload()
+    end
+
+    test "updates lead archived_at" do
+      lead = insert(:lead)
+      assert {:ok, _} = BookingEvents.expire_booking(lead)
+      assert %{archived_at: %DateTime{}} = lead |> Repo.reload()
+    end
+
+    test "expires stripe session when stripe id is set" do
+      lead = insert(:lead)
+      insert(:payment_schedule, job: lead, stripe_session_id: "session_id")
+
+      Picsello.MockPayments
+      |> Mox.stub(:expire_session, fn "session_id", _opts ->
+        {:ok, %Stripe.Session{}}
+      end)
+
+      assert {:ok, _} = BookingEvents.expire_booking(lead)
+    end
+
+    test "does not expires stripe session when stripe id is not set" do
+      lead = insert(:lead)
+      insert(:payment_schedule, job: lead)
+      assert {:ok, _} = BookingEvents.expire_booking(lead)
+    end
+  end
 end

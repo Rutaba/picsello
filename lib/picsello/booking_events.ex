@@ -1,6 +1,6 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent}
+  alias Picsello.{Repo, BookingEvent, Job}
   import Ecto.Query
 
   defmodule Booking do
@@ -179,6 +179,33 @@ defmodule Picsello.BookingEvents do
         description: "100% retainer"
       })
     end)
+    |> Oban.insert(:oban_job, fn changes ->
+      # multiply booking reservation by 2 to account for time spent on Stripe checkout
+      expiration = Application.get_env(:picsello, :booking_reservation_seconds) * 2
+      Picsello.Workers.ExpireBooking.new(%{id: changes.job.id}, schedule_in: expiration)
+    end)
     |> Repo.transaction()
+  end
+
+  def expire_booking(%Job{} = job) do
+    with %Job{
+           job_status: job_status,
+           client: %{organization: organization},
+           payment_schedules: payment_schedules
+         } <-
+           job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
+         %Picsello.JobStatus{is_lead: true} <- job_status,
+         {:ok, _} <- Picsello.Jobs.archive_lead(job) do
+      for %{stripe_session_id: "" <> session_id} <- payment_schedules,
+          do:
+            Picsello.Payments.expire_session(session_id,
+              connect_account: organization.stripe_account_id
+            )
+
+      {:ok, job}
+    else
+      %Picsello.JobStatus{is_lead: false} -> {:ok, job}
+      {:error, error} -> {:error, error}
+    end
   end
 end

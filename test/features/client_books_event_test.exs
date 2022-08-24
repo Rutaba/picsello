@@ -56,6 +56,7 @@ defmodule Picsello.ClientBooksEventTest do
     [
       photographer: user,
       template: template,
+      event: event,
       booking_event_url:
         Routes.client_booking_event_path(
           PicselloWeb.Endpoint,
@@ -66,7 +67,13 @@ defmodule Picsello.ClientBooksEventTest do
     ]
   end
 
-  feature "client books event", %{session: session, booking_event_url: booking_event_url} do
+  feature "client books event", %{
+    session: session,
+    photographer: %{organization_id: organization_id},
+    event: %{id: event_id},
+    template: %{id: template_id},
+    booking_event_url: booking_event_url
+  } do
     Picsello.MockPayments
     |> Mox.stub(:retrieve_account, fn _, _ ->
       {:ok, %Stripe.Account{charges_enabled: true}}
@@ -80,7 +87,9 @@ defmodule Picsello.ClientBooksEventTest do
          url:
            PicselloWeb.Endpoint.struct_url()
            |> Map.put(:fragment, "stripe-checkout")
-           |> URI.to_string()
+           |> URI.to_string(),
+         payment_intent: "new_intent_id",
+         id: "new_session_id"
        }}
     end)
 
@@ -136,6 +145,57 @@ defmodule Picsello.ClientBooksEventTest do
     |> assert_has(definition("100% retainer due today", text: "$15.00"))
     |> click(button("Pay Invoice"))
     |> assert_url_contains("stripe-checkout")
+
+    assert [
+             %{
+               id: job_id,
+               type: "mini",
+               client: %{
+                 name: "Chad Smith",
+                 email: "chad@example.com",
+                 phone: "(987) 123-4567",
+                 organization_id: ^organization_id
+               },
+               package: %{
+                 base_price: ~M[1500]USD,
+                 download_count: 3,
+                 package_template_id: ^template_id,
+                 contract: %{
+                   name: "Picsello Default Contract"
+                 }
+               },
+               shoots: [
+                 %{
+                   name: "Event 1",
+                   duration_minutes: 45,
+                   location: :studio,
+                   address: "320 1st St N",
+                   starts_at: ~U[2050-12-11 11:00:00Z]
+                 }
+               ],
+               payment_schedules: [
+                 %{
+                   price: ~M[1500]USD,
+                   description: "100% retainer",
+                   stripe_payment_intent_id: "new_intent_id",
+                   stripe_session_id: "new_session_id"
+                 }
+               ],
+               booking_proposals: [%{}],
+               booking_event_id: ^event_id
+             }
+           ] =
+             Picsello.Repo.all(Picsello.Job)
+             |> Picsello.Repo.preload([
+               :client,
+               :payment_schedules,
+               :shoots,
+               :booking_proposals,
+               [package: :contract]
+             ])
+
+    assert [%{args: %{"id" => ^job_id}, worker: "Picsello.Workers.ExpireBooking"}] =
+             Picsello.Repo.all(Oban.Job)
   end
 
   feature "client books event and package has contract", %{
