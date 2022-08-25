@@ -12,8 +12,10 @@ defmodule Picsello.Shoots do
       where:
         client.organization_id == ^user.organization.id and
           is_nil(job.archived_at) and shoot.starts_at >= ^start_date and
-          shoot.starts_at <= ^end_date,
-      select: {shoot, job, client, status}
+          shoot.starts_at <= ^end_date and
+          (status.is_lead == false or is_nil(job.booking_event_id)),
+      select: {shoot, job, client, status},
+      order_by: shoot.starts_at
     )
     |> Repo.all()
   end
