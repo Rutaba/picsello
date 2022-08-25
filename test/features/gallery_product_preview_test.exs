@@ -7,7 +7,7 @@ defmodule Picsello.GalleryProductPreviewTest do
 
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
+    [products: products(gallery)]
   end
 
   def products(gallery, coming_soon \\ false) do
