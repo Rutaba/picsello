@@ -100,6 +100,10 @@ defmodule Picsello.Job do
     from(job in query, join: status in assoc(job, :job_status), where: status.is_lead)
   end
 
+  def not_booking(query \\ __MODULE__) do
+    from(job in query, where: is_nil(job.booking_event_id))
+  end
+
   def not_leads(query \\ __MODULE__) do
     from(job in query, join: status in assoc(job, :job_status), where: not status.is_lead)
   end
