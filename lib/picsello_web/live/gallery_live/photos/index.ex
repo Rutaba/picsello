@@ -972,7 +972,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
-    |> sorted_photos()
+    |> reject_ordered_photos()
     |> noreply()
   end
 
@@ -992,21 +992,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  defp sorted_photos(%{assigns: %{orders: orders, photos: photos}} = socket) do
-    if orders do
-      selected_photo_ids =
-        Enum.flat_map(orders, fn order ->
-          order.digitals
-          |> Enum.map(fn digital -> digital.photo.id end)
-        end)
+  defp reject_ordered_photos(%{assigns: %{orders: orders, photos: photos}} = socket) do
+    case orders do
+      [] ->
+        assign(socket, photos: photos)
 
-      photos = Enum.reject(photos, fn photo -> photo.id in selected_photo_ids end)
+      orders ->
+        selected_photo_ids =
+          Enum.flat_map(orders, fn %{digitals: digitals} ->
+            Enum.map(digitals, & &1.photo.id)
+          end)
 
-      socket
-      |> assign(photos: photos)
-    else
-      socket
-      |> assign(photos: photos)
+        photos = Enum.reject(photos, fn photo -> photo.id in selected_photo_ids end)
+        assign(socket, photos: photos)
     end
   end
 
