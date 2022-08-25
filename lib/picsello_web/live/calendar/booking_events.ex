@@ -21,6 +21,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   end
 
   @impl true
+  def handle_params(
+        %{"id" => event_id},
+        _,
+        %{
+          assigns: %{
+            live_action: :edit,
+            current_user: current_user,
+            booking_events: booking_events
+          }
+        } = socket
+      ) do
+    event_id = String.to_integer(event_id)
+
+    if booking_events |> Enum.find(&(&1.id == event_id)) |> Map.get(:can_edit?) do
+      socket
+      |> open_wizard(%{
+        booking_event: BookingEvents.get_booking_event!(current_user.organization_id, event_id)
+      })
+      |> noreply()
+    else
+      socket
+      |> push_patch(to: Routes.calendar_booking_events_path(socket, :index), replace: true)
+      |> noreply()
+    end
+  end
+
+  @impl true
   def handle_params(_, _, socket) do
     socket |> noreply()
   end
@@ -95,7 +122,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
       <div class="flex flex-col justify-center sm:ml-4">
         <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
-        <p class="text-xl font-semibold underline text-blue-planning-300"><%= @booking_event.name %></p>
+        <p class="text-xl font-semibold"><%= @booking_event.name %></p>
         <p class="text-gray-400"><%= @booking_event.package_name %></p>
         <p class="text-gray-400"><%= @booking_event.duration_minutes %> minutes</p>
       </div>
@@ -123,8 +150,30 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           Copied!
         </div>
       </.icon_button>
+      <div phx-update="ignore" data-offset="0" phx-hook="Select" id={"manage-event-#{@booking_event.id}"}>
+        <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+          <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+          <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+        </button>
+
+        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+          <button disabled={!@booking_event.can_edit?} title={if @booking_event.can_edit?, do: "Edit", else: "Can't edit a booking event that has leads already"} type="button" {if @booking_event.can_edit?, do: %{phx_click: "edit-event", phx_value_event_id: @booking_event.id}, else: %{}}
+                  class={classes("flex items-center px-3 py-2 rounded-lg", %{"hover:bg-blue-planning-100 hover:font-bold" => @booking_event.can_edit?, "opacity-40 cursor-not-allowed" => !@booking_event.can_edit?})}
+          >
+            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            Edit
+          </button>
+        </div>
+      </div>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event("edit-event", %{"event-id" => id}, socket) do
+    socket
+    |> push_patch(to: Routes.calendar_booking_events_path(socket, :edit, id))
+    |> noreply()
   end
 
   @impl true

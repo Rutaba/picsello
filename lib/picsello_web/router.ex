@@ -137,6 +137,7 @@ defmodule PicselloWeb.Router do
       live "/calendar/settings", Live.Calendar.Settings, :settings
       live "/booking-events", Live.Calendar.BookingEvents, :index
       live "/booking-events/new", Live.Calendar.BookingEvents, :new
+      live "/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit
       get "/calendar-feed", CalendarFeedController, :index
 
       scope "/galleries/:id", GalleryLive do

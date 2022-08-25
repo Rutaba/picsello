@@ -295,6 +295,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def to_integer(int) when is_integer(int), do: int
   def to_integer(bin) when is_binary(bin), do: String.to_integer(bin)
+  def to_integer(nil), do: nil
 
   def display_cover_photo(%{cover_photo: %{id: photo_id}}),
     do: %{

@@ -28,12 +28,7 @@ defmodule Picsello.BookingEvents do
   end
 
   def upsert_booking_event(changeset) do
-    changeset
-    |> Repo.insert(
-      on_conflict: :replace_all,
-      conflict_target: [:id],
-      returning: true
-    )
+    changeset |> Repo.insert_or_update()
   end
 
   def get_booking_events(organization_id) do
@@ -44,6 +39,7 @@ defmodule Picsello.BookingEvents do
       where: package.organization_id == ^organization_id,
       select: %{
         booking_count: fragment("sum(case when ?.is_lead = false then 1 else 0 end)", status),
+        can_edit?: fragment("count(?.*) = 0", job),
         package_name: package.name,
         id: event.id,
         name: event.name,

@@ -38,7 +38,7 @@ defmodule Picsello.BookingEvent do
     @primary_key false
     embedded_schema do
       field(:date, :date)
-      embeds_many :time_blocks, TimeBlock
+      embeds_many :time_blocks, TimeBlock, on_replace: :delete
     end
 
     def changeset(event_date \\ %__MODULE__{}, attrs) do
@@ -78,7 +78,7 @@ defmodule Picsello.BookingEvent do
     field :address, :string
     field :thumbnail_url, :string
     belongs_to :package_template, Picsello.Package
-    embeds_many :dates, EventDate
+    embeds_many :dates, EventDate, on_replace: :delete
     has_many :jobs, Picsello.Job
 
     timestamps()

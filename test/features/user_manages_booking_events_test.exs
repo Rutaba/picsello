@@ -193,6 +193,67 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_value(text_field("booking_event[dates][0][date]"), "2050-10-10")
   end
 
+  feature "edit is disabled when there's a lead associated to the event", %{
+    session: session,
+    user: user
+  } do
+    template = insert(:package_template, user: user)
+    event = insert(:booking_event, package_template_id: template.id)
+    insert(:lead, user: user, booking_event_id: event.id)
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(button("Manage"))
+    |> assert_disabled(button("Edit"))
+  end
+
+  feature "edit the event", %{session: session, user: user} do
+    %{id: template_id} = template = insert(:package_template, user: user)
+    insert(:booking_event, package_template_id: template.id, name: "Event 1")
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(button("Manage"))
+    |> click(button("Edit"))
+    |> assert_text("Edit booking event: Details")
+    |> fill_in(text_field("Title"), with: "My modified event")
+    |> click(button("Next"))
+    |> assert_text("Edit booking event: Select package")
+    |> click(button("Next"))
+    |> assert_text("Edit booking event: Customize")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_flash(:success, text: "Booking event saved successfully")
+    |> assert_path("/booking-events")
+    |> assert_text("My modified event")
+
+    thumbnail_url = PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png"
+
+    assert [
+             %{
+               name: "My modified event",
+               location: "on_location",
+               address: "320 1st St N, Jax Beach, FL",
+               duration_minutes: 45,
+               buffer_minutes: 15,
+               dates: [
+                 %{
+                   date: ~D[2050-12-10],
+                   time_blocks: [
+                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
+                     %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
+                   ]
+                 }
+               ],
+               package_template_id: ^template_id,
+               thumbnail_url: ^thumbnail_url,
+               description: "<p>My custom description</p>"
+             }
+           ] = Picsello.Repo.all(Picsello.BookingEvent)
+  end
+
   defp mock_image_upload(%{port: port} = bypass) do
     upload_url = "http://localhost:#{port}"
 

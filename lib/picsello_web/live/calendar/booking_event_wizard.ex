@@ -18,7 +18,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     |> assign_new(:steps, fn -> [:details, :package, :customize] end)
     |> assign_new(:collapsed_dates, fn -> [] end)
     |> assign_new(:booking_event, fn -> %BookingEvent{} end)
-    |> assign_changeset(%{"dates" => [%{"time_blocks" => [%{}]}]})
+    |> case do
+      %{assigns: %{booking_event: %BookingEvent{id: nil}}} = socket ->
+        socket |> assign_changeset(%{"dates" => [%{"time_blocks" => [%{}]}]})
+
+      socket ->
+        socket |> assign_changeset(%{})
+    end
     |> assign_package_templates()
     |> ok()
   end
@@ -159,7 +165,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     ~H"""
     <div class="grid grid-cols-1 my-4 sm:grid-cols-2 lg:grid-cols-3 gap-7">
       <%= for package <- @package_templates do %>
-        <% checked = input_value(@f, :package_template_id) == package.id %>
+        <% checked = input_value(@f, :package_template_id) |> to_integer() == package.id %>
 
         <label {testid("template-card")}>
           <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: package.id} />
