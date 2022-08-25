@@ -1,19 +1,12 @@
 defmodule Picsello.GalleryProductPreviewTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.TestSupport.ClientGallery
 
   setup :onboarded
   setup :authenticated
   setup :authenticated_gallery
 
-  setup do
-    Picsello.Test.WHCCCatalog.sync_catalog()
-  end
-
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
-    [gallery: gallery]
 
   end
 
