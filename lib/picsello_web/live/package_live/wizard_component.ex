@@ -3,14 +3,19 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   use PicselloWeb, :live_component
 
+  alias Ecto.Changeset
+
   alias Picsello.{
+    Repo,
     Package,
     Packages,
     Packages.Multiplier,
     Packages.Download,
     Packages.PackagePricing,
     Contracts,
-    Contract
+    Contract,
+    PackagePaymentSchedule,
+    PackagePayments
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
@@ -26,6 +31,213 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
+  @payment_defaults_fixed %{
+    "wedding" => ["To Book", "6 Months Before", "Week Before"],
+    "family" => ["To Book", "Day Before Shoot"],
+    "maternity" => ["To Book", "Day Before Shoot"],
+    "newborn" => ["To Book", "Day Before Shoot"],
+    "event" => ["To Book", "Day Before Shoot"],
+    "headshot" => ["To Book"],
+    "portrait" => ["To Book"],
+    "mini" => ["To Book"],
+    "boudoir" => ["To Book", "Day Before Shoot"],
+    "other" => ["To Book", "Day Before Shoot"],
+    "payment_due_book" => ["To Book"],
+    "splits_2" => ["To Book", "Day Before Shoot"],
+    "splits_3" => ["To Book", "6 Months Before", "Week Before"]
+  }
+  @payment_defaults_percentage %{
+    "wedding" => ["33% To Book", "33% 1 Month Before", "34% Day Before"],
+    "family" => ["50% To Book", "50% Day Before"],
+    "maternity" => ["50% To Book", "50% Day Before"],
+    "newborn" => ["50% To Book", "50% Day Before"],
+    "event" => ["50% To Book", "50% Day Before"],
+    "headshot" => ["100% To Book"],
+    "portrait" => ["100% To Book"],
+    "mini" => ["100% To Book"],
+    "boudoir" => ["50% To Book", "50% Day Before"],
+    "other" => ["50% To Book", "50% Day Before"],
+    "payment_due_book" => ["100% To Book"],
+    "splits_2" => ["50% To Book", "50% Day Before"],
+    "splits_3" => ["33% To Book", "33% 1 Month Before", "34% Day Before"]
+  }
+
+  defmodule CustomPayments do
+    @moduledoc "For setting payments on last step"
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    alias PicselloWeb.PackageLive.WizardComponent
+    @future_date ~D[2122-01-01]
+
+    @primary_key false
+    embedded_schema do
+      field(:schedule_type, :string)
+      field(:fixed, :boolean)
+      field(:total_price, Money.Ecto.Amount.Type)
+      field(:remaining_price, Money.Ecto.Amount.Type)
+      embeds_many(:payment_schedules, PackagePaymentSchedule)
+    end
+
+    def changeset(attrs, default_payment_changeset \\ nil) do
+      fixed = %__MODULE__{} |> cast(attrs, [:fixed]) |> Changeset.get_field(:fixed)
+
+      %__MODULE__{}
+      |> cast(attrs, [:total_price, :remaining_price, :fixed, :schedule_type])
+      |> cast_embed(:payment_schedules,
+        with: &PackagePaymentSchedule.changeset(&1, &2, default_payment_changeset, fixed),
+        required: true
+      )
+      |> validate_schedule_date(default_payment_changeset)
+      |> validate_required([:schedule_type, :fixed])
+      |> validate_total_amount()
+    end
+
+    defp validate_schedule_date(changeset, default_payment_changeset) do
+      {schedules_changeset, _} =
+        changeset
+        |> Changeset.get_change(:payment_schedules)
+        |> Enum.reduce({[], []}, fn payment, {schedules, acc} ->
+          payment = transform_to_schedule_date(payment, default_payment_changeset)
+
+          schedules_changeset =
+            if Enum.any?(acc) do
+              Enum.with_index(acc, fn x_schedule_date, index ->
+                compare_and_validate(payment, x_schedule_date, index, length(acc))
+              end)
+              |> List.flatten()
+              |> List.first()
+              |> then(fn
+                nil -> schedules ++ [payment]
+                schedule -> schedules ++ [schedule]
+              end)
+            else
+              schedules ++ [payment]
+            end
+
+          schedule_date = Changeset.get_field(payment, :schedule_date)
+          {schedules_changeset, if(schedule_date, do: acc ++ [schedule_date], else: acc)}
+        end)
+
+      Changeset.put_change(changeset, :payment_schedules, schedules_changeset |> List.flatten())
+    end
+
+    defp compare_and_validate(changeset, x_schedule_date, index, field_index) do
+      case Date.compare(Changeset.get_field(changeset, :schedule_date), x_schedule_date) do
+        :lt ->
+          add_error(
+            changeset,
+            :schedule_date,
+            "Payment #{field_index + 1} must be after Payment #{index + 1}"
+          )
+
+        :eq ->
+          add_error(
+            changeset,
+            :schedule_date,
+            "Payment #{field_index + 1} and Payment #{index + 1} cann't be same"
+          )
+
+        _ ->
+          []
+      end
+    end
+
+    defp validate_total_amount(changeset) do
+      remaining = remaining_to_collect(changeset)
+
+      if Money.zero?(remaining) do
+        changeset
+      else
+        changeset
+        |> add_error(:remaining_price, "is not valid")
+      end
+      |> Changeset.put_change(:remaining_price, remaining)
+    end
+
+    defp remaining_to_collect(payments_changeset) do
+      %{
+        fixed: fixed,
+        total_price: total_price,
+        payment_schedules: payments
+      } = payments_changeset |> current()
+
+      total_collected =
+        payments
+        |> Enum.reduce(Money.new(0), fn payment, acc ->
+          if fixed && !WizardComponent.is_percentage(payment.due_interval) do
+            Money.add(acc, payment.price || Money.new(0))
+          else
+            Money.add(acc, from_percentage(payment.percentage, total_price))
+          end
+        end)
+
+      Money.subtract(total_price, total_collected.amount)
+    end
+
+    defp from_percentage(nil, _), do: Money.new(0)
+
+    defp from_percentage(price, total_price) do
+      Money.divide(total_price, 100) |> List.first() |> Money.multiply(price)
+    end
+
+    defp transform_to_schedule_date(changeset, default_payment_changeset) do
+      shoot_date = get_shoot_date(Changeset.get_field(changeset, :shoot_date))
+
+      schedule_date =
+        case Changeset.get_field(changeset, :interval) do
+          true ->
+            transform_text_to_date(Changeset.get_field(changeset, :due_interval), shoot_date)
+
+          _ ->
+            transform_text_to_date(changeset, default_payment_changeset, shoot_date)
+        end
+
+      Changeset.put_change(changeset, :schedule_date, schedule_date)
+    end
+
+    defp transform_text_to_date("" <> due_interval, shoot_date) do
+      cond do
+        String.contains?(due_interval, "6 Months Before") -> Timex.shift(shoot_date, months: -6)
+        String.contains?(due_interval, "1 Month Before") -> Timex.shift(shoot_date, months: -1)
+        String.contains?(due_interval, "Week Before") -> Date.add(shoot_date, -7)
+        String.contains?(due_interval, "Day Before") -> Date.add(shoot_date, -1)
+        true -> Timex.today()
+      end
+    end
+
+    defp transform_text_to_date(changeset, default_payment_changeset, shoot_date) do
+      interval =
+        if default_payment_changeset,
+          do:
+            PackagePaymentSchedule.get_default_payment_schedules_values(
+              default_payment_changeset,
+              :interval,
+              get_field(changeset, :payment_field_index)
+            ),
+          else: false
+
+      if Changeset.get_field(changeset, :shoot_date) && interval do
+        due_at = Changeset.get_field(changeset, :due_at)
+        if due_at, do: due_at, else: shoot_date
+      else
+        last_shoot_date = get_shoot_date(Changeset.get_field(changeset, :last_shoot_date))
+        count_interval = Changeset.get_field(changeset, :count_interval) |> String.to_integer()
+
+        time_interval =
+          (Changeset.get_field(changeset, :time_interval) <> "s")
+          |> String.downcase()
+          |> String.to_atom()
+
+        if(Changeset.get_field(changeset, :shoot_interval) == "Before 1st Shoot",
+          do: Timex.shift(shoot_date, [{time_interval, -count_interval}]),
+          else: Timex.shift(last_shoot_date, [{time_interval, -count_interval}])
+        )
+      end
+    end
+
+    defp get_shoot_date(shoot_date), do: if(shoot_date, do: shoot_date, else: @future_date)
+  end
 
   @impl true
   def update(assigns, socket) do
@@ -38,11 +250,33 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
     |> choose_initial_step()
     |> assign_changeset(%{})
+    |> assign(default: %{})
+    |> assign(custom: false)
+    |> assign(job_type: nil)
+    |> assign(custom_schedule_type: nil)
+    |> assign(default_payment_changeset: nil)
     |> ok()
   end
 
+  defp assign_payments_changeset(
+         %{assigns: %{default_payment_changeset: default_payment_changeset}} = socket,
+         params,
+         action
+       ) do
+    changeset =
+      params |> CustomPayments.changeset(default_payment_changeset) |> Map.put(:action, action)
+
+    assign(socket, payments_changeset: changeset)
+  end
+
+  defp remaining_price(changeset),
+    do:
+      Changeset.get_field(changeset, :base_price)
+      |> Money.multiply(Changeset.get_field(changeset, :base_multiplier))
+
   defp choose_initial_step(%{assigns: %{is_template: true}} = socket) do
-    socket |> assign(templates: [], step: :details, steps: [:details, :contract, :pricing])
+    socket
+    |> assign(templates: [], step: :details, steps: [:details, :contract, :pricing, :payment])
   end
 
   defp choose_initial_step(%{assigns: %{current_user: user, job: job, package: package}} = socket) do
@@ -53,10 +287,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> assign(
         templates: templates,
         step: :choose_template,
-        steps: [:choose_template, :details, :pricing]
+        steps: [:choose_template, :details, :pricing, :payment]
       )
     else
-      _ -> socket |> assign(templates: [], step: :details, steps: [:details, :pricing])
+      _ -> socket |> assign(templates: [], step: :details, steps: [:details, :pricing, :payment])
     end
   end
 
@@ -100,7 +334,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.step name={@step} f={f} {assigns} />
 
-        <.footer>
+        <.footer class="pt-10">
           <.step_buttons name={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
@@ -111,6 +345,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     </div>
     """
   end
+
+  defp step_valid?(%{step: :payment, payments_changeset: payments_changeset}),
+    do: payments_changeset.valid?
 
   defp step_valid?(%{step: :contract, contract_changeset: contract}), do: contract.valid?
 
@@ -190,7 +427,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step_buttons(%{name: step} = assigns) when step in [:details, :contract] do
+  def step_buttons(%{name: step} = assigns) when step in [:details, :contract, :pricing] do
     ~H"""
     <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
       Next
@@ -198,7 +435,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step_buttons(%{name: :pricing} = assigns) do
+  def step_buttons(%{name: :payment} = assigns) do
     ~H"""
     <button class="px-8 mb-2 sm:mb-0 btn-primary" title="Save" type="submit" disabled={!@is_valid} phx-disable-with="Save">
       Save
@@ -279,7 +516,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :pricing} = assigns) do
     ~H"""
-      <div class="">
+      <div>
           <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
             <label for={input_id(@f, :base_price)}>
               <h2 class="mb-1 text-xl font-bold">Package Price</h2>
@@ -350,6 +587,147 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
+  def step(
+        %{
+          name: :payment,
+          f: %{params: params},
+          default_payment_changeset: default_payment_changeset
+        } = assigns
+      ) do
+    job_type = Map.get(params, "job_type", nil) || Map.get(assigns.job, :type, nil)
+
+    ~H"""
+    <div>
+      <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
+        <div class="mb-2">
+          <h2 class="mb-1 text-xl font-bold">Payment Schedule Preset</h2>
+          Use your default payment schedule or select a new one. Any changes made will result in a custom payment schedule.
+        </div>
+      </div>
+      <% pc = form_for(@payments_changeset, "#") %>
+      <div {testid("select-preset-type")} class="grid gap-6 md:grid-cols-2 grid-cols-1 mt-8">
+        <%= select pc, :schedule_type, payment_dropdown_options(job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
+        <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc) %></div>
+      </div>
+      <hr class="w-full my-6 md:my-8"/>
+      <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
+        <div class="mb-2">
+          <h2 class="mb-1 text-xl font-bold">Payment Schedule Details</h2>
+          Reminder: you're limited to three payment due dates
+        </div>
+      </div>
+      <div class="flex flex-col items-start w-full sm:items-center sm:flex-row sm:w-auto">
+        <div class="mb-8">
+          <h2 class="mb-1 font-bold">Payment By:</h2>
+          <div class="flex flex-col">
+            <label class="my-2"><%= radio_button(pc, :fixed, true, class: "w-5 h-5 mr-2 radio cursor-pointer") %>Fixed amount</label>
+            <label><%= radio_button(pc, :fixed, false, class: "w-5 h-5 mr-2 radio cursor-pointer") %>Percentage</label>
+          </div>
+        </div>
+      </div>
+      <div class="flex mb-6 md:w-1/2">
+        <h2 class="font-bold">Balance to collect:</h2>
+        <div {testid("balance-to-collect")} class="ml-auto"><%= total_price(@f) %> <%= unless input_value(pc, :fixed), do: "(100%)" %></div>
+      </div>
+      <%= hidden_input pc, :total_price %>
+      <%= hidden_input pc, :remaining_price %>
+      <%= inputs_for pc, :payment_schedules, fn p -> %>
+        <%= hidden_input p, :shoot_date %>
+        <%= hidden_input p, :last_shoot_date %>
+        <%= hidden_input p, :schedule_date %>
+        <%= hidden_input p, :payment_field_index, value: p.index %>
+        <div {testid("payment-count-card")} class="border rounded-lg border-base-200 md:w-1/2 pb-2 mt-3">
+          <div class="flex items-center bg-base-200 px-2 p-2">
+            <div class="mb-2 text-xl font-bold">Payment <%= p.index + 1 %></div>
+              <%= if p.index != 0 do %>
+                <.icon_button class="ml-auto" title="remove" phx-value-index={p.index} phx-click="remove-payment" phx-target={@myself} color="red-sales-300" icon="trash">
+                  Remove
+                </.icon_button>
+              <% end %>
+          </div>
+          <h2 class="my-2 px-2 font-bold">Payment Due</h2>
+          <div class="flex flex-col w-full px-2">
+            <label class="items-center font-medium">
+              <div class={classes("flex items-center", %{"mb-2" => is_nil(@job)})}>
+                <%= radio_button(p, :interval, true, class: "w-5 h-5 mr-4 radio cursor-pointer") %>
+                <span class="font-medium">At the following interval</span>
+              </div>
+            </label>
+            <div class={classes("flex my-1 ml-8 items-center text-base-250", %{"hidden" => is_nil(@job)})}>
+              <.icon name="calendar" class="w-4 h-4 mr-1 text-base-250"/>
+              <%= if input_value(p, :shoot_date) |> is_value_set(), do: input_value(p, :schedule_date) |> Calendar.strftime("%m-%d-%Y"), else: "Add shoot to generate date" %>
+            </div>
+            <div {testid("due-interval")} class={classes("flex flex-col my-2 ml-8", %{"hidden" => !input_value(p, :interval)})}>
+              <%= select p, :due_interval, interval_dropdown_options(input_value(p, :due_interval), p.index, input_value(pc, :fixed)), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+              <%= if message = p.errors[:schedule_date] do %>
+                <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
+            </div>
+            <label>
+              <div class={classes("flex items-center", %{"mb-2" => input_value(p, :interval)})}>
+                <%= radio_button(p, :interval, false, class: "w-5 h-5 mr-4 radio cursor-pointer") %>
+                <span class="font-medium">At a custom time</span>
+              </div>
+            </label>
+            <%= unless input_value(p, :interval) do %>
+              <%= if (input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index) do %>
+                <div class="flex flex-col my-2 ml-8 cursor-pointer">
+                  <%= input p, :due_at, type: :date_input, format: "mm/dd/yyyy", min: Date.utc_today(), placeholder: "mm/dd/yyyy", phx_debounce: "0", class: "w-full px-4 text-lg cursor-pointer" %>
+                  <%= if message = p.errors[:schedule_date] do %>
+                    <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="flex flex-col ml-8">
+                  <div class="flex w-full my-2">  
+                    <div class="w-2/12">
+                      <%= select p, :count_interval, 1..10, wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                    </div>
+                      <div class="ml-2 w-2/5">
+                      <%= select p, :time_interval, ["Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                    </div>
+                    <div class="ml-2 w-2/3">
+                      <%= select p, :shoot_interval, ["Before 1st Shoot", "Before Last Shoot"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                    </div>
+                  </div>
+                  <%= if message = p.errors[:schedule_date] do %>
+                    <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+                  <% end %>
+                </div>
+              <% end %>     
+            <% end %>
+            <div class="flex my-2">
+              <%= if input_value(pc, :fixed) do %>
+                <%= input p, :price, placeholder: "$0.00", class: "w-24 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", phx_hook: "PriceMask" %>
+              <% else %>
+                <%= input p, :percentage, placeholder: "0.00%", value: "#{input_value(p, :percentage)}%", class: classes("w-24 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto",%{"hidden" => input_value(p, :interval)}), phx_hook: "PercentMask" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <.icon_button phx-click="add-payment" phx-target={@myself} class={classes("text-sm bg-white py-1.5 shadow-lg mt-5", %{"hidden" => hide_add_button(pc)})} color="blue-planning-300" icon="plus">
+        Add another payment
+      </.icon_button>
+
+      <div class="flex mb-2 md:w-1/2 mt-5">
+        <h2 class="font-bold">Remaining to collect:</h2>
+        <div {testid("remaining-to-collect")} class="ml-auto">
+          <%= case input_value(pc, :remaining_price) do %>
+            <% value -> %>
+            <%= if Money.zero?(value) do %>
+              <span class="text-green-finances-300"><%= get_remaining_price(input_value(pc, :fixed), value, total_price(@f)) %></span>
+            <% else %>
+              <span class="text-red-sales-300"><%= get_remaining_price(input_value(pc, :fixed), value, total_price(@f)) %></span>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   @impl true
   def handle_event(
         "back",
@@ -362,6 +740,85 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     socket
     |> assign(step: previous_step, changeset: changeset)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "remove-payment",
+        %{"index" => index},
+        %{assigns: %{payments_changeset: payments_changeset}} = socket
+      ) do
+    params = payments_changeset |> current() |> map_keys()
+
+    payment_schedules =
+      params
+      |> Map.get("payment_schedules")
+      |> List.delete_at(String.to_integer(index))
+      |> map_keys()
+
+    params = Map.merge(params, %{"payment_schedules" => payment_schedules})
+
+    socket
+    |> assign_payments_changeset(params, :validate)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "add-payment",
+        %{},
+        %{assigns: %{job: job, payments_changeset: payments_changeset}} = socket
+      ) do
+    params = payments_changeset |> current() |> map_keys()
+    payment_schedules = params |> Map.get("payment_schedules") |> map_keys()
+
+    new_payment =
+      if params["fixed"] do
+        %{"price" => nil, "due_interval" => "Day Before Shoot"}
+      else
+        %{"percentage" => 34, "due_interval" => "34% Day Before"}
+      end
+      |> Map.merge(%{
+        "shoot_date" => get_first_shoot(job),
+        "last_shoot_date" => get_last_shoot(job),
+        "interval" => true
+      })
+
+    params =
+      Map.merge(params, %{
+        "payment_schedules" =>
+          payment_schedules ++ [Map.merge(payment_schedules |> List.first(), new_payment)]
+      })
+
+    socket
+    |> assign_payments_changeset(params, :validate)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"step" => "payment", "custom_payments" => params},
+        %{assigns: %{payments_changeset: payments_changeset}} = socket
+      ) do
+    custom_payments_changeset =
+      %CustomPayments{} |> Changeset.cast(params, [:fixed, :schedule_type])
+
+    schedule_type = Changeset.get_field(custom_payments_changeset, :schedule_type)
+    fixed = Changeset.get_field(custom_payments_changeset, :fixed)
+    price = Changeset.get_field(payments_changeset, :total_price)
+
+    cond do
+      schedule_type != Changeset.get_field(payments_changeset, :schedule_type) ->
+        schedule_type_switch(socket, price, schedule_type, params)
+
+      fixed != Changeset.get_field(payments_changeset, :fixed) ->
+        fixed_switch(socket, fixed, price, schedule_type, params)
+
+      true ->
+        socket |> maybe_assign_custom(params)
+    end
     |> noreply()
   end
 
@@ -429,9 +886,22 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: %{job: job}} = socket
       ) do
+    package_payment_schedules =
+      socket
+      |> find_template(package_template_id)
+      |> Repo.preload(:package_payment_schedules, force: true)
+      |> Map.get(:package_payment_schedules)
+
     changeset = changeset_from_template(socket, package_template_id)
 
-    insert_package_and_update_job(socket, changeset, job)
+    payment_schedules =
+      package_payment_schedules
+      |> Enum.map(fn schedule ->
+        schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
+      end)
+
+    opts = %{payment_schedules: payment_schedules, action: :insert}
+    insert_package_and_update_job(socket, changeset, job, opts)
   end
 
   @impl true
@@ -466,28 +936,126 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event(
         "submit",
         %{"step" => "pricing"} = params,
-        %{assigns: %{is_template: false, job: job, package: %Package{id: nil}}} = socket
+        %{
+          assigns: %{
+            job: job,
+            package: package,
+            current_user: %{organization: organization}
+          }
+        } = socket
       ) do
-    socket = assign_changeset(socket, params)
-    insert_package_and_update_job(socket, socket.assigns.changeset, job)
+    package =
+      if package.id,
+        do: package |> Repo.preload(:package_payment_schedules, force: true),
+        else: package
+
+    socket
+    |> assign_changeset(params, :validate)
+    |> assign_contract_changeset(params)
+    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
+      job_type = if job, do: job.type, else: changeset |> Changeset.get_field(:job_type)
+
+      package_payment_presets =
+        case package do
+          %{package_payment_schedules: []} ->
+            PackagePayments.get_package_presets(organization.id, job_type)
+
+          %{package_payment_schedules: %Ecto.Association.NotLoaded{}} ->
+            PackagePayments.get_package_presets(organization.id, job_type)
+
+          _ ->
+            package
+        end
+
+      socket
+      |> assign(job_type: job_type)
+      |> assign_payment_defaults(job_type, package_payment_presets)
+    end)
+    |> then(fn %{assigns: %{payments_changeset: payments_changeset}} = socket ->
+      socket
+      |> assign(default_payment_changeset: payments_changeset)
+    end)
+    |> noreply()
   end
 
   @impl true
   def handle_event(
         "submit",
-        %{"step" => "pricing"} = params,
-        socket
+        %{"step" => "payment", "custom_payments" => payment_params} = params,
+        %{
+          assigns: %{
+            is_template: false,
+            job: job,
+            package: %Package{id: nil}
+          }
+        } = socket
       ) do
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
+    socket
+    |> assign_changeset(params)
+    |> maybe_assign_custom(payment_params)
+    |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
+                 socket ->
+      payment_schedules =
+        payments_changeset
+        |> current()
+        |> Map.from_struct()
+        |> Map.get(:payment_schedules, [])
+        |> Enum.map(fn schedule ->
+          schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
+        end)
 
-    case Packages.insert_or_update_package(changeset, Map.get(params, "contract")) do
-      {:ok, package} ->
-        successfull_save(socket, package)
-
-      _ ->
-        socket |> noreply()
-    end
+      total_price = total_price = Changeset.get_field(payments_changeset, :total_price)
+      opts = %{total_price: total_price, payment_schedules: payment_schedules, action: :insert}
+      insert_package_and_update_job(socket, changeset, job, opts)
+    end)
   end
+
+  @impl true
+  def handle_event(
+        "submit",
+        %{"step" => "payment", "custom_payments" => payment_params} = params,
+        %{
+          assigns: %{
+            is_template: true,
+            current_user: %{organization: organization},
+            job_type: job_type,
+            package: %{id: nil}
+          }
+        } = socket
+      ) do
+    payment_preset = PackagePayments.get_package_presets(organization.id, job_type)
+
+    socket
+    |> assign_changeset(params)
+    |> maybe_assign_custom(payment_params)
+    |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
+                 socket ->
+      case Packages.insert_or_update_package(
+             changeset,
+             Map.get(params, "contract"),
+             get_preset_options(payments_changeset, payment_preset)
+           ) do
+        {:ok, package} -> successfull_save(socket, package)
+        _ -> socket |> noreply()
+      end
+    end)
+  end
+
+  @impl true
+  def handle_event(
+        "submit",
+        %{"step" => "payment"} = params,
+        %{assigns: %{is_template: false, job: %{id: job_id}}} = socket
+      ),
+      do: socket |> save_payment(params, job_id)
+
+  @impl true
+  def handle_event(
+        "submit",
+        %{"step" => "payment"} = params,
+        %{assigns: %{is_template: true}} = socket
+      ),
+      do: socket |> save_payment(params)
 
   @impl true
   def handle_event("new-package", %{}, socket) do
@@ -504,7 +1072,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       ) do
     package = current(changeset)
 
-    template = find_template(socket, package.package_template_id)
+    template =
+      find_template(socket, package.package_template_id)
+      |> Repo.preload(:package_payment_schedules, force: true)
 
     changeset = changeset_from_template(template)
 
@@ -519,12 +1089,179 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             :download_count,
             :base_multiplier,
             :buy_all,
-            :print_credits
+            :print_credits,
+            :package_payment_schedules,
+            :fixed,
+            :schedule_type
           ])
         ),
       changeset: changeset
     )
     |> noreply()
+  end
+
+  defp schedule_type_switch(
+         %{assigns: %{job: job, changeset: changeset}} = socket,
+         price,
+         schedule_type,
+         params
+       ) do
+    fixed = schedule_type == Changeset.get_field(changeset, :job_type)
+
+    presets =
+      get_custom_payment_defaults(socket, schedule_type, fixed)
+      |> Enum.map(
+        &%{
+          "interval" => true,
+          "shoot_date" => get_first_shoot(job),
+          "last_shoot_date" => get_last_shoot(job),
+          "percentage" => "",
+          "due_interval" => &1
+        }
+      )
+
+    params = %{
+      "total_price" => price,
+      "remaining_price" => price,
+      "payment_schedules" => presets,
+      "fixed" => fixed,
+      "schedule_type" => schedule_type
+    }
+
+    socket
+    |> assign(default: map_default(params))
+    |> assign(custom: false)
+    |> assign_payments_changeset(params, :validate)
+  end
+
+  defp fixed_switch(%{assigns: %{job: job}} = socket, fixed, price, schedule_type, params) do
+    presets =
+      get_custom_payment_defaults(socket, schedule_type, fixed)
+      |> Enum.map(
+        &%{
+          "interval" => true,
+          "shoot_date" => get_first_shoot(job),
+          "last_shoot_date" => get_last_shoot(job),
+          "percentage" => "",
+          "due_interval" => &1
+        }
+      )
+
+    params = %{
+      "total_price" => price,
+      "remaining_price" => price,
+      "payment_schedules" => presets,
+      "fixed" => fixed,
+      "schedule_type" => schedule_type
+    }
+
+    socket
+    |> maybe_assign_custom(params)
+  end
+
+  defp assign_payment_defaults(
+         %{assigns: %{job: job, changeset: changeset}} = socket,
+         job_type,
+         params
+       ) do
+    price = remaining_price(changeset)
+
+    params =
+      if params && params.package_payment_schedules != [] do
+        presets =
+          map_keys(params.package_payment_schedules)
+          |> Enum.map(
+            &Map.merge(&1, %{
+              "shoot_date" => get_first_shoot(job),
+              "last_shoot_date" => get_last_shoot(job)
+            })
+          )
+
+        %{
+          "total_price" => price,
+          "remaining_price" => price,
+          "payment_schedules" => presets,
+          "fixed" => params.fixed,
+          "schedule_type" => params.schedule_type
+        }
+      else
+        presets =
+          get_payment_defaults(job_type, true)
+          |> Enum.map(
+            &%{
+              "interval" => true,
+              "shoot_date" => get_first_shoot(job),
+              "last_shoot_date" => get_last_shoot(job),
+              "due_interval" => &1
+            }
+          )
+
+        %{
+          "total_price" => price,
+          "remaining_price" => price,
+          "payment_schedules" => presets,
+          "fixed" => true,
+          "schedule_type" => job_type
+        }
+      end
+
+    socket
+    |> assign_payments_changeset(params, :insert)
+    |> assign(step: :payment)
+  end
+
+  defp save_payment(socket, %{"custom_payments" => payment_params} = params, job_id \\ nil) do
+    socket
+    |> assign_changeset(params)
+    |> maybe_assign_custom(payment_params)
+    |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
+                 socket ->
+      payment_schedules =
+        payments_changeset
+        |> current()
+        |> Map.from_struct()
+        |> Map.get(:payment_schedules, [])
+        |> Enum.map(&Map.from_struct(&1))
+
+      total_price = Changeset.get_field(payments_changeset, :total_price)
+
+      opts = %{
+        job_id: job_id,
+        total_price: total_price,
+        payment_schedules: payment_schedules,
+        action: :update
+      }
+
+      case Packages.insert_or_update_package(changeset, Map.get(params, "contract"), opts) do
+        {:ok, package} ->
+          successfull_save(
+            socket,
+            package |> Repo.preload(:package_payment_schedules, force: true)
+          )
+
+        _ ->
+          socket |> noreply()
+      end
+    end)
+  end
+
+  defp get_preset_options(payments_changeset, payment_preset) do
+    payment_schedules =
+      payments_changeset
+      |> current()
+      |> Map.from_struct()
+      |> Map.get(:payment_schedules, [])
+      |> Enum.map(&Map.from_struct(&1))
+
+    if payment_preset do
+      %{
+        action: :update_preset,
+        payment_preset: payment_preset |> Map.drop([:package_payment_schedules])
+      }
+    else
+      %{action: :insert_preset}
+    end
+    |> Map.merge(%{payment_schedules: payment_schedules})
   end
 
   defp template_selected?(form),
@@ -567,9 +1304,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket |> noreply()
   end
 
-  defp insert_package_and_update_job(socket, changeset, job),
+  defp insert_package_and_update_job(socket, changeset, job, opts),
     do:
-      (case(Packages.insert_package_and_update_job(changeset, job)) do
+      (case(Packages.insert_package_and_update_job(changeset, job, opts)) do
          {:ok, %{package: package}} ->
            successfull_save(socket, package)
 
@@ -606,6 +1343,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     download = current(download_changeset)
 
     package_params =
+      Map.get(params, "custom_payments", %{})
+      |> Map.take(["schedule_type", "fixed"])
+
+    package_params =
       params
       |> Map.get("package", %{})
       |> PackagePricing.handle_package_params(params)
@@ -615,6 +1356,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "download_each_price" => Download.each_price(download),
         "buy_all" => Download.buy_all(download)
       })
+      |> Map.merge(package_params)
 
     changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
 
@@ -646,7 +1388,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}
       %Money{} = value -> %{is_enabled: Money.positive?(value)}
-      %{} -> %{}
+      _ -> %{}
     end
   end
 
@@ -697,5 +1439,215 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         contract_template_id: default_contract.id
       }
     end
+  end
+
+  defp interval_dropdown_options(field, index, fixed) do
+    if fixed do
+      ["To Book", "6 Months Before", "Week Before", "Day Before Shoot"]
+    else
+      [
+        "100% To Book",
+        "50% To Book",
+        "50% Day Before",
+        "33% 1 Month Before",
+        "34% Day Before",
+        "33% To Book"
+      ]
+    end
+    |> Enum.map(&[key: &1, value: &1, disabled: index == 0 && field != &1])
+  end
+
+  defp payment_dropdown_options(job_type, schedule_type) do
+    options = %{
+      "Picsello #{job_type} default" => job_type,
+      "Payment due to book" => "payment_due_book",
+      "2 split payments" => "splits_2",
+      "3 split payments" => "splits_3"
+    }
+
+    cond do
+      schedule_type == "custom_#{job_type}" -> %{"Custom for #{job_type}" => "custom_#{job_type}"}
+      schedule_type == "custom" -> %{"Custom" => "custom"}
+      true -> %{}
+    end
+    |> Map.merge(options)
+  end
+
+  defp get_payment_defaults(schedule_type, true) do
+    Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
+  end
+
+  defp get_payment_defaults(schedule_type, _) do
+    Map.get(@payment_defaults_percentage, schedule_type, [
+      "33% To Book",
+      "33% 1 Month Before",
+      "34% Day Before"
+    ])
+  end
+
+  def is_percentage(due_interval) do
+    due_interval in [
+      "100% To Book",
+      "50% To Book",
+      "50% Day Before",
+      "33% 1 Month Before",
+      "33% To Book",
+      "34% Day Before"
+    ]
+  end
+
+  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
+
+  defp get_tags(form), do: get_intervals(form) |> Enum.join(", ")
+
+  defp get_intervals(form) do
+    {_, tags} =
+      inputs_for(form, :payment_schedules, fn payment_schedule ->
+        if input_value(payment_schedule, :interval) do
+          due_interval = input_value(payment_schedule, :due_interval)
+
+          if is_percentage(due_interval),
+            do: due_interval,
+            else: make_due_inteval_tag(payment_schedule, :price)
+        else
+          shoot_date = input_value(payment_schedule, :shoot_date) |> is_value_set()
+
+          if shoot_date && !input_value(payment_schedule, :count_interval) do
+            make_date_tag(payment_schedule, :due_at)
+          else
+            make_shoot_interval(payment_schedule)
+          end
+        end
+      end)
+
+    tags |> List.flatten()
+  end
+
+  defp make_shoot_interval(form) do
+    value = get_price_value(form)
+
+    if value do
+      time = input_value(form, :time_interval)
+      count = input_value(form, :count_interval) |> String.to_integer()
+      count_interval = if count == 1, do: "1 #{time}", else: "#{count} #{time}s"
+      "#{value} #{count_interval} #{input_value(form, :shoot_interval)}"
+    else
+      ""
+    end
+  end
+
+  defp make_due_inteval_tag(form, field) do
+    value = input_value(form, field) |> is_value_set()
+    if value && value != "$", do: "#{value} to #{input_value(form, :due_interval)}", else: ""
+  end
+
+  defp make_date_tag(form, field) do
+    date = input_value(form, field) |> is_value_set()
+    value = get_price_value(form)
+    if date && value, do: "#{value} at #{date |> Calendar.strftime("%m-%d-%Y")}", else: ""
+  end
+
+  defp get_price_value(form) do
+    price = input_value(form, :price) |> is_value_set()
+    percentage = input_value(form, :percentage) |> is_value_set()
+
+    cond do
+      price && price != "$" -> price
+      percentage -> "#{percentage}%"
+      true -> nil
+    end
+  end
+
+  defp is_value_set("" <> value), do: if(String.length(value) > 0, do: value, else: false)
+  defp is_value_set(value), do: value
+
+  defp get_remaining_price(fixed, value, total) do
+    if fixed do
+      value
+    else
+      percentage = div(div(value.amount, 100) * 100, div(total.amount, 100))
+      "#{value} (#{percentage}%)"
+    end
+  end
+
+  defp map_keys(payments) when is_list(payments) do
+    payments
+    |> Enum.map(fn payment ->
+      payment
+      |> Map.from_struct()
+      |> Map.new(fn {k, v} -> {to_string(k), v} end)
+    end)
+  end
+
+  defp map_keys(payment) do
+    payment
+    |> Map.from_struct()
+    |> Map.new(fn {k, v} -> {to_string(k), v} end)
+  end
+
+  defp get_custom_payment_defaults(
+         %{
+           assigns: %{
+             custom: custom,
+             job_type: job_type,
+             custom_schedule_type: custom_schedule_type
+           }
+         },
+         schedule_type,
+         fixed
+       ) do
+    if custom && schedule_type in ["custom_#{job_type}", "custom"] do
+      get_payment_defaults(custom_schedule_type, fixed)
+    else
+      get_payment_defaults(schedule_type, fixed)
+    end
+  end
+
+  defp maybe_assign_custom(%{assigns: %{is_template: false, job: _}} = socket, params),
+    do: socket |> assign_payments_changeset(params, :validate)
+
+  defp maybe_assign_custom(%{assigns: %{job_type: job_type, default: default}} = socket, params) do
+    schedule_type = Map.get(params, "schedule_type")
+    custom = default != map_default(params)
+
+    if custom && schedule_type not in ["custom_#{job_type}", "custom"] do
+      custom_schedule_type = schedule_type
+      schedule_type = if(schedule_type == job_type, do: "custom_#{job_type}", else: "custom")
+
+      socket
+      |> assign(custom_schedule_type: custom_schedule_type)
+      |> assign_payments_changeset(Map.put(params, "schedule_type", schedule_type), :validate)
+    else
+      socket
+      |> assign_payments_changeset(params, :validate)
+    end
+    |> assign(custom: custom)
+  end
+
+  defp map_default(params) do
+    changeset = params |> CustomPayments.changeset()
+
+    %{
+      fixed: Changeset.get_field(changeset, :fixed),
+      payment_schedules:
+        Enum.map(
+          Changeset.get_field(changeset, :payment_schedules),
+          &Map.take(&1, [:interval, :due_interval])
+        )
+    }
+  end
+
+  defp get_last_shoot(%{id: nil}), do: nil
+
+  defp get_last_shoot(job) do
+    shoot = job |> Repo.preload(:shoots) |> Map.get(:shoots, []) |> List.last()
+    if shoot, do: shoot.starts_at |> Timex.to_date(), else: nil
+  end
+
+  defp get_first_shoot(%{id: nil}), do: nil
+
+  defp get_first_shoot(job) do
+    shoot = job |> Repo.preload(:shoots) |> Map.get(:shoots, []) |> List.first()
+    if shoot, do: shoot.starts_at |> Timex.to_date(), else: nil
   end
 end

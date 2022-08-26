@@ -65,6 +65,30 @@ defmodule Picsello.EditLeadPackageTest do
       text_field("download_buy_all"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
     )
+    |> click(button("Next"))
+    |> scroll_into_view(testid("select-preset-type"))
+    |> find(select("custom_payments_schedule_type"), &click(&1, option("2 split payments")))
+    |> assert_has(testid("preset-summary", text: "50% To Book, 50% Day Before"))
+    |> assert_has(testid("balance-to-collect", text: "$2.00 (100%)"))
+    |> assert_has(testid("payment-count-card", count: 2))
+    |> find(
+      select("custom_payments_payment_schedules_0_due_interval"),
+      &assert_text(&1, "50% To Book")
+    )
+    |> find(
+      select("custom_payments_payment_schedules_1_due_interval"),
+      &assert_text(&1, "50% Day Before")
+    )
+    |> assert_has(testid("remaining-to-collect", text: "$0.00 (0%)"))
+    |> click(radio_button("Fixed amount", checked: false))
+    |> fill_in(css("#custom_payments_payment_schedules_0_price"), with: "0.50")
+    |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "0.50")
+    |> assert_has(testid("remaining-to-collect", text: "$1.00"))
+    |> click(css("#custom_payments_payment_schedules_1_interval_false", checked: false))
+    |> fill_in(css("#custom_payments_payment_schedules_1_due_at"), with: "09/01/2092")
+    |> scroll_into_view(testid("select-preset-type"))
+    |> assert_has(testid("preset-summary", text: "$0.50 to To Book, $0.50 at 2092-01-09"))
+    |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "1.50")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
@@ -73,7 +97,7 @@ defmodule Picsello.EditLeadPackageTest do
     package = lead |> Repo.preload(:package) |> Map.get(:package)
 
     form_fields =
-      ~w(base_price job_type name gallery_credit download_count download_each_price shoot_count buy_all print_credits)a
+      ~w(fixed schedule_type base_price job_type name gallery_credit download_count download_each_price shoot_count buy_all print_credits)a
 
     updated =
       %{
