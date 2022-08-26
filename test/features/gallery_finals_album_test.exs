@@ -1,16 +1,13 @@
 defmodule Picsello.GalleryFinalsAlbumTest do
   use Picsello.FeatureCase, async: true
 
-  import Money.Sigils
-  alias Picsello.Cart.{Digital, DeliveryInfo}
-
   setup :onboarded
   setup :authenticated
   setup :authenticated_gallery
 
   setup %{gallery: gallery} do
-    proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
-    photo_ids = insert_photo(%{gallery: gallery, album: finals_album, total_photos: 5})
+    finals_album = insert(:finals_album, %{gallery_id: gallery.id})
+    insert_photo(%{gallery: gallery, album: finals_album, total_photos: 5})
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     [finals_album: finals_album]

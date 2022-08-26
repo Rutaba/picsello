@@ -27,7 +27,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @impl true
   def handle_params(%{"album_id" => album_id}, _, socket) do
     socket
-    |> assign(:album, Albums.get_album!(album_id))
+    |> assign(:album, %{is_proofing: false, is_finals: false} = Albums.get_album!(album_id))
     |> assign(:is_proofing, false)
     |> assigns()
   end

@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
   @impl true
   def handle_params(_, _, %{assigns: %{gallery: gallery} = assigns} = socket) do
-    orders = Orders.all(gallery.id) |> may_be_filter(assigns)
+    orders = Orders.all(gallery.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 
     gallery = Galleries.populate_organization_user(gallery)
@@ -99,11 +99,13 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     """
   end
 
-  defp may_be_filter(orders, %{album: album}) when album.is_proofing or album.is_finals do
+  defp maybe_filter(orders, %{album: album}) when album.is_proofing or album.is_finals do
     Enum.filter(orders, &(&1.album_id == album.id))
   end
 
-  defp may_be_filter(orders, %{album: _album}), do: orders
+  defp maybe_filter(orders, _assigns) do
+    Enum.reject(orders, & &1.album_id)
+  end
 
   defdelegate canceled?(order), to: Orders
   defdelegate has_download?(order), to: Orders

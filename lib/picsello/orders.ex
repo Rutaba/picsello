@@ -234,6 +234,7 @@ defmodule Picsello.Orders do
     from(order in get_all_proofing_album_orders_query(organization_id),
       where: order.inserted_at > ago(@filtered_days, "day")
     )
+    |> Repo.all()
   end
 
   def get_all_proofing_album_orders_query(organization_id) do
