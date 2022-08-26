@@ -113,7 +113,7 @@ defmodule Picsello.BookingEvents do
       slot_end =
         slot_start
         |> DateTime.add(booking_event.duration_minutes * 60)
-        |> DateTime.add(booking_event.buffer_minutes * 60 - 1)
+        |> DateTime.add((booking_event.buffer_minutes || 0) * 60 - 1)
 
       !Enum.any?(shoots, fn shoot ->
         start_time = shoot.starts_at |> DateTime.shift_zone!(user.time_zone)
