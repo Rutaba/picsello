@@ -9,8 +9,8 @@ defmodule Picsello.CalendarSettingsTest do
     session
     |> visit("/calendar/settings")
     |> assert_text("Calendar Settings")
-    |> assert_has(css("a[href*='/calendar']", count: 2))
-    |> click(link("Calendar"))
+    |> assert_has(css("a[href*='/calendar']", count: 3))
+    |> click(link("Calendar", count: 2, at: 1))
     |> assert_url_contains("calendar")
   end
 
@@ -21,7 +21,5 @@ defmodule Picsello.CalendarSettingsTest do
     |> assert_text("Copy this link if you need to subscribe")
     |> click(button("Copy link"))
     |> assert_text("Copied!")
-    |> click(link("Calendar"))
-    |> assert_url_contains("calendar")
   end
 end
