@@ -51,7 +51,12 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
     %{digitals: digitals, album: album} = Orders.get!(gallery, order_number)
 
-    csv_data = Enum.map(digitals, & &1.photo) |> csv_content()
+    csv_data =
+      digitals
+      |> Enum.map(& &1.photo)
+      |> Enum.split_with(& &1.size)
+      |> assure_photo_size()
+      |> Photos.csv_content()
 
     file_name =
       ~s(#{Date.utc_today() |> Date.to_string()}_#{client.name}_#{gallery.name}_#{album.name}.csv)
@@ -62,26 +67,18 @@ defmodule PicselloWeb.GalleryDownloadsController do
     |> send_resp(200, csv_data)
   end
 
-  @headers [:photo_name, :size]
-  defp csv_content(photos) do
-    photos
-    |> Enum.map(fn %{original_url: url} = photo ->
-      Task.async(fn ->
-        {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
-        Map.put(photo, :size, byte_size(body) |> Size.humanize!())
-      end)
+  defp assure_photo_size({with_size, []}), do: with_size
+
+  defp assure_photo_size({with_size, without_size}) do
+    without_size
+    |> Task.async_stream(fn %{original_url: url, id: id} ->
+      {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
+      %{id: id, size: byte_size(body)}
     end)
-    |> Enum.map(&Task.await/1)
-    |> Enum.map(fn photo ->
-      [
-        photo.name,
-        photo.size
-      ]
-    end)
-    |> then(&[@headers | &1])
-    |> CSV.encode()
-    |> Enum.to_list()
-    |> to_string()
+    |> Enum.map(&elem(&1, 1))
+    |> then(&Photos.update_photos_in_bulk(without_size, &1))
+    |> then(fn {:ok, photos} -> photos end)
+    |> Enum.concat(with_size)
   end
 
   defp process_photos(conn, photos, file_name) do

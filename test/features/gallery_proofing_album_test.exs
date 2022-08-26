@@ -47,7 +47,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
       testid("selection-name", text: "Client Selection - #{DateTime.to_date(order.placed_at)}")
     )
     |> click(css("#toggle_selections"))
-    |> assert_has(css(".item", count: 5))
+    |> assert_has(css(".item", count: 4))
     |> click(css("#toggle_selections"))
     |> assert_has(
       testid("selection-name", text: "Client Selection - #{DateTime.to_date(order.placed_at)}")
@@ -131,7 +131,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
 
   feature "gallery card changes when proofing selections are in", %{
     session: session,
-    gallery: %{job: job},
+    gallery: %{job: job}
   } do
     session
     |> visit("/jobs/#{job.id}")
