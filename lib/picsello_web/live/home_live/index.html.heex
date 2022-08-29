@@ -34,14 +34,9 @@
                     <%= button_label %>
                   </a>
                 <% "gallery-links" -> %>
-                  <div class="flex gap-2">
-                    <a href="https://www.figma.com/proto/JcNTIrljRRJ0gMRTaI4Jes/Client-facing-gallery?page-id=4310%3A2230&node-id=5010%3A4765&viewport=1294%2C981%2C0.1&scaling=scale-down-width&starting-point-node-id=5010%3A4765" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.youtube.com/watch?v=uEY3eS9cDIk" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
                       <%= button_label %>
                     </a>
-                    <a href="https://www.figma.com/proto/x5u7Fod9H9BsUOvYYutNLb/Photographer-facing-gallery?page-id=661%3A3370&node-id=1825%3A22729&viewport=183%2C1589%2C0.11&scaling=scale-down-width&starting-point-node-id=1825%3A22729" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
-                      Preview yours
-                    </a>
-                  </div>
                 <% "proofing-album" -> %>
                   <div class="flex gap-4">
                     <a href={Routes.gallery_photos_index_path(@socket, :index, item.params.album.gallery_id, item.params.album.id)} class={"#{button_class} text-center text-sm w-full py-2 mt-2"} rel="noopener noreferrer">
