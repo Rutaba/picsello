@@ -380,7 +380,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
                 www.emmathurgood.com</cite>
             </div>
           </blockquote>
-          <img class="mt-auto object-cover object-top w-full" style="max-height:75vh;" src="https://uploads-ssl.webflow.com/61147776bffed57ff3e884ef/62f45d6d8aae0229be8bafc7_large-hero.png" alt="Picsello Appliation" />
+          <img class="mt-auto object-cover object-top w-full" style="max-height:75vh;" src="https://uploads-ssl.webflow.com/61147776bffed57ff3e884ef/62f45d6d8aae0229be8bafc7_large-hero.png" alt="Picsello Application" />
         </div>
       </div>
     """

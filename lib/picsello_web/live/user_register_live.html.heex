@@ -2,7 +2,7 @@
   <div id="tz-cookie" phx-hook="TZCookie"></div>
   <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
   <h1 class="text-3xl font-bold mt-7 sm:leading-tight sm:mt-11"><%= @subscription_plan_metadata.signup_title %></h1>
-  <p class="text-base mt-4 font-normal"><%= @subscription_plan_metadata.signup_description %> or <%= link "log in", to: Routes.user_session_path(@socket, :new), class: "underline text-blue-planning-300" %>.</p>
+  <h2 class="text-base mt-4 font-normal"><%= @subscription_plan_metadata.signup_description %> or <%= link "log in", to: Routes.user_session_path(@socket, :new), class: "underline text-blue-planning-300" %>.</h2>
   <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-primary">
     <.icon name="google" width="25" height="24" class="mr-4" />
     Continue with Google
