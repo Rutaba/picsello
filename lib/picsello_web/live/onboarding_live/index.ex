@@ -1,5 +1,6 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
+  import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
@@ -445,6 +446,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
       ]
     }
     |> SendgridClient.add_contacts()
+
+    user_trial_created_webhook(%{email: current_user.email})
 
     socket
   end

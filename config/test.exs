@@ -78,3 +78,7 @@ config :picsello, :photo_output_subscription, {Broadway.DummyProducer, []}
 config :picsello, :photo_storage_service, Picsello.PhotoStorageMock
 
 config :sentry, environment_name: :test, included_environments: [:prod]
+
+config :picsello, :zapier,
+  new_user_webhook_url: "/zapier/1234",
+  trial_user_webhook_url: "/zapier/5678"
