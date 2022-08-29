@@ -14,6 +14,25 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   end
 
   @impl true
+  def handle_params(
+        %{"duplicate" => event_id},
+        _,
+        %{assigns: %{live_action: :new, current_user: current_user}} = socket
+      ) do
+    socket
+    |> open_wizard(%{
+      booking_event:
+        BookingEvents.get_booking_event!(current_user.organization_id, event_id)
+        |> Map.put(:id, nil)
+        |> Map.put(:inserted_at, nil)
+        |> Map.put(:updated_at, nil)
+        |> Map.put(:disabled_at, nil)
+        |> Map.put(:__meta__, %Picsello.BookingEvent{} |> Map.get(:__meta__))
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_params(_, _, %{assigns: %{live_action: :new}} = socket) do
     socket
     |> open_wizard()
@@ -168,6 +187,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
             Edit
           </button>
 
+          <button title="Duplicate" type="button" phx-click="duplicate-event" phx-value-event-id={@booking_event.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            Duplicate
+          </button>
+
           <%= if @booking_event.disabled_at do %>
             <button title="Enable" type="button" phx-click="enable-event" phx-value-event-id={@booking_event.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
               <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
@@ -189,6 +213,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   def handle_event("edit-event", %{"event-id" => id}, socket) do
     socket
     |> push_patch(to: Routes.calendar_booking_events_path(socket, :edit, id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("duplicate-event", %{"event-id" => id}, socket) do
+    socket
+    |> push_patch(to: Routes.calendar_booking_events_path(socket, :new, duplicate: id))
     |> noreply()
   end
 

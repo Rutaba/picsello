@@ -254,6 +254,54 @@ defmodule Picsello.UserManagesBookingEventsTest do
            ] = Picsello.Repo.all(Picsello.BookingEvent)
   end
 
+  feature "duplicate the event", %{session: session, user: user} do
+    %{id: template_id} = template = insert(:package_template, user: user)
+
+    %{id: old_event_id, thumbnail_url: thumbnail_url} =
+      insert(:booking_event, package_template_id: template.id, name: "Event 1")
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(button("Manage"))
+    |> click(button("Duplicate"))
+    |> assert_text("Add booking event: Details")
+    |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][0][start_time]"), with: "09:00AM")
+    |> fill_in(text_field("booking_event[dates][0][time_blocks][0][end_time]"), with: "01:00PM")
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Add booking event: Select package")
+    |> click(button("Next"))
+    |> assert_text("Add booking event: Customize")
+    |> click(button("Save"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_flash(:success, text: "Booking event saved successfully")
+    |> assert_path("/booking-events")
+
+    assert [
+             %{id: ^old_event_id},
+             %{
+               name: "Event 1",
+               location: "on_location",
+               address: "320 1st St N, Jax Beach, FL",
+               duration_minutes: 45,
+               buffer_minutes: 15,
+               dates: [
+                 %{
+                   date: ~D[2050-10-10],
+                   time_blocks: [
+                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
+                   ]
+                 }
+               ],
+               package_template_id: ^template_id,
+               thumbnail_url: ^thumbnail_url,
+               description: "<p>My custom description</p>"
+             }
+           ] = Picsello.Repo.all(Picsello.BookingEvent |> Ecto.Query.order_by(:inserted_at))
+  end
+
   feature "disable/enable event", %{session: session, user: user} do
     template = insert(:package_template, user: user)
     insert(:booking_event, package_template_id: template.id, name: "Event 1")
