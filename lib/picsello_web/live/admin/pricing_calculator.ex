@@ -1,6 +1,7 @@
 defmodule PicselloWeb.Live.Admin.PricingCalculator do
   @moduledoc "update tax, business costs and cost categories"
   use PicselloWeb, live_view: [layout: false]
+
   alias Picsello.{Repo, PricingCalculatorTaxSchedules, PricingCalculatorBusinessCosts}
 
   import Ecto.Query

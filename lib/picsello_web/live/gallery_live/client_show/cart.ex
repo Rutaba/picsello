@@ -3,27 +3,28 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
   alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
+  alias PicselloWeb.Endpoint
   import PicselloWeb.GalleryLive.Shared
   import Money.Sigils
 
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
-    case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals, :package]) do
-      {:ok, order} ->
-        gallery = Galleries.populate_organization_user(gallery)
-
-        socket
-        |> assign(gallery: gallery, order: order, client_menu_id: "clientMenu")
-        |> assign_cart_count(gallery)
-
-      _ ->
-        socket
-        |> push_redirect(
-          to: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
-        )
-    end
+  def mount(_params, _session, %{assigns: %{gallery: gallery, live_action: live_action}} = socket) do
+    socket
+    |> assign(gallery: gallery, client_menu_id: "clientMenu")
+    |> assign(is_proofing: live_action in [:proofing_album, :proofing_album_address])
+    |> then(
+      &(&1
+        |> get_unconfirmed_order(preload: [:products, :digitals, :package])
+        |> case do
+          {:ok, order} -> assign(&1, :order, order)
+          {:error, _} -> assign_checkout_routes(&1) |> maybe_redirect()
+        end)
+    )
+    |> assign_cart_count(gallery)
+    |> assign_credits()
+    |> assign_checkout_routes()
     |> ok()
   end
 
@@ -35,10 +36,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           assigns: %{
             order: order,
             gallery: %{job: %{client: %{organization: organization}}},
-            live_action: :address
+            live_action: live_action
           }
         } = socket
-      ) do
+      )
+      when live_action in ~w(address proofing_album_address)a do
     socket
     |> assign(
       delivery_info_changeset: Cart.delivery_info_change(order),
@@ -58,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           assigns: %{
             delivery_info_changeset: delivery_info_changeset,
             order: order,
-            gallery: gallery
+            checkout_routes: checkout_routes
           }
         } = socket
       ) do
@@ -69,18 +71,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           success_url:
             Enum.join(
               [
-                Routes.gallery_client_order_url(
-                  socket,
-                  :paid,
-                  gallery.client_link_hash,
-                  Order.number(order)
-                ),
+                Endpoint.url() <> checkout_routes.order_paid,
                 "session_id={CHECKOUT_SESSION_ID}"
               ],
               "?"
             ),
-          cancel_url:
-            Routes.gallery_client_show_cart_url(socket, :cart, gallery.client_link_hash),
+          cancel_url: Endpoint.url() <> checkout_routes.cart,
           helpers: PicselloWeb.Helpers
         )
         |> case do
@@ -88,7 +84,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
             socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
 
           _error ->
-            socket |> put_flash(:error, "something went wrong")
+            socket |> put_flash(:error, "Something went wrong")
         end
         |> noreply()
 
@@ -99,6 +95,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end
   end
 
+  @impl true
   def handle_event(
         "edit_product",
         %{"editor-id" => editor_id},
@@ -120,9 +117,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{
           assigns: %{
             order: order,
-            gallery: gallery,
             client_menu_id: client_menu_id,
-            cart_count: count
+            cart_count: count,
+            gallery: gallery
           }
         } = socket
       ) do
@@ -136,18 +133,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     case Cart.delete_product(order, item) do
       {:deleted, _} ->
         socket
-        |> push_redirect(
-          to: Routes.gallery_client_index_path(socket, :index, gallery.client_link_hash)
-        )
-        |> noreply()
+        |> assign(order: nil)
+        |> maybe_redirect()
 
       {:loaded, order} ->
         send_update(ClientMenuComponent, id: client_menu_id, cart_count: count - 1)
 
-        socket
-        |> assign(:order, order)
-        |> noreply()
+        assign(socket, :order, order)
     end
+    |> assign_cart_count(gallery)
+    |> assign_credits()
+    |> noreply()
   end
 
   def handle_event(
@@ -176,20 +172,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @impl true
   @doc "called when checkout completes"
   def handle_info(
-        {:checkout, :complete, %Order{} = order},
-        %{assigns: %{gallery: gallery}} = socket
+        {:checkout, :complete, %Order{}},
+        %{assigns: %{gallery: _gallery, checkout_routes: checkout_routes}} = socket
       ) do
     socket
-    |> push_redirect(
-      to:
-        Routes.gallery_client_order_path(
-          socket,
-          :show,
-          gallery.client_link_hash,
-          Order.number(order)
-        ),
-      replace: true
-    )
+    |> push_redirect(to: checkout_routes.order_paid, replace: true)
     |> push_event("scroll:unlock", %{})
     |> noreply()
   end
@@ -209,14 +196,81 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp continue_summary(assigns) do
     ~H"""
-    <.summary order={@order} id={@id}>
-      <%= live_patch to: Routes.gallery_client_show_cart_path(@socket, :address, @order.gallery.client_link_hash), class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
+    <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id}>
+      <%= live_patch to: @checkout_routes.cart_address, class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
         Continue
       <% end %>
     </.summary>
     """
   end
 
+  defp top_section(assigns) do
+    {back_route, back_btn, title} = top_section_content(assigns)
+
+    ~H"""
+    <%= live_redirect to: back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
+      <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
+      <p class="mt-1"><%= back_btn %></p>
+    <% end %>
+
+    <div class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-8 lg:pb-10"><%= title %></div>
+    """
+  end
+
+  defp top_section_content(%{checkout_routes: checkout_routes, live_action: :proofing_album}) do
+    {
+      checkout_routes.home_page,
+      "Back to album",
+      "Review Selections"
+    }
+  end
+
+  defp top_section_content(%{checkout_routes: checkout_routes}) do
+    {
+      checkout_routes.home_page,
+      "Back to gallery",
+      "Cart Review"
+    }
+  end
+
+  defp empty_cart_view(assigns) do
+    ~H"""
+    <div class="col-span-1 lg:col-span-2 text-lg lg:pb-24">
+      <div class="flex flex-col items-center justify-center font-bold border border-base-225 flex p-8 lg:mx-8 border-t">
+        <span class="flex mb-8">Oops, you haven't made any selections yet.</span>
+        <span class="flex text-base-225">Go back to the album to make some now.</span>
+      </div>
+    </div>
+    <div class="col-span-1 text-lg">
+      <div class="flex flex-col items-center justify-center border border-base-225 flex p-8 border-t">
+        <span class="flex mb-4">
+          Total: <b>$0.00</b>
+        </span>
+        <button disabled class="flex items-center justify-center border border-base-225 text-base-225 w-full py-2">
+          Send to my photographer
+          <.icon name="send" class="w-4 h-4 ml-3" />
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  defp maybe_redirect(%{assigns: %{is_proofing: true}} = socket) do
+    assign(socket, :order, nil)
+  end
+
+  defp maybe_redirect(%{assigns: %{checkout_routes: checkout_routes}} = socket) do
+    push_redirect(socket, to: checkout_routes.home_page)
+  end
+
+  defp assign_credits(%{assigns: %{gallery: gallery, is_proofing: true}} = socket) do
+    assign(socket, :credits, credits(gallery))
+  end
+
+  defp assign_credits(%{assigns: %{is_proofing: false}} = socket), do: socket
+
+  defp checkout_type(true), do: :proofing_album_cart
+  defp checkout_type(false), do: :cart
   defp only_digitals?(%{products: []} = order), do: digitals?(order)
   defp only_digitals?(%{products: [_ | _]}), do: false
   defp digitals?(%{digitals: [_ | _]}), do: true
@@ -231,6 +285,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate lines_by_product(order), to: Cart
   defdelegate product_quantity(product), to: Cart
   defdelegate summary(assigns), to: __MODULE__.Summary
+  defdelegate details(order, caller), to: __MODULE__.Summary
 
   defp zero_total?(order),
     do: order |> Cart.total_cost() |> Money.zero?()

@@ -6,6 +6,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
 
   @impl true
   def update(assigns, socket) do
+    album = Map.get(assigns, :album)
+
     socket
     |> assign(
       preview_photo_id: nil,
@@ -13,10 +15,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_removable: false,
       is_viewable: false,
       is_meatball: false,
+      proofing_photo_icons: if(album && album.is_proofing, do: false, else: true),
       is_gallery_category_page: false,
       is_client_gallery: false,
       album: nil,
       component: false,
+      is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
       url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
     )

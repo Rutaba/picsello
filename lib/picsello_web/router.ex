@@ -137,6 +137,18 @@ defmodule PicselloWeb.Router do
       live "/calendar/settings", Live.Calendar.Settings, :settings
       get "/calendar-feed", CalendarFeedController, :index
 
+      scope "/galleries/:id", GalleryLive do
+        live "/", PhotographerIndex, :index
+        live "/photos", Photos.Index, :index
+        live "/product-previews", ProductPreview.Index, :index
+        live "/orders", PhotographerOrders, :orders
+      end
+
+      scope "/galleries/:id/albums", GalleryLive do
+        live "/", Albums.Index, :index
+        live "/:album_id", Photos.Index, :index
+      end
+
       live "/home", HomeLive.Index, :index, as: :home
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
@@ -180,23 +192,6 @@ defmodule PicselloWeb.Router do
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end
 
-  scope "/galleries/:id", PicselloWeb.GalleryLive do
-    live_session :gallery_photographer, on_mount: {PicselloWeb.LiveAuth, :gallery_photographer} do
-      pipe_through :browser
-
-      live "/", PhotographerIndex, :index
-
-      live "/photos", Photos.Index, :index
-      live "/product-previews", ProductPreview.Index, :index
-      live "/orders", PhotographerOrders, :orders
-
-      scope "/albums" do
-        live "/", Albums.Index, :index
-        live "/:album_id", Photos.Index, :index
-      end
-    end
-  end
-
   scope "/gallery/:hash", PicselloWeb do
     live_session :gallery_client, on_mount: {PicselloWeb.LiveAuth, :gallery_client} do
       pipe_through :browser
@@ -219,12 +214,36 @@ defmodule PicselloWeb.Router do
           end
 
           live "/paid", GalleryLive.ClientOrder, :paid
+          get "/csv", GalleryDownloadsController, :download_csv
         end
       end
 
       live "/cart", GalleryLive.ClientShow.Cart, :cart
       live "/cart/address", GalleryLive.ClientShow.Cart, :address
-      post "/login", GallerySessionController, :post
+      post "/gallery/login", GallerySessionController, :gallery_login
+      post "/album/login", GallerySessionController, :album_login
+    end
+  end
+
+  scope "/album/:hash", PicselloWeb do
+    pipe_through [:browser]
+
+    live_session :proofing_album_client, on_mount: {PicselloWeb.LiveAuth, :proofing_album_client} do
+      live "/", GalleryLive.ClientAlbum, :proofing_album
+
+      live "/cart", GalleryLive.ClientShow.Cart, :proofing_album
+      live "/cart/address", GalleryLive.ClientShow.Cart, :proofing_album_address
+
+      scope "/orders" do
+        live "/", GalleryLive.ClientOrders, :proofing_album
+        live "/:order_number", GalleryLive.ClientOrder, :proofing_album
+        live "/:order_number/paid", GalleryLive.ClientOrder, :proofing_album_paid
+      end
+    end
+
+    live_session :proofing_album_client_login,
+      on_mount: {PicselloWeb.LiveAuth, :proofing_album_client_login} do
+      live "/login", GalleryLive.ClientShow.Login, :album_login
     end
   end
 
@@ -239,7 +258,7 @@ defmodule PicselloWeb.Router do
     live_session :gallery_client_login, on_mount: {PicselloWeb.LiveAuth, :gallery_client_login} do
       pipe_through [:browser]
 
-      live "/:hash/login", GalleryLive.ClientShow.Login, :login
+      live "/:hash/login", GalleryLive.ClientShow.Login, :gallery_login
     end
   end
 end

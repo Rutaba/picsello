@@ -80,7 +80,12 @@ defmodule Picsello.Orders do
     |> preload([
       :intent,
       :canceled_intents,
-      [gallery: :organization, products: :whcc_product, digitals: [photo: ^watermarked_query]]
+      [
+        :album,
+        gallery: [:organization, :package],
+        products: :whcc_product,
+        digitals: [photo: ^watermarked_query]
+      ]
     ])
     |> Repo.one!()
   end
@@ -222,5 +227,47 @@ defmodule Picsello.Orders do
       select: org
     )
     |> Repo.one!()
+  end
+
+  @filtered_days 7
+  def get_all_proofing_album_orders(organization_id) do
+    from(order in get_all_orders_query(organization_id),
+      where:
+        not is_nil(order.album_id) and not is_nil(order.placed_at) and
+          order.inserted_at > ago(@filtered_days, "day"),
+      preload: [:album, gallery: [job: [:client]]]
+    )
+    |> Repo.all()
+  end
+
+  def get_all_orders_query(organization_id) do
+    from(order in Picsello.Cart.Order,
+      join: gallery in assoc(order, :gallery),
+      join: job in assoc(gallery, :job),
+      join: client in assoc(job, :client),
+      join: organization in assoc(client, :organization),
+      where: organization.id == ^organization_id
+    )
+  end
+
+  def get_proofing_order(album_id, organization_id) do
+    from(order in get_all_orders_query(organization_id),
+      where: order.album_id == ^album_id and not is_nil(order.placed_at),
+      preload: [gallery: [job: [:client]]]
+    )
+    |> Repo.all()
+  end
+
+  def get_proofing_order_photos(album_id, organization_id) do
+    photo_query = from(photo in Photo, select: %{photo | watermarked: false})
+
+    from(order in get_all_orders_query(organization_id),
+      where: order.album_id == ^album_id and not is_nil(order.placed_at),
+      preload: [
+        digitals: [photo: ^photo_query]
+      ],
+      order_by: [desc: order.placed_at]
+    )
+    |> Repo.all()
   end
 end

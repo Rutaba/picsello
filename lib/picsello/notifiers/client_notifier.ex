@@ -87,7 +87,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
                 client: %{organization: %{user: %{time_zone: "" <> time_zone}} = organization}
               }
             } = gallery,
-          delivery_info: %{name: client_name, address: address, email: to_email}
+          delivery_info: %{name: client_name, address: address, email: to_email},
+          album: album
         } = order,
         helpers
       ) do
@@ -124,11 +125,17 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_shipping: Money.new(0),
       order_subtotal: Order.total_cost(order),
       order_total: Order.total_cost(order),
-      order_url: helpers.order_url(gallery, order),
+      order_url:
+        if(order.album_id,
+          do: helpers.proofing_album_selections_url(album, order),
+          else: helpers.order_url(gallery, order)
+        ),
       subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"
     ]
 
-    sendgrid_template(:order_confirmation_template, opts)
+    order.album_id
+    |> may_be_proofing_album_selection()
+    |> sendgrid_template(opts)
     |> to({client_name, to_email})
     |> from({organization.name, "noreply@picsello.com"})
     |> deliver_later()
@@ -214,4 +221,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> to(to_email)
     |> deliver_later()
   end
+
+  defp may_be_proofing_album_selection(nil), do: :order_confirmation_template
+  defp may_be_proofing_album_selection(_), do: :proofing_selection_confirmation_template
 end

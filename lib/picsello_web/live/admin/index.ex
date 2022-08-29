@@ -21,6 +21,14 @@ defmodule PicselloWeb.Live.Admin.Index do
         <li><%= live_redirect "Subscription Pricing", to: Routes.admin_subscription_pricing_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8" %></li>
 
         <li><%= live_redirect "Product Pricing Report", to: Routes.admin_product_pricing_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8" %></li>
+        <li>
+          <div class="grid border flex items-center justify-center rounded-lg py-4 px-8">
+            Current photo Uploaders
+            <div class="flex items-center justify-center text-red-500 pt-2">
+              <%= PicselloWeb.UploaderCache.current_uploaders() %>
+            </div>
+          </div>
+        </li>
       </ul>
     </nav>
     """

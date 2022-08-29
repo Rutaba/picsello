@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_photographer"]
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Albums}
   alias PicselloWeb.GalleryLive.Albums.{AlbumSettings, AlbumThumbnail}
@@ -253,8 +254,10 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
-  def handle_info({:total_progress, total_progress}, socket) do
-    socket |> assign(:total_progress, total_progress) |> noreply()
+  def handle_info({:gallery_progress, %{total_progress: total_progress}}, socket) do
+    socket
+    |> assign(:total_progress, if(total_progress == 0, do: 1, else: total_progress))
+    |> noreply()
   end
 
   @impl true
@@ -270,13 +273,13 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
-  def handle_info({:upload_success_message, success_message}, socket) do
+  def handle_info({:uploading, %{success_message: success_message}}, socket) do
     socket |> put_flash(:success, success_message) |> noreply()
   end
 
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset)
+    add_message_and_notify(socket, message_changeset, "gallery")
   end
 
   def thumbnail(%{album: %{thumbnail_photo: nil}} = assigns) do
@@ -291,7 +294,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   def thumbnail(assigns) do
     ~H"""
-    <a class="p-0 mt-4 bg-gray-200 cursor-pointer albumBlock h-72" phx-click={@event} phx-value-album={@album.id}>
+    <a class="relative p-0 mt-4 bg-gray-200 cursor-pointer albumBlock h-72" phx-click={@event} phx-value-album={@album.id}>
       <img class="object-contain m-auto h-72" src={thumbnail_url(@album)} />
       <span class="absolute font-sans font-bold text-white bottom-4 left-4 text-1xl"><%= @album.name %></span>
     </a>

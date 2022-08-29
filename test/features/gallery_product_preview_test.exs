@@ -1,6 +1,5 @@
 defmodule Picsello.GalleryProductPreviewTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.TestSupport.ClientGallery
 
   setup :onboarded
   setup :authenticated
@@ -8,7 +7,6 @@ defmodule Picsello.GalleryProductPreviewTest do
 
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
     [products: products(gallery)]
   end
 
@@ -90,80 +88,19 @@ defmodule Picsello.GalleryProductPreviewTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/photos")
-    |> assert_has(css("#dragDrop-upload-form span", text: "Drag your images or"))
+    |> assert_has(css("#dragDrop-upload-form-#{gallery_id} span", text: "Drag your images or"))
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images']", count: length(products)))
 
     assert current_path(session) == "/galleries/#{gallery_id}/product-previews"
-    insert_photo(%{gallery: gallery, total_photos: 20})
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: length(photo_ids)))
-    |> refute_has(css("#dragDrop-upload-form span", text: "Drag your images or"))
+    |> refute_has(css("#dragDrop-upload-form-#{gallery_id} span", text: "Drag your images or"))
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
   end
-
-    test "Toggle disable product in gallery", %{
-      session: session,
-      gallery: %{id: gallery_id} = _gallery,
-    } do
-      session
-      |> visit("/galleries/#{gallery_id}/product-previews")
-      |> assert_text("Product Previews")
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 0))
-      |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> click(css("label", text: "Show product preview in gallery", count: 3, at: 0))
-      |> find(checkbox("Show product preview in gallery", visible: false, count: 3, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
-    end
-
-    test "Toggle disable product and view in client preview", %{
-      session: session,
-      gallery: %{id: gallery_id} = gallery
-    } do
-      session
-      |> visit("/galleries/#{gallery_id}/product-previews")
-      insert_photo(%{gallery: gallery, total_photos: 20})
-      session
-      |> assert_text("Product Previews")
-      |> scroll_to_bottom()
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 0))
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 2))
-      |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> click(css("label", text: "Show product preview in gallery", count: 2, at: 0))
-      |> find(checkbox("Show product preview in gallery", visible: false, count: 2, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
-      |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("a", text: "View Gallery"))
-      |> assert_text("Test Client Wedding Gallery")
-      |> assert_text("cool shirts")
-      |> scroll_into_view(css("Test Client Wedding Gallery"))
-    end
-
-    test "Toggle disable product preview and product available for purchase", %{
-      session: session,
-      gallery: %{id: gallery_id} = gallery
-    } do
-      session
-      |> visit("/galleries/#{gallery_id}/product-previews")
-      photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
-      session
-      |> assert_text("Product Previews")
-      |> scroll_to_bottom()
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 0))
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 2))
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 3))
-      |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 2), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 3), fn checkbox -> refute Element.selected?(checkbox) end)
-      |> click(css("label", text: "Show product preview in gallery", count: 1, at: 0))
-      |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("a", text: "View Gallery"))
-      |> assert_text("Test Client Wedding Gallery")
-      |> click_photo(1)
-      |> assert_text("Select an option")
-      |> assert_text("cool shirts")
-    end
 
 end

@@ -156,7 +156,7 @@ defmodule Picsello.GalleryOverviewTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/photos")
-    |> assert_has(css("#dragDrop-upload-form span", text: "Drag your images or"))
+    |> assert_has(css("#dragDrop-upload-form-#{gallery_id} span", text: "Drag your images or"))
     |> visit("/galleries/#{gallery_id}")
     |> assert_has(css("#dragDrop-form span", text: "Drop image or"))
 

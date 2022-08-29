@@ -57,7 +57,7 @@
                   <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/>
                 </div>
                 <div class="justify-start ml-3">
-                  <span class={@arrow_show == "photos" && "text-blue-planning-300"}>Photos</span>
+                  <span class={@arrow_show in ["photos", "albums"] && "text-blue-planning-300"}>Photos</span>
                 </div>
               </div>
               <div class="flex px-2 items-center ml-auto">
@@ -90,14 +90,14 @@
             <%= if length(@albums) >= 1 do %>
               <div phx-click="select_albums_dropdown" phx-target={@myself} class="w-4 h-4 text-blue-planning-300 ml-auto">
                 <%= if @album_dropdown_show do %>
-                  <.icon name="up" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 close-icon hover:text-blue-planning-300", %{"text-blue-planning-300" => @arrow_show == "photos", "text-black" => @arrow_show !== "photos"})} />
+                  <.icon name="up" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 close-icon hover:text-blue-planning-300 text-blue-planning-300", %{"text-black" => @arrow_show not in ["photos", "albums"]})} />
                 <% else %>
-                  <.icon name="down" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 open-icon hover:text-blue-planning-300", %{"text-blue-planning-300" => @arrow_show == "photos", "text-black" => @arrow_show !== "photos"})} />
+                  <.icon name="down" class={classes("w-4 h-4 mr-2 stroke-current stroke-2 open-icon hover:text-blue-planning-300 text-blue-planning-300", %{"text-black" => @arrow_show not in ["photos", "albums"]})} />
                 <% end %>
               </div>
             <% end %>
           </div>
-            <%= if @arrow_show == "photos" do %>
+            <%= if @arrow_show in ["photos", "albums"] do %>
               <span class="arrow show lg:block hidden">
                 <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
               </span>
@@ -106,12 +106,12 @@
               <%= if @album_dropdown_show do %>
                 <%= if length(@albums) > 0 do %>
                   <ul>
-                    <.li title="Unsorted photos" class="block" button_class={if @selected_album == nil, do: " text-blue-planning-300", else: "text-gray-700"} selected_album={@selected_album} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li title="Unsorted photos" name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>
-                    <.li title={album.name} class="block" button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} selected_album={@selected_album} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li title={album.name} class="block" name={if album.is_proofing, do: "proofing", else: "standard_album"} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
               <% end %>

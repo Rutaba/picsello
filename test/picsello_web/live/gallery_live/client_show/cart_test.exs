@@ -53,7 +53,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
       |> assert_redirect(
         Routes.gallery_client_order_path(
           conn,
-          :show,
+          :paid,
           gallery.client_link_hash,
           Picsello.Cart.Order.number(order)
         )

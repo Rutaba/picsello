@@ -5,6 +5,14 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   setup :onboarded
   setup :authenticated
 
+  defp quill(session, text) do
+    session
+    |> click(css("div.ql-editor"))
+    |> send_keys([text])
+    # this sleep is intentional since the quill editor takes time to reset
+    |> sleep(500)
+  end
+
   feature "navigate", %{session: session} do
     session
     |> click(link("Settings"))
@@ -54,13 +62,14 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_value(text_field("Image Turnaround Time"), "1")
     |> fill_in(text_field("Image Turnaround Time"), with: "2")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> click(css("div.ql-editor"))
-    |> send_keys(["My greatest wedding package"])
+    |> quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Choose a Contract")
+    # this sleep is intentional since the quill editor takes time to reset
+    |> sleep(500)
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> fill_in(text_field("Package Price"), with: "$100")
@@ -106,8 +115,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> click(css("div.ql-editor"))
-    |> send_keys(["My greatest wedding package"])
+    |> quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
@@ -227,10 +235,14 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> assert_has(css("*[role='status']", text: "No edits made"))
         |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
         |> replace_inner_content(css("div.ql-editor"), "updated content")
+        # this sleep is intentional since the quill editor takes time to reset
+        |> sleep(500)
         |> fill_in(text_field("Contract Name"), with: "Contract 2")
         |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
         |> click(link("back"))
         |> assert_text("Edit Package: Provide Details")
+        # this sleep is intentional since the quill editor takes time to reset
+        |> sleep(500)
         |> click(button("Next"))
         |> assert_text("Edit Package: Choose a Contract")
         |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
