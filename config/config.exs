@@ -142,6 +142,10 @@ config :picsello, :email_presets,
 
 config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorage.Impl
 
+config :picsello, :zapier,
+  new_user_webhook_url: System.get_env("ZAPIER_NEW_USER_WEBHOOK_URL"),
+  trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
