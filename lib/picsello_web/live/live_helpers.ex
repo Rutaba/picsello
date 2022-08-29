@@ -105,11 +105,14 @@ defmodule PicselloWeb.LiveHelpers do
   def icon_button(%{href: href} = assigns) do
     assigns =
       assigns
-      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class]))
-      |> Enum.into(%{class: "", inner_block: nil})
+      |> Map.put(
+        :rest,
+        Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :target])
+      )
+      |> Enum.into(%{class: "", target: nil, disabled: false, inner_block: nil})
 
     ~H"""
-    <a href={href} class={"flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-#{@color} #{@class}"} {@rest}>
+    <a href={if @disabled, do: "javascript:void(0)", else: href} target={unless @disabled, do: @target} class={classes("flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} {@rest}>
       <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-1" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_block(@inner_block) %>

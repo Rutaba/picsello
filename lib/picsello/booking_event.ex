@@ -77,6 +77,7 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
+    field :disabled_at, :utc_datetime
     belongs_to :package_template, Picsello.Package
     embeds_many :dates, EventDate, on_replace: :delete
     has_many :jobs, Picsello.Job
@@ -97,6 +98,14 @@ defmodule Picsello.BookingEvent do
     Enum.reduce_while(steps, booking_event, fn {step_name, initializer}, changeset ->
       {if(step_name == step, do: :halt, else: :cont), initializer.(changeset, attrs)}
     end)
+  end
+
+  def disable_changeset(%__MODULE__{} = booking_event) do
+    booking_event |> change(disabled_at: DateTime.utc_now() |> DateTime.truncate(:second))
+  end
+
+  def enable_changeset(%__MODULE__{} = booking_event) do
+    booking_event |> change(disabled_at: nil)
   end
 
   defp update_details(booking_event, attrs) do

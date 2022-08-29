@@ -72,7 +72,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           Booking events
         </div>
         <%= unless Enum.empty?(@booking_events) do %>
-          <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
+          <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
             <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-primary text-center">
               Add booking event
             </.live_link>
@@ -120,8 +120,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     ~H"""
     <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
       <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
-      <div class="flex flex-col justify-center sm:ml-4">
-        <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+      <div class="flex flex-col items-start justify-center sm:ml-4">
+        <%= if @booking_event.disabled_at do %>
+          <.badge color={:gray}>Disabled</.badge>
+        <% else %>
+          <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+        <% end %>
         <p class="text-xl font-semibold"><%= @booking_event.name %></p>
         <p class="text-gray-400"><%= @booking_event.package_name %></p>
         <p class="text-gray-400"><%= @booking_event.duration_minutes %> minutes</p>
@@ -141,16 +145,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-start">
-      <.icon_button icon="eye" color="blue-planning-300" class="flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+      <.icon_button icon="eye" disabled={!!@booking_event.disabled_at} color="blue-planning-300" class="flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
-      <.icon_button icon="anchor" color="blue-planning-300" class="ml-2 flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+      <.icon_button icon="anchor" disabled={!!@booking_event.disabled_at} color="blue-planning-300" class="ml-2 flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
         </div>
       </.icon_button>
-      <div phx-update="ignore" data-offset="0" phx-hook="Select" id={"manage-event-#{@booking_event.id}"}>
+      <div phx-update="ignore" data-offset="0" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{!!@booking_event.disabled_at}"}>
         <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
           <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
           <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
@@ -163,6 +167,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
             <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
             Edit
           </button>
+
+          <%= if @booking_event.disabled_at do %>
+            <button title="Enable" type="button" phx-click="enable-event" phx-value-event-id={@booking_event.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+              <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Enable
+            </button>
+          <% else %>
+            <button title="Disable" type="button" phx-click="confirm-disable-event" phx-value-event-id={@booking_event.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <.icon name="closed-eye" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+              Disable
+            </button>
+          <% end %>
         </div>
       </div>
     </div>
@@ -174,6 +190,68 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     socket
     |> push_patch(to: Routes.calendar_booking_events_path(socket, :edit, id))
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("confirm-disable-event", %{"event-id" => id}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Disable this event?",
+      subtitle: """
+      Disabling this event will hide all availability for this event and prevent any further booking. This is also the first step to take if you need to cancel an event for any reason.
+      Some things to keep in mind:
+        • If you are no longer able to shoot at the date and time provided, let your clients know. We suggest offering them a new link to book with once you reschedule!
+        • You may need to refund any payments made to prevent confusion with your clients.
+        • Archive each job individually in the Jobs page if you intend to cancel it.
+        • Reschedule if possible to keep business coming in!
+      """,
+      confirm_event: "disable_event_" <> id,
+      confirm_label: "Disable Event",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "enable-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> assign_booking_events()
+        |> put_flash(:success, "Event enabled successfully")
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error enabling event")
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "disable_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> close_modal()
+        |> assign_booking_events()
+        |> put_flash(:success, "Event disabled successfully")
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:success, "Error disabling event")
+        |> noreply()
+    end
   end
 
   @impl true

@@ -44,6 +44,7 @@ defmodule Picsello.BookingEvents do
         id: event.id,
         name: event.name,
         thumbnail_url: event.thumbnail_url,
+        disabled_at: event.disabled_at,
         duration_minutes: event.duration_minutes,
         dates: event.dates
       },
@@ -181,6 +182,18 @@ defmodule Picsello.BookingEvents do
       Picsello.Workers.ExpireBooking.new(%{id: changes.job.id}, schedule_in: expiration)
     end)
     |> Repo.transaction()
+  end
+
+  def disable_booking_event(event_id, organization_id) do
+    get_booking_event!(organization_id, event_id)
+    |> BookingEvent.disable_changeset()
+    |> Repo.update()
+  end
+
+  def enable_booking_event(event_id, organization_id) do
+    get_booking_event!(organization_id, event_id)
+    |> BookingEvent.enable_changeset()
+    |> Repo.update()
   end
 
   def expire_booking(%Job{} = job) do

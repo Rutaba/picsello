@@ -254,6 +254,32 @@ defmodule Picsello.UserManagesBookingEventsTest do
            ] = Picsello.Repo.all(Picsello.BookingEvent)
   end
 
+  feature "disable/enable event", %{session: session, user: user} do
+    template = insert(:package_template, user: user)
+    insert(:booking_event, package_template_id: template.id, name: "Event 1")
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(button("Manage"))
+    |> click(button("Disable"))
+    |> assert_text("Disable this event?")
+    |> click(button("Disable Event"))
+    |> assert_flash(:success, text: "Event disabled successfully")
+    |> assert_text("Disabled")
+
+    assert [%{disabled_at: %DateTime{}}] = Picsello.Repo.all(Picsello.BookingEvent)
+
+    session
+    |> click(button("Manage"))
+    |> click(button("Enable"))
+    |> assert_flash(:success, text: "Event enabled successfully")
+    |> click(button("Manage"))
+    |> assert_text("Disable")
+
+    assert [%{disabled_at: nil}] = Picsello.Repo.all(Picsello.BookingEvent)
+  end
+
   defp mock_image_upload(%{port: port} = bypass) do
     upload_url = "http://localhost:#{port}"
 

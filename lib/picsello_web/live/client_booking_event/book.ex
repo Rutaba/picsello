@@ -1,7 +1,7 @@
 defmodule PicselloWeb.ClientBookingEventLive.Book do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.BookingEvents
+  alias Picsello.{BookingEvents, BookingEvent}
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -163,6 +163,8 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     changeset = params |> BookingEvents.Booking.changeset() |> Map.put(:action, action)
     assign(socket, changeset: changeset)
   end
+
+  defp available_dates(%BookingEvent{disabled_at: %DateTime{}}), do: []
 
   defp available_dates(booking_event) do
     booking_event
