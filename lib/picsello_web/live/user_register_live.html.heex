@@ -1,7 +1,9 @@
-<.container step={1} color_class="bg-blue-planning-200" title={@subscription_plan_metadata.signup_title} subtitle={@subscription_plan_metadata.signup_description}>
+<.optimized_container step={1} color_class="bg-blue-planning-200">
   <div id="tz-cookie" phx-hook="TZCookie"></div>
   <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
-  <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-secondary">
+  <h1 class="text-3xl font-bold mt-7 sm:leading-tight sm:mt-11"><%= @subscription_plan_metadata.signup_title %></h1>
+  <p class="text-base mt-4 font-normal"><%= @subscription_plan_metadata.signup_description %> or <%= link "log in", to: Routes.user_session_path(@socket, :new), class: "underline text-blue-planning-300" %>.</p>
+  <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-primary">
     <.icon name="google" width="25" height="24" class="mr-4" />
     Continue with Google
   </a>
@@ -9,28 +11,22 @@
   <p class="m-6 text-center">or</p>
 
   <.form let={f} for={@changeset} action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
-
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
-    <%= labeled_input f, :name, placeholder: "First and last name", phx_debounce: "500", wrapper_class: "mt-4", label: "Name", autocomplete: "name" %>
+    <%= labeled_input f, :name, placeholder: "First and last name", phx_debounce: "500", label: "Name", autocomplete: "name" %>
     <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
     <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password, placeholder: "Enter password"%>
 
-    <div class="flex flex-col-reverse justify-between mt-5 sm:mt-9 sm:flex-row">
-      <p class="mt-5 text-sm text-gray-400 sm:mt-0 sm:pr-6">By signing up you agree to our
-        <a href="https://www.picsello.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Privacy Policy</a> and
-        <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms</a>
-      </p>
+    <p class="text-sm text-gray-400 mt-6 sm:pr-6 mb-8">By signing up you agree to our
+      <a href="https://www.picsello.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Privacy Policy</a> and
+      <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms</a>
+    </p>
 
-      <div class="flex flex-shrink-0">
-        <%= link "Login",
-              to: Routes.user_session_path(@socket, :new),
-              class: "btn-secondary inline-block text-center px-6 sm:px-8" %>
-
-        <%= submit "Sign up",
-              class: "btn-primary sm:flex-1 px-6 sm:px-10 flex-grow ml-4",
-              disabled: !@changeset.valid?,
-              phx_disable_with: "Saving..." %>
-      </div>
+    <div class="flex mt-4">
+      <%= submit "Sign up",
+        class: "btn-primary sm:flex-1 px-6 sm:px-10 flex-grow",
+        disabled: !@changeset.valid?,
+        phx_disable_with: "Saving..." 
+      %>
     </div>
   </.form>
-</.container>
+</.optimized_container>
