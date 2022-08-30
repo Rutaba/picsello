@@ -32,6 +32,7 @@ import HandleTrialCode from './hooks/handle-trial-code';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import PrefixHttp from './hooks/prefix-http';
 import HelpScout from './hooks/help-scout';
+import ImageUploadInput from './hooks/image-upload-input';
 import IntroJS from './hooks/intro';
 import MasonryGrid from './hooks/masonry-grid';
 import PackageDescription from './hooks/package-description';
@@ -138,6 +139,7 @@ const Hooks = {
   HandleTrialCode,
   IFrameAutoHeight,
   HelpScout,
+  ImageUploadInput,
   IntroJS,
   MasonryGrid,
   Modal,

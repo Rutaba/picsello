@@ -23,7 +23,7 @@ defmodule Picsello.Shoot do
 
   def create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:starts_at, :duration_minutes, :name, :location, :notes, :job_id])
+    |> cast(attrs, [:starts_at, :duration_minutes, :name, :location, :notes, :job_id, :address])
     |> validate_required([:starts_at, :duration_minutes, :name, :location, :job_id])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)

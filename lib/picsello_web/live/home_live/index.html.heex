@@ -102,6 +102,19 @@
     <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
 
     <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <.card color="blue-planning-300" icon="calendar" title="Booking Events & Calendar" phx-click="redirect" phx-value-to={Routes.calendar_index_path(@socket, :index)} class="cursor-pointer">
+        <p class="my-2">
+          Create client booking events and see all of your upcoming shoots in one place.
+        </p>
+        <div class="flex items-center mt-4 flex-wrap">
+          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="sm:flex-1 py-2 mr-4 text-sm btn-secondary text-center sm:w-auto w-full">
+            Add booking event
+          </.live_link>
+
+          <%= live_redirect to: Routes.calendar_index_path(@socket, :index), title: "View calendar", class: "underline text-blue-planning-300 text-center sm:text-left mt-4 sm:mt-0 sm:w-auto w-full" do %>View calendar<% end %>
+        </div>
+      </.card>
+
       <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">
         <p class="my-2">
           <%= if @inbox_count > 0 do %>

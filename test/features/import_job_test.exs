@@ -453,7 +453,12 @@ defmodule Picsello.ImportJobTest do
         {:checkout_linked, opts |> Enum.into(params)}
       )
 
-      {:ok, %{url: "https://example.com/stripe-checkout"}}
+      {:ok,
+       %{
+         url: "https://example.com/stripe-checkout",
+         payment_intent: "new_intent_id",
+         id: "new_session_id"
+       }}
     end)
     |> Mox.expect(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
       {:ok,

@@ -6,8 +6,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
-      photographer_logo: 1
+      assign_organization: 2,
+      photographer_logo: 1,
+      profile_footer: 1
     ]
+
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [subtitle_display: 1, date_display: 1, address_display: 1]
 
   @max_age 60 * 60 * 24 * 365 * 10
 
@@ -20,6 +25,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_proposal(token)
     |> assign_stripe_status()
     |> maybe_confetti(params)
+    |> maybe_set_booking_countdown()
     |> ok()
   end
 
@@ -133,6 +139,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @impl true
   def handle_info({:confirm_event, "send_another"}, socket), do: open_compose(socket)
 
+  @impl true
+  def handle_info(:booking_countdown, socket) do
+    socket
+    |> maybe_expire_booking()
+    |> noreply()
+  end
+
   def open_page_modal(%{assigns: %{proposal: proposal}} = socket, page, read_only \\ false)
       when page in @pages do
     Map.get(
@@ -178,8 +191,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
                :client,
                :job_status,
                :payment_schedules,
+               :booking_event,
                :shoots,
-               package: [organization: :user]
+               package: [organization: [:user, :brand_links]]
              ]
            ]) do
       %{
@@ -204,7 +218,19 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         read_only: photographer == current_user,
         token: token
       )
+      |> assign_organization(organization)
     else
+      %{
+        job: %{
+          booking_event: %Picsello.BookingEvent{} = booking_event,
+          archived_at: %DateTime{},
+          package: package
+        }
+      } ->
+        socket
+        |> assign(proposal: nil)
+        |> redirect_to_expired_booking_event(package.organization, booking_event)
+
       _ ->
         socket
         |> assign(proposal: nil)
@@ -263,5 +289,64 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> put_flash(:error, "Payment is not enabled yet. Please contact your photographer.")
     end
+  end
+
+  defp formatted_date(%Job{shoots: [shoot | _]}, photographer) do
+    strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
+  end
+
+  defp maybe_set_booking_countdown(%{assigns: %{job: job}} = socket) do
+    if show_booking_countdown?(job) && connected?(socket),
+      do: Process.send_after(self(), :booking_countdown, 1000)
+
+    socket
+    |> assign_booking_countdown()
+  end
+
+  defp maybe_set_booking_countdown(socket), do: socket
+
+  defp assign_booking_countdown(%{assigns: %{job: job}} = socket) do
+    reservation_seconds = Application.get_env(:picsello, :booking_reservation_seconds)
+
+    countdown =
+      job.inserted_at |> DateTime.add(reservation_seconds) |> DateTime.diff(DateTime.utc_now())
+
+    socket
+    |> assign(booking_countdown: countdown)
+  end
+
+  def show_booking_countdown?(job), do: job.booking_event && !PaymentSchedules.all_paid?(job)
+
+  defp maybe_expire_booking(
+         %{assigns: %{booking_countdown: booking_countdown, job: job, organization: organization}} =
+           socket
+       ) do
+    if booking_countdown <= 0 do
+      case Picsello.BookingEvents.expire_booking(job) do
+        {:ok, _} ->
+          socket
+          |> redirect_to_expired_booking_event(organization, job.booking_event)
+
+        _ ->
+          socket |> put_flash(:error, "Unexpected error")
+      end
+    else
+      socket
+      |> maybe_set_booking_countdown()
+    end
+  end
+
+  def redirect_to_expired_booking_event(socket, organization, booking_event) do
+    socket
+    |> push_redirect(
+      to:
+        Routes.client_booking_event_path(
+          socket,
+          :show,
+          organization.slug,
+          booking_event.id,
+          booking_expired: true
+        )
+    )
   end
 end

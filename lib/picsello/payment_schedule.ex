@@ -9,9 +9,28 @@ defmodule Picsello.PaymentSchedule do
     field :reminded_at, :utc_datetime
     field :paid_at, :utc_datetime
     field :description, :string
+    field :stripe_payment_intent_id, :string
+    field :stripe_session_id, :string
     belongs_to :job, Picsello.Job
 
     timestamps(type: :utc_datetime)
+  end
+
+  def create_changeset(attrs \\ %{}) do
+    %__MODULE__{}
+    |> cast(attrs, ~w[price due_at description job_id]a)
+    |> validate_required(~w[price due_at description job_id]a)
+  end
+
+  def stripe_ids_changeset(
+        %__MODULE__{} = payment_schedule,
+        stripe_payment_intent_id,
+        stripe_session_id
+      ) do
+    change(payment_schedule, %{
+      stripe_payment_intent_id: stripe_payment_intent_id,
+      stripe_session_id: stripe_session_id
+    })
   end
 
   def paid_changeset(payment_schedule) do

@@ -143,7 +143,6 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{title: "Orders", icon: "cart"},
-      %{title: "Calendar", icon: "calendar", path: Routes.calendar_index_path(socket, :index)},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
       %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
@@ -153,6 +152,11 @@ defmodule PicselloWeb.LayoutView do
         path: Routes.finance_settings_path(socket, :index)
       },
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
+      %{
+        title: "Public profile",
+        icon: "profile",
+        path: Routes.profile_settings_path(socket, :index)
+      },
       %{
         title: "Business Coaching",
         icon: "camera-laptop",
@@ -171,9 +175,9 @@ defmodule PicselloWeb.LayoutView do
     do: [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{
-        title: "Public profile",
-        icon: "profile",
-        path: Routes.profile_settings_path(socket, :index)
+        title: "Calendar",
+        icon: "calendar",
+        path: Routes.calendar_index_path(socket, :index)
       },
       %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"},
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}

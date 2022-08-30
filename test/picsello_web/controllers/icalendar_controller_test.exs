@@ -39,12 +39,48 @@ defmodule PicselloWeb.ICalendarControllerTest do
 
   test "icalendar feed", %{
     conn: conn,
-    user: user
+    user: user,
+    job: %{shoots: [%{id: shoot1_id}, %{id: shoot2_id}]}
   } do
     token = Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
 
     res = conn |> get(get_url(conn, token), %{})
 
     assert res.resp_body |> String.contains?("SUMMARY:Mary Jane Wedding - chute")
+    shoot1_uid = "shoot_#{shoot1_id}@picsello.com"
+    shoot2_uid = "shoot_#{shoot2_id}@picsello.com"
+
+    assert [
+             %ICalendar.Event{summary: "Mary Jane Wedding - chute", uid: ^shoot2_uid},
+             %ICalendar.Event{summary: "Mary Jane Wedding - chute", uid: ^shoot1_uid}
+           ] = res.resp_body |> ICalendar.from_ics()
+  end
+
+  test "does not return booking leads", %{
+    conn: conn,
+    user: user,
+    job: %{shoots: [%{id: shoot1_id}, %{id: shoot2_id}]}
+  } do
+    template = insert(:package_template, user: user)
+    event = insert(:booking_event, package_template_id: template.id)
+
+    archived_booking_lead =
+      insert(:lead, user: user, archived_at: DateTime.utc_now(), booking_event_id: event.id)
+
+    insert(:shoot, job: archived_booking_lead, starts_at: DateTime.utc_now())
+    booking_lead = insert(:lead, user: user, booking_event_id: event.id)
+    insert(:shoot, job: booking_lead, starts_at: DateTime.utc_now())
+
+    token = Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
+
+    res = conn |> get(get_url(conn, token), %{})
+
+    shoot1_uid = "shoot_#{shoot1_id}@picsello.com"
+    shoot2_uid = "shoot_#{shoot2_id}@picsello.com"
+
+    assert [
+             %ICalendar.Event{uid: ^shoot2_uid},
+             %ICalendar.Event{uid: ^shoot1_uid}
+           ] = res.resp_body |> ICalendar.from_ics()
   end
 end

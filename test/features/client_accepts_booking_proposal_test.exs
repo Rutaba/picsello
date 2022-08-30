@@ -94,7 +94,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
            url:
              PicselloWeb.Endpoint.struct_url()
              |> Map.put(:fragment, "stripe-checkout")
-             |> URI.to_string()
+             |> URI.to_string(),
+           payment_intent: "new_intent_id",
+           id: "new_session_id"
          }}
       end)
 
@@ -347,6 +349,52 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("h1", text: "Your session is now booked."))
 
       photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
+    end
+
+    @sessions 2
+    feature "client pays - expires previous session", %{
+      sessions: [_photographer_session, client_session],
+      lead: lead,
+      proposal: %{id: proposal_id},
+      url: url
+    } do
+      [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
+
+      deposit_payment
+      |> Picsello.PaymentSchedule.stripe_ids_changeset("old_intent_id", "old_session_id")
+      |> Repo.update()
+
+      Picsello.MockPayments
+      |> Mox.stub(:expire_session, fn "old_session_id", _opts ->
+        {:ok, %Stripe.Session{}}
+      end)
+      |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+        {:ok,
+         %Stripe.Session{
+           client_reference_id: "proposal_#{proposal_id}",
+           metadata: %{"paying_for" => deposit_payment.id}
+         }}
+      end)
+      |> Mox.expect(:create_customer, fn params, [connect_account: "stripe_id"] ->
+        assert params == Map.take(lead.client, [:email, :name])
+        {:ok, %Stripe.Customer{id: "stripe-customer-id"}}
+      end)
+
+      client_session
+      |> visit(url)
+      |> assert_has(css("h2", text: "Welcome."))
+      |> click(button("To-Do Review your proposal"))
+      |> click(button("Accept Quote"))
+      |> click(button("To-Do Read and agree to your contract"))
+      |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Accept Contract"))
+      |> click(button("To-Do Pay your invoice"))
+      |> click(button("Pay Invoice"))
+      |> assert_url_contains("stripe-checkout")
+
+      assert %{stripe_payment_intent_id: "new_intent_id", stripe_session_id: "new_session_id"} =
+               deposit_payment |> Repo.reload()
     end
   end
 
