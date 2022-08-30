@@ -19,7 +19,11 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = params,
         socket
       ) do
-    albums = Albums.get_albums_by_gallery_id(gallery.id) ++ [client_liked_album(gallery.id)]
+    albums =
+      case client_liked_album(gallery.id) do
+        nil -> Albums.get_albums_by_gallery_id(gallery.id)
+        album -> Albums.get_albums_by_gallery_id(gallery.id) ++ [album]
+      end
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")

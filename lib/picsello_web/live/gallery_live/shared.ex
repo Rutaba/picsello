@@ -846,12 +846,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def client_liked_album(gallery_id) do
     photos = Galleries.get_gallery_photos(gallery_id, favorites_filter: true)
 
-    %Album{
-      id: "client_liked",
-      photos: photos,
-      show?: !Enum.empty?(photos),
-      name: "Client Favourites",
-      is_client_liked: true
-    }
+    unless Enum.empty?(photos) do
+      %Album{
+        id: "client_liked",
+        photos: photos,
+        name: "Client Favourites",
+        is_client_liked: true
+      }
+    end
   end
 end

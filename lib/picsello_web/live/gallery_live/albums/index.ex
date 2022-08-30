@@ -22,9 +22,15 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
     client_liked_album = client_liked_album(gallery_id)
 
+    albums =
+      case client_liked_album(gallery.id) do
+        nil -> Albums.get_albums_by_gallery_id(gallery.id)
+        album -> Albums.get_albums_by_gallery_id(gallery.id) ++ [album]
+      end
+
     socket
     |> assign(:gallery_id, gallery_id)
-    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id) ++ [client_liked_album])
+    |> assign(:albums, albums)
     |> assign(:gallery, gallery)
     |> is_mobile(params)
     |> noreply()

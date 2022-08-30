@@ -21,17 +21,17 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                 <% end %>
             </.photo_wrapper>
             <% end %>
-            <%= if !@is_proofing && !@is_gallery_category_page do %>
+            <%= if !@is_proofing && !@is_gallery_category_page && !@client_liked_album do %>
                 <%= if @proofing_photo_icons && @is_likable do %>
                     <button
                         class="likeBtn"
                         phx-click={js_like_click(@id, @myself)}
                     >
-                        <div id={"photo-#{@id}-liked"} style={!@photo.client_liked && "display: none"}>
+                        <div id={"photo-#{@id}-liked"} style={!@is_liked && "display: none"}>
                             <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
                         </div>
 
-                        <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
+                        <div id={"photo-#{@id}-to-like"} style={@is_liked && "display: none"}>
                             <.icon
                             name="heart-white"
                             class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
@@ -39,7 +39,7 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                         </div>
                     </button>
                 <% else %>
-                    <button class={classes("likeBtn", %{"hidden" => !@photo.client_liked})}>
+                    <button class={classes("likeBtn", %{"hidden" => !@is_liked})}>
                         <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
                     </button>
                 <% end %>

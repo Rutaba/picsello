@@ -140,6 +140,18 @@ defmodule Picsello.Photos do
     {:ok, photo}
   end
 
+  def toggle_photographer_liked(id) when is_number(id) do
+    {1, [photo]} =
+      from(photo in Photo,
+        where: photo.id == ^id,
+        update: [set: [photographer_liked: not photo.photographer_liked]],
+        select: photo
+      )
+      |> Repo.update_all([])
+
+    {:ok, photo}
+  end
+
   @spec get_related(Photo.t(), favorites_only: boolean()) :: [Photo.t()]
   def get_related(%{gallery_id: gallery_id, id: photo_id} = photo, opts \\ []) do
     order_by =

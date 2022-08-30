@@ -183,7 +183,7 @@ defmodule Picsello.Galleries do
 
   defp conditions(id, opts) do
     favorites_filter = Keyword.get(opts, :favorites_filter, false)
-    _photographer_favorites_filter = Keyword.get(opts, :photographer_favorites_filter, false)
+    photographer_favorites_filter = Keyword.get(opts, :photographer_favorites_filter, false)
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
 
@@ -192,6 +192,13 @@ defmodule Picsello.Galleries do
     conditions =
       if favorites_filter do
         dynamic([p], p.client_liked == true and ^conditions)
+      else
+        conditions
+      end
+
+    conditions =
+      if photographer_favorites_filter do
+        dynamic([p], p.photographer_liked == true and ^conditions)
       else
         conditions
       end

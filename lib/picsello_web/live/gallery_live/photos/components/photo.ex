@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   alias Picsello.Photos
 
   @impl true
-  def update(assigns, socket) do
+  def update(%{photo: photo} = assigns, socket) do
     album = Map.get(assigns, :album)
 
     socket
@@ -20,11 +20,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
+      client_liked_album: false,
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
       url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
     )
     |> assign(assigns)
+    |> then(fn
+      %{assigns: %{is_client_gallery: true}} = socket ->
+        assign(socket, :is_liked, photo.client_liked)
+
+      socket ->
+        assign(socket, :is_liked, photo.photographer_liked)
+    end)
     |> ok
   end
 
@@ -32,9 +40,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   def handle_event(
         "like",
         %{"id" => id},
-        socket
+        %{assigns: %{is_client_gallery: is_client_gallery}} = socket
       ) do
-    {:ok, _} = Photos.toggle_liked(id)
+    {:ok, _} =
+      case is_client_gallery do
+        true -> Photos.toggle_liked(id)
+        false -> Photos.toggle_photographer_liked(id)
+      end
 
     socket |> noreply()
   end
