@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart, Galleries.Album}
   alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Cart.Order
@@ -22,8 +22,28 @@ defmodule PicselloWeb.GalleryLive.Shared do
     toggle_state = !favorites_filter
 
     socket
-    |> assign(:page, 0)
     |> assign(:favorites_filter, toggle_state)
+    |> process_favorites(per_page)
+  end
+
+  def toggle_photographer_favorites(
+        %{
+          assigns: %{
+            photographer_favorites_filter: photographer_favorites_filter
+          }
+        } = socket,
+        per_page
+      ) do
+    toggle_state = !photographer_favorites_filter
+
+    socket
+    |> assign(:photographer_favorites_filter, toggle_state)
+    |> process_favorites(per_page)
+  end
+
+  defp process_favorites(socket, per_page) do
+    socket
+    |> assign(:page, 0)
     |> assign(:update_mode, "replace")
     |> assign_photos(per_page)
     |> push_event("reload_grid", %{})
@@ -179,18 +199,20 @@ defmodule PicselloWeb.GalleryLive.Shared do
         exclude_all \\ nil
       ) do
     selected_filter = assigns[:selected_filter] || false
+    photographer_favorites_filter = assigns[:photographer_favorites_filter] || false
 
     if exclude_all do
       []
     else
       album = Map.get(assigns, :album, nil)
 
-      if album do
+      if album && album.id != "client_liked" do
         [album_id: album.id]
       else
         [exclude_album: true]
       end ++
         [
+          photographer_favorites_filter: photographer_favorites_filter,
           favorites_filter: filter,
           selected_filter: selected_filter,
           limit: per_page + 1,
@@ -820,4 +842,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defdelegate product_name(order), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate price_display(product), to: Cart
+
+  def client_liked_album(gallery_id) do
+    photos = Galleries.get_gallery_photos(gallery_id, favorites_filter: true)
+
+    %Album{
+      id: "client_liked",
+      photos: photos,
+      show?: !Enum.empty?(photos),
+      name: "Client Favourites",
+      is_client_liked: true
+    }
+  end
 end

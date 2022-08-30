@@ -131,10 +131,12 @@
                   <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
                 </div>
               <% end %>
-              <%= if @album && @album.is_proofing do %>
-                <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
-              <% else %>  
-                <.toggle id="toggle_favorites" filter={@favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
+              <%= unless @client_liked_album do %>
+                <%= if @album && @album.is_proofing do %>
+                  <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
+                <% else %>  
+                  <.toggle id="toggle_favorites" filter={@photographer_favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
+                <% end %>
               <% end %>
             </div>
           </div>
@@ -151,7 +153,15 @@
           </div>
         </div>
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
-          <% true when @favorites_filter -> %>
+          <% true when not @photographer_favorites_filter -> %>
+            <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
+                <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
+                <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
+            </div>
+            <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
+              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
+            </div>
+          <% true when @photographer_favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 Oops, there's no liked photo!
             </div>
@@ -175,7 +185,7 @@
                 data-uploading={@total_progress}
                 data-total={@gallery.total_count}
                 data-favorites-count={@favorites_count}
-                data-is-favorites-shown={ "#{@favorites_filter}" }
+                data-is-favorites-shown={ "#{@photographer_favorites_filter}" }
                 data-is-sortable="true"
                 data-has-more-photos={ "#{@has_more_photos}" }
                 data-inprogress-photos={ "#{length(@inprogress_photos)}" }

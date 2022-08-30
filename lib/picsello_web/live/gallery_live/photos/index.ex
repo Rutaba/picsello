@@ -28,6 +28,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(
       total_progress: 0,
       favorites_filter: false,
+      photographer_favorites_filter: false,
+      client_liked_album: false,
       page: 0,
       photos_error_count: 0,
       inprogress_photos: [],
@@ -46,6 +48,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+
+  def handle_params(
+        %{"id" => gallery_id, "album_id" => "client_liked"} = params,
+        _,
+        socket
+      ) do
+    socket
+    |> is_mobile(params)
+    |> assign(:client_liked_album, true)
+    |> assign(:favorites_filter, true)
+    |> assigns(gallery_id, client_liked_album(gallery_id))
+  end
+
   def handle_params(
         %{"id" => gallery_id, "album_id" => album_id} = params,
         _,
@@ -320,7 +335,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:inprogress_photos, [])
     |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
-    |> toggle_favorites(@per_page)
+    |> toggle_photographer_favorites(@per_page)
   end
 
   def handle_event(
@@ -408,13 +423,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> then(fn
       %{
         assigns: %{
-          favorites_filter: true
+          photographer_favorites_filter: true
         }
       } = socket ->
         socket
         |> assign(:page, 0)
         |> assign(:update_mode, "append")
-        |> assign(:favorites_filter, false)
+        |> assign(:photographer_favorites_filter, false)
         |> assign_photos(@per_page)
 
       socket ->
@@ -439,7 +454,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
-    |> assign(:favorites_filter, true)
+    |> assign(:photographer_favorites_filter, true)
     |> then(fn socket ->
       photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
 

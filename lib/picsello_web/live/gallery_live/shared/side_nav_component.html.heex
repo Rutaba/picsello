@@ -107,7 +107,7 @@
                     <.li title="Unsorted photos" name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
-                <%= for album <- @albums do %>
+                <%= for album <- @albums, album.show? do %>
                   <ul>
                     <.li title={album.name} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>

@@ -20,10 +20,11 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @impl true
   def handle_params(%{"id" => gallery_id} = params, _uri, socket) do
     gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
+    client_liked_album = client_liked_album(gallery_id)
 
     socket
     |> assign(:gallery_id, gallery_id)
-    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id))
+    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id) ++ [client_liked_album])
     |> assign(:gallery, gallery)
     |> is_mobile(params)
     |> noreply()
