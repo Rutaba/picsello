@@ -129,6 +129,13 @@ defmodule Picsello.BookingEventsTest do
                ~T[09:00:00.000000],
                ~T[11:00:00.000000]
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
+
+      assert [
+               ~T[09:00:00.000000],
+               ~T[10:00:00.000000],
+               ~T[11:00:00.000000]
+             ] =
+               BookingEvents.available_times(event, ~D[2050-12-10], skip_overlapping_shoots: true)
     end
 
     test "excludes times when shoots are scheduled within range and user time zone is not utc" do
@@ -157,6 +164,43 @@ defmodule Picsello.BookingEventsTest do
                ~T[19:00:00.000000],
                ~T[22:00:00.000000]
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
+    end
+
+    test "defaults to 15 min slots when duration is not present" do
+      event = %Picsello.BookingEvent{
+        dates: [
+          %{
+            date: ~D[2050-12-10],
+            time_blocks: [
+              %{start_time: ~T[09:00:00], end_time: ~T[10:00:00]}
+            ]
+          }
+        ]
+      }
+
+      assert [
+               ~T[09:00:00.000000],
+               ~T[09:15:00.000000],
+               ~T[09:30:00.000000],
+               ~T[09:45:00.000000]
+             ] =
+               BookingEvents.available_times(event, ~D[2050-12-10], skip_overlapping_shoots: true)
+    end
+
+    test "returns empty when time blocks are not set" do
+      event = %Picsello.BookingEvent{
+        dates: [
+          %{
+            date: ~D[2050-12-10],
+            time_blocks: [
+              %{start_time: nil, end_time: nil}
+            ]
+          }
+        ]
+      }
+
+      assert [] =
+               BookingEvents.available_times(event, ~D[2050-12-10], skip_overlapping_shoots: true)
     end
   end
 

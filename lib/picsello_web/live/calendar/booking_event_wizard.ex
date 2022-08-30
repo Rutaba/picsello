@@ -149,7 +149,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
         <%= error_tag(@f, :dates, prefix: "Dates", class: "text-red-sales-300 text-sm mt-2") %>
         <%= inputs_for @f, :dates, fn d -> %>
-          <.event_date f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} />
+          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} />
         <% end %>
 
         <div class="mt-8">
@@ -231,7 +231,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         </div>
       </div>
       <div class={classes("p-4 grid gap-5 sm:grid-cols-2", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})}>
-        <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today() %>
+        <div class="flex flex-col">
+          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today() %>
+          <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
+            <% count -> %>
+              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= count %></span><%= ngettext " open slot", " open slots", count %> on this day</p>
+          <% end %>
+        </div>
         <div>
           <p class="input-label">What times are you available this day?</p>
           <%= error_tag(@f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
@@ -435,6 +441,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       duration <- [5, 10, 15, 20, 30, 45, 60],
       do: {dyn_gettext("duration-#{duration}"), duration}
     )
+  end
+
+  defp calculate_slots_count(event_form, date) do
+    event = current(event_form)
+    event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
   end
 
   def current(%{source: changeset}), do: current(changeset)

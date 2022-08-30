@@ -63,27 +63,33 @@ defmodule Picsello.BookingEvents do
     |> Repo.get!(event_id)
   end
 
-  def available_times(%BookingEvent{} = booking_event, date) do
-    duration = (booking_event.duration_minutes + (booking_event.buffer_minutes || 0)) * 60
+  def available_times(%BookingEvent{} = booking_event, date, opts \\ []) do
+    duration =
+      ((booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) +
+         (booking_event.buffer_minutes || 0)) * 60
+
+    skip_overlapping_shoots = opts |> Keyword.get(:skip_overlapping_shoots, false)
 
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
         for(
-          %{start_time: start_time, end_time: end_time} <- time_blocks,
+          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} <- time_blocks,
           available_slots = (Time.diff(end_time, start_time) / duration) |> trunc(),
           slot <- 0..(available_slots - 1),
           available_slots > 0
         ) do
           start_time |> Time.add(duration * slot)
         end
-        |> filter_overlapping_shoots(booking_event, date)
+        |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
 
       _ ->
         []
     end
   end
 
-  defp filter_overlapping_shoots(slot_times, %BookingEvent{} = booking_event, date) do
+  defp filter_overlapping_shoots(slot_times, _booking_event, _date, true), do: slot_times
+
+  defp filter_overlapping_shoots(slot_times, %BookingEvent{} = booking_event, date, false) do
     %{package_template: %{organization: %{user: user} = organization}} =
       booking_event
       |> Repo.preload(package_template: [organization: :user])
