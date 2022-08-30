@@ -43,7 +43,7 @@ defmodule Picsello.EditLeadPackageTest do
       |> assert_value(text_field("Title"), "My Greatest Package")
       |> fill_in(text_field("Title"), with: "My updated package")
       |> assert_value(select("# of Shoots"), "2")
-      |> click(css("div.ql-editor"))
+      |> focus_quill()
       |> find(select("# of Shoots"), &click(&1, option("1")))
       |> assert_has(css("label", text: "# of Shoots must be greater than or equal to 2"))
       |> find(select("# of Shoots"), &click(&1, option("2")))

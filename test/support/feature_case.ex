@@ -326,6 +326,53 @@ defmodule Picsello.FeatureCase do
       [session: session, gallery: insert(:gallery, job: job)]
     end
 
+    def wait_for_focus(session, query) do
+      {:css, selector} = Wallaby.Query.compile(query)
+
+      retry(fn ->
+        test_pid = self()
+
+        session
+        |> execute_script(
+          "return document.activeElement === document.querySelector(arguments[0])",
+          [selector],
+          &send(test_pid, {:focused?, &1})
+        )
+
+        receive do
+          {:focused?, true} -> {:ok, nil}
+          {:focused?, false} -> {:error, "element not focused"}
+        end
+      end)
+
+      session
+    end
+
+    @quill_text_area_query css("div.ql-editor")
+
+    def focus_quill(session) do
+      session
+      |> find(css("div[phx-hook=Quill]"), fn quill ->
+        quill
+        |> click(@quill_text_area_query)
+        |> wait_for_focus(@quill_text_area_query)
+      end)
+    end
+
+    def fill_in_quill(session, text) do
+      session
+      |> focus_quill()
+      |> find(css("div[phx-hook=Quill]"), fn quill ->
+        retry(fn ->
+          quill
+          |> find(@quill_text_area_query, &send_keys(&1, text))
+          |> find(css("input[type=hidden]", count: :any, visible: false))
+          |> Enum.any?(&(&1 |> Wallaby.Element.attr("value") |> String.contains?(text)))
+          |> if(do: {:ok, nil}, else: {:error, "quill didnt set the hidden"})
+        end)
+      end)
+    end
+
     def insert_photo(%{gallery: %{id: gallery_id}, total_photos: total_photos} = data) do
       album = Map.get(data, :album, %{id: nil})
       photo_url = "/images/print.png"

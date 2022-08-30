@@ -5,12 +5,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   setup :onboarded
   setup :authenticated
 
-  defp quill(session, text) do
-    session
-    |> click(css("div.ql-editor"))
-    |> send_keys([text])
-  end
-
   feature "navigate", %{session: session} do
     session
     |> click(link("Settings"))
@@ -60,7 +54,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_value(text_field("Image Turnaround Time"), "1")
     |> fill_in(text_field("Image Turnaround Time"), with: "2")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> quill("My greatest wedding package")
+    |> fill_in_quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
@@ -111,7 +105,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> quill("My greatest wedding package")
+    |> fill_in_quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
@@ -119,8 +113,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("Add a Package: Choose a Contract")
     |> find(select("Select a Contract Template"), &click(&1, option("New Contract")))
     |> fill_in(text_field("Contract Name"), with: "My custom contract")
-    |> click(css("div.ql-editor[data-placeholder='Paste contract text here']"))
-    |> send_keys(["content of my new contract"])
+    |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
+    |> fill_in_quill("content of my new contract")
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")

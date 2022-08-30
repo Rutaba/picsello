@@ -53,7 +53,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
           </div>
 
             <div class="flex items-center justify-center mt-4">
-              <.framed_preview category={@category} photo={@photo} width={cards_width(@category.frame_image)}/>
+              <.framed_preview category={@category} photo={@photo}/>
             </div>
 
             <div class="flex justify-start pt-4 pl-4">
