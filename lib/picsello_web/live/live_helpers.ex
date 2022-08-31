@@ -141,6 +141,7 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def ok(socket), do: {:ok, socket}
+  def ok(socket, opts), do: {:ok, socket, opts}
   def noreply(socket), do: {:noreply, socket}
   def reply(socket, payload), do: {:reply, payload, socket}
 

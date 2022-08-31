@@ -655,7 +655,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <span class={classes("bg-blue-planning-300 text-white w-6 h-6 inline-block flex items-center justify-center mr-2 rounded-full leading-none text-sm font-bold",
         %{"bg-gray-300 text-gray-500 opacity-70" => !@active})}>
           <%= if @done do %>
-            <.icon name="checkmark" class="p-2 text-white" />
+            <.icon name="checkmark" class="p-2 stroke-current text-base-100" />
           <% else %>
             <span class="-mt-1"><%= @step %></span>
           <% end %>

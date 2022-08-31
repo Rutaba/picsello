@@ -132,8 +132,15 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket |> client_photo_click(photo_id, %{close_event: :update_assigns_state})
   end
 
-  def handle_info({:customize_and_buy_product, whcc_product, photo, size}, socket) do
-    socket |> customize_and_buy_product(whcc_product, photo, size)
+  def handle_info(
+        {:customize_and_buy_product, whcc_product, photo, size},
+        %{assigns: %{favorites_filter: favorites_filter}} = socket
+      ) do
+    socket
+    |> customize_and_buy_product(whcc_product, photo,
+      size: size,
+      favorites_only: favorites_filter
+    )
   end
 
   def handle_info(
@@ -210,7 +217,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp top_section(%{is_proofing: true} = assigns) do
     ~H"""
       <h3 {testid("album-title")} class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
-      <p class="font-normal text-lg mt-2">Select your favourite photos below
+      <p class="mt-2 text-lg font-normal">Select your favourite photos below
         and then send those selections to your photographer for retouching.
       </p>
     <.photos_count {assigns} />
@@ -234,9 +241,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       Routes.gallery_client_show_cart_path(socket, :proofing_album, album.client_link_hash)
 
     ~H"""
-    <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
+    <div class="flex flex-col justify-between w-full my-4 lg:flex-row lg:items-center">
       <div class="flex items-center">
-        <.photos_button title="Review my Selections" route={cart_route} />
+        <%= live_redirect to: cart_route do %>
+          <button class="py-8 btn-primary">Review my Selections</button>
+        <% end %>
         <.photos_count photos_count={@photos_count} class="ml-4" />
       </div>
       <.toggle_filter title="Show selected only" event="toggle_selected" applied?={@selected_filter} />

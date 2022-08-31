@@ -2,6 +2,7 @@ defmodule Picsello.GalleryProducts do
   @moduledoc false
 
   import Ecto.Query, warn: false
+  import Picsello.Repo.CustomMacros
   alias Picsello.{Repo, Galleries, Subscriptions, Product, Galleries.GalleryProduct}
 
   def upsert_gallery_product(gallery_product, attr) do
@@ -33,6 +34,25 @@ defmodule Picsello.GalleryProducts do
     |> Repo.update!()
   end
 
+  def editor_type(%GalleryProduct{category_id: category_id}) do
+    editor_types = %{
+      "simpleEditor" => :simple,
+      "cardEditor" => :card,
+      "albumEditor" => :album
+    }
+
+    type =
+      from(product in Picsello.Product,
+        join: category in assoc(product, :category),
+        where: category.id == ^category_id,
+        select: product.api ~> "editorType",
+        distinct: true
+      )
+      |> Repo.one!()
+
+    Map.get(editor_types, type)
+  end
+
   @doc """
   Get all the gallery products that are ready for review
   """
@@ -62,13 +82,8 @@ defmodule Picsello.GalleryProducts do
       as: :preview_photo,
       where:
         product.gallery_id == ^gallery_id and not category.hidden and is_nil(category.deleted_at),
-      where:
-        fragment(
-          "?->>'state' != ?",
-          photographer.onboarding,
-          ^Picsello.Onboardings.non_us_state()
-        ),
-      preload: [category: :products],
+      where: photographer.onboarding ~>> "state" != ^Picsello.Onboardings.non_us_state(),
+      preload: [category: {category, :products}],
       select_merge: %{preview_photo: preview_photo},
       order_by: category.position
     )
@@ -112,28 +127,26 @@ defmodule Picsello.GalleryProducts do
   Gets WHCC products with size params.
   """
 
-  @product_sizes """
-  select
-  products.id as product_id,
-  jsonb_agg(
-  jsonb_build_object('id', attributes.id, 'name', attributes.name)
-  order by
-    (metadata -> 'height') :: decimal * (metadata -> 'width') :: decimal
-  ) as sizes
-  from
-  products,
-  jsonb_to_recordset(products.attribute_categories) as attribute_categories(attributes jsonb, name text, _id text),
-  jsonb_to_recordset(attribute_categories.attributes) as attributes(name text, id text, metadata jsonb)
-  where
-  attribute_categories._id = 'size'
-  group by
-  products.id
-  """
-
   def get_whcc_products(category_id) do
-    from(product in Product,
+    sizes =
+      from(product in Product,
+        join:
+          attributes in jsonb_path_query_args(
+            product.attribute_categories,
+            "$[*] \? (@._id == $id).attributes[*]",
+            ^[%{id: "size"}]
+          ),
+        group_by: product.id,
+        select: %{
+          product_id: product.id,
+          sizes:
+            jsonb_agg(jsonb_object(["name", attributes ~>> "name", "id", attributes ~>> "id"]))
+        }
+      )
+
+    from(product in with_cte(Product, "sizes", as: ^sizes),
       where: product.category_id == ^category_id and is_nil(product.deleted_at),
-      inner_join: sizes in fragment(@product_sizes),
+      inner_join: sizes in "sizes",
       on: sizes.product_id == product.id,
       order_by: [asc: product.position],
       select: merge(product, %{sizes: sizes.sizes})
