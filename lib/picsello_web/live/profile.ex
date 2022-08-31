@@ -100,10 +100,10 @@ defmodule PicselloWeb.Live.Profile do
 
         <%= if !Enum.empty?(@booking_events) do %>
           <section class="mt-20">
-            <h2 class="text-4xl font-bold mb-8">Book a session with me!</h2>
+            <h2 class="text-4xl font-bold mb-8" {testid("events-heading")}>Book a session with me!</h2>
             <div class="grid sm:grid-cols-2 gap-8">
               <%= for event <- @booking_events do %>
-                <div>
+                <div {testid("booking-cards")}>
                   <a href={"#{event.url}/book"} class="block w-full col">
                     <.blurred_thumbnail class="w-full" url={event.thumbnail_url} />
                     <div>
@@ -117,7 +117,7 @@ defmodule PicselloWeb.Live.Profile do
                       </div>
                       <div class="my-4 raw_html"><%= raw event.description %></div>
                       <button type="button" class="flex items-center justify-center btn-primary">
-                        Book Now
+                        Book now
                       </button>
                     </div>
                   </a>
