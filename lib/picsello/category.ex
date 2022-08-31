@@ -68,6 +68,7 @@ defmodule Picsello.Category do
     |> unique_constraint(:position)
   end
 
+  @spec coords(%{:frame_image => any, optional(any) => any}) :: any
   def coords(category) do
     @preview_templates |> Map.get(frame_image(category))
   end
