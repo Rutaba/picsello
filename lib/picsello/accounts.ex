@@ -4,6 +4,7 @@ defmodule Picsello.Accounts do
   """
 
   import Ecto.Query, warn: false
+  import Picsello.Zapier.User, only: [user_created_webhook: 1]
   alias Picsello.{Repo, Accounts.User, Accounts.UserToken, Notifiers.UserNotifier}
 
   ## Database getters
@@ -399,6 +400,12 @@ defmodule Picsello.Accounts do
           ]
         }
         |> SendgridClient.add_contacts()
+
+        user_created_webhook(%{
+          email: user.email,
+          first_name: User.first_name(user),
+          last_name: User.last_name(user)
+        })
 
         {:ok, user}
 

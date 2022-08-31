@@ -162,7 +162,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
 
   def profile_footer(assigns) do
     ~H"""
-    <footer class="mx-6 md:mx-16 mt-10 center-container">
+    <footer class="mt-auto pt-10 center-container">
       <div class="flex flex-col md:flex-row">
         <div class="flex justify-center py-8 md:justify-start md:py-14"><.photographer_logo {assigns} /></div>
         <div class="flex items-center justify-center md:ml-auto flex-wrap">

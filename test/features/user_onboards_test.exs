@@ -8,13 +8,25 @@ defmodule Picsello.UserOnboardsTest do
   setup %{session: session, user: user} do
     test_pid = self()
 
-    Tesla.Mock.mock_global(fn %{method: :put} = request ->
-      send(test_pid, {:sendgrid_request, request})
+    Tesla.Mock.mock_global(fn
+      %{method: :put} = request ->
+        send(test_pid, {:sendgrid_request, request})
 
-      %Tesla.Env{
-        status: 202,
-        body: %{"job_id" => "1234"}
-      }
+        body = %{"job_id" => "1234"}
+
+        %Tesla.Env{status: 202, body: body}
+
+      %{method: :post} = request ->
+        send(test_pid, {:zapier_request, request})
+
+        body = %{
+          "attempt" => "1234",
+          "id" => "1234",
+          "request_id" => "1234",
+          "status" => "success"
+        }
+
+        %Tesla.Env{status: 200, body: body}
     end)
 
     insert(:brand_link, user: user)
@@ -32,7 +44,7 @@ defmodule Picsello.UserOnboardsTest do
   @org_name_field text_field("onboarding-step-2_organization_name")
   @phone_field text_field("onboarding-step-2_onboarding_phone")
   @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
-  @second_color_field css("li.aspect-h-1.aspect-w-1:nth-child(2)")
+  @second_color_field css("li.aspect-square:nth-child(2)")
   @website_field text_field("onboarding-step-4_organization_brand_links_0_link")
 
   def fill_in_step(session, 2) do
@@ -161,6 +173,14 @@ defmodule Picsello.UserOnboardsTest do
            } = user
 
     assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert_received {:zapier_request, %{body: zapier_request_body}}
+
+    user_email = user.email
+
+    assert %{
+             "email" => ^user_email
+           } = Jason.decode!(zapier_request_body)
 
     assert %{
              "list_ids" => [

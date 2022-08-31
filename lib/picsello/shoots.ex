@@ -12,9 +12,26 @@ defmodule Picsello.Shoots do
       where:
         client.organization_id == ^user.organization.id and
           is_nil(job.archived_at) and shoot.starts_at >= ^start_date and
-          shoot.starts_at <= ^end_date,
-      select: {shoot, job, client, status}
+          shoot.starts_at <= ^end_date and
+          (status.is_lead == false or is_nil(job.booking_event_id)),
+      select: {shoot, job, client, status},
+      order_by: shoot.starts_at
     )
     |> Repo.all()
   end
+
+  def broadcast_shoot_change(%Shoot{} = shoot) do
+    job = shoot |> Repo.preload(job: :client) |> Map.get(:job)
+
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      topic_shoot_change(job.client.organization_id),
+      {:shoot_updated, shoot}
+    )
+  end
+
+  def subscribe_shoot_change(organization_id),
+    do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic_shoot_change(organization_id))
+
+  defp topic_shoot_change(organization_id), do: "shoot_change:#{organization_id}"
 end

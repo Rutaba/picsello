@@ -2,7 +2,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedules, BookingProposal, Job}
+  alias Picsello.{Repo, PaymentSchedules, BookingProposal}
   import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
@@ -111,28 +111,13 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   defp stripe_checkout(%{assigns: %{proposal: proposal, job: job}} = socket) do
     payment = PaymentSchedules.unpaid_payment(job)
 
-    line_items = [
-      %{
-        price_data: %{
-          currency: "usd",
-          unit_amount: payment.price.amount,
-          product_data: %{
-            name: "#{Job.name(job)} #{payment.description}",
-            tax_code: Picsello.Payments.tax_code(:services)
-          },
-          tax_behavior: "exclusive"
-        },
-        quantity: 1
-      }
-    ]
-
-    case PaymentSchedules.checkout_link(proposal, line_items,
+    case PaymentSchedules.checkout_link(proposal, payment,
            # manually interpolate here to not encode the brackets
            success_url: "#{BookingProposal.url(proposal.id)}?session_id={CHECKOUT_SESSION_ID}",
            cancel_url: BookingProposal.url(proposal.id),
            metadata: %{"paying_for" => payment.id}
          ) do
-      {:ok, %{url: url}} ->
+      {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
 
       {:error, error} ->

@@ -49,6 +49,7 @@ config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_AP
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
 config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
 config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
+config :picsello, :booking_reservation_seconds, 60 * 10
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
@@ -141,6 +142,10 @@ config :picsello, :email_presets,
   column_map: System.get_env("EMAIL_PRESET_COLUMN_MAP")
 
 config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorage.Impl
+
+config :picsello, :zapier,
+  new_user_webhook_url: System.get_env("ZAPIER_NEW_USER_WEBHOOK_URL"),
+  trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

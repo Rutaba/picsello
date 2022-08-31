@@ -135,6 +135,9 @@ defmodule PicselloWeb.Router do
       live "/profile/settings/edit", Live.Profile, :edit, as: :profile_settings
       live "/calendar", Live.Calendar.Index, :index
       live "/calendar/settings", Live.Calendar.Settings, :settings
+      live "/booking-events", Live.Calendar.BookingEvents, :index
+      live "/booking-events/new", Live.Calendar.BookingEvents, :new
+      live "/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit
       get "/calendar-feed", CalendarFeedController, :index
 
       scope "/galleries/:id", GalleryLive do
@@ -188,6 +191,12 @@ defmodule PicselloWeb.Router do
 
     live "/proposals/:token", BookingProposalLive.Show, :show, as: :booking_proposal
     live "/photographer/:organization_slug", Live.Profile, :index, as: :profile
+
+    live "/photographer/:organization_slug/event/:id", ClientBookingEventLive.Show, :show,
+      as: :client_booking_event
+
+    live "/photographer/:organization_slug/event/:id/book", ClientBookingEventLive.Book, :book,
+      as: :client_booking_event
 
     live "/gallery-expired/:hash", GalleryLive.ClientShow.GalleryExpire, :show
   end

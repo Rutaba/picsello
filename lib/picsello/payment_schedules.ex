@@ -247,29 +247,50 @@ defmodule Picsello.PaymentSchedules do
     end)
   end
 
-  def checkout_link(%BookingProposal{} = proposal, line_items, opts) do
-    cancel_url = opts |> Keyword.get(:cancel_url)
-    success_url = opts |> Keyword.get(:success_url)
-
-    %{job: %{client: %{organization: organization} = client}} =
+  def checkout_link(%BookingProposal{} = proposal, payment, opts) do
+    %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: :organization])
-
-    customer_id = customer_id(client)
 
     stripe_params = %{
       client_reference_id: "proposal_#{proposal.id}",
-      cancel_url: cancel_url,
-      success_url: success_url,
-      customer: customer_id,
+      cancel_url: Keyword.get(opts, :cancel_url),
+      success_url: Keyword.get(opts, :success_url),
+      customer: customer_id(client),
       customer_update: %{
         address: "auto"
       },
-      line_items: line_items,
+      line_items: [
+        %{
+          price_data: %{
+            currency: "usd",
+            unit_amount: payment.price.amount,
+            product_data: %{
+              name: "#{Job.name(job)} #{payment.description}",
+              tax_code: Picsello.Payments.tax_code(:services)
+            },
+            tax_behavior: "exclusive"
+          },
+          quantity: 1
+        }
+      ],
       payment_intent_data: %{setup_future_usage: "off_session"},
       metadata: Keyword.get(opts, :metadata, %{})
     }
 
-    Payments.create_session(stripe_params, connect_account: organization.stripe_account_id)
+    stripe_opts = [connect_account: organization.stripe_account_id]
+
+    if payment.stripe_session_id,
+      do: Payments.expire_session(payment.stripe_session_id, stripe_opts)
+
+    with {:ok, %{url: url, payment_intent: payment_intent, id: session_id}} <-
+           Payments.create_session(stripe_params, stripe_opts),
+         {:ok, _} <-
+           PaymentSchedule.stripe_ids_changeset(payment, payment_intent, session_id)
+           |> Repo.update() do
+      {:ok, url}
+    else
+      error -> error
+    end
   end
 
   defp customer_id(%Client{stripe_customer_id: nil} = client) do

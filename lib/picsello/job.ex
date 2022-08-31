@@ -24,6 +24,7 @@ defmodule Picsello.Job do
     field(:completed_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
+    belongs_to(:booking_event, Picsello.BookingEvent)
     has_one(:job_status, JobStatus)
     has_one(:gallery, Gallery)
     has_many(:payment_schedules, PaymentSchedule, preload_order: [asc: :due_at])
@@ -97,6 +98,10 @@ defmodule Picsello.Job do
 
   def leads(query \\ __MODULE__) do
     from(job in query, join: status in assoc(job, :job_status), where: status.is_lead)
+  end
+
+  def not_booking(query \\ __MODULE__) do
+    from(job in query, where: is_nil(job.booking_event_id))
   end
 
   def not_leads(query \\ __MODULE__) do

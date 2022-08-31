@@ -687,7 +687,7 @@ defmodule Picsello.Factory do
         code: "123456",
         trial_length: 90,
         active: false,
-        signup_title: "This is going to be a game changer!",
+        signup_title: "Get started with your free 90-day free trial today",
         signup_description:
           "Start your 90-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
         onboarding_title: "Start your 90-day free trial",
@@ -853,6 +853,27 @@ defmodule Picsello.Factory do
       description: "invoice description",
       status: "draft",
       id: sequence(:invoice_stripe_id, &"invoice-stripe-id-#{&1}")
+    }
+  end
+
+  def booking_event_factory() do
+    %Picsello.BookingEvent{
+      name: "My event",
+      location: "on_location",
+      address: "320 1st St N, Jax Beach, FL",
+      duration_minutes: 45,
+      buffer_minutes: 15,
+      dates: [
+        %{
+          date: ~D[2050-12-10],
+          time_blocks: [
+            %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
+            %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
+          ]
+        }
+      ],
+      thumbnail_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      description: "<p>My custom description</p>"
     }
   end
 end

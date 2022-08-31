@@ -5,13 +5,25 @@ defmodule PicselloWeb.AuthControllerTest do
   setup do
     test_pid = self()
 
-    Tesla.Mock.mock_global(fn %{method: :put} = request ->
-      send(test_pid, {:sendgrid_request, request})
+    Tesla.Mock.mock_global(fn
+      %{method: :put} = request ->
+        send(test_pid, {:sendgrid_request, request})
 
-      %Tesla.Env{
-        status: 202,
-        body: %{"job_id" => "1234"}
-      }
+        body = %{"job_id" => "1234"}
+
+        %Tesla.Env{status: 202, body: body}
+
+      %{method: :post} = request ->
+        send(test_pid, {:zapier_request, request})
+
+        body = %{
+          "attempt" => "1234",
+          "id" => "1234",
+          "request_id" => "1234",
+          "status" => "success"
+        }
+
+        %Tesla.Env{status: 200, body: body}
     end)
 
     mock_auth =
@@ -56,6 +68,12 @@ defmodule PicselloWeb.AuthControllerTest do
                User |> Repo.get_by(email: "brian@example.com")
 
       assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+      assert_received {:zapier_request, %{body: zapier_request_body}}
+
+      assert %{
+               "email" => "brian@example.com"
+             } = Jason.decode!(zapier_request_body)
 
       assert %{
                "list_ids" => [

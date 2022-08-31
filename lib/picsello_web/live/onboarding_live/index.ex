@@ -1,5 +1,6 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
+  import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
@@ -208,7 +209,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <p class="py-2 font-extrabold">Choose your color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
             <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
               <%= for(color <- colors()) do %>
-                <li class="aspect-h-1 aspect-w-1">
+                <li class="aspect-square">
                   <label>
                     <%= radio_button p, :color, color, class: "hidden" %>
                     <div class={classes(
@@ -364,6 +365,28 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(changeset: build_changeset(socket, params, :validate))
   end
 
+  def optimized_container(assigns) do
+    ~H"""
+      <div class="flex items-stretch w-screen min-h-screen flex-wrap">
+        <div class="lg:w-1/3 w-full flex flex-col justify-center px-8 lg:px-16 py-8">
+          <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 sm:mb-4" />
+          <%= render_block(@inner_block) %>
+        </div>
+        <div class="lg:w-2/3 w-full flex flex-col items-evenly pl-8 lg:pl-16 bg-blue-planning-300">
+          <blockquote class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
+            <p class="mb-4 text-white border-solid border-l-4 border-white pl-4">“I love the way that Picsello flows and so easy to use! All the information I need is easily accessible and well organized. Putting together a proposal for a client is so simple and takes only a few clicks before it's ready to send off for signing and payment.”</p>
+            <div class="flex items-center gap-4">
+              <img src="https://uploads-ssl.webflow.com/61147776bffed57ff3e884ef/62f45d35be926e94d576f60c_emma.png" alt="Emma Thurgood">
+              <cite class="normal not-italic text-white"><span class="block font-bold not-italic">Emma Thurgood</span>
+                www.emmathurgood.com</cite>
+            </div>
+          </blockquote>
+          <img class="mt-auto object-cover object-top w-full" style="max-height:75vh;" src="https://uploads-ssl.webflow.com/61147776bffed57ff3e884ef/62f45d6d8aae0229be8bafc7_large-hero.png" alt="Picsello Application" />
+        </div>
+      </div>
+    """
+  end
+
   def container(assigns) do
     ~H"""
     <div class={classes(["flex flex-col items-center justify-center w-screen min-h-screen p-5", @color_class])}>
@@ -445,6 +468,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
       ]
     }
     |> SendgridClient.add_contacts()
+
+    user_trial_created_webhook(%{email: current_user.email})
 
     socket
   end
