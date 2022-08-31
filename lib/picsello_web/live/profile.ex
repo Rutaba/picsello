@@ -83,6 +83,8 @@ defmodule PicselloWeb.Live.Profile do
         <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
         <h1 class="mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
 
+        <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
+
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
         <%= if @website || @edit do %>
@@ -127,7 +129,8 @@ defmodule PicselloWeb.Live.Profile do
           </section>
         <% end %>
 
-        <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
+        <h3 class="mt-20 uppercase">MORE ABOUT MY OFFERINGS:</h3>
+        <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
 
         <hr class="mt-12" />
 
@@ -160,8 +163,8 @@ defmodule PicselloWeb.Live.Profile do
 
   def job_types_details(assigns) do
     ~H"""
-    <div class="flex items-center mt-16">
-      <h1 class="uppercase font-bold">Specializing In:</h1>
+    <div class="flex items-center mt-8">
+      <h3 class="uppercase font-bold">Specializing In:</h3>
       <%= if @edit do %>
         <div class="ml-4">
           <.icon_button {testid("edit-photography-types-button")} class="shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
@@ -171,14 +174,12 @@ defmodule PicselloWeb.Live.Profile do
       <% end %>
     </div>
 
-    <div class="w-auto mt-6">
+    <div class="w-auto mt-4">
       <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
         <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
         <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
       <% end) %>
     </div>
-
-    <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
     """
   end
 
