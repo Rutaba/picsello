@@ -16,6 +16,7 @@ defmodule Picsello.Shoot do
     field :notes, :string
     field :starts_at, :utc_datetime
     field :reminded_at, :utc_datetime
+    field :thanked_at, :utc_datetime
     field :address, :string
     belongs_to(:job, Picsello.Job)
 
@@ -40,6 +41,10 @@ defmodule Picsello.Shoot do
 
   def reminded_at_changeset(%__MODULE__{} = shoot) do
     shoot |> change(reminded_at: DateTime.utc_now() |> DateTime.truncate(:second))
+  end
+
+  def thanked_at_changeset(%__MODULE__{} = shoot) do
+    shoot |> change(thanked_at: DateTime.utc_now() |> DateTime.truncate(:second))
   end
 
   def by_starts_at(query \\ __MODULE__) do
