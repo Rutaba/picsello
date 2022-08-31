@@ -168,7 +168,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/users/register?code=#{random_code}")
     |> assert_has(
-      css("h2",
+      css("h1",
         text: "90-day free"
       )
     )
@@ -181,7 +181,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/users/register?code=#{random_code}")
     |> assert_has(
-      css("h2",
+      css("h1",
         text: "30-day free"
       )
     )
