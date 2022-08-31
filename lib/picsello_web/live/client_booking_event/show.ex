@@ -11,7 +11,13 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
     ]
 
   import PicselloWeb.ClientBookingEventLive.Shared,
-    only: [blurred_thumbnail: 1, subtitle_display: 1, date_display: 1, address_display: 1]
+    only: [
+      blurred_thumbnail: 1,
+      subtitle_display: 1,
+      date_display: 1,
+      address_display: 1,
+      formatted_date: 1
+    ]
 
   @impl true
   def mount(%{"organization_slug" => slug, "id" => event_id} = params, session, socket) do
@@ -59,22 +65,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
     socket
     |> assign(booking_event: BookingEvents.get_booking_event!(organization.id, event_id))
-  end
-
-  defp formatted_date(booking_event) do
-    dates =
-      booking_event
-      |> Map.get(:dates)
-      |> Enum.map(& &1.date)
-      |> Enum.sort()
-      |> Enum.map(&Calendar.strftime(&1, "%b %d, %Y"))
-
-    [
-      Enum.at(dates, 0),
-      Enum.at(dates, -1)
-    ]
-    |> Enum.uniq()
-    |> Enum.join(" - ")
   end
 
   defp maybe_show_expired_message(socket, %{"booking_expired" => "true"}),

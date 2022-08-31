@@ -5,7 +5,13 @@ defmodule PicselloWeb.Live.Profile do
   alias Picsello.BookingEvents
 
   import PicselloWeb.ClientBookingEventLive.Shared,
-    only: [blurred_thumbnail: 1, date_display: 1, address_display: 1, subtitle_display: 1]
+    only: [
+      blurred_thumbnail: 1,
+      date_display: 1,
+      address_display: 1,
+      subtitle_display: 1,
+      formatted_date: 1
+    ]
 
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
@@ -37,9 +43,9 @@ defmodule PicselloWeb.Live.Profile do
     socket
     |> assign(:edit, true)
     |> assign(:entry, nil)
-    |> assign_booking_events()
     |> assign_defaults(session)
     |> assign_current_organization()
+    |> assign_booking_events()
     |> assign_job_type_packages()
     |> allow_upload(
       :logo,
@@ -325,26 +331,6 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(booking_events: booking_events)
   end
 
-  defp assign_booking_events(%{assigns: %{current_user: current_user}} = socket) do
-    booking_events =
-      BookingEvents.get_booking_events_public(current_user.organization_id)
-      |> Enum.map(fn booking_event ->
-        booking_event
-        |> Map.put(
-          :url,
-          Routes.client_booking_event_url(
-            socket,
-            :show,
-            current_user.organization.slug,
-            booking_event.id
-          )
-        )
-      end)
-
-    socket
-    |> assign(booking_events: booking_events)
-  end
-
   defp edit_image_button(assigns) do
     ~H"""
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
@@ -546,21 +532,5 @@ defmodule PicselloWeb.Live.Profile do
       |> put_flash(:error, "Image was too large, needs to be below 10 mb")
       |> cancel_upload(entry.upload_config, entry.ref)
     end
-  end
-
-  defp formatted_date(booking_event) do
-    dates =
-      booking_event
-      |> Map.get(:dates)
-      |> Enum.map(& &1.date)
-      |> Enum.sort()
-      |> Enum.map(&Calendar.strftime(&1, "%b %d, %Y"))
-
-    [
-      Enum.at(dates, 0),
-      Enum.at(dates, -1)
-    ]
-    |> Enum.uniq()
-    |> Enum.join(" - ")
   end
 end
