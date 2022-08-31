@@ -31,6 +31,27 @@ defmodule Picsello.BookingEvents do
     changeset |> Repo.insert_or_update()
   end
 
+  def get_booking_events_public(organization_id) do
+    from(event in BookingEvent,
+      join: package in assoc(event, :package_template),
+      where: package.organization_id == ^organization_id and is_nil(event.disabled_at),
+      select: %{
+        package_name: package.name,
+        id: event.id,
+        name: event.name,
+        thumbnail_url: event.thumbnail_url,
+        disabled_at: event.disabled_at,
+        location: event.location,
+        duration_minutes: event.duration_minutes,
+        dates: event.dates,
+        description: event.description,
+        address: event.address,
+        package_template: package
+      }
+    )
+    |> Repo.all()
+  end
+
   def get_booking_events(organization_id) do
     from(event in BookingEvent,
       left_join: job in assoc(event, :jobs),
@@ -46,9 +67,12 @@ defmodule Picsello.BookingEvents do
         thumbnail_url: event.thumbnail_url,
         disabled_at: event.disabled_at,
         duration_minutes: event.duration_minutes,
-        dates: event.dates
+        dates: event.dates,
+        description: event.description,
+        address: event.address,
+        package_price: package.base_price
       },
-      group_by: [event.id, package.name],
+      group_by: [event.id, package.name, package.base_price],
       order_by: [desc: event.id]
     )
     |> Repo.all()
