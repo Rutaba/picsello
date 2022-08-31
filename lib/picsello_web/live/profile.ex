@@ -80,7 +80,7 @@ defmodule PicselloWeb.Live.Profile do
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
         <%= if @website || @edit do %>
-          <div class="flex items-center justify-center py-6 mt-auto">
+          <div class="py-6">
             <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
             <%= if @edit do %>
               <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
@@ -90,13 +90,15 @@ defmodule PicselloWeb.Live.Profile do
           </div>
         <% end %>
 
+        <hr class="mt-12" />
+
         <%= if !Enum.empty?(@booking_events) do %>
           <section class="mt-20">
             <h2 class="text-4xl font-bold mb-8">Book a session with me!</h2>
             <div class="grid sm:grid-cols-2 gap-8">
               <%= for event <- @booking_events do %>
                 <div>
-                  <a href={"#{event.url}"} class="block w-full col">
+                  <a href={"#{event.url}/book"} class="block w-full col">
                     <.blurred_thumbnail class="w-full" url={event.thumbnail_url} />
                     <div>
                       <h3 class="text-xl font-semibold mt-4">
@@ -107,7 +109,10 @@ defmodule PicselloWeb.Live.Profile do
                         <.date_display date={formatted_date(event)} />
                         <.address_display booking_event={event} class="mt-4"/>
                       </div>
-                      <div class="mt-4 raw_html"><%= raw event.description %></div>
+                      <div class="my-4 raw_html"><%= raw event.description %></div>
+                      <button type="button" class="flex items-center justify-center btn-primary">
+                        Book Now
+                      </button>
                     </div>
                   </a>
                 </div>
@@ -131,6 +136,8 @@ defmodule PicselloWeb.Live.Profile do
             <.book_now_button job_type={job_type} />
           </div>
         <% end %>
+
+        <hr class="my-20" />
 
         <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>
@@ -323,8 +330,6 @@ defmodule PicselloWeb.Live.Profile do
       BookingEvents.get_booking_events_public(current_user.organization_id)
       |> Enum.map(fn booking_event ->
         booking_event
-        |> Map.put(:date, booking_event.dates |> hd |> Map.get(:date))
-        |> Map.drop([:dates])
         |> Map.put(
           :url,
           Routes.client_booking_event_url(
@@ -411,7 +416,7 @@ defmodule PicselloWeb.Live.Profile do
         <%= if @image && @image.url do %>
           <div class="absolute top-8 right-8"><.edit_image_button image={@uploads.main_image} image_field={"main_image"} /></div>
         <% else %>
-          <div class="bg-[#F6F6F6] w-full aspect-[2/1]" >
+          <div class="bg-[#F6F6F6] w-full aspect-[2/1] flex items-center justify-center">
             <.drag_image_upload icon_class={@icon_class} image={@image} image_upload={@uploads.main_image} supports_class="text-center" supports="JPEG or PNG: 1060x650 under 10mb" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
           </div>
         <% end %>
