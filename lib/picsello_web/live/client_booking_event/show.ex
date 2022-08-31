@@ -57,8 +57,21 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   end
 
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
+    booking_event = BookingEvents.get_booking_event!(organization.id, event_id)
+    title = "#{booking_event.name} | Book with #{organization.name}"
+
     socket
-    |> assign(booking_event: BookingEvents.get_booking_event!(organization.id, event_id))
+    |> assign(booking_event: booking_event)
+    |> assign(:page_title, title)
+    |> assign(:meta_attrs, %{
+      description: booking_event.description,
+      "og:title": title,
+      "og:description": booking_event.description,
+      "og:image": booking_event.thumbnail_url,
+      "og:url":
+        "https://app.picsello.com#{Routes.client_booking_event_path(socket, :show, organization.slug, booking_event.id)}",
+      "og:type": "website"
+    })
   end
 
   defp formatted_date(booking_event) do
