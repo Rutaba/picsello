@@ -15,6 +15,7 @@ defmodule Picsello.Shoot do
     field :name, :string
     field :notes, :string
     field :starts_at, :utc_datetime
+    field :reminded_at, :utc_datetime
     field :address, :string
     belongs_to(:job, Picsello.Job)
 
@@ -35,6 +36,10 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at, :duration_minutes, :name, :location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
+  end
+
+  def reminded_at_changeset(%__MODULE__{} = shoot) do
+    shoot |> change(reminded_at: DateTime.utc_now() |> DateTime.truncate(:second))
   end
 
   def by_starts_at(query \\ __MODULE__) do

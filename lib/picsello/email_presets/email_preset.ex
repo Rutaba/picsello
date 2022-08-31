@@ -6,7 +6,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
   @types ~w(job gallery)a
   @states_by_type %{
     job:
-      ~w(post_shoot booking_proposal booking_proposal_sent balance_due job lead payment_confirmation_client)a,
+      ~w(post_shoot booking_proposal booking_proposal_sent balance_due job lead payment_confirmation_client shoot_reminder)a,
     gallery:
       ~w[gallery_send_link gallery_shipping_to_client gallery_shipping_to_photographer album_send_link]a
   }
