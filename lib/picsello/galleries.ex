@@ -7,6 +7,7 @@ defmodule Picsello.Galleries do
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
   alias Picsello.{
+    Galleries,
     Repo,
     Photos,
     Category,
@@ -644,15 +645,9 @@ defmodule Picsello.Galleries do
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos, :organization])
 
-    gallery.organization.id
-    |> Orders.get_all_proofing_album_orders()
-    |> Enum.any?(fn %{gallery: %{id: id}} ->
-      id == gallery.id
-    end)
-    |> then(fn
-      true -> :selections_available
-      false -> uploading_status(gallery)
-    end)
+    gallery
+    |> Orders.has_proofing_album_orders?()
+    |> if(do: :selections_available, else: uploading_status(gallery))
   end
 
   @doc """
@@ -694,8 +689,6 @@ defmodule Picsello.Galleries do
   Clears watermarks of photos and triggers watermarked versions removal
   """
   def clear_watermarks(gallery_id) do
-    get_gallery!(gallery_id)
-
     %{job: %{client: %{organization: %{name: name}}}} =
       gallery =
       gallery_id
@@ -704,6 +697,7 @@ defmodule Picsello.Galleries do
 
     gallery
     |> Repo.preload(photos: [:album])
+    |> Map.get(:photos)
     |> Enum.each(fn
       %{album: %{is_proofing: true}} = photo ->
         ProcessingManager.start(photo, Watermark.build(name))
@@ -898,10 +892,7 @@ defmodule Picsello.Galleries do
       is_nil(photo.aspect_ratio) ||
         is_nil(photo.preview_url)
     end)
-    |> then(fn
-      false -> :ready
-      true -> :upload_in_progress
-    end)
+    |> if(do: :upload_in_progress, else: :ready)
   end
 
   defp active_galleries, do: from(g in Gallery, where: g.active == true)

@@ -132,13 +132,13 @@ defmodule PicselloWeb.FormHelpers do
   end
 
   def labeled_select(form, field, options, opts \\ []) do
-    label_opts = [label: Keyword.get(opts, :label)]
+    {label_opts, opts} = Keyword.split(opts, [:label, :optional, :label_class])
 
     select_opts =
       [
         class: opts |> Keyword.get(:select_class) |> classes()
       ] ++
-        Keyword.drop(opts, [:wrapper_class, :select_class, :label])
+        Keyword.drop(opts, [:wrapper_class, :select_class])
 
     content_tag :div,
       class:

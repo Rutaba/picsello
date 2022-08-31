@@ -13,18 +13,24 @@ defmodule Picsello.Contracts do
     package |> for_package_query() |> where([contract], contract.id == ^id) |> Repo.one!()
   end
 
-  def add_default_contract_to_package(multi, package) do
-    default_contract = default_contract(package)
+  def maybe_add_default_contract_to_package_multi(package) do
+    contract = package |> Ecto.assoc(:contract) |> Repo.one()
 
-    Ecto.Multi.insert(
-      multi,
-      :contract,
-      default_contract
-      |> Map.take([:content, :name])
-      |> Map.put(:package_id, package.id)
-      |> Map.put(:contract_template_id, default_contract.id)
-      |> Contract.changeset()
-    )
+    if contract do
+      Ecto.Multi.new()
+    else
+      default_contract = default_contract(package)
+
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(
+        :default_contract,
+        default_contract
+        |> Map.take([:content, :name])
+        |> Map.put(:package_id, package.id)
+        |> Map.put(:contract_template_id, default_contract.id)
+        |> Contract.changeset()
+      )
+    end
   end
 
   def save_template_and_contract(package, params) do

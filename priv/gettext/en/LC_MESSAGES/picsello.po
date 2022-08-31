@@ -7,8 +7,17 @@ msgstr "On Location"
 msgid "home"
 msgstr "In Client's Home"
 
+msgid "duration-5"
+msgstr "5 mins"
+
+msgid "duration-10"
+msgstr "10 mins"
+
 msgid "duration-15"
 msgstr "15 mins"
+
+msgid "duration-20"
+msgstr "20 mins"
 
 msgid "duration-30"
 msgstr "30 mins"

@@ -1,4 +1,6 @@
 defmodule PicselloWeb.UserRegistrationController do
+  import Picsello.Zapier.User, only: [user_created_webhook: 1]
+
   use PicselloWeb, :controller
 
   alias Picsello.Accounts
@@ -13,7 +15,7 @@ defmodule PicselloWeb.UserRegistrationController do
             &Routes.user_confirmation_url(conn, :confirm, &1)
           )
 
-        add_user_to_sendgrid(user)
+        add_user_to_external_tools(user)
 
         conn
         |> UserAuth.log_in_user(user)
@@ -23,7 +25,7 @@ defmodule PicselloWeb.UserRegistrationController do
     end
   end
 
-  defp add_user_to_sendgrid(user) do
+  defp add_user_to_external_tools(user) do
     %{
       list_ids: SendgridClient.get_all_contact_list_env(),
       contacts: [
@@ -40,5 +42,11 @@ defmodule PicselloWeb.UserRegistrationController do
       ]
     }
     |> SendgridClient.add_contacts()
+
+    user_created_webhook(%{
+      email: user.email,
+      first_name: Accounts.User.first_name(user),
+      last_name: Accounts.User.last_name(user)
+    })
   end
 end

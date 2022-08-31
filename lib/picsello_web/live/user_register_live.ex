@@ -3,7 +3,7 @@ defmodule PicselloWeb.UserRegisterLive do
   use PicselloWeb, live_view: [layout: "onboarding"]
 
   alias Picsello.{Accounts, Accounts.User}
-  import PicselloWeb.OnboardingLive.Index, only: [container: 1]
+  import PicselloWeb.OnboardingLive.Index, only: [optimized_container: 1]
 
   import Picsello.Subscriptions,
     only: [get_subscription_plan_metadata: 0, get_subscription_plan_metadata: 1]

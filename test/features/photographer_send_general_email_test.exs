@@ -68,9 +68,9 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
     Picsello.PhotoStorageMock
     |> Mox.stub(:params_for_upload, fn options ->
-      assert %{key: key, field: %{"content-type" => "image/png"}} = Enum.into(options, %{})
-      assert key =~ "favicon-128.png"
-      %{url: upload_url, fields: %{key: "image.png"}}
+      assert %{key: key, field: %{"content-type" => "image/jpeg"}} = Enum.into(options, %{})
+      assert key =~ "favicon-128.jpg"
+      %{url: upload_url, fields: %{key: "image.jpg"}}
     end)
 
     Bypass.expect_once(bypass, "POST", "/", fn conn ->
@@ -79,7 +79,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
       |> Plug.Conn.resp(204, "")
     end)
 
-    Bypass.expect_once(bypass, "GET", "/image.png", fn conn ->
+    Bypass.expect_once(bypass, "GET", "/image.jpg", fn conn ->
       conn
       |> Plug.Conn.resp(200, "")
     end)
@@ -96,7 +96,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     assert_receive {:delivered_email, email}
 
     assert """
-           <p>This is 1st line</p><p>2nd line</p><img src="http://localhost:#{port}/image.png" style="max-width: 100%; margin-left: auto; margin-right: auto;"><p><br></p><p><br></p>
+           <p>This is 1st line</p><p>2nd line</p><img src="http://localhost:#{port}/image.jpg" style="max-width: 100%; margin-left: auto; margin-right: auto;"><p><br></p><p><br></p>
            """ =~ email |> email_substitutions |> Map.get("body")
   end
 end

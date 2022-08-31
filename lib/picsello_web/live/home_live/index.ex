@@ -266,9 +266,9 @@ defmodule PicselloWeb.HomeLive.Index do
                action: "gallery-links",
                title: "Preview the gallery experience",
                body:
-                 "We’ve created some clickable previews to see what you and your clients will use without having to book a job first!",
+                 "We’ve created a video overview of how galleries work to help you get started.",
                icon: "add-photos",
-               button_label: "Preview client",
+               button_label: "Watch video",
                button_class: "btn-secondary",
                external_link: "",
                color: "blue-planning-300",

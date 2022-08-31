@@ -3,7 +3,10 @@ defmodule Picsello.Photos do
 
   import Ecto.Query, only: [from: 2, where: 3, order_by: 3]
 
+  alias Ecto.Multi
+
   alias Picsello.{
+    Galleries,
     Cart.Digital,
     Galleries.Photo,
     Galleries.Watermark,
@@ -150,4 +153,30 @@ defmodule Picsello.Photos do
   def active_photos, do: from(p in Photo, where: p.active == true)
 
   defdelegate path_to_url(path), to: PhotoStorage
+
+  def update_photos_in_bulk(photos, new_values) when is_list(photos) and is_list(new_values) do
+    new_values = Map.new(new_values, &{&1.id, &1})
+
+    Enum.reduce(photos, Multi.new(), fn %{id: id} = photo, multi ->
+      Multi.update(multi, id, Photo.update_changeset(photo, new_values[id]))
+    end)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, _} ->
+        {:ok, Galleries.get_photos_by_ids(Map.keys(new_values))}
+
+      error ->
+        error
+    end)
+  end
+
+  @headers [:photo_name, :size]
+  def csv_content(photos) do
+    photos
+    |> Enum.map(fn photo -> [photo.name, Size.humanize!(photo.size)] end)
+    |> then(&[@headers | &1])
+    |> CSV.encode()
+    |> Enum.to_list()
+    |> to_string()
+  end
 end

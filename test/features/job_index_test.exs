@@ -93,6 +93,18 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(css("h1", text: "Create a lead"))
   end
 
+  feature "booking leads are not displayed", %{session: session, user: user} do
+    insert(:lead, user: user, archived_at: DateTime.utc_now())
+    template = insert(:package_template, user: user)
+    event = insert(:booking_event, package_template_id: template.id)
+    insert(:lead, user: user, archived_at: DateTime.utc_now(), booking_event_id: event.id)
+    insert(:lead, user: user, booking_event_id: event.id)
+
+    session
+    |> visit("/leads")
+    |> assert_has(css("main > ul > li", count: 2))
+  end
+
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
     archived_lead = insert(:lead, user: user, type: "family", archived_at: DateTime.utc_now())
 
