@@ -88,7 +88,7 @@ defmodule PicselloWeb.Live.Profile do
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
         <%= if @website || @edit do %>
-          <div class="py-6">
+          <div class="flex items-center py-6">
             <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
             <%= if @edit do %>
               <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
@@ -129,12 +129,12 @@ defmodule PicselloWeb.Live.Profile do
           </section>
         <% end %>
 
-        <h3 class="mt-20 uppercase">MORE ABOUT MY OFFERINGS:</h3>
+        <h3 class="mt-20 uppercase font-bold">MORE ABOUT MY OFFERINGS:</h3>
         <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
 
         <hr class="mt-12" />
 
-        <h3 class="mt-20 uppercase">PRICING & SERVICES:</h3>
+        <h3 class="mt-20 uppercase font-bold">PRICING & SERVICES:</h3>
 
         <%= for {job_type, packages} <- @job_type_packages do %>
           <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
