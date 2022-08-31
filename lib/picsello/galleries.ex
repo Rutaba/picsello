@@ -580,7 +580,7 @@ defmodule Picsello.Galleries do
   def delete_photos_by(photo_ids) do
     from(p in Photo,
       where: p.id in ^photo_ids
-    ) |> Repo.delete_all() |> IO.inspect(label: "To be deleted")
+    ) |> Repo.update_all(set: [active: false])
   end
 
   @doc """
