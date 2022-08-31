@@ -17,6 +17,7 @@ defmodule Picsello.Galleries.Photo do
     field :aspect_ratio, :float
     field :height, :integer
     field :width, :integer
+    field :size, :integer
     field :watermarked, :boolean, virtual: true
     field :is_selected, :boolean, virtual: true
     field :active, :boolean, default: true
@@ -45,7 +46,8 @@ defmodule Picsello.Galleries.Photo do
     :gallery_id,
     :album_id,
     :aspect_ratio,
-    :active
+    :active,
+    :size
   ]
   @update_attrs [
     :name,
@@ -58,7 +60,8 @@ defmodule Picsello.Galleries.Photo do
     :height,
     :width,
     :album_id,
-    :active
+    :active,
+    :size
   ]
   @required_attrs [:name, :position, :gallery_id, :original_url]
 
