@@ -67,12 +67,9 @@ defmodule Picsello.BookingEvents do
         thumbnail_url: event.thumbnail_url,
         disabled_at: event.disabled_at,
         duration_minutes: event.duration_minutes,
-        dates: event.dates,
-        description: event.description,
-        address: event.address,
-        package_price: package.base_price
+        dates: event.dates
       },
-      group_by: [event.id, package.name, package.base_price],
+      group_by: [event.id, package.name],
       order_by: [desc: event.id]
     )
     |> Repo.all()
