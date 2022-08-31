@@ -714,8 +714,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:confirm_event, "move_to_album", %{album_id: album_id}},
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
-    Galleries.move_to_album(String.to_integer(album_id), selected_photos)
+
     album = Albums.get_album!(album_id)
+
+    unless album.is_finals do
+      duplicate_photo_ids =
+        Galleries.get_photos_name(selected_photos)
+        |> Galleries.filter_duplication(album_id)
+
+      Galleries.delete_photos_by(duplicate_photo_ids)
+
+      selected_photos = selected_photos -- duplicate_photo_ids
+    end
+
+    Galleries.move_to_album(String.to_integer(album_id), selected_photos)
 
     if album.is_proofing && is_nil(gallery.watermark) do
       %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)

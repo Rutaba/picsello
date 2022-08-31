@@ -551,6 +551,39 @@ defmodule Picsello.Galleries do
   def update_photo(_, %{} = _attrs), do: {:error, :no_photo}
 
   @doc """
+  get name of the selected photos
+  """
+  def get_photos_name(selected_photos) do
+    from(p in Photo,
+      where: p.id in ^selected_photos,
+      select: fragment("REPLACE(?,?,?)", p.name, "_final", "")
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  filter the photos that are duplicated and returns id of filtered photos
+  """
+  def filter_duplication(selected_photos, album_id) do
+    from(p in Photo,
+      join: a in assoc(p, :album),
+      where: fragment("REPLACE(?,?,?)", p.name, "_final", "") in ^selected_photos,
+      where: a.id == ^album_id,
+      select: p.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  delete the photos if they are duplicated
+  """
+  def delete_photos_by(photo_ids) do
+    from(p in Photo,
+      where: p.id in ^photo_ids
+    ) |> Repo.delete_all() |> IO.inspect(label: "To be deleted")
+  end
+
+  @doc """
   updates album_id for multiple photos.
   """
   def move_to_album(album_id, selected_photos) do
