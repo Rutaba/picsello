@@ -38,4 +38,13 @@ defmodule Picsello.UserFinancesTest do
       )
     )
   end
+
+  test "user can click on tax link", %{session: session} do
+    session
+    |> click(link("Settings"))
+    |> click(link("Finances"))
+    |> click(link("Do I need this?"))
+    |> assert_text("Collecting your Taxes through Stripe")
+  end
+
 end

@@ -25,8 +25,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
       <hr class="my-4 sm:my-10" />
       <div class="grid gap-6 sm:grid-cols-2">
         <.card title="Tax info" class="intro-taxes">
-
-
           <p class="mt-2">Stripe can easily manage your tax settings to simplify filing.</p>
           <a class="link" target="_blank" href="https://support.picsello.com/article/113-stripe-taxes">Do I need this?</a>
           <div class="flex mt-6 justify-end">
