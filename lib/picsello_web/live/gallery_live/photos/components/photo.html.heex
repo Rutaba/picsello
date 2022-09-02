@@ -1,4 +1,4 @@
-<div class="item flex bg-gray-200" id={"photo-item-#{@photo.id}"} 
+<div class="item flex bg-gray-200" id={"photo-item-#{@photo.id}"}
 style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
         <div class="galleryItem toggle-parent">
@@ -21,34 +21,36 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                 <% end %>
             </.photo_wrapper>
             <% end %>
-            <%= if !@is_proofing && !@is_gallery_category_page && !@client_liked_album do %>
-                <%= if @proofing_photo_icons && @is_likable do %>
-                    <button
-                        class="likeBtn"
-                        phx-click={js_like_click(@id, @myself)}
-                    >
-                        <div id={"photo-#{@id}-liked"} style={!@is_liked && "display: none"}>
+            <%= if !@is_proofing && !@is_gallery_category_page do %>
+                <%= if !@client_liked_album do %>
+                    <%= if @proofing_photo_icons && @is_likable do %>
+                        <button
+                            class="likeBtn"
+                            phx-click={js_like_click(@id, @myself)}
+                        >
+                            <div id={"photo-#{@id}-liked"} style={!@is_liked && "display: none"}>
+                                <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+                            </div>
+
+                            <div id={"photo-#{@id}-to-like"} style={@is_liked && "display: none"}>
+                                <.icon
+                                name="heart-white"
+                                class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
+                                />
+                            </div>
+                        </button>
+                    <% else %>
+                        <button class={classes("likeBtn", %{"hidden" => !@is_liked})}>
                             <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
-                        </div>
-
-                        <div id={"photo-#{@id}-to-like"} style={@is_liked && "display: none"}>
-                            <.icon
-                            name="heart-white"
-                            class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
-                            />
-                        </div>
-                    </button>
-                <% else %>
-                    <button class={classes("likeBtn", %{"hidden" => !@is_liked})}>
-                        <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
-                    </button>
-                <% end %>
-
-                <%= if @proofing_photo_icons && @is_removable do %>
-                    <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
-                <% end %>
-                <%= if @proofing_photo_icons && @is_viewable do %>
-                    <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
+                        </button>
+                    <% end %>
+                
+                    <%= if @proofing_photo_icons && @is_removable do %>
+                        <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
+                    <% end %>
+                    <%= if @proofing_photo_icons && @is_viewable do %>
+                        <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
+                    <% end %>
                 <% end %>
                 <%= if @proofing_photo_icons && @is_meatball do %>
                     <div id={"meatball-photo-#{@id}"} data-offset-y="-100" data-offset-x="20" phx-hook="Select">
@@ -56,10 +58,10 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                             <.icon name="meatballs" class="text-gray-200 w-7 h-7 meatballs open-icon" />
                             <.icon name="close-x" class="hidden absolute right-2 top-1 w-4 h-4 text-white stroke-current stroke-2 close-icon opacity-100"/>
                         </button>
-                        <.ul id={@id} entries={meatball(@album, @id)} socket={@socket} client_link_hash={@client_link_hash}} />
+                        <.ul {assigns} entries={meatball(@album, @id)} />
                     </div>
                 <% end %>
-                <% else %>
+            <% else %>
                 <button class={"absolute opacity-100 z-10 right-3 bottom-3 #{!@photo.is_selected && 'hidden'}"}>
                     <.icon name="star" class="text-gray-200 w-7 h-7"/>
                 </button>

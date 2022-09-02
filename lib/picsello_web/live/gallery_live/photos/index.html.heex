@@ -9,7 +9,7 @@
         <div class="flex flex-col">          
           <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
             <.mobile_banner albums={@album} title="Photos" class="items-center">
-              <%= if Enum.any?(@gallery.albums) do %>
+              <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
                 <div class="flex bg-white">                
                   <.crumbs class="mt-2 font-sans text-xs text-base-250">
                     <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}>Photos</:crumb>
@@ -22,7 +22,7 @@
           <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
 
           <div class="lg:flex hidden items-center font-sans lg:justify-start">
-            <%= if Enum.any?(@gallery.albums) do %>
+            <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
               <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
                 <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
                 <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
@@ -31,7 +31,7 @@
           </div>
           <div class="flex items-center lg:ml-0 ml-10 shrink-0">
             <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
-            <%= if @album do %>
+            <%= if @album && !@client_liked_album  do %>
               <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
                   <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
               </button>
@@ -43,7 +43,7 @@
               <div {testid("selection-complete")} class={"flex bg-green-finances-100 text-green-finances-300 px-2 font-bold items-center rounded rounded-lg ml-auto h-7 lg:mr-0 mr-10 #{Enum.empty?(@orders) && 'hidden'}"}>Client selection complete</div>
             <% end %>
           </div>
-          <div class="flex lg:ml-0 ml-10 mt-2 shrink-0">                        
+          <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>                        
             <div class="lg:flex hidden">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
             </div>  
@@ -71,7 +71,7 @@
             to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
           </div>
         </div>
-        <%= if Enum.any?(@photos) || Enum.any?(@orders) || @favorites_filter do %>
+        <%= if Enum.any?(@photos) || Enum.any?(@orders) || @photographer_favorites_filter do %>
           <div class="pt-4 grid lg:grid-cols-2">
             <div class="flex flex-col text-sm justify-start md:flex-row">
               <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">

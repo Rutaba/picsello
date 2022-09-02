@@ -69,7 +69,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   end
 
   defp meatball(album, id) do
-    if album do
+    if album && !album.is_client_liked do
       [
         %{
           id: "photo-thumbnail-#{id}",
@@ -79,7 +79,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
         %{id: "photo-remove-#{id}", event: "remove_from_album_popup", title: "Remove from album"}
       ]
     else
-      []
+      [
+        %{id: "photo-remove-#{id}", event: "photo_view", title: "View"}
+      ]
     end ++
       [
         %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
@@ -134,6 +136,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
           )}>Download photo
         </a>
       </li>
+      <%= if @album.is_client_liked && @photo.album_id do %>
+        <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
+          <%=
+            live_redirect(
+            "Go to original",
+            to: Routes.gallery_photos_index_path(@socket, :index, @photo.gallery_id, @photo.album_id),
+            class: "hover-drop-down"
+            )
+          %>
+        </li>
+      <% end %>
     </ul>
     """
   end
