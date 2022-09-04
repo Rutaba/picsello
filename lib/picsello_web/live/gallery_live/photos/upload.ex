@@ -236,10 +236,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp assign_overall_progress(
-         %{assigns: %{progress: progress, gallery: gallery}} =
-           socket
-       ) do
+  defp assign_overall_progress(%{assigns: %{progress: progress, gallery: gallery}} = socket) do
     total_progress = GalleryUploadProgress.total_progress(progress)
 
     gallery_progress_broadcast(socket, total_progress)
