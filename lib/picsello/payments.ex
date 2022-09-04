@@ -65,6 +65,17 @@ defmodule Picsello.Payments do
           optional(:metadata) => Stripe.Types.metadata()
         }
 
+  @type create_subscription() :: %{
+          :customer => Stripe.id() | Stripe.Customer.t(),
+          :items => [
+            %{
+              optional(:price) => Stripe.id() | Stripe.Price.t(),
+              optional(:quantity) => non_neg_integer()
+            }
+          ],
+          optional(:trial_period_days) => non_neg_integer()
+        }
+
   @callback create_customer(create_customer(), Stripe.options()) ::
               {:ok, Stripe.Customer.t()} | {:error, Stripe.Error.t()}
 
@@ -85,6 +96,9 @@ defmodule Picsello.Payments do
 
   @callback create_account(create_account(), Stripe.options()) ::
               {:ok, Stripe.Account.t()} | {:error, Stripe.Error.t()}
+
+  @callback create_subscription(create_subscription(), Stripe.options()) ::
+              {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
 
   @callback retrieve_subscription(String.t(), keyword(binary())) ::
               {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
@@ -175,6 +189,7 @@ defmodule Picsello.Payments do
   def expire_session(id, opts), do: impl().expire_session(id, opts)
   def create_customer(params, opts), do: impl().create_customer(params, opts)
   def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
+  def create_subscription(params, opts \\ []), do: impl().create_subscription(params, opts)
   def retrieve_subscription(id, opts), do: impl().retrieve_subscription(id, opts)
   def list_prices(params), do: impl().list_prices(params)
   def create_account_link(params), do: impl().create_account_link(params, [])

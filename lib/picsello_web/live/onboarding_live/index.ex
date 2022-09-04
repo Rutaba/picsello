@@ -5,7 +5,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, BrandLink, JobType, Onboardings, Subscriptions, Accounts.User}
+  alias Picsello.{Repo, BrandLink, JobType, Onboardings, Subscriptions}
 
   @impl true
   def mount(params, _session, socket) do
@@ -43,20 +43,21 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   @impl true
   def handle_event("save", %{}, %{assigns: %{step: 6}} = socket) do
-    case Subscriptions.checkout_link(
-           socket.assigns.current_user,
-           "month",
-           success_url:
-             "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
-           cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
+    case Subscriptions.subscription_base(socket.assigns.current_user, "month",
            trial_days: socket.assigns.subscription_plan_metadata.trial_length
          ) do
-      {:ok, url} ->
-        socket |> redirect(external: url) |> noreply()
+      {:ok, subscription} ->
+        Picsello.Subscriptions.handle_stripe_subscription(subscription)
+
+        socket
+        |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
+        |> update_user_contact_trial(socket.assigns.current_user)
+        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+        |> noreply()
 
       {:error, error} ->
         Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
-        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+        socket |> put_flash(:error, "Couldn't connect to Stripe. Please try again") |> noreply()
     end
   end
 
@@ -145,18 +146,20 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
       <%= for onboarding <- inputs_for(@f, :onboarding) do %>
 
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
 
-          <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
-        </label>
+            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+          </label>
 
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
 
-          <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
-          <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
-        </label>
+            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
+            <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
+          </label>
+        </div>
 
         <label class="flex flex-col mt-4">
           <p class="py-2 font-extrabold">Where’s your business based?</p>
@@ -274,24 +277,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
     <hr class="mb-4" />
     <p class="mb-4"><%= @subscription_plan_metadata.onboarding_description %></p>
-    <p class="text-sm text-gray-400"><small>You can cancel at any time before the trial ends and you won’t be charged. Your subscription will automatically renew each month at the amazing Founder Rate and you can continue to keep growing your business with ease! Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
 
     <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
-
-    <%= if User.onboarded?(@current_user) do %>
-      <div class="fixed inset-0 flex items-center justify-center bg-black/60">
-        <div class="rounded-lg dialog">
-          <.icon name="confetti" class="w-11 h-11" />
-
-          <h1 class="text-3xl font-semibold"><%= @subscription_plan_metadata.success_title %></h1>
-          <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
-
-          <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
-            Go to my dashboard
-          </button>
-        </div>
-      </div>
-    <% end %>
     """
   end
 
@@ -303,7 +290,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step: 2,
       color_class: "bg-orange-inbox-200",
       step_title: "Tell us more about yourself",
-      subtitle: "We need a little more info to get your account ready!",
+      subtitle: "",
       page_title: "Onboarding Step 2"
     )
     |> assign_new(:states, &states/0)

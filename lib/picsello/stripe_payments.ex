@@ -42,6 +42,9 @@ defmodule Picsello.StripePayments do
   defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
 
   @impl Payments
+  defdelegate create_subscription(id, opts), to: Stripe.Subscription, as: :create
+
+  @impl Payments
   defdelegate list_prices(params), to: Stripe.Price, as: :list
 
   @impl Payments

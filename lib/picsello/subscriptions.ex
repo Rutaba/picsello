@@ -94,6 +94,28 @@ defmodule Picsello.Subscriptions do
   def get_subscription_plan(recurring_interval \\ "month"),
     do: Repo.get_by!(SubscriptionPlan, %{recurring_interval: recurring_interval, active: true})
 
+  def subscription_base(%User{} = user, recurring_interval, opts) do
+    subscription_plan = get_subscription_plan(recurring_interval)
+
+    trial_days = opts |> Keyword.get(:trial_days)
+
+    stripe_params = %{
+      customer: user_customer_id(user),
+      items: [
+        %{
+          quantity: 1,
+          price: subscription_plan.stripe_price_id
+        }
+      ],
+      trial_period_days: trial_days
+    }
+
+    case Payments.create_subscription(stripe_params) do
+      {:ok, subscription} -> {:ok, subscription}
+      err -> err
+    end
+  end
+
   def checkout_link(%User{} = user, recurring_interval, opts) do
     subscription_plan = get_subscription_plan(recurring_interval)
 
