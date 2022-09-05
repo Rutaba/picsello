@@ -42,7 +42,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       selected_photos: [],
       selections: [],
       selection_filter: false,
-      orders: []
+      orders: [],
+      selected_photo: nil,
+      original_photo_id: nil
     )
     |> ok()
   end
@@ -74,12 +76,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(selection_filter: orders != [])
     |> is_mobile(params)
     |> assigns(gallery_id, album)
+    |> may_be_has_selected_photo(params)
   end
 
   def handle_params(%{"id" => gallery_id} = params, _, socket) do
     socket
     |> is_mobile(params)
     |> assigns(gallery_id)
+    |> may_be_has_selected_photo(params)
   end
 
   @impl true
@@ -491,19 +495,32 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_event(
         "toggle_selected_photos",
         %{"photo_id" => photo_id},
-        %{assigns: %{selected_photos: selected_photos}} = socket
+        %{
+          assigns: %{
+            selected_photos: selected_photos,
+            photos: photos,
+            original_photo_id: original_photo_id,
+            album: album
+          }
+        } = socket
       ) do
     photo_id = String.to_integer(photo_id)
 
     selected_photos =
-      if Enum.member?(selected_photos, photo_id) do
-        List.delete(selected_photos, photo_id)
-      else
-        [photo_id | selected_photos]
+      cond do
+        photo_id == original_photo_id -> selected_photos
+        Enum.member?(selected_photos, photo_id) -> List.delete(selected_photos, photo_id)
+        true -> [photo_id | selected_photos]
       end
 
     socket
     |> assign(:selected_photos, selected_photos)
+    |> assign(
+      :selected_photo,
+      if album && album.id == "client_liked" && Enum.count(selected_photos) == 1 do
+        Enum.find(photos, &(&1.id == photo_id))
+      end
+    )
     |> noreply()
   end
 
@@ -831,6 +848,22 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
     |> reject_ordered_photos()
+    |> noreply()
+  end
+
+  defp may_be_has_selected_photo({:noreply, socket}, params) do
+    params
+    |> case do
+      %{"go_to_original" => "true", "photo_id" => photo_id} ->
+        photo_id = String.to_integer(photo_id)
+
+        socket
+        |> assign(:selected_photos, [photo_id])
+        |> assign(:original_photo_id, photo_id)
+
+      _ ->
+        socket
+    end
     |> noreply()
   end
 

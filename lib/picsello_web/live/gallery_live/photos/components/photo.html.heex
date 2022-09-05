@@ -11,7 +11,7 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                 <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
             </div>
             <% else %>
-            <.photo_wrapper id={@id} is_client_gallery={@is_client_gallery}>
+            <.photo_wrapper id={@id} is_client_gallery={@is_client_gallery} is_selected={@is_selected}>
                 <%= if @photo.watermarked_preview_url || @photo.preview_url do %>
                     <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
                 <% else %>

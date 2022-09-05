@@ -206,10 +206,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
     else
       album = Map.get(assigns, :album, nil)
 
-      if album && album.id != "client_liked" do
-        [album_id: album.id]
-      else
-        [exclude_album: true]
+      case album do
+        %{id: "client_liked"} -> []
+        %{} -> [album_id: album.id]
+        _ -> [exclude_album: true]
       end ++
         [
           photographer_favorites_filter: photographer_favorites_filter,
@@ -853,6 +853,29 @@ defmodule PicselloWeb.GalleryLive.Shared do
         name: "Client Favourites",
         is_client_liked: true
       }
+    end
+  end
+
+  def original_album_link(socket, %{id: id, gallery_id: gallery_id, album_id: album_id}) do
+    case album_id do
+      nil ->
+        Routes.gallery_photos_index_path(
+          socket,
+          :index,
+          gallery_id,
+          go_to_original: true,
+          photo_id: id
+        )
+
+      album_id ->
+        Routes.gallery_photos_index_path(
+          socket,
+          :index,
+          gallery_id,
+          album_id,
+          go_to_original: true,
+          photo_id: id
+        )
     end
   end
 end

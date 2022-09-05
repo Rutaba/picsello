@@ -4,6 +4,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   alias Phoenix.LiveView.JS
   alias Picsello.Photos
 
+  import PicselloWeb.GalleryLive.Shared, only: [original_album_link: 2]
+
   @impl true
   def update(%{photo: photo} = assigns, socket) do
     album = Map.get(assigns, :album)
@@ -20,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
+      is_selected: false,
       client_liked_album: false,
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
@@ -88,7 +91,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       ]
   end
 
-  defp photo_wrapper(assigns) do
+  defp photo_wrapper(%{is_selected: is_selected} = assigns) do
     ~H"""
     <%= if @is_client_gallery do %>
       <div id={"img-#{@id}"} class="galleryItem" phx-click="click" phx-value-preview_photo_id={@id}>
@@ -97,6 +100,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     <% else %>
       <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
         <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+        <div id={"photo-#{@id}-selected"} class={"item-border #{!is_selected && 'hidden'}"} photo-id={@id} class="toggle-it"></div>
         <%= render_block(@inner_block) %>
       </div>
     <% end%>
@@ -136,12 +140,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
           )}>Download photo
         </a>
       </li>
-      <%= if @album.is_client_liked && @photo.album_id do %>
+      <%= if @album && @album.is_client_liked do %>
         <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
           <%=
             live_redirect(
             "Go to original",
-            to: Routes.gallery_photos_index_path(@socket, :index, @photo.gallery_id, @photo.album_id),
+            to: original_album_link(@socket, @photo),
             class: "hover-drop-down"
             )
           %>

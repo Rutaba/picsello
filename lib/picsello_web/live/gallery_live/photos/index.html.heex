@@ -116,6 +116,16 @@
                             )}>Download photos
                     </a>
                   </li>
+                  <%= if @client_liked_album && @selected_photo do %>
+                    <li class="relative py-1.5 hover:bg-blue-planning-100">
+                      <%= live_redirect(
+                        "Go to original",
+                        to: original_album_link(@socket, @selected_photo),
+                        class: "album-actions"
+                        )
+                      %>
+                    </li>
+                  <% end %>
                   <%= if @album && @album.is_proofing && @selection_filter || !@album do %>
                     <li class="relative py-1.5 hover:bg-blue-planning-100">
                       <button class="album-actions" phx-click="add_album_popup">Create new album with selected</button>
@@ -200,6 +210,7 @@
                     is_removable: true,
                     is_viewable: true,
                     is_meatball: true,
+                    is_selected: @original_photo_id == photo.id,
                     client_liked_album: @client_liked_album,
                     client_link_hash: @gallery.client_link_hash
                   %>
