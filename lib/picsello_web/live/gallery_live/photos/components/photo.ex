@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
-      is_selected: false,
+      selected_photo_id: nil,
       client_liked_album: false,
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
@@ -91,18 +91,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       ]
   end
 
-  defp photo_wrapper(%{is_selected: is_selected} = assigns) do
+  defp photo_wrapper(assigns) do
     ~H"""
     <%= if @is_client_gallery do %>
       <div id={"img-#{@id}"} class="galleryItem" phx-click="click" phx-value-preview_photo_id={@id}>
       <%= render_block(@inner_block) %>
       </div>
     <% else %>
-      <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
-        <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-        <div id={"photo-#{@id}-selected"} class={"item-border #{!is_selected && 'hidden'}"} photo-id={@id} class="toggle-it"></div>
-        <%= render_block(@inner_block) %>
-      </div>
+        <div id={"img-#{@id}"} class="galleryItem" data-selected_photo_id={@selected_photo_id} phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+            <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+            <%= render_block(@inner_block) %>
+        </div>
     <% end%>
     """
   end

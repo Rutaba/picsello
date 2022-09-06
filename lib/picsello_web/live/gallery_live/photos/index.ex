@@ -43,8 +43,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       selections: [],
       selection_filter: false,
       orders: [],
-      selected_photo: nil,
-      original_photo_id: nil
+      selected_photo_id: nil
     )
     |> ok()
   end
@@ -497,30 +496,21 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{"photo_id" => photo_id},
         %{
           assigns: %{
-            selected_photos: selected_photos,
-            photos: photos,
-            original_photo_id: original_photo_id,
-            album: album
+            selected_photos: selected_photos
           }
         } = socket
       ) do
     photo_id = String.to_integer(photo_id)
 
     selected_photos =
-      cond do
-        photo_id == original_photo_id -> selected_photos
-        Enum.member?(selected_photos, photo_id) -> List.delete(selected_photos, photo_id)
-        true -> [photo_id | selected_photos]
+      if Enum.member?(selected_photos, photo_id) do
+        List.delete(selected_photos, photo_id)
+      else
+        [photo_id | selected_photos]
       end
 
     socket
     |> assign(:selected_photos, selected_photos)
-    |> assign(
-      :selected_photo,
-      if album && album.id == "client_liked" && Enum.count(selected_photos) == 1 do
-        Enum.find(photos, &(&1.id == photo_id))
-      end
-    )
     |> noreply()
   end
 
@@ -859,7 +849,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
         socket
         |> assign(:selected_photos, [photo_id])
-        |> assign(:original_photo_id, photo_id)
+        |> assign(:selected_photo_id, photo_id)
 
       _ ->
         socket

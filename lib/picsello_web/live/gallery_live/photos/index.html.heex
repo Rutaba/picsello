@@ -116,11 +116,11 @@
                             )}>Download photos
                     </a>
                   </li>
-                  <%= if @client_liked_album && @selected_photo do %>
+                  <%= if @client_liked_album && Enum.count(@selected_photos) == 1 do %>
                     <li class="relative py-1.5 hover:bg-blue-planning-100">
                       <%= live_redirect(
                         "Go to original",
-                        to: original_album_link(@socket, @selected_photo),
+                        to: original_album_link(@socket, Enum.find(@photos, & &1.id == List.first(@selected_photos))),
                         class: "album-actions"
                         )
                       %>
@@ -210,7 +210,7 @@
                     is_removable: true,
                     is_viewable: true,
                     is_meatball: true,
-                    is_selected: @original_photo_id == photo.id,
+                    selected_photo_id: @selected_photo_id,
                     client_liked_album: @client_liked_album,
                     client_link_hash: @gallery.client_link_hash
                   %>
