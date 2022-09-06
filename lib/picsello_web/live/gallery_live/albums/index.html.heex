@@ -50,12 +50,14 @@
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>
                 </li>
-                <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
-                  <button class="w-full album-actions">Go to album settings</button>
-                </li>
-                <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
-                  <button class="w-full album-actions">Edit album thumbnail</button>
-                </li>
+                <%= unless album.is_client_liked do %>
+                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
+                    <button class="w-full album-actions">Go to album settings</button>
+                  </li>
+                  <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
+                    <button class="w-full album-actions">Edit album thumbnail</button>
+                  </li>
+                <% end %>
               </.actions>
             </div>
           </div>
