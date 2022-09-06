@@ -13,7 +13,7 @@ defmodule Picsello.GalleryAlbumTest do
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
 
     insert_photo(%{gallery: gallery, album: proofing_album, total_photos: 1})
-    insert(:email_preset, type: :gallery, state: :album_send_link)
+    insert(:email_preset, type: :gallery, state: :proofs_send_link)
 
     [
       album: album,

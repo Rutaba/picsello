@@ -11,11 +11,15 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   def update(%{gallery_id: gallery_id} = assigns, socket) do
     album = Map.get(assigns, :album, nil)
     selected_photos = Map.get(assigns, :selected_photos, [])
+    is_finals = Map.get(assigns, :is_finals, false)
 
     socket
-    |> assign(:album, album)
-    |> assign(:selected_photos, selected_photos)
-    |> assign(:gallery_id, gallery_id)
+    |> assign(
+      album: album,
+      selected_photos: selected_photos,
+      gallery_id: gallery_id,
+      is_finals: is_finals
+    )
     |> assign_album_changeset()
     |> assign(:visibility, false)
     |> then(fn socket ->
@@ -24,11 +28,15 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         |> assign(:title, "Album Settings")
         |> assign(:set_password, album.set_password)
         |> assign(:album_password, album.password)
+        |> assign(:action, "Save")
       else
         socket
-        |> assign(:title, "Add Album")
-        |> assign(:set_password, false)
-        |> assign(:album_password, nil)
+        |> assign(:title, if(is_finals, do: "Add finals album", else: "Add Album"))
+        |> assign(:action, if(is_finals, do: "Create finals album", else: "Create new album"))
+        |> assign(
+          set_password: false,
+          album_password: nil
+        )
       end
     end)
     |> ok()
@@ -38,7 +46,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   def handle_event(
         "submit",
         %{"album" => params},
-        %{assigns: %{album: album, gallery_id: gallery_id}} = socket
+        %{assigns: %{album: album, gallery_id: gallery_id, is_finals: is_finals}} = socket
       ) do
     if album do
       {album, message} =
@@ -49,6 +57,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       send(self(), {:album_settings, %{message: message, album: album}})
       socket |> noreply()
     else
+      params = if is_finals, do: Map.put(params, "is_finals", true), else: params
       {_, message} =
         socket.assigns
         |> insert_album(params)
@@ -156,9 +165,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
   @impl true
   def render(assigns) do
-    action = if is_nil(assigns.album), do: "Create new album", else: "Save"
-    assigns = Enum.into(assigns, %{action: action})
-
     ~H"""
     <div class="flex flex-col modal rounded-lg sm:mb-8">
       <div class="flex items-start justify-between flex-shrink-0">
@@ -167,12 +173,15 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
+      <%= if @is_finals do%>
+        <.finals_banner/>
+      <% end %>
       <.form for={@changeset} let={f} phx-submit="submit" phx-change="validate" phx-target={@myself}>
         <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
         <%= hidden_input f, :gallery_id%>
 
         <div class="flex flex-col mt-3">
-          <%= if is_nil(@album) do %>
+          <%= if is_nil(@album) && !@is_finals do %>
             <label class="flex items-center mb-4">
               <%= checkbox f, :is_proofing, class: "w-5 h-5 mr-2.5 checkbox cursor-pointer" %>
               Proofing album
@@ -244,6 +253,20 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         </div>
       </.form>
     </div>
+    """
+  end
+
+  defp finals_banner(assigns) do
+    ~H"""
+      <div class="bg-orange-inbox-400 rounded-lg py-2">
+        <div class="flex justify-center items-center mx-4">
+          <.icon name="warning-orange", class="w-10 h-10 stroke-[4px]" />
+          <div class="pl-4">
+            <b>Note: </b>None of the photos in your finals album will be watermarked, and <b>all photos will be free to download.</b>
+            Please ensure you only add photos to this album that you’ve already been financially compensated for.
+          </div>
+        </div>
+      </div>
     """
   end
 end

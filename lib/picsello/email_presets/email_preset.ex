@@ -8,7 +8,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     job:
       ~w(post_shoot booking_proposal booking_proposal_sent balance_due job lead payment_confirmation_client)a,
     gallery:
-      ~w[gallery_send_link gallery_shipping_to_client gallery_shipping_to_photographer album_send_link]a
+    ~w[gallery_send_link gallery_shipping_to_client gallery_shipping_to_photographer album_send_link proofs_send_link]a
   }
   @states @states_by_type |> Map.values() |> List.flatten()
 
