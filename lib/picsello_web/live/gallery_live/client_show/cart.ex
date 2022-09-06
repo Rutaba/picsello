@@ -218,10 +218,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   defp top_section_content(%{
-        checkout_routes: checkout_routes,
-        live_action: :proofing_album,
-        album: album
-      }) do
+         checkout_routes: checkout_routes,
+         live_action: :proofing_album,
+         album: album
+       }) do
     {
       checkout_routes.home_page,
       "Back to album",

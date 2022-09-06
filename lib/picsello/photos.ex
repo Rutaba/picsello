@@ -7,6 +7,7 @@ defmodule Picsello.Photos do
 
   alias Picsello.{
     Galleries,
+    Galleries.Album,
     Cart.Digital,
     Galleries.Photo,
     Galleries.Watermark,
@@ -97,7 +98,7 @@ defmodule Picsello.Photos do
       )
 
     from(photo in photo_query,
-      left_join: album in Picsello.Galleries.Album,
+      left_join: album in Album,
       on: album.id == photo.album_id,
       select_merge: %{
         is_finals: album.is_finals

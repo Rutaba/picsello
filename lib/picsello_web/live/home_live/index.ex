@@ -301,6 +301,7 @@ defmodule PicselloWeb.HomeLive.Index do
           ],
         do: item
       )
+
     items =
       Enum.concat(
         organization_id

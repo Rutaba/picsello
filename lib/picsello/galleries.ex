@@ -17,6 +17,7 @@ defmodule Picsello.Galleries do
     Orders,
     Cart.Digital
   }
+
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}

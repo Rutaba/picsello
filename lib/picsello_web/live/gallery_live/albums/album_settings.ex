@@ -58,6 +58,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       socket |> noreply()
     else
       params = if is_finals, do: Map.put(params, "is_finals", true), else: params
+
       {_, message} =
         socket.assigns
         |> insert_album(params)

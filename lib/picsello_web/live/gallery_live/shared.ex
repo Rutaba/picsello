@@ -736,7 +736,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def get_unconfirmed_order(
         %{assigns: %{gallery: gallery, album: album}},
         opts
-        )
+      )
       when album.is_finals or album.is_proofing do
     opts = Keyword.put(opts, :album_id, album.id)
     Cart.get_unconfirmed_order(gallery.id, opts)
@@ -760,9 +760,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   # routes to use for proofing_album and gallery checkout flow
   def assign_checkout_routes(
-    %{assigns: %{album: %{client_link_hash: hash} = album, order: order}} = socket
-    )
-    when album.is_finals or album.is_proofing do
+        %{assigns: %{album: %{client_link_hash: hash} = album, order: order}} = socket
+      )
+      when album.is_finals or album.is_proofing do
     order_num = order && Order.number(order)
 
     assign(socket, :checkout_routes, %{

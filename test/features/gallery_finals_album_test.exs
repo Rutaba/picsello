@@ -6,7 +6,7 @@ defmodule Picsello.GalleryFinalsAlbumTest do
   setup :authenticated_gallery
 
   setup %{gallery: gallery} do
-    finals_album = insert(:finals_album, %{gallery_id: gallery.id})
+    finals_album = insert(:album, %{gallery_id: gallery.id, is_finals: true})
     insert_photo(%{gallery: gallery, album: finals_album, total_photos: 5})
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)

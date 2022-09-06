@@ -357,8 +357,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
              pending_photos: pending_photos,
              invalid_photos: invalid_photos,
              gallery: gallery,
-            album_id: album_id
-          }
+             persisted_album_id: album_id
+           }
          } = socket
        ) do
     if Enum.empty?(pending_photos) do
@@ -383,7 +383,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     do: assigns.uploads.photo.entries |> Enum.filter(&(!&1.done?))
 
   defp apply_limits(
-         %{assigns: %{photos_error_count: photos_error_count, uploads: uploads, album_id: album_id}} = socket,
+         %{
+           assigns: %{
+             photos_error_count: photos_error_count,
+             uploads: uploads,
+             persisted_album_id: album_id
+           }
+         } = socket,
          entries
        ) do
     {pending_photos, invalid} = max_size_limit(entries, album_id)
@@ -404,55 +410,55 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp max_size_limit(entries, album_id, gallery_id \\ nil) do
+    is_finals =
+      if album_id do
+        Albums.get_album!(album_id) |> Map.get(:is_finals)
+      else
+        false
+      end
+
     Enum.reduce(entries, {[], []}, fn entry, {valid, invalid} = acc ->
       if entry.client_size < Keyword.get(@upload_options, :max_file_size) do
-        filter_wrong_extensions(entry, acc, album_id, gallery_id)
+        filter_wrong_extensions(entry, acc, is_finals, gallery_id)
       else
         {valid, [Map.put(entry, :error, "File too large") | invalid]}
       end
     end)
   end
 
-  defp filter_wrong_extensions(entry, {valid, invalid} = acc, album_id, gallery_id) do
+  defp filter_wrong_extensions(entry, {valid, invalid} = acc, is_finals, gallery_id) do
     if entry.client_type in Keyword.get(@upload_options, :accept, []) do
-      duplicate_entries(entry, acc, gallery_id, album_id)
+      duplicate_entries(entry, acc, gallery_id, is_finals)
     else
       {valid, [Map.put(entry, :error, "Invalid file type") | invalid]}
     end
   end
 
-  defp duplicate_entries(entry, {valid, invalid} = acc, gallery_id, album_id) do
+  defp duplicate_entries(entry, {valid, invalid} = acc, gallery_id, is_finals) do
     if gallery_id do
       photos =
         Enum.filter(Galleries.get_gallery_photos(gallery_id), fn photo ->
           photo.name == entry.client_name
         end)
 
-      filter_duplicate(entry, acc, photos, album_id)
+      filter_duplicate(entry, acc, photos, is_finals)
     else
       {[entry | valid], invalid}
     end
   end
 
-  defp filter_duplicate(entry, {valid, invalid}, photos, album_id) do
-  is_finals =
-    if album_id do
-      Albums.get_album!(album_id) |> Map.get(:is_finals)
-    else
-      false
-    end
+  defp filter_duplicate(entry, {valid, invalid}, photos, is_finals) do
+    case Enum.any?(photos) do
+      true when is_finals ->
+        [name, type] = entry.client_name |> String.split(".", parts: 2)
+        entry = Map.put(entry, :client_name, name <> "_final." <> type)
+        {[entry | valid], invalid}
 
-  cond do
-    is_finals && Enum.any?(photos) ->
-      [name, type] = entry.client_name |> String.split(".", parts: 2)
-      entry = Map.put(entry, :client_name, name <> "_final." <> type)
-      {[entry | valid], invalid}
+      true ->
+        {valid, [Map.put(entry, :error, "Duplicate") | invalid]}
 
-    Enum.any?(photos) ->
-      {valid, [Map.put(entry, :error, "Duplicate") | invalid]}
-
-    true ->
-      {[entry | valid], invalid}
+      _ ->
+        {[entry | valid], invalid}
     end
   end
 

@@ -28,7 +28,15 @@ defmodule Picsello.Galleries.Album do
     timestamps(type: :utc_datetime)
   end
 
-  @attrs [:name, :set_password, :gallery_id, :password, :is_proofing, :is_finals, :client_link_hash]
+  @attrs [
+    :name,
+    :set_password,
+    :gallery_id,
+    :password,
+    :is_proofing,
+    :is_finals,
+    :client_link_hash
+  ]
   @required_attrs [:name, :set_password, :gallery_id]
 
   def create_changeset(attrs) do

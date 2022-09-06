@@ -104,9 +104,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   end
 
   defp add_to_cart(%{assigns: assigns, root_pid: root_pid} = socket) do
-    %{photo: photo, download_each_price: price} = assigns
+    %{photo: photo, download_each_price: price, album: album} = assigns
 
-    finals_album_id = get_finals_album_id(assigns[:album])
+    finals_album_id = get_finals_album_id(album)
 
     send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}, finals_album_id})
     socket
