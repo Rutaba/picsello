@@ -357,13 +357,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
              pending_photos: pending_photos,
              invalid_photos: invalid_photos,
              gallery: gallery,
-             persisted_album_id: album_id
+             persisted_album_id: persisted_album_id
            }
          } = socket
        ) do
     if Enum.empty?(pending_photos) do
       entries = get_entries(socket)
-      {valid, invalid} = max_size_limit(entries, album_id, gallery.id)
+      {valid, invalid} = max_size_limit(entries, persisted_album_id, gallery.id)
       {valid_entries, pending_entries} = max_entries_limit(valid)
       pending_entries = List.flatten(pending_entries)
       invalid = invalid ++ invalid_photos
@@ -387,12 +387,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
            assigns: %{
              photos_error_count: photos_error_count,
              uploads: uploads,
-             persisted_album_id: album_id
+             persisted_album_id: persisted_album_id
            }
          } = socket,
          entries
        ) do
-    {pending_photos, invalid} = max_size_limit(entries, album_id)
+    {pending_photos, invalid} = max_size_limit(entries, persisted_album_id)
 
     socket
     |> assign(:invalid_photos, invalid)
@@ -409,10 +409,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> List.pop_at(0)
   end
 
-  defp max_size_limit(entries, album_id, gallery_id \\ nil) do
+  defp max_size_limit(entries, persisted_album_id, gallery_id \\ nil) do
     is_finals =
-      if album_id do
-        Albums.get_album!(album_id) |> Map.get(:is_finals)
+      if persisted_album_id do
+        Albums.get_album!(persisted_album_id) |> Map.get(:is_finals)
       else
         false
       end
