@@ -106,6 +106,51 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   def handle_event(
+        "assign_to_album_popup",
+        %{},
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos,
+            photos: photos
+          }
+        } = socket
+      ) do
+    dropdown_items =
+      gallery
+      |> Repo.preload(:albums)
+      |> Map.get(:albums)
+      |> then(fn albums ->
+        case selected_photos do
+          [photo_id] ->
+            photo = Enum.find(photos, &(&1.id == photo_id))
+            Enum.reject(albums, &(&1.id == photo.album_id))
+
+          _ ->
+            albums
+        end
+      end)
+      |> Enum.map(&{&1.name, &1.id})
+
+    opts = [
+      event: "assign_to_album",
+      title: "Assign to album",
+      confirm_label: "Save changes",
+      close_label: "Cancel",
+      subtitle:
+        "If you'd like, you can reassign all the selected photos from their  current locations to a
+          new album of your choice",
+      dropdown?: true,
+      dropdown_label: "Assign to which album?",
+      dropdown_items: dropdown_items
+    ]
+
+    socket
+    |> make_popup(opts)
+  end
+
+  @impl true
+  def handle_event(
         "add_finals_album_popup",
         %{},
         %{
@@ -812,7 +857,48 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     add_message_and_notify(socket, message_changeset, "album")
   end
 
+
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
+  @impl true
+  def handle_info(
+        {
+          :confirm_event,
+          "assign_to_album",
+          %{item_id: item_id}
+        },
+        %{assigns: %{gallery: %{albums: albums}}} = socket
+      ) do
+    album = Enum.find(albums, &(to_string(&1.id) == item_id))
+
+    opts = [
+      event: "assign_album_confirmation",
+      title: "Move photo",
+      subtitle: "Are you sure you wish to to move selected photos from its current location to
+            #{album.name} ?",
+      payload: %{album_id: album.id}
+    ]
+
+    socket
+    |> make_popup(opts)
+  end
+
+  def handle_info(
+        {
+          :confirm_event,
+          "assign_album_confirmation",
+          %{album_id: album_id}
+        },
+        %{assigns: %{selected_photos: selected_photos, gallery: %{albums: albums}}} = socket
+      ) do
+    album = Enum.find(albums, &(&1.id == album_id))
+    Galleries.move_to_album(album_id, selected_photos)
+
+    socket
+    |> put_flash(:success, "Photos successfully moved to #{album.name}")
+    |> close_modal()
+    |> noreply()
+  end
 
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery =

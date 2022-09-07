@@ -12,7 +12,10 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
     icon: "confetti",
     gallery_name: nil,
     gallery_count: nil,
-    subtitle: nil
+    subtitle: nil,
+    dropdown?: false,
+    dropdown_label: nil,
+    dropdown_values: []
   }
 
   @impl true
@@ -28,7 +31,7 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
 
     ~H"""
     <div class={class}>
-      <%= if @icon do %>
+      <%= if @icon && !@dropdown? do %>
         <.icon name={@icon} class="mb-2 w-11 h-11" />
       <% end %>
 
@@ -40,13 +43,39 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
         <p class="pt-4"><%= @subtitle %></p>
       <% end %>
 
-      <%= if @gallery_name && @gallery_count do %>
-        <p class="pt-4">Are you sure you wish to permanently delete
-        <span class="font-bold"><%= @gallery_name %></span>
-        gallery, and the
-        <span class="font-bold"><%= @gallery_count %> photos</span>
-        it contains?</p>
-      <% end %>
+      <.section {assigns} />
+    </div>
+    """
+  end
+
+  defp section(%{dropdown?: true} = assigns) do
+    ~H"""
+    <.form let={f} for={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
+      <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
+      <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1") %>
+
+      <div class="flex justify-end mt-4">
+        <button class="w-full md:w-auto btn-secondary text-center mr-2" type="button" phx-click="modal" phx-value-action="close">
+          <%= @close_label %>
+        </button>
+
+        <button class="w-full md:w-auto btn-primary text-center" phx-disable-with="Saving&hellip;">
+          <%= @confirm_label %>
+        </button>
+      </div>
+    </.form>
+    """
+  end
+
+  defp section(assigns) do
+    ~H"""
+    <%= if @gallery_name && @gallery_count do %>
+      <p class="pt-4">Are you sure you wish to permanently delete
+      <span class="font-bold"><%= @gallery_name %></span>
+      gallery, and the
+      <span class="font-bold"><%= @gallery_count %> photos</span>
+      it contains?</p>
+    <% end %>
 
       <%= if @confirm_event do %>
         <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="button" phx-click={@confirm_event} phx-disable-with="Saving&hellip;" phx-target={@myself}>
@@ -54,14 +83,24 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
         </button>
       <% end %>
 
-      <button class="w-full mt-4 px-6 py-3 font-medium text-base-300 bg-white border border-base-300 rounded-lg hover:bg-base-300/10 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75" type="button" phx-click="modal" phx-value-action="close">
-        <%= @close_label %>
-      </button>
-    </div>
+        <button class="w-full mt-4 px-6 py-3 font-medium text-base-300 bg-white border border-base-300 rounded-lg hover:bg-base-300/10 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75" type="button" phx-click="modal" phx-value-action="close">
+          <%= @close_label %>
+        </button>
     """
   end
 
   @impl true
+
+  def handle_event(
+        event,
+        %{"dropdown" => %{"item_id" => item_id}},
+        %{assigns: %{parent_pid: parent_pid}} = socket
+      ) do
+    send(parent_pid, {:confirm_event, event, %{item_id: item_id}})
+
+    socket |> noreply()
+  end
+
   def handle_event(event, %{}, %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket) do
     send(parent_pid, {:confirm_event, event, payload})
 
@@ -88,6 +127,9 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
           optional(:gallery_name) => binary,
           optional(:gallery_count) => binary,
           optional(:payload) => map,
+          optional(:dropdown?) => boolean(),
+          optional(:dropdown_label) => binary | nil,
+          optional(:dropdown_items) => list(),
           title: binary
         }) :: %Phoenix.LiveView.Socket{}
   def open(socket, assigns) do

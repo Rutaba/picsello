@@ -241,7 +241,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def make_popup(socket, opts) do
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: opts[:close_label] || "No, go back",
       confirm_event: opts[:event],
       class: "dialog-photographer",
       confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
@@ -249,6 +249,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
       icon: Keyword.get(opts, :icon, "warning-orange"),
       title: opts[:title],
       subtitle: opts[:subtitle],
+      dropdown?: opts[:dropdown?],
+      dropdown_label: opts[:dropdown_label],
+      dropdown_items: opts[:dropdown_items],
       payload: Keyword.get(opts, :payload, %{})
     })
     |> noreply()

@@ -131,6 +131,9 @@
                       <button class="album-actions" phx-click="add_album_popup">Create new album with selected</button>
                     </li>
                   <% end %>
+                  <li class={"relative py-1.5 hover:bg-blue-planning-100 #{!@client_liked_album&& 'hidden'}"}>
+                      <button class="album-actions" phx-click="assign_to_album_popup">Assign to album</button>
+                  </li>
               </.actions>
               </div>
             </div>
