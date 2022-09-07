@@ -125,9 +125,9 @@
               </div>
             </div>
 
-            <div class="flex items-start min-w-0 flex-row">
+            <div class="flex items-start justify-between min-w-0 flex-row">
               <%= if Enum.any?(@selected_photos) do %>
-                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mx-0 mx-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
+                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mr-0 mr-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
                   <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
                 </div>
               <% end %>
@@ -160,7 +160,7 @@
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>
-            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
+            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
                 <hr class={classes("my-6 border-base-225", %{"hidden" => @orders == []})}>

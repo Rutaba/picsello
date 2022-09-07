@@ -41,7 +41,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
         photo_id,
         config \\ %{}
       ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, favorites_filter: favorites_filter)
+    album = Map.get(assigns, :album)
+
+    photo_ids =
+      Galleries.get_gallery_photo_ids(
+        gallery.id,
+        [favorites_filter: favorites_filter] ++ if(album, do: [album_id: album.id], else: [])
+      )
 
     photo_id = to_integer(photo_id)
 

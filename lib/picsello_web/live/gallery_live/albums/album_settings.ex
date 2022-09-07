@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   @impl true
   def update(%{gallery_id: gallery_id} = assigns, socket) do
     album = Map.get(assigns, :album, nil)
+    is_mobile = Map.get(assigns, :is_mobile)
     selected_photos = Map.get(assigns, :selected_photos, [])
     is_finals = Map.get(assigns, :is_finals, false)
 
@@ -18,7 +19,8 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       album: album,
       selected_photos: selected_photos,
       gallery_id: gallery_id,
-      is_finals: is_finals
+      is_finals: is_finals,
+      is_mobile: is_mobile
     )
     |> assign_album_changeset()
     |> assign(:visibility, false)
@@ -46,7 +48,14 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   def handle_event(
         "submit",
         %{"album" => params},
-        %{assigns: %{album: album, gallery_id: gallery_id, is_finals: is_finals}} = socket
+        %{
+          assigns: %{
+            album: album,
+            gallery_id: gallery_id,
+            is_finals: is_finals,
+            is_mobile: is_mobile
+          }
+        } = socket
       ) do
     if album do
       {album, message} =
@@ -58,14 +67,17 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       socket |> noreply()
     else
       params = if is_finals, do: Map.put(params, "is_finals", true), else: params
+      is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
 
-      {_, message} =
+      {album, message} =
         socket.assigns
         |> insert_album(params)
         |> upsert_album("Album successfully created")
 
       socket
-      |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
+      |> push_redirect(
+        to: Routes.gallery_photos_index_path(socket, :index, gallery_id, album.id, is_mobile)
+      )
       |> put_flash(:success, message)
       |> noreply()
     end
