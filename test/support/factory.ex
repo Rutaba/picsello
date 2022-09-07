@@ -687,7 +687,7 @@ defmodule Picsello.Factory do
         code: "123456",
         trial_length: 90,
         active: false,
-        signup_title: "This is going to be a game changer!",
+        signup_title: "Get started with your free 90-day free trial today",
         signup_description:
           "Start your 90-day free trial today and find out how simple it is to manage, market, and monetize your photography business with Picsello. It’s never been easier to grow doing what you love into a successful business.",
         onboarding_title: "Start your 90-day free trial",
