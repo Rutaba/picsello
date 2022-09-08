@@ -43,6 +43,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      |> assign(:gallery, gallery)
      |> assigns()
      |> assign(:overall_progress, 0)
+     |> assign(:uploaded_files, 0)
+     |> assign(:progress, %GalleryUploadProgress{})
      |> assign(:estimate, "n/a")
      |> assign(:update_mode, "append")
      |> allow_upload(:photo, @upload_options), layout: false}
@@ -234,10 +236,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp assign_overall_progress(
-         %{assigns: %{pending_photos: pending_photos, progress: progress, gallery: gallery}} =
-           socket
-       ) do
+  defp assign_overall_progress(%{assigns: %{progress: progress, gallery: gallery}} = socket) do
     total_progress = GalleryUploadProgress.total_progress(progress)
 
     gallery_progress_broadcast(socket, total_progress)
@@ -256,7 +255,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       Galleries.normalize_gallery_photo_positions(gallery.id)
     end
 
-    if total_progress == 100 && Enum.empty?(pending_photos) do
+    if total_progress == 100 do
       socket
       |> assign(:inprogress_photos, [])
     else
@@ -272,12 +271,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
              gallery: gallery,
              photos_error_count: photos_error_count,
              invalid_photos: invalid_photos,
-             pending_photos: pending_photos
+             pending_photos: pending_photos,
+             inprogress_photos: inprogress_photos
            }
          } = socket,
          entries \\ []
        ) do
-    photos_error_count > 0 &&
+    photos_error_count > 0 && inprogress_photos == [] &&
       PubSub.broadcast(
         Picsello.PubSub,
         "photos_error:#{gallery.id}",
@@ -381,7 +381,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp get_entries(%{assigns: assigns}),
     do: assigns.uploads.photo.entries |> Enum.filter(&(!&1.done?))
 
-  defp apply_limits(%{assigns: %{uploads: uploads}} = socket, entries) do
+  defp apply_limits(
+         %{assigns: %{photos_error_count: photos_error_count, uploads: uploads}} = socket,
+         entries
+       ) do
     {pending_photos, invalid} = max_size_limit(entries)
 
     socket
@@ -390,7 +393,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       :pending_photos,
       Enum.map(pending_photos, &Map.put(&1, :upload_ref, uploads.photo.ref))
     )
-    |> assign(:photos_error_count, length(entries))
+    |> assign(:photos_error_count, photos_error_count ++ length(entries))
     |> assign(:entries, entries)
   end
 
@@ -402,11 +405,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp max_size_limit(entries, gallery_id \\ nil) do
     Enum.reduce(entries, {[], []}, fn entry, {valid, invalid} = acc ->
       if entry.client_size < Keyword.get(@upload_options, :max_file_size) do
-        duplicate_entries(entry, acc, gallery_id)
+        filter_wrong_extensions(entry, acc, gallery_id)
       else
         {valid, [Map.put(entry, :error, "File too large") | invalid]}
       end
     end)
+  end
+
+  defp filter_wrong_extensions(entry, {valid, invalid} = acc, gallery_id) do
+    if entry.client_type in Keyword.get(@upload_options, :accept, []) do
+      duplicate_entries(entry, acc, gallery_id)
+    else
+      {valid, [Map.put(entry, :error, "Invalid file type") | invalid]}
+    end
   end
 
   defp duplicate_entries(entry, {valid, invalid} = acc, gallery_id) do
@@ -511,7 +522,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   defp add_photo_button(assigns) do
     ~H"""
-    <%= if @pending_photos do %>
+    <%= if @disable do %>
       <div class={@class}><%= render_block(@inner_block) %></div>
     <% else %>
       <button disabled="disabled" class={"#{@class} disabled:opacity-50 disabled:cursor-not-allowed"}>

@@ -102,5 +102,4 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
   end
-
 end

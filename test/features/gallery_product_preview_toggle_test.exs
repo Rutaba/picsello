@@ -1,31 +1,30 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
-    use Picsello.FeatureCase, async: true
-    import Picsello.TestSupport.ClientGallery
+  use Picsello.FeatureCase, async: true
+  import Picsello.TestSupport.ClientGallery
 
-    setup :onboarded
-    setup :authenticated
-    setup :authenticated_gallery
+  setup :onboarded
+  setup :authenticated
+  setup :authenticated_gallery
 
-    setup do
-      Picsello.Test.WHCCCatalog.sync_catalog()
+  setup do
+    Picsello.Test.WHCCCatalog.sync_catalog()
+  end
+
+  setup %{gallery: gallery} do
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+
+    for category <- Picsello.Repo.all(Picsello.Category) do
+      preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
+
+      insert(:gallery_product,
+        category: category,
+        preview_photo: preview_photo,
+        gallery: gallery
+      )
     end
 
-    setup %{gallery: gallery} do
-      Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-      for category <- Picsello.Repo.all(Picsello.Category) do
-        preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
-
-        insert(:gallery_product,
-          category: category,
-          preview_photo: preview_photo,
-          gallery: gallery
-        )
-      end
-
-      [gallery: gallery]
-
-    end
-
+    [gallery: gallery]
+  end
 
       test "Toggle disable product in gallery", %{
         session: session,
@@ -103,5 +102,4 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
             end)
         end)
       end
-
-  end
+end
