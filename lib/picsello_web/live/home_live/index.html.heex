@@ -37,6 +37,10 @@
                   <a href="https://www.youtube.com/watch?v=uEY3eS9cDIk" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
                       <%= button_label %>
                     </a>
+                <% "client-booking" -> %>
+                  <a href={Routes.calendar_booking_events_path(@socket, :index)} class={"#{button_class} text-center text-sm w-full p-2 mt-2"}>
+                      <%= button_label %>
+                    </a>
                 <% "proofing-album" -> %>
                   <div class="flex gap-4">
                     <a href={Routes.gallery_photos_index_path(@socket, :index, item.params.album.gallery_id, item.params.album.id)} class={"#{button_class} text-center text-sm w-full py-2 mt-2"} rel="noopener noreferrer">
