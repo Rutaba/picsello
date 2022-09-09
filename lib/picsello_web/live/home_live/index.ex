@@ -252,8 +252,7 @@ defmodule PicselloWeb.HomeLive.Index do
              %{
                action: "client-booking",
                title: "Client booking is here!",
-               body:
-                 "You asked, we delivered - clients can now easily schedule shoots themselves.",
+               body: "Your clients will go from looking to direct booking in under 10 minutes.",
                icon: "calendar",
                button_label: "Check it out",
                button_class: "btn-secondary",
