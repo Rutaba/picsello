@@ -152,8 +152,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
   defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
 
-  defp insert_album(%{selected_photos: selected_photos}, album_params),
-    do: Albums.insert_album_with_selected_photos(album_params, selected_photos)
+  defp insert_album(%{selected_photos: selected_photos}, album_params) do
+      {:ok, album} = Albums.insert_album_with_selected_photos(album_params, selected_photos)
+      {:ok, album.album}
+end
 
   defp upsert_album(result, message) do
     case result do
