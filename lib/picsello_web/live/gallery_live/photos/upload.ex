@@ -253,9 +253,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       uploading_broadcast(socket, gallery.id)
       Galleries.update_gallery_photo_count(gallery.id)
       Galleries.normalize_gallery_photo_positions(gallery.id)
-    end
 
-    if total_progress == 100 do
       socket
       |> assign(:inprogress_photos, [])
     else
@@ -294,21 +292,29 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp gallery_progress_broadcast(
-         %{assigns: %{gallery: gallery, inprogress_photos: inprogress_photos}},
+         %{
+           assigns: %{
+             overall_progress: overall_progress,
+             gallery: gallery,
+             inprogress_photos: inprogress_photos
+           }
+         },
          total_progress
        ) do
-    PubSub.broadcast(
-      Picsello.PubSub,
-      "galleries_progress:#{gallery.id}",
-      {:galleries_progress, %{total_progress: total_progress, gallery_id: gallery.id}}
-    )
+    if total_progress != overall_progress do
+      PubSub.broadcast(
+        Picsello.PubSub,
+        "galleries_progress:#{gallery.id}",
+        {:galleries_progress, %{total_progress: total_progress, gallery_id: gallery.id}}
+      )
 
-    PubSub.broadcast(
-      Picsello.PubSub,
-      "gallery_progress:#{gallery.id}",
-      {:gallery_progress,
-       %{total_progress: total_progress, gallery_id: gallery.id, entries: inprogress_photos}}
-    )
+      PubSub.broadcast(
+        Picsello.PubSub,
+        "gallery_progress:#{gallery.id}",
+        {:gallery_progress,
+         %{total_progress: total_progress, gallery_id: gallery.id, entries: inprogress_photos}}
+      )
+    end
   end
 
   defp uploading_broadcast(socket, gallery_id, entries \\ [], uploading \\ false) do

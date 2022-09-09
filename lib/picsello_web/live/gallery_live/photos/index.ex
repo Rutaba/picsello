@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
-  @per_page 100
+  @per_page 500
   @string_length 24
 
   @impl true
@@ -664,16 +664,22 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, socket) do
-    photo_update =
-      %{
-        id: photo.id,
-        url: preview_url(photo)
-      }
-      |> Jason.encode!()
+  def handle_info(
+        {:photo_processed, _, photo},
+        %{assigns: %{total_progress: total_progress}} = socket
+      ) do
+    if total_progress == 100 do
+      photo_update =
+        %{
+          id: photo.id,
+          url: preview_url(photo)
+        }
+        |> Jason.encode!()
 
-    socket
-    |> assign(:photo_updates, photo_update)
+      socket |> assign(:photo_updates, photo_update)
+    else
+      socket
+    end
     |> noreply()
   end
 
