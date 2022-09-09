@@ -161,8 +161,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(css("#toggle-visibility"))
     |> click(button("Create new album"))
     |> assert_has(css("p", text: "Album successfully created"))
-    |> assert_has(css("#albums .album", count: 3))
-    |> click(css("#albums .album:nth-child(3)"))
+    |> assert_has(css("#page-scroll span span", test: "Test album 2"))
     |> assert_has(css(".item", count: photos_count))
   end
 end

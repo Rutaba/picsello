@@ -436,6 +436,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
+        "add_finals_album_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      selected_photos: selected_photos,
+      is_finals: true
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "toggle_selected_photos",
         %{"photo_id" => photo_id},
         %{assigns: %{selected_photos: selected_photos}} = socket
@@ -470,9 +490,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       true ->
         gallery = Repo.preload(gallery, job: :client)
         album = Albums.set_album_hash(album)
+        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, :album_send_link) do
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
             Picsello.EmailPresets.resolve_variables(
               preset,
               {gallery, album},
@@ -483,7 +504,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         socket
         |> assign(:job, gallery.job)
         |> PicselloWeb.ClientMessageComponent.open(%{
-          modal_title: "Share proofing album",
+          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
           subject: subject,
           body_html: body_html,
           presets: [],
@@ -495,7 +516,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
       false ->
         socket
-        |> put_flash(:error, "Please add photos to the gallery before sharing")
+        |> put_flash(:error, "Please add photos to the album before sharing")
         |> noreply()
     end
   end

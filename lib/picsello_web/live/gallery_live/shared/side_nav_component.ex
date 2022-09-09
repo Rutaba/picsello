@@ -150,4 +150,12 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
 
   defp is_selected_album(album, selected_album),
     do: selected_album && album.id == selected_album.id
+
+  defp icon_name(album) do
+    cond do
+      album.is_proofing -> "proofing"
+      album.is_finals -> "finals"
+      true -> "standard_album"
+    end
+  end
 end
