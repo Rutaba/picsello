@@ -75,4 +75,15 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                 <span><%= @album_name %></span>
         </div> 
     <% end %>
+
+    <%= if @client_liked_album && !@album_name do %>
+        <div class="flex lg:p-0 p-3 items-center font-sans md:w-full bg-base-100 cursor-pointer text-blue-planning-300" phx-click="go_to_original_album" phx-target={@myself}>
+                <.icon name="standard_album" class="w-4 h-4 stroke-2 fill-current text-blue-planning-300 mr-2 group-hover:!text-blue-planning-300"/>
+                <%= if @albums_length == 1 do %>
+                    <span>All Photos</span>
+                <% else %>
+                    <span>Unsorted Photos</span>
+                <% end %>
+        </div> 
+    <% end %>
 </div>
