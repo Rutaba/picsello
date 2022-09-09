@@ -60,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   @impl true
   def handle_event(
         "go_to_original_album",
-        %{"album" => album_id},
+        params,
         %{
           assigns: %{
             photo: photo,
@@ -70,10 +70,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       ) do
     is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
 
+    route =
+      if(is_nil(params["album"]),
+        do: Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, is_mobile),
+        else:
+          Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, params["album"], is_mobile)
+      )
+
     socket
-    |> push_redirect(
-      to: Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, album_id, is_mobile)
-    )
+    |> push_redirect(to: route)
     |> noreply()
   end
 

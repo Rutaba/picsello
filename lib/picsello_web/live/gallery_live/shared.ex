@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart, Galleries.Album}
+  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart, Galleries.Album, Albums}
   alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Cart.Order
@@ -159,6 +159,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket
     |> redirect(external: created_editor.url)
     |> noreply()
+  end
+
+  def get_all_gallery_albums(gallery_id) do
+      case client_liked_album(gallery_id) do
+        nil -> Albums.get_albums_by_gallery_id(gallery_id)
+        album -> Albums.get_albums_by_gallery_id(gallery_id) ++ [album]
+      end
   end
 
   def expire_soon(gallery) do

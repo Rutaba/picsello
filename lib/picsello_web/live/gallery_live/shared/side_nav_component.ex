@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared
 
-  alias Picsello.{Galleries, Albums}
+  alias Picsello.Galleries
   alias Phoenix.PubSub
 
   @impl true
@@ -19,11 +19,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
         } = params,
         socket
       ) do
-    albums =
-      case client_liked_album(gallery.id) do
-        nil -> Albums.get_albums_by_gallery_id(gallery.id)
-        album -> Albums.get_albums_by_gallery_id(gallery.id) ++ [album]
-      end
+    albums = get_all_gallery_albums(gallery.id)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "photos_error:#{gallery.id}")

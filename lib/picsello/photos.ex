@@ -51,10 +51,7 @@ defmodule Picsello.Photos do
 
   def get_album_name(photo) do
     photo = Repo.preload(photo, :album)
-    case photo.album do
-      nil -> nil
-      album -> album.name
-    end
+    if photo.album, do: photo.album.name, else: nil
   end
 
   def watermarked_query do

@@ -30,7 +30,11 @@
             <% end %>
           </div>
           <div class="flex items-center lg:ml-0 ml-10 shrink-0">
+            <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
             <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
+            <% else %>
+            <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "All photos") %></span>
+            <% end %>
             <%= if @album && !@client_liked_album  do %>
               <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
                   <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
@@ -209,6 +213,7 @@
                     id: photo.id,
                     photo: photo,
                     album: @album,
+                    albums_length: @albums_length,
                     photo_width: 300,
                     is_likable: true,
                     is_removable: true,

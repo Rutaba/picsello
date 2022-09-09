@@ -26,6 +26,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign(
+      albums_length: 0,
       total_progress: 0,
       favorites_filter: false,
       photographer_favorites_filter: false,
@@ -55,10 +56,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         _,
         socket
       ) do
+    albums_length = length(get_all_gallery_albums(gallery_id))
+
     socket
     |> is_mobile(params)
     |> assign(:client_liked_album, true)
     |> assign(:favorites_filter, true)
+    |> assign(:albums_length, albums_length)
     |> assigns(gallery_id, client_liked_album(gallery_id))
   end
 
