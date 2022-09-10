@@ -192,7 +192,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
       |> assert_has(button("Completed Read and agree to your contract"))
-      |> click(button("To-Do Pay your invoice"))
+      |> click(button("To-Do Pay your retainer"))
       |> assert_has(definition("Discount", text: "20%"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(definition("50% retainer due today", text: "$0.40"))
@@ -242,7 +242,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("h1", text: "Your session is now booked."))
       |> click(button("Got it"))
       |> assert_text("Let’s get your shoot booked")
-      |> click(button("To-Do Pay your invoice"))
+      |> click(button("Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
         definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
@@ -337,7 +337,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> click(button("To-Do Pay your invoice"))
+      |> click(button("To-Do Pay your retainer"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -389,7 +389,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> click(button("To-Do Pay your invoice"))
+      |> click(button("To-Do Pay your retainer"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -531,7 +531,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
-    |> click(button("To-Do Finish booking"))
+    |> click(button("Pay your invoice"))
     |> assert_has(definition("Session fee", text: "$1.00"))
     |> assert_has(definition("Discount", text: "100%"))
     |> assert_has(definition("Total", text: "$0.00"))
@@ -539,7 +539,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> assert_has(css("h1", text: "Thank you"))
     |> assert_has(css("h1", text: "Your session is now booked."))
     |> click(button("Got it"))
-    |> assert_has(button("Completed Finish booking"))
+    |> assert_has(button("Completed Pay your invoice"))
 
     assert_receive {:delivered_email, email}
     %{"subject" => subject, "body" => body} = email |> email_substitutions
