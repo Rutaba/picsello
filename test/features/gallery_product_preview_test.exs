@@ -103,6 +103,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
   end
 
+
   test "Product Preview, 'edit product preview' is removed", %{
     session: session,
     gallery: %{id: gallery_id} = _gallery
@@ -119,4 +120,5 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> click(css("label", text: "Product enabled to sell", count: 4, at: 1))
     |> assert_has(button("Edit product preview", visible: true, count: 2))
   end
+
 end

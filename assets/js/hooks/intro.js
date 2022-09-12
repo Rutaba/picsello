@@ -25,15 +25,17 @@ function startIntroJsTour(component, introSteps, introId) {
     .start();
 
   // Hide introJs if element is clicked underneath it
-  document
-    .querySelector('.introjs-showElement')
-    .addEventListener('click', () => {
-      introJs().exit();
-      component.pushEvent('intro_js', {
-        action: 'dismissed',
-        intro_id: introId,
+  if (document.querySelector('.introjs-showElement')) {
+    document
+      .querySelector('.introjs-showElement')
+      .addEventListener('click', () => {
+        introJs().exit();
+        component.pushEvent('intro_js', {
+          action: 'dismissed',
+          intro_id: introId,
+        });
       });
-    });
+  }
 }
 
 function addEventListeners() {
@@ -135,11 +137,13 @@ export default {
   },
   updated() {
     // remove existing intro elements of previous page
-    document.querySelectorAll('.introjs-hint').forEach((el) => {el.remove()});
+    document.querySelectorAll('.introjs-hint').forEach((el) => {
+      el.remove();
+    });
 
     // add new intro elements to current page
     introJs().addHints();
-    
+
     addEventListeners();
   },
   destroyed() {
