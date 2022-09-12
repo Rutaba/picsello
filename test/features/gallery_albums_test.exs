@@ -39,7 +39,7 @@ defmodule Picsello.GalleryAlbumsTest do
     |> click(css("#toggle-visibility"))
     |> click(button("Create new album"))
     |> assert_has(css("p", text: "Album successfully created"))
-    |> find(css("#albums .album", count: 3))
+    |> find(css("#page-scroll span span", test: "Test album 2"))
   end
 
   test "Albums, Unsorted Photos actions dropdown, Go to unsorted photos", %{

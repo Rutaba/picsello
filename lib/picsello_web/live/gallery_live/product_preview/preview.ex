@@ -13,15 +13,15 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
     |> ok()
   end
 
-  def handle_event("enabled", _, %{assigns: %{product: product}} = socket) do
+  def handle_event("sell_product_enabled", _, %{assigns: %{product: product}} = socket) do
     socket
-    |> assign(product: GalleryProducts.toggle_enabled(product))
+    |> assign(product: GalleryProducts.toggle_sell_product_enabled(product))
     |> noreply()
   end
 
-  def handle_event("preview_enabled", _, %{assigns: %{product: product}} = socket) do
+  def handle_event("product_preview_enabled", _, %{assigns: %{product: product}} = socket) do
     socket
-    |> assign(product: GalleryProducts.toggle_preview_enabled(product))
+    |> assign(product: GalleryProducts.toggle_product_preview_enabled(product))
     |> noreply()
   end
 
@@ -35,21 +35,23 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
         </div>
 
         <div class=" mx-4 pt-4 flex flex-col justify-between" >
-          <label class="toggle">
-            <input class="toggle-checkbox" type="checkbox" phx-click="enabled" checked={@product.enabled} phx-target={@myself}>
-            <div class="toggle-switch"></div>
-            <span class="toggle-label">Product enabled to sell</span>
+
+          <label class="inline-flex relative items-center cursor-pointer">
+          <input type="checkbox" class="sr-only peer" phx-click="sell_product_enabled" checked={@product.sell_product_enabled} phx-target={@myself}>
+          <div class="w-11 h-6 bg-gray-200 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-300 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
+          <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Product enabled to sell</span>
           </label>
+
         </div>
 
         <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
         <div class=" mx-4 pt-4 flex flex-col justify-between">
 
-        <%= if @product.enabled do %>
-          <label class="toggle">
-            <input class="toggle-checkbox" type="checkbox" phx-click="preview_enabled" checked={@product.preview_enabled} phx-target={@myself}>
-            <div class="toggle-switch"></div>
-            <span class="toggle-label">Show product preview in gallery</span>
+        <%= if @product.sell_product_enabled do %>
+        <label class="inline-flex relative items-center cursor-pointer">
+          <input type="checkbox" class="sr-only peer" phx-click="product_preview_enabled" checked={@product.product_preview_enabled} phx-target={@myself}>
+          <div class="w-11 h-6 bg-gray-300 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-100 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
+          <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Show product preview in gallery</span>
           </label>
         <% end %>
         </div>

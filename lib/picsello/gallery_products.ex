@@ -23,15 +23,15 @@ defmodule Picsello.GalleryProducts do
     |> Repo.one()
   end
 
-  def toggle_enabled(product) do
+  def toggle_sell_product_enabled(product) do
     product
-    |> GalleryProduct.changeset(%{enabled: !product.enabled})
+    |> GalleryProduct.changeset(%{sell_product_enabled: !product.sell_product_enabled})
     |> Repo.update!()
   end
 
-  def toggle_preview_enabled(product) do
+  def toggle_product_preview_enabled(product) do
     product
-    |> GalleryProduct.changeset(%{preview_enabled: !product.preview_enabled})
+    |> GalleryProduct.changeset(%{product_preview_enabled: !product.product_preview_enabled})
     |> Repo.update!()
   end
 
@@ -46,7 +46,7 @@ defmodule Picsello.GalleryProducts do
     gallery_products_query(gallery_id, :with_or_without_previews)
     |> where([preview_photo: preview_photo], not is_nil(preview_photo.id))
     |> where([category: category], not category.coming_soon)
-    |> where(enabled: true)
+    |> where(sell_product_enabled: true)
   end
 
   defp gallery_products_query(gallery_id, :with_or_without_previews) do
