@@ -173,7 +173,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   end
 
   def handle_info(
-        {:add_digital_to_cart, digital},
+        {:add_digital_to_cart, digital, _},
         %{assigns: %{gallery: gallery}} = socket
       ) do
     order = Cart.place_product(digital, gallery.id)
@@ -240,7 +240,9 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   end
 
   defp get_albums(id) do
-    Albums.get_albums_by_gallery_id(id)
-    |> Enum.filter(&(Galleries.get_album_photo_count(id, &1.id) > 0 && !&1.is_proofing))
+    id
+    |> Albums.get_albums_by_gallery_id()
+    |> Picsello.Repo.preload(:photos)
+    |> Enum.filter(&(Enum.count(&1.photos) > 0 && !&1.is_proofing && !&1.is_finals))
   end
 end

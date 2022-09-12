@@ -52,7 +52,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        state: "album_send_link",
+        state: "proofs_send_link",
         position: 0,
         name: "Share Proofing Album",
         subject_template: "Your Proofing Album is Ready!",
@@ -61,6 +61,19 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Your proofs are ready to view! You can view your proofing album here: <a href="{{album_link}}">{{album_link}}</a></p>
         {{#album_password}}<p>Your photos are password-protected, so you will need to use this password to view: <b>{{album_password}}</b></p>{{/album_password}}
         <p>These photos have not been retouched. To select the photos you’d like to purchase to be fully edited, simply favorite the photo. When you’re done selecting your images, select "Send to Photographer." Then I’ll get these fully edited and sent  over to you.</p>
+        """
+      },
+      %{
+        type: "gallery",
+        state: "album_send_link",
+        position: 0,
+        name: "Share Finals Album",
+        subject_template: "Your Finals Album is Ready!",
+        body_template: """
+        <p>Hi {{client_first_name}},</p>
+        <p>Your Finals are ready to view! You can view your Finals album here: <a href="{{album_link}}">{{album_link}}</a></p>
+        {{#album_password}}<p>Your photos are password-protected, so you will need to use this password to view: <b>{{album_password}}</b></p>{{/album_password}}
+        <p>These photos have all been retouched, and you can download them all at the touch of a button.</p>
         """
       }
     ]

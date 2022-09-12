@@ -7,6 +7,7 @@ defmodule Picsello.Photos do
 
   alias Picsello.{
     Galleries,
+    Galleries.Album,
     Cart.Digital,
     Galleries.Photo,
     Galleries.Watermark,
@@ -31,6 +32,10 @@ defmodule Picsello.Photos do
     else
       _ -> url
     end
+  end
+
+  def preview_url(%{is_finals: true, preview_url: "" <> path}) do
+    path_to_url(path)
   end
 
   def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}) do
@@ -83,11 +88,20 @@ defmodule Picsello.Photos do
         }
       )
 
+    photo_query =
+      from(photo in photo_query,
+        left_join: digital in Digital,
+        on: digital.photo_id == photo.id,
+        select_merge: %{
+          is_selected: digital.photo_id == photo.id
+        }
+      )
+
     from(photo in photo_query,
-      left_join: digital in Digital,
-      on: digital.photo_id == photo.id,
+      left_join: album in Album,
+      on: album.id == photo.album_id,
       select_merge: %{
-        is_selected: digital.photo_id == photo.id
+        is_finals: album.is_finals
       }
     )
   end
