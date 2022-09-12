@@ -204,9 +204,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     """
   end
 
-  defp get_finals_album_id(%{is_finals: true, id: album_id}), do: album_id
-  defp get_finals_album_id(_album), do: nil
-
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
   defdelegate min_price(category), to: Galleries
 end

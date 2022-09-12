@@ -38,10 +38,6 @@ defmodule Picsello.Photos do
     path_to_url(path)
   end
 
-  def preview_url(%{is_finals: true, preview_url: "" <> path}) do
-    path_to_url(path)
-  end
-
   def preview_url(%{watermarked: true, watermarked_preview_url: "" <> path}) do
     path_to_url(path)
   end
