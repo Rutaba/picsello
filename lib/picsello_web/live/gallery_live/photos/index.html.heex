@@ -47,11 +47,11 @@
             <div class="lg:flex hidden">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
             </div>  
-            <%= if @album && @album.is_proofing do %>
+            <%= if @album && (@album.is_proofing || @album.is_finals) do %>
               <.icon_button {testid("send-proofs-popup")} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
-                Send proofs to client
+                Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
               </.icon_button>
-              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
                 Add finals album
               </.icon_button> 
             <% end %>
@@ -125,9 +125,9 @@
               </div>
             </div>
 
-            <div class="flex items-start min-w-0 flex-row">
+            <div class="flex items-start justify-between min-w-0 flex-row">
               <%= if Enum.any?(@selected_photos) do %>
-                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mx-0 mx-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
+                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mr-0 mr-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
                   <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
                 </div>
               <% end %>
@@ -160,10 +160,10 @@
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>
-            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
+            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
-                <hr class="my-6 border-base-225">
+                <hr class={classes("my-6 border-base-225", %{"hidden" => @orders == []})}>
               <% end %>
               <div
                 phx-hook="MasonryGrid"

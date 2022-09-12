@@ -98,7 +98,7 @@
                         <img class="float-left object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(digital, proofing_client_view?: @is_proofing)}/>
 
                         <div class="py-0 md:py-7">
-                          <div class="text-lg"><%= product_name(digital, @live_action == :proofing_album) %></div>
+                          <div class="text-lg"><%= product_name(digital, @is_proofing) %></div>
 
                           <div class="text-2xl font-extrabold mt-2.5 mb-7 md:mb-9">
                             <%= price_display(digital) %>
