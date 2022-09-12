@@ -205,6 +205,7 @@
                 data-photo-width="300">
                 <%= for photo <- @photos do%>
                   <%= live_component Photo,
+                    is_mobile: @is_mobile,
                     id: photo.id,
                     photo: photo,
                     album: @album,

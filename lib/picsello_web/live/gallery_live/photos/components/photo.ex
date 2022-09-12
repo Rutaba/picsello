@@ -3,15 +3,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
   alias Picsello.Photos
+  alias PicselloWeb.Router.Helpers, as: Routes
 
   import PicselloWeb.GalleryLive.Shared, only: [original_album_link: 2]
 
   @impl true
   def update(%{photo: photo} = assigns, socket) do
     album = Map.get(assigns, :album)
+    album_name = Photos.get_album_name(photo)
 
     socket
     |> assign(
+      album_name: album_name,
       preview_photo_id: nil,
       is_likable: false,
       is_removable: false,
@@ -52,6 +55,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       end
 
     socket |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "go_to_original_album",
+        %{"album" => album_id},
+        %{
+          assigns: %{
+            photo: photo,
+            is_mobile: is_mobile
+          }
+        } = socket
+      ) do
+    is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
+
+    socket
+    |> push_redirect(
+      to: Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, album_id, is_mobile)
+    )
+    |> noreply()
   end
 
   defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do

@@ -1,4 +1,4 @@
-<div class="item flex bg-gray-200" id={"photo-item-#{@photo.id}"}
+<div class="item flex flex-col bg-gray-200" id={"photo-item-#{@photo.id}"}
 style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
         <div class="galleryItem toggle-parent">
@@ -68,4 +68,11 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
             <% end %>
         </div>
     </div>
+
+    <%= if @client_liked_album && @album_name do %>
+        <div class="flex lg:p-0 p-3 items-center font-sans md:w-full bg-base-100 cursor-pointer text-blue-planning-300" phx-click="go_to_original_album" phx-value-album={@photo.album_id} phx-target={@myself}>
+                <.icon name="standard_album" class="w-4 h-4 stroke-2 fill-current text-blue-planning-300 mr-2 group-hover:!text-blue-planning-300"/>
+                <span><%= @album_name %></span>
+        </div> 
+    <% end %>
 </div>

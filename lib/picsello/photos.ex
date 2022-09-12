@@ -49,6 +49,14 @@ defmodule Picsello.Photos do
 
   def original_url(%{original_url: path}), do: path_to_url(path)
 
+  def get_album_name(photo) do
+    photo = Repo.preload(photo, :album)
+    case photo.album do
+      nil -> nil
+      album -> album.name
+    end
+  end
+
   def watermarked_query do
     watermark =
       from(watermark in Watermark,
