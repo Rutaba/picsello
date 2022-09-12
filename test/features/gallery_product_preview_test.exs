@@ -111,7 +111,7 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> scroll_to_bottom()
     |> assert_has(button("Edit product preview", visible: true, count: 4))
-    |> find(checkbox("Product enabled to sell", visible: false, count: 4, at: 0), fn checkbox ->
+    |> find(checkbox("Product enabled to sell", visible: true, count: 4, at: 0), fn checkbox ->
       assert Element.selected?(checkbox)
     end)
     |> click(css("label", text: "Show product preview in gallery", count: 4, at: 0))
