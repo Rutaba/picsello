@@ -107,9 +107,15 @@
 </ul>
 
 <div class="flex items-center px-6 pb-6 center-container">
-  <form phx-change="page">
-    <.select name="per-page" value={@pagination.limit} options={[12, 24, 48, 96]} />
-  </form>
+   <form phx-change="page">
+         <select class= "focus:ring-0 focus:outline-none focus:border-blue-planning-300 border border-gray-200 rounded-lg p-3 "name = "per-page" phx-update="page">
+            <option value = {12} selected>12</option>
+            <option value = {24}>24</option>
+            <option value = {36}>36</option>
+            <option value = {48}>48</option>
+         </select>
+      </form>
+  
 
   <div class="flex ml-2 text-xs font-bold text-gray-500">
       Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
