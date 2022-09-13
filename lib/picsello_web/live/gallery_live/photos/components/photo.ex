@@ -74,7 +74,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       if(is_nil(params["album"]),
         do: Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, is_mobile),
         else:
-          Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, params["album"], is_mobile)
+          Routes.gallery_photos_index_path(
+            socket,
+            :index,
+            photo.gallery_id,
+            params["album"],
+            is_mobile
+          )
       )
 
     socket
@@ -194,4 +200,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     do: "width: #{width}px;height: #{width / aspect_ratio}px;"
 
   defp wrapper_style(_, _, _), do: nil
+
+  defp album_name(assigns) do
+    cond do
+      assigns.album_name -> assigns.album_name
+      assigns.albums_length == 1 -> "All photos"
+      true -> "Unsorted photos"
+    end
+  end
 end

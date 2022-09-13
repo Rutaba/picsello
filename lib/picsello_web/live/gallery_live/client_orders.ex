@@ -33,14 +33,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     |> noreply()
   end
 
-  defp may_be_filter(orders, %{album: album}) when album.is_proofing or album.is_finals do
-    Enum.filter(orders, &(&1.album_id == album.id))
-  end
-
-  defp may_be_filter(orders, _assigns) do
-    Enum.reject(orders, & &1.album_id)
-  end
-
   @impl true
   def handle_info({:pack, :ok, %{packable: %{id: id}, status: status}}, socket) do
     DownloadLinkComponent.update_status(id, status)

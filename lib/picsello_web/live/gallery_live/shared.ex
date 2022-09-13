@@ -172,10 +172,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def get_all_gallery_albums(gallery_id) do
-      case client_liked_album(gallery_id) do
-        nil -> Albums.get_albums_by_gallery_id(gallery_id)
-        album -> Albums.get_albums_by_gallery_id(gallery_id) ++ [album]
-      end
+    case client_liked_album(gallery_id) do
+      nil -> Albums.get_albums_by_gallery_id(gallery_id)
+      album -> Albums.get_albums_by_gallery_id(gallery_id) ++ [album]
+    end
   end
 
   def expire_soon(gallery) do

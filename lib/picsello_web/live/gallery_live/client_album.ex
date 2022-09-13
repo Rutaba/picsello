@@ -265,8 +265,4 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     </div>
     """
   end
-
-  defp photos_button(%{route: route, title: title} = assigns) do
-    ~H[<%= live_redirect to: route, target: "_blank" do %> <button class="btn-primary py-8"><%= title %></button><% end %>]
-  end
 end

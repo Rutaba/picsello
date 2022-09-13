@@ -182,26 +182,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
-        "add_finals_album_popup",
-        %{},
-        %{
-          assigns: %{
-            gallery: gallery,
-            selected_photos: selected_photos
-          }
-        } = socket
-      ) do
-    socket
-    |> open_modal(AlbumSettings, %{
-      gallery_id: gallery.id,
-      selected_photos: selected_photos,
-      is_finals: true
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
         "edit_album_thumbnail_popup",
         _,
         %{
@@ -714,18 +694,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:confirm_event, "move_to_album", %{album_id: album_id}},
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
-
     album = Albums.get_album!(album_id)
 
-    unless album.is_finals do
-      duplicate_photo_ids =
-        Galleries.get_photos_name(selected_photos)
-        |> Galleries.filter_duplication(album_id)
+    selected_photos =
+      unless album.is_finals do
+        duplicate_photo_ids =
+          Galleries.get_photos_name(selected_photos)
+          |> Galleries.filter_duplication(album_id)
 
-      Galleries.delete_photos_by(duplicate_photo_ids)
+        Galleries.delete_photos_by(duplicate_photo_ids)
 
-      selected_photos = selected_photos -- duplicate_photo_ids
-    end
+        selected_photos -- duplicate_photo_ids
+      end
 
     Galleries.move_to_album(String.to_integer(album_id), selected_photos)
 
@@ -1110,7 +1090,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     ~H"""
     <%= for album <- @albums do %>
-      <%= if @exclude_album_id != album.id do %>
+      <%= if @exclude_album_id != album.id && @exclude_album_id != "client_liked" do %>
         <li class={"relative py-1 hover:bg-blue-planning-100 hover:rounded-md #{get_class(album.name)}"}>
           <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
           <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
@@ -1123,7 +1103,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp photo_loader(assigns) do
     ~H"""
     <%= for {_, index} <- Enum.with_index(@inprogress_photos) do%>
-      <div id={"photo-loader-#{index}"} class="flex bg-gray-200 item photo-loader">
+      <div id={"photo-loader-#{index}"} class="item h-[130px] photo-loader flex bg-gray-200">
         <div class="relative cursor-pointer item-content preview">
           <div class="galleryLoader">
             <img src={@url} class="relative" />
