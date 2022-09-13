@@ -155,7 +155,7 @@ defmodule Picsello.JobIndexTest do
     |> click(button("Previous page"))
     |> assert_text("Results: 1 – 12 of 13")
     |> click(css("#page-dropdown"))
-    |> click(css("label", text: "24"))
+    |> click(css("option", text: "24"))
     |> assert_text("Results: 1 – 13 of 13")
   end
 end
