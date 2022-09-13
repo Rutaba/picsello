@@ -13,6 +13,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     is_mobile = Map.get(assigns, :is_mobile)
     selected_photos = Map.get(assigns, :selected_photos, [])
     is_finals = Map.get(assigns, :is_finals, false)
+    is_redirect = Map.get(assigns, :is_redirect)
 
     socket
     |> assign(
@@ -20,7 +21,8 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       selected_photos: selected_photos,
       gallery_id: gallery_id,
       is_finals: is_finals,
-      is_mobile: is_mobile
+      is_mobile: is_mobile,
+      is_redirect: is_redirect
     )
     |> assign_album_changeset()
     |> assign(:visibility, false)
@@ -53,33 +55,32 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
             album: album,
             gallery_id: gallery_id,
             is_finals: is_finals,
-            is_mobile: is_mobile
+            is_mobile: is_mobile,
+            is_redirect: is_redirect
           }
         } = socket
       ) do
-    if album do
-      {album, message} =
-        album
-        |> Albums.update_album(params)
-        |> upsert_album("Album settings successfully updated")
-
-      send(self(), {:album_settings, %{message: message, album: album}})
-      socket |> noreply()
-    else
-      params = if is_finals, do: Map.put(params, "is_finals", true), else: params
-      is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
-
-      {album, message} =
-        socket.assigns
-        |> insert_album(params)
-        |> upsert_album("Album successfully created")
+    if is_redirect == false do
+      opts = [
+        event: "add_from_clients_favorite",
+        title: "Are you sure?",
+        confirm_label: "Save changes",
+        close_label: "Cancel",
+        subtitle: "You really want to create a new album with these selected photos?",
+        payload: %{
+          params: params,
+          album: album,
+          gallery_id: gallery_id,
+          is_finals: is_finals,
+          is_mobile: is_mobile,
+          is_redirect: is_redirect
+        }
+      ]
 
       socket
-      |> push_redirect(
-        to: Routes.gallery_photos_index_path(socket, :index, gallery_id, album.id, is_mobile)
-      )
-      |> put_flash(:success, message)
-      |> noreply()
+      |> make_popup(opts)
+    else
+      create_a_new_album(album, is_finals, params, is_mobile, is_redirect, gallery_id, socket)
     end
   end
 
@@ -147,20 +148,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       Gallery.generate_password()
     else
       album_password
-    end
-  end
-
-  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
-
-  defp insert_album(%{selected_photos: selected_photos}, album_params) do
-    {:ok, album} = Albums.insert_album_with_selected_photos(album_params, selected_photos)
-    {:ok, album.album}
-  end
-
-  defp upsert_album(result, message) do
-    case result do
-      {:ok, album} -> {album, message}
-      _ -> {nil, "something went wrong"}
     end
   end
 

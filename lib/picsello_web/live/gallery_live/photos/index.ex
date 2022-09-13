@@ -100,12 +100,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{
           assigns: %{
             gallery: gallery,
-            selected_photos: selected_photos
+            selected_photos: selected_photos,
+            client_liked_album: client_liked_album
           }
         } = socket
       ) do
+    is_redirect_value = if(client_liked_album, do: false, else: true)
+
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, selected_photos: selected_photos})
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      selected_photos: selected_photos,
+      is_redirect: is_redirect_value
+    })
     |> noreply()
   end
 
@@ -885,6 +892,24 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     socket
     |> make_popup(opts)
+  end
+
+  def handle_info(
+        {
+          :confirm_event,
+          "add_from_clients_favorite",
+          %{
+            params: params,
+            album: album,
+            gallery_id: gallery_id,
+            is_finals: is_finals,
+            is_mobile: is_mobile,
+            is_redirect: is_redirect
+          }
+        },
+        socket
+      ) do
+    create_a_new_album(album, is_finals, params, is_mobile, is_redirect, gallery_id, socket)
   end
 
   def handle_info(

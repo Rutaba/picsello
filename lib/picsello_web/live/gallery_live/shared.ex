@@ -5,7 +5,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart, Galleries.Album, Albums}
+  alias Picsello.{
+    Repo,
+    Galleries,
+    GalleryProducts,
+    Messages,
+    Cart.Digital,
+    Cart,
+    Galleries.Album,
+    Albums
+  }
+
   alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Cart.Order
@@ -887,5 +897,49 @@ defmodule PicselloWeb.GalleryLive.Shared do
           photo_id: id
         )
     end
+  end
+
+  def create_a_new_album(album, is_finals, params, is_mobile, is_redirect, gallery_id, socket) do
+    if album do
+      {album, message} =
+        album
+        |> Albums.update_album(params)
+        |> upsert_album("Album settings successfully updated")
+
+      send(self(), {:album_settings, %{message: message, album: album}})
+      socket |> noreply()
+    else
+      params = if is_finals, do: Map.put(params, "is_finals", true), else: params
+      is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
+
+      {album, message} =
+        socket.assigns
+        |> insert_album(params)
+        |> upsert_album("Album successfully created")
+
+      redirect_path =
+        if is_redirect == false,
+          do: "/galleries/#{gallery_id}/albums/client_liked",
+          else: Routes.gallery_photos_index_path(socket, :index, gallery_id, album.id, is_mobile)
+
+      socket
+      |> push_redirect(to: redirect_path)
+      |> put_flash(:success, message)
+      |> noreply()
+    end
+  end
+
+  defp upsert_album(result, message) do
+    case result do
+      {:ok, album} -> {album, message}
+      _ -> {nil, "something went wrong"}
+    end
+  end
+
+  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
+
+  defp insert_album(%{selected_photos: selected_photos}, album_params) do
+    {:ok, album} = Albums.insert_album_with_selected_photos(album_params, selected_photos)
+    {:ok, album.album}
   end
 end
