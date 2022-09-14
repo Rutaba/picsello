@@ -92,7 +92,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
             <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
-              <%= if @step == 4, do: "Start Trial", else: "Next" %>
+              <%= if @step == 3, do: "Start Trial", else: "Next" %>
             </button>
           </div>
         </.form>
@@ -165,8 +165,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <% end %>
     """
   end
-
-  defdelegate software_options(), to: Onboardings
 
   defp assign_step(socket, 2) do
     socket
