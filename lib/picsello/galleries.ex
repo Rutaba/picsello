@@ -349,6 +349,17 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  def pack(gallery, photo_ids, opts \\ []) when is_list(photo_ids) do
+    %{
+      photo_ids: photo_ids,
+      gallery_name: gallery.name,
+      gallery_url: PicselloWeb.Helpers.gallery_url(gallery),
+      email: opts[:user_email]
+    }
+    |> Picsello.Workers.PackPhotos.new()
+    |> Oban.insert()
+  end
+
   @spec get_albums_photo_count(gallery_id :: integer) :: integer
   def get_albums_photo_count(gallery_id) do
     from(p in Photos.active_photos(),

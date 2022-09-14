@@ -68,7 +68,7 @@ defmodule Picsello.Pack do
     defp to_acc([_ | _] = iodata), do: {IO.iodata_length(iodata), iodata}
   end
 
-  alias Picsello.{Galleries.Gallery, Orders, Repo, Cart.Order, Galleries.Workers.PhotoStorage}
+  alias Picsello.{Orders, Galleries.Gallery, Galleries, Repo, Cart.Order, Galleries.Workers.PhotoStorage}
 
   @chunk_size Integer.pow(2, 18) *
                 trunc(Application.compile_env(:picsello, :chunks_per_request, 32))
@@ -158,6 +158,21 @@ defmodule Picsello.Pack do
         end),
       do: {:ok, PhotoStorage.path_to_url(path)}
     )
+  end
+
+  def upload_photos(photo_ids, opts \\ []) when is_list(photo_ids) do
+    photos = Galleries.get_photos_by_ids(photo_ids)
+    gallery = photos |> List.first() |> Repo.preload(:gallery)
+    unix_time = DateTime.utc_now() |> DateTime.to_unix()
+    path = Path.join(["temporary", "#{gallery.name}-#{unix_time}.zip"])
+
+    case photos do
+      [_ | _] = photos ->
+        photos |> stream() |> do_upload(path, Keyword.get(opts, :chunk_size, @chunk_size))
+
+      [] ->
+        {:error, "invalid photo ids"}
+    end
   end
 
   def to_sized_binary(iodata) do
