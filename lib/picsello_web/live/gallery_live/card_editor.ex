@@ -95,7 +95,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         Choose occasion
       </h1>
 
-      <ul class="pt-6 pb-16 grid grid-cols-2 gap-6">
+      <ul class="pt-6 pb-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
         <%= for occasion <- @occasions do %>
           <li>
             <%= live_patch to: self_path(@socket, @gallery, %{"occasion_id" => occasion.id}) do %>
@@ -188,7 +188,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         <%= @occasion.name %>
       </h1>
 
-      <div class="flex items-end justify-between mb-7">
+      <div class="flex items-end justify-between mb-7 lg:hidden">
         <button class="flex py-2.5 px-4 text-xl border border-base-300 items-center font-medium" phx-click="toggle-filter-form">
           Filters
 
@@ -198,6 +198,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         <p class="font-medium text-base-250">Showing <%= @filtered_count %> of <%= @total_count %> designs</p>
       </div>
 
+      <.filter_navbar {assigns} />
       <hr class="border-base-225">
 
       <.form method="get" for={:pills} phx-change="apply-filters">
@@ -208,7 +209,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         <.filter_option_pills filter={@filter} />
       </.form>
 
-      <ul class="pb-16 pt-9 grid grid-cols-2 gap-6" id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
+      <ul class="pb-16 pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6" id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
         <%= for design <- @designs do %>
           <li id={"design-#{design.id}"}>
             <button class="w-full h-full" phx-click="open-editor" value={design.id}>
@@ -246,8 +247,22 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     |> noreply()
   end
 
+  def handle_event("toggle-open-filter", %{"is_unique" => _, "value" => filter_id}, socket) do
+    socket
+    |> update(:filter, &Enum.map(&1, fn f -> %{f | open: filter_id == f.id && f.open} end))
+    |> assign(:update, "append")
+    |> then(&__MODULE__.handle_event("toggle-open-filter", %{"value" => filter_id}, &1))
+  end
+
   def handle_event("toggle-open-filter", %{"value" => filter_id}, socket) do
     socket |> update(:filter, &Filter.open(&1, filter_id)) |> noreply()
+  end
+
+  def handle_event("close-filter-nav", _, socket) do
+    socket
+    |> update(:filter, &Enum.map(&1, fn f -> %{f | open: false} end))
+    |> assign(:update, "append")
+    |> noreply()
   end
 
   def handle_event(
@@ -300,6 +315,41 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
           </li>
         <% end %>
       </ul>
+    """
+  end
+
+  defp filter_navbar(assigns) do
+    ~H"""
+    <.form method="get" for={:filter} phx-change="apply-filters" id="filter-form" class="hidden lg:block">
+      <nav class="bg-white">
+        <div class="container flex flex-wrap justify-between items-center mx-auto">
+          <div phx-click-away="close-filter-nav" class="w-auto">
+            <ul class="flex py-4 rounded-lg flex-row space-x-4 text-sm font-medium bg-white">
+              <%= for %{id: filter_id, name: name, options: options, open: open} <- @filter do %>
+                <li>
+                  <button type="button" class="flex justify-between items-center pr-2 font-black w-full text-base w-auto" value={filter_id} phx-value-is_unique={true} phx-click="toggle-open-filter">
+                    <%= name %>
+                    <.icon name={if open, do: "up", else: "down"} class="w-2 h-2 ml-2.5 stroke-current stroke-2"/>
+                  </button>
+                    <ul class={classes("absolute z-10 py-1 font-medium text-sm text-base-500 bg-white w-44 rounded divide-y divide-gray-100 shadow", %{"hidden" => not(open)})}>
+                      <%= for %{id: option_id, checked: checked} = option <- options, dom_id = Enum.join([filter_id, option_id], "-") do %>
+                        <li>
+                          <input type="checkbox" id={dom_id} name={"filter[#{filter_id}][]"} value={option_id} checked={checked} class="hidden peer"/>
+                          <.icon name="checkmark" class="absolute w-8 h-4 stroke-current top-1/3 right-5 text-base-100 peer-checked:text-base-300"/>
+
+                          <label for={dom_id} class="block px-5 py-3 peer-checked:bg-base-200")>
+                            <.filter_option_label option={option} />
+                          </label>
+                        </li>
+                      <% end %>
+                    </ul>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </.form>
     """
   end
 
