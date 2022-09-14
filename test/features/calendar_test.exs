@@ -78,4 +78,21 @@ defmodule Picsello.CalendarTest do
     |> click(button("Previous month"))
     |> assert_has(css(".fc-event", count: 0))
   end
+
+  feature "does not display booking leads", %{session: session, user: user} do
+    template = insert(:package_template, user: user)
+    event = insert(:booking_event, package_template_id: template.id)
+
+    archived_booking_lead =
+      insert(:lead, user: user, archived_at: DateTime.utc_now(), booking_event_id: event.id)
+
+    insert(:shoot, job: archived_booking_lead, starts_at: DateTime.utc_now())
+
+    booking_lead = insert(:lead, user: user, booking_event_id: event.id)
+    insert(:shoot, job: booking_lead, starts_at: DateTime.utc_now())
+
+    session
+    |> visit("/calendar")
+    |> assert_has(css(".fc-event", count: 2))
+  end
 end

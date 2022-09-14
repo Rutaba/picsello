@@ -102,16 +102,37 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def icon_button(%{href: href} = assigns) do
+    assigns =
+      assigns
+      |> Map.put(
+        :rest,
+        Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :target])
+      )
+      |> Enum.into(%{class: "", target: nil, disabled: false, inner_block: nil})
+
+    ~H"""
+    <a href={if @disabled, do: "javascript:void(0)", else: href} target={unless @disabled, do: @target} class={classes("flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} {@rest}>
+      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-1" => @inner_block})} />
+      <%= if @inner_block do %>
+        <%= render_block(@inner_block) %>
+      <% end %>
+    </a>
+    """
+  end
+
   def icon_button(assigns) do
     assigns =
       assigns
       |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled]))
-      |> Enum.into(%{class: "", disabled: false})
+      |> Enum.into(%{class: "", disabled: false, inner_block: nil})
 
     ~H"""
     <button type="button" class={classes("flex items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
-      <.icon name={@icon} class={"w-4 h-4 mr-1 fill-current text-#{@color}"} />
-      <%= render_block(@inner_block) %>
+      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-1" => @inner_block})} />
+      <%= if @inner_block do %>
+        <%= render_block(@inner_block) %>
+      <% end %>
     </button>
     """
   end
@@ -277,6 +298,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def to_integer(int) when is_integer(int), do: int
   def to_integer(bin) when is_binary(bin), do: String.to_integer(bin)
+  def to_integer(nil), do: nil
 
   def display_cover_photo(%{cover_photo: %{id: photo_id}}),
     do: %{

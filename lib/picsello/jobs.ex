@@ -3,18 +3,22 @@ defmodule Picsello.Jobs do
   alias Picsello.{
     Accounts.User,
     Repo,
-    Job,
-    Client
+    Client,
+    Job
   }
 
-  def maybe_upsert_client(%Ecto.Multi{} = multi, %Job{} = job, %User{} = current_user) do
+  def archive_lead(%Job{} = job) do
+    job |> Job.archive_changeset() |> Repo.update()
+  end
+
+  def maybe_upsert_client(%Ecto.Multi{} = multi, %Client{} = new_client, %User{} = current_user) do
     old_client =
       Repo.get_by(Client,
-        email: job.client.email |> String.downcase(),
+        email: new_client.email |> String.downcase(),
         organization_id: current_user.organization_id
       )
 
-    maybe_upsert_client(multi, old_client, job.client, current_user.organization_id)
+    maybe_upsert_client(multi, old_client, new_client, current_user.organization_id)
   end
 
   defp maybe_upsert_client(

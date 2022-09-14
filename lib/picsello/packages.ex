@@ -212,6 +212,13 @@ defmodule Picsello.Packages do
     end
   end
 
+  def templates_with_single_shoot(%User{organization_id: organization_id}) do
+    query = Package.templates_for_organization_id(organization_id)
+
+    from(package in query, where: package.shoot_count == 1)
+    |> Repo.all()
+  end
+
   def templates_for_user(user, job_type),
     do: user |> Package.templates_for_user(job_type) |> Repo.all()
 
@@ -220,9 +227,14 @@ defmodule Picsello.Packages do
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}),
     do:
+      insert_package_and_update_job_multi(changeset, job)
+      |> Repo.transaction()
+
+  def insert_package_and_update_job_multi(changeset, job),
+    do:
       Ecto.Multi.new()
       |> Ecto.Multi.insert(:package, changeset)
-      |> Ecto.Multi.update(:job, fn changes ->
+      |> Ecto.Multi.update(:job_update, fn changes ->
         Job.add_package_changeset(job, %{package_id: changes.package.id})
       end)
       |> Ecto.Multi.merge(fn %{package: package} ->
@@ -256,7 +268,6 @@ defmodule Picsello.Packages do
             Ecto.Multi.new()
         end
       end)
-      |> Repo.transaction()
 
   def build_package_changeset(
         %{
@@ -336,6 +347,13 @@ defmodule Picsello.Packages do
       !Map.get(contract_params, "edited") ->
         Picsello.Contracts.insert_contract_multi(package, contract_params)
     end
+  end
+
+  def changeset_from_template(%Package{id: template_id} = template) do
+    template
+    |> Map.from_struct()
+    |> Map.put(:package_template_id, template_id)
+    |> Package.create_from_template_changeset()
   end
 
   defdelegate job_types(), to: JobType, as: :all

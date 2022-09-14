@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   use PicselloWeb, :live_view
 
   alias PicselloWeb.Endpoint
+  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -77,14 +78,6 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       </div>
 
     </div>
-    """
-  end
-
-  defp back_button(assigns) do
-    ~H"""
-    <.live_link to={@to} class={"#{@class} rounded-full bg-base-200 flex items-center justify-center p-2.5 mr-4"}>
-      <.icon name="back" class="w-4 h-4 stroke-2"/>
-    </.live_link>
     """
   end
 end

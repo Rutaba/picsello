@@ -34,14 +34,9 @@
                     <%= button_label %>
                   </a>
                 <% "gallery-links" -> %>
-                  <div class="flex gap-2">
-                    <a href="https://www.figma.com/proto/JcNTIrljRRJ0gMRTaI4Jes/Client-facing-gallery?page-id=4310%3A2230&node-id=5010%3A4765&viewport=1294%2C981%2C0.1&scaling=scale-down-width&starting-point-node-id=5010%3A4765" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.youtube.com/watch?v=uEY3eS9cDIk" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
                       <%= button_label %>
                     </a>
-                    <a href="https://www.figma.com/proto/x5u7Fod9H9BsUOvYYutNLb/Photographer-facing-gallery?page-id=661%3A3370&node-id=1825%3A22729&viewport=183%2C1589%2C0.11&scaling=scale-down-width&starting-point-node-id=1825%3A22729" class={"#{button_class} text-center text-sm w-full p-2 mt-2"} target="_blank" rel="noopener noreferrer">
-                      Preview yours
-                    </a>
-                  </div>
                 <% "proofing-album" -> %>
                   <div class="flex gap-4">
                     <a href={Routes.gallery_photos_index_path(@socket, :index, item.params.album.gallery_id, item.params.album.id)} class={"#{button_class} text-center text-sm w-full py-2 mt-2"} rel="noopener noreferrer">
@@ -107,6 +102,19 @@
     <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
 
     <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <.card color="blue-planning-300" icon="calendar" title="Booking Events & Calendar" phx-click="redirect" phx-value-to={Routes.calendar_index_path(@socket, :index)} class="cursor-pointer">
+        <p class="my-2">
+          Create client booking events and see all of your upcoming shoots in one place.
+        </p>
+        <div class="flex items-center mt-4 flex-wrap">
+          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="sm:flex-1 py-2 mr-4 text-sm btn-secondary text-center sm:w-auto w-full">
+            Add booking event
+          </.live_link>
+
+          <%= live_redirect to: Routes.calendar_index_path(@socket, :index), title: "View calendar", class: "underline text-blue-planning-300 text-center sm:text-left mt-4 sm:mt-0 sm:w-auto w-full" do %>View calendar<% end %>
+        </div>
+      </.card>
+
       <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">
         <p class="my-2">
           <%= if @inbox_count > 0 do %>

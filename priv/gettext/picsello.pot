@@ -7,7 +7,16 @@ msgstr ""
 msgid "home"
 msgstr ""
 
+msgid "duration-5"
+msgstr ""
+
+msgid "duration-10"
+msgstr ""
+
 msgid "duration-15"
+msgstr ""
+
+msgid "duration-20"
 msgstr ""
 
 msgid "duration-30"

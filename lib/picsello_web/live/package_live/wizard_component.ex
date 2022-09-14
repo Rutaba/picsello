@@ -1290,12 +1290,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> changeset_from_template()
   end
 
-  defp changeset_from_template(%{id: template_id} = template) do
-    template
-    |> Map.from_struct()
-    |> Map.put(:package_template_id, template_id)
-    |> Package.create_from_template_changeset()
-  end
+  defp changeset_from_template(template), do: Packages.changeset_from_template(template)
 
   defp successfull_save(socket, package) do
     send(self(), {:update, %{package: package}})
@@ -1313,7 +1308,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          {:error, :package, changeset, _} ->
            socket |> assign(changeset: changeset) |> noreply()
 
-         {:error, :job, _changeset, _} ->
+         {:error, :job_update, _changeset, _} ->
            socket
            |> put_flash(:error, "Oops! Something went wrong. Please try again.")
            |> noreply()

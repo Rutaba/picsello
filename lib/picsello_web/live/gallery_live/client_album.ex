@@ -27,15 +27,17 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @impl true
   def handle_params(%{"album_id" => album_id}, _, socket) do
     socket
-    |> assign(:album, Albums.get_album!(album_id))
+    |> assign(:album, %{is_proofing: false, is_finals: false} = Albums.get_album!(album_id))
     |> assign(:is_proofing, false)
     |> assigns()
   end
 
   def handle_params(%{"hash" => hash}, _, socket) do
+    album = Albums.get_album_by_hash!(hash) |> Repo.preload(:gallery)
+
     socket
-    |> assign(:album, Albums.get_album_by_hash!(hash))
-    |> assign(:is_proofing, true)
+    |> assign(:album, album)
+    |> assign(:is_proofing, !album.is_finals)
     |> assigns()
   end
 
@@ -134,12 +136,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   def handle_info(
-        {:add_digital_to_cart, digital},
+        {:add_digital_to_cart, digital, finals_album_id},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    order = Cart.place_product(digital, gallery.id)
+    order = Cart.place_product(digital, gallery.id, finals_album_id)
     socket |> add_to_cart_assigns(order)
-    update_assigns(socket, gallery, order)
   end
 
   def handle_info(
@@ -148,7 +149,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       ) do
     order = Cart.place_product({:bundle, bundle_price}, gallery.id)
     socket |> add_to_cart_assigns(order)
-    update_assigns(socket, gallery, order)
   end
 
   def handle_info({:open_choose_product, photo_id}, socket) do
@@ -171,24 +171,37 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> noreply()
   end
 
-  defp update_assigns(socket, gallery, order) do
-    socket
-    |> assign_cart_count(gallery)
-    |> assign(
-      order: order,
-      credits: Cart.credit_remaining(gallery) |> credits()
-    )
-    |> close_modal()
-    |> noreply()
-  end
-
   defp top_section(%{is_proofing: false} = assigns) do
     ~H"""
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
+    <%= if @album.is_finals do %>
       <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-      <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} />
-    </div>
-    <.photos_count {assigns} class="mb-8 lg:mb-16" />
+      <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
+        <div class="flex items-center mt-4">
+          <.button
+          element="a"
+          icon="download"
+          icon_class="h-4 w-4 fill-current"
+          class="py-1.5 px-8"
+          download
+          href={Routes.gallery_downloads_path(
+              @socket, :download_all,
+              @gallery.client_link_hash,
+              photo_ids: @album.photos |> Enum.map(& &1.id) |> Enum.join(",")
+          )}>
+          Download all photos
+          </.button>
+
+          <.photos_count photos_count={@photos_count} class="ml-4" />
+        </div>
+        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} />
+      </div>
+    <% else %>
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
+        <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
+        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} />
+      </div>
+      <.photos_count {assigns} class="mb-8 lg:mb-16" />
+    <% end %>
     """
   end
 
@@ -205,7 +218,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp toggle_empty_state(assigns) do
     ~H"""
       <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
-        <%= if @favorites_filter do %>
+        <%= if !@is_proofing do %>
           Oops, there's no liked photo!
         <% else %>
           Oops, there's no selected photo!
@@ -221,9 +234,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     ~H"""
     <div class="flex flex-col lg:flex-row justify-between lg:items-center my-4 w-full">
       <div class="flex items-center">
-        <%= live_redirect to: cart_route do %>
-          <button class="btn-primary py-8">Review my Selections</button>
-        <% end %>
+        <.photos_button title="Review my Selections" route={cart_route} />
         <.photos_count photos_count={@photos_count} class="ml-4" />
       </div>
       <.toggle_filter title="Show selected only" event="toggle_selected" applied?={@selected_filter} />
@@ -239,6 +250,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp photos_count(nil), do: "photo"
   defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
+
+  defp photos_button(%{route: route, title: title} = assigns) do
+    ~H[<%= live_redirect to: route, target: "_blank" do %> <button class="btn-primary py-8"><%= title %></button><% end %>]
+  end
 
   defp toggle_filter(%{applied?: applied?} = assigns) do
     class_1 = if applied?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)

@@ -2,6 +2,16 @@ defmodule PicselloWeb.Live.Profile do
   @moduledoc "photographers public profile"
   use PicselloWeb, live_view: [layout: "profile"]
   alias Picsello.{Profiles, Packages, Subscriptions}
+  alias Picsello.BookingEvents
+
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [
+      blurred_thumbnail: 1,
+      date_display: 1,
+      address_display: 1,
+      subtitle_display: 1,
+      formatted_date: 1
+    ]
 
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
@@ -21,6 +31,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(:entry, nil)
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
+    |> assign_booking_events()
     |> assign_job_type_packages()
     |> maybe_redirect_slug(slug)
     |> check_active_subscription()
@@ -34,6 +45,7 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(:entry, nil)
     |> assign_defaults(session)
     |> assign_current_organization()
+    |> assign_booking_events()
     |> assign_job_type_packages()
     |> allow_upload(
       :logo,
@@ -58,24 +70,72 @@ defmodule PicselloWeb.Live.Profile do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex-grow md:mx-32 client-app">
+    <div class="flex-grow center-container client-app">
       <.sticky_upload current_user={@current_user} />
       <div class="flex flex-wrap items-center justify-between px-6 py-2 md:py-4 md:px-12">
         <.logo_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :logo)} uploads={@uploads} organization={@organization} edit={@edit} />
         <.book_now_button />
       </div>
 
-      <hr class="border-base-300">
+      <hr class="border-base-200 mt-2">
 
       <div class="flex flex-col justify-center max-w-screen-lg px-6 mx-auto mt-10 md:px-16">
         <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
         <h1 class="mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
-        <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
         <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
 
+        <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
-        <h1 class="mt-20 uppercase">PRICING & SERVICES:</h1>
+        <%= if @website || @edit do %>
+          <div class="flex items-center py-6">
+            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
+            <%= if @edit do %>
+              <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
+                Edit Link
+              </.icon_button>
+            <% end %>
+          </div>
+        <% end %>
+
+        <hr class="mt-12" />
+
+        <%= if !Enum.empty?(@booking_events) do %>
+          <section class="mt-20">
+            <h2 class="text-4xl font-bold mb-8" {testid("events-heading")}>Book a session with me!</h2>
+            <div class="grid sm:grid-cols-2 gap-8">
+              <%= for event <- @booking_events do %>
+                <div {testid("booking-cards")}>
+                  <a href={"#{event.url}/book"} class="block w-full col">
+                    <.blurred_thumbnail class="w-full" url={event.thumbnail_url} />
+                    <div>
+                      <h3 class="text-xl font-semibold mt-4">
+                        <%= event.name %>
+                      </h3>
+                      <.subtitle_display booking_event={event} package={event.package_template} class="text-base-250 mt-2" />
+                      <div class="mt-4 flex flex-col border-gray-100 border-y py-4 text-base-250">
+                        <.date_display date={formatted_date(event)} />
+                        <.address_display booking_event={event} class="mt-4"/>
+                      </div>
+                      <div class="my-4 raw_html"><%= raw event.description %></div>
+                      <button type="button" class="flex items-center justify-center btn-primary">
+                        Book now
+                      </button>
+                    </div>
+                  </a>
+                </div>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+
+        <h3 class="mt-20 uppercase font-bold">MORE ABOUT MY OFFERINGS:</h3>
+        <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
+
+        <hr class="mt-12" />
+
+        <h3 class="mt-20 uppercase font-bold">PRICING & SERVICES:</h3>
+
         <%= for {job_type, packages} <- @job_type_packages do %>
           <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
           <%= for package <- packages do %>
@@ -86,16 +146,7 @@ defmodule PicselloWeb.Live.Profile do
           </div>
         <% end %>
 
-        <%= if @website || @edit do %>
-          <div class="flex items-center justify-center py-6 mt-auto">
-            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
-            <%= if @edit do %>
-              <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
-                Edit Link
-              </.icon_button>
-            <% end %>
-          </div>
-        <% end %>
+        <hr class="my-20" />
 
         <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>
@@ -112,8 +163,8 @@ defmodule PicselloWeb.Live.Profile do
 
   def job_types_details(assigns) do
     ~H"""
-    <div class="flex items-center mt-16">
-      <h1 class="uppercase">Specializing In:</h1>
+    <div class="flex items-center mt-8">
+      <h3 class="uppercase font-bold">Specializing In:</h3>
       <%= if @edit do %>
         <div class="ml-4">
           <.icon_button {testid("edit-photography-types-button")} class="shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
@@ -123,14 +174,12 @@ defmodule PicselloWeb.Live.Profile do
       <% end %>
     </div>
 
-    <div class="w-auto mt-6">
+    <div class="w-auto mt-4">
       <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
         <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
         <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
       <% end) %>
     </div>
-
-    <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
     """
   end
 
@@ -263,6 +312,26 @@ defmodule PicselloWeb.Live.Profile do
   defp website_url("http" <> _domain = url), do: url
   defp website_url(domain), do: "https://#{domain}"
 
+  defp assign_booking_events(%{assigns: %{organization: organization}} = socket) do
+    booking_events =
+      BookingEvents.get_booking_events_public(organization.id)
+      |> Enum.map(fn booking_event ->
+        booking_event
+        |> Map.put(
+          :url,
+          Routes.client_booking_event_url(
+            socket,
+            :show,
+            organization.slug,
+            booking_event.id
+          )
+        )
+      end)
+
+    socket
+    |> assign(booking_events: booking_events)
+  end
+
   defp edit_image_button(assigns) do
     ~H"""
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
@@ -334,7 +403,7 @@ defmodule PicselloWeb.Live.Profile do
         <%= if @image && @image.url do %>
           <div class="absolute top-8 right-8"><.edit_image_button image={@uploads.main_image} image_field={"main_image"} /></div>
         <% else %>
-          <div class="bg-[#F6F6F6] w-full aspect-h-1 aspect-w-2" >
+          <div class="bg-[#F6F6F6] w-full aspect-[2/1] flex items-center justify-center">
             <.drag_image_upload icon_class={@icon_class} image={@image} image_upload={@uploads.main_image} supports_class="text-center" supports="JPEG or PNG: 1060x650 under 10mb" image_title="main image" label_class="justify-center flex-col" class="h-5/6 w-11/12 flex m-auto" />
           </div>
         <% end %>

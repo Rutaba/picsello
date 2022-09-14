@@ -87,7 +87,7 @@ defmodule PicselloWeb.JobLive.Index do
       |> Job.for_user()
       |> then(fn query ->
         case action do
-          :leads -> query |> Job.leads()
+          :leads -> query |> Job.leads() |> Job.not_booking()
           :jobs -> query |> Job.not_leads()
         end
       end)

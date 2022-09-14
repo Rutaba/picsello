@@ -23,21 +23,30 @@ defmodule Picsello.GalleryProducts do
     |> Repo.one()
   end
 
+  def toggle_enabled(product) do
+    product
+    |> GalleryProduct.changeset(%{enabled: !product.enabled})
+    |> Repo.update!()
+  end
+
+  def toggle_preview_enabled(product) do
+    product
+    |> GalleryProduct.changeset(%{preview_enabled: !product.preview_enabled})
+    |> Repo.update!()
+  end
+
   @doc """
   Get all the gallery products that are ready for review
   """
-  def get_gallery_products(gallery_id, opts \\ :with_previews) do
+  def get_gallery_products(gallery_id, opts) do
     gallery_id |> gallery_products_query(opts) |> Repo.all()
   end
 
-  defp gallery_products_query(gallery_id, :with_previews) do
+  defp gallery_products_query(gallery_id, :coming_soon_false) do
     gallery_products_query(gallery_id, :with_or_without_previews)
     |> where([preview_photo: preview_photo], not is_nil(preview_photo.id))
-  end
-
-  defp gallery_products_query(gallery_id, :coming_soon_false) do
-    gallery_products_query(gallery_id, :with_previews)
     |> where([category: category], not category.coming_soon)
+    |> where(enabled: true)
   end
 
   defp gallery_products_query(gallery_id, :with_or_without_previews) do

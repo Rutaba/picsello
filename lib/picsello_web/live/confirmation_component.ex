@@ -35,7 +35,7 @@ defmodule PicselloWeb.ConfirmationComponent do
       </h1>
 
       <%= if @subtitle do %>
-        <p class="pt-4"><%= @subtitle %></p>
+        <p class="pt-4 whitespace-pre-wrap"><%= @subtitle %></p>
       <% end %>
 
       <%= if @confirm_event do %>

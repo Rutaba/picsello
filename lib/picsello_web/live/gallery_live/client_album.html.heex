@@ -1,28 +1,32 @@
   <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
-    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery, album: @album, is_proofing: @is_proofing %>
+    <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery, album: @album, is_proofing: @is_proofing || @album.is_finals %>
   </div>
 
   <hr>
 
   <%= unless @is_proofing do %>
     <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 max-w-screen-xl">
-      <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
-        <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
-        <p class="mt-1">Back to gallery</p>
+      <%= unless @album.is_finals do %>
+        <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
+          <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
+          <p class="mt-1">Back to gallery</p>
+        <% end %>
       <% end %>
-    
       <h3 class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
     </div>
+  
+
     <%= unless Enum.empty?(@products) do %>
       <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
         <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
           <%= for product <- @products do %>
-            <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} photo={product.preview_photo} category={product.category} click_params={product.id} />
+            <%= if product.preview_enabled do %>
+              <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} photo={product.preview_photo} category={product.category} click_params={product.id} />
+            <% end %>
           <% end %>
         </ul>
       </div>
     <% end %>
-
     <hr class="lg:mx-16 mt-8 mx-8">
   <% end %>
 
@@ -53,12 +57,13 @@
                 photo: photo,
                 photo_width: 300,
                 is_client_gallery: true,
-                is_likable: false,
+                is_likable: true,
                 is_proofing: @is_proofing
             %>
           <% end %>
         </div>
       <% end %>
+     
       <div class="hidden">
         <div
           id="photo-update-listener"

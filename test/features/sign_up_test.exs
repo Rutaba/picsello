@@ -8,13 +8,25 @@ defmodule Picsello.SignUpTest do
 
     insert_subscription_plans!()
 
-    Tesla.Mock.mock_global(fn %{method: :put} = request ->
-      send(test_pid, {:sendgrid_request, request})
+    Tesla.Mock.mock_global(fn
+      %{method: :put} = request ->
+        send(test_pid, {:sendgrid_request, request})
 
-      %Tesla.Env{
-        status: 202,
-        body: %{"job_id" => "1234"}
-      }
+        body = %{"job_id" => "1234"}
+
+        %Tesla.Env{status: 202, body: body}
+
+      %{method: :post} = request ->
+        send(test_pid, {:zapier_request, request})
+
+        body = %{
+          "attempt" => "1234",
+          "id" => "1234",
+          "request_id" => "1234",
+          "status" => "success"
+        }
+
+        %Tesla.Env{status: 200, body: body}
     end)
 
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
@@ -51,6 +63,12 @@ defmodule Picsello.SignUpTest do
            } = user
 
     assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
+
+    assert_received {:zapier_request, %{body: zapier_request_body}}
+
+    assert %{
+             "email" => "user@example.com"
+           } = Jason.decode!(zapier_request_body)
 
     assert %{
              "list_ids" => [
@@ -119,6 +137,12 @@ defmodule Picsello.SignUpTest do
 
     assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
 
+    assert_received {:zapier_request, %{body: zapier_request_body}}
+
+    assert %{
+             "email" => "brian@example.com"
+           } = Jason.decode!(zapier_request_body)
+
     assert %{
              "list_ids" => [
                "contact-list-transactional-id",
@@ -144,7 +168,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/users/register?code=#{random_code}")
     |> assert_has(
-      css("h2",
+      css("h1",
         text: "90-day free"
       )
     )
@@ -157,7 +181,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/users/register?code=#{random_code}")
     |> assert_has(
-      css("h2",
+      css("h1",
         text: "30-day free"
       )
     )
