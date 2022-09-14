@@ -9,8 +9,6 @@ defmodule Picsello.PackagePayments do
 
   import Ecto.Query, warn: false
 
-  @future_date ~D[2122-01-01]
-
   def get_package_presets(organization_id, job_type) do
     from(p in PackagePaymentPreset,
       where: p.organization_id == ^organization_id and p.job_type == ^job_type
@@ -53,8 +51,8 @@ defmodule Picsello.PackagePayments do
           &%{
             job_id: job_id,
             price: get_price(&1, opts.total_price),
-            due_at: get_due_at(&1) |> Timex.to_datetime(),
-            description: get_description(&1),
+            due_at: &1.schedule_date,
+            description: &1.description,
             inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
             updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
           }
@@ -71,54 +69,11 @@ defmodule Picsello.PackagePayments do
     end
   end
 
-  defp get_description(%{interval: true, due_interval: due_interval}), do: due_interval
-
-  defp get_description(%{
-         due_at: nil,
-         count_interval: count,
-         time_interval: time,
-         shoot_interval: shoot
-       }) do
-    count = count |> String.to_integer()
-    count_interval = if count == 1, do: "1 #{time}", else: "#{count} #{time}s"
-    "#{count_interval} #{shoot}"
-  end
-
-  defp get_description(%{due_at: due_at}), do: "Custom Payment At %{due_at}"
-
-  defp get_price(%{price: nil, percentage: percentage}, total_price) do
+  def get_price(%{price: nil, percentage: percentage}, total_price) do
     Money.divide(total_price, 100) |> List.first() |> Money.multiply(percentage)
   end
 
-  defp get_price(%{price: price}, _), do: price
-
-  defp get_due_at(
-         %{
-           due_interval: due_interval,
-           interval: interval,
-           shoot_date: shoot_date,
-           schedule_date: schedule_date
-         } = schedule
-       ) do
-    if shoot_date do
-      schedule_date
-    else
-      if interval && String.contains?(due_interval, "To Book"),
-        do: Timex.today(),
-        else: shift_date(schedule)
-    end
-  end
-
-  defp shift_date(%{schedule_date: schedule_date, shoot_date: shoot_date} = schedule) do
-    due_at = Map.get(schedule, :due_at, nil)
-
-    if due_at do
-      due_at
-    else
-      diff = Date.diff(@future_date, schedule_date)
-      Date.add(shoot_date, -diff)
-    end
-  end
+  def get_price(%{price: price}, _), do: price
 
   def insert_schedules(package, opts) do
     payment_preset = Map.get(opts, :payment_preset)

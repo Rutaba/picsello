@@ -9,16 +9,17 @@ defmodule Picsello.PackagePaymentSchedule do
   schema "package_payment_schedules" do
     field :price, Money.Ecto.Amount.Type
     field :percentage, :integer
-    field :interval, :boolean
+    field :interval, :boolean, null: false
+    field :description, :string, null: false
     field :due_interval, :string
     field :count_interval, :string
     field :time_interval, :string
     field :shoot_interval, :string
     field :payment_field_index, :integer, virtual: true
-    field :shoot_date, :date, virtual: true
-    field :last_shoot_date, :date, virtual: true
+    field :shoot_date, :utc_datetime, virtual: true
+    field :last_shoot_date, :utc_datetime, virtual: true
     field :due_at, :date
-    field :schedule_date, :date
+    field :schedule_date, :utc_datetime, null: false
 
     belongs_to :package, Package
     belongs_to :package_payment_preset, PackagePaymentPreset
@@ -43,6 +44,7 @@ defmodule Picsello.PackagePaymentSchedule do
 
     payment_schedule
     |> cast(attrs, [
+      :description,
       :shoot_date,
       :last_shoot_date,
       :price,
@@ -103,7 +105,7 @@ defmodule Picsello.PackagePaymentSchedule do
           ),
         else: false
 
-    if get_field(changeset, :shoot_date) && interval do
+    if get_field(changeset, :due_at) || (get_field(changeset, :shoot_date) && interval) do
       validate_required(changeset, [:due_at])
     else
       validate_required(changeset, [:count_interval, :time_interval, :shoot_interval])
@@ -145,7 +147,7 @@ defmodule Picsello.PackagePaymentSchedule do
         else: false
 
     cond do
-      interval && get_field(changeset, :shoot_date) ->
+      get_field(changeset, :due_at) || (interval && get_field(changeset, :shoot_date)) ->
         attrs
 
       !get_field(changeset, :count_interval) && !get_field(changeset, :shoot_date) ->

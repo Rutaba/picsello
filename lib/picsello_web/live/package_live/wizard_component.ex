@@ -15,7 +15,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Contracts,
     Contract,
     PackagePaymentSchedule,
-    PackagePayments
+    PackagePayments,
+    Shoot
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
@@ -68,7 +69,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     import Ecto.Changeset
 
     alias PicselloWeb.PackageLive.WizardComponent
-    @future_date ~D[2122-01-01]
+    @future_date ~U[3022-01-01 00:00:00Z]
 
     @primary_key false
     embedded_schema do
@@ -200,9 +201,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       cond do
         String.contains?(due_interval, "6 Months Before") -> Timex.shift(shoot_date, months: -6)
         String.contains?(due_interval, "1 Month Before") -> Timex.shift(shoot_date, months: -1)
-        String.contains?(due_interval, "Week Before") -> Date.add(shoot_date, -7)
-        String.contains?(due_interval, "Day Before") -> Date.add(shoot_date, -1)
-        true -> Timex.today()
+        String.contains?(due_interval, "Week Before") -> Timex.shift(shoot_date, days: -7)
+        String.contains?(due_interval, "Day Before") -> Timex.shift(shoot_date, days: -1)
+        true -> Timex.now() |> DateTime.truncate(:second)
       end
     end
 
@@ -217,15 +218,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             ),
           else: false
 
-      if Changeset.get_field(changeset, :shoot_date) && interval do
-        due_at = Changeset.get_field(changeset, :due_at)
-        if due_at, do: due_at, else: shoot_date
+      due_at = Changeset.get_field(changeset, :due_at)
+
+      if due_at || (Changeset.get_field(changeset, :shoot_date) && interval) do
+        if due_at, do: due_at |> Timex.to_datetime(), else: shoot_date
       else
         last_shoot_date = get_shoot_date(Changeset.get_field(changeset, :last_shoot_date))
-        count_interval = Changeset.get_field(changeset, :count_interval) |> String.to_integer()
+        count_interval = Changeset.get_field(changeset, :count_interval)
+        count_interval = if count_interval, do: count_interval |> String.to_integer(), else: 1
+        time_interval = Changeset.get_field(changeset, :time_interval)
 
         time_interval =
-          (Changeset.get_field(changeset, :time_interval) <> "s")
+          if(time_interval, do: time_interval <> "s", else: "Days")
           |> String.downcase()
           |> String.to_atom()
 
@@ -635,6 +639,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <%= hidden_input p, :shoot_date %>
         <%= hidden_input p, :last_shoot_date %>
         <%= hidden_input p, :schedule_date %>
+        <%= hidden_input p, :description, value: get_tag(p) %>
         <%= hidden_input p, :payment_field_index, value: p.index %>
         <div {testid("payment-count-card")} class="border rounded-lg border-base-200 md:w-1/2 pb-2 mt-3">
           <div class="flex items-center bg-base-200 px-2 p-2">
@@ -670,7 +675,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </div>
             </label>
             <%= unless input_value(p, :interval) do %>
-              <%= if (input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index) do %>
+              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index)) do %>
                 <div class="flex flex-col my-2 ml-8 cursor-pointer">
                   <%= input p, :due_at, type: :date_input, format: "mm/dd/yyyy", min: Date.utc_today(), placeholder: "mm/dd/yyyy", phx_debounce: "0", class: "w-full px-4 text-lg cursor-pointer" %>
                   <%= if message = p.errors[:schedule_date] do %>
@@ -756,6 +761,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Map.get("payment_schedules")
       |> List.delete_at(String.to_integer(index))
       |> map_keys()
+      |> Enum.with_index(fn %{"payment_field_index" => field_index} = payment, count ->
+        Map.put(payment, "payment_field_index", if(field_index, do: field_index, else: count))
+      end)
 
     params = Map.merge(params, %{"payment_schedules" => payment_schedules})
 
@@ -782,7 +790,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Map.merge(%{
         "shoot_date" => get_first_shoot(job),
         "last_shoot_date" => get_last_shoot(job),
-        "interval" => true
+        "interval" => true,
+        "payment_field_index" => length(payment_schedules) - 1
       })
 
     params =
@@ -811,10 +820,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     cond do
       schedule_type != Changeset.get_field(payments_changeset, :schedule_type) ->
-        schedule_type_switch(socket, price, schedule_type, params)
+        schedule_type_switch(socket, price, schedule_type)
 
       fixed != Changeset.get_field(payments_changeset, :fixed) ->
-        fixed_switch(socket, fixed, price, schedule_type, params)
+        fixed_switch(socket, fixed, price, schedule_type)
 
       true ->
         socket |> maybe_assign_custom(params)
@@ -1004,7 +1013,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
         end)
 
-      total_price = total_price = Changeset.get_field(payments_changeset, :total_price)
+      total_price = Changeset.get_field(payments_changeset, :total_price)
       opts = %{total_price: total_price, payment_schedules: payment_schedules, action: :insert}
       insert_package_and_update_job(socket, changeset, job, opts)
     end)
@@ -1103,8 +1112,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp schedule_type_switch(
          %{assigns: %{job: job, changeset: changeset}} = socket,
          price,
-         schedule_type,
-         params
+         schedule_type
        ) do
     fixed = schedule_type == Changeset.get_field(changeset, :job_type)
 
@@ -1134,7 +1142,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_payments_changeset(params, :validate)
   end
 
-  defp fixed_switch(%{assigns: %{job: job}} = socket, fixed, price, schedule_type, params) do
+  defp fixed_switch(%{assigns: %{job: job}} = socket, fixed, price, schedule_type) do
     presets =
       get_custom_payment_defaults(socket, schedule_type, fixed)
       |> Enum.map(
@@ -1299,20 +1307,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket |> noreply()
   end
 
-  defp insert_package_and_update_job(socket, changeset, job, opts),
-    do:
-      (case(Packages.insert_package_and_update_job(changeset, job, opts)) do
-         {:ok, %{package: package}} ->
-           successfull_save(socket, package)
+  defp insert_package_and_update_job(socket, changeset, job, opts) do
+    case Packages.insert_package_and_update_job(changeset, job, opts) |> Repo.transaction() do
+      {:ok, %{package: package}} ->
+        successfull_save(socket, package)
 
-         {:error, :package, changeset, _} ->
-           socket |> assign(changeset: changeset) |> noreply()
+      {:error, :package, changeset, _} ->
+        socket |> assign(changeset: changeset) |> noreply()
 
-         {:error, :job_update, _changeset, _} ->
-           socket
-           |> put_flash(:error, "Oops! Something went wrong. Please try again.")
-           |> noreply()
-       end)
+      _ ->
+        socket
+        |> put_flash(:error, "Oops! Something went wrong. Please try again.")
+        |> noreply()
+    end
+  end
 
   defp build_changeset(socket, params),
     do: Packages.build_package_changeset(socket.assigns, params)
@@ -1493,29 +1501,30 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
 
-  defp get_tags(form), do: get_intervals(form) |> Enum.join(", ")
+  defp get_tags(form), do: make_tags(form) |> Enum.join(", ")
 
-  defp get_intervals(form) do
-    {_, tags} =
-      inputs_for(form, :payment_schedules, fn payment_schedule ->
-        if input_value(payment_schedule, :interval) do
-          due_interval = input_value(payment_schedule, :due_interval)
-
-          if is_percentage(due_interval),
-            do: due_interval,
-            else: make_due_inteval_tag(payment_schedule, :price)
-        else
-          shoot_date = input_value(payment_schedule, :shoot_date) |> is_value_set()
-
-          if shoot_date && !input_value(payment_schedule, :count_interval) do
-            make_date_tag(payment_schedule, :due_at)
-          else
-            make_shoot_interval(payment_schedule)
-          end
-        end
-      end)
+  defp make_tags(form) do
+    {_, tags} = inputs_for(form, :payment_schedules, &get_tag(&1))
 
     tags |> List.flatten()
+  end
+
+  defp get_tag(payment_schedule) do
+    if input_value(payment_schedule, :interval) do
+      due_interval = input_value(payment_schedule, :due_interval)
+
+      if is_percentage(due_interval),
+        do: due_interval,
+        else: make_due_inteval_tag(payment_schedule, :price)
+    else
+      shoot_date = input_value(payment_schedule, :shoot_date) |> is_value_set()
+
+      if shoot_date && !input_value(payment_schedule, :count_interval) do
+        make_date_tag(payment_schedule, :due_at)
+      else
+        make_shoot_interval(payment_schedule)
+      end
+    end
   end
 
   defp make_shoot_interval(form) do
@@ -1560,7 +1569,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     if fixed do
       value
     else
-      percentage = div(div(value.amount, 100) * 100, div(total.amount, 100))
+      percentage = value.amount / div(total.amount, 100)
       "#{value} (#{percentage}%)"
     end
   end
@@ -1635,14 +1644,16 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp get_last_shoot(%{id: nil}), do: nil
 
   defp get_last_shoot(job) do
-    shoot = job |> Repo.preload(:shoots) |> Map.get(:shoots, []) |> List.last()
-    if shoot, do: shoot.starts_at |> Timex.to_date(), else: nil
+    shoot = if job, do: get_shoots(job.id) |> List.last(), else: nil
+    if shoot, do: shoot.starts_at, else: nil
   end
 
   defp get_first_shoot(%{id: nil}), do: nil
 
   defp get_first_shoot(job) do
-    shoot = job |> Repo.preload(:shoots) |> Map.get(:shoots, []) |> List.first()
-    if shoot, do: shoot.starts_at |> Timex.to_date(), else: nil
+    shoot = if job, do: get_shoots(job.id) |> List.first(), else: nil
+    if shoot, do: shoot.starts_at, else: nil
   end
+
+  defp get_shoots(job_id), do: Shoot.for_job(job_id) |> Repo.all()
 end

@@ -24,6 +24,7 @@ defmodule PicselloWeb.JobLive.Shared do
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext, only: [ngettext: 3]
+
   use Phoenix.Component
 
   def handle_event(
@@ -141,6 +142,14 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})
     |> assign_shoots()
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      payment_schedules =
+        job |> Repo.preload(:payment_schedules, force: true) |> Map.get(:payment_schedules)
+
+      socket
+      |> assign(payment_schedules: payment_schedules)
+      |> validate_payment_schedule()
+    end)
     |> noreply()
   end
 
@@ -498,6 +507,11 @@ defmodule PicselloWeb.JobLive.Shared do
           <dl class="flex flex-col">
             <dt class="font-bold">Payment schedule:</dt>
             <dd>
+              <%= if !@is_schedule_valid do %>
+                <.badge color={:red}>You changed a shoot date. You need to review or fix your payment schedule date.</.badge>
+              <% end %>
+            </dd>
+            <dd>
               <%= @job |> PaymentSchedules.build_payment_schedules_for_lead() |> Map.get(:details) %>
               <%= if @proposal do %>
                 <button phx-click="open-proposal" phx-value-action="invoice" class="block link mt-2">View invoice</button>
@@ -651,6 +665,46 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Repo.get!(job_id)
 
     socket |> do_assign_job(job)
+  end
+
+  def validate_payment_schedule(%{assigns: %{payment_schedules: payment_schedules}} = socket) do
+    due_at_list = payment_schedules |> Enum.sort_by(& &1.id, :asc) |> Enum.map(& &1.due_at)
+    updated_due_at_list = due_at_list |> Enum.sort_by(& &1, {:asc, DateTime})
+
+    validity =
+      if due_at_list == updated_due_at_list do
+        dates = due_at_list |> Enum.map(&(&1 |> Timex.to_date()))
+        dates == dates |> Enum.uniq()
+      else
+        false
+      end
+
+    socket
+    |> assign(is_schedule_valid: validity)
+  end
+
+  def error(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: nil,
+        icon_class: "hidden",
+        button: %{class: "hidden", title: nil, action: nil}
+      })
+
+    ~H"""
+    <div class={"px-4 bg-orange-inbox-400 md:flex md:justify-between grid rounded-lg py-2 my-2 #{@class}"}>
+      <div class="flex justify-start items-center">
+        <.icon name="warning-orange", class={"md:w-6 md:h-6 w-10 h-10 stroke-[4px] #{@icon_class}"} />
+        <div class="pl-4"><%= @message %></div>
+      </div>
+      <div class="flex items-center md:justify-end justify-center">
+      <button type="button" class={"btn-primary px-8 intro-message #{@button.class}"} phx-click={@button.action}>
+        <%= @button.title %>
+      </button>
+      </div>
+    </div>
+    """
   end
 
   defp do_assign_job(socket, job) do

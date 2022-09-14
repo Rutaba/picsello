@@ -87,7 +87,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> click(css("#custom_payments_payment_schedules_1_interval_false", checked: false))
     |> fill_in(css("#custom_payments_payment_schedules_1_due_at"), with: "09/01/2092")
     |> scroll_into_view(testid("select-preset-type"))
-    |> assert_has(testid("preset-summary", text: "$0.50 to To Book, $0.50 at 2092-01-09"))
+    |> assert_has(testid("preset-summary", text: "$0.50 to To Book, $0.50 at 01-09-2092"))
     |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "1.50")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
@@ -107,7 +107,8 @@ defmodule Picsello.EditLeadPackageTest do
           base_price: ~M[200]USD,
           download_each_price: ~M[400]USD,
           buy_all: ~M[500]USD,
-          print_credits: ~M[200]USD
+          print_credits: ~M[200]USD,
+          schedule_type: "splits_2"
       }
       |> Map.take([:id | form_fields])
 

@@ -10,7 +10,6 @@ defmodule PicselloWeb.LeadLive.Show do
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
-    PaymentSchedules,
     Contracts
   }
 
@@ -25,7 +24,9 @@ defmodule PicselloWeb.LeadLive.Show do
       private_notes_card: 1,
       section: 1,
       shoot_details_section: 1,
-      title_header: 1
+      title_header: 1,
+      validate_payment_schedule: 1,
+      error: 1
     ]
 
   @impl true
@@ -35,13 +36,23 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
     |> assign(:collapsed_sections, [])
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
+
+      socket
+      |> assign(payment_schedules: payment_schedules)
+      |> validate_payment_schedule()
+    end)
     |> ok()
   end
 
   def send_proposal_button(assigns) do
     assigns =
       assigns
-      |> assign(:disabled_message, proposal_disabled_message(assigns))
+      |> assign(
+        :disabled_message,
+        !assigns.is_schedule_valid || proposal_disabled_message(assigns)
+      )
       |> assign_new(:show_message, fn -> true end)
       |> assign_new(:class, fn -> nil end)
 
@@ -224,9 +235,9 @@ defmodule PicselloWeb.LeadLive.Show do
         :proposal,
         BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
       )
-      |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
-        PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
-      end)
+      # |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
+      #   PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
+      # end)
       |> Ecto.Multi.merge(fn _ ->
         Contracts.maybe_add_default_contract_to_package_multi(package)
       end)
