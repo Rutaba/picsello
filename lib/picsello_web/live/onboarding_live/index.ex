@@ -8,7 +8,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   alias Picsello.{Repo, JobType, Onboardings, Subscriptions}
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     socket
     |> assign_step(2)
     |> assign(:loading_stripe, false)
@@ -18,7 +18,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
     )
     |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
-    |> maybe_show_trial(params)
     |> ok()
   end
 
@@ -41,23 +40,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
-  def handle_event("save", %{}, %{assigns: %{step: 4}} = socket) do
-    case Subscriptions.subscription_base(socket.assigns.current_user, "month",
-           trial_days: socket.assigns.subscription_plan_metadata.trial_length
-         ) do
-      {:ok, subscription} ->
-        Picsello.Subscriptions.handle_stripe_subscription(subscription)
-
-        socket
-        |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
-        |> update_user_contact_trial(socket.assigns.current_user)
-        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
-        |> noreply()
-
-      {:error, error} ->
-        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
-        socket |> put_flash(:error, "Couldn't connect to Stripe. Please try again") |> noreply()
-    end
+  def handle_event("save", %{"user" => params}, %{assigns: %{step: 3}} = socket) do
+    save_final(socket, params)
   end
 
   @impl true
@@ -169,6 +153,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <i class="italic font-light">(Select one or more)</i>
             </p>
 
+            <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
+
             <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
               <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(p, :job_types) || [], job_type)]) do %>
                 <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
@@ -177,19 +163,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </div>
         <% end %>
       <% end %>
-    """
-  end
-
-  defp step(%{step: 4} = assigns) do
-    ~H"""
-    <%= for org <- inputs_for(@f, :organization) do %>
-      <%= hidden_inputs_for org %>
-    <% end %>
-
-    <hr class="mb-4" />
-    <p class="mb-4"><%= @subscription_plan_metadata.onboarding_description %></p>
-
-    <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
     """
   end
 
@@ -215,18 +188,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step_title: "Customize your account",
       subtitle: "",
       page_title: "Onboarding Step 3"
-    )
-  end
-
-  defp assign_step(socket, 4) do
-    socket
-    |> assign(
-      step: 4,
-      color_class: "bg-blue-gallery-200",
-      step_title: socket.assigns.subscription_plan_metadata.onboarding_title,
-      subtitle:
-        "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever?",
-      page_title: "Onboarding Step 4"
     )
   end
 
@@ -272,7 +233,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
           <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
-              <%= for step <- 1..4 do %>
+              <%= for step <- 1..3 do %>
                 <li class={classes(
                   "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
                   %{ @color_class => step == @step, "bg-gray-200" => step != @step }
@@ -307,28 +268,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
     end
   end
 
-  defp maybe_show_trial(socket, %{
-         "session_id" => "" <> session_id
-       }) do
-    if connected?(socket),
-      do: send(self(), {:stripe_session_id, session_id})
-
-    socket
-    |> assign(:loading_stripe, true)
-    |> assign_step(4)
-  end
-
-  defp maybe_show_trial(socket, %{"step" => "trial"}) do
-    if socket.assigns.changeset.valid? do
-      socket
-      |> assign_step(4)
-    else
-      socket
-    end
-  end
-
-  defp maybe_show_trial(socket, %{}), do: socket
-
   defp update_user_contact_trial(socket, current_user) do
     %{
       list_ids: SendgridClient.get_all_contact_list_env(),
@@ -361,14 +300,45 @@ defmodule PicselloWeb.OnboardingLive.Index do
         |> assign(current_user: user)
         |> assign_step(step + 1)
         |> assign_changeset()
+        |> noreply()
 
       {:error, reason} ->
         socket |> assign(changeset: reason)
     end)
-    |> noreply()
+  end
+
+  defp save_final(socket, params, data \\ :skip) do
+    Multi.new()
+    |> Multi.put(:data, data)
+    |> Multi.update(:user, build_changeset(socket, params))
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{user: user}} ->
+        case Subscriptions.subscription_base(user, "month",
+               trial_days: socket.assigns.subscription_plan_metadata.trial_length
+             ) do
+          {:ok, subscription} ->
+            Picsello.Subscriptions.handle_stripe_subscription(subscription)
+
+            socket
+            |> assign(current_user: Onboardings.complete!(user))
+            |> update_user_contact_trial(user)
+            |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+            |> noreply()
+
+          {:error, error} ->
+            Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+
+            socket
+            |> put_flash(:error, "Couldn't connect to Stripe. Please try again")
+            |> noreply()
+        end
+
+      {:error, reason} ->
+        socket |> assign(changeset: reason)
+    end)
   end
 
   defdelegate job_types(), to: JobType, as: :all
-  defdelegate colors(), to: Picsello.Profiles
   defdelegate states(), to: Onboardings, as: :state_options
 end

@@ -77,7 +77,7 @@ defmodule Picsello.Onboardings do
   defdelegate software_options(), to: Onboarding
 
   def changeset(%User{} = user, attrs, opts \\ []) do
-    step = Keyword.get(opts, :step, 4)
+    step = Keyword.get(opts, :step, 3)
 
     user
     |> cast(
@@ -172,18 +172,9 @@ defmodule Picsello.Onboardings do
     |> validate_length(:job_types, min: 1)
   end
 
-  defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3, 4] do
+  defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3] do
     profile
     |> profile_onboarding_changeset(attrs, 3)
-  end
-
-  defp onboarding_changeset(onboarding, attrs, 3) do
-    onboarding
-    |> onboarding_changeset(attrs, 4)
-    |> update_change(
-      :switching_from_softwares,
-      :none
-    )
   end
 
   defp onboarding_changeset(onboarding, attrs, _) do

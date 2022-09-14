@@ -107,6 +107,7 @@ defmodule Picsello.Subscriptions do
           price: subscription_plan.stripe_price_id
         }
       ],
+      cancel_at_period_end: true,
       trial_period_days: trial_days
     }
 
