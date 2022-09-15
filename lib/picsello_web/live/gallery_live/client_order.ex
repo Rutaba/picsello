@@ -22,8 +22,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         %{assigns: %{gallery: gallery, live_action: live_action} = assigns} = socket
       )
       when live_action in ~w(paid proofing_album_paid)a do
-    album = Map.get(assigns, :album, nil)
-
+    
+    album = Map.get(assigns, :album)
+    
     case Orders.handle_session(order_number, session_id) do
       {:ok, _order, :already_confirmed} ->
         get_order!(gallery, order_number, album)
@@ -50,8 +51,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery, live_action: :proofing_album_paid} = assigns} = socket
       ) do
-    album = Map.get(assigns, :album, nil)
-    order = get_order!(gallery, order_number, album)
+    order = get_order!(gallery, order_number, Map.get(assigns, :album))
 
     socket
     |> assign_details(order)
@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery} = assigns} = socket
       ) do
-    order = get_order!(gallery, order_number, assigns)
+    order = get_order!(gallery, order_number, Map.get(assigns, :album))
     Orders.subscribe(order)
 
     socket
