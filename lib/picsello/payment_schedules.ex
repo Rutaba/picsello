@@ -174,11 +174,19 @@ defmodule Picsello.PaymentSchedules do
     |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
   end
 
+  def paid_amount(%Job{} = job) do
+    paid_price(job) |> Map.get(:amount)
+  end
+
   def owed_price(%Job{} = job) do
     job
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at == nil))
     |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
+  end
+
+  def owed_amount(%Job{} = job) do
+    owed_price(job) |> Map.get(:amount)
   end
 
   def remainder_due_on(%Job{} = job) do
@@ -198,8 +206,13 @@ defmodule Picsello.PaymentSchedules do
     |> Map.get(:payment_schedules)
   end
 
+  def payment_schedules_count(job) do
+    payment_schedules(job)
+    |> Enum.count()
+  end
+
   def remainder_price(job) do
-    remainder_payment(job).price
+    remainder_payment(job) |> Map.get(:price)
   end
 
   def handle_payment(

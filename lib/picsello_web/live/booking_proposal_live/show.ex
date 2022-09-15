@@ -3,6 +3,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
+  alias PicselloWeb.BookingProposalLive.ScheduleComponent
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -34,6 +35,17 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @impl true
   def handle_event("open-compose", %{}, socket), do: open_compose(socket)
+
+  @impl true
+  def handle_event(
+        "open_schedule_popup",
+        _params,
+        %{assigns: %{proposal: proposal, job: job}} = socket
+      ) do
+    socket
+    |> open_modal(ScheduleComponent, %{proposal: proposal, job: job})
+    |> noreply()
+  end
 
   @impl true
   def handle_event(
@@ -349,4 +361,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         )
     )
   end
+
+  defp pending_amount_details(job),
+    do:
+      if(PaymentSchedules.owed_amount(job) > PaymentSchedules.paid_amount(job),
+        do: "To-Do",
+        else:
+          "Next payment due: #{PaymentSchedules.remainder_due_on(job) |> format_date_via_type("MM/DD/YY")}"
+      )
 end
