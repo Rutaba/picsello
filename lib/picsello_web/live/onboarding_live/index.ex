@@ -319,7 +319,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       end
     end)
     |> Multi.run(:user_final, fn _repo, %{user: user} ->
-      with Onboardings.complete!(user) do
+      with _ <- Onboardings.complete!(user) do
         {:ok, nil}
       end
     end)
