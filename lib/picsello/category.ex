@@ -5,11 +5,38 @@ defmodule Picsello.Category do
   import Ecto.Changeset
   import Picsello.Package, only: [validate_money: 2]
 
+  @album %{w: 2348, h: 2331, image: "album", slot: %{x: 768, y: 710, w: 915, h: 916}}
+
   @preview_templates %{
-    "album_transparency.png" => [800, 715, 1720, 715, 800, 1620, 1720, 1620],
-    "frame_transparency.png" => [550, 550, 2110, 550, 550, 1600, 2110, 1600],
-    "card_blank.png" => [0, 0, 1120, 0, 0, 1100, 1120, 1100],
-    "card.png" => [800, 715, 1720, 715, 800, 1620, 1720, 1620]
+    "album" => %{portrait: @album, landscape: @album},
+    "frame" => %{
+      portrait: %{
+        image: "wooden_frame_portrait",
+        w: 2157,
+        h: 2652,
+        slot: %{y: 558, x: 548, h: 1547, w: 1063}
+      },
+      landscape: %{
+        image: "wooden_frame_landscape",
+        w: 2652,
+        h: 2157,
+        slot: %{x: 558, y: 548, w: 1547, h: 1063}
+      }
+    },
+    "envelope" => %{
+      portrait: %{
+        image: "envelope_portrait",
+        w: 1887,
+        h: 2367,
+        slot: %{x: 243, y: 161, w: 1456, h: 2015}
+      },
+      landscape: %{
+        image: "envelope_landscape",
+        w: 2367,
+        h: 1887,
+        slot: %{w: 2015, h: 1456, x: 191, y: 243}
+      }
+    }
   }
 
   schema "categories" do
@@ -68,10 +95,16 @@ defmodule Picsello.Category do
     |> unique_constraint(:position)
   end
 
-  @spec coords(%{:frame_image => any, optional(any) => any}) :: any
-  def coords(category) do
-    @preview_templates |> Map.get(frame_image(category))
+  def frame(category) do
+    image = frame_image(category)
+
+    @preview_templates
+    |> Map.get(image)
+    |> case do
+      nil -> nil
+      frame -> frame |> Map.put(:image, image)
+    end
   end
 
-  def frame_image(%{frame_image: frame_image}), do: frame_image || "card_blank.png"
+  def frame_image(%{frame_image: frame_image}), do: frame_image
 end

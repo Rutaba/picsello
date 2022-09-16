@@ -49,7 +49,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       gallery: gallery
     )
 
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:get, &{:ok, %{name: &1}})
 
     [
       gallery: gallery,
