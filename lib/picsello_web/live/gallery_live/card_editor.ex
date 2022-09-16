@@ -57,15 +57,12 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def render(assigns) do
     ~H"""
     <div class="relative">
-      <div class="px-6 mx-auto max-w-screen-xl">
+      <div class="fixed lg:ml-[220px] w-full px-6 mx-auto max-w-screen-xl z-10 bg-white">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
       </div>
 
       <hr>
-
-      <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
-        <.step {assigns} />
-      </div>
+      <.step {assigns} />
     </div>
     """
   end
@@ -73,7 +70,9 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   # choose occasion
   defp step(%{occasion: nil} = assigns) do
     ~H"""
-      <nav class="pb-7 text-base-250">
+    <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
+      <div class="fixed z-10 mt-16 lg:mt-8 bg-white w-full">
+      <nav class="pb-7 mt-8 lg:mt-16 text-base-250">
         <ol class="flex items-center list-reset">
           <li>
             <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash) do %>
@@ -94,8 +93,9 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       <h1 class="text-2xl font-extrabold sm:text-4xl">
         Choose occasion
       </h1>
+      </div>
 
-      <ul class="pt-6 pb-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <ul class="mt-48 pt-6 pb-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
         <%= for occasion <- @occasions do %>
           <li>
             <%= live_patch to: self_path(@socket, @gallery, %{"occasion_id" => occasion.id}) do %>
@@ -106,122 +106,107 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
           </li>
         <% end %>
       </ul>
+    </div>
     """
   end
 
   defp step(%{show_filter_form: true} = assigns) do
     ~H"""
-      <div id="filters" class="absolute top-0 left-0 z-50 w-screen min-h-screen p-8 bg-base-100">
-        <button phx-click="toggle-filter-form" class="block mt-6 mb-10">
-          <.icon name="close-x" class="w-5 h-5 stroke-current"/>
-        </button>
-
-        <.form for={:filter} method="get" phx-change="apply-filters" id="filter-form">
-          <ul>
-            <%= for %{id: filter_id, name: name, options: options, open: open} <- @filter do %>
-              <li>
-                <button type="button" class="flex items-center w-full py-2 text-2xl font-semibold" value={filter_id} phx-click="toggle-open-filter">
-                  <%= name %>
-
-                  <.icon name={if open, do: "up", else: "down"} class="w-4 h-2 ml-2.5 stroke-current stroke-2"/>
-                </button>
-
-                <ul class={classes("mb-8 border shadow-lg border-base-200", %{"hidden" => not(open)})}>
-                  <%= for %{id: option_id, checked: checked} = option <- options, dom_id = Enum.join([filter_id, option_id], "-") do %>
-                    <li class="relative text-lg font-semibold">
-                      <input type="checkbox" id={dom_id} name={"filter[#{filter_id}][]"} value={option_id} checked={checked} class="hidden peer"/>
-
-                      <.icon name="checkmark" class="absolute w-8 h-4 stroke-current top-1/3 right-5 text-base-100 peer-checked:text-base-300"/>
-
-                      <label for={dom_id} class="block px-5 py-3 peer-checked:bg-base-200")>
-                        <.filter_option_label option={option} />
-                      </label>
-                    </li>
-                  <% end %>
-                </ul>
-                <%= unless open do %>
-                  <hr class="mb-8">
-                <% end %>
-              </li>
-            <% end %>
-          </ul>
-
-          <.filter_option_pills filter={@filter} />
-
-          <button type="button" phx-click="toggle-filter-form" class="flex py-2.5 mt-20 text-xl border border-base-300 justify-center items-center font-medium w-full">
-            Show results
+      <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
+        <div id="filters" class="absolute top-0 left-0 z-50 w-screen min-h-screen p-8 bg-base-100">
+          <button phx-click="toggle-filter-form" class="block mt-6 mb-10">
+            <.icon name="close-x" class="w-5 h-5 stroke-current"/>
           </button>
-        </.form>
+
+          <.form for={:filter} method="get" phx-change="apply-filters" id="filter-form">
+            <.ul
+              filter={@filter}
+              nested_list_class="mb-8 border shadow-lg border-base-200"
+              button_class="flex items-center w-full py-2 text-2xl font-semibold"
+              options_icon_class="peer-checked:text-base-300",
+              is_mobile={true}
+            />
+
+            <.filter_option_pills filter={@filter} />
+
+            <button type="button" phx-click="toggle-filter-form" class="flex py-2.5 mt-20 text-xl border border-base-300 justify-center items-center font-medium w-full">
+              Show results
+            </button>
+          </.form>
+        </div>
       </div>
     """
   end
 
   defp step(assigns) do
     ~H"""
-      <nav class="mb-9 text-base-250">
-        <ol class="flex items-center list-reset">
-          <li>
-            <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash) do %>
-              Gallery Home
-            <% end %>
-          </li>
+    <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
+      <div class="fixed sm:mt-16 lg:mt-8 pt-[32px] lg:pt-16 sm:w-[772px] lg:w-[1232px] z-10 bg-white">
+        <nav class="mb-9 text-base-250">
+          <ol class="flex items-center list-reset">
+            <li>
+              <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash) do %>
+                Gallery Home
+              <% end %>
+            </li>
 
-          <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
+            <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
 
-          <li>
-            <%= live_patch to: self_path(@socket, @gallery) do %>
-              Choose occasion
-            <% end %>
-          </li>
+            <li>
+              <%= live_patch to: self_path(@socket, @gallery) do %>
+                Choose occasion
+              <% end %>
+            </li>
 
-          <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
+            <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
 
-          <li>
-            <%= live_patch to: self_path(@socket, @gallery, %{"occasion_id" => @occasion.id}), class: "font-bold capitalize" do %>
-              <%= @occasion.name %>
-            <% end %>
-          </li>
-        </ol>
-      </nav>
+            <li>
+              <%= live_patch to: self_path(@socket, @gallery, %{"occasion_id" => @occasion.id}), class: "font-bold capitalize" do %>
+                <%= @occasion.name %>
+              <% end %>
+            </li>
+          </ol>
+        </nav>
 
-      <h1 class="mb-5 text-2xl font-extrabold capitalize sm:text-4xl">
-        <%= @occasion.name %>
-      </h1>
+        <h1 class="mb-5 text-2xl font-extrabold capitalize sm:text-4xl">
+          <%= @occasion.name %>
+        </h1>
 
-      <div class="flex items-end justify-between mb-7 lg:hidden">
-        <button class="flex py-2.5 px-4 text-xl border border-base-300 items-center font-medium" phx-click="toggle-filter-form">
-          Filters
+        <div class="flex items-end justify-between mb-7 lg:mb-2">
+          <button class="flex py-2.5 px-4 text-xl border border-base-300 items-center font-medium lg:hidden" phx-click="toggle-filter-form">
+            Filters
 
-          <.icon name="funnel" class="w-4 h-4 ml-3" />
-        </button>
+            <.icon name="funnel" class="w-4 h-4 ml-3" />
+          </button>
 
-        <p class="font-medium text-base-250">Showing <%= @filtered_count %> of <%= @total_count %> designs</p>
+          <.filter_navbar {assigns} />
+          <p class="font-medium text-base-250">Showing <%= @filtered_count %> of <%= @total_count %> designs</p>
+        </div>
+
+        <hr class="border-base-225">
+
+        <.form method="get" for={:pills} phx-change="apply-filters" class="pb-2 relative">
+          <%= for %{id: filter_id, options: options} <- @filter, %{id: option_id, checked: true} <- options do %>
+            <input type="hidden" name={"filter[#{filter_id}][]"} value={option_id}/>
+          <% end %>
+
+          <.filter_option_pills filter={@filter} />
+        </.form>
       </div>
 
-      <.filter_navbar {assigns} />
-      <hr class="border-base-225">
+        <ul class="relative top-[250px] pb-16 pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6" id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
+          <%= for design <- @designs do %>
+            <li id={"design-#{design.id}"}>
+              <button class="w-full h-full" phx-click="open-editor" value={design.id}>
+                <.img_box src={design.preview_url} />
 
-      <.form method="get" for={:pills} phx-change="apply-filters">
-        <%= for %{id: filter_id, options: options} <- @filter, %{id: option_id, checked: true} <- options do %>
-          <input type="hidden" name={"filter[#{filter_id}][]"} value={option_id}/>
-        <% end %>
-
-        <.filter_option_pills filter={@filter} />
-      </.form>
-
-      <ul class="pb-16 pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6" id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
-        <%= for design <- @designs do %>
-          <li id={"design-#{design.id}"}>
-            <button class="w-full h-full" phx-click="open-editor" value={design.id}>
-              <.img_box src={design.preview_url} />
-
-              <h3 class="pt-2 text-lg"><%= design.name %></h3>
-
-              <p class="mt-1 text-sm text-base-250"><%= photo_range_summary(design) %></p>
-            </button>
-          </li>
-        <% end %>
-      </ul>
+                <h3 class="pt-2 text-lg"><%= design.name %></h3>
+                <p class="mt-1 text-sm text-base-250"><%= photo_range_summary(design) %></p>
+              </button>
+            </li>
+          <% end %>
+        </ul>
+    </div>
     """
   end
 
@@ -258,7 +243,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     socket |> update(:filter, &Filter.open(&1, filter_id)) |> noreply()
   end
 
-  def handle_event("close-filter-nav", _, socket) do
+  def handle_event("close-filter-dropdown", _, socket) do
     socket
     |> update(:filter, &Enum.map(&1, fn f -> %{f | open: false} end))
     |> assign(:update, "append")
@@ -287,7 +272,68 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       |> fetch()
       |> noreply()
 
-  def filter_option_label(assigns) do
+  # for desktop view
+  defp filter_navbar(assigns) do
+    ~H"""
+    <.form method="get" for={:filter} phx-change="apply-filters" id="filter-form" class="hidden lg:block">
+      <nav class="bg-white">
+        <div class="container flex flex-wrap justify-between items-center mx-auto">
+          <div phx-click-away="close-filter-dropdown" class="w-auto">
+            <.ul
+              filter={@filter}
+              main_list_class="flex rounded-lg flex-row space-x-4 text-sm font-medium bg-white"
+              nested_list_class="absolute z-10 py-1 font-medium text-sm text-base-500 bg-white w-44 rounded divide-y divide-gray-100 shadow"
+              button_class="flex justify-between items-center pr-2 font-black w-full text-base w-auto"
+              options_icon_class="mt-2 peer-checked:text-black"
+            />
+          </div>
+        </div>
+      </nav>
+    </.form>
+    """
+  end
+
+  defp ul(assigns) do
+    assigns = Enum.into(assigns, %{main_list_class: "", is_mobile: false})
+
+    ~H"""
+    <ul class={@main_list_class}>
+      <%= for %{id: filter_id, name: name, options: options, open: open} <- @filter do %>
+        <li>
+          <button type="button" class={@button_class} value={filter_id} phx-value-is_unique={true} phx-click="toggle-open-filter">
+            <%= name %>
+            <.icon name={if open, do: "up", else: "down"} class="w-2 h-2 ml-2.5 stroke-current stroke-2"/>
+          </button>
+            <ul class={classes(@nested_list_class, %{"hidden" => not(open)})}>
+              <.filter_options options={options} filter_id={filter_id} icon_class={@options_icon_class} />
+            </ul>
+            <%= if @is_mobile && !open do %>
+              <hr class="mb-8">
+            <% end %>
+        </li>
+      <% end %>
+    </ul>
+    """
+  end
+
+  defp filter_options(assigns) do
+    assigns = Map.put_new(assigns, :icon_class, "")
+
+    ~H"""
+    <%= for %{id: option_id, checked: checked} = option <- @options, dom_id = Enum.join([@filter_id, option_id], "-") do %>
+      <li>
+        <input type="checkbox" id={dom_id} name={"filter[#{@filter_id}][]"} value={option_id} checked={checked} class="hidden peer"/>
+        <.icon name="checkmark" class={"absolute w-8 h-4 stroke-current right-5 text-base-100 #{@icon_class}"} />
+
+        <label for={dom_id} class="block px-5 py-3 peer-checked:bg-base-200">
+          <.filter_option_label option={option} />
+        </label>
+      </li>
+    <% end %>
+    """
+  end
+
+  defp filter_option_label(assigns) do
     ~H"""
     <div class="flex items-center leading-snug capitalize">
       <%= case @option do %>
@@ -301,7 +347,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     """
   end
 
-  def filter_option_pills(assigns) do
+  defp filter_option_pills(assigns) do
     ~H"""
       <ul class="flex flex-wrap w-full" {testid("pills")}>
         <%= for %{id: filter_id, options: options} <- @filter, %{checked: true, id: option_id} = option <- options do %>
@@ -315,41 +361,6 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
           </li>
         <% end %>
       </ul>
-    """
-  end
-
-  defp filter_navbar(assigns) do
-    ~H"""
-    <.form method="get" for={:filter} phx-change="apply-filters" id="filter-form" class="hidden lg:block">
-      <nav class="bg-white">
-        <div class="container flex flex-wrap justify-between items-center mx-auto">
-          <div phx-click-away="close-filter-nav" class="w-auto">
-            <ul class="flex py-4 rounded-lg flex-row space-x-4 text-sm font-medium bg-white">
-              <%= for %{id: filter_id, name: name, options: options, open: open} <- @filter do %>
-                <li>
-                  <button type="button" class="flex justify-between items-center pr-2 font-black w-full text-base w-auto" value={filter_id} phx-value-is_unique={true} phx-click="toggle-open-filter">
-                    <%= name %>
-                    <.icon name={if open, do: "up", else: "down"} class="w-2 h-2 ml-2.5 stroke-current stroke-2"/>
-                  </button>
-                    <ul class={classes("absolute z-10 py-1 font-medium text-sm text-base-500 bg-white w-44 rounded divide-y divide-gray-100 shadow", %{"hidden" => not(open)})}>
-                      <%= for %{id: option_id, checked: checked} = option <- options, dom_id = Enum.join([filter_id, option_id], "-") do %>
-                        <li>
-                          <input type="checkbox" id={dom_id} name={"filter[#{filter_id}][]"} value={option_id} checked={checked} class="hidden peer"/>
-                          <.icon name="checkmark" class="absolute w-8 h-4 stroke-current top-1/3 right-5 text-base-100 peer-checked:text-base-300"/>
-
-                          <label for={dom_id} class="block px-5 py-3 peer-checked:bg-base-200")>
-                            <.filter_option_label option={option} />
-                          </label>
-                        </li>
-                      <% end %>
-                    </ul>
-                </li>
-              <% end %>
-            </ul>
-          </div>
-        </div>
-      </nav>
-    </.form>
     """
   end
 
