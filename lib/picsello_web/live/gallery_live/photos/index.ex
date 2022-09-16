@@ -760,7 +760,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery =
       Galleries.get_gallery!(gallery_id)
-      |> Repo.preload(:albums)
+      |> Repo.preload([:albums, :photographer])
       |> Galleries.load_watermark_in_gallery()
 
     if connected?(socket) do

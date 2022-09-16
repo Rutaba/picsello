@@ -83,6 +83,13 @@ defmodule Picsello.Subscriptions do
   def subscription_expired?(%User{subscription: subscription}),
     do: subscription && !subscription.active
 
+  def subscription_payment_method?(%User{stripe_customer_id: stripe_customer_id}) do
+    case stripe_customer_id do
+      nil -> false
+      _ -> Payments.retrieve_customer(stripe_customer_id) |> check_card_source()
+    end
+  end
+
   def subscription_plans() do
     Repo.all(from(s in SubscriptionPlan, where: s.active == true, order_by: s.price))
   end
@@ -245,4 +252,14 @@ defmodule Picsello.Subscriptions do
 
   defp to_datetime(nil), do: nil
   defp to_datetime(unix_date), do: DateTime.from_unix!(unix_date)
+
+  defp check_card_source(
+         {:ok,
+          %Stripe.Customer{invoice_settings: %{default_payment_method: default_payment_method}}}
+       ) do
+    case default_payment_method do
+      nil -> false
+      _ -> true
+    end
+  end
 end

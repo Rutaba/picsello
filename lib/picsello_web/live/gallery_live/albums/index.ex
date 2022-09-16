@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
-  alias Picsello.{Galleries, Albums}
+  alias Picsello.{Repo, Galleries, Albums}
   alias PicselloWeb.GalleryLive.Albums.{AlbumSettings, AlbumThumbnail}
 
   @blank_image "/images/album_placeholder.png"
@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   @impl true
   def handle_params(%{"id" => gallery_id} = params, _uri, socket) do
-    gallery = Galleries.get_gallery!(gallery_id)
+    gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
 
     socket
     |> assign(:gallery_id, gallery_id)
