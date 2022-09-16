@@ -112,7 +112,7 @@ defmodule Picsello.Subscriptions do
     }
 
     case Payments.create_subscription(stripe_params) do
-      {:ok, subscription} -> {:ok, subscription}
+      {:ok, subscription} -> subscription
       err -> err
     end
   end

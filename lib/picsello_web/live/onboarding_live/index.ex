@@ -301,7 +301,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         |> noreply()
 
       {:error, reason} ->
-        socket |> assign(changeset: reason)
+        socket |> assign(changeset: reason) |> noreply()
     end)
   end
 
@@ -309,31 +309,31 @@ defmodule PicselloWeb.OnboardingLive.Index do
     Multi.new()
     |> Multi.put(:data, data)
     |> Multi.update(:user, build_changeset(socket, params))
+    |> Multi.run(:subscription, fn _repo, %{user: user} ->
+      with :ok <-
+             Subscriptions.subscription_base(user, "month",
+               trial_days: socket.assigns.subscription_plan_metadata.trial_length
+             )
+             |> Picsello.Subscriptions.handle_stripe_subscription() do
+        {:ok, nil}
+      end
+    end)
+    |> Multi.run(:user_final, fn _repo, %{user: user} ->
+      with Onboardings.complete!(user) do
+        {:ok, nil}
+      end
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{user: user}} ->
-        case Subscriptions.subscription_base(user, "month",
-               trial_days: socket.assigns.subscription_plan_metadata.trial_length
-             ) do
-          {:ok, subscription} ->
-            Picsello.Subscriptions.handle_stripe_subscription(subscription)
-
-            socket
-            |> assign(current_user: Onboardings.complete!(user))
-            |> update_user_contact_trial(user)
-            |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
-            |> noreply()
-
-          {:error, error} ->
-            Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
-
-            socket
-            |> put_flash(:error, "Couldn't connect to Stripe. Please try again")
-            |> noreply()
-        end
+        socket
+        |> assign(current_user: user)
+        |> update_user_contact_trial(user)
+        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+        |> noreply()
 
       {:error, reason} ->
-        socket |> assign(changeset: reason)
+        socket |> assign(changeset: reason) |> noreply()
     end)
   end
 
