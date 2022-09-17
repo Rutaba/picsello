@@ -59,12 +59,10 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     session: session,
     gallery: %{id: gallery_id} = gallery
   } do
-    session
-    |> visit("/galleries/#{gallery_id}/product-previews")
 
     insert_photo(%{gallery: gallery, total_photos: 20})
-
     session
+    |> visit("/galleries/#{gallery_id}/product-previews")
     |> assert_text("Product Previews")
     |> take_screenshot()
     |> scroll_to_bottom()
@@ -72,9 +70,9 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 0), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
-    |> click(css("label", text: "Show product preview in gallery", count: 6, at: 1))
+    |> click(css("label", text: "Show product preview in gallery", count: 6, at: 0))
     |> find(
-      checkbox("Show product preview in gallery", visible: false, count: 6, at: 1),
+      checkbox("Show product preview in gallery", visible: false, count: 6, at: 0),
       fn checkbox -> refute Element.selected?(checkbox) end
     )
     |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
@@ -97,14 +95,14 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> assert_text("Product Previews")
     |> scroll_to_bottom()
     |> click(css("label", text: "Product enabled to sell", count: 7, at: 0))
-    |> click(css("label", text: "Product enabled to sell", count: 7, at: 2))
-    |> click(css("label", text: "Product enabled to sell", count: 7, at: 3))
     |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 0), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
-    |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 2), fn checkbox ->
+    |> click(css("label", text: "Product enabled to sell", count: 7, at: 1))
+    |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 1), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
+    |> click(css("label", text: "Product enabled to sell", count: 7, at: 3))
     |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 3), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
@@ -116,10 +114,9 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> scroll_to_bottom()
     |> click_photo(1)
     |> assert_text("Select an option")
-    # fails here
     |> find(css("*[data-testid^='product_option']", count: 5), fn options ->
       assert [
-               {"Albums", "$55.00"},
+               {"Books", "$45.00"},
                {"Loose Prints", "$25.00"},
                {"Press Printed Cards", "$5.00"},
                {"Display Products", "$80.00"},

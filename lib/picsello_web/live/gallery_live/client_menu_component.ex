@@ -14,7 +14,9 @@ defmodule PicselloWeb.GalleryLive.ClientMenuComponent do
     cart: true,
     is_proofing: false
   }
-  @menu_items ["Home", "My orders", "Help"]
+
+  @menu_items ["Home", "My orders"]
+  # To add back Help page, just add "Help" to the list above
 
   def update(assigns, socket) do
     socket
