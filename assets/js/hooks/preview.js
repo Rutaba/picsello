@@ -1,57 +1,79 @@
+function cropFill(
+  { width: previewW, height: previewH },
+  { w: slotW, h: slotH }
+) {
+  const srcAspectRatio = previewW / previewH;
+  const slotAspectRatio = slotW / slotH;
+
+  if (srcAspectRatio > slotAspectRatio) {
+    // src too wide, crop right and left edges
+
+    const w = previewH * slotAspectRatio;
+    return {
+      x: (previewW - w) / 2,
+      y: 0,
+      w,
+      h: previewH,
+    };
+  } else {
+    // src too narrow, crop top and bottom edges
+
+    const h = previewW / slotAspectRatio;
+    return {
+      x: 0,
+      y: (previewH - h) / 2,
+      w: previewW,
+      h,
+    };
+  }
+}
+
+const loadImage = (src) =>
+  new Promise((resolve) => {
+    const image = new Image();
+    image.addEventListener('load', () => {
+      resolve(image);
+    });
+    image.src = src;
+  });
+
+function drawImage(context, image, { src, dest }) {
+  context.drawImage(
+    image,
+    src.x,
+    src.y,
+    src.w,
+    src.h,
+    dest.x,
+    dest.y,
+    dest.w,
+    dest.h
+  );
+}
+
+function drawPreview(context, img, { dest }) {
+  drawImage(context, img, { dest, src: cropFill(img, dest) });
+}
+
 function draw(canvas) {
   const {
-    preview: previewSrc,
-    frame: frameSrc,
-    coords: coord,
+    preview: { url: previewUrl, ...previewBoxes },
+    frame: { url: frameUrl, rotate, ...frameBoxes },
   } = JSON.parse(canvas.dataset.config);
+  const context = canvas.getContext('2d');
 
-  const w = coord[6] - coord[0] + 1;
-  const h = coord[7] - coord[1] + 1;
-
-  const ctx = canvas.getContext('2d');
-
-  const { width: cw, height: ch } = canvas;
-
-  const frame = new Image();
-
-  frame.onload = () => {
-    const frameW = frame.width;
-    const frameH = frame.height;
-
-    const kfw = coord[0] / frameW;
-    const kfh = coord[1] / frameH;
-
-    const preview = new Image();
-    preview.onload = () => {
-      const kw = cw / frameW;
-      const kh = ch / frameH;
-
-      const width = (w * kw < 10 && cw) || w * kw;
-      const height = (h * kh < 10 && ch) || h * kh;
-
-      const gk = w / h;
-      const sk = preview.width / preview.height;
-
-      if (sk < gk) {
-        const preview_width = width;
-        const preview_height = width / sk;
-        const lty = ch * kfh + (height - preview_height) / 2;
-        const ltx = cw * kfw;
-        ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
-      } else if (gk < sk) {
-        const preview_height = height;
-        const preview_width = height * sk;
-        const lty = ch * kfh;
-        const ltx = cw * kfw + (width - preview_width) / 2;
-        ctx.drawImage(preview, ltx, lty, preview_width, preview_height);
+  if (frameUrl) {
+    Promise.all([previewUrl, frameUrl].map(loadImage)).then(
+      ([previewImg, frameImg]) => {
+        drawPreview(context, previewImg, previewBoxes);
+        drawImage(context, frameImg, frameBoxes);
       }
-      ctx.drawImage(frame, 0, 0, cw, ch);
-    };
-
-    preview.src = previewSrc;
-  };
-
-  frame.src = '/images/' + frameSrc;
+    );
+  } else {
+    loadImage(previewUrl).then((previewImg) => {
+      drawPreview(context, previewImg, previewBoxes);
+    });
+  }
 }
 
 const Preview = {

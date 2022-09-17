@@ -450,6 +450,8 @@ defmodule Picsello.Factory do
       position: 1.0,
       aspect_ratio: 1.0,
       original_url: Photo.original_path("name", 333, "4444"),
+      width: 300,
+      height: 300,
       active: true
     }
     |> merge_attributes(attrs)
