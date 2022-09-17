@@ -39,7 +39,7 @@ defmodule Picsello.StripePayments do
   defdelegate create_customer(params, opts), to: Stripe.Customer, as: :create
 
   @impl Payments
-  defdelegate retrieve_customer(id), to: Stripe.Customer, as: :retrieve
+  defdelegate retrieve_customer(id, opts), to: Stripe.Customer, as: :retrieve
 
   @impl Payments
   defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
