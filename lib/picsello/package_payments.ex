@@ -144,7 +144,8 @@ defmodule Picsello.PackagePayments do
         :package,
         :package_payment_preset,
         :payment_field_index,
-        :last_shoot_date
+        :last_shoot_date,
+        :fields_count
       ])
       |> Map.merge(%{inserted_at: now, updated_at: now})
     end)

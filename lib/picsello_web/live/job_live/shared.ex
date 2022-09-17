@@ -512,7 +512,7 @@ defmodule PicselloWeb.JobLive.Shared do
               <% end %>
             </dd>
             <dd>
-              <%= @job |> PaymentSchedules.build_payment_schedules_for_lead() |> Map.get(:details) %>
+              <%= PaymentSchedules.get_description(@job) %>
               <%= if @proposal do %>
                 <button phx-click="open-proposal" phx-value-action="invoice" class="block link mt-2">View invoice</button>
               <% end %>

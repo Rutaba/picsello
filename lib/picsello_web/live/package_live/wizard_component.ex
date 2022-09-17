@@ -47,28 +47,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     "splits_2" => ["To Book", "Day Before Shoot"],
     "splits_3" => ["To Book", "6 Months Before", "Week Before"]
   }
-  @payment_defaults_percentage %{
-    "wedding" => ["33% To Book", "33% 1 Month Before", "34% Day Before"],
-    "family" => ["50% To Book", "50% Day Before"],
-    "maternity" => ["50% To Book", "50% Day Before"],
-    "newborn" => ["50% To Book", "50% Day Before"],
-    "event" => ["50% To Book", "50% Day Before"],
-    "headshot" => ["100% To Book"],
-    "portrait" => ["100% To Book"],
-    "mini" => ["100% To Book"],
-    "boudoir" => ["50% To Book", "50% Day Before"],
-    "other" => ["50% To Book", "50% Day Before"],
-    "payment_due_book" => ["100% To Book"],
-    "splits_2" => ["50% To Book", "50% Day Before"],
-    "splits_3" => ["33% To Book", "33% 1 Month Before", "34% Day Before"]
-  }
 
   defmodule CustomPayments do
     @moduledoc "For setting payments on last step"
     use Ecto.Schema
     import Ecto.Changeset
 
-    alias PicselloWeb.PackageLive.WizardComponent
     @future_date ~U[3022-01-01 00:00:00Z]
 
     @primary_key false
@@ -166,7 +150,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       total_collected =
         payments
         |> Enum.reduce(Money.new(0), fn payment, acc ->
-          if fixed && !WizardComponent.is_percentage(payment.due_interval) do
+          if fixed do
             Money.add(acc, payment.price || Money.new(0))
           else
             Money.add(acc, from_percentage(payment.percentage, total_price))
@@ -270,7 +254,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     changeset =
       params |> CustomPayments.changeset(default_payment_changeset) |> Map.put(:action, action)
 
-    assign(socket, payments_changeset: changeset)
+      assign(socket, payments_changeset: changeset)
   end
 
   defp remaining_price(changeset),
@@ -639,8 +623,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <%= hidden_input p, :shoot_date %>
         <%= hidden_input p, :last_shoot_date %>
         <%= hidden_input p, :schedule_date %>
-        <%= hidden_input p, :description, value: get_tag(p) %>
+        <%= hidden_input p, :description, value: get_tag(p, input_value(pc, :fixed)) %>
         <%= hidden_input p, :payment_field_index, value: p.index %>
+        <%= hidden_input p, :fields_count, value: length(input_value(pc, :payment_schedules)) %>
         <div {testid("payment-count-card")} class="border rounded-lg border-base-200 md:w-1/2 pb-2 mt-3">
           <div class="flex items-center bg-base-200 px-2 p-2">
             <div class="mb-2 text-xl font-bold">Payment <%= p.index + 1 %></div>
@@ -663,7 +648,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <%= if input_value(p, :shoot_date) |> is_value_set(), do: input_value(p, :schedule_date) |> Calendar.strftime("%m-%d-%Y"), else: "Add shoot to generate date" %>
             </div>
             <div {testid("due-interval")} class={classes("flex flex-col my-2 ml-8", %{"hidden" => !input_value(p, :interval)})}>
-              <%= select p, :due_interval, interval_dropdown_options(input_value(p, :due_interval), p.index, input_value(pc, :fixed)), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+              <%= select p, :due_interval, interval_dropdown_options(input_value(p, :due_interval), p.index), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
               <%= if message = p.errors[:schedule_date] do %>
                 <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
               <% end %>
@@ -702,11 +687,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <% end %>     
             <% end %>
             <div class="flex my-2">
-              <%= if input_value(pc, :fixed) do %>
-                <%= input p, :price, placeholder: "$0.00", class: "w-24 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", phx_hook: "PriceMask" %>
-              <% else %>
-                <%= input p, :percentage, placeholder: "0.00%", value: "#{input_value(p, :percentage)}%", class: classes("w-24 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto",%{"hidden" => input_value(p, :interval)}), phx_hook: "PercentMask" %>
-              <% end %>
+              <%= input p, :price, placeholder: "$0.00", class: classes("w-32 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", %{"hidden" => !input_value(pc, :fixed)}), phx_hook: "PriceMask" %>
+              <%= input p, :percentage, placeholder: "0.00%", value: "#{input_value(p, :percentage)}%", class: classes("w-24 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", %{"hidden" => input_value(pc, :fixed)}), phx_hook: "PercentMask" %>
             </div>
           </div>
         </div>
@@ -823,7 +805,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         schedule_type_switch(socket, price, schedule_type)
 
       fixed != Changeset.get_field(payments_changeset, :fixed) ->
-        fixed_switch(socket, fixed, price, schedule_type)
+        fixed_switch(socket, fixed, price, params)
 
       true ->
         socket |> maybe_assign_custom(params)
@@ -1115,16 +1097,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          schedule_type
        ) do
     fixed = schedule_type == Changeset.get_field(changeset, :job_type)
-
+    default_presets = get_custom_payment_defaults(socket, schedule_type, fixed)
     presets =
-      get_custom_payment_defaults(socket, schedule_type, fixed)
-      |> Enum.map(
+      default_presets
+      |> Enum.with_index(
         &%{
           "interval" => true,
           "shoot_date" => get_first_shoot(job),
           "last_shoot_date" => get_last_shoot(job),
           "percentage" => "",
-          "due_interval" => &1
+          "due_interval" => &1,
+          "price" => get_price(price, length(default_presets), &2)
         }
       )
 
@@ -1142,29 +1125,82 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_payments_changeset(params, :validate)
   end
 
-  defp fixed_switch(%{assigns: %{job: job}} = socket, fixed, price, schedule_type) do
-    presets =
-      get_custom_payment_defaults(socket, schedule_type, fixed)
-      |> Enum.map(
-        &%{
-          "interval" => true,
-          "shoot_date" => get_first_shoot(job),
-          "last_shoot_date" => get_last_shoot(job),
-          "percentage" => "",
-          "due_interval" => &1
-        }
-      )
+  defp get_price(total_price, presets_count, index) do
+    remainder = rem(total_price.amount, presets_count) * 100
+    amount = if remainder == 0, do: total_price, else: Money.subtract(total_price, remainder)
 
-    params = %{
-      "total_price" => price,
-      "remaining_price" => price,
-      "payment_schedules" => presets,
-      "fixed" => fixed,
-      "schedule_type" => schedule_type
-    }
+    if index + 1 == presets_count do
+      Money.divide(amount, presets_count) |> List.first() |> Money.add(remainder)
+    else
+      Money.divide(amount, presets_count) |> List.first()
+    end
+  end
+
+  defp fixed_switch(socket, fixed, total_price, params) do
+    {presets, _} =
+    params 
+    |> Map.get("payment_schedules")
+    |> Map.values()
+    |> Enum.reduce({%{}, 0}, fn schedule, {schedules, collection} -> 
+      schedule = Picsello.PackagePaymentSchedule.prepare_percentage(schedule)
+      changeset = %Picsello.PackagePaymentSchedule{} |> Changeset.cast(schedule, [:fields_count, :payment_field_index, :price, :percentage])
+      index = Changeset.get_field(changeset, :payment_field_index)
+      presets_count = Changeset.get_field(changeset, :fields_count)
+      price = Changeset.get_field(changeset, :price)
+      percentage = Changeset.get_field(changeset, :percentage)
+
+      if fixed do
+        updated_price = (if price, do: price, else: percentage_to_price(total_price, percentage))
+        |> normalize_price(collection, presets_count, index, total_price)
+        
+        {Map.merge(schedules, %{"#{index}" => %{schedule | "percentage" => nil, "price" => updated_price}}), collection + updated_price}
+      else
+        updated_percentage = (if percentage, do: percentage, else: price_to_percentage(total_price, price))
+        |> normalize_percentage(collection, presets_count, index)
+        
+        {Map.merge(schedules, %{"#{index}" => %{schedule | "percentage" => updated_percentage, "price" => nil}}), collection + updated_percentage}
+      end
+    end)
 
     socket
-    |> maybe_assign_custom(params)
+    |> maybe_assign_custom(Map.put(params, "payment_schedules", presets))
+  end
+
+  defp normalize_price(price, collection, presets_count, index, total_price) do
+    if index + 1 == presets_count do
+      (total_price.amount - collection)  |> Kernel.trunc()
+    else
+      price
+    end
+  end
+
+  defp normalize_percentage(percentage, collection, presets_count, index) do
+    if index + 1 == presets_count do
+      100 - collection
+    else
+      percentage
+    end
+  end
+
+  defp percentage_to_price(_, nil), do: nil
+  defp percentage_to_price(total_price, value) do
+    ((total_price.amount / 10000 * value) |> Kernel.trunc()) * 100
+  end
+  
+  defp price_to_percentage(_, nil), do: nil
+  defp price_to_percentage(total_price, value) do
+    (value.amount / total_price.amount * 100) |> Kernel.trunc()
+  end
+  
+  defp get_default_price(schedule, x_schedule, price, params, index) do
+    if params.fixed do
+      x_price = params.package_payment_schedules |> Enum.reduce(Money.new(0), &Money.add(&2, &1.price))
+      extra_price = Money.subtract(price, x_price)
+      updated_price = Money.add(Map.get(x_schedule, "price"), get_price(extra_price, length(params.package_payment_schedules), index))
+      Map.merge(schedule, %{"price" => updated_price})
+    else
+      schedule
+    end
   end
 
   defp assign_payment_defaults(
@@ -1175,14 +1211,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     price = remaining_price(changeset)
 
     params =
-      if params && params.package_payment_schedules != [] do
+      if params && params.package_payment_schedules != [] do        
         presets =
           map_keys(params.package_payment_schedules)
-          |> Enum.map(
+          |> Enum.with_index(
             &Map.merge(&1, %{
               "shoot_date" => get_first_shoot(job),
               "last_shoot_date" => get_last_shoot(job)
-            })
+            } |> get_default_price(&1, price, params, &2))
           )
 
         %{
@@ -1193,14 +1229,16 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "schedule_type" => params.schedule_type
         }
       else
+        default_presets = get_payment_defaults(job_type, true)
         presets =
-          get_payment_defaults(job_type, true)
-          |> Enum.map(
+          default_presets
+          |> Enum.with_index(
             &%{
               "interval" => true,
               "shoot_date" => get_first_shoot(job),
               "last_shoot_date" => get_last_shoot(job),
-              "due_interval" => &1
+              "due_interval" => &1,
+              "price" => get_price(price, length(default_presets), &2)
             }
           )
 
@@ -1444,19 +1482,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp interval_dropdown_options(field, index, fixed) do
-    if fixed do
-      ["To Book", "6 Months Before", "Week Before", "Day Before Shoot"]
-    else
-      [
-        "100% To Book",
-        "50% To Book",
-        "50% Day Before",
-        "33% 1 Month Before",
-        "34% Day Before",
-        "33% To Book"
-      ]
-    end
+  defp interval_dropdown_options(field, index) do
+    ["To Book", "6 Months Before", "Week Before", "Day Before Shoot"]
+    
     |> Enum.map(&[key: &1, value: &1, disabled: index == 0 && field != &1])
   end
 
@@ -1476,46 +1504,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  defp get_payment_defaults(schedule_type, true) do
+  def get_payment_defaults(schedule_type, _) do
     Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
   end
 
-  defp get_payment_defaults(schedule_type, _) do
-    Map.get(@payment_defaults_percentage, schedule_type, [
-      "33% To Book",
-      "33% 1 Month Before",
-      "34% Day Before"
-    ])
-  end
-
-  def is_percentage(due_interval) do
-    due_interval in [
-      "100% To Book",
-      "50% To Book",
-      "50% Day Before",
-      "33% 1 Month Before",
-      "33% To Book",
-      "34% Day Before"
-    ]
-  end
 
   defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
 
   defp get_tags(form), do: make_tags(form) |> Enum.join(", ")
 
   defp make_tags(form) do
-    {_, tags} = inputs_for(form, :payment_schedules, &get_tag(&1))
+    fixed = input_value(form, :fixed)
+    {_, tags} = inputs_for(form, :payment_schedules, &get_tag(&1, fixed))
 
     tags |> List.flatten()
   end
 
-  defp get_tag(payment_schedule) do
+  defp get_tag(payment_schedule, fixed) do
     if input_value(payment_schedule, :interval) do
-      due_interval = input_value(payment_schedule, :due_interval)
-
-      if is_percentage(due_interval),
-        do: due_interval,
-        else: make_due_inteval_tag(payment_schedule, :price)
+      if fixed,
+        do: make_due_inteval_tag(payment_schedule, :price),
+        else: make_due_inteval_tag(payment_schedule, :percentage)
     else
       shoot_date = input_value(payment_schedule, :shoot_date) |> is_value_set()
 
@@ -1540,9 +1549,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp make_due_inteval_tag(form, field) do
+  defp make_due_inteval_tag(form, :price = field) do
     value = input_value(form, field) |> is_value_set()
     if value && value != "$", do: "#{value} to #{input_value(form, :due_interval)}", else: ""
+  end
+
+  defp make_due_inteval_tag(form, field) do
+    value = input_value(form, field) |> is_value_set()
+    if value && value != "%", do: "#{value}% #{input_value(form, :due_interval)}", else: ""
   end
 
   defp make_date_tag(form, field) do

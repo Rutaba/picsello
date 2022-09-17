@@ -15,6 +15,7 @@ defmodule Picsello.PackagePaymentSchedule do
     field :count_interval, :string
     field :time_interval, :string
     field :shoot_interval, :string
+    field :fields_count, :integer, virtual: true
     field :payment_field_index, :integer, virtual: true
     field :shoot_date, :utc_datetime, virtual: true
     field :last_shoot_date, :utc_datetime, virtual: true
@@ -35,12 +36,10 @@ defmodule Picsello.PackagePaymentSchedule do
       ) do
     interval = payment_schedule |> cast(attrs, [:interval]) |> get_field(:interval)
 
-    is_fixed =
-      (fixed && interval && !WizardComponent.is_percentage(attrs["due_interval"])) ||
-        (fixed && !interval)
-
     attrs =
-      set_percentage(attrs, interval) |> set_shoot_interval(interval, default_payment_changeset)
+      attrs
+      |> prepare_percentage() 
+      |> set_shoot_interval(interval, default_payment_changeset)
 
     payment_schedule
     |> cast(attrs, [
@@ -58,12 +57,13 @@ defmodule Picsello.PackagePaymentSchedule do
       :schedule_date,
       :package_payment_preset_id,
       :package_id,
-      :payment_field_index
+      :payment_field_index,
+      :fields_count
     ])
     |> validate_required([:interval])
     |> then(fn changeset ->
       changeset
-      |> validate_price_percentage(is_fixed)
+      |> validate_price_percentage(fixed)
       |> validate_custom_time(default_payment_changeset)
     end)
   end
@@ -112,26 +112,10 @@ defmodule Picsello.PackagePaymentSchedule do
     end
   end
 
-  defp set_percentage(%{"percentage" => percentage} = attrs, interval) do
-    due_interval = attrs |> Map.get("due_interval", nil)
-
-    update_percentage =
-      if interval do
-        cond do
-          String.contains?(due_interval, "100%") -> 100
-          String.contains?(due_interval, "50%") -> 50
-          String.contains?(due_interval, "34%") -> 34
-          String.contains?(due_interval, "33%") -> 33
-          true -> prepare_percentage(percentage)
-        end
-      else
-        prepare_percentage(percentage)
-      end
-
-    %{attrs | "percentage" => update_percentage}
-  end
-
-  defp set_percentage(attrs, _), do: attrs
+  def prepare_percentage(%{"percentage" => percentage} = attrs), do: %{attrs | "percentage" => prepare_percentage(percentage)}
+  def prepare_percentage(nil), do: nil
+  def prepare_percentage("" <> percentage), do: String.trim_trailing(percentage, "%")
+  def prepare_percentage(percentage), do: percentage
 
   defp set_shoot_interval(attrs, false, default_payment_changeset) do
     changeset = %__MODULE__{} |> cast(attrs, [:shoot_date, :count_interval, :payment_field_index])
@@ -164,8 +148,4 @@ defmodule Picsello.PackagePaymentSchedule do
   end
 
   defp set_shoot_interval(attrs, _, _), do: attrs
-
-  defp prepare_percentage(nil), do: nil
-  defp prepare_percentage("" <> percentage), do: String.trim_trailing(percentage, "%")
-  defp prepare_percentage(percentage), do: percentage
 end

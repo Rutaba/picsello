@@ -283,15 +283,19 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
     updated_payment_schedules =
       Enum.map(updated_package_payment_schedules, fn package_schedule ->
-        Enum.find_value(payment_schedules, [], fn %{description: description} = pyment_schedule ->
-          if description == package_schedule.description,
-            do: Map.put(pyment_schedule, :due_at, package_schedule.schedule_date)
-        end)
+        find_and_map_payment_schedule(payment_schedules, package_schedule)
       end)
       |> List.flatten()
       |> payment_schedules_struct_map()
 
     {updated_package_payment_schedules, updated_payment_schedules}
+  end
+
+  defp find_and_map_payment_schedule(payment_schedules, package_schedule) do
+    Enum.find_value(payment_schedules, [], fn %{description: description} = pyment_schedule ->
+      if description == package_schedule.description,
+        do: Map.put(pyment_schedule, :due_at, package_schedule.schedule_date)
+    end)
   end
 
   defp get_fist_and_last_shoot_dates(schedules, field) do
