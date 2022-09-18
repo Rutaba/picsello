@@ -899,7 +899,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  def create_a_new_album(album, is_finals, params, is_mobile, is_redirect, gallery_id, socket) do
+  def create_album(
+        album,
+        %{
+          params: params,
+          gallery_id: gallery_id,
+          is_finals: is_finals,
+          is_mobile: is_mobile,
+          is_redirect: is_redirect
+        },
+        socket
+      ) do
     if album do
       {album, message} =
         album
@@ -939,7 +949,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
 
   defp insert_album(%{selected_photos: selected_photos}, album_params) do
-    {:ok, album} = Albums.insert_album_with_selected_photos(album_params, selected_photos)
-    {:ok, album.album}
+    case Albums.insert_album_with_selected_photos(album_params, selected_photos) do
+      {:ok, album} -> {:ok, album.album}
+      _ -> {nil, "something went wrong"}
+    end
   end
 end

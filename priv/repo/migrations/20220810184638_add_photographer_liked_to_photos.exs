@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.AddPhotographerLikedToPhotos do
 
   def change do
     alter table(:photos) do
-      add(:photographer_liked, :boolean, default: false)
+      add(:is_photographer_liked, :boolean, default: false)
     end
   end
 end

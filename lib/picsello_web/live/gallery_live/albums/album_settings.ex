@@ -80,7 +80,17 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       socket
       |> make_popup(opts)
     else
-      create_a_new_album(album, is_finals, params, is_mobile, is_redirect, gallery_id, socket)
+      create_album(
+        album,
+        %{
+          params: params,
+          gallery_id: gallery_id,
+          is_finals: is_finals,
+          is_mobile: is_mobile,
+          is_redirect: is_redirect
+        },
+        socket
+      )
     end
   end
 

@@ -3,7 +3,7 @@ import { Modal } from './shared';
 export default {
   mounted() {
     const { el } = this;
-    if (el.id == ('img-' + el.dataset.selected_photo_id)) {
+    if (el.id == el.dataset.selected_photo_id) {
       const e = el.querySelector('.toggle-it')
       e.classList.add('item-border');
     }

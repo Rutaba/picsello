@@ -699,10 +699,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     selected_photos =
       unless album.is_finals do
         duplicate_photo_ids =
-          Galleries.get_photos_name(selected_photos)
+          Galleries.get_selected_photos_name(selected_photos)
           |> Galleries.filter_duplication(album_id)
 
-        Galleries.delete_photos_by(duplicate_photo_ids)
+        Galleries.delete_photos(duplicate_photo_ids)
 
         selected_photos -- duplicate_photo_ids
       end
@@ -910,18 +910,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {
           :confirm_event,
           "add_from_clients_favorite",
-          %{
-            params: params,
-            album: album,
-            gallery_id: gallery_id,
-            is_finals: is_finals,
-            is_mobile: is_mobile,
-            is_redirect: is_redirect
-          }
+          %{album: album} = params
         },
         socket
       ) do
-    create_a_new_album(album, is_finals, params, is_mobile, is_redirect, gallery_id, socket)
+    create_album(album, params, socket)
   end
 
   def handle_info(

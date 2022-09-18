@@ -50,20 +50,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         _,
         %{assigns: %{gallery: gallery, live_action: :proofing_album_paid} = assigns} = socket
       ) do
-<<<<<<< HEAD
-<<<<<<< HEAD
     order = get_order!(gallery, order_number, Map.get(assigns, :album))
-=======
-<<<<<<< HEAD
-    album = Map.get(assigns, :album, nil)
-    order = get_order!(gallery, order_number, album)
-=======
-    order = get_order!(gallery, order_number, assigns)
->>>>>>> 40b45662 (Modifications to gallery client)
->>>>>>> a366c700 (Modifications to gallery client)
-=======
-    order = get_order!(gallery, order_number, assigns)
->>>>>>> eaf898ed (Remove unused/damaged code)
 
     socket
     |> assign_details(order)

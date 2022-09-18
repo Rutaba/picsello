@@ -8,7 +8,7 @@ defmodule Picsello.Galleries.Photo do
 
   schema "photos" do
     field :client_liked, :boolean, default: false
-    field :photographer_liked, :boolean, default: false
+    field :is_photographer_liked, :boolean, default: false
     field :name, :string
     field :original_url, :string
     field :position, :float
@@ -50,7 +50,7 @@ defmodule Picsello.Galleries.Photo do
     :aspect_ratio,
     :active,
     :size,
-    :photographer_liked
+    :is_photographer_liked
   ]
   @update_attrs [
     :name,
@@ -65,7 +65,7 @@ defmodule Picsello.Galleries.Photo do
     :album_id,
     :active,
     :size,
-    :photographer_liked
+    :is_photographer_liked
   ]
   @required_attrs [:name, :position, :gallery_id, :original_url]
 

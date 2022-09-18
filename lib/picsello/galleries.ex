@@ -141,6 +141,7 @@ defmodule Picsello.Galleries do
     * :album_id
     * :offset
     * :limit
+    * :photographer_favorites_filter
   """
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
@@ -198,7 +199,7 @@ defmodule Picsello.Galleries do
 
     conditions =
       if photographer_favorites_filter do
-        dynamic([p], p.photographer_liked == true and ^conditions)
+        dynamic([p], p.is_photographer_liked == true and ^conditions)
       else
         conditions
       end
@@ -553,9 +554,9 @@ defmodule Picsello.Galleries do
   @doc """
   get name of the selected photos
   """
-  def get_photos_name(selected_photos) do
+  def get_selected_photos_name(selected_photo_ids) do
     from(p in Photo,
-      where: p.id in ^selected_photos,
+      where: p.id in ^selected_photo_ids,
       select: fragment("REPLACE(?,?,?)", p.name, "_final", "")
     )
     |> Repo.all()
@@ -564,24 +565,14 @@ defmodule Picsello.Galleries do
   @doc """
   filter the photos that are duplicated and returns id of filtered photos
   """
-  def filter_duplication(selected_photos, album_id) do
+  def filter_duplication(selected_photo_ids, album_id) do
     from(p in Photo,
       join: a in assoc(p, :album),
-      where: fragment("REPLACE(?,?,?)", p.name, "_final", "") in ^selected_photos,
+      where: fragment("REPLACE(?,?,?)", p.name, "_final", "") in ^selected_photo_ids,
       where: a.id == ^album_id,
       select: p.id
     )
     |> Repo.all()
-  end
-
-  @doc """
-  delete the photos if they are duplicated
-  """
-  def delete_photos_by(photo_ids) do
-    from(p in Photo,
-      where: p.id in ^photo_ids
-    )
-    |> Repo.update_all(set: [active: false])
   end
 
   @doc """

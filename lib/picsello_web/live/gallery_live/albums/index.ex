@@ -311,4 +311,10 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   defp thumbnail_url(%{thumbnail_photo: nil}), do: @blank_image
   defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
+
+  defp album_params(albums) do
+    if List.last(albums).is_client_liked && length(albums) == 1,
+      do: %{name: "All Photos", thumbnail_photo: nil, id: "unsorted-photos"},
+      else: %{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}
+  end
 end

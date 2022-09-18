@@ -145,7 +145,7 @@ defmodule Picsello.Photos do
     {1, [photo]} =
       from(photo in Photo,
         where: photo.id == ^id,
-        update: [set: [photographer_liked: not photo.photographer_liked]],
+        update: [set: [is_photographer_liked: not photo.is_photographer_liked]],
         select: photo
       )
       |> Repo.update_all([])
