@@ -56,7 +56,7 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
         <div class="grid gap-2.5 justify-center" style="grid-template-columns: repeat(auto-fill, minmax(0px, 200px));">
           <%= for digital <- order.digitals do%>
             <div class="sticky w-[200px] h-[130px] bg-gray-200 cursor-pointer hover:opacity-80" phx-click={toggle_border(digital.photo.id)} phx-click-away={JS.remove_class("item-border", to: "item-#{digital.photo.id}")} id={"selected-item-#{digital.photo.id}"}>
-              <div class="h-full relative" id={"selected-photo-#{digital.photo.id}"} phx-click="toggle_selected_photos" phx-value-photo_id={digital.photo.id} phx-hook="GallerySelector">
+              <div {testid("proofing-grid-item")} class="h-full relative toggle-parent" id={"selected-photo-#{digital.photo.id}"} phx-click="toggle_selected_photos" phx-value-photo_id={digital.photo.id} phx-hook="GallerySelector">
                   <div id={"photo-#{digital.photo.id}-selected"} photo-id={digital.photo.id} class="toggle-it"></div>
                   <img src={preview_url(digital.photo)}class="w-full h-full object-contain relative" />
                   <.icon name="star" class="absolute opacity-100 right-3 bottom-2 text-white w-5 h-5"/>
