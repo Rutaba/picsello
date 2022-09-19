@@ -44,10 +44,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         } = socket,
         per_page
       ) do
-    toggle_state = !photographer_favorites_filter
-
     socket
-    |> assign(:photographer_favorites_filter, toggle_state)
+    |> assign(:photographer_favorites_filter, !photographer_favorites_filter)
     |> process_favorites(per_page)
   end
 
@@ -866,7 +864,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def client_liked_album(gallery_id) do
     photos = Galleries.get_gallery_photos(gallery_id, favorites_filter: true)
 
-    unless Enum.empty?(photos) do
+    if Enum.any?(photos) do
       %Album{
         id: "client_liked",
         photos: photos,

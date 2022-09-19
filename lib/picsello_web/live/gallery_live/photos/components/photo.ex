@@ -49,10 +49,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
         %{assigns: %{is_client_gallery: is_client_gallery}} = socket
       ) do
     {:ok, _} =
-      case is_client_gallery do
-        true -> Photos.toggle_liked(id)
-        false -> Photos.toggle_photographer_liked(id)
-      end
+      if is_client_gallery,
+        do: Photos.toggle_liked(id),
+        else: Photos.toggle_photographer_liked(id)
 
     socket |> noreply()
   end
@@ -69,16 +68,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
         } = socket
       ) do
     is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
+    album = params["album"]
 
     route =
-      if(is_nil(params["album"]),
+      if(is_nil(album),
         do: Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, is_mobile),
         else:
           Routes.gallery_photos_index_path(
             socket,
             :index,
             photo.gallery_id,
-            params["album"],
+            album,
             is_mobile
           )
       )

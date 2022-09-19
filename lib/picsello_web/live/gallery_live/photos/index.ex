@@ -105,13 +105,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    is_redirect_value = if(client_liked_album, do: false, else: true)
-
     socket
     |> open_modal(AlbumSettings, %{
       gallery_id: gallery.id,
       selected_photos: selected_photos,
-      is_redirect: is_redirect_value
+      is_redirect: !client_liked_album
     })
     |> noreply()
   end
@@ -977,7 +975,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  defp reject_ordered_photos(%{assigns: %{orders: orders, photos: photos}} = socket) do
+  defp sorted_photos(%{assigns: %{orders: orders, photos: photos}} = socket) do
     case orders do
       [] ->
         assign(socket, photos: photos)

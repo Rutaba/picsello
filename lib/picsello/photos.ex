@@ -142,15 +142,20 @@ defmodule Picsello.Photos do
   end
 
   def toggle_photographer_liked(id) when is_number(id) do
-    {1, [photo]} =
-      from(photo in Photo,
-        where: photo.id == ^id,
-        update: [set: [is_photographer_liked: not photo.is_photographer_liked]],
-        select: photo
-      )
-      |> Repo.update_all([])
+    case toggle_photographer_liked_query(id) do
+      {_, [photo]} -> {:ok, photo}
+      {_, nil} -> {:error, "something went wrong"}
+      _ -> {:error, "something went wrong"}
+    end
+  end
 
-    {:ok, photo}
+  defp toggle_photographer_liked_query(id) do
+    from(photo in Photo,
+      where: photo.id == ^id,
+      update: [set: [is_photographer_liked: not photo.is_photographer_liked]],
+      select: photo
+    )
+    |> Repo.update_all([])
   end
 
   @spec get_related(Photo.t(), favorites_only: boolean()) :: [Photo.t()]

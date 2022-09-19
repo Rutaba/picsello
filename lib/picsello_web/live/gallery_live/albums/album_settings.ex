@@ -279,6 +279,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           </div>
         </div>
       </div>
-    """
+    """ 
   end
 end

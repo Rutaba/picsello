@@ -70,7 +70,7 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
         </div>
     </div>
     
-</div>
+    </div>
     <%= if @client_liked_album do %>
         <div class="flex p-3 items-center font-sans md:w-full bg-base-100 cursor-pointer text-blue-planning-300" phx-click="go_to_original_album" phx-value-album={@photo.album_id} phx-target={@myself}>
             <.icon name="standard_album" class="w-4 h-4 stroke-2 fill-current text-blue-planning-300 mr-2 group-hover:!text-blue-planning-300"/>
