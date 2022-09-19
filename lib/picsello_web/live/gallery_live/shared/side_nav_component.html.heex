@@ -117,7 +117,7 @@
         </div>
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
           <.bar class="block" route={Routes.gallery_product_preview_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Product previews" icon="shop-icon.png" arrow_show={@arrow_show == "product_previews"}>
-            <%= if Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) == false do %>
+            <%= if !Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) do %>
               <.icon name="warning-orange-dark" class="text-base-200 w-4 h-4" />
             <% end %>
           </.bar>

@@ -261,7 +261,7 @@ defmodule PicselloWeb.HomeLive.Index do
                color: "red-sales-300",
                class: "border-red-sales-300"
              }},
-            {Picsello.Subscriptions.subscription_payment_method?(current_user) === false,
+            {!Picsello.Subscriptions.subscription_payment_method?(current_user),
              %{
                action: "open-billing-portal",
                title: "Missing Payment Method",

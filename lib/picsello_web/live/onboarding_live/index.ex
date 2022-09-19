@@ -298,11 +298,11 @@ defmodule PicselloWeb.OnboardingLive.Index do
         |> assign(current_user: user)
         |> assign_step(step + 1)
         |> assign_changeset()
-        |> noreply()
 
       {:error, reason} ->
-        socket |> assign(changeset: reason) |> noreply()
+        socket |> assign(changeset: reason)
     end)
+    |> noreply()
   end
 
   defp save_final(socket, params, data \\ :skip) do
@@ -330,11 +330,11 @@ defmodule PicselloWeb.OnboardingLive.Index do
         |> assign(current_user: user)
         |> update_user_contact_trial(user)
         |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
-        |> noreply()
 
       {:error, reason} ->
-        socket |> assign(changeset: reason) |> noreply()
+        socket |> assign(changeset: reason)
     end)
+    |> noreply()
   end
 
   defdelegate job_types(), to: JobType, as: :all

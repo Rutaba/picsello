@@ -13,12 +13,11 @@ defmodule Picsello.ClientOrdersTest do
   setup do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    _photographer =
-      insert(:user,
-        organization: organization,
-        stripe_customer_id: "photographer-stripe-customer-id"
-      )
-      |> onboard!()
+    insert(:user,
+      organization: organization,
+      stripe_customer_id: "photographer-stripe-customer-id"
+    )
+    |> onboard!()
 
     package =
       insert(:package,

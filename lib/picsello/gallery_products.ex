@@ -2,9 +2,7 @@ defmodule Picsello.GalleryProducts do
   @moduledoc false
 
   import Ecto.Query, warn: false
-  alias Picsello.Repo
-  alias Picsello.Product
-  alias Picsello.Galleries.GalleryProduct
+  alias Picsello.{Repo, Galleries, Subscriptions, Product, Galleries.GalleryProduct}
 
   def upsert_gallery_product(gallery_product, attr) do
     gallery_product
@@ -158,8 +156,8 @@ defmodule Picsello.GalleryProducts do
   end
 
   defp maybe_query_products_with_active_payment_method(gallery_id) do
-    Picsello.Galleries.get_gallery!(gallery_id)
-    |> Picsello.Galleries.gallery_photographer()
-    |> Picsello.Subscriptions.subscription_payment_method?()
+    Galleries.get_gallery!(gallery_id)
+    |> Galleries.gallery_photographer()
+    |> Subscriptions.subscription_payment_method?()
   end
 end

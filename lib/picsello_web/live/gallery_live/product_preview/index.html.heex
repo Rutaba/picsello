@@ -21,7 +21,7 @@
           <%= cond do %>
             <% Picsello.Onboardings.non_us_state?(@gallery.photographer) -> %>
                 <p>Product ordering is not available in your country yet. Please <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id, data_ask: true)}>contact us</a> if there is a favorite vendor / lab partner you would like to see available on Picsello.</p>
-              <% Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) == false -> %>
+              <% !Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) -> %>
                 <div class="flex flex-col items-center px-4 py-2 mt-8 text-center rounded-lg md:flex-row bg-red-sales-300/10 sm:text-left">
                   <.icon name="warning-orange-dark" class="inline-block w-8 h-8 mr-2"/>
                   <p class="text-black md:mr-4">It looks like you're missing a payment method. You won’t be able to sell physical products until you add one in the billing portal. Don't worry, you can still sell digitals! <a href="https://support.picsello.com/article/116-print-credits-and-how-they-work" class="underline" target="_blank" rel="noopener noreferrer">Learn more</a></p>
