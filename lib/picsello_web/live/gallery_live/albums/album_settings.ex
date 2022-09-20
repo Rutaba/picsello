@@ -60,7 +60,19 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           }
         } = socket
       ) do
-    if is_redirect == false do
+    if is_redirect do
+      create_album(
+        album,
+        %{
+          params: params,
+          gallery_id: gallery_id,
+          is_finals: is_finals,
+          is_mobile: is_mobile,
+          is_redirect: is_redirect
+        },
+        socket
+      )
+    else
       opts = [
         event: "add_from_clients_favorite",
         title: "Are you sure?",
@@ -79,18 +91,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
       socket
       |> make_popup(opts)
-    else
-      create_album(
-        album,
-        %{
-          params: params,
-          gallery_id: gallery_id,
-          is_finals: is_finals,
-          is_mobile: is_mobile,
-          is_redirect: is_redirect
-        },
-        socket
-      )
     end
   end
 

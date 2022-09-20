@@ -328,6 +328,16 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  @doc """
+  delete the photos if they are duplicated
+  """
+  def delete_photos_by(photo_ids) do
+    from(p in Photo,
+      where: p.id in ^photo_ids
+    )
+    |> Repo.update_all(set: [active: false])
+  end
+
   @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)
   def get_photos_by_ids(photo_ids) do
     from(p in Photos.active_photos(), where: p.id in ^photo_ids)

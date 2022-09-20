@@ -926,9 +926,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> upsert_album("Album successfully created")
 
       redirect_path =
-        if is_redirect == false,
-          do: "/galleries/#{gallery_id}/albums/client_liked",
-          else: Routes.gallery_photos_index_path(socket, :index, gallery_id, album.id, is_mobile)
+        if is_redirect,
+          do: Routes.gallery_photos_index_path(socket, :index, gallery_id, album.id, is_mobile),
+          else: "/galleries/#{gallery_id}/albums/client_liked"
 
       socket
       |> push_redirect(to: redirect_path)

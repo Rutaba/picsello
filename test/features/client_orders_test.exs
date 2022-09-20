@@ -2,8 +2,7 @@ defmodule Picsello.ClientOrdersTest do
   use Picsello.FeatureCase, async: true
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
-  import Picsello.TestSupport.ClientGallery, only: [click_photo: 2]
-  alias Picsello.{Repo, Cart.Order, Package, Galleries.Photo}
+  alias Picsello.{Repo, Cart.Order, Package}
 
   setup do
     Mox.verify_on_exit!()
@@ -36,6 +35,7 @@ defmodule Picsello.ClientOrdersTest do
       )
 
     insert(:watermark, gallery: gallery)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
     for {%{id: category_id} = category, index} <-
           Enum.with_index(Picsello.Repo.all(Picsello.Category)) do
@@ -64,7 +64,7 @@ defmodule Picsello.ClientOrdersTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, organization: organization, package: package]
+    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids]
   end
 
   setup :authenticated_gallery_client
@@ -178,7 +178,8 @@ defmodule Picsello.ClientOrdersTest do
   feature "order product", %{
     session: session,
     gallery: %{id: gallery_id} = gallery,
-    organization: organization
+    organization: organization,
+    photo_ids: photo_ids
   } do
     {gallery_product_id, whcc_product_id, size} =
       from(whcc_product in Picsello.Product,
@@ -262,7 +263,7 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_text(gallery.name)
     |> click(css("a", text: "View Gallery"))
     |> assert_has(css("*[data-testid='products'] li", count: 7))
-    |> click_photo(1)
+    |> click(css("#img-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
@@ -324,7 +325,8 @@ defmodule Picsello.ClientOrdersTest do
 
   feature "client doesn't see products for non-US photographer", %{
     session: session,
-    gallery: gallery
+    gallery: gallery,
+    photo_ids: photo_ids
   } do
     Picsello.Repo.update_all(Picsello.Accounts.User,
       set: [
@@ -340,7 +342,7 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_text(gallery.name)
     |> click(css("a", text: "View Gallery"))
     |> assert_has(css("*[data-testid='products'] li", count: 0))
-    |> click_photo(1)
+    |> click(css("#img-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [{"Digital Download", "$25.00"}] =
@@ -355,7 +357,7 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   describe "digital downloads" do
-    feature "purchase single", %{session: session, organization: organization} do
+    feature "purchase single", %{session: session, organization: organization, photo_ids: photo_ids} do
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
@@ -385,14 +387,14 @@ defmodule Picsello.ClientOrdersTest do
 
       session
       |> click(css("a", text: "View Gallery"))
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "1"))
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
       |> click(link("close"))
-      |> click_photo(2)
+      |> click(css("#img-#{List.last(photo_ids)}"))
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
       |> click(css("p", text: "Added!"))
@@ -406,7 +408,7 @@ defmodule Picsello.ClientOrdersTest do
           css("img"),
           fn img ->
             src = Element.attr(img, "src")
-            assert String.ends_with?(src, "/watermarked_preview.jpg")
+            assert String.ends_with?(src, "/gallery-icon.svg")
           end
         )
         |> assert_text("$25.00")
@@ -416,13 +418,13 @@ defmodule Picsello.ClientOrdersTest do
       |> find(css("*[data-testid^='digital-']", count: 1, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
-        |> assert_has(css("img[src$='/watermarked_preview.jpg']"))
+        |> assert_has(css("img[src$='/gallery-icon.svg']"))
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
       |> assert_path(gallery_path)
       |> assert_has(css("*[title='cart']", text: "0"))
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> within_modal(&click(&1, button("Add to cart")))
       |> click(css("p", text: "Added!"))
       |> click(link("cart"))
@@ -458,15 +460,14 @@ defmodule Picsello.ClientOrdersTest do
          }}
       )
 
-      assert String.ends_with?(product_image, "watermarked_preview.jpg")
+      assert String.ends_with?(product_image, "/gallery-icon.svg")
 
       session
-      |> assert_has(css("img[src$='/preview.jpg']"))
       |> assert_text("Digital download")
       |> assert_has(css("*[title='cart']", text: "0"))
       |> assert_download_link("Download photos", order_number)
       |> click(link("Home"))
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "Download"))
       |> click(link("close"))
       |> click(link("My orders"))
@@ -474,30 +475,30 @@ defmodule Picsello.ClientOrdersTest do
         session
         |> find(css("img"), fn img ->
           src = Element.attr(img, "src")
-          assert String.ends_with?(src, "/preview.jpg")
+          assert String.ends_with?(src, "/print.png")
         end)
         |> assert_download_link("Download photos", Element.text(number))
       end)
     end
 
-    feature "with download credit", %{session: session} do
+    feature "with download credit", %{session: session, photo_ids: photo_ids} do
       Repo.update_all(Package, set: [download_count: 2])
 
       session
       |> visit(current_url(session))
       |> click(link("View Gallery"))
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(definition("Download Credits", text: "2"))
       |> click(button("Add to cart"))
       |> assert_has(link("cart", text: "1"))
-      |> click_photo(2)
+      |> click(css("#img-#{List.last(photo_ids)}"))
       |> assert_has(definition("Download Credits", text: "1"))
       |> click(button("Add to cart"))
       |> click(css("p", text: "Added!"))
       |> click(link("cart", text: "2"))
       |> assert_has(definition("Total", text: "$0.00"))
       |> click(link("Home"))
-      |> click_photo(3)
+      |> click(css("#img-#{Enum.at(photo_ids, 1)}"))
       |> refute_has(testid("download-credit"))
       |> click(button("Add to cart"))
       |> click(css("p", text: "Added!"))
@@ -529,7 +530,8 @@ defmodule Picsello.ClientOrdersTest do
       session: session,
       package: package,
       organization: organization,
-      gallery: %{name: gallery_name}
+      gallery: %{name: gallery_name},
+      photo_ids: photo_ids
     } do
       %{stripe_account_id: connect_account_id} = organization
       assert ~M[5000]USD = package.buy_all
@@ -559,7 +561,6 @@ defmodule Picsello.ClientOrdersTest do
       })
 
       gallery_url = session |> current_url()
-      photo1 = from(photo in Photo, order_by: photo.position, limit: 1) |> Repo.one!()
 
       session
       |> click(css("a", text: "View Gallery"))
@@ -574,7 +575,7 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> click(css("p", text: "Added!"))
       |> assert_has(link("cart", text: "1"))
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
       |> click(link("close"))
       |> click(link("cart"))
@@ -585,7 +586,7 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("$50.00")
         |> click(button("Delete"))
       end)
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> within_modal(&click(&1, button("Add to cart")))
       |> assert_has(link("cart", text: "1"))
       |> click(button("Buy now"))
@@ -646,15 +647,14 @@ defmodule Picsello.ClientOrdersTest do
             gallery_name
         )
       )
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> within_modal(fn modal ->
         modal
-        |> assert_has(css("img[src$='/preview.jpg']"))
         |> assert_has(testid("product_option_digital_download", text: "Download"))
         |> find(
           link("Download"),
           &assert(
-            Element.attr(&1, "href") == Path.join(gallery_url, "photos/#{photo1.id}/download")
+            Element.attr(&1, "href") == Path.join(gallery_url, "photos/#{List.first(photo_ids)}/download")
           )
         )
         |> click(link("close"))

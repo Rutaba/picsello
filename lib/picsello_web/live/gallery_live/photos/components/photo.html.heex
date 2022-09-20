@@ -1,5 +1,5 @@
-<div class={classes(%{"flex item flex-col" => !@is_client_gallery})}>
-<div class={classes("bg-gray-200 h-[130px]", %{"item" => @is_client_gallery, "flex" => !@is_client_gallery})} id={"photo-item-#{@photo.id}"}
+<div class={classes(%{"flex item flex-col" => !@is_client_gallery})} id={"photo-item-#{@photo.id}"}>
+<div class={classes("bg-gray-200 h-[130px]", %{"item" => @is_client_gallery, "flex" => !@is_client_gallery})} 
 style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
         <div class="galleryItem toggle-parent">

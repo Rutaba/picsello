@@ -172,14 +172,6 @@
           </div>
         </div>
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
-          <% true when not @photographer_favorites_filter -> %>
-            <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-                <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
-                <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
-            </div>
-            <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
-              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
-            </div>
           <% true when @photographer_favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 Oops, there's no liked photo!

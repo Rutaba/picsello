@@ -700,7 +700,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           Galleries.get_selected_photos_name(selected_photos)
           |> Galleries.filter_duplication(album_id)
 
-        Galleries.delete_photos(duplicate_photo_ids)
+        Galleries.delete_photos_by(duplicate_photo_ids)
 
         selected_photos -- duplicate_photo_ids
       end
