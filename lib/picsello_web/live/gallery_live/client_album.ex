@@ -262,10 +262,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp photos_count(nil), do: "photo"
   defp photos_count(count), do: "#{count} #{ngettext("photo", "photos", count)}"
 
-  defp photos_button(%{route: route, title: title} = assigns) do
-    ~H[<%= live_redirect to: route, target: "_blank" do %> <button class="btn-primary py-8"><%= title %></button><% end %>]
-  end
-
   defp toggle_filter(%{applied?: applied?} = assigns) do
     class_1 = if applied?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)
     class_2 = if applied?, do: ~s(right-1), else: ~s(left-1)

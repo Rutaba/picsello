@@ -18,7 +18,13 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def mount(_, _, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign_cart_count(gallery)
-    |> assign(update: "init", filter: nil, occasion: nil, show_filter_form: false)
+    |> assign(
+      update: "init",
+      filter: nil,
+      occasion: nil,
+      show_filter_form: false,
+      filter_applied?: false
+    )
     |> ok(temporary_assigns: [designs: []])
   end
 
@@ -47,6 +53,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
             end
             |> Filter.update(Map.get(params, "filter", %{})))
         )
+        |> assign(:filter_applied?, Map.get(params, "filter", %{}) != %{})
         |> fetch()
         |> noreply()
 
@@ -123,7 +130,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
               filter={@filter}
               nested_list_class="mb-8 border shadow-lg border-base-200"
               button_class="flex items-center w-full py-2 text-2xl font-semibold"
-              options_icon_class="peer-checked:text-base-300",
+              options_icon_class="mt-3 right-10 peer-checked:text-base-300",
               is_mobile={true}
             />
 
@@ -185,7 +192,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
         <hr class="border-base-225">
 
-        <.form method="get" for={:pills} phx-change="apply-filters" class="pb-2 relative">
+        <.form method="get" for={:pills} phx-change="apply-filters" class="pb-6 relative">
           <%= for %{id: filter_id, options: options} <- @filter, %{id: option_id, checked: true} <- options do %>
             <input type="hidden" name={"filter[#{filter_id}][]"} value={option_id}/>
           <% end %>
@@ -194,7 +201,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         </.form>
       </div>
 
-        <ul class="relative top-[250px] pb-16 pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6" id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
+        <ul class={"relative pb-16 pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
           <%= for design <- @designs do %>
             <li id={"design-#{design.id}"}>
               <button class="w-full h-full" phx-click="open-editor" value={design.id}>
@@ -209,6 +216,9 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     </div>
     """
   end
+
+  defp top(true), do: "top-[320px]"
+  defp top(false), do: "top-[250px]"
 
   @impl true
   # if it fires but we are choosing an occasion
@@ -229,6 +239,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     |> push_patch(
       to: self_path(socket, gallery, %{occasion_id: occasion_id, filter: filter_params})
     )
+    |> assign(:filter_applied?, filter_params != %{})
     |> noreply()
   end
 
@@ -284,7 +295,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
               main_list_class="flex rounded-lg flex-row space-x-4 text-sm font-medium bg-white"
               nested_list_class="absolute z-10 py-1 font-medium text-sm text-base-500 bg-white w-44 rounded divide-y divide-gray-100 shadow"
               button_class="flex justify-between items-center pr-2 font-black w-full text-base w-auto"
-              options_icon_class="mt-2 peer-checked:text-black"
+              options_icon_class="right-5 mt-2 peer-checked:text-black"
             />
           </div>
         </div>
@@ -323,9 +334,9 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     <%= for %{id: option_id, checked: checked} = option <- @options, dom_id = Enum.join([@filter_id, option_id], "-") do %>
       <li>
         <input type="checkbox" id={dom_id} name={"filter[#{@filter_id}][]"} value={option_id} checked={checked} class="hidden peer"/>
-        <.icon name="checkmark" class={"absolute w-8 h-4 stroke-current right-5 text-base-100 #{@icon_class}"} />
+        <.icon name="checkmark" class={"absolute w-8 h-4 stroke-current #{!checked && 'hidden'} #{@icon_class}"} />
 
-        <label for={dom_id} class="block px-5 py-3 peer-checked:bg-base-200">
+        <label for={dom_id} class="block px-5 py-3 hover:bg-base-200 peer-checked:bg-base-200">
           <.filter_option_label option={option} />
         </label>
       </li>

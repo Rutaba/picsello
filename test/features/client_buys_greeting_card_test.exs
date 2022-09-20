@@ -29,8 +29,13 @@ defmodule Picsello.ClientBuysGreetingCardTest do
 
     session
     |> find(css("label", count: :any, text: label_text), fn labels ->
-      labels
-      |> Enum.find_value(fn label ->
+      filter_label(labels)
+    end)
+  end
+
+  def filter_label(labels) do
+    labels
+    |> Enum.find_value(fn label ->
         case Element.attr(label, "for") do
           <<_::binary-size(1)>> <> _ = id ->
             has?(session, css("input[type=checkbox]##{id}", options))
@@ -39,11 +44,10 @@ defmodule Picsello.ClientBuysGreetingCardTest do
             has?(label, css("input[type=checkbox]", options))
         end && label
       end)
-      |> case do
-        nil -> "No labeled with text #{label_text} for a #{inspect(options)} checkbox"
-        label -> Element.click(label)
-      end
-    end)
+    |> case do
+      nil -> "No labeled with text #{label_text} for a #{inspect(options)} checkbox"
+      label -> Element.click(label)
+    end
   end
 
   feature "filter designs", %{session: session} do
