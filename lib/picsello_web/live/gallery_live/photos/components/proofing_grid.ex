@@ -78,6 +78,6 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
   def proofing_grid(assigns) do
     ~H"""
     <.live_component module={__MODULE__} id={assigns[:id] || "proofing-grid"} {assigns} />
-    """
+    """ 
   end
 end
