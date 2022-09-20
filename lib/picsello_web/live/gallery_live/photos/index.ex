@@ -955,7 +955,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
-    |> reject_ordered_photos()
+    |> sorted_photos()
     |> noreply()
   end
 

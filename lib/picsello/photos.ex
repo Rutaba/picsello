@@ -143,8 +143,7 @@ defmodule Picsello.Photos do
 
   def toggle_photographer_liked(id) when is_number(id) do
     case toggle_photographer_liked_query(id) do
-      {_, [photo]} -> {:ok, photo}
-      {_, nil} -> {:error, "something went wrong"}
+      {_, photos} -> {:ok, List.first(photos)}
       _ -> {:error, "something went wrong"}
     end
   end
