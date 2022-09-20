@@ -60,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           }
         } = socket
       ) do
-    if !is_redirect do
+    unless is_redirect do
       opts = [
         event: "add_from_clients_favorite",
         title: "Are you sure?",
