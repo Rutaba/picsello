@@ -11,18 +11,11 @@ defmodule Picsello.GalleryProductPreviewTest do
   end
 
   def products(gallery, coming_soon \\ false) do
-    Enum.map(Picsello.Category.frame_images(), fn frame_image ->
-      :category
-      |> insert(frame_image: frame_image, coming_soon: coming_soon)
-      |> Kernel.then(fn category ->
-        insert(:product, category: category)
-
-        insert(:gallery_product,
-          category: category,
-          gallery: gallery
-        )
-      end)
-    end)
+    for image <- [nil | Picsello.Category.frame_images()] do
+      category = insert(:category, frame_image: image, coming_soon: coming_soon)
+      insert(:product, category: category)
+      insert(:gallery_product, category: category, gallery: gallery)
+    end
   end
 
   test "Product Preview render", %{
@@ -100,6 +93,6 @@ defmodule Picsello.GalleryProductPreviewTest do
     |> assert_has(css(".item", count: length(photo_ids)))
     |> refute_has(css("#dragDrop-upload-form-#{gallery_id} span", text: "Drag your images or"))
     |> visit("/galleries/#{gallery_id}/product-previews")
-    |> find(css("*[id^='/images/print.png-album_transparency.png']", count: 1))
+    |> find(css("canvas[id='/images/print.png-/images/frames/album.png']", count: 1))
   end
 end
