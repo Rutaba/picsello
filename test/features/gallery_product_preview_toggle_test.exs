@@ -23,6 +23,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       )
     end
 
+    insert_photo(%{gallery: gallery, total_photos: 20})
     [gallery: gallery]
   end
 
@@ -45,8 +46,6 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       } do
         session
         |> visit("/galleries/#{gallery_id}/product-previews")
-        insert_photo(%{gallery: gallery, total_photos: 20})
-        session
         |> assert_text("Product Previews")
         |> take_screenshot()
         |> scroll_to_bottom()
@@ -67,8 +66,6 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       } do
         session
         |> visit("/galleries/#{gallery_id}/product-previews")
-        insert_photo(%{gallery: gallery, total_photos: 20})
-        session
         |> assert_text("Product Previews")
         |> scroll_to_bottom()
         |> click(css("span", text: "Product enabled to sell", count: 7, at: 0))
