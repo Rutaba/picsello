@@ -230,6 +230,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> put_flash(:success, remove_from_album_success_message(selected_photos, album))
     |> push_event("reload_grid", %{})
     |> noreply()
@@ -275,6 +276,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:update_mode, "append")
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> push_event("reload_grid", %{})
     |> noreply()
   end
@@ -297,6 +299,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
     |> assign_photos(@per_page)
     |> sorted_photos()
+    |> push_event("select_mode", %{"mode" => "selected_none"})
     |> push_event("reload_grid", %{})
     |> noreply()
   end
@@ -368,12 +371,25 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "selected_all",
         _,
         %{
-          assigns: %{
-            gallery: gallery
-          }
+          assigns:
+            %{
+              gallery: gallery,
+              current_user: %{organization: organization}
+            } = assigns
         } = socket
       ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
+    selection_filter = assigns[:selection_filter] || false
+    album = assigns[:album] || nil
+
+    photo_ids =
+      if selection_filter && album do
+        Orders.get_proofing_order_photos(album.id, organization.id)
+        |> Enum.flat_map(fn %{digitals: digitals} ->
+          Enum.map(digitals, & &1.photo.id)
+        end)
+      else
+        Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
+      end
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_all"})
@@ -592,6 +608,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => id})
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> put_flash(:success, remove_from_album_success_message(id, album))
     |> push_event("reload_grid", %{})
     |> noreply()
@@ -679,6 +696,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:update_mode, "append")
     |> assign(:inprogress_photos, [])
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> push_event("reload_grid", %{})
     |> put_flash(:success, success_message)
     |> noreply()
@@ -816,6 +834,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "#{count} #{ngettext("photo", "photos", count)} deleted successfully"
       )
       |> assign_photos(@per_page)
+      |> sorted_photos()
       |> push_event("reload_grid", %{})
       |> noreply()
     else
@@ -842,12 +861,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"
   end
 
-  defp options(:select),
-    do: [
-      %{title: "All", id: "selected_all"},
-      %{title: "Favorite", id: "selected_favorite"},
-      %{title: "None", id: "selected_none"}
-    ]
+  defp options(album) do
+    select_options =
+      [%{title: "All", id: "selected_all"}] ++
+        if album && album.is_proofing do
+          [%{title: "None", id: "selected_none"}]
+        else
+          [%{title: "Favorite", id: "selected_favorite"}, %{title: "None", id: "selected_none"}]
+        end
+
+    select_options
+  end
 
   defp page_title(:index), do: "Photos"
   defp page_title(:edit), do: "Edit Photos"
