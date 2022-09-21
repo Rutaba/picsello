@@ -29,11 +29,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
 
     <div class="flex flex-col justify-between">
       <div class="items-center mt-8">
-        <div class={classes("flex items-center pt-4 font-sans lg:text-lg text-2xl font-bold", %{"text-gray-400" => @category.coming_soon})}>
+        <div class={classes("flex items-center py-4 font-sans lg:text-lg text-2xl font-bold", %{"text-gray-400" => @category.coming_soon})}>
           <%= @category.name %>
         </div>
-
-        <div class=" mx-4 pt-4 flex flex-col justify-between" >
 
           <label class="inline-flex relative items-center cursor-pointer">
           <input type="checkbox" class="sr-only peer" phx-click="sell_product_enabled" checked={@product.sell_product_enabled} phx-target={@myself}>
@@ -41,7 +39,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
           <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Product enabled to sell</span>
           </label>
 
-        </div>
         <%= if @product.sell_product_enabled do %>
           <label class="inline-flex relative items-center cursor-pointer">
             <input type="checkbox" class="sr-only peer" phx-click="product_preview_enabled" checked={@product.product_preview_enabled} phx-target={@myself}>
@@ -49,10 +46,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
             <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Show product preview in gallery</span>
           </label>
         <% end %>
-        </div>
 
           <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
-          <div class=" mx-4 pt-4 flex flex-col justify-between">
+            <div class=" mx-4 pt-4 flex flex-col justify-between">
 
             <div class="flex items-center justify-center mt-4">
               <.framed_preview category={@category} photo={@photo}/>
@@ -77,6 +73,8 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
             <% end %>
           </div>
         </div>
+      </div>
+      </div>
       </div>
     """
   end
