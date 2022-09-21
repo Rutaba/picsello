@@ -46,12 +46,12 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> assert_text("Product Previews")
     |> click(css("label", text: "Product enabled to sell", count: 7, at: 0))
-    |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 0), fn checkbox ->
+    |> find(checkbox("Product enabled to sell", count: 7, at: 0), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
     |> click(css("label", text: "Show product preview in gallery", count: 6, at: 0))
     |> find(
-      checkbox("Show product preview in gallery", visible: false, count: 6, at: 0),
+      checkbox("Show product preview in gallery", count: 6, at: 0),
       fn checkbox -> refute Element.selected?(checkbox) end
     )
   end
