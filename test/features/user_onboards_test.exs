@@ -42,15 +42,11 @@ defmodule Picsello.UserOnboardsTest do
 
   @onboarding_path Routes.onboarding_path(PicselloWeb.Endpoint, :index)
   @org_name_field text_field("onboarding-step-2_organization_name")
-  @phone_field text_field("onboarding-step-2_onboarding_phone")
   @photographer_years_field text_field("onboarding-step-2_onboarding_photographer_years")
-  @second_color_field css("li.aspect-square:nth-child(2)")
-  @website_field text_field("onboarding-step-4_organization_brand_links_0_link")
 
   def fill_in_step(session, 2) do
     session
     |> fill_in(@photographer_years_field, with: "5")
-    |> fill_in(@phone_field, with: "1234567890")
     |> click(option("OK"))
   end
 
@@ -79,6 +75,17 @@ defmodule Picsello.UserOnboardsTest do
     |> Mox.stub(:create_customer, fn %{}, _opts ->
       {:ok, %Stripe.Customer{id: "cus_123"}}
     end)
+    |> Mox.stub(:create_subscription, fn %{}, _opts ->
+      {:ok,
+       %Stripe.Subscription{
+         id: "s1",
+         status: "active",
+         current_period_start: DateTime.utc_now() |> DateTime.to_unix(),
+         current_period_end: DateTime.utc_now() |> DateTime.add(100) |> DateTime.to_unix(),
+         plan: %{id: subscription_plan.stripe_price_id},
+         customer: "cus_123"
+       }}
+    end)
     |> Mox.stub(:retrieve_subscription, fn "sub_123", _opts ->
       {:ok,
        %Stripe.Subscription{
@@ -100,48 +107,14 @@ defmodule Picsello.UserOnboardsTest do
     |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@photographer_years_field, with: "5")
     |> click(option("OK"))
-    |> fill_in(@phone_field, with: "123")
-    |> assert_disabled_submit()
-    |> fill_in(@phone_field, with: "1234567890")
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_disabled_submit()
     |> click(css("label", text: "Portrait"))
     |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
-    |> click(button("Next"))
-    |> assert_has(css("input[name$='[link]']:not(.text-input-invalid:not(.phx-no-feedback))"))
-    |> assert_disabled_submit()
-    |> click(@second_color_field)
-    |> fill_in(@website_field, with: "inval!d.com")
-    |> assert_disabled_submit()
-    |> fill_in(@website_field, with: "example.com")
+    |> click(css("button[type='submit']", text: "Start Trial"))
     |> wait_for_enabled_submit_button()
-    |> click(button("Next"))
-    |> assert_disabled_submit()
-    |> click(css("label", text: "Shootproof"))
-    |> click(css("label", text: "Session"))
-    |> find(css("input:checked", count: 2, visible: false), fn inputs ->
-      assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
-    end)
-    |> click(css("label", text: "None"))
-    |> assert_value(css("input:checked", count: 1, visible: false), "none")
-    |> click(css("label", text: "Shootproof"))
-    |> click(css("label", text: "Session"))
-    |> find(css("input:checked", count: 2, visible: false), fn inputs ->
-      assert ~w[shootproof session] == Enum.map(inputs, &Element.value/1)
-    end)
-    |> click(css("button[type='submit']", text: "Next"))
-    |> assert_text("Start your 30-day free trial")
-    |> click(button("Start Trial"))
-    |> assert_url_contains("stripe-checkout")
-
-    assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
-
-    session
-    |> visit(stripe_success_url)
-    |> assert_text("Your 30-day free trial has started!")
-    |> click(button("Go to my dashboard"))
     |> assert_path(home_path)
 
     user =
@@ -149,14 +122,14 @@ defmodule Picsello.UserOnboardsTest do
       |> Repo.reload()
       |> Repo.preload(organization: :package_templates)
 
-    second_color = Picsello.Profiles.colors() |> tl |> hd
+    first_color = Picsello.Profiles.colors() |> hd
 
     assert %User{
              onboarding: %{
                schedule: :full_time,
-               phone: "(123) 456-7890",
+               phone: nil,
                photographer_years: 5,
-               switching_from_softwares: [:shootproof, :session],
+               switching_from_softwares: nil,
                completed_at: %DateTime{}
              },
              organization: %{
@@ -166,7 +139,7 @@ defmodule Picsello.UserOnboardsTest do
                  %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
                ],
                profile: %{
-                 color: ^second_color,
+                 color: ^first_color,
                  job_types: ~w(event portrait)
                }
              }
@@ -220,28 +193,9 @@ defmodule Picsello.UserOnboardsTest do
     |> assert_has(@photographer_years_field)
 
     assert %User{
-             onboarding: %{phone: "(123) 456-7890"},
+             onboarding: %{schedule: :full_time},
              organization: %{profile: %{job_types: nil}}
            } = user |> Repo.reload() |> Repo.preload(:organization)
-  end
-
-  feature "user onboards without website", %{session: session, user: user} do
-    session
-    |> assert_path(@onboarding_path)
-    |> fill_in_step(2)
-    |> click(button("Next"))
-    |> click(css("label", text: "Portrait"))
-    |> click(button("Next"))
-    |> click(@second_color_field)
-    |> fill_in(@website_field, with: "example.com")
-    |> click(button("Next"))
-
-    user =
-      user
-      |> Repo.reload()
-      |> Repo.preload(organization: :brand_links)
-
-    assert %User{organization: %{brand_links: [%{link: "https://example.com"}]}} = user
   end
 
   feature "user selects Non-US state", %{session: session, user: user} do
@@ -250,7 +204,6 @@ defmodule Picsello.UserOnboardsTest do
     |> fill_in(@org_name_field, with: "Photogenious")
     |> fill_in(@photographer_years_field, with: "5")
     |> click(option("Non-US"))
-    |> assert_disabled(@phone_field)
     |> click(button("Next"))
     |> assert_text("speciality")
 

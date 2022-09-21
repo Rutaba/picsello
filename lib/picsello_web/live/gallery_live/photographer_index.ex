@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
-  alias Picsello.{Galleries, Messages, Notifiers.ClientNotifier}
+  alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent,
@@ -46,6 +46,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   def handle_params(%{"id" => id} = params, _, socket) do
     gallery =
       Galleries.get_gallery!(id)
+      |> Repo.preload(:photographer)
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
