@@ -524,13 +524,19 @@ defmodule Picsello.Galleries do
   @doc """
   Updates a photo
   """
-  def update_photo(nil, %{} = _attrs), do: []
+  def update_photo(photo_id, %{} = attrs) when is_integer(photo_id) do
+    case Repo.get(Photo, photo_id) do
+      nil ->
+        {:error, :no_photo}
 
-  def update_photo(%Photo{id: _} = photo, %{} = attrs) do
-    photo
-    |> Photo.update_changeset(attrs)
-    |> Repo.update()
+      photo ->
+        photo
+        |> Photo.update_changeset(attrs)
+        |> Repo.update()
+    end
   end
+
+  def update_photo(_, %{} = _attrs), do: {:error, :no_photo}
 
   @doc """
   updates album_id for multiple photos.
@@ -745,7 +751,7 @@ defmodule Picsello.Galleries do
   def save_gallery_cover_photo(gallery, attrs \\ %{}) do
     gallery
     |> Gallery.save_cover_photo_changeset(attrs)
-    |> Repo.update!()
+    |> Repo.update()
   end
 
   def delete_gallery_cover_photo(gallery) do

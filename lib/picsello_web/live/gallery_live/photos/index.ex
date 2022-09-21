@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
-  @per_page 100
+  @per_page 500
   @string_length 24
 
   @impl true
@@ -230,6 +230,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => selected_photos})
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> put_flash(:success, remove_from_album_success_message(selected_photos, album))
     |> push_event("reload_grid", %{})
     |> noreply()
@@ -275,6 +276,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:update_mode, "append")
     |> assign(page: page + 1)
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> push_event("reload_grid", %{})
     |> noreply()
   end
@@ -297,6 +299,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     )
     |> assign_photos(@per_page)
     |> sorted_photos()
+    |> push_event("select_mode", %{"mode" => "selected_none"})
     |> push_event("reload_grid", %{})
     |> noreply()
   end
@@ -368,12 +371,25 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "selected_all",
         _,
         %{
-          assigns: %{
-            gallery: gallery
-          }
+          assigns:
+            %{
+              gallery: gallery,
+              current_user: %{organization: organization}
+            } = assigns
         } = socket
       ) do
-    photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
+    selection_filter = assigns[:selection_filter] || false
+    album = assigns[:album] || nil
+
+    photo_ids =
+      if selection_filter && album do
+        Orders.get_proofing_order_photos(album.id, organization.id)
+        |> Enum.flat_map(fn %{digitals: digitals} ->
+          Enum.map(digitals, & &1.photo.id)
+        end)
+      else
+        Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
+      end
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_all"})
@@ -436,6 +452,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   @impl true
   def handle_event(
+        "add_finals_album_popup",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      selected_photos: selected_photos,
+      is_finals: true
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "toggle_selected_photos",
         %{"photo_id" => photo_id},
         %{assigns: %{selected_photos: selected_photos}} = socket
@@ -470,9 +506,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       true ->
         gallery = Repo.preload(gallery, job: :client)
         album = Albums.set_album_hash(album)
+        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, :album_send_link) do
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
             Picsello.EmailPresets.resolve_variables(
               preset,
               {gallery, album},
@@ -483,7 +520,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         socket
         |> assign(:job, gallery.job)
         |> PicselloWeb.ClientMessageComponent.open(%{
-          modal_title: "Share proofing album",
+          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
           subject: subject,
           body_html: body_html,
           presets: [],
@@ -495,7 +532,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
       false ->
         socket
-        |> put_flash(:error, "Please add photos to the gallery before sharing")
+        |> put_flash(:error, "Please add photos to the album before sharing")
         |> noreply()
     end
   end
@@ -571,6 +608,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:selected_photos, [])
     |> push_event("remove_items", %{"ids" => id})
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> put_flash(:success, remove_from_album_success_message(id, album))
     |> push_event("reload_grid", %{})
     |> noreply()
@@ -658,22 +696,29 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:update_mode, "append")
     |> assign(:inprogress_photos, [])
     |> assign_photos(@per_page)
+    |> sorted_photos()
     |> push_event("reload_grid", %{})
     |> put_flash(:success, success_message)
     |> noreply()
   end
 
   @impl true
-  def handle_info({:photo_processed, _, photo}, socket) do
-    photo_update =
-      %{
-        id: photo.id,
-        url: preview_url(photo)
-      }
-      |> Jason.encode!()
+  def handle_info(
+        {:photo_processed, _, photo},
+        %{assigns: %{total_progress: total_progress}} = socket
+      ) do
+    if total_progress == 100 do
+      photo_update =
+        %{
+          id: photo.id,
+          url: preview_url(photo)
+        }
+        |> Jason.encode!()
 
-    socket
-    |> assign(:photo_updates, photo_update)
+      socket |> assign(:photo_updates, photo_update)
+    else
+      socket
+    end
     |> noreply()
   end
 
@@ -789,6 +834,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "#{count} #{ngettext("photo", "photos", count)} deleted successfully"
       )
       |> assign_photos(@per_page)
+      |> sorted_photos()
       |> push_event("reload_grid", %{})
       |> noreply()
     else
@@ -815,12 +861,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     "#{photos_count} #{ngettext("photo", "photos", photos_count)} successfully removed from #{album.name}"
   end
 
-  defp options(:select),
-    do: [
-      %{title: "All", id: "selected_all"},
-      %{title: "Favorite", id: "selected_favorite"},
-      %{title: "None", id: "selected_none"}
-    ]
+  defp options(album) do
+    select_options =
+      [%{title: "All", id: "selected_all"}] ++
+        if album && album.is_proofing do
+          [%{title: "None", id: "selected_none"}]
+        else
+          [%{title: "Favorite", id: "selected_favorite"}, %{title: "None", id: "selected_none"}]
+        end
+
+    select_options
+  end
 
   defp page_title(:index), do: "Photos"
   defp page_title(:edit), do: "Edit Photos"

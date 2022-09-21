@@ -113,6 +113,6 @@ config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
 
 config :picsello,
        :feature_flags,
-       ~w[balance_due_emails]a
+       ~w[balance_due_emails sync_whcc_design_details]a
 
 config :picsello, :whcc, debug: System.get_env("WHCC_LOG_LEVEL")

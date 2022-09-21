@@ -98,12 +98,13 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
         %{},
         %{
           assigns: %{
-            gallery_id: gallery_id
+            gallery_id: gallery_id,
+            is_mobile: is_mobile
           }
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery_id})
+    |> open_modal(AlbumSettings, %{gallery_id: gallery_id, is_mobile: is_mobile})
     |> noreply()
   end
 

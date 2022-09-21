@@ -3,6 +3,26 @@ defmodule Picsello.PaymentSchedulesTest do
   import Money.Sigils
   alias Picsello.{PaymentSchedules, Repo}
 
+  setup do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+    user = insert(:user, email: "photographer@example.com")
+
+    lead =
+      insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
+
+    insert(:email_preset, job_type: lead.type, state: :payment_confirmation_client)
+
+    proposal = insert(:proposal, job: lead)
+
+    payment_schedule =
+      insert(:payment_schedule,
+        job: lead,
+        price: ~M[5000]USD
+      )
+
+    [lead: lead, proposal: proposal, payment_schedule: payment_schedule]
+  end
+
   describe "build_payment_schedules_for_lead/1" do
     test "when package total price is zero" do
       %{id: lead_id} =
@@ -274,23 +294,10 @@ defmodule Picsello.PaymentSchedulesTest do
   end
 
   describe "handle_payment/2" do
-    test "updates paid_at and sends email to photographer and client" do
-      Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
-      user = insert(:user, email: "photographer@example.com")
-
-      lead =
-        insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
-
-      insert(:email_preset, job_type: lead.type, state: :payment_confirmation_client)
-
-      proposal = insert(:proposal, job: lead)
-
-      payment_schedule =
-        insert(:payment_schedule,
-          job: lead,
-          price: ~M[5000]USD
-        )
-
+    test "updates paid_at and sends email to photographer and client", %{
+      proposal: proposal,
+      payment_schedule: payment_schedule
+    } do
       result =
         PaymentSchedules.handle_payment(
           %Stripe.Session{
@@ -308,14 +315,7 @@ defmodule Picsello.PaymentSchedulesTest do
       assert_receive {:delivered_email, %{to: [nil: "elizabeth-lead@example.com"]}}
     end
 
-    test "it does not update paid_at if already paid" do
-      user = insert(:user, email: "photographer@example.com")
-
-      lead =
-        insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
-
-      proposal = insert(:proposal, job: lead)
-
+    test "it does not update paid_at if already paid", %{lead: lead, proposal: proposal} do
       paid_at = DateTime.utc_now() |> DateTime.truncate(:second)
 
       payment_schedule =
@@ -337,6 +337,65 @@ defmodule Picsello.PaymentSchedulesTest do
       assert {:ok, :already_paid} = result
 
       assert %{paid_at: ^paid_at} = payment_schedule |> Repo.reload!()
+    end
+  end
+
+  describe "paid_amount/1" do
+    test "returns the amount that has been paid", %{
+      lead: lead,
+      proposal: proposal,
+      payment_schedule: payment_schedule
+    } do
+      PaymentSchedules.handle_payment(
+        %Stripe.Session{
+          client_reference_id: "proposal_#{proposal.id}",
+          metadata: %{"paying_for" => payment_schedule.id}
+        },
+        PicselloWeb.Helpers
+      )
+
+      assert PaymentSchedules.paid_amount(lead) == 5000
+    end
+
+    test "returns 0 when no payment has been executed yet", %{lead: lead} do
+      assert PaymentSchedules.paid_amount(lead) == 0
+    end
+  end
+
+  describe "owed_price/1" do
+    test "returns 0 when you have no amount in owed-queue", %{
+      lead: lead,
+      proposal: proposal,
+      payment_schedule: payment_schedule
+    } do
+      PaymentSchedules.handle_payment(
+        %Stripe.Session{
+          client_reference_id: "proposal_#{proposal.id}",
+          metadata: %{"paying_for" => payment_schedule.id}
+        },
+        PicselloWeb.Helpers
+      )
+
+      assert PaymentSchedules.owed_amount(lead) == 0
+    end
+
+    test "returns the owed amount", %{lead: lead} do
+      assert PaymentSchedules.owed_amount(lead) == 5000
+    end
+  end
+
+  describe "payment_schedules_count/1" do
+    test "returns 1 when count of payment_schedules in any lead is 1", %{lead: lead} do
+      assert PaymentSchedules.payment_schedules_count(lead) == 1
+    end
+
+    test "returns 2 when count of payment_schedules in any lead is 2 and so on", %{lead: lead} do
+      insert(:payment_schedule,
+        job: lead,
+        price: ~M[5000]USD
+      )
+
+      assert PaymentSchedules.payment_schedules_count(lead) == 2
     end
   end
 end
