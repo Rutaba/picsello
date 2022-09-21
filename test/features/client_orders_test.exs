@@ -205,8 +205,8 @@ defmodule Picsello.ClientOrdersTest do
                "redirects" => %{"complete" => %{"url" => complete_url}}
              } = args
 
-      assert String.ends_with?(preview_url, "watermarked_preview.jpg")
-      assert String.ends_with?(print_url, "original.jpg")
+      assert String.ends_with?(preview_url, "/images/print.png")
+      assert String.ends_with?(print_url, "/images/print.png")
 
       url =
         complete_url
@@ -408,7 +408,7 @@ defmodule Picsello.ClientOrdersTest do
           css("img"),
           fn img ->
             src = Element.attr(img, "src")
-            assert String.ends_with?(src, "/gallery-icon.svg")
+            assert String.ends_with?(src, "/print.png")
           end
         )
         |> assert_text("$25.00")
@@ -418,7 +418,7 @@ defmodule Picsello.ClientOrdersTest do
       |> find(css("*[data-testid^='digital-']", count: 1, at: 0), fn cart_item ->
         cart_item
         |> assert_text("Digital download")
-        |> assert_has(css("img[src$='/gallery-icon.svg']"))
+        |> assert_has(css("img[src$='/print.png']"))
         |> assert_text("$25.00")
         |> click(button("Delete"))
       end)
@@ -460,7 +460,7 @@ defmodule Picsello.ClientOrdersTest do
          }}
       )
 
-      assert String.ends_with?(product_image, "/gallery-icon.svg")
+      assert String.ends_with?(product_image, "/print.png")
 
       session
       |> assert_text("Digital download")

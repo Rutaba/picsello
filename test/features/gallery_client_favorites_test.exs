@@ -40,15 +40,6 @@ defmodule Picsello.GalleryClientFavoritesTest do
   end
 
   defp create_album_from_client_favorites(session, gallery_id) do
-    open_are_you_sure_modal(session, gallery_id)
-    |> assert_has(css("h1", text: "Are you sure?"))
-    |> assert_has(
-      css("p", text: "You really want to create a new album with these selected photos?")
-    )
-    |> click(button("Save changes"))
-  end
-
-  defp open_are_you_sure_modal(session, gallery_id) do
     session
     |> visit("/galleries/#{gallery_id}/albums/client_liked")
     |> click(css("#select"))

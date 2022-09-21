@@ -1,6 +1,5 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.TestSupport.ClientGallery
   alias Picsello.{Repo, Accounts.User}
 
   setup :onboarded
@@ -24,6 +23,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
     for category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
 
@@ -34,8 +34,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       )
     end
 
-    insert_photo(%{gallery: gallery, total_photos: 20})
-    [gallery: gallery]
+    [gallery: gallery, photo_ids: photo_ids]
   end
 
   test "Toggle disable product and view in client preview", %{
@@ -80,11 +79,17 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
   test "Toggle disable product preview and product available for purchase", %{
     session: session,
     gallery: %{id: gallery_id} = gallery,
+<<<<<<< HEAD
     } do
+=======
+    photo_ids: photo_ids
+  } do
+>>>>>>> b40bf255 (fix test cases)
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> assert_text("Product Previews")
     |> scroll_to_bottom()
+<<<<<<< HEAD
     |> click(css("span", text: "Product enabled to sell", count: 7, at: 0))
     |> click(css("span", text: "Product enabled to sell", count: 7, at: 2))
     |> click(css("span", text: "Product enabled to sell", count: 7, at: 3))
@@ -92,15 +97,32 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 2), fn checkbox -> refute Element.selected?(checkbox) end)
     |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 3), fn checkbox -> refute Element.selected?(checkbox) end)
     |> click(css("span", text: "Show product preview in gallery", count: 4, at: 0))
+=======
+    |> click(css("label", text: "Product enabled to sell", count: 7, at: 0))
+    |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 0), fn checkbox ->
+      refute Element.selected?(checkbox)
+    end)
+    |> click(css("label", text: "Product enabled to sell", count: 7, at: 1))
+    |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 1), fn checkbox ->
+      refute Element.selected?(checkbox)
+    end)
+    |> click(css("label", text: "Product enabled to sell", count: 7, at: 2))
+    |> find(checkbox("Product enabled to sell", visible: false, count: 7, at: 2), fn checkbox ->
+      refute Element.selected?(checkbox)
+    end)
+    |> scroll_to_bottom()
+    |> click(css("label", text: "Show product preview in gallery", count: 4, at: 3))
+>>>>>>> b40bf255 (fix test cases)
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> click(link("View Gallery"))
     |> assert_text("Test Client Wedding Gallery")
     |> assert_has(css("*[data-testid='products'] li", count: 3))
     |> scroll_to_bottom()
-    |> click_photo(1)
+    |> click(css("#item-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: 5), fn options ->
       assert [
+<<<<<<< HEAD
         {"Albums", "$55.00"},
         {"Loose Prints", "$25.00"},
         {"Press Printed Cards", "$5.00"},
@@ -133,4 +155,21 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       |> click(css("label", text: "Product enabled to sell", count: 7, at: 1))
       |> assert_has(button("Edit product preview", visible: true, count: 5))
     end
+=======
+               {"Ornaments", "$40.00"},
+               {"Loose Prints", "$25.00"},
+               {"Press Printed Cards", "$5.00"},
+               {"Display Products", "$80.00"},
+               {"Digital Download", "$25.00"}
+             ] =
+               options
+               |> Enum.map(fn option ->
+                 option
+                 |> find(css("p", count: 2))
+                 |> Enum.map(&Element.text/1)
+                 |> List.to_tuple()
+               end)
+    end)
+  end
+>>>>>>> b40bf255 (fix test cases)
 end

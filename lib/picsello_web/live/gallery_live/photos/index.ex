@@ -140,7 +140,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         end
       end)
       |> Enum.map(&{&1.name, &1.id})
-
     opts = [
       event: "assign_to_album",
       title: "Assign to album",
@@ -878,6 +877,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       title: "Move photo",
       subtitle: "Are you sure you wish to to move selected photos from its current location to
             #{album.name} ?",
+      confirm_label: "Yes, move",
       payload: %{album_id: album.id}
     ]
 
