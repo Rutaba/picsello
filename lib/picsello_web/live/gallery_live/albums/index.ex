@@ -20,7 +20,6 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @impl true
   def handle_params(%{"id" => gallery_id} = params, _uri, socket) do
     gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
-    client_liked_album = client_liked_album(gallery_id)
 
     albums =
       case client_liked_album(gallery.id) do

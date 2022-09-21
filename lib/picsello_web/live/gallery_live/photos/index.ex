@@ -158,25 +158,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> make_popup(opts)
   end
 
-  @impl true
-  def handle_event(
-        "add_finals_album_popup",
-        %{},
-        %{
-          assigns: %{
-            gallery: gallery,
-            selected_photos: selected_photos
-          }
-        } = socket
-      ) do
-    socket
-    |> open_modal(AlbumSettings, %{
-      gallery_id: gallery.id,
-      selected_photos: selected_photos,
-      is_finals: true
-    })
-    |> noreply()
-  end
 
   @impl true
   def handle_event(
@@ -693,18 +674,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
     album = Albums.get_album!(album_id)
-
     selected_photos =
-      unless album.is_finals do
+      if album.is_finals do
+        selected_photos
+      else
         duplicate_photo_ids =
-          Galleries.get_selected_photos_name(selected_photos)
-          |> Galleries.filter_duplication(album_id)
+        Galleries.get_selected_photos_name(selected_photos)
+        |> Galleries.filter_duplication(album_id)
 
         Galleries.delete_photos_by(duplicate_photo_ids)
 
         selected_photos -- duplicate_photo_ids
       end
-
     Galleries.move_to_album(String.to_integer(album_id), selected_photos)
 
     if album.is_proofing && is_nil(gallery.watermark) do

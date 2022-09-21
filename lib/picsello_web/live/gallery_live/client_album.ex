@@ -59,6 +59,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     )
     |> assign_cart_count(gallery)
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
