@@ -9,6 +9,10 @@ defmodule Picsello.SubscriptionChangesTest do
     user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
     plan = insert(:subscription_plan)
 
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "cus_123", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
+
     [plan: plan, user: user]
   end
 

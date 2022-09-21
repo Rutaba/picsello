@@ -12,7 +12,12 @@ defmodule Picsello.ClientOrdersTest do
 
   setup do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
-    _photographer = insert(:user, organization: organization) |> onboard!()
+
+    insert(:user,
+      organization: organization,
+      stripe_customer_id: "photographer-stripe-customer-id"
+    )
+    |> onboard!()
 
     package =
       insert(:package,
@@ -54,6 +59,10 @@ defmodule Picsello.ClientOrdersTest do
     Picsello.PhotoStorageMock
     |> Mox.stub(:path_to_url, & &1)
     |> Mox.stub(:get, &{:ok, %{name: &1}})
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
 
     [gallery: gallery, organization: organization, package: package]
   end

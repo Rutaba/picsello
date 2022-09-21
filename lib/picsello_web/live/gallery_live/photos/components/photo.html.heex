@@ -1,7 +1,7 @@
 <div class="item flex bg-gray-200" id={"photo-item-#{@photo.id}"} 
 style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
-        <div class="galleryItem">
+        <div class="galleryItem toggle-parent">
             <%= if @component do %>
             <div
             id={"photo-#{@id}"}

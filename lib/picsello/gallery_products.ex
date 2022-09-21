@@ -2,9 +2,7 @@ defmodule Picsello.GalleryProducts do
   @moduledoc false
 
   import Ecto.Query, warn: false
-  alias Picsello.Repo
-  alias Picsello.Product
-  alias Picsello.Galleries.GalleryProduct
+  alias Picsello.{Repo, Galleries, Subscriptions, Product, Galleries.GalleryProduct}
 
   def upsert_gallery_product(gallery_product, attr) do
     gallery_product
@@ -39,7 +37,11 @@ defmodule Picsello.GalleryProducts do
   Get all the gallery products that are ready for review
   """
   def get_gallery_products(gallery_id, opts) do
-    gallery_id |> gallery_products_query(opts) |> Repo.all()
+    if maybe_query_products_with_active_payment_method(gallery_id) do
+      gallery_id |> gallery_products_query(opts) |> Repo.all()
+    else
+      []
+    end
   end
 
   defp gallery_products_query(gallery_id, :coming_soon_false) do
@@ -151,5 +153,11 @@ defmodule Picsello.GalleryProducts do
     |> get_whcc_product()
     |> Repo.preload(:category)
     |> then(& &1.category)
+  end
+
+  defp maybe_query_products_with_active_payment_method(gallery_id) do
+    Galleries.get_gallery!(gallery_id)
+    |> Galleries.gallery_photographer()
+    |> Subscriptions.subscription_payment_method?()
   end
 end
