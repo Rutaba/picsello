@@ -29,7 +29,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
 
   test "Toggle disable product in gallery", %{
     session: session,
-    gallery: %{id: gallery_id} = _gallery
+    gallery: %{id: gallery_id}
   } do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
@@ -73,7 +73,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
 
   test "Toggle disable product in gallery", %{
     session: session,
-    gallery: %{id: gallery_id} = _gallery,
+    gallery: %{id: gallery_id}
   } do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
