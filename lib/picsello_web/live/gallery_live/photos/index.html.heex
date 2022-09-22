@@ -163,7 +163,7 @@
             <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
-                <hr class={classes("my-6 border-base-225", %{"hidden" => @orders == []})}>
+                <hr class={classes("sticky my-6 border-base-225", %{"hidden" => @orders == []})}>
               <% end %>
               <div
                 phx-hook="MasonryGrid"

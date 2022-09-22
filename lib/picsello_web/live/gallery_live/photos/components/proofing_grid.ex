@@ -53,7 +53,7 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
 
         <hr class="sticky my-2 border-base-225">
 
-        <div class="grid gap-2.5 justify-center" style="grid-template-columns: repeat(auto-fill, minmax(0px, 200px));">
+        <div class="grid gap-2.5 md:justify-start justify-center" style="grid-template-columns: repeat(auto-fill, minmax(0px, 200px));">
           <%= for digital <- order.digitals do%>
             <div class="sticky w-[200px] h-[130px] bg-gray-200 cursor-pointer hover:opacity-80" phx-click={toggle_border(digital.photo.id)} phx-click-away={JS.remove_class("item-border", to: "item-#{digital.photo.id}")} id={"selected-item-#{digital.photo.id}"}>
               <div {testid("proofing-grid-item")} class="h-full relative toggle-parent" id={"selected-photo-#{digital.photo.id}"} phx-click="toggle_selected_photos" phx-value-photo_id={digital.photo.id} phx-hook="GallerySelector">
@@ -78,6 +78,6 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
   def proofing_grid(assigns) do
     ~H"""
     <.live_component module={__MODULE__} id={assigns[:id] || "proofing-grid"} {assigns} />
-    """ 
+    """
   end
 end
