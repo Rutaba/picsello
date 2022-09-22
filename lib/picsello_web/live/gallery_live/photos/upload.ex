@@ -249,7 +249,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       Galleries.update_gallery_photo_count(gallery.id)
       Galleries.normalize_gallery_photo_positions(gallery.id)
       Galleries.refresh_bundle(gallery)
-    end
 
       socket
       |> assign(:inprogress_photos, [])
