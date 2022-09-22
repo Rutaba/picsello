@@ -59,6 +59,17 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
+  def handle_event("open-billing-portal", _, %{assigns: %{gallery: gallery}} = socket) do
+    {:ok, url} =
+      Picsello.Subscriptions.billing_portal_link(
+        socket.assigns.current_user,
+        Routes.gallery_product_preview_index_url(socket, :index, gallery.id)
+      )
+
+    socket |> redirect(external: url) |> noreply()
+  end
+
+  @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset, "gallery")
   end

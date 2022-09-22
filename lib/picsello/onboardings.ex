@@ -1,6 +1,6 @@
 defmodule Picsello.Onboardings do
   @moduledoc "context module for photographer onboarding"
-  alias Picsello.{Repo, BrandLink, Accounts.User, Organization, Profiles.Profile}
+  alias Picsello.{Repo, Accounts.User, Organization, Profiles.Profile}
   import Ecto.Changeset
   import Picsello.Accounts.User, only: [put_new_attr: 3, update_attr_in: 3]
   import Ecto.Query, only: [from: 2]
@@ -77,7 +77,7 @@ defmodule Picsello.Onboardings do
   defdelegate software_options(), to: Onboarding
 
   def changeset(%User{} = user, attrs, opts \\ []) do
-    step = Keyword.get(opts, :step, 6)
+    step = Keyword.get(opts, :step, 3)
 
     user
     |> cast(
@@ -161,18 +161,7 @@ defmodule Picsello.Onboardings do
     organization
     |> Organization.registration_changeset(attrs)
     |> cast_embed(:profile, required: step > 2, with: &profile_onboarding_changeset(&1, &2, step))
-    |> brand_link_onboarding_changeset(step)
   end
-
-  defp brand_link_onboarding_changeset(organization, 4) do
-    organization
-    |> cast_assoc(:brand_links,
-      required: true,
-      with: &BrandLink.brand_link_changeset(&1, &2)
-    )
-  end
-
-  defp brand_link_onboarding_changeset(organization, _), do: organization
 
   defp profile_onboarding_changeset(profile, attrs, 2), do: Profile.changeset(profile, attrs)
 
@@ -183,21 +172,9 @@ defmodule Picsello.Onboardings do
     |> validate_length(:job_types, min: 1)
   end
 
-  defp profile_onboarding_changeset(profile, attrs, step) when step in [4, 5, 6] do
+  defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3] do
     profile
     |> profile_onboarding_changeset(attrs, 3)
-    |> validate_required([:color])
-  end
-
-  defp onboarding_changeset(onboarding, attrs, 5) do
-    onboarding
-    |> onboarding_changeset(attrs, 4)
-    |> validate_required([:switching_from_softwares])
-    |> validate_length(:switching_from_softwares, min: 1)
-    |> update_change(
-      :switching_from_softwares,
-      &if(Enum.member?(&1, :none), do: [:none], else: &1)
-    )
   end
 
   defp onboarding_changeset(onboarding, attrs, _) do

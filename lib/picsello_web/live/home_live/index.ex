@@ -273,6 +273,19 @@ defmodule PicselloWeb.HomeLive.Index do
                color: "red-sales-300",
                class: "border-red-sales-300"
              }},
+            {!Picsello.Subscriptions.subscription_payment_method?(current_user),
+             %{
+               action: "open-billing-portal",
+               title: "Missing Payment Method",
+               body:
+                 "Oh no! You won't be able to sell physical gallery products until we have a payment method. If you're having trouble, please contact support.",
+               icon: "money-bags",
+               button_label: "Open Billing Portal",
+               button_class: "btn-primary",
+               external_link: "",
+               color: "red-sales-300",
+               class: "border-red-sales-300"
+             }},
             {true,
              %{
                action: "gallery-links",
