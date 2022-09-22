@@ -7,6 +7,7 @@ defmodule PicselloWeb.LiveAuthTest do
 
   setup do
     [plan | _] = insert_subscription_plans!()
+    Mox.stub(Picsello.PhotoStorageMock, :get, fn _ -> {:error, nil} end)
 
     [user: insert(:user), plan: plan]
   end

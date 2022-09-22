@@ -325,6 +325,15 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> noreply()
   end
 
+  @impl true
+  def handle_info({:pack, :ok, _}, socket) do
+    socket
+    |> put_flash(:success, "Gallery is ready for download")
+    |> noreply()
+  end
+
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
   def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = CoverPhoto.original_path(gallery.id, entry.uuid)
 

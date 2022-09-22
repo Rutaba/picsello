@@ -18,14 +18,6 @@ defmodule PicselloWeb.GalleryDownloadsController do
     end
   end
 
-  def download_all(conn, %{"hash" => hash} = _params) do
-    gallery = Galleries.get_gallery_by_hash!(hash)
-
-    %{organization: %{name: org_name}, photos: photos} = Orders.get_all_photos!(gallery)
-
-    process_photos(conn, photos, "#{org_name}.zip")
-  end
-
   def download_photo(%{assigns: %{current_user: %{id: id}}} = conn, %{
         "hash" => hash,
         "photo_id" => photo_id
@@ -92,7 +84,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   defp process_photos(conn, photos, file_name) do
     photos
-    |> Picsello.Orders.Pack.stream()
+    |> Picsello.Pack.stream()
     |> Packmatic.Conn.send_chunked(conn, file_name)
   end
 

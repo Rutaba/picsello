@@ -160,12 +160,19 @@ defmodule Picsello.ClientOrdersTest do
     )
   end
 
-  def assert_download_link(session, label, order_number),
+  def assert_download_link(session, label, basename),
     do:
       session
       |> find(
         link(label),
-        &assert(Element.attr(&1, "href") |> String.ends_with?("#{order_number}.zip"))
+        fn link ->
+          href = Element.attr(link, "href")
+          basename = "#{URI.encode(basename)}.zip"
+
+          href
+          |> String.ends_with?(basename)
+          |> assert("expected #{href} to end with #{basename}")
+        end
       )
 
   feature "order product", %{
@@ -518,7 +525,12 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(definition("Digital download credit (2)", text: "-$50"))
     end
 
-    feature "purchase bundle", %{session: session, package: package, organization: organization} do
+    feature "purchase bundle", %{
+      session: session,
+      package: package,
+      organization: organization,
+      gallery: %{name: gallery_name}
+    } do
       %{stripe_account_id: connect_account_id} = organization
       assert ~M[5000]USD = package.buy_all
 
@@ -621,11 +633,18 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_has(css("img[src$='/preview.jpg']", count: 3))
       |> assert_text("All digital downloads")
       |> assert_has(css("*[title='cart']", text: "0"))
-      |> assert_download_link("Download photos", order_number)
+      |> assert_download_link("Download photos", gallery_name)
       |> click(link("Home"))
       |> find(
         link("Download all photos"),
-        &assert(Element.attr(&1, "href") == session |> current_url() |> Path.join("zip"))
+        &assert(
+          Element.attr(&1, "href")
+          |> URI.parse()
+          |> Map.get(:path)
+          |> Path.basename(".zip")
+          |> URI.decode() ==
+            gallery_name
+        )
       )
       |> click_photo(1)
       |> within_modal(fn modal ->
@@ -642,10 +661,7 @@ defmodule Picsello.ClientOrdersTest do
       end)
       |> refute_has(button("Buy now"))
       |> click(link("My orders"))
-      |> find(
-        definition("Order number:"),
-        &assert_download_link(session, "Download photos", Element.text(&1))
-      )
+      |> assert_download_link("Download photos", gallery_name)
     end
   end
 end

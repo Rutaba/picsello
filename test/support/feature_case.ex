@@ -24,8 +24,11 @@ defmodule Picsello.FeatureCase do
       end
     end
 
-    def run_jobs do
-      ExUnit.CaptureLog.capture_log([level: :warn], fn -> Oban.drain_queue(queue: :default) end)
+    def run_jobs(opts \\ []) do
+      ExUnit.CaptureLog.capture_log([level: :warn], fn ->
+        opts |> Keyword.put_new(:queue, :default) |> Oban.drain_queue()
+      end)
+
       Oban.Job |> Picsello.Repo.all()
     end
 
