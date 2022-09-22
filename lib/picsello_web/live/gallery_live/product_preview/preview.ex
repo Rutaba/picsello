@@ -32,21 +32,13 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
           <%= @category.name %>
         </div>
         <div class=" mx-4 pt-4 flex flex-col justify-between" >
-          <label class="inline-flex relative items-center cursor-pointer">
-          <input type="checkbox" class="sr-only peer" phx-click="sell_product_enabled" checked={@product.sell_product_enabled} phx-target={@myself}>
-          <div class="w-11 h-6 bg-gray-200 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-300 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
-          <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Product enabled to sell</span>
-          </label>
+          <.toggle_preview click="sell_product_enabled" checked={@product.sell_product_enabled} text="Product enabled to sell" myself={@myself} />
         </div>
 
         <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
           <div class=" mx-4 pt-4 flex flex-col justify-between" >
             <%= if @product.sell_product_enabled do %>
-              <label class="inline-flex relative items-center cursor-pointer">
-                <input type="checkbox" class="sr-only peer" phx-click="product_preview_enabled" checked={@product.product_preview_enabled} phx-target={@myself}>
-                <div class="w-11 h-6 bg-gray-300 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-100 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
-                <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Show product preview in gallery</span>
-              </label>
+            <.toggle_preview click="product_preview_enabled" checked={@product.product_preview_enabled} text="Show product preview in gallery" myself={@myself} />
             <% end %>
           </div>
 
@@ -76,5 +68,14 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
     """
   end
 
+  defp toggle_preview(assigns) do
+    ~H"""
+    <label class="inline-flex relative items-center cursor-pointer">
+    <input type="checkbox" class="sr-only peer" phx-click={@click} checked={@checked} phx-target={@myself}>
+    <div class="w-11 h-6 bg-gray-300 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-300 dark:bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
+    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"><%= @text %></span>
+    </label>
+    """
+  end
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
 end
