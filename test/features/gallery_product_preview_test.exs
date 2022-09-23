@@ -16,16 +16,6 @@ defmodule Picsello.GalleryProductPreviewTest do
     [products: products(gallery)]
   end
 
-  setup %{user: user} do
-    user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
-
-    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "cus_123", _ ->
-      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
-    end)
-
-    [user: user]
-  end
-
   def products(gallery, coming_soon \\ false) do
     for image <- [nil | Picsello.Category.frame_images()] do
       category = insert(:category, frame_image: image, coming_soon: coming_soon)
@@ -161,22 +151,5 @@ defmodule Picsello.GalleryProductPreviewTest do
       |> visit("/galleries/#{gallery_id}/product-previews")
       |> find(css("canvas[id='/images/print.png-/images/frames/album.png']", count: 1))
     end
-  end
-
-  test "Product Preview, 'edit product preview' is removed", %{
-    session: session,
-    gallery: %{id: gallery_id} = _gallery
-  } do
-    session
-    |> visit("/galleries/#{gallery_id}/product-previews")
-    |> take_screenshot()
-    |> assert_has(button("Edit product preview", visible: true, count: 4))
-    |> find(checkbox("Product enabled to sell", visible: true, count: 4, at: 0), fn checkbox ->
-      assert Element.selected?(checkbox)
-    end)
-    |> click(css("label", text: "Show product preview in gallery", count: 4, at: 0))
-    |> assert_has(button("Edit product preview", visible: true, count: 3))
-    |> click(css("label", text: "Product enabled to sell", count: 4, at: 1))
-    |> assert_has(button("Edit product preview", visible: true, count: 2))
   end
 end
