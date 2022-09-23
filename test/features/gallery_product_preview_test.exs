@@ -16,6 +16,16 @@ defmodule Picsello.GalleryProductPreviewTest do
     [products: products(gallery)]
   end
 
+  setup %{user: user} do
+    user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "cus_123", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
+
+    [user: user]
+  end
+
   def products(gallery, coming_soon \\ false) do
     for image <- [nil | Picsello.Category.frame_images()] do
       category = insert(:category, frame_image: image, coming_soon: coming_soon)
@@ -159,7 +169,7 @@ defmodule Picsello.GalleryProductPreviewTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
-    |> scroll_to_bottom()
+    |> take_screenshot()
     |> assert_has(button("Edit product preview", visible: true, count: 4))
     |> find(checkbox("Product enabled to sell", visible: true, count: 4, at: 0), fn checkbox ->
       assert Element.selected?(checkbox)
