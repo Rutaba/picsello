@@ -148,11 +148,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   end
 
   def notify_processed(context, %Photo{} = photo) do
-    Phoenix.PubSub.broadcast(
-      Picsello.PubSub,
-      "gallery:#{photo.gallery_id}",
-      {:photo_processed, context, photo}
-    )
+    Galleries.broadcast(%{id: photo.gallery_id}, {:photo_processed, context, photo})
   rescue
     _err ->
       :ignored

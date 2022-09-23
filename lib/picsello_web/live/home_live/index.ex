@@ -248,6 +248,18 @@ defmodule PicselloWeb.HomeLive.Index do
                color: "blue-planning-300",
                class: "intro-stripe"
              }},
+            {true,
+             %{
+               action: "client-booking",
+               title: "Client booking is here!",
+               body: "Your clients will go from looking to direct booking in under 10 minutes.",
+               icon: "calendar",
+               button_label: "Check it out",
+               button_class: "btn-secondary",
+               external_link: "",
+               color: "blue-planning-300",
+               class: ""
+             }},
             {Picsello.Invoices.pending_invoices?(current_user.organization_id),
              %{
                action: "open-billing-portal",

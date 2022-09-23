@@ -42,7 +42,7 @@ defmodule Picsello.Photos do
     path_to_url(path)
   end
 
-  def preview_url(%{watermarked: false, preview_url: "" <> path}),
+  def preview_url(%{preview_url: "" <> path}),
     do: path_to_url(path)
 
   def preview_url(_), do: @gallery_icon

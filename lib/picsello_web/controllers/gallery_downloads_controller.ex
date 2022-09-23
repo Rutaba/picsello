@@ -2,25 +2,20 @@ defmodule PicselloWeb.GalleryDownloadsController do
   use PicselloWeb, :controller
   alias Picsello.{Orders, Photos, Galleries, Galleries.Workers.PhotoStorage, Repo}
 
+  def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids, "is_client" => "true"}) do
+    gallery = Galleries.get_gallery_by_hash!(hash)
+    parse_and_download(conn, gallery, photo_ids)
+  end
+
   def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids} = _params) do
     gallery = Galleries.get_gallery_by_hash!(hash)
     photographer = Galleries.gallery_photographer(gallery)
 
     if photographer.id == conn.assigns.current_user.id do
-      photo_ids = photo_ids |> String.split(",") |> Enum.map(&String.to_integer/1)
-      photos = Galleries.get_photos_by_ids(gallery, photo_ids) |> some!()
-      process_photos(conn, photos, "#{gallery.name}.zip")
+      parse_and_download(conn, gallery, photo_ids)
     else
       conn |> put_view(ErrorView) |> render("403.html")
     end
-  end
-
-  def download_all(conn, %{"hash" => hash} = _params) do
-    gallery = Galleries.get_gallery_by_hash!(hash)
-
-    %{organization: %{name: org_name}, photos: photos} = Orders.get_all_photos!(gallery)
-
-    process_photos(conn, photos, "#{org_name}.zip")
   end
 
   def download_photo(%{assigns: %{current_user: %{id: id}}} = conn, %{
@@ -67,6 +62,12 @@ defmodule PicselloWeb.GalleryDownloadsController do
     |> send_resp(200, csv_data)
   end
 
+  defp parse_and_download(conn, gallery, photo_ids) do
+    photo_ids = photo_ids |> String.split(",") |> Enum.map(&String.to_integer/1)
+    photos = Galleries.get_photos_by_ids(gallery, photo_ids) |> some!()
+    process_photos(conn, photos, "#{gallery.name}.zip")
+  end
+
   defp assure_photo_size({with_size, []}), do: with_size
 
   defp assure_photo_size({with_size, without_size}) do
@@ -83,7 +84,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   defp process_photos(conn, photos, file_name) do
     photos
-    |> Picsello.Orders.Pack.stream()
+    |> Picsello.Pack.stream()
     |> Packmatic.Conn.send_chunked(conn, file_name)
   end
 
