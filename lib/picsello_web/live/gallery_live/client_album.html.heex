@@ -29,7 +29,6 @@
     <% end %>
     <hr class="lg:mx-16 mt-8 mx-8">
   <% end %>
-
   <div class={"my-0 py-0 mx-auto h-full px-7 sm:px-16 #{@is_proofing && 'mb-56'}"}>
     <div class="pt-5 lg:pt-16" id="gallery">
       <.top_section {assigns} />
@@ -46,7 +45,7 @@
           data-page={@page}
           data-id="muuri-grid"
           data-uploading="0"
-          data-total={@gallery.total_count}
+          data-total={length(@photos)}
           data-favorites-count={@favorites_count}
           data-is-favorites-shown={ "#{@favorites_filter}" }
           data-has-more-photos={ "#{@has_more_photos}" }
@@ -63,7 +62,6 @@
           <% end %>
         </div>
       <% end %>
-     
       <div class="hidden">
         <div
           id="photo-update-listener"

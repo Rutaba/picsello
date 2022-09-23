@@ -2,11 +2,14 @@ defmodule PicselloWeb.LiveHelpers do
   @moduledoc "used in both views and components"
   use Phoenix.Component
 
-  alias Picsello.Onboardings
+  alias Picsello.{Onboardings, PaymentSchedules, BookingProposal}
 
-  import Phoenix.LiveView, only: [get_connect_params: 1, assign: 2, assign_new: 3]
+  import Phoenix.LiveView,
+    only: [get_connect_params: 1, assign: 2, assign_new: 3, redirect: 2, put_flash: 3]
+
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  require Logger
 
   def live_modal(_socket, component, opts) do
     path = Keyword.fetch!(opts, :return_to)
@@ -392,5 +395,52 @@ defmodule PicselloWeb.LiveHelpers do
 
   def remove_cache(user_id, gallery_id) do
     PicselloWeb.UploaderCache.delete(user_id, gallery_id)
+  end
+
+  def stripe_checkout(%{assigns: %{proposal: proposal, job: job}} = socket) do
+    payment = PaymentSchedules.unpaid_payment(job)
+
+    case PaymentSchedules.checkout_link(proposal, payment,
+           # manually interpolate here to not encode the brackets
+           success_url: "#{BookingProposal.url(proposal.id)}?session_id={CHECKOUT_SESSION_ID}",
+           cancel_url: BookingProposal.url(proposal.id),
+           metadata: %{"paying_for" => payment.id}
+         ) do
+      {:ok, url} ->
+        socket |> redirect(external: url)
+
+      {:error, error} ->
+        Logger.error(error)
+        socket |> put_flash(:error, "Couldn't redirect to stripe. Please try again")
+    end
+  end
+
+  def finish_booking(%{assigns: %{proposal: proposal}} = socket) do
+    case PaymentSchedules.mark_as_paid(proposal, PicselloWeb.Helpers) do
+      {:ok, _} ->
+        send(self(), {:update_payment_schedules})
+        socket
+
+      {:error, _} ->
+        socket |> put_flash(:error, "Couldn't finish booking")
+    end
+  end
+
+  def format_date_via_type(_, _ \\ "MM DD, YY")
+
+  def format_date_via_type(%DateTime{} = datetime, type),
+    do: DateTime.to_date(datetime) |> format_date_via_type(type)
+
+  def format_date_via_type(%Date{} = date, type) do
+    case type do
+      "MM/DD/YY" ->
+        [date.month, date.day, date.year]
+        |> Enum.map(&to_string/1)
+        |> Enum.map(&String.pad_leading(&1, 2, "0"))
+        |> Enum.join("/")
+
+      _ ->
+        "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
+    end
   end
 end

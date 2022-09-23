@@ -248,12 +248,37 @@ defmodule PicselloWeb.HomeLive.Index do
                color: "blue-planning-300",
                class: "intro-stripe"
              }},
+            {true,
+             %{
+               action: "client-booking",
+               title: "Client booking is here!",
+               body: "Your clients will go from looking to direct booking in under 10 minutes.",
+               icon: "calendar",
+               button_label: "Check it out",
+               button_class: "btn-secondary",
+               external_link: "",
+               color: "blue-planning-300",
+               class: ""
+             }},
             {Picsello.Invoices.pending_invoices?(current_user.organization_id),
              %{
                action: "open-billing-portal",
                title: "Balance(s) Due",
                body:
                  "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
+               icon: "money-bags",
+               button_label: "Open Billing Portal",
+               button_class: "btn-primary",
+               external_link: "",
+               color: "red-sales-300",
+               class: "border-red-sales-300"
+             }},
+            {!Picsello.Subscriptions.subscription_payment_method?(current_user),
+             %{
+               action: "open-billing-portal",
+               title: "Missing Payment Method",
+               body:
+                 "Oh no! You won't be able to sell physical gallery products until we have a payment method. If you're having trouble, please contact support.",
                icon: "money-bags",
                button_label: "Open Billing Portal",
                button_class: "btn-primary",

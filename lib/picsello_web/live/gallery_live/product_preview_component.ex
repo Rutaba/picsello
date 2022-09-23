@@ -2,12 +2,8 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  import PicselloWeb.GalleryLive.Shared, only: [cards_width: 1]
-
   @default_assigns %{
-    edit_product_link: nil,
-    click_params: nil,
-    has_product_info: true
+    click_params: nil
   }
 
   def update(assigns, socket) do

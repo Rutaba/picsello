@@ -1,7 +1,7 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  alias Picsello.{BookingProposal, Repo, Job, Cart}
+  alias Picsello.{BookingProposal, Repo, Job, Cart, Galleries.Gallery}
   alias Cart.Order
 
   @doc """
@@ -171,6 +171,51 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> to(email)
     |> from("noreply@picsello.com")
     |> subject("Order canceled")
+    |> deliver_later()
+  end
+
+  def deliver_download_ready(%Gallery{} = gallery, download_link, helpers) do
+    %{job: %{client: %{name: name, email: email, organization: organization}}} =
+      Repo.preload(gallery, job: [client: :organization])
+
+    deliver_download_ready(
+      %{gallery: gallery, organization: organization, name: name, email: email},
+      download_link,
+      helpers
+    )
+  end
+
+  def deliver_download_ready(
+        %Order{delivery_info: %{email: email, name: name}} = order,
+        download_link,
+        helpers
+      ) do
+    %{gallery: %{organization: organization} = gallery} =
+      Repo.preload(order, gallery: :organization)
+
+    deliver_download_ready(
+      %{gallery: gallery, organization: organization, name: name, email: email},
+      download_link,
+      helpers
+    )
+  end
+
+  def deliver_download_ready(
+        %{gallery: gallery, organization: organization, name: name, email: email},
+        download_link,
+        helpers
+      ) do
+    params = %{
+      download_link: download_link,
+      logo_url: Picsello.Profiles.logo_url(organization),
+      name: name,
+      gallery_url: helpers.gallery_url(gallery)
+    }
+
+    sendgrid_template(:client_download_ready_template, params)
+    |> to(email)
+    |> from("noreply@picsello.com")
+    |> subject("Download Ready")
     |> deliver_later()
   end
 

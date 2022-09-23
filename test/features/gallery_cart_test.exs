@@ -4,6 +4,12 @@ defmodule Picsello.GalleryCartTest do
   alias Cart.Order
   import Money.Sigils
 
+  setup do
+    Mox.stub(Picsello.PhotoStorageMock, :get, fn _ -> {:error, nil} end)
+
+    :ok
+  end
+
   setup :authenticated_gallery_client
 
   def fill_gallery_cart(gallery) do
@@ -25,6 +31,7 @@ defmodule Picsello.GalleryCartTest do
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")
     |> assert_path("/gallery/#{gallery.client_link_hash}")
+    |> assert_text(gallery.name)
   end
 
   feature "shows cart info", %{session: session, gallery: gallery} do

@@ -450,6 +450,8 @@ defmodule Picsello.Factory do
       position: 1.0,
       aspect_ratio: 1.0,
       original_url: Photo.original_path("name", 333, "4444"),
+      width: 300,
+      height: 300,
       active: true
     }
     |> merge_attributes(attrs)
@@ -565,7 +567,7 @@ defmodule Picsello.Factory do
   def whcc_editor_details_factory(attrs \\ %{}) do
     %Picsello.WHCC.Editor.Details{
       editor_id: sequence("hkazbRKGjcoWwnEq3"),
-      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      preview_url: image_url(),
       product_id: fn -> insert(:product).whcc_id end,
       selections: %{
         "display_options" => "no",
@@ -588,7 +590,7 @@ defmodule Picsello.Factory do
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_product: fn -> insert(:product) end,
-      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      preview_url: image_url(),
       selections: %{
         "display_options" => "no",
         "quantity" => Map.get(attrs, :quantity, 1),
@@ -876,4 +878,10 @@ defmodule Picsello.Factory do
       description: "<p>My custom description</p>"
     }
   end
+
+  def image_url(),
+    do:
+      PicselloWeb.Endpoint.struct_url()
+      |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
+      |> URI.to_string()
 end
