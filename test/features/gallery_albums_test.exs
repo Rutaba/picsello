@@ -39,7 +39,7 @@ defmodule Picsello.GalleryAlbumsTest do
     |> click(css("#toggle-visibility"))
     |> click(button("Create new album"))
     |> assert_has(css("p", text: "Album successfully created"))
-    |> find(css("#albums .album", count: 3))
+    |> find(css("#page-scroll span span", test: "Test album 2"))
   end
 
   test "Albums, Unsorted Photos actions dropdown, Go to unsorted photos", %{
@@ -111,14 +111,15 @@ defmodule Picsello.GalleryAlbumsTest do
     gallery: gallery,
     album: album
   } do
-    photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
+    [photo_id | _photo_ids] = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
 
     session
     |> visit("/galleries/#{gallery.id}/albums")
     |> assert_has(css(placeholder_background_image(), count: 2))
     |> click(css("#actions-#{album.id}"))
+    |> scroll_to_bottom()
     |> click(css("button", text: "Edit album thumbnail"))
-    |> click(css("#photo-#{List.first(photo_ids)}"))
+    |> click(css("#photo-#{photo_id}"))
     |> click(button("Save"))
     |> click(css("#actions-#{album.id}"))
     |> assert_has(css(placeholder_background_image(), count: 1))

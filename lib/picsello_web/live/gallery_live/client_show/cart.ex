@@ -10,10 +10,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery, live_action: live_action}} = socket) do
+  def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(gallery: gallery, client_menu_id: "clientMenu")
-    |> assign(is_proofing: live_action in [:proofing_album, :proofing_album_address])
+    |> assign_is_proofing()
     |> then(
       &(&1
         |> get_unconfirmed_order(preload: [:products, :digitals, :package])
@@ -217,11 +217,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     """
   end
 
-  defp top_section_content(%{checkout_routes: checkout_routes, live_action: :proofing_album}) do
+  defp top_section_content(%{
+         checkout_routes: checkout_routes,
+         live_action: :proofing_album,
+         album: album
+       }) do
     {
       checkout_routes.home_page,
       "Back to album",
-      "Review Selections"
+      (album.is_finals && "Cart Review") || "Review Selections"
     }
   end
 

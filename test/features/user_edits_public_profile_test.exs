@@ -95,8 +95,8 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_text("SPECIALIZING IN:")
     |> scroll_into_view(testid("edit-description-button"))
     |> click(testid("edit-description-button"))
-    |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
-    |> send_keys(["my description"])
+    |> assert_has(css("div.ql-editor[data-placeholder='Start typing…']"))
+    |> fill_in_quill("my description")
     |> click(button("Save"))
     |> assert_has(testid("description", text: "my description"))
   end
@@ -108,8 +108,8 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_text("SPECIALIZING IN:")
     |> scroll_into_view(testid("edit-job_types_description-button"))
     |> click(testid("edit-job_types_description-button"))
-    |> click(css("div.ql-editor[data-placeholder='Start typing…']"))
-    |> send_keys(["my description"])
+    |> assert_has(css("div.ql-editor[data-placeholder='Start typing…']"))
+    |> fill_in_quill("my description")
     |> click(button("Save"))
     |> assert_has(testid("job_types_description", text: "my description"))
   end

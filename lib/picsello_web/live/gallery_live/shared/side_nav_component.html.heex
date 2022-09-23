@@ -61,11 +61,9 @@
                 </div>
               </div>
               <div class="flex px-2 items-center ml-auto">
-                <%= if @photos_error_count > 0 do %>
-                  <div class="flex">
-                    <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
-                  </div>
-                <% end %>
+                <div class={if @photos_error_count > 0 && (@total_progress == 0 || @total_progress == 100), do: "flex", else: "hidden"}>
+                  <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+                </div>
                 <%= if @total_progress > 0 && @total_progress < 100 do %>
                   <div class="flex sk-circle">
                     <div class="sk-circle1 sk-child"></div>
@@ -111,14 +109,18 @@
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>
-                    <.li title={album.name} class="block" name={if album.is_proofing, do: "proofing", else: "standard_album"} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li title={album.name} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
               <% end %>
             </div>
         </div>
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
-          <.bar class="block" route={Routes.gallery_product_preview_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Product previews" icon="shop-icon.png" arrow_show={@arrow_show == "product_previews"}></.bar>
+          <.bar class="block" route={Routes.gallery_product_preview_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Product previews" icon="shop-icon.png" arrow_show={@arrow_show == "product_previews"}>
+            <%= if !Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) do %>
+              <.icon name="warning-orange-dark" class="text-base-200 w-4 h-4" />
+            <% end %>
+          </.bar>
           <%= if @arrow_show == "product_previews" do %>
             <span class="arrow show lg:block hidden">
               <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />

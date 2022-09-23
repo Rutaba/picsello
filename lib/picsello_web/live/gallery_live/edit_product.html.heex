@@ -1,22 +1,21 @@
-<div class="editProductPopup z-50 p-4 pt-0 my-0 mx-auto bg-base-100 xl:px-5 fixed left-0 top-0 right-0 lg:static" id="edit-product-component">
+<div class="fixed top-0 left-0 right-0 z-50 p-4 pt-0 mx-auto my-0 editProductPopup bg-base-100 xl:px-5 lg:static" id="edit-product-component">
   <div class="flex justify-between pt-4 mb-4">
-    <a href="#" phx-click="click" phx-value-preview_photo_id={@photo.id} phx-target="#hamburger-menu" class="inline-block xl cursor-pointer">
+    <a href="#" phx-click="click" phx-value-preview_photo_id={@photo.id} phx-target="#hamburger-menu" class="inline-block cursor-pointer xl">
        <.icon name="arrow-left" class="w-4 h-4 lg:w-5 lg:h-5" />
     </a>
-    <a href="#" phx-click="close" phx-target={@myself} class="cursor-pointer ml-auto">
-       <.icon name="close-x" class="w-4 h-4 lg:w-5 lg:h-5 stroke-current stroke-3" />
+    <a href="#" phx-click="close" phx-target={@myself} class="ml-auto cursor-pointer">
+       <.icon name="close-x" class="w-4 h-4 stroke-current lg:w-5 lg:h-5 stroke-3" />
     </a>
   </div>
-  <div class="editProductPopup__content flex flex-col lg:flex-row pt-2 items-start w-full h-full overflow-y-auto">
-    <div class="editProductPopup__img lg:w-2/4 p-8 w-full bg-base-250 flex items-center justify-center h-full lg:ml-12 ml-0">
-      <.live_component
-        module={PicselloWeb.GalleryLive.ProductPreviewComponent}
-        id={@photo.id}
-        photo={@photo}
-        category={@category}
-        has_product_info={false} />
+  <div class="flex flex-col items-start w-full h-full pt-2 overflow-y-auto editProductPopup__content lg:flex-row">
+    <div class="flex items-center justify-center w-full h-full p-8 ml-0 editProductPopup__img lg:w-2/4 bg-base-250 lg:ml-12">
+      <div class="flex flex-col justify-between">
+        <div class="flex items-center justify-center photos__rect xl:h-96">
+          <.framed_preview item_id={@photo.id} category={@category} photo={@photo} height={384} />
+        </div>
+      </div>
     </div>
-    <div class="lg:w-2/4 w-full lg:pl-16 lg:pr-12 px-0 h-full flex flex-col pt-14 flex-start">
+    <div class="flex flex-col w-full h-full px-0 lg:w-2/4 lg:pl-16 lg:pr-12 pt-14 flex-start">
       <h3 class="text-4xl font-bold productType"><%= @category.name %></h3>
 
       <%= if length(@whcc_products) > 1 do %>
@@ -27,7 +26,7 @@
               <%= if product === @current_whcc_product do %>
                 <button phx-click="update-print-type" phx-target={@myself} class={classes("btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100", %{"bg-blue-planning-100 border-blue-planning-300"=> 'active'})} ><%= product.whcc_name %></button>
               <% else %>
-                <button phx-click="update-print-type" phx-target={@myself} phx-value-product-id={product.id} class="btn-row py-2 px-4 justify-center text-xs 2xl:text-base hover:bg-blue-planning-100"><%= product.whcc_name %></button>
+                <button phx-click="update-print-type" phx-target={@myself} phx-value-product-id={product.id} class="justify-center px-4 py-2 text-xs btn-row 2xl:text-base hover:bg-blue-planning-100"><%= product.whcc_name %></button>
               <% end %>
             <% end %>
           </div>
@@ -45,7 +44,7 @@
           </div>
         </.form>
       </div>
-      <button class="btn-primary mt-12" phx-click="customize_and_buy" phx-target={@myself}>Customize & buy</button>
+      <button class="mt-12 btn-primary" phx-click="customize_and_buy" phx-target={@myself}>Customize & buy</button>
     </div>
   </div>
 </div>

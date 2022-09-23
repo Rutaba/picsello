@@ -8,10 +8,10 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   alias Picsello.{Orders, Galleries}
 
   @impl true
-  def mount(_, _, %{assigns: %{live_action: live_action}} = socket) do
+  def mount(_params, _session, socket) do
     socket
     |> assign(from_checkout: false)
-    |> assign(is_proofing: live_action in [:proofing_album, :proofing_album_paid])
+    |> assign_is_proofing()
     |> ok()
   end
 
@@ -19,15 +19,17 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   def handle_params(
         %{"order_number" => order_number, "session_id" => session_id},
         _,
-        %{assigns: %{gallery: gallery, live_action: live_action}} = socket
+        %{assigns: %{gallery: gallery, live_action: live_action} = assigns} = socket
       )
       when live_action in ~w(paid proofing_album_paid)a do
+    album = Map.get(assigns, :album)
+
     case Orders.handle_session(order_number, session_id) do
       {:ok, _order, :already_confirmed} ->
-        Orders.get!(gallery, order_number)
+        get_order!(gallery, order_number, album)
 
       {:ok, _order, :confirmed} ->
-        order = Orders.get!(gallery, order_number)
+        order = get_order!(gallery, order_number, album)
 
         Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
           order,
@@ -46,9 +48,9 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   def handle_params(
         %{"order_number" => order_number},
         _,
-        %{assigns: %{gallery: gallery, live_action: :proofing_album_paid}} = socket
+        %{assigns: %{gallery: gallery, live_action: :proofing_album_paid} = assigns} = socket
       ) do
-    order = Orders.get!(gallery, order_number)
+    order = get_order!(gallery, order_number, Map.get(assigns, :album))
 
     socket
     |> assign_details(order)
@@ -57,50 +59,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   def handle_params(
-        %{"order_number" => order_number, "session_id" => session_id},
-        _,
-        %{assigns: %{gallery: gallery, live_action: live_action}} = socket
-      )
-      when live_action in ~w(paid proofing_album_paid)a do
-    case Orders.handle_session(order_number, session_id) do
-      {:ok, _order, :already_confirmed} ->
-        Orders.get!(gallery, order_number)
-
-      {:ok, _order, :confirmed} ->
-        order = Orders.get!(gallery, order_number)
-
-        Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
-          order,
-          PicselloWeb.Helpers
-        )
-
-        order
-    end
-    |> then(fn order ->
-      socket
-      |> assign_details(order)
-      |> process_checkout_order()
-    end)
-  end
-
-  def handle_params(
         %{"order_number" => order_number},
         _,
-        %{assigns: %{gallery: gallery, live_action: :proofing_album_paid}} = socket
+        %{assigns: %{gallery: gallery} = assigns} = socket
       ) do
-    order = Orders.get!(gallery, order_number)
-
-    socket
-    |> assign_details(order)
-    |> process_checkout_order()
-  end
-
-  def handle_params(
-        %{"order_number" => order_number},
-        _,
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    order = Orders.get!(gallery, order_number)
+    order = get_order!(gallery, order_number, Map.get(assigns, :album))
     Orders.subscribe(order)
 
     socket
@@ -108,9 +71,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> noreply()
   end
 
-  @impl true
-  def handle_info({:pack, :ok, %{path: path}}, %{assigns: %{order: order}} = socket) do
-    DownloadLinkComponent.update_path(order, path)
+  def handle_info({:pack, :ok, %{packable: %{id: id}, status: status}}, socket) do
+    DownloadLinkComponent.update_status(id, status)
 
     socket |> noreply()
   end
@@ -184,12 +146,26 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
-  def message_heading(true), do: "Your Selections were Sent!"
-  def message_heading(false), do: "Thank you for your order!"
+  defp message_heading(true), do: "Your Selections were Sent!"
+  defp message_heading(false), do: "Thank you for your order!"
+
+  defp get_order!(
+         gallery,
+         order_number,
+         %{is_proofing: is_proofing, is_finals: is_finals, id: album_id}
+       )
+       when is_proofing or is_finals do
+    %{album_id: ^album_id} = Orders.get!(gallery, order_number)
+  end
+
+  defp get_order!(gallery, order_number, _album) do
+    %{album_id: nil} = Orders.get!(gallery, order_number)
+  end
 
   defp checkout_type(true), do: :proofing_album_order
   defp checkout_type(false), do: :order
   defdelegate has_download?(order), to: Picsello.Orders
   defdelegate summary(assigns), to: PicselloWeb.GalleryLive.ClientShow.Cart.Summary
   defdelegate canceled?(order), to: Picsello.Orders
+  defdelegate download_link(assigns), to: DownloadLinkComponent
 end

@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
-  alias Picsello.{Galleries, Messages, Notifiers.ClientNotifier}
+  alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent,
@@ -46,6 +46,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   def handle_params(%{"id" => id} = params, _, socket) do
     gallery =
       Galleries.get_gallery!(id)
+      |> Repo.preload(:photographer)
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
@@ -323,6 +324,15 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> close_modal()
     |> noreply()
   end
+
+  @impl true
+  def handle_info({:pack, :ok, _}, socket) do
+    socket
+    |> put_flash(:success, "Gallery is ready for download")
+    |> noreply()
+  end
+
+  def handle_info({:pack, _, _}, socket), do: noreply(socket)
 
   def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = CoverPhoto.original_path(gallery.id, entry.uuid)

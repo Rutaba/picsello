@@ -1,5 +1,6 @@
 defmodule Picsello.ClientVisitsPhotographerProfileTest do
   use Picsello.FeatureCase, async: true
+  import Money.Sigils
   alias Picsello.{Job, Repo, Onboardings}
   require Ecto.Query
 
@@ -32,7 +33,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       download_count: 2,
       user: user,
       job_type: "portrait",
-      base_price: 3000
+      base_price: ~M[3000]USD
     )
 
     insert(:package_template,
@@ -41,12 +42,22 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       download_count: 1,
       user: user,
       job_type: "event",
-      base_price: 2000
+      base_price: ~M[2000]USD
     )
+
+    template =
+      insert(:package_template,
+        user: user,
+        job_type: "mini",
+        name: "My custom package",
+        download_count: 3,
+        base_price: ~M[1500]USD
+      )
 
     [
       photographer: user,
-      profile_url: Routes.profile_path(PicselloWeb.Endpoint, :index, user.organization.slug)
+      profile_url: Routes.profile_path(PicselloWeb.Endpoint, :index, user.organization.slug),
+      booking_package_id: template.id
     ]
   end
 
@@ -212,5 +223,101 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       card
       |> assert_has(css("a[href='http://photos.example1.com']"))
     end)
+  end
+
+  feature "sees no booking events on public profile", %{
+    session: session,
+    profile_url: profile_url
+  } do
+    session
+    |> visit(profile_url)
+
+    assert false ==
+             session
+             |> visible?(testid("events-heading"))
+  end
+
+  feature "sees only enabled booking events on public profile", %{
+    session: session,
+    photographer: photographer,
+    profile_url: profile_url,
+    booking_package_id: booking_package_id
+  } do
+    event =
+      insert(:booking_event,
+        name: "Event 1",
+        package_template_id: booking_package_id,
+        duration_minutes: 45,
+        location: "studio",
+        address: "320 1st St N",
+        description: "This is the description",
+        dates: [
+          %{
+            date: ~D[2050-12-10],
+            time_blocks: [
+              %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
+            ]
+          },
+          %{
+            date: ~D[2050-12-11],
+            time_blocks: [
+              %{start_time: ~T[11:00:00], end_time: ~T[13:00:00]},
+              %{start_time: ~T[16:00:00], end_time: ~T[17:00:00]}
+            ]
+          }
+        ]
+      )
+
+    insert(:booking_event,
+      name: "Event 2",
+      package_template_id: booking_package_id,
+      duration_minutes: 45,
+      location: "studio",
+      address: "820 2nd St N",
+      description: "This is the description",
+      disabled_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      dates: [
+        %{
+          date: ~D[2040-11-10],
+          time_blocks: [
+            %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
+          ]
+        },
+        %{
+          date: ~D[2040-11-11],
+          time_blocks: [
+            %{start_time: ~T[11:00:00], end_time: ~T[13:00:00]},
+            %{start_time: ~T[16:00:00], end_time: ~T[17:00:00]}
+          ]
+        }
+      ]
+    )
+
+    booking_event_url_enabled =
+      Routes.client_booking_event_path(
+        PicselloWeb.Endpoint,
+        :show,
+        photographer.organization.slug,
+        event.id
+      )
+
+    session
+    |> visit(profile_url)
+    |> assert_text("Book a session with me!")
+    |> find(
+      testid("booking-cards", at: 0, count: 1),
+      fn booking_card ->
+        booking_card
+        |> assert_text("Event 1")
+        |> assert_text("3 images include | 45 min session | In Studio")
+        |> assert_text("Dec 10, 2050")
+        |> assert_text("320 1st St N")
+        |> assert_text("This is the description")
+        |> assert_has(css("img[src$='/phoenix.png']"))
+      end
+    )
+    |> click(link("Book now"))
+    |> assert_url_contains(booking_event_url_enabled)
+    |> assert_text("Booking with Mary Jane Photography")
   end
 end

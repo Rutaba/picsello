@@ -141,7 +141,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> fill_in(text_field("Type your full legal name"), with: "Chad Smith")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
-    |> click(button("To-Do Pay your invoice"))
+    |> click(button("To-Do Pay your retainer"))
     |> assert_has(definition("100% retainer due today", text: "$15.00"))
     |> click(button("Pay Invoice"))
     |> assert_url_contains("stripe-checkout")

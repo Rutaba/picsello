@@ -27,20 +27,12 @@ defmodule Picsello.ConfigureStripeTest do
     :ok
   end
 
-  feature "user configures stripe from lead page overview card", %{session: session, user: user} do
+  feature "user configures stripe from lead page", %{session: session, user: user} do
     lead = insert(:lead, %{package: %{}, user: user})
 
     session
-    |> visit("/leads/#{lead.id}")
-    |> click(button("Set up Stripe"))
-    |> assert_url_contains("stripe.me")
-  end
-
-  feature "user configures stripe from lead page booking summary", %{session: session, user: user} do
-    lead = insert(:lead, %{package: %{}, user: user})
-
-    session
-    |> visit("/leads/#{lead.id}")
+    |> click(css("li[title=Leads]"))
+    |> click(link(Picsello.Job.name(lead)))
     |> click(button("Set up Stripe"))
     |> assert_url_contains("stripe.me")
   end

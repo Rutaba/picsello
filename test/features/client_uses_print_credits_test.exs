@@ -49,7 +49,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       gallery: gallery
     )
 
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:get, fn _ -> {:error, nil} end)
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
 
     [
       gallery: gallery,

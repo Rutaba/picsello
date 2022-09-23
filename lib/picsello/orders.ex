@@ -9,6 +9,7 @@ defmodule Picsello.Orders do
     Galleries.Photo,
     Intents,
     Invoices.Invoice,
+    Photos,
     Repo
   }
 
@@ -110,11 +111,18 @@ defmodule Picsello.Orders do
     if can_download_all?(gallery) do
       %{
         organization: get_organization!(gallery_hash),
-        photos: from(photo in Photo, where: photo.gallery_id == ^gallery.id) |> some!()
+        photos:
+          from(photo in Photos.active_photos(), where: photo.gallery_id == ^gallery.id) |> some!()
       }
     else
       raise Ecto.NoResultsError, queryable: Gallery
     end
+  end
+
+  def get_all_photos(gallery) do
+    {:ok, get_all_photos!(gallery)}
+  rescue
+    e in Ecto.NoResultsError -> {:error, e}
   end
 
   @doc "stores processing info in order it finds"
@@ -163,16 +171,6 @@ defmodule Picsello.Orders do
     )
     |> Repo.exists?()
   end
-
-  def pack(order) do
-    %{
-      order_id: order.id
-    }
-    |> Picsello.Workers.PackDigitals.new()
-    |> Oban.insert()
-  end
-
-  defdelegate pack_url(order), to: __MODULE__.Pack, as: :url
 
   defdelegate handle_session(order_number, stripe_session_id),
     to: __MODULE__.Confirmations
@@ -230,24 +228,25 @@ defmodule Picsello.Orders do
   end
 
   @filtered_days 7
-  def get_all_proofing_album_orders_query(organization_id) do
-    from(order in get_all_orders_query(organization_id),
-      where:
-        not is_nil(order.album_id) and not is_nil(order.placed_at) and
-          order.inserted_at > ago(@filtered_days, "day"),
-      preload: [:album, gallery: [job: [:client]]]
+  def get_all_proofing_album_orders(organization_id) do
+    from(order in get_all_proofing_album_orders_query(organization_id),
+      where: order.inserted_at > ago(@filtered_days, "day")
     )
+    |> Repo.all()
   end
 
-  def get_all_proofing_album_orders(organization_id) do
-    get_all_proofing_album_orders_query(organization_id)
-    |> Repo.all()
+  def get_all_proofing_album_orders_query(organization_id) do
+    from(order in get_all_orders_query(organization_id),
+      join: album in assoc(order, :album),
+      where: album.is_proofing == true and not is_nil(order.placed_at),
+      preload: [:album, gallery: [job: [:client]]]
+    )
   end
 
   def has_proofing_album_orders?(gallery) do
     Repo.exists?(
       from(order in get_all_proofing_album_orders_query(gallery.organization.id),
-        where: order.gallery_id == ^gallery.id
+        where: order.gallery_id == ^gallery.id and order.inserted_at > ago(7, "day")
       )
     )
   end

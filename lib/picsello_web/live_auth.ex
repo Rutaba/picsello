@@ -19,14 +19,6 @@ defmodule PicselloWeb.LiveAuth do
     |> maybe_redirect_to_client_login(params)
   end
 
-  def on_mount(:gallery_photographer, params, session, socket) do
-    socket
-    |> allow_sandbox()
-    |> authenticate_gallery(params)
-    |> authenticate_gallery_for_photographer(session)
-    |> maybe_redirect_to_login()
-  end
-
   def on_mount(:gallery_client_login, params, _session, socket) do
     socket
     |> allow_sandbox()
@@ -231,7 +223,10 @@ defmodule PicselloWeb.LiveAuth do
     socket
     |> assign_current_user(session)
     |> then(fn
-      %{assigns: %{current_user: current_user}} = socket ->
+      %{assigns: %{authenticated: true}} = socket ->
+        socket
+
+      %{assigns: %{current_user: current_user}} = socket when not is_nil(current_user) ->
         socket
         |> assign(authenticated: current_user.id == Galleries.gallery_photographer(gallery).id)
 
@@ -248,10 +243,10 @@ defmodule PicselloWeb.LiveAuth do
     |> Map.get(:path)
     |> String.split("/", trim: true)
     |> case do
-      ["gallery", hash] ->
+      ["gallery", hash | _] ->
         Routes.gallery_client_show_login_path(socket, :gallery_login, hash)
 
-      ["album", hash] ->
+      ["album", hash | _] ->
         Routes.gallery_client_show_login_path(socket, :album_login, hash)
     end
   end

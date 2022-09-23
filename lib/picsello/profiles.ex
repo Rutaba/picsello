@@ -47,7 +47,7 @@ defmodule Picsello.Profiles do
     @primary_key false
     embedded_schema do
       field(:is_enabled, :boolean, default: true)
-      field(:color, :string)
+      field(:color, :string, default: @default_color)
       field(:job_types, {:array, :string})
       field(:description, :string)
       field(:job_types_description, :string)

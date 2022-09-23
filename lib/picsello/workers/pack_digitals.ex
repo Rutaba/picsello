@@ -1,27 +1,72 @@
 defmodule Picsello.Workers.PackDigitals do
   @moduledoc "Background job to create zip of digitals"
 
-  use Oban.Worker, unique: [fields: [:args, :worker]]
-  alias Picsello.{Repo, Orders, Orders.Pack}
+  use Oban.Worker,
+    unique: [states: ~w[available scheduled executing retryable]a, fields: [:args, :worker]]
+
+  alias Picsello.{Galleries, Galleries.Gallery, Orders, Cart.Order, Pack, Repo}
   import Ecto.Query, only: [from: 2]
 
   def perform(%Oban.Job{args: args}) do
-    {order_id, _args} = Map.pop(args, "order_id")
+    packable = to_packable(args)
 
-    case Pack.upload(order_id) do
-      {:ok, path} -> Orders.broadcast(order_id, {:pack, :ok, %{order_id: order_id, path: path}})
-      error -> Orders.broadcast(order_id, {:pack, :error, error})
+    broadcast(packable, :ok, %{packable: packable, status: :uploading})
+
+    case Pack.upload(packable) do
+      {:ok, url} ->
+        broadcast(packable, :ok, %{packable: packable, status: {:ready, url}})
+
+        Picsello.Notifiers.ClientNotifier.deliver_download_ready(
+          packable,
+          url,
+          PicselloWeb.Helpers
+        )
+
+        :ok
+
+      {:error, :empty} ->
+        # ignore when there are no photos to pack
+        :ok
+
+      error ->
+        broadcast(packable, :error, %{packable: packable, error: error})
+        {:error, error}
     end
   end
 
-  def executing?(%{id: order_id}) do
-    worker = to_string(__MODULE__)
+  def enqueue(%{id: id, __struct__: packable}, opts \\ []) do
+    %{id: id, packable: packable}
+    |> __MODULE__.new(opts)
+    |> Oban.insert()
+  end
 
+  def cancel(%{id: id, __struct__: module}) do
     from(job in Oban.Job,
       where:
-        job.worker == ^worker and job.state == "executing" and
-          fragment("(? -> 'order_id')::bigint = ?", job.args, ^order_id)
+        fragment("? -> ?", job.args, "packable") == ^module and
+          fragment("? -> ?", job.args, "id") == ^id
     )
-    |> Repo.exists?()
+    |> Repo.one()
+    |> case do
+      %{id: job_id} ->
+        Oban.cancel_job(job_id)
+        :ok
+
+      nil ->
+        :ok
+    end
   end
+
+  def broadcast(packable, status, payload) do
+    context_module(packable).broadcast(
+      packable,
+      {:pack, status, Map.put(payload, :packable, packable)}
+    )
+  end
+
+  defp to_packable(%{"packable" => module_name, "id" => id}),
+    do: module_name |> String.to_existing_atom() |> Repo.get!(id)
+
+  defp context_module(%Order{}), do: Orders
+  defp context_module(%Gallery{}), do: Galleries
 end

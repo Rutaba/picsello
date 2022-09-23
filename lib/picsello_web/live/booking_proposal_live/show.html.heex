@@ -54,13 +54,13 @@
 
         <%= unless Job.imported?(@job) do %>
           <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
-            <div class="flex flex-col items-start w-full">
+            <div class="flex flex-col items-start w-full font-medium">
               <%= if @proposal.accepted_at do %>
                 <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
               <% else %>
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
-              <div class="flex items-center justify-between w-full">
+              <div class="flex items-center justify-between w-full font-light">
                 Review your proposal
                 <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
               </div>
@@ -68,13 +68,13 @@
           </button>
 
           <button title="Contract" type="button" phx-click="open-contract" class="mt-6 font-semibold btn-row">
-            <div class="flex flex-col items-start w-full">
+            <div class="flex flex-col items-start w-full font-medium">
               <%= if @proposal.signed_at do %>
                 <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
               <% else %>
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
-              <div class="flex items-center justify-between w-full">
+              <div class="flex items-center justify-between w-full font-light">
                 Read and agree to your contract
                 <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
               </div>
@@ -83,13 +83,13 @@
 
           <%= if @proposal.questionnaire_id do %>
             <button title="Questionnaire" type="button" phx-click="open-questionnaire" class="mt-6 font-semibold btn-row">
-              <div class="flex flex-col items-start w-full">
+              <div class="flex flex-col items-start w-full font-medium">
                 <%= if @answer do %>
                   <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
                 <% else %>
                   <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
                 <% end %>
-                <div class="flex items-center justify-between w-full">
+                <div class="flex items-center justify-between w-full font-light">
                   Fill out the initial questionnaire
                   <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
                 </div>
@@ -99,16 +99,20 @@
         <% end %>
 
         <button title="Invoice" type="button" {if invoice_disabled?(@proposal, @stripe_status), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status)})} disabled={invoice_disabled?(@proposal, @stripe_status)}>
-          <div class="flex flex-col items-start w-full">
+          <div class="flex flex-col items-start w-full font-medium">
             <%= if PaymentSchedules.all_paid?(@job) do %>
               <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
             <% else %>
-              <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
+              <.badge class="mb-1" color={:red} mode={:outlined}><%= pending_amount_details(@job) %></.badge>
             <% end %>
-            <div class="flex items-center justify-between w-full">
-              <%= if PaymentSchedules.free?(@job), do: "Finish booking", else: "Pay your invoice" %>
+            <div class="flex items-center justify-between w-full font-light">
+              <%= if PaymentSchedules.owed_amount(@job) > PaymentSchedules.paid_amount(@job), do: "Pay your retainer", else: "Pay your invoice" %>
               <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
             </div>
+            <%= if PaymentSchedules.payment_schedules_count(@job) > 1 do %>
+            <hr class="w-full mt-3">
+              <a {if invoice_disabled?(@proposal, @stripe_status), do: %{}, else: %{phx_click: "open_schedule_popup"}} class="mt-3 text-base-250 underline underline-offset-2 font-normal schedule-popup-link" disabled={invoice_disabled?(@proposal, @stripe_status)}>Show schedule</a>
+            <% end %>
           </div>
         </button>
       </div>

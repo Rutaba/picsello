@@ -2,14 +2,16 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedules, BookingProposal}
+  alias Picsello.{Repo, PaymentSchedules}
   import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
-    only: [banner: 1, items: 1, package_description_length_long?: 1]
-
-  require Logger
+    only: [
+      banner: 1,
+      items: 1,
+      package_description_length_long?: 1
+    ]
 
   @impl true
   def render(assigns) do
@@ -74,9 +76,9 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @impl true
   def handle_event("submit", %{}, %{assigns: %{job: job}} = socket) do
     if PaymentSchedules.free?(job) do
-      finish_booking(socket)
+      finish_booking(socket) |> noreply()
     else
-      stripe_checkout(socket)
+      stripe_checkout(socket) |> noreply()
     end
   end
 
@@ -106,34 +108,5 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       shoots: shoots,
       package: package
     })
-  end
-
-  defp stripe_checkout(%{assigns: %{proposal: proposal, job: job}} = socket) do
-    payment = PaymentSchedules.unpaid_payment(job)
-
-    case PaymentSchedules.checkout_link(proposal, payment,
-           # manually interpolate here to not encode the brackets
-           success_url: "#{BookingProposal.url(proposal.id)}?session_id={CHECKOUT_SESSION_ID}",
-           cancel_url: BookingProposal.url(proposal.id),
-           metadata: %{"paying_for" => payment.id}
-         ) do
-      {:ok, url} ->
-        socket |> redirect(external: url) |> noreply()
-
-      {:error, error} ->
-        Logger.error(error)
-        socket |> put_flash(:error, "Couldn't redirect to stripe. Please try again") |> noreply()
-    end
-  end
-
-  def finish_booking(%{assigns: %{proposal: proposal}} = socket) do
-    case PaymentSchedules.mark_as_paid(proposal, PicselloWeb.Helpers) do
-      {:ok, _} ->
-        send(self(), {:update_payment_schedules})
-        socket |> noreply()
-
-      {:error, _} ->
-        socket |> put_flash(:error, "Couldn't finish booking") |> noreply()
-    end
   end
 end

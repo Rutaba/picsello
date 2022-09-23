@@ -104,8 +104,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> attach_file(testid("image-upload-input", visible: false),
       path: "assets/static/favicon-128.png"
     )
-    |> click(css("div.ql-editor"))
-    |> send_keys(["My custom description"])
+    |> fill_in_quill("My custom description")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
