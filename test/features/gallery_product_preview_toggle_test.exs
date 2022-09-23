@@ -6,6 +6,16 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
   setup :authenticated
   setup :authenticated_gallery
 
+  setup %{user: user} do
+    user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "cus_123", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
+
+    [user: user]
+  end
+
   setup do
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
