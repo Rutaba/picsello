@@ -52,7 +52,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
                 Coming soon!
               </button>
             <% else %>
-              <%= if @product.preview_enabled and @product.sell_product_enabled do %>
+              <%= if @product.product_preview_enabled and @product.sell_product_enabled do %>
                 <button
                 class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
                 phx-click="edit"
