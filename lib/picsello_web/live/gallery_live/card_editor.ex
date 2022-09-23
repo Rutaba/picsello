@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def render(assigns) do
     ~H"""
     <div class="relative">
-      <div class="fixed lg:ml-[220px] w-full px-6 mx-auto max-w-screen-xl z-10 bg-white">
+      <div class="fixed pl-16 w-full px-6 mx-auto max-w-screen-xl z-40 bg-white">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
       </div>
 
@@ -333,7 +333,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     ~H"""
     <%= for %{id: option_id, checked: checked} = option <- @options, dom_id = Enum.join([@filter_id, option_id], "-") do %>
       <li>
-        <input type="checkbox" id={dom_id} name={"filter[#{@filter_id}][]"} value={option_id} checked={checked} class="hidden peer"/>
+        <input type="checkbox" id={dom_id} name={"filter[#{@filter_id}][]"} value={option_id} checked={checked} class="hidden peer cursor-pointer"/>
         <.icon name="checkmark" class={"absolute w-8 h-4 stroke-current #{!checked && 'hidden'} #{@icon_class}"} />
 
         <label for={dom_id} class="block px-5 py-3 hover:bg-base-200 peer-checked:bg-base-200">
@@ -346,7 +346,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   defp filter_option_label(assigns) do
     ~H"""
-    <div class="flex items-center leading-snug capitalize">
+    <div class="flex items-center leading-snug capitalize cursor-pointer">
       <%= case @option do %>
         <% %{name: name, swatch: {r,g,b}} -> %>
             <div style={"background-color:rgb(#{r},#{g},#{b})"} class="w-4 h-4 mr-2"></div>
@@ -367,7 +367,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
               <input type="checkbox" class="hidden" value={option_id} name={"filter[remove][#{filter_id}][]"}/>
               <.filter_option_label option={option} />
 
-              <.icon name="close-x" class="w-3 h-3 ml-3 stroke-current stroke-[5px]" />
+              <.icon name="close-x" class="w-3 h-3 ml-3 stroke-current cursor-pointer stroke-[5px]" />
             </label>
           </li>
         <% end %>

@@ -29,11 +29,11 @@ defmodule Picsello.ClientBuysGreetingCardTest do
 
     session
     |> find(css("label", count: :any, text: label_text), fn labels ->
-      filter_label(labels)
+      filter_label(labels, session, options, label_text)
     end)
   end
 
-  def filter_label(labels) do
+  def filter_label(labels, session, options, label_text) do
     labels
     |> Enum.find_value(fn label ->
         case Element.attr(label, "for") do
