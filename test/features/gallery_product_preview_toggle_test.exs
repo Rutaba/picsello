@@ -1,6 +1,7 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
   use Picsello.FeatureCase, async: true
   import Picsello.TestSupport.ClientGallery
+  alias Picsello.{Repo, Accounts.User}
 
   setup :onboarded
   setup :authenticated
