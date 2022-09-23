@@ -52,14 +52,16 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
                 Coming soon!
               </button>
             <% else %>
-              <button
-              class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
-              phx-click="edit"
-              id={"product-id-#{@product_id}"}
-              phx-value-product_id={@product_id}>
-                <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
-                <span>Edit product preview</span>
-              </button>
+              <%= if @product.preview_enabled and @product.sell_product_enabled do %>
+                <button
+                class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
+                phx-click="edit"
+                id={"product-id-#{@product_id}"}
+                phx-value-product_id={@product_id}>
+                  <.icon name="pencil" class="mr-2.5 w-3 h-3 fill-current text-blue-planning-300" />
+                  <span>Edit product preview</span>
+                </button>
+              <% end %>
             <% end %>
           </div>
         </div>
