@@ -102,7 +102,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   def go_cart_wrapper(assigns) do
     ~H"""
     <%= if @count > 0 do %>
-      <button type="button" class="btn-primary text-sm w-full py-2 mt-2">Go to cart</button>
       <%= live_redirect to: @route, title: "cart", class: "block" do %><%= render_slot @inner_block %><% end %>
     <% else %>
       <div title="cart" ><%= render_slot @inner_block %></div>
