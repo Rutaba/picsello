@@ -76,7 +76,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       gallery: gallery,
       albums: get_albums(gallery.id),
       page: 0,
-      page_title: "Show Gallery",
+      page_title: gallery.name,
       download_all_visible: Orders.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
       update_mode: "append"
