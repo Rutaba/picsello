@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
-
   alias Picsello.Payments
 
   @impl true
