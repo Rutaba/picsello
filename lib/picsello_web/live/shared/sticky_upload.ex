@@ -11,7 +11,13 @@ defmodule PicselloWeb.Shared.StickyUpload do
 
   @impl true
   def update(assigns, socket) do
-    gallery_ids = PicselloWeb.UploaderCache.get(assigns.current_user.id) |> subscribe_upload()
+    user_id = assigns.current_user.id
+
+    gallery_ids =
+      user_id
+      |> PicselloWeb.UploaderCache.get()
+      |> clean_data(user_id)
+      |> subscribe_upload()
 
     socket
     |> assign(Enum.into(assigns, %{exclude_gallery_id: true}))
@@ -63,6 +69,13 @@ defmodule PicselloWeb.Shared.StickyUpload do
     end)
 
     gallery_ids
+  end
+
+  defp clean_data(upload_data, user_id) do
+    data = upload_data |> Enum.filter(fn {pid, _, _} -> Process.alive?(pid) end)
+    PicselloWeb.UploaderCache.update(user_id, data)
+
+    data
   end
 
   def sticky_upload(%{current_user: nil} = assigns), do: ~H""

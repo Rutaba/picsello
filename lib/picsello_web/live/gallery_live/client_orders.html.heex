@@ -76,7 +76,11 @@
               <% end %>
               <%= unless @is_proofing do %>
               <div class="pt-6 pb-6 lg:pt-16 lg:absolute lg:top-0 lg:right-0 lg:w-1/3">
-                <.live_component module={DownloadLinkComponent} id={order.id} order={order} />
+                <.download_link packable={order}>
+                    Download photos
+
+                    <.icon name="forth" class="w-2 h-3 ml-2 stroke-current stroke-3" />
+                </.download_link>
               </div>
               <% end %>
             </div>

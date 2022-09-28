@@ -47,11 +47,11 @@
             <div class="lg:flex hidden">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
             </div>  
-            <%= if @album && @album.is_proofing do %>
+            <%= if @album && (@album.is_proofing || @album.is_finals) do %>
               <.icon_button {testid("send-proofs-popup")} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
-                Send proofs to client
+                Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
               </.icon_button>
-              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
                 Add finals album
               </.icon_button> 
             <% end %>
@@ -61,7 +61,7 @@
           </div>
         </div>
         
-        <div class={"#{@photos_error_count == 0 && 'hidden'} flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400"}>
+        <div class={classes("flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400", %{"hidden" => @photos_error_count == 0 || (@total_progress > 0 && @total_progress < 100)})}>
           <div class="flex justify-center pl-5">
             <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
           </div>
@@ -84,7 +84,7 @@
                     <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
                   </div>
                   <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
-                    <%= for option <- options(:select) do %>
+                    <%= for option <- options(@album) do %>
                       <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
                       class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
                         <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
@@ -125,9 +125,9 @@
               </div>
             </div>
 
-            <div class="flex items-start min-w-0 flex-row">
+            <div class="flex items-start justify-between min-w-0 flex-row">
               <%= if Enum.any?(@selected_photos) do %>
-                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mx-0 mx-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
+                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mr-0 mr-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
                   <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
                 </div>
               <% end %>
@@ -141,15 +141,16 @@
         <% end %>
       </div>
       <div class= "lg:pt-16 pt-60 pb-10 pl-10 pr-8">
+        <div class={classes(%{"hidden" => @photos != [] || @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
+          <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
+              <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
+              <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
+          </div>
+          <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
+            <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
+          </div>
+        </div>
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
-          <% true when not @favorites_filter -> %>
-            <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-                <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
-                <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
-            </div>
-            <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
-              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
-            </div>
           <% true when @favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 Oops, there's no liked photo!
@@ -159,10 +160,10 @@
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>
-            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
+            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
-                <hr class="my-6 border-base-225">
+                <hr class={classes("sticky my-6 border-base-225", %{"hidden" => @orders == []})}>
               <% end %>
               <div
                 phx-hook="MasonryGrid"
@@ -200,6 +201,7 @@
                 <div id="photo-update-listener" phx-hook="PhotoUpdate" data-photo-updates={@photo_updates}></div>
               </div>
             </div>
+            <% true -> %>
         <% end %>
       </div>
     </div>

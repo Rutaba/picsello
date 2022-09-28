@@ -139,4 +139,19 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> assert_has(css("p", text: "Your client's prooflist is in!"))
     |> assert_has(button("Go to gallery"))
   end
+
+  feature "Selected photo-border in proofing-grid disappears on toggle-button off and on", %{
+    session: session,
+    proofing_album: album,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> click(testid("proofing-grid-item"))
+    |> click(css("#toggle_selections"))
+    |> refute_has(css("galleryItem > item-border"))
+    |> click(testid("proofing-grid-item"))
+    |> click(css("#toggle_selections"))
+    |> refute_has(css("galleryItem > item-border"))
+  end
 end

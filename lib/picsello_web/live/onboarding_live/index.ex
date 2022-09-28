@@ -5,12 +5,11 @@ defmodule PicselloWeb.OnboardingLive.Index do
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, BrandLink, JobType, Onboardings, Subscriptions, Accounts.User}
+  alias Picsello.{Repo, JobType, Onboardings, Subscriptions}
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     socket
-    |> assign_brand_links()
     |> assign_step(2)
     |> assign(:loading_stripe, false)
     |> assign(
@@ -19,7 +18,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
     )
     |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
-    |> maybe_show_trial(params)
     |> ok()
   end
 
@@ -42,36 +40,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   @impl true
-  def handle_event("save", %{}, %{assigns: %{step: 6}} = socket) do
-    case Subscriptions.checkout_link(
-           socket.assigns.current_user,
-           "month",
-           success_url:
-             "#{Routes.onboarding_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
-           cancel_url: Routes.onboarding_url(socket, :index, step: "trial"),
-           trial_days: socket.assigns.subscription_plan_metadata.trial_length
-         ) do
-      {:ok, url} ->
-        socket |> redirect(external: url) |> noreply()
-
-      {:error, error} ->
-        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
-        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
-    end
-  end
-
-  @impl true
-  def handle_event(
-        "save",
-        %{"user" => params},
-        %{assigns: %{current_user: %{organization: organization}, step: 4}} = socket
-      ) do
-    {brand_links_params, organization_params} = pop_in(params["organization"]["brand_links"])
-
-    case handle_brand_link(organization.brand_links, brand_links_params) do
-      :update -> save(socket, params)
-      data -> save(socket, organization_params, data)
-    end
+  def handle_event("save", %{"user" => params}, %{assigns: %{step: 3}} = socket) do
+    save_final(socket, params)
   end
 
   @impl true
@@ -91,7 +61,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     supscription_plan_metadata = Subscriptions.get_subscription_plan_metadata(code)
 
     step_title =
-      if socket.assigns.step === 6 do
+      if socket.assigns.step === 4 do
         supscription_plan_metadata.onboarding_title
       else
         socket.assigns.step_title
@@ -122,7 +92,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
             <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
-              <%= if @step == 6, do: "Start Trial", else: "Next" %>
+              <%= if @step == 3, do: "Start Trial", else: "Next" %>
             </button>
           </div>
         </.form>
@@ -145,31 +115,26 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
       <%= for onboarding <- inputs_for(@f, :onboarding) do %>
 
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
 
-          <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
-        </label>
+            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
+          </label>
 
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
+          <label class="flex flex-col mt-4">
+            <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
 
-          <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
-          <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
-        </label>
+            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
+            <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
+          </label>
+        </div>
 
         <label class="flex flex-col mt-4">
           <p class="py-2 font-extrabold">Where’s your business based?</p>
 
           <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
           <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
-        </label>
-
-        <label class={classes("flex flex-col mt-4", %{"opacity-50" => onboarding |> input_value(:state) |> Onboardings.non_us_state?()})}>
-          <p class="py-2 font-extrabold">What's your phone number? <em class="text-xs italic font-normal">(optional)</em></p>
-
-          <%= input onboarding, :phone, type: :telephone_input, disabled: onboarding |> input_value(:state) |> Onboardings.non_us_state?(), phx_debounce: 500, placeholder: "(555) 555-5555", phx_hook: "Phone", class: "p-4" %>
-          <%= error_tag onboarding, :phone, class: "text-red-sales-300 text-sm", prefix: "Phone number" %>
         </label>
       <% end %>
     """
@@ -188,6 +153,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <i class="italic font-light">(Select one or more)</i>
             </p>
 
+            <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
+
             <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
               <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(p, :job_types) || [], job_type)]) do %>
                 <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
@@ -199,111 +166,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
     """
   end
 
-  defp step(%{step: 4} = assigns) do
-    ~H"""
-      <%= for o <- inputs_for(@f, :organization) do %>
-        <%= hidden_inputs_for o %>
-
-        <%= for p <- inputs_for(o, :profile) do %>
-          <label class="flex flex-col">
-            <p class="py-2 font-extrabold">Choose your color <i class="italic font-light">(Used to customize your invoices, emails, and profile)</i></p>
-            <ul class="mt-2 grid grid-cols-4 gap-5 sm:gap-3 sm:grid-cols-8">
-              <%= for(color <- colors()) do %>
-                <li class="aspect-square">
-                  <label>
-                    <%= radio_button p, :color, color, class: "hidden" %>
-                    <div class={classes(
-                      "flex cursor-pointer items-center hover:border-base-300 justify-center w-full h-full border rounded", %{
-                      "border-base-300" => input_value(p, :color) == color,
-                      "hover:border-opacity-40" => input_value(p, :color) != color
-                    })}>
-                      <div class="w-4/5 rounded h-4/5" style={"background-color: #{color}"}></div>
-                    </div>
-                  </label>
-                </li>
-              <% end %>
-            </ul>
-          </label>
-        <% end %>
-        <%= for b <- inputs_for(o, :brand_links) do %>
-          <%= hidden_inputs_for b %>
-          <%= hidden_input b, :title, value: "Website" %>
-          <%= hidden_input b, :link_id, value: "website" %>
-          <%= hidden_input b, :organization_id, value: @current_user.organization.id %>
-          <.website_field form={b} class="mt-4" />
-        <% end %>
-      <% end %>
-    """
-  end
-
-  defp step(%{step: 5} = assigns) do
-    software_selected? = fn form, software ->
-      Enum.member?(input_value(form, :switching_from_softwares) || [], software)
-    end
-
-    ~H"""
-      <%= for o <- inputs_for(@f, :onboarding) do %>
-        <div class="flex flex-col pb-1">
-          <p class="py-2 font-extrabold">
-            Which photography software have you used before?
-            <i class="font-normal">(Select one or more)</i>
-          </p>
-
-          <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-            <%= for({value, label} <- software_options(), checked <- [software_selected?.(o, value)]) do %>
-              <label class={classes(
-                "p-3 border rounded-lg hover:bg-blue-planning-100/60 cursor-pointer font-semibold text-sm sm:text-base",
-                %{"border-blue-planning-300 bg-blue-planning-100" => checked}
-              )}>
-                <input class="hidden" type={if software_selected?.(o, :none), do: "radio", else: "checkbox"} name={input_name(o, :switching_from_softwares) <> "[]"} value={value} checked={checked} />
-
-                <%= label %>
-              </label>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    """
-  end
-
-  defp step(%{step: 6} = assigns) do
-    ~H"""
-    <%= for org <- inputs_for(@f, :organization) do %>
-      <%= hidden_inputs_for org %>
-    <% end %>
-
-    <hr class="mb-4" />
-    <p class="mb-4"><%= @subscription_plan_metadata.onboarding_description %></p>
-    <p class="text-sm text-gray-400"><small>You can cancel at any time before the trial ends and you won’t be charged. Your subscription will automatically renew each month at the amazing Founder Rate and you can continue to keep growing your business with ease! Rates are subject to Picsello's <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms and Conditions</a></small></p>
-
-    <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
-
-    <%= if User.onboarded?(@current_user) do %>
-      <div class="fixed inset-0 flex items-center justify-center bg-black/60">
-        <div class="rounded-lg dialog">
-          <.icon name="confetti" class="w-11 h-11" />
-
-          <h1 class="text-3xl font-semibold"><%= @subscription_plan_metadata.success_title %></h1>
-          <p class="pt-4">We’re excited to have you try Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.</p>
-
-          <button class="w-full mt-6 btn-primary" type="button" phx-click="go-dashboard">
-            Go to my dashboard
-          </button>
-        </div>
-      </div>
-    <% end %>
-    """
-  end
-
-  defdelegate software_options(), to: Onboardings
-
   defp assign_step(socket, 2) do
     socket
     |> assign(
       step: 2,
       color_class: "bg-orange-inbox-200",
       step_title: "Tell us more about yourself",
-      subtitle: "We need a little more info to get your account ready!",
+      subtitle: "",
       page_title: "Onboarding Step 2"
     )
     |> assign_new(:states, &states/0)
@@ -317,40 +186,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       step_title: "Customize your account",
       subtitle: "",
       page_title: "Onboarding Step 3"
-    )
-  end
-
-  defp assign_step(socket, 4) do
-    socket
-    |> assign(
-      step: 4,
-      color_class: "bg-green-finances-100",
-      step_title: "Customize your account",
-      subtitle: "",
-      page_title: "Onboarding Step 4"
-    )
-  end
-
-  defp assign_step(socket, 5) do
-    socket
-    |> assign(
-      step: 5,
-      color_class: "bg-blue-planning-200",
-      step_title: "Almost done!",
-      subtitle: "",
-      page_title: "Onboarding Step 5"
-    )
-  end
-
-  defp assign_step(socket, 6) do
-    socket
-    |> assign(
-      step: 6,
-      color_class: "bg-blue-gallery-200",
-      step_title: socket.assigns.subscription_plan_metadata.onboarding_title,
-      subtitle:
-        "We’re so excited you are here! Ready to find out how Picsello will make running your photography business easier than ever?",
-      page_title: "Onboarding Step 6"
     )
   end
 
@@ -396,7 +231,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
           <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
-              <%= for step <- 1..6 do %>
+              <%= for step <- 1..3 do %>
                 <li class={classes(
                   "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
                   %{ @color_class => step == @step, "bg-gray-200" => step != @step }
@@ -431,28 +266,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
     end
   end
 
-  defp maybe_show_trial(socket, %{
-         "session_id" => "" <> session_id
-       }) do
-    if connected?(socket),
-      do: send(self(), {:stripe_session_id, session_id})
-
-    socket
-    |> assign(:loading_stripe, true)
-    |> assign_step(6)
-  end
-
-  defp maybe_show_trial(socket, %{"step" => "trial"}) do
-    if socket.assigns.changeset.valid? do
-      socket
-      |> assign_step(6)
-    else
-      socket
-    end
-  end
-
-  defp maybe_show_trial(socket, %{}), do: socket
-
   defp update_user_contact_trial(socket, current_user) do
     %{
       list_ids: SendgridClient.get_all_contact_list_env(),
@@ -474,53 +287,15 @@ defmodule PicselloWeb.OnboardingLive.Index do
     socket
   end
 
-  defp assign_brand_links(
-         %{assigns: %{current_user: %{organization: organization} = user}} = socket
-       ) do
-    current_user =
-      case organization |> Repo.preload(:brand_links, force: true) do
-        %{brand_links: [%{id: id}]} = organization when not is_nil(id) ->
-          user |> Map.put(:organization, organization)
-
-        _ ->
-          user
-          |> Map.put(
-            :organization,
-            Map.put(organization, :brand_links, [
-              %BrandLink{
-                title: "Website",
-                link_id: "website",
-                organization_id: organization.id
-              }
-            ])
-          )
-      end
-
-    socket
-    |> assign(:current_user, current_user)
-  end
-
   defp save(%{assigns: %{step: step}} = socket, params, data \\ :skip) do
     Multi.new()
     |> Multi.put(:data, data)
     |> Multi.update(:user, build_changeset(socket, params))
-    |> Multi.merge(fn
-      %{data: %BrandLink{} = data} ->
-        Multi.new() |> Multi.delete(:brand_link, data)
-
-      %{data: %{} = data} ->
-        Multi.new()
-        |> Multi.insert(:insert_brand_link, BrandLink.create_changeset(%BrandLink{}, data))
-
-      _ ->
-        Multi.new()
-    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{user: user}} ->
         socket
         |> assign(current_user: user)
-        |> assign_brand_links()
         |> assign_step(step + 1)
         |> assign_changeset()
 
@@ -530,12 +305,38 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> noreply()
   end
 
-  defp handle_brand_link([%{id: nil}], %{"0" => %{"link" => ""}}), do: :skip
-  defp handle_brand_link([brand_link], %{"0" => %{"link" => ""}}), do: brand_link
-  defp handle_brand_link([%{id: nil}], %{"0" => params}), do: params
-  defp handle_brand_link(_, _), do: :update
+  defp save_final(socket, params, data \\ :skip) do
+    Multi.new()
+    |> Multi.put(:data, data)
+    |> Multi.update(:user, build_changeset(socket, params))
+    |> Multi.run(:subscription, fn _repo, %{user: user} ->
+      with :ok <-
+             Subscriptions.subscription_base(user, "month",
+               trial_days: socket.assigns.subscription_plan_metadata.trial_length
+             )
+             |> Picsello.Subscriptions.handle_stripe_subscription() do
+        {:ok, nil}
+      end
+    end)
+    |> Multi.run(:user_final, fn _repo, %{user: user} ->
+      with _ <- Onboardings.complete!(user) do
+        {:ok, nil}
+      end
+    end)
+    |> Repo.transaction()
+    |> then(fn
+      {:ok, %{user: user}} ->
+        socket
+        |> assign(current_user: user)
+        |> update_user_contact_trial(user)
+        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+
+      {:error, reason} ->
+        socket |> assign(changeset: reason)
+    end)
+    |> noreply()
+  end
 
   defdelegate job_types(), to: JobType, as: :all
-  defdelegate colors(), to: Picsello.Profiles
   defdelegate states(), to: Onboardings, as: :state_options
 end

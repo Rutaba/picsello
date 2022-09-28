@@ -115,4 +115,6 @@ defmodule PicselloWeb.GalleryLive.EditProduct do
   end
 
   def product_description(_), do: ""
+
+  defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
 end

@@ -6,6 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
+
   alias Picsello.{
     Galleries,
     Repo,
@@ -307,7 +308,9 @@ defmodule Picsello.Galleries do
     |> Repo.transaction()
     |> then(fn
       {:ok, %{photos: photos}} ->
-        prepare_gallery(get_gallery!(photo.gallery_id))
+        gallery = get_gallery!(photo.gallery_id)
+        prepare_gallery(gallery)
+        refresh_bundle(gallery)
         {:ok, photos}
 
       {:error, reason} ->
@@ -524,13 +527,19 @@ defmodule Picsello.Galleries do
   @doc """
   Updates a photo
   """
-  def update_photo(nil, %{} = _attrs), do: []
+  def update_photo(photo_id, %{} = attrs) when is_integer(photo_id) do
+    case Repo.get(Photo, photo_id) do
+      nil ->
+        {:error, :no_photo}
 
-  def update_photo(%Photo{id: _} = photo, %{} = attrs) do
-    photo
-    |> Photo.update_changeset(attrs)
-    |> Repo.update()
+      photo ->
+        photo
+        |> Photo.update_changeset(attrs)
+        |> Repo.update()
+    end
   end
+
+  def update_photo(_, %{} = _attrs), do: {:error, :no_photo}
 
   @doc """
   updates album_id for multiple photos.
@@ -745,7 +754,7 @@ defmodule Picsello.Galleries do
   def save_gallery_cover_photo(gallery, attrs \\ %{}) do
     gallery
     |> Gallery.save_cover_photo_changeset(attrs)
-    |> Repo.update!()
+    |> Repo.update()
   end
 
   def delete_gallery_cover_photo(gallery) do
@@ -895,7 +904,15 @@ defmodule Picsello.Galleries do
     |> if(do: :upload_in_progress, else: :ready)
   end
 
+  def broadcast(gallery, message),
+    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(gallery), message)
+
+  def subscribe(gallery), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(gallery))
+
+  defp topic(gallery), do: "gallery:#{gallery.id}"
+
   defp active_galleries, do: from(g in Gallery, where: g.active == true)
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
+  defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue
 end

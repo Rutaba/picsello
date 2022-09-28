@@ -16,10 +16,15 @@ defmodule Picsello.Messages do
 
   def insert_scheduled_message!(params, %Job{} = job) do
     params
+    |> scheduled_message_changeset(job)
+    |> Repo.insert!()
+  end
+
+  def scheduled_message_changeset(params, %Job{} = job) do
+    params
     |> ClientMessage.create_outbound_changeset()
     |> Ecto.Changeset.put_change(:job_id, job.id)
     |> Ecto.Changeset.put_change(:scheduled, true)
-    |> Repo.insert!()
   end
 
   def notify_inbound_message(%ClientMessage{} = message, helpers) do

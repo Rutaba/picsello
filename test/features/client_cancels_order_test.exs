@@ -55,7 +55,6 @@ defmodule Picsello.ClientCancelsOrderTest do
     |> click(button("Check out with Stripe"))
 
     assert [%{errors: []}] = run_jobs()
-
     assert_receive {:create_session, %{cancel_url: cancel_url}}
 
     session

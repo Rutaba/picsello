@@ -90,21 +90,22 @@ config :sentry,
 config :picsello, Picsello.Mailer,
   adapter: Bamboo.SendGridAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
+  calculator_template: System.get_env("SENDGRID_CALCULATOR_TEMPLATE"),
+  client_order_canceled_template: System.get_env("SENDGRID_ORDER_CANCELED_PHOTOGRAPHER_TEMPLATE"),
+  client_transactional_template: System.get_env("SENDGRID_CLIENT_TRANSACTIONAL_TEMPLATE"),
   confirmation_instructions_template:
     System.get_env("SENDGRID_CONFIRMATION_INSTRUCTIONS_TEMPLATE"),
-  password_reset_template: System.get_env("SENDGRID_PASSWORD_RESET_TEMPLATE"),
-  update_email_template: System.get_env("SENDGRID_UPDATE_EMAIL_TEMPLATE"),
-  calculator_template: System.get_env("SENDGRID_CALCULATOR_TEMPLATE"),
-  client_transactional_template: System.get_env("SENDGRID_CLIENT_TRANSACTIONAL_TEMPLATE"),
   generic_transactional_template: System.get_env("SENDGRID_GENERIC_TRANSACTIONAL_TEMPLATE"),
-  email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
-  reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
   order_confirmation_template: System.get_env("SENDGRID_ORDER_CONFIMATION_TEMPLATE"),
+  password_reset_template: System.get_env("SENDGRID_PASSWORD_RESET_TEMPLATE"),
   photographer_order_canceled_template:
     System.get_env("SENDGRID_ORDER_CANCELED_PHOTOGRAPHER_TEMPLATE"),
-  client_order_canceled_template: System.get_env("SENDGRID_ORDER_CANCELED_PHOTOGRAPHER_TEMPLATE"),
   photographer_order_confirmation_template:
     System.get_env("SENDGRID_PHOTOGRAPHER_ORDER_CONFIMATION_TEMPLATE"),
+  update_email_template: System.get_env("SENDGRID_UPDATE_EMAIL_TEMPLATE"),
+  client_download_ready_template: System.get_env("SENDGRID_CLIENT_DOWNLOAD_READY_TEMPLATE"),
+  email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
+  reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]
@@ -113,6 +114,6 @@ config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
 
 config :picsello,
        :feature_flags,
-       ~w[balance_due_emails]a
+       ~w[balance_due_emails sync_whcc_design_details]a
 
 config :picsello, :whcc, debug: System.get_env("WHCC_LOG_LEVEL")

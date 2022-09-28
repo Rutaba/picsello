@@ -3,8 +3,12 @@ defmodule Picsello.Repo.Migrations.AddTogglesToGalleryProduct do
 
   def change do
     execute(
-      "alter table gallery_products add column enabled boolean not null default true",
-      "alter table gallery_products drop column enabled"
+      "alter table gallery_products add column sell_product_enabled boolean not null default true",
+      "alter table gallery_products drop column sell_product_enabled"
+    )
+    execute(
+      "alter table gallery_products add column product_preview_enabled boolean not null default true",
+      "alter table gallery_products drop column product_preview_enabled"
     )
   end
 end
