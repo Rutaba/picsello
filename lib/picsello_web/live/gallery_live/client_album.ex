@@ -186,7 +186,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
           href={Routes.gallery_downloads_path(
               @socket, :download_all,
               @gallery.client_link_hash,
-              photo_ids: @album.photos |> Enum.map(& &1.id) |> Enum.join(",")
+              photo_ids: @album.photos |> Enum.map(& &1.id) |> Enum.join(","),
+              is_client: true
           )}>
           Download all photos
           </.button>

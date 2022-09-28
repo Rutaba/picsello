@@ -64,107 +64,91 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     }
   end
 
-  def save_processed(%{
-        "task" => %{
-          "photoId" => photo_id,
-          "previewPath" => preview_url,
-          "watermarkedPreviewPath" => watermarked_preview_path,
-          "watermarkedOriginalPath" => watermark_path
-        },
-        "artifacts" => %{
-          "isPreviewUploaded" => true,
-          "aspectRatio" => aspect_ratio,
-          "height" => height,
-          "width" => width,
-          "isWatermarkedUploaded" => true
-        }
-      }) do
-    photo = Galleries.get_photo(photo_id)
+  def save_processed(context), do: do_save_processed(context)
 
-    {:ok, _} =
-      Galleries.update_photo(photo, %{
-        aspect_ratio: aspect_ratio,
-        height: height,
-        width: width,
-        preview_url: preview_url,
-        watermarked_url: watermark_path,
-        watermarked_preview_url: watermarked_preview_path
-      })
-  rescue
-    _ -> :error
+  defp do_save_processed(%{
+         "task" => %{
+           "photoId" => photo_id,
+           "previewPath" => preview_url,
+           "watermarkedPreviewPath" => watermarked_preview_path,
+           "watermarkedOriginalPath" => watermark_path
+         },
+         "artifacts" => %{
+           "isPreviewUploaded" => true,
+           "aspectRatio" => aspect_ratio,
+           "height" => height,
+           "width" => width,
+           "isWatermarkedUploaded" => true
+         }
+       }) do
+    Galleries.update_photo(photo_id, %{
+      aspect_ratio: aspect_ratio,
+      height: height,
+      width: width,
+      preview_url: preview_url,
+      watermarked_url: watermark_path,
+      watermarked_preview_url: watermarked_preview_path
+    })
   end
 
-  def save_processed(%{
-        "task" => %{"photoId" => photo_id, "previewPath" => preview_url},
-        "artifacts" => %{
-          "isPreviewUploaded" => true,
-          "aspectRatio" => aspect_ratio,
-          "height" => height,
-          "width" => width
-        }
-      }) do
-    photo = Galleries.get_photo(photo_id)
-
-    {:ok, _} =
-      Galleries.update_photo(photo, %{
-        aspect_ratio: aspect_ratio,
-        height: height,
-        width: width,
-        preview_url: preview_url
-      })
-  rescue
-    _ -> :error
+  defp do_save_processed(%{
+         "task" => %{"photoId" => photo_id, "previewPath" => preview_url},
+         "artifacts" => %{
+           "isPreviewUploaded" => true,
+           "aspectRatio" => aspect_ratio,
+           "height" => height,
+           "width" => width
+         }
+       }) do
+    Galleries.update_photo(photo_id, %{
+      aspect_ratio: aspect_ratio,
+      height: height,
+      width: width,
+      preview_url: preview_url
+    })
   end
 
-  def save_processed(%{
-        "task" => %{
-          "photoId" => photo_id,
-          "watermarkedPreviewPath" => watermarked_preview_path,
-          "watermarkedOriginalPath" => watermark_path
-        },
-        "artifacts" => %{
-          "isWatermarkedUploaded" => true
-        }
-      }) do
-    photo = Galleries.get_photo(photo_id)
-
-    {:ok, _} =
-      Galleries.update_photo(photo, %{
-        watermarked_url: watermark_path,
-        watermarked_preview_url: watermarked_preview_path
-      })
-  rescue
-    _ -> :error
+  defp do_save_processed(%{
+         "task" => %{
+           "photoId" => photo_id,
+           "watermarkedPreviewPath" => watermarked_preview_path,
+           "watermarkedOriginalPath" => watermark_path
+         },
+         "artifacts" => %{
+           "isWatermarkedUploaded" => true
+         }
+       }) do
+    Galleries.update_photo(photo_id, %{
+      watermarked_url: watermark_path,
+      watermarked_preview_url: watermarked_preview_path
+    })
   end
 
-  def save_processed(%{
-        "task" => %{
-          "processCoverPhoto" => true,
-          "originalPath" => path
-        },
-        "artifacts" => %{
-          "aspectRatio" => aspect_ratio,
-          "width" => width,
-          "height" => height
-        }
-      }) do
+  defp do_save_processed(%{
+         "task" => %{
+           "processCoverPhoto" => true,
+           "originalPath" => path
+         },
+         "artifacts" => %{
+           "aspectRatio" => aspect_ratio,
+           "width" => width,
+           "height" => height
+         }
+       }) do
     path
     |> CoverPhoto.get_gallery_id_from_path()
     |> Galleries.get_gallery!()
     |> Galleries.save_gallery_cover_photo(%{
       cover_photo: %{id: path, aspect_ratio: aspect_ratio, width: width, height: height}
     })
-    |> then(fn %{cover_photo: photo} -> {:ok, photo} end)
-  rescue
-    _ -> :error
+    |> case do
+      {:ok, %{cover_photo: photo}} -> {:ok, photo}
+      error -> error
+    end
   end
 
   def notify_processed(context, %Photo{} = photo) do
-    Phoenix.PubSub.broadcast(
-      Picsello.PubSub,
-      "gallery:#{photo.gallery_id}",
-      {:photo_processed, context, photo}
-    )
+    Galleries.broadcast(%{id: photo.gallery_id}, {:photo_processed, context, photo})
   rescue
     _err ->
       :ignored

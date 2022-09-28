@@ -1,7 +1,7 @@
 defmodule Picsello.OnboardingsTest do
   use Picsello.DataCase, async: true
 
-  alias Picsello.{Onboardings, BrandLink}
+  alias Picsello.{Onboardings}
   alias Ecto.Changeset
 
   describe "changeset" do
@@ -60,78 +60,6 @@ defmodule Picsello.OnboardingsTest do
                )
 
       assert [:job_types] = Map.keys(profile_errors)
-    end
-
-    test "step 4 requires color, website" do
-      user = insert(:user)
-
-      assert %{
-               onboarding: %{
-                 photographer_years: [:required],
-                 schedule: [:required],
-                 state: [:required]
-               },
-               organization: %{
-                 name: [:required],
-                 profile: %{
-                   job_types: [:required],
-                   color: [:required]
-                 }
-               }
-             } =
-               changeset_errors(
-                 user,
-                 %{
-                   onboarding: %{},
-                   organization: %{id: user.organization_id, name: nil, profile: %{}}
-                 },
-                 step: 4
-               )
-    end
-
-    test "step 5 requires switching from softwares" do
-      user = insert(:user)
-
-      assert %{
-               onboarding: %{
-                 photographer_years: [:required],
-                 schedule: [:required],
-                 state: [:required],
-                 switching_from_softwares: [:required]
-               },
-               organization: %{
-                 name: [:required],
-                 profile: %{
-                   job_types: [:required],
-                   color: [:required]
-                 }
-               }
-             } =
-               changeset_errors(
-                 user,
-                 %{
-                   onboarding: %{},
-                   organization: %{id: user.organization_id, name: nil, profile: %{}}
-                 },
-                 step: 5
-               )
-    end
-
-    test "validates website" do
-      assert [["is invalid"], nil, nil, ["is invalid"]] =
-               for(
-                 url <- [
-                   "ftp://example.com",
-                   "example.com",
-                   "example.com/my-profile",
-                   "https://bad!.hostname"
-                 ],
-                 do:
-                   %BrandLink{}
-                   |> BrandLink.brand_link_changeset(%{link: url})
-                   |> errors_on()
-                   |> get_in([:link])
-               )
     end
   end
 

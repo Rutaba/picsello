@@ -43,7 +43,7 @@
 
         <ul {testid("products")} class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
           <%= for product <- @products do %>
-            <%= if product.preview_enabled do %>
+            <%= if product.product_preview_enabled do %>
               <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} photo={product.preview_photo} category={product.category} click_params={product.id} />
             <% end %>
           <% end %>
@@ -79,15 +79,11 @@
 
           <div class="flex items-end">
             <%= if @download_all_visible do %>
-              <.button
-                element="a"
-                icon="download"
-                icon_class="h-4 w-4 fill-current"
-                class="mt-4 mr-4 py-1.5 px-8"
-                download
-                href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash)}>
+              <.download_link packable={@gallery} class="mt-4 mr-4 px-8 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem] hover:text-base-100 hover:bg-base-300">
                 Download all photos
-              </.button>
+
+                <.icon name="download" class="w-4 h-4 ml-2 fill-current" />
+              </.download_link>
             <% end %>
             <div class="text-sm lg:text-xl text-base-250"> <%= photos_count(@photos_count) %></div>
           </div>

@@ -9,6 +9,7 @@ defmodule Picsello.Orders do
     Galleries.Photo,
     Intents,
     Invoices.Invoice,
+    Photos,
     Repo
   }
 
@@ -110,11 +111,18 @@ defmodule Picsello.Orders do
     if can_download_all?(gallery) do
       %{
         organization: get_organization!(gallery_hash),
-        photos: from(photo in Photo, where: photo.gallery_id == ^gallery.id) |> some!()
+        photos:
+          from(photo in Photos.active_photos(), where: photo.gallery_id == ^gallery.id) |> some!()
       }
     else
       raise Ecto.NoResultsError, queryable: Gallery
     end
+  end
+
+  def get_all_photos(gallery) do
+    {:ok, get_all_photos!(gallery)}
+  rescue
+    e in Ecto.NoResultsError -> {:error, e}
   end
 
   @doc "stores processing info in order it finds"
@@ -163,16 +171,6 @@ defmodule Picsello.Orders do
     )
     |> Repo.exists?()
   end
-
-  def pack(order) do
-    %{
-      order_id: order.id
-    }
-    |> Picsello.Workers.PackDigitals.new()
-    |> Oban.insert()
-  end
-
-  defdelegate pack_url(order), to: __MODULE__.Pack, as: :url
 
   defdelegate handle_session(order_number, stripe_session_id),
     to: __MODULE__.Confirmations

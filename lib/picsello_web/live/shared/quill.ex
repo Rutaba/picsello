@@ -4,22 +4,28 @@ defmodule PicselloWeb.Shared.Quill do
   """
   use PicselloWeb, :live_component
 
+  @debounce Application.compile_env(:picsello, :debounce, 500)
+
+  @defaults %{
+    id: "editor",
+    html_field: nil,
+    text_field: nil,
+    placeholder: nil,
+    class: nil,
+    editor_class: "min-h-[8rem]",
+    enable_size: false,
+    enable_image: false,
+    track_quill_source: false,
+    current_user: nil,
+    debounce: @debounce
+  }
+
   @impl true
   def render(assigns) do
     assigns =
-      assigns
-      |> Enum.into(%{
-        id: "editor",
-        html_field: nil,
-        text_field: nil,
-        placeholder: nil,
-        class: nil,
-        editor_class: "min-h-[8rem]",
-        enable_size: false,
-        enable_image: false,
-        track_quill_source: false,
-        current_user: nil
-      })
+      for {k, v} <- @defaults, reduce: assigns do
+        acc -> assign_new(acc, k, fn -> v end)
+      end
 
     ~H"""
     <div id={"#{@id}-wrapper"} class={@class} phx-hook="Quill" phx-update="ignore" class="mt-2"
@@ -36,8 +42,8 @@ defmodule PicselloWeb.Shared.Quill do
         <%= hidden_input @f, :quill_source %>
       <% end %>
       <div class={"#{@editor_class} editor"}></div>
-      <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: "500" %>
-      <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: "500" %>
+      <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: @debounce %>
+      <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: @debounce %>
     </div>
     """
   end
