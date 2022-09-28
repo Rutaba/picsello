@@ -124,13 +124,13 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       session
       |> visit("/galleries/#{gallery_id}/product-previews")
       |> take_screenshot()
-      |> assert_has(button("Edit product preview", visible: true, count: 4))
-      |> find(checkbox("Product enabled to sell", visible: true, count: 4, at: 0), fn checkbox ->
+      |> assert_has(button("Edit product preview", visible: true, count: 7))
+      |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 0), fn checkbox ->
         assert Element.selected?(checkbox)
       end)
-      |> click(css("label", text: "Show product preview in gallery", count: 4, at: 0))
-      |> assert_has(button("Edit product preview", visible: true, count: 3))
-      |> click(css("label", text: "Product enabled to sell", count: 4, at: 1))
-      |> assert_has(button("Edit product preview", visible: true, count: 2))
+      |> click(css("label", text: "Show product preview in gallery", count: 7, at: 0))
+      |> assert_has(button("Edit product preview", visible: true, count: 6))
+      |> click(css("label", text: "Product enabled to sell", count: 7, at: 1))
+      |> assert_has(button("Edit product preview", visible: true, count: 5))
     end
 end
