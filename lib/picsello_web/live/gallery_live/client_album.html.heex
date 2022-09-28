@@ -6,10 +6,12 @@
 
   <%= unless @is_proofing do %>
     <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 max-w-screen-xl">
+
       <%= unless @album.is_finals do %>
         <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
           <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
           <p class="mt-1">Back to gallery</p>
+
         <% end %>
       <% end %>
       <h3 class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
