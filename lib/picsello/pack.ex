@@ -162,13 +162,13 @@ defmodule Picsello.Pack do
 
   def upload_photos(photo_ids, opts \\ []) when is_list(photo_ids) do
     photos = Galleries.get_photos_by_ids(photo_ids)
-    gallery = photos |> List.first() |> Repo.preload(:gallery)
+    gallery = photos |> List.first() |> Repo.preload(:gallery) |> Map.get(:gallery)
     unix_time = DateTime.utc_now() |> DateTime.to_unix()
     path = Path.join(["temporary", "#{gallery.name}-#{unix_time}.zip"])
 
     case photos do
       [_ | _] = photos ->
-        photos |> stream() |> do_upload(path, Keyword.get(opts, :chunk_size, @chunk_size))
+        photos |> stream() |> do_upload(path, opts)
 
       [] ->
         {:error, "invalid photo ids"}
@@ -194,6 +194,7 @@ defmodule Picsello.Pack do
     |> PhotoStorage.continue_resumable(chunk,
       headers: [
         {"content-length", chunk_length},
+        {"Content-Disposition", "attachment"},
         {"content-range", "bytes #{first_byte_index}-#{last_byte_index}/#{total_size}"}
       ]
     )

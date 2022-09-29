@@ -219,11 +219,15 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           }
         } = socket
       ) do
-    UserNotifier.deliver_download_start_notification(current_user, socket.gallery)
+    UserNotifier.deliver_download_start_notification(current_user, gallery)
     Galleries.pack(gallery, selected_photos, user_email: current_user.email)
 
     socket
     |> push_event("select_mode", %{"mode" => "selected_none"})
+    |> assign(:select_mode, "selected_none")
+    |> assign(:selected_photos, [])
+    |> push_event("reload_grid", %{})
+    |> put_flash(:success, "Download request sent at #{current_user.email}! The ZIP file with your images is on the way to your inbox")
     |> noreply()
   end
 

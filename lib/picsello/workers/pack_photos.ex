@@ -6,9 +6,8 @@ defmodule Picsello.Workers.PackPhotos do
   alias Picsello.{
     Repo,
     Orders,
-    Orders.Pack,
-    Notifiers.UserNotifier,
-    Galleries.Workers.PhotoStorage
+    Pack,
+    Notifiers.UserNotifier
   }
 
   import Ecto.Query, only: [from: 2]
@@ -20,9 +19,7 @@ defmodule Picsello.Workers.PackPhotos do
     {gallery_url, _args} = Map.pop(args, "gallery_url")
 
     case Pack.upload_photos(photo_ids) do
-      {:ok, path} ->
-        downlaod_url = PhotoStorage.path_to_url(path)
-
+      {:ok, downlaod_url} ->
         UserNotifier.deliver_download_ready_notification(
           %{email: email},
           gallery_name,
