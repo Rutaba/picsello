@@ -32,11 +32,21 @@ defmodule PicselloWeb.UserResetPasswordEditLive do
 
   @impl true
   def handle_event("submit", %{"user" => user_params}, socket) do
-    {:ok, _} = Accounts.reset_user_password(socket.assigns.user, user_params)
+    changeset =
+      socket.assigns.user
+      |> User.password_changeset(user_params)
+      |> Map.put(:action, :validate)
 
-    socket
-    |> put_flash(:info, "Password reset successfully.")
-    |> push_redirect(to: Routes.user_session_path(socket, :new))
+    if changeset.valid? do
+      {:ok, _} = Accounts.reset_user_password(socket.assigns.user, user_params)
+
+      socket
+      |> put_flash(:info, "Password reset successfully.")
+      |> push_redirect(to: Routes.user_session_path(socket, :new))
+    else
+      socket
+      |> assign(changeset: changeset)
+    end
     |> noreply()
   end
 

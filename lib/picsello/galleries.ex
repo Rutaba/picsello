@@ -307,7 +307,9 @@ defmodule Picsello.Galleries do
     |> Repo.transaction()
     |> then(fn
       {:ok, %{photos: photos}} ->
-        prepare_gallery(get_gallery!(photo.gallery_id))
+        gallery = get_gallery!(photo.gallery_id)
+        prepare_gallery(gallery)
+        refresh_bundle(gallery)
         {:ok, photos}
 
       {:error, reason} ->
@@ -901,7 +903,15 @@ defmodule Picsello.Galleries do
     |> if(do: :upload_in_progress, else: :ready)
   end
 
+  def broadcast(gallery, message),
+    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(gallery), message)
+
+  def subscribe(gallery), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(gallery))
+
+  defp topic(gallery), do: "gallery:#{gallery.id}"
+
   defp active_galleries, do: from(g in Gallery, where: g.active == true)
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
+  defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue
 end

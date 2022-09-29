@@ -27,7 +27,8 @@ defmodule Picsello.Factory do
     Galleries.Watermark,
     Galleries.Photo,
     Profiles.Profile,
-    BrandLink
+    BrandLink,
+    PackagePaymentSchedule
   }
 
   def valid_user_password(), do: "hello world!"
@@ -133,6 +134,8 @@ defmodule Picsello.Factory do
       description: "<p>Package description</p>",
       shoot_count: 2,
       turnaround_weeks: 1,
+      fixed: true,
+      schedule_type: "wedding",
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -142,6 +145,49 @@ defmodule Picsello.Factory do
     }
     |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
+  end
+
+  def package_payment_schedule_factory(attrs) do
+    package =
+      case attrs do
+        %{package: package} -> package
+        _ -> build(:package, attrs)
+      end
+
+    ["To Book", "1 Month Before", "Day Before"]
+    |> Enum.with_index(fn due_interval, index ->
+      %PackagePaymentSchedule{
+        price: get_price(package, 3, index) * 100,
+        interval: true,
+        due_interval: due_interval,
+        description: "$#{get_price(package, 3, index)} to #{due_interval}",
+        schedule_date: "3022-01-01 00:00:00"
+      }
+      |> merge_attributes(Map.drop(attrs, [:user]))
+      |> evaluate_lazy_attributes()
+    end)
+    |> List.first()
+  end
+
+  def get_price(%{base_multiplier: base_multiplier, base_price: base_price}, presets_count, index) do
+    base_price = if(base_price, do: base_price.amount, else: 0)
+
+    amount =
+      Decimal.mult(base_price, base_multiplier)
+      |> Decimal.round(0, :floor)
+      |> Decimal.to_integer()
+
+    total_price = div(amount, 100)
+
+    remainder = rem(total_price, presets_count)
+    amount = if remainder == 0, do: total_price, else: total_price - remainder
+
+    if index + 1 == presets_count do
+      amount / presets_count + remainder
+    else
+      amount / presets_count
+    end
+    |> Kernel.trunc()
   end
 
   def package_template_factory(attrs) do
@@ -567,7 +613,7 @@ defmodule Picsello.Factory do
   def whcc_editor_details_factory(attrs \\ %{}) do
     %Picsello.WHCC.Editor.Details{
       editor_id: sequence("hkazbRKGjcoWwnEq3"),
-      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      preview_url: image_url(),
       product_id: fn -> insert(:product).whcc_id end,
       selections: %{
         "display_options" => "no",
@@ -590,7 +636,7 @@ defmodule Picsello.Factory do
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_product: fn -> insert(:product) end,
-      preview_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
+      preview_url: image_url(),
       selections: %{
         "display_options" => "no",
         "quantity" => Map.get(attrs, :quantity, 1),
@@ -878,4 +924,10 @@ defmodule Picsello.Factory do
       description: "<p>My custom description</p>"
     }
   end
+
+  def image_url(),
+    do:
+      PicselloWeb.Endpoint.struct_url()
+      |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
+      |> URI.to_string()
 end

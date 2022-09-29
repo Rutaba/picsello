@@ -96,14 +96,14 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     ~H"""
     <div class={@class}>
       <%= live_redirect to: @route do %>
-        <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
+        <div class="flex items-center py-3 pl-3 pr-4 overflow-hidden text-sm rounded lg:h-11 lg:pl-2 lg:py-4 transition duration-300 ease-in-out text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
           <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
               <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/#{@icon}")} width="16" height="16"/>
           </div>
           <div class="ml-3">
             <span class={@arrow_show && "text-blue-planning-300"}><%= @title %></span>
           </div>
-          <div class="flex px-2 items-center ml-auto">
+          <div class="flex items-center px-2 ml-auto">
             <%= render_slot(@inner_block) %>
           </div>
         </div>

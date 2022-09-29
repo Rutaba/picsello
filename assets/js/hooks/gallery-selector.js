@@ -15,6 +15,7 @@ export default {
     const isClosed = () => {e.classList.contains('item-border');}
     function onOpen() {e.classList.contains('item-border');}
 
+    this.handleEvent('select_mode', ({ mode: mode }) => this.select_mode(mode));
     this.modal = Modal({ el, onOpen, onClose, isClosed });
   },
 
@@ -25,4 +26,19 @@ export default {
   updated() {
     this.modal.updated();
   },
+  select_mode(mode) {
+    const items = document.querySelectorAll('.toggle-parent > .toggle-it');
+    switch (mode) {
+      case 'selected_none':
+        items.forEach((item) => {
+          item.classList.remove('item-border');
+        });
+        break;
+      default:
+        items.forEach((item) => {
+          item.classList.add('item-border');
+        });
+        break;
+    }
+  }
 };

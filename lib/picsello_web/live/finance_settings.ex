@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
-
   alias Picsello.Payments
 
   @impl true
@@ -26,7 +25,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       <div class="grid gap-6 sm:grid-cols-2">
         <.card title="Tax info" class="intro-taxes">
           <p class="mt-2">Stripe can easily manage your tax settings to simplify filing.</p>
-          <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id)} data-article="625878185d0b9565e1733f7e">Do I need this?</a>
+          <a class="link" target="_blank" href="https://support.picsello.com/article/113-stripe-taxes">Do I need this?</a>
           <div class="flex mt-6 justify-end">
             <%= if @stripe_status == :charges_enabled do %>
               <a class="text-center block btn-primary sm:w-auto w-full" href="https://dashboard.stripe.com/settings/tax" target="_blank" rel="noopener noreferrer">

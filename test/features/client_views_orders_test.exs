@@ -4,6 +4,18 @@ defmodule Picsello.ClientViewsOrdersTest do
   import Money.Sigils
   alias Picsello.Orders
 
+  setup do
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:get, fn _ -> {:error, nil} end)
+    |> Mox.stub(:path_to_url, & &1)
+
+    :ok
+  end
+
+  setup do
+    [gallery: insert(:gallery, job: insert(:lead, package: insert(:package)))]
+  end
+
   setup :authenticated_gallery_client
 
   feature "no orders", %{
@@ -75,22 +87,15 @@ defmodule Picsello.ClientViewsOrdersTest do
 
   def stub_storage() do
     Picsello.PhotoStorageMock
-    |> Mox.stub(:get, fn _ -> :error end)
-    |> Mox.stub(:path_to_url, & &1)
     |> Mox.stub(:initiate_resumable, fn _, _ ->
-      {:ok, %{status: 200, headers: [{"location", "https://example.com"}]}}
+      {:ok, %Tesla.Env{status: 200, headers: [{"location", "https://example.com"}]}}
     end)
     |> Mox.stub(:continue_resumable, fn _, _, _ ->
-      {:ok, %{status: 200}}
+      {:ok, %Tesla.Env{status: 200}}
     end)
   end
 
   def insert_order(gallery) do
-    original_url =
-      PicselloWeb.Endpoint.struct_url()
-      |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
-      |> URI.to_string()
-
     order =
       insert(:order,
         gallery: gallery,
@@ -100,7 +105,7 @@ defmodule Picsello.ClientViewsOrdersTest do
 
     insert(:digital,
       order: order,
-      photo: insert(:photo, gallery: gallery, original_url: original_url)
+      photo: insert(:photo, gallery: gallery, original_url: image_url())
     )
 
     order
@@ -117,7 +122,7 @@ defmodule Picsello.ClientViewsOrdersTest do
 
     assert_enqueued(worker: Picsello.Workers.PackDigitals)
 
-    assert [%{errors: []}] = run_jobs()
+    assert [] == Enum.flat_map(run_jobs(), & &1.errors)
 
     session
     |> assert_has(link("Download photos"))
@@ -139,7 +144,7 @@ defmodule Picsello.ClientViewsOrdersTest do
     |> assert_has(css("h3", text: "Order number #{Orders.number(order)}"))
     |> assert_text("Preparing Download")
 
-    assert [%{errors: []}] = run_jobs()
+    assert [] == Enum.flat_map(run_jobs(), & &1.errors)
 
     assert_has(session, link("Download photos"))
   end

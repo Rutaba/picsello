@@ -4,7 +4,6 @@ defmodule Picsello.PackagePaymentSchedule do
   import Ecto.Changeset
 
   alias Picsello.{Package, PackagePaymentPreset}
-  alias PicselloWeb.PackageLive.WizardComponent
 
   schema "package_payment_schedules" do
     field :price, Money.Ecto.Amount.Type
@@ -15,11 +14,11 @@ defmodule Picsello.PackagePaymentSchedule do
     field :count_interval, :string
     field :time_interval, :string
     field :shoot_interval, :string
+    field :due_at, :date
     field :fields_count, :integer, virtual: true
     field :payment_field_index, :integer, virtual: true
     field :shoot_date, :utc_datetime, virtual: true
     field :last_shoot_date, :utc_datetime, virtual: true
-    field :due_at, :date
     field :schedule_date, :utc_datetime, null: false
 
     belongs_to :package, Package
@@ -38,7 +37,7 @@ defmodule Picsello.PackagePaymentSchedule do
 
     attrs =
       attrs
-      |> prepare_percentage() 
+      |> prepare_percentage()
       |> set_shoot_interval(interval, default_payment_changeset)
 
     payment_schedule
@@ -112,7 +111,9 @@ defmodule Picsello.PackagePaymentSchedule do
     end
   end
 
-  def prepare_percentage(%{"percentage" => percentage} = attrs), do: %{attrs | "percentage" => prepare_percentage(percentage)}
+  def prepare_percentage(%{"percentage" => percentage} = attrs),
+    do: %{attrs | "percentage" => prepare_percentage(percentage)}
+
   def prepare_percentage(nil), do: nil
   def prepare_percentage("" <> percentage), do: String.trim_trailing(percentage, "%")
   def prepare_percentage(percentage), do: percentage

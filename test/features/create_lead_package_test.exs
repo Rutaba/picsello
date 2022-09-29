@@ -17,7 +17,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> find(button("Save"), &assert(Element.attr(&1, :disabled)))
+    |> find(button("Next"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(@price_text_field, with: "$100")
     |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("Set my own download price"))
@@ -35,12 +35,22 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
     )
+    |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("package_pricing_is_enabled"))
     |> find(
       text_field("package[print_credits]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
     )
     |> assert_has(definition("Total Price", text: "$100.00"))
+  end
+
+  defp package_payment_screen(session) do
+    session
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> assert_has(testid("remaining-to-collect", text: "$0.00"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
   end
 
   feature "user without package templates creates a package", %{session: session, user: user} do
@@ -50,8 +60,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> visit("/leads/#{lead.id}")
     |> click(@add_package_button)
     |> fill_in_package_form()
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
 
@@ -77,18 +86,22 @@ defmodule Picsello.CreateLeadPackageTest do
   feature "user with package templates sees them", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
-    insert(:package_template,
-      user: user,
-      job_type: "wedding",
-      name: "best wedding"
-    )
+    template1 =
+      insert(:package_template,
+        user: user,
+        job_type: "wedding",
+        name: "best wedding"
+      )
 
-    insert(:package_template,
-      user: user,
-      job_type: "wedding",
-      name: "lame wedding"
-    )
+    template2 =
+      insert(:package_template,
+        user: user,
+        job_type: "wedding",
+        name: "lame wedding"
+      )
 
+    insert(:package_payment_schedule, %{user: user, package: template1})
+    insert(:package_payment_schedule, %{user: user, package: template2})
     insert(:package_template, user: user, job_type: "other")
 
     selected_card = css("[data-testid='template-card'] > .border-blue-planning-300")
@@ -127,15 +140,14 @@ defmodule Picsello.CreateLeadPackageTest do
       modal
       |> click(button("New Package"))
       |> fill_in_package_form()
-      |> wait_for_enabled_submit_button(text: "Save")
+      |> wait_for_enabled_submit_button(text: "Next")
       |> click(link("back"))
       |> click(link("back"))
       |> click(button("New Package"))
       |> click(button("Next"))
       # REGRESSION: the wizard now forgets the package price if you go back and forth 2 steps
       |> fill_in(@price_text_field, with: "$100")
-      |> wait_for_enabled_submit_button(text: "Save")
-      |> click(button("Save"))
+      |> package_payment_screen()
     end)
     |> assert_text("Wedding Deluxe")
     |> assert_text("Selected contract: Picsello Default Contract")
@@ -162,6 +174,8 @@ defmodule Picsello.CreateLeadPackageTest do
         download_count: 1,
         download_each_price: download_each_price
       )
+
+    insert(:package_payment_schedule, %{user: user, package: template})
 
     session
     |> visit("/leads/#{lead.id}")
@@ -199,6 +213,8 @@ defmodule Picsello.CreateLeadPackageTest do
         job_type: "wedding",
         name: "best wedding"
       )
+
+    insert(:package_payment_schedule, %{user: user, package: template})
 
     contract_template =
       insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
@@ -260,8 +276,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_value(text_field("download_count"), "1")
     |> assert_value(text_field("download_each_price"), "$2.00")
     |> fill_in(@price_text_field, with: "200")
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_text("Selected contract: Picsello Default Contract")
@@ -311,8 +326,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_text("Selected contract: Contract 1")
@@ -346,7 +360,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in_quill("My greatest wedding package")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
-    |> assert_disabled_submit(text: "Save")
+    |> assert_disabled_submit(text: "Next")
     |> fill_in(@price_text_field, with: " ")
     |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("Set my own download price"))
@@ -364,6 +378,7 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
+    |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(checkbox("package_pricing_is_enabled"))
     |> find(
       text_field("package[print_credits]"),

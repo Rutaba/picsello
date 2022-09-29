@@ -34,8 +34,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   end
 
   @impl true
-  def handle_info({:pack, :ok, %{order_id: order_id, path: path}}, socket) do
-    DownloadLinkComponent.update_path(%{id: order_id}, path)
+  def handle_info({:pack, :ok, %{packable: %{id: id}, status: status}}, socket) do
+    DownloadLinkComponent.update_status(id, status)
 
     socket |> noreply()
   end
@@ -113,4 +113,5 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   defdelegate item_image_url(item, opts), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate total_cost(order), to: Cart
+  defdelegate download_link(assigns), to: DownloadLinkComponent
 end

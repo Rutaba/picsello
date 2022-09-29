@@ -57,10 +57,10 @@ defmodule PicselloWeb.Live.Marketing do
             <div class="flex items-center flex-wrap justify-between">
               <%= if active?(@brand_links) do %>
                 <p class="lg:flex hidden">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
-                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
+                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your Marketing Hub.</p>
               <% else %>
                 <p class="lg:flex hidden">Looks like you don’t have any links. Go head and add one!</p>
-                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your <span class="underline text-blue-planning-300">Marketing</span> Hub.</p>
+                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your Marketing Hub.</p>
               <% end %>
               <button type="button" phx-click="edit-link" phx-value-link-id="website" class="w-full sm:w-auto text-center btn-primary">Manage links</button>
             </div>

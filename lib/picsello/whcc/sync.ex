@@ -98,7 +98,7 @@ defmodule Picsello.WHCC.Sync do
 
     for(
       chunk <-
-        rows |> Stream.with_index() |> Stream.chunk_every(100),
+        rows |> Stream.with_index() |> Stream.chunk_every(10),
       reduce: []
     ) do
       acc ->

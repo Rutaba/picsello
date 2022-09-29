@@ -14,6 +14,7 @@ defmodule PicselloWeb.JobLive.Show do
       private_notes_card: 1,
       section: 1,
       shoot_details_section: 1,
+      validate_payment_schedule: 1,
       title_header: 1
     ]
 
@@ -22,6 +23,13 @@ defmodule PicselloWeb.JobLive.Show do
     socket
     |> assign_job(job_id)
     |> assign(:collapsed_sections, [])
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
+
+      socket
+      |> assign(payment_schedules: payment_schedules)
+      |> validate_payment_schedule()
+    end)
     |> ok()
   end
 

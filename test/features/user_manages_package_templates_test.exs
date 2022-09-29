@@ -10,18 +10,21 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Next"))
     |> scroll_into_view(testid("select-preset-type"))
     |> find(select("custom_payments_schedule_type"), &click(&1, option("2 split payments")))
+    |> scroll_into_view(testid("preset-summary"))
+    |> fill_in(css("#custom_payments_payment_schedules_0_percentage"), with: "50")
+    |> fill_in(css("#custom_payments_payment_schedules_1_percentage"), with: "50")
     |> assert_has(testid("preset-summary", text: "50% To Book, 50% Day Before"))
     |> assert_has(testid("balance-to-collect", text: "$130.00 (100%)"))
     |> assert_has(testid("payment-count-card", count: 2))
     |> find(
       select("custom_payments_payment_schedules_0_due_interval"),
-      &assert_text(&1, "50% To Book")
+      &assert_text(&1, "To Book")
     )
     |> find(
       select("custom_payments_payment_schedules_1_due_interval"),
-      &assert_text(&1, "50% Day Before")
+      &assert_text(&1, "Day Before")
     )
-    |> assert_has(testid("remaining-to-collect", text: "$0.00 (0%)"))
+    |> assert_has(testid("remaining-to-collect", text: "$0.00 (0.0%)"))
     |> click(radio_button("Fixed amount", checked: false))
     |> fill_in(css("#custom_payments_payment_schedules_0_price"), with: "60.00")
     |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "60.00")
@@ -34,6 +37,28 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
     |> scroll_into_view(testid("preset-summary"))
     |> assert_has(testid("preset-summary", text: "$60.00 to To Book, $70.00"))
+  end
+
+  defp edit_package_screen(session) do
+    session
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> assert_has(testid("payment-count-card", count: 3))
+    |> find(
+      select("custom_payments_payment_schedules_0_due_interval"),
+      fn element -> assert_text(element, "To Book") end
+    )
+    |> find(
+      select("custom_payments_payment_schedules_1_due_interval"),
+      fn element -> assert_text(element, "6 Months Before") end
+    )
+    |> find(
+      select("custom_payments_payment_schedules_2_due_interval"),
+      fn element -> assert_text(element, "Week Before") end
+    )
+    |> assert_has(testid("remaining-to-collect", text: "$0.00"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
   end
 
   feature "navigate", %{session: session} do
@@ -203,9 +228,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> Kernel.tap(fn modal ->
           refute Regex.match?(~r/downloads are valued/, Element.text(modal))
         end)
-        |> payment_screen()
-        |> wait_for_enabled_submit_button()
-        |> click(button("Save")))
+        |> edit_package_screen())
     )
     |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> assert_flash(:success, text: "The package has been successfully saved")
@@ -272,8 +295,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
-        |> wait_for_enabled_submit_button()
-        |> click(button("Save")))
+        |> edit_package_screen())
     )
     |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> assert_flash(:success, text: "The package has been successfully saved")

@@ -614,8 +614,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
                   </div>
                 <% end %>
               </div>
-
-              <.icon name="gallery-info" class="fill-current text-base-300 w-7 h-7" />
+              <.icon name="gallery-info" class="fill-current hidden text-base-300 w-7 h-7" />
             </div>
           </div>
       </div>

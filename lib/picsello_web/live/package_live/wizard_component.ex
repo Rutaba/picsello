@@ -254,7 +254,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     changeset =
       params |> CustomPayments.changeset(default_payment_changeset) |> Map.put(:action, action)
 
-      assign(socket, payments_changeset: changeset)
+    assign(socket, payments_changeset: changeset)
   end
 
   defp remaining_price(changeset),
@@ -1098,6 +1098,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
        ) do
     fixed = schedule_type == Changeset.get_field(changeset, :job_type)
     default_presets = get_custom_payment_defaults(socket, schedule_type, fixed)
+
     presets =
       default_presets
       |> Enum.with_index(
@@ -1138,29 +1139,39 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp fixed_switch(socket, fixed, total_price, params) do
     {presets, _} =
-    params 
-    |> Map.get("payment_schedules")
-    |> Map.values()
-    |> Enum.reduce({%{}, 0}, fn schedule, {schedules, collection} -> 
-      schedule = Picsello.PackagePaymentSchedule.prepare_percentage(schedule)
-      changeset = %Picsello.PackagePaymentSchedule{} |> Changeset.cast(schedule, [:fields_count, :payment_field_index, :price, :percentage])
-      index = Changeset.get_field(changeset, :payment_field_index)
-      presets_count = Changeset.get_field(changeset, :fields_count)
-      price = Changeset.get_field(changeset, :price)
-      percentage = Changeset.get_field(changeset, :percentage)
+      params
+      |> Map.get("payment_schedules")
+      |> Map.values()
+      |> Enum.reduce({%{}, 0}, fn schedule, {schedules, collection} ->
+        schedule = Picsello.PackagePaymentSchedule.prepare_percentage(schedule)
 
-      if fixed do
-        updated_price = (if price, do: price, else: percentage_to_price(total_price, percentage))
-        |> normalize_price(collection, presets_count, index, total_price)
-        
-        {Map.merge(schedules, %{"#{index}" => %{schedule | "percentage" => nil, "price" => updated_price}}), collection + updated_price}
-      else
-        updated_percentage = (if percentage, do: percentage, else: price_to_percentage(total_price, price))
-        |> normalize_percentage(collection, presets_count, index)
-        
-        {Map.merge(schedules, %{"#{index}" => %{schedule | "percentage" => updated_percentage, "price" => nil}}), collection + updated_percentage}
-      end
-    end)
+        changeset =
+          %Picsello.PackagePaymentSchedule{}
+          |> Changeset.cast(schedule, [:fields_count, :payment_field_index, :price, :percentage])
+
+        index = Changeset.get_field(changeset, :payment_field_index)
+        presets_count = Changeset.get_field(changeset, :fields_count)
+        price = Changeset.get_field(changeset, :price)
+        percentage = Changeset.get_field(changeset, :percentage)
+
+        if fixed do
+          updated_price =
+            if(price, do: price.amount / 100, else: percentage_to_price(total_price, percentage))
+            |> normalize_price(collection, presets_count, index, total_price)
+
+          {Map.merge(schedules, %{
+             "#{index}" => %{schedule | "percentage" => nil, "price" => updated_price}
+           }), collection + updated_price}
+        else
+          updated_percentage =
+            if(percentage, do: percentage, else: price_to_percentage(total_price, price))
+            |> normalize_percentage(collection, presets_count, index)
+
+          {Map.merge(schedules, %{
+             "#{index}" => %{schedule | "percentage" => updated_percentage, "price" => nil}
+           }), collection + updated_percentage}
+        end
+      end)
 
     socket
     |> maybe_assign_custom(Map.put(params, "payment_schedules", presets))
@@ -1168,7 +1179,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp normalize_price(price, collection, presets_count, index, total_price) do
     if index + 1 == presets_count do
-      (total_price.amount - collection)  |> Kernel.trunc()
+      (total_price.amount - collection) |> Kernel.trunc()
     else
       price
     end
@@ -1183,20 +1194,30 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp percentage_to_price(_, nil), do: nil
+
   defp percentage_to_price(total_price, value) do
-    ((total_price.amount / 10000 * value) |> Kernel.trunc()) * 100
+    ((total_price.amount / 10_000 * value) |> Kernel.trunc()) * 100
   end
-  
+
   defp price_to_percentage(_, nil), do: nil
+
   defp price_to_percentage(total_price, value) do
     (value.amount / total_price.amount * 100) |> Kernel.trunc()
   end
-  
+
   defp get_default_price(schedule, x_schedule, price, params, index) do
     if params.fixed do
-      x_price = params.package_payment_schedules |> Enum.reduce(Money.new(0), &Money.add(&2, &1.price))
+      x_price =
+        params.package_payment_schedules |> Enum.reduce(Money.new(0), &Money.add(&2, &1.price))
+
       extra_price = Money.subtract(price, x_price)
-      updated_price = Money.add(Map.get(x_schedule, "price"), get_price(extra_price, length(params.package_payment_schedules), index))
+
+      updated_price =
+        Money.add(
+          Map.get(x_schedule, "price"),
+          get_price(extra_price, length(params.package_payment_schedules), index)
+        )
+
       Map.merge(schedule, %{"price" => updated_price})
     else
       schedule
@@ -1211,14 +1232,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     price = remaining_price(changeset)
 
     params =
-      if params && params.package_payment_schedules != [] do        
+      if params && params.package_payment_schedules != [] do
         presets =
           map_keys(params.package_payment_schedules)
           |> Enum.with_index(
-            &Map.merge(&1, %{
-              "shoot_date" => get_first_shoot(job),
-              "last_shoot_date" => get_last_shoot(job)
-            } |> get_default_price(&1, price, params, &2))
+            &Map.merge(
+              &1,
+              %{
+                "shoot_date" => get_first_shoot(job),
+                "last_shoot_date" => get_last_shoot(job)
+              }
+              |> get_default_price(&1, price, params, &2)
+            )
           )
 
         %{
@@ -1230,6 +1255,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         }
       else
         default_presets = get_payment_defaults(job_type, true)
+
         presets =
           default_presets
           |> Enum.with_index(
@@ -1484,7 +1510,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp interval_dropdown_options(field, index) do
     ["To Book", "6 Months Before", "Week Before", "Day Before Shoot"]
-    
     |> Enum.map(&[key: &1, value: &1, disabled: index == 0 && field != &1])
   end
 
@@ -1507,7 +1532,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def get_payment_defaults(schedule_type, _) do
     Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
   end
-
 
   defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
 
