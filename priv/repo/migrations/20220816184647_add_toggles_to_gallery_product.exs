@@ -3,8 +3,8 @@ defmodule Picsello.Repo.Migrations.AddTogglesToGalleryProduct do
 
   def up do
     alter table(:gallery_products) do
-      add(:sell_product_enabled, :boolean, null: false, default: true)
-      add(:product_preview_enabled, :boolean, null: false, default: true)
+      add_if_not_exists(:sell_product_enabled, :boolean, null: false, default: true)
+      add_if_not_exists(:product_preview_enabled, :boolean, null: false, default: true)
     end
   end
 
