@@ -143,7 +143,7 @@ defmodule PicselloWeb.LeadLive.Show do
         %{assigns: %{job: job}} = socket
       ) do
     actions =
-      [%{title: "Send an email", action_event: "open_email_compose"}]
+      [%{title: "Send an email", action_event: "open_email_compose"}, %{title: "Change lead name", action_event: ""}]
       |> Enum.concat(
         if job.archived_at,
           do: [],
