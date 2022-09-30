@@ -16,7 +16,9 @@ defmodule Picsello.Galleries do
     Galleries,
     Albums,
     Orders,
-    Cart.Digital
+    Cart.Digital,
+    Job,
+    Client
   }
 
   alias Picsello.Workers.CleanStore
@@ -49,6 +51,17 @@ defmodule Picsello.Galleries do
   def list_expired_galleries do
     from(g in active_galleries(), where: g.status == "expired")
     |> Repo.all()
+  end
+
+  def list_all_galleries_by_organization_query(organization_id) do
+    from(g in active_galleries(),
+      join: j in Job,
+      on: j.id == g.job_id,
+      join: c in Client,
+      on: c.id == j.client_id,
+      preload: [:albums, [job: :client]],
+      where: c.organization_id == ^organization_id
+    )
   end
 
   @doc """
@@ -493,6 +506,10 @@ defmodule Picsello.Galleries do
   """
   def delete_gallery(%Gallery{} = gallery) do
     update_gallery(gallery, %{active: false})
+  end
+
+  def delete_gallery_by_id(id) do
+    update_gallery(get_gallery!(id), %{active: false})
   end
 
   @doc """
@@ -957,6 +974,16 @@ defmodule Picsello.Galleries do
     |> Picsello.WHCC.min_price_details()
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
+  end
+
+  def preview_image(gallery) do
+    photo_query = Photos.watermarked_query()
+
+    photo =
+      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
+      |> Repo.one()
+
+    if photo, do: Photos.preview_url(photo, [])
   end
 
   defp selected_photo_query(query) do

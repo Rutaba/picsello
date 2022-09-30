@@ -248,3 +248,34 @@ canvas {
     }
   }
 }
+
+li.custom-tooltip {
+  border-bottom: 1px;
+  text-decoration: none;
+}
+
+li.custom-tooltip:hover {
+  position: relative;
+}
+
+li.custom-tooltip span {
+  display: none;
+  text-align: center;
+}
+
+li.custom-tooltip:hover span {
+  padding: 5px;
+  padding-bottom: 5px;
+  display: block;
+  z-index: 100;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  left: 0px;
+  margin: 15px;
+  width: 165px;
+  height: 35px;
+  position: absolute;
+  top: 15px;
+  text-decoration: none;
+}

@@ -120,6 +120,10 @@ defmodule Picsello.Galleries.Gallery do
     |> put_embed(:cover_photo, nil)
   end
 
+  def name(gallery) do
+    Map.get(gallery, :name)
+  end
+
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),
