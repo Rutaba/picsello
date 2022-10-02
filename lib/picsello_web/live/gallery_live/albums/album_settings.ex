@@ -140,6 +140,20 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     end
   end
 
+  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
+
+  defp insert_album(%{selected_photos: selected_photos}, album_params) do
+    {:ok, album} = Albums.insert_album_with_selected_photos(album_params, selected_photos)
+    {:ok, album.album}
+  end
+
+  defp upsert_album(result, message) do
+    case result do
+      {:ok, album} -> {album, message}
+      _ -> {nil, "something went wrong"}
+    end
+  end
+
   defp assign_album_changeset(
          %{assigns: %{album: album, gallery_id: gallery_id}} = socket,
          attrs \\ %{}

@@ -5,14 +5,20 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   alias PicselloWeb.GalleryLive.Photos.PhotoView
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [credits_footer: 1, credits: 1, assign_cart_count: 2, get_unconfirmed_order: 2, assign_checkout_routes: 1]
+    only: [
+      credits_footer: 1,
+      credits: 1,
+      assign_cart_count: 2,
+      get_unconfirmed_order: 2,
+      assign_checkout_routes: 1
+    ]
 
-    @defaults %{
-      cart_count: 0,
-      cart_route: nil,
-      cart: true,
-      is_proofing: false
-    }
+  @defaults %{
+    cart_count: 0,
+    cart_route: nil,
+    cart: true,
+    is_proofing: false
+  }
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
@@ -36,7 +42,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign_checkout_routes()
     |> ok()
   end
-
 
   @impl true
   def handle_event("prev", _, socket) do
@@ -99,7 +104,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply
   end
 
-  def go_cart_wrapper(assigns) do
+  def go_to_cart_wrapper(assigns) do
     ~H"""
     <%= if @count > 0 do %>
       <%= live_redirect to: @route, title: "cart", class: "block" do %><%= render_slot @inner_block %><% end %>
