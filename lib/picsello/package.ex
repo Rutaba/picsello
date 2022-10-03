@@ -49,6 +49,20 @@ defmodule Picsello.Package do
     end)
   end
 
+  @fields ~w[base_price organization_id name download_count download_each_price base_multiplier print_credits buy_all shoot_count turnaround_weeks]a
+  def changeset_for_create_gallery(package \\ %__MODULE__{}, attrs) do
+    package
+    |> cast(attrs, @fields)
+    |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
+    |> put_change(:base_price, Money.new(0))
+    |> validate_number(:download_count, greater_than_or_equal_to: 0)
+    |> validate_money(:download_each_price)
+    |> validate_money(:print_credits,
+      greater_than_or_equal_to: 0,
+      message: "must be equal to or less than total price"
+    )
+  end
+
   def import_changeset(package \\ %__MODULE__{}, attrs) do
     base_price = package |> cast(attrs, [:base_price]) |> get_field(:base_price) || Money.new(0)
     skip_base_price = Money.zero?(base_price)

@@ -30,6 +30,24 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
+  def handle_params(%{"is_gallery_created" => "true", "job_id" => job_id}, _uri, socket) do
+    socket
+    |> PicselloWeb.SuccessComponent.open(%{
+      title: "Gallery Created!",
+      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
+      success_label: "View new job",
+      success_event: "view-job",
+      close_label: "Great! Close window.",
+      payload: %{job_id: job_id}
+    })
+    |> noreply()
+  end
+
+  def handle_params(_params, _uri, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:message_composed, changeset},
         %{
@@ -62,6 +80,12 @@ defmodule PicselloWeb.GalleryLive.Index do
       end
 
     socket |> flash.() |> noreply()
+  end
+
+  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
+    socket
+    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
+    |> noreply()
   end
 
   @impl true
@@ -156,6 +180,16 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> assign(:gallery_id, gallery_id)
     |> noreply()
   end
+
+  @impl true
+  def handle_event("create_gallery", %{}, socket),
+    do:
+      socket
+      |> open_modal(
+        PicselloWeb.GalleryLive.CreateComponent,
+        Map.take(socket.assigns, [:current_user])
+      )
+      |> noreply()
 
   def preview_icons(assigns) do
     standard_albums_count =

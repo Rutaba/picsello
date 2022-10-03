@@ -410,9 +410,20 @@ defmodule Picsello.Galleries do
       {:error, %Ecto.Changeset{}}
   """
   def create_gallery(attrs \\ %{}) do
-    Multi.new()
-    |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Multi.insert_all(
+    attrs
+    |> create_gallery_multi()
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{gallery: gallery}} -> {:ok, gallery}
+      {:error, :gallery, changeset, _} -> {:error, changeset}
+      other -> other
+    end
+  end
+
+  def create_gallery_multi(attrs) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Ecto.Multi.insert_all(
       :gallery_products,
       GalleryProduct,
       fn %{
@@ -430,12 +441,6 @@ defmodule Picsello.Galleries do
         )
       end
     )
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{gallery: gallery}} -> {:ok, gallery}
-      {:error, :gallery, changeset, _} -> {:error, changeset}
-      other -> other
-    end
   end
 
   @doc """

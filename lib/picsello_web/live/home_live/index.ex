@@ -43,6 +43,16 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("create-gallery", %{}, socket),
+    do:
+      socket
+      |> open_modal(
+        PicselloWeb.GalleryLive.CreateComponent,
+        Map.take(socket.assigns, [:current_user])
+      )
+      |> noreply()
+
+  @impl true
   def handle_event("redirect", %{"to" => path}, socket),
     do:
       socket
@@ -492,6 +502,12 @@ defmodule PicselloWeb.HomeLive.Index do
         |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
         |> noreply()
     end
+  end
+
+  def handle_info({:create_gallery, _result}, socket) do
+    # create gallery: step 3 or show error message
+
+    socket |> noreply()
   end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do

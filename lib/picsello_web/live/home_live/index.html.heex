@@ -92,14 +92,14 @@
           Create your first gallery! You don’t have any galleries at the moment.
         </p>
 
-        <button type="button" class="w-full py-2 mt-auto text-sm btn-primary" phx-click="">Create a gallery</button>
+        <button type="button" class="w-full py-2 mt-auto text-sm btn-primary" phx-click="create-gallery">Create a gallery</button>
         <% else %>
         <ul class="grid grid-flow-col gap-2 my-2 auto-cols-fr">
           <li class="text-left"><span class="font-bold"><%= @gallery_count %></span> galleries created so far</li>
         </ul>
 
         <div class="flex items-stretch mt-4">
-          <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="">Create a gallery</button>
+          <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="create-gallery">Create a gallery</button>
 
           <button type="button" class="flex-1 py-2 text-sm btn-secondary">View all galleries</button>
         </div>
