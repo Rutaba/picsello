@@ -135,10 +135,10 @@ defmodule PicselloWeb.GalleryLive.Index do
   @impl true
   def handle_event(
         "page",
-        %{"per_page" => per_page},
+        %{"pagination" => %{"limit" => limit}},
         socket
       ) do
-    limit = String.to_integer(per_page)
+    limit = String.to_integer(limit)
 
     socket
     |> assign(:pagination, %Pagination{limit: limit, last_index: limit})
@@ -211,19 +211,19 @@ defmodule PicselloWeb.GalleryLive.Index do
     <ul class="flex">
       <%= if Enum.any?(assigns.albums, fn album -> album.is_proofing == false and album.is_finals == false end) do %>
         <li class="cursor-pointer mr-1 custom-tooltip text-center">
-          <span class="text-base-300"><%= standard_albums_count %> Standard album</span>
+          <span class="text-base-300"><%= standard_albums_count %> Standard <%= ngettext("album", "albums", standard_albums_count)%></span>
           <.icon name="standard_album" class="inline-block w-4 h-4"/>
         </li>
       <% end %>
       <%= if Enum.any?(assigns.albums, & &1.is_proofing) do %>
         <li class="cursor-pointer mr-1 custom-tooltip">
-        <span class="text-base-300"><%= proofing_albums_count %> Proofing album</span>
+          <span class="text-base-300"><%= proofing_albums_count %> Proofing <%= ngettext("album", "albums", proofing_albums_count)%></span>
           <.icon name="proofing" class="inline-block w-4 h-4"/>
         </li>
       <% end %>
       <%= if Enum.any?(assigns.albums, & &1.is_finals) do %>
         <li class="cursor-pointer custom-tooltip">
-        <span class="text-base-300"><%= final_albums_count %> Proofing album</span>
+          <span class="text-base-300"><%= final_albums_count %> Finals <%= ngettext("album", "albums", final_albums_count)%></span>
           <.icon name="finals" class="inline-block w-4 h-4"/>
         </li>
       <% end %>
@@ -233,14 +233,15 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   def image_item(assigns) do
     ~H"""
+    <div class="flex flex-col md:flex-row">
       <%= if Galleries.preview_image(@gallery) do %>
-        <img class="rounded-lg float-left w-[180px] h-[119px] mr-4 md:w-[180px] md:h-[119px] md:mr-7" src={Galleries.preview_image(@gallery)}/>
+        <img class="rounded-lg float-left w-[200px] h-[130px] mr-4 md:mr-7" src={Galleries.preview_image(@gallery)}/>
       <% else %>
-        <div class="rounded-lg float-left w-[180px] h-[119px] mr-4 md:w-[180px] md:h-[119px] md:mr-7 bg-base-200">
-          <div class="flex justify-center mt-3">
-            <.icon name="no-image-icon" class="inline-block w-9 h-9"/>
+        <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
+          <div class="flex justify-center h-full items-center">
+            <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
           </div>
-          <div class="mt-1 text-base-250 font-normal text-center">
+          <div class="mt-1 text-base-250 text-center h-full">
             <span>Edit your gallery to upload a cover photo</span>
           </div>
         </div>
@@ -269,26 +270,6 @@ defmodule PicselloWeb.GalleryLive.Index do
           </div>
         <% end %>
       </div>
-    """
-  end
-
-  def select(assigns) do
-    ~H"""
-    <div id="page-dropdown" class="flex items-center px-2 py-1 border rounded cursor-pointer border-blue-planning-300" phx-update="ignore" data-offset-y="10" phx-hook="Select">
-      <div class="hidden border shadow popover-content">
-        <%= for(option <- @options) do %>
-          <label class={"p-2 pr-6 flex items-center cursor-pointer hover:bg-blue-planning-100 #{if @value == option, do: "bg-blue-planning-100", else: "bg-white"}"}>
-            <input type="radio" class="hidden" name={@name} value={option} />
-            <div class={"flex items-center justify-center w-5 h-5 mr-2 rounded-full #{if @value == option, do: "bg-blue-planning-300", else: "border"}"}>
-              <.icon name="checkmark" class="w-3 h-3 stroke-current" />
-            </div>
-            <%= option %>
-          </label>
-        <% end %>
-      </div>
-      <span class="text-xs font-semibold"><%= @value %></span>
-      <.icon name="down" class="w-3 h-3 ml-2 stroke-current stroke-2 open-icon text-blue-planning-300" />
-      <.icon name="up" class="hidden w-3 h-3 ml-2 stroke-current stroke-2 close-icon text-blue-planning-300" />
     </div>
     """
   end
