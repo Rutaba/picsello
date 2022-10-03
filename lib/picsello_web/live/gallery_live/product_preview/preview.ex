@@ -79,5 +79,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
     </label>
     """
   end
+
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
 end

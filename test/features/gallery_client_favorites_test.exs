@@ -28,18 +28,44 @@ defmodule Picsello.GalleryClientFavoritesTest do
     |> refute_has(css("#actions li button", text: "Remove from album"))
   end
 
+  feature "Assign to album dropdown-option appears in Client favorites album", %{
+    session: session,
+    gallery: %{id: gallery_id}
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums/client_liked")
+    |> click(css("#select"))
+    |> click(button("All"))
+    |> click(css("#actions"))
+    |> assert_has(css("#actions li button", text: "Assign to album"))
+    |> click(button("Assign to album"))
+    |> click(css("#dropdown_item_id"))
+    |> click(button("Save changes"))
+    |> click(button("Yes, move"))
+    |> visit("/galleries/#{gallery_id}/albums/client_liked")
+    |> find(css("#album_name", text: "Test album"))
+  end
+
+  feature "Go to original dropdown-option doesn't appears in Client favorites album when selected multiple photos",
+          %{
+            session: session,
+            gallery: gallery,
+            album: album
+          } do
+    insert(:photo, client_liked: true, active: true, gallery: gallery, album: album)
+
+    session
+    |> visit("/galleries/#{gallery.id}/albums/client_liked")
+    |> click(css("#select"))
+    |> click(button("All"))
+    |> click(css("#actions"))
+    |> refute_has(css("#actions li button", text: "Go to original"))
+  end
+
   feature "Create album with selected, works on client-favorites with no redirection", %{
     session: session,
     gallery: %{id: gallery_id}
   } do
-    create_album_from_client_favorites(session, gallery_id)
-    |> assert_has(button("New Test Album"))
-    |> assert_url_contains("/client_liked")
-    |> click(button("New Test Album"))
-    |> assert_has(css(".item", count: 1))
-  end
-
-  defp create_album_from_client_favorites(session, gallery_id) do
     session
     |> visit("/galleries/#{gallery_id}/albums/client_liked")
     |> click(css("#select"))
@@ -49,5 +75,52 @@ defmodule Picsello.GalleryClientFavoritesTest do
     |> fill_in(text_field("Album Name"), with: "New Test Album")
     |> wait_for_enabled_submit_button()
     |> click(button("Create new album"))
+    |> assert_has(css(".item", count: 1))
+  end
+
+  feature "Click on album name under photos will redirect to it's original album", %{
+    session: session,
+    gallery: %{id: gallery_id}
+  } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums/client_liked")
+    |> click(css("#select"))
+    |> click(button("All"))
+    |> click(css("#actions"))
+    |> click(css("#actions li button", text: "Create album with selected"))
+    |> fill_in(text_field("Album Name"), with: "New Test Album")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Create new album"))
+    |> find(css("#album_name"), &click(&1, css("span", text: "New Test Album")))
+    |> find(css("#page-scroll span span", text: "New Test Album"))
+  end
+
+  feature "Redirect to original album by clicking album name under photo", %{
+    session: session,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums/client_liked")
+    |> click(css("#select"))
+    |> click(button("All"))
+    |> click(css("#actions"))
+    |> click(css("#actions li button", text: "Create album with selected"))
+    |> fill_in(text_field("Album Name"), with: "New Test Album")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Create new album"))
+    |> find(css("#album_name"), &click(&1, css("span", text: "New Test Album")))
+    |> find(css("#page-scroll span span", text: "New Test Album"))
+  end
+
+  feature "Show album name when client liked image belongs to album", %{
+    session: session,
+    gallery: gallery,
+    album: album
+  } do
+    insert(:photo, client_liked: true, active: true, gallery: gallery, album: album)
+
+    session
+    |> visit("/galleries/#{gallery.id}/albums/client_liked")
+    |> find(css("#album_name", text: "Test album"))
   end
 end

@@ -20,21 +20,23 @@ defmodule Picsello.ClientProofingAlbumTest do
       )
 
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
-    photo_ids = Enum.map(1..10, fn index ->
-      %Photo{
-        album_id: proofing_album.id,
-        gallery_id: gallery.id,
-        watermarked_preview_url: "/images/print.png",
-        original_url: "/images/print.png",
-        name: "/images/print.png",
-        aspect_ratio: 2,
-        position: index + 100,
-        width: 487,
-        height: 358
-      }
-      |> insert()
-      |> Map.get(:id)
-    end)
+
+    photo_ids =
+      Enum.map(1..10, fn index ->
+        %Photo{
+          album_id: proofing_album.id,
+          gallery_id: gallery.id,
+          watermarked_preview_url: "/images/print.png",
+          original_url: "/images/print.png",
+          name: "/images/print.png",
+          aspect_ratio: 2,
+          position: index + 100,
+          width: 487,
+          height: 358
+        }
+        |> insert()
+        |> Map.get(:id)
+      end)
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     Repo.update_all(Package, set: [download_count: 2])
@@ -55,14 +57,20 @@ defmodule Picsello.ClientProofingAlbumTest do
     |> assert_has(css(".item", count: Enum.count(photo_ids)))
   end
 
-  feature "credit & selections count, when no photo selected", %{session: session, photo_ids: photo_ids} do
+  feature "credit & selections count, when no photo selected", %{
+    session: session,
+    photo_ids: photo_ids
+  } do
     session
     |> click(css("#item-#{List.first(photo_ids)}"))
     |> assert_has(definition(" Digital Image Credits", text: "2 out of 2"))
     |> assert_has(testid("selections", text: "Selections 0"))
   end
 
-  feature "credit & selections count, when one or more photos selected", %{session: session, photo_ids: photo_ids} do
+  feature "credit & selections count, when one or more photos selected", %{
+    session: session,
+    photo_ids: photo_ids
+  } do
     session
     |> click(css("#item-#{List.first(photo_ids)}"))
     |> assert_has(definition(" Digital Image Credits", text: "2 out of 2"))
@@ -74,7 +82,10 @@ defmodule Picsello.ClientProofingAlbumTest do
     |> assert_has(testid("selections", text: "Selections 2"))
   end
 
-  feature "Dislay 'Add to cart' button, when no credit available", %{session: session, photo_ids: photo_ids} do
+  feature "Dislay 'Add to cart' button, when no credit available", %{
+    session: session,
+    photo_ids: photo_ids
+  } do
     session
     |> click(css("#item-#{List.first(photo_ids)}"))
     |> click(testid("product_option_digital_download"))
@@ -107,7 +118,10 @@ defmodule Picsello.ClientProofingAlbumTest do
     end)
   end
 
-  feature "Review selections, when credit and price is used", %{session: session, photo_ids: photo_ids} do
+  feature "Review selections, when credit and price is used", %{
+    session: session,
+    photo_ids: photo_ids
+  } do
     session
     |> click(css("#item-#{List.first(photo_ids)}"))
     |> click(testid("product_option_digital_download"))

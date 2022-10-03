@@ -17,6 +17,12 @@ defmodule Picsello.Galleries.GalleryProduct do
   end
 
   def changeset(%__MODULE__{} = gallery_product, attrs \\ %{}) do
-    gallery_product |> cast(attrs, [:preview_photo_id, :category_id, :sell_product_enabled, :product_preview_enabled])
+    gallery_product
+    |> cast(attrs, [
+      :preview_photo_id,
+      :category_id,
+      :sell_product_enabled,
+      :product_preview_enabled
+    ])
   end
 end

@@ -60,17 +60,17 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           }
         } = socket
       ) do
-      create_album(
-        album,
-        %{
-          params: params,
-          gallery_id: gallery_id,
-          is_finals: is_finals,
-          is_mobile: is_mobile,
-          is_redirect: is_redirect
-        },
-        socket
-      )
+    create_album(
+      album,
+      %{
+        params: params,
+        gallery_id: gallery_id,
+        is_finals: is_finals,
+        is_mobile: is_mobile,
+        is_redirect: is_redirect
+      },
+      socket
+    )
   end
 
   @impl true

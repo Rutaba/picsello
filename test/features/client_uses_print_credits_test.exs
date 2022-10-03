@@ -348,7 +348,11 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc]
 
-    feature("only charges photographer", %{session: session, stripe_invoice: invoice, photo_ids: photo_ids}) do
+    feature("only charges photographer", %{
+      session: session,
+      stripe_invoice: invoice,
+      photo_ids: photo_ids
+    }) do
       session
       |> click(link("View Gallery"))
       |> assert_has(definition("Print Credit", text: "$100.00"))
@@ -504,7 +508,11 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       session
     end
 
-    feature("charges both client and photographer", %{session: session, stripe_invoice: invoice, photo_ids: photo_ids}) do
+    feature("charges both client and photographer", %{
+      session: session,
+      stripe_invoice: invoice,
+      photo_ids: photo_ids
+    }) do
       session
       |> place_order(photo_ids)
       |> assert_url_contains("orders")

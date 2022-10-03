@@ -357,7 +357,11 @@ defmodule Picsello.ClientOrdersTest do
   end
 
   describe "digital downloads" do
-    feature "purchase single", %{session: session, organization: organization, photo_ids: photo_ids} do
+    feature "purchase single", %{
+      session: session,
+      organization: organization,
+      photo_ids: photo_ids
+    } do
       %{stripe_account_id: connect_account_id} = organization
 
       Picsello.MockPayments
@@ -654,7 +658,8 @@ defmodule Picsello.ClientOrdersTest do
         |> find(
           link("Download"),
           &assert(
-            Element.attr(&1, "href") == Path.join(gallery_url, "photos/#{List.first(photo_ids)}/download")
+            Element.attr(&1, "href") ==
+              Path.join(gallery_url, "photos/#{List.first(photo_ids)}/download")
           )
         )
         |> click(link("close"))

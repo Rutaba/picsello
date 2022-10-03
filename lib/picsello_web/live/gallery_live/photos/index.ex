@@ -140,6 +140,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         end
       end)
       |> Enum.map(&{&1.name, &1.id})
+
     opts = [
       event: "assign_to_album",
       title: "Assign to album",
@@ -156,7 +157,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> make_popup(opts)
   end
-
 
   @impl true
   def handle_event(
@@ -673,18 +673,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
     album = Albums.get_album!(album_id)
+
     selected_photos =
       if album.is_finals do
         selected_photos
       else
         duplicate_photo_ids =
-        Galleries.get_selected_photos_name(selected_photos)
-        |> Galleries.filter_duplication(album_id)
+          Galleries.get_selected_photos_name(selected_photos)
+          |> Galleries.filter_duplication(album_id)
 
         Galleries.delete_photos_by(duplicate_photo_ids)
 
         selected_photos -- duplicate_photo_ids
       end
+
     Galleries.move_to_album(String.to_integer(album_id), selected_photos)
 
     if album.is_proofing && is_nil(gallery.watermark) do
@@ -857,7 +859,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_info({:message_composed_for_album, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset, "album")
   end
-
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
 

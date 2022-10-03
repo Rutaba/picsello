@@ -868,7 +868,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       %Album{
         id: "client_liked",
         photos: photos,
-        name: "Client Favourites",
+        name: "Client Favorites",
         is_client_liked: true
       }
     end
