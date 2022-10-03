@@ -239,7 +239,8 @@ defmodule Picsello.Packages do
       end
     end)
     |> Ecto.Multi.merge(fn _ ->
-      shoot_date = opts.payment_schedules |> List.first() |> Map.get(:shoot_date)
+      payment_schedules = Map.get(opts, :payment_schedules)
+      shoot_date = if payment_schedules, do: payment_schedules |> List.first() |> Map.get(:shoot_date), else: false
 
       if Map.get(opts, :action) == :insert && shoot_date do
         PackagePayments.insert_job_payment_schedules(Map.put(opts, :job_id, job.id))

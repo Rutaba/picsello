@@ -48,7 +48,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           }
         ]
       })
-
+    insert(:package_payment_schedule, %{user: user, package: lead.package})
     insert(:email_preset, job_type: lead.type, state: :lead)
 
     insert(:email_preset,
@@ -313,7 +313,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
+      deposit_payment = Picsello.PaymentSchedules.payment_schedules(lead) |> List.first()
 
       Picsello.MockPayments
       |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
@@ -358,7 +358,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
+      deposit_payment = Picsello.PaymentSchedules.payment_schedules(lead) |> List.first()
 
       deposit_payment
       |> Picsello.PaymentSchedule.stripe_ids_changeset("old_intent_id", "old_session_id")

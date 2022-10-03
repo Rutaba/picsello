@@ -14,6 +14,7 @@ defmodule Picsello.ManageLeadShootTest do
         package: %{}
       })
 
+    insert(:package_payment_schedule, %{user: user, package: lead.package})
     [lead: lead, session: session]
   end
 
