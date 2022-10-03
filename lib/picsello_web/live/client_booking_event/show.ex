@@ -65,7 +65,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
     booking_event = BookingEvents.get_booking_event!(organization.id, event_id)
     title = "#{booking_event.name} | Book with #{organization.name}"
-
+    
     socket
     |> assign(booking_event: booking_event)
     |> assign(:page_title, title)
