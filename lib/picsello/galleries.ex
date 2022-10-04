@@ -6,6 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
+  alias Ecto.Multi
 
   alias Picsello.{
     Galleries,
@@ -140,6 +141,7 @@ defmodule Picsello.Galleries do
     * :album_id
     * :offset
     * :limit
+    * :photographer_favorites_filter
   """
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
@@ -182,6 +184,7 @@ defmodule Picsello.Galleries do
 
   defp conditions(id, opts) do
     favorites_filter = Keyword.get(opts, :favorites_filter, false)
+    photographer_favorites_filter = Keyword.get(opts, :photographer_favorites_filter, false)
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
 
@@ -190,6 +193,13 @@ defmodule Picsello.Galleries do
     conditions =
       if favorites_filter do
         dynamic([p], p.client_liked == true and ^conditions)
+      else
+        conditions
+      end
+
+    conditions =
+      if photographer_favorites_filter do
+        dynamic([p], p.is_photographer_liked == true and ^conditions)
       else
         conditions
       end
@@ -316,6 +326,16 @@ defmodule Picsello.Galleries do
       {:error, reason} ->
         reason
     end)
+  end
+
+  @doc """
+  delete the photos if they are duplicated
+  """
+  def delete_photos_by(photo_ids) do
+    from(p in Photo,
+      where: p.id in ^photo_ids
+    )
+    |> Repo.update_all(set: [active: false])
   end
 
   @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)
@@ -542,6 +562,30 @@ defmodule Picsello.Galleries do
   def update_photo(_, %{} = _attrs), do: {:error, :no_photo}
 
   @doc """
+  get name of the selected photos
+  """
+  def get_selected_photos_name(selected_photo_ids) do
+    from(p in Photo,
+      where: p.id in ^selected_photo_ids,
+      select: fragment("REPLACE(?,?,?)", p.name, "_final", "")
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  filter the photos that are duplicated and returns id of filtered photos
+  """
+  def filter_duplication(selected_photo_ids, album_id) do
+    from(p in Photo,
+      join: a in assoc(p, :album),
+      where: fragment("REPLACE(?,?,?)", p.name, "_final", "") in ^selected_photo_ids,
+      where: a.id == ^album_id,
+      select: p.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   updates album_id for multiple photos.
   """
   def move_to_album(album_id, selected_photos) do
@@ -699,27 +743,42 @@ defmodule Picsello.Galleries do
   """
   def clear_watermarks(gallery_id) do
     %{job: %{client: %{organization: %{name: name}}}} =
-      gallery =
-      gallery_id
-      |> get_gallery!()
-      |> populate_organization()
+      gallery = get_gallery!(gallery_id) |> populate_organization()
 
     gallery
     |> Repo.preload(photos: [:album])
     |> Map.get(:photos)
-    |> Enum.each(fn
-      %{album: %{is_proofing: true}} = photo ->
+    |> Enum.reduce({[], []}, fn
+      %{album: %{is_proofing: true}} = photo, acc ->
         ProcessingManager.start(photo, Watermark.build(name))
+        acc
 
-      photo ->
-        [photo.watermarked_preview_url, photo.watermarked_url]
-        |> Enum.each(fn path ->
-          %{path: path}
-          |> CleanStore.new()
-          |> Oban.insert()
-        end)
+      photo, {photo_ids, oban_jobs} ->
+        {
+          [photo.id | photo_ids],
+          [photo.watermarked_preview_url, photo.watermarked_url]
+          |> Enum.map(fn path -> CleanStore.new(%{path: path}) end)
+          |> Enum.concat(oban_jobs)
+        }
+    end)
+    |> then(fn
+      {[], []} ->
+        :ok
 
-        update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+      {photo_ids, oban_jobs} ->
+        Multi.new()
+        |> Multi.update_all(
+          :photos,
+          fn _ ->
+            from(p in Photo,
+              where: p.id in ^photo_ids,
+              update: [set: [watermarked_url: nil, watermarked_preview_url: nil]]
+            )
+          end,
+          []
+        )
+        |> Oban.insert_all(:clean_store, oban_jobs)
+        |> Repo.transaction()
     end)
   end
 

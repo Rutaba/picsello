@@ -21,7 +21,7 @@
       <div id="albums" class="relative flex flex-col w-full mb-20 lg:mb-10">
         <div class="pl-10 grid lg:grid-cols-2 grid-cols-1 pr-7 sm:gap-2 md:gap-2">
             <div class="flex flex-col mb-2 mr-2 album">
-            <.thumbnail event="go_to_unsorted_photos" album={%{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}}/>
+            <.thumbnail event="go_to_unsorted_photos" album={album_params(@albums)}/>
             <div class="cursor-pointer actionBlock">
               <.actions
               id="unsorted_actions"
@@ -50,12 +50,14 @@
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>
                 </li>
-                <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
-                  <button class="w-full album-actions">Go to album settings</button>
-                </li>
-                <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
-                  <button class="w-full album-actions">Edit album thumbnail</button>
-                </li>
+                <%= unless album.is_client_liked do %>
+                  <li phx-click="album_settings_popup" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
+                    <button class="w-full album-actions">Go to album settings</button>
+                  </li>
+                  <li phx-click="edit_album_thumbnail_popup" phx-value-album={album.id} class="relative flex items-center py-1.5  justify-between hover:bg-blue-planning-100">
+                    <button class="w-full album-actions">Edit album thumbnail</button>
+                  </li>
+                <% end %>
               </.actions>
             </div>
           </div>

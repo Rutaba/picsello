@@ -9,7 +9,7 @@
         <div class="flex flex-col">          
           <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
             <.mobile_banner albums={@album} title="Photos" class="items-center">
-              <%= if Enum.any?(@gallery.albums) do %>
+              <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
                 <div class="flex bg-white">                
                   <.crumbs class="mt-2 font-sans text-xs text-base-250">
                     <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}>Photos</:crumb>
@@ -22,7 +22,7 @@
           <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
 
           <div class="lg:flex hidden items-center font-sans lg:justify-start">
-            <%= if Enum.any?(@gallery.albums) do %>
+            <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
               <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
                 <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
                 <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
@@ -30,8 +30,12 @@
             <% end %>
           </div>
           <div class="flex items-center lg:ml-0 ml-10 shrink-0">
+            <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
             <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
-            <%= if @album do %>
+            <% else %>
+            <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "All photos") %></span>
+            <% end %>
+            <%= if @album && !@client_liked_album  do %>
               <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
                   <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
               </button>
@@ -43,7 +47,7 @@
               <div {testid("selection-complete")} class={"flex bg-green-finances-100 text-green-finances-300 px-2 font-bold items-center rounded rounded-lg ml-auto h-7 lg:mr-0 mr-10 #{Enum.empty?(@orders) && 'hidden'}"}>Client selection complete</div>
             <% end %>
           </div>
-          <div class="flex lg:ml-0 ml-10 mt-2 shrink-0">                        
+          <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>                        
             <div class="lg:flex hidden">
               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %> 
             </div>  
@@ -71,7 +75,7 @@
             to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
           </div>
         </div>
-        <%= if Enum.any?(@photos) || Enum.any?(@orders) || @favorites_filter do %>
+        <%= if Enum.any?(@photos) || Enum.any?(@orders) || @photographer_favorites_filter do %>
           <div class="pt-4 grid lg:grid-cols-2">
             <div class="flex flex-col text-sm justify-start md:flex-row">
               <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">
@@ -101,9 +105,11 @@
                     <.album_actions albums={@gallery.albums} />
                   <% else %>
                     <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
+                    <%= if !@client_liked_album do %>
                     <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
                         <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
                     </li>
+                    <% end %>
                   <% end %>
                   <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
                     <a class="album-actions"
@@ -116,11 +122,24 @@
                             )}>Download photos
                     </a>
                   </li>
-                  <%= if @album && @album.is_proofing && @selection_filter || !@album do %>
+                  <%= if @client_liked_album && Enum.count(@selected_photos) == 1 do %>
                     <li class="relative py-1.5 hover:bg-blue-planning-100">
-                      <button class="album-actions" phx-click="add_album_popup">Create new album with selected</button>
+                      <%= live_redirect(
+                        "Go to original",
+                        to: original_album_link(@socket, Enum.find(@photos, & &1.id == List.first(@selected_photos))),
+                        class: "album-actions"
+                        )
+                      %>
                     </li>
                   <% end %>
+                  <%= if @album && @album.is_proofing && @selection_filter || !@album || @client_liked_album do %>
+                    <li class="relative py-1.5 hover:bg-blue-planning-100">
+                      <button class="album-actions" phx-click="add_album_popup">Create album with selected</button>
+                    </li>
+                  <% end %>
+                  <li class={classes("relative py-1.5 hover:bg-blue-planning-100", %{"hidden" => (!@client_liked_album || !Enum.any?(@gallery.albums))})}>
+                      <button class="album-actions" phx-click="assign_to_album_popup">Assign to album</button>
+                  </li>
               </.actions>
               </div>
             </div>
@@ -131,10 +150,12 @@
                   <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected                
                 </div>
               <% end %>
-              <%= if @album && @album.is_proofing do %>
-                <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
-              <% else %>  
-                <.toggle id="toggle_favorites" filter={@favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
+              <%= unless @client_liked_album do %>
+                <%= if @album && @album.is_proofing do %>
+                  <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
+                <% else %>  
+                  <.toggle id="toggle_favorites" filter={@photographer_favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
+                <% end %>
               <% end %>
             </div>
           </div>
@@ -151,7 +172,7 @@
           </div>
         </div>
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
-          <% true when @favorites_filter -> %>
+          <% true when @photographer_favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
                 Oops, there's no liked photo!
             </div>
@@ -175,21 +196,25 @@
                 data-uploading={@total_progress}
                 data-total={@gallery.total_count}
                 data-favorites-count={@favorites_count}
-                data-is-favorites-shown={ "#{@favorites_filter}" }
+                data-is-favorites-shown={ "#{@photographer_favorites_filter}" }
                 data-is-sortable="true"
                 data-has-more-photos={ "#{@has_more_photos}" }
                 data-inprogress-photos={ "#{length(@inprogress_photos)}" }
                 data-photo-width="300">
                 <%= for photo <- @photos do%>
                   <%= live_component Photo,
+                    is_mobile: @is_mobile,
                     id: photo.id,
                     photo: photo,
                     album: @album,
+                    albums_length: @albums_length,
                     photo_width: 300,
                     is_likable: true,
                     is_removable: true,
                     is_viewable: true,
                     is_meatball: true,
+                    selected_photo_id: @selected_photo_id,
+                    client_liked_album: @client_liked_album,
                     client_link_hash: @gallery.client_link_hash
                   %>
                 <% end %>

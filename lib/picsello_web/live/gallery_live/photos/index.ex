@@ -13,8 +13,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.GalleryLive.Photos.ProofingGrid, only: [proofing_grid: 1]
 
   alias Phoenix.PubSub
-  alias Picsello.{Repo, Galleries, Albums, Orders}
+  alias Picsello.{Repo, Galleries, Albums, Orders, Galleries.Watermark}
   alias Picsello.Galleries.Workers.PositionNormalizer
+  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
 
@@ -25,8 +26,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign(
+      albums_length: 0,
       total_progress: 0,
       favorites_filter: false,
+      photographer_favorites_filter: false,
+      client_liked_album: false,
       page: 0,
       photos_error_count: 0,
       inprogress_photos: [],
@@ -39,12 +43,29 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       selected_photos: [],
       selections: [],
       selection_filter: false,
-      orders: []
+      orders: [],
+      selected_photo_id: nil
     )
     |> ok()
   end
 
   @impl true
+
+  def handle_params(
+        %{"id" => gallery_id, "album_id" => "client_liked"} = params,
+        _,
+        socket
+      ) do
+    albums_length = length(get_all_gallery_albums(gallery_id))
+
+    socket
+    |> is_mobile(params)
+    |> assign(:client_liked_album, true)
+    |> assign(:favorites_filter, true)
+    |> assign(:albums_length, albums_length)
+    |> assigns(gallery_id, client_liked_album(gallery_id))
+  end
+
   def handle_params(
         %{"id" => gallery_id, "album_id" => album_id} = params,
         _,
@@ -58,12 +79,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(selection_filter: orders != [])
     |> is_mobile(params)
     |> assigns(gallery_id, album)
+    |> maybe_has_selected_photo(params)
   end
 
   def handle_params(%{"id" => gallery_id} = params, _, socket) do
     socket
     |> is_mobile(params)
     |> assigns(gallery_id)
+    |> maybe_has_selected_photo(params)
   end
 
   @impl true
@@ -77,15 +100,65 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{
           assigns: %{
             gallery: gallery,
-            selected_photos: selected_photos
+            selected_photos: selected_photos,
+            client_liked_album: client_liked_album
           }
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, selected_photos: selected_photos})
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      selected_photos: selected_photos,
+      is_redirect: !client_liked_album
+    })
     |> noreply()
   end
 
+  def handle_event(
+        "assign_to_album_popup",
+        %{},
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos,
+            photos: photos
+          }
+        } = socket
+      ) do
+    dropdown_items =
+      gallery
+      |> Repo.preload(:albums)
+      |> Map.get(:albums)
+      |> then(fn albums ->
+        case selected_photos do
+          [photo_id] ->
+            photo = Enum.find(photos, &(&1.id == photo_id))
+            Enum.reject(albums, &(&1.id == photo.album_id))
+
+          _ ->
+            albums
+        end
+      end)
+      |> Enum.map(&{&1.name, &1.id})
+
+    opts = [
+      event: "assign_to_album",
+      title: "Assign to album",
+      confirm_label: "Save changes",
+      close_label: "Cancel",
+      subtitle:
+        "If you'd like, you can reassign all the selected photos from their  current locations to a
+          new album of your choice",
+      dropdown?: true,
+      dropdown_label: "Assign to which album?",
+      dropdown_items: dropdown_items
+    ]
+
+    socket
+    |> make_popup(opts)
+  end
+
+  @impl true
   def handle_event(
         "edit_album_thumbnail_popup",
         _,
@@ -278,6 +351,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     socket
+    |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(
       selected_photos: [],
       select_mode: "selected_none",
@@ -298,7 +372,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:inprogress_photos, [])
     |> push_event("select_mode", %{"mode" => "selected_none"})
     |> assign(:select_mode, "selected_none")
-    |> toggle_favorites(@per_page)
+    |> toggle_photographer_favorites(@per_page)
   end
 
   def handle_event(
@@ -386,13 +460,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> then(fn
       %{
         assigns: %{
-          favorites_filter: true
+          photographer_favorites_filter: true
         }
       } = socket ->
         socket
         |> assign(:page, 0)
         |> assign(:update_mode, "append")
-        |> assign(:favorites_filter, false)
+        |> assign(:photographer_favorites_filter, false)
         |> assign_photos(@per_page)
 
       socket ->
@@ -417,7 +491,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
-    |> assign(:favorites_filter, true)
+    |> assign(:photographer_favorites_filter, true)
     |> then(fn socket ->
       photo_ids = Galleries.get_gallery_photo_ids(gallery.id, make_opts(socket, @per_page))
 
@@ -454,7 +528,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_event(
         "toggle_selected_photos",
         %{"photo_id" => photo_id},
-        %{assigns: %{selected_photos: selected_photos}} = socket
+        %{
+          assigns: %{
+            selected_photos: selected_photos
+          }
+        } = socket
       ) do
     photo_id = String.to_integer(photo_id)
 
@@ -594,7 +672,30 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:confirm_event, "move_to_album", %{album_id: album_id}},
         %{assigns: %{selected_photos: selected_photos, gallery: gallery}} = socket
       ) do
+    album = Albums.get_album!(album_id)
+
+    selected_photos =
+      if album.is_finals do
+        selected_photos
+      else
+        duplicate_photo_ids =
+          Galleries.get_selected_photos_name(selected_photos)
+          |> Galleries.filter_duplication(album_id)
+
+        Galleries.delete_photos_by(duplicate_photo_ids)
+
+        selected_photos -- duplicate_photo_ids
+      end
+
     Galleries.move_to_album(String.to_integer(album_id), selected_photos)
+
+    if album.is_proofing && is_nil(gallery.watermark) do
+      %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
+
+      gallery
+      |> Galleries.get_photos_by_ids(selected_photos)
+      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
+    end
 
     socket
     |> close_modal()
@@ -761,6 +862,58 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
 
+  @impl true
+  def handle_info(
+        {
+          :confirm_event,
+          "assign_to_album",
+          %{item_id: item_id}
+        },
+        %{assigns: %{gallery: %{albums: albums}}} = socket
+      ) do
+    album = Enum.find(albums, &(to_string(&1.id) == item_id))
+
+    opts = [
+      event: "assign_album_confirmation",
+      title: "Move photo",
+      subtitle: "Are you sure you wish to to move selected photos from its current location to
+            #{album.name} ?",
+      confirm_label: "Yes, move",
+      payload: %{album_id: album.id}
+    ]
+
+    socket
+    |> make_popup(opts)
+  end
+
+  def handle_info(
+        {
+          :confirm_event,
+          "add_from_clients_favorite",
+          %{album: album} = params
+        },
+        socket
+      ) do
+    create_album(album, params, socket)
+  end
+
+  def handle_info(
+        {
+          :confirm_event,
+          "assign_album_confirmation",
+          %{album_id: album_id}
+        },
+        %{assigns: %{selected_photos: selected_photos, gallery: %{albums: albums}}} = socket
+      ) do
+    album = Enum.find(albums, &(&1.id == album_id))
+    Galleries.move_to_album(album_id, selected_photos)
+
+    socket
+    |> put_flash(:success, "Photos successfully moved to #{album.name}")
+    |> close_modal()
+    |> noreply()
+  end
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery =
       Galleries.get_gallery!(gallery_id)
@@ -788,10 +941,26 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
+  defp maybe_has_selected_photo({:noreply, socket}, params) do
+    params
+    |> case do
+      %{"go_to_original" => "true", "photo_id" => photo_id} ->
+        photo_id = String.to_integer(photo_id)
+
+        socket
+        |> assign(:selected_photos, [photo_id])
+        |> assign(:selected_photo_id, photo_id)
+
+      _ ->
+        socket
+    end
+    |> noreply()
+  end
+
   defp sorted_photos(%{assigns: %{orders: orders, photos: photos}} = socket) do
     case orders do
       [] ->
-        socket |> assign(:photos, photos)
+        assign(socket, photos: photos)
 
       orders ->
         selected_photo_ids =
@@ -800,7 +969,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           end)
 
         photos = Enum.reject(photos, fn photo -> photo.id in selected_photo_ids end)
-        socket |> assign(:photos, photos)
+        assign(socket, photos: photos)
     end
   end
 
@@ -894,7 +1063,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     ~H"""
     <%= for album <- @albums do %>
-      <%= if @exclude_album_id != album.id do %>
+      <%= if @exclude_album_id != album.id && @exclude_album_id != "client_liked" do %>
         <li class={"relative py-1 hover:bg-blue-planning-100 hover:rounded-md #{get_class(album.name)}"}>
           <button class="album-actions" phx-click="move_to_album_popup" phx-value-album_id={album.id}>Move to <%= truncate(album.name) %></button>
           <div class="cursor-default tooltiptext">Move to <%= album.name %></div>
@@ -907,7 +1076,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   defp photo_loader(assigns) do
     ~H"""
     <%= for {_, index} <- Enum.with_index(@inprogress_photos) do%>
-      <div id={"photo-loader-#{index}"} class="flex bg-gray-200 item photo-loader">
+      <div id={"photo-loader-#{index}"} class="item h-[130px] photo-loader flex bg-gray-200">
         <div class="relative cursor-pointer item-content preview">
           <div class="galleryLoader">
             <img src={@url} class="relative" />

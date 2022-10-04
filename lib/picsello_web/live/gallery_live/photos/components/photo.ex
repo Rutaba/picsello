@@ -3,13 +3,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
   alias Picsello.Photos
+  alias PicselloWeb.Router.Helpers, as: Routes
+
+  import PicselloWeb.GalleryLive.Shared, only: [original_album_link: 2]
 
   @impl true
-  def update(assigns, socket) do
+  def update(%{photo: photo} = assigns, socket) do
     album = Map.get(assigns, :album)
+    album_name = Photos.get_album_name(photo)
 
     socket
     |> assign(
+      album_name: album_name,
       preview_photo_id: nil,
       is_likable: false,
       is_removable: false,
@@ -20,11 +25,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_client_gallery: false,
       album: nil,
       component: false,
+      selected_photo_id: nil,
+      client_liked_album: false,
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
       url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
     )
     |> assign(assigns)
+    |> then(fn
+      %{assigns: %{is_client_gallery: true}} = socket ->
+        assign(socket, :is_liked, photo.client_liked)
+
+      socket ->
+        assign(socket, :is_liked, photo.is_photographer_liked)
+    end)
     |> ok
   end
 
@@ -32,11 +46,46 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   def handle_event(
         "like",
         %{"id" => id},
-        socket
+        %{assigns: %{is_client_gallery: is_client_gallery}} = socket
       ) do
-    {:ok, _} = Photos.toggle_liked(id)
+    {:ok, _} =
+      if is_client_gallery,
+        do: Photos.toggle_liked(id),
+        else: Photos.toggle_photographer_liked(id)
 
     socket |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "go_to_original_album",
+        params,
+        %{
+          assigns: %{
+            photo: photo,
+            is_mobile: is_mobile
+          }
+        } = socket
+      ) do
+    is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
+    album = params["album"]
+
+    route =
+      if(is_nil(album),
+        do: Routes.gallery_photos_index_path(socket, :index, photo.gallery_id, is_mobile),
+        else:
+          Routes.gallery_photos_index_path(
+            socket,
+            :index,
+            photo.gallery_id,
+            album,
+            is_mobile
+          )
+      )
+
+    socket
+    |> push_redirect(to: route)
+    |> noreply()
   end
 
   defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
@@ -57,7 +106,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   end
 
   defp meatball(album, id) do
-    if album do
+    if album && !album.is_client_liked do
       [
         %{
           id: "photo-thumbnail-#{id}",
@@ -67,7 +116,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
         %{id: "photo-remove-#{id}", event: "remove_from_album_popup", title: "Remove from album"}
       ]
     else
-      []
+      [
+        %{id: "photo-remove-#{id}", event: "photo_view", title: "View"}
+      ]
     end ++
       [
         %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
@@ -81,10 +132,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       <%= render_block(@inner_block) %>
       </div>
     <% else %>
-      <div id={"img-#{@id}"} class="galleryItem" phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
-        <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-        <%= render_block(@inner_block) %>
-      </div>
+        <div id={"img-#{@id}"} class="galleryItem" data-selected_photo_id={"img-#{@selected_photo_id}"} phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+            <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+            <%= render_block(@inner_block) %>
+        </div>
     <% end%>
     """
   end
@@ -122,6 +173,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
           )}>Download photo
         </a>
       </li>
+      <%= if @album && @album.is_client_liked do %>
+        <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
+          <%=
+            live_redirect(
+            "Go to original",
+            to: original_album_link(@socket, @photo),
+            class: "hover-drop-down"
+            )
+          %>
+        </li>
+      <% end %>
     </ul>
     """
   end
@@ -138,4 +200,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     do: "width: #{width}px;height: #{width / aspect_ratio}px;"
 
   defp wrapper_style(_, _, _), do: nil
+
+  defp album_name(assigns) do
+    cond do
+      assigns.album_name -> assigns.album_name
+      assigns.albums_length == 1 -> "All photos"
+      true -> "Unsorted photos"
+    end
+  end
 end

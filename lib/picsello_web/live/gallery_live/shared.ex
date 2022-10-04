@@ -5,7 +5,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
-  alias Picsello.{Repo, Galleries, GalleryProducts, Messages, Cart.Digital, Cart}
+  alias Picsello.{
+    Repo,
+    Galleries,
+    GalleryProducts,
+    Messages,
+    Cart.Digital,
+    Cart,
+    Galleries.Album,
+    Albums
+  }
+
   alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
   alias Picsello.Notifiers.ClientNotifier
   alias Picsello.Cart.Order
@@ -22,8 +32,26 @@ defmodule PicselloWeb.GalleryLive.Shared do
     toggle_state = !favorites_filter
 
     socket
-    |> assign(:page, 0)
     |> assign(:favorites_filter, toggle_state)
+    |> process_favorites(per_page)
+  end
+
+  def toggle_photographer_favorites(
+        %{
+          assigns: %{
+            photographer_favorites_filter: photographer_favorites_filter
+          }
+        } = socket,
+        per_page
+      ) do
+    socket
+    |> assign(:photographer_favorites_filter, !photographer_favorites_filter)
+    |> process_favorites(per_page)
+  end
+
+  defp process_favorites(socket, per_page) do
+    socket
+    |> assign(:page, 0)
     |> assign(:update_mode, "replace")
     |> assign_photos(per_page)
     |> push_event("reload_grid", %{})
@@ -141,6 +169,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
+  def get_all_gallery_albums(gallery_id) do
+    case client_liked_album(gallery_id) do
+      nil -> Albums.get_albums_by_gallery_id(gallery_id)
+      album -> Albums.get_albums_by_gallery_id(gallery_id) ++ [album]
+    end
+  end
+
   def expire_soon(gallery) do
     expired_at = get_expiry_date(gallery)
 
@@ -179,18 +214,20 @@ defmodule PicselloWeb.GalleryLive.Shared do
         exclude_all \\ nil
       ) do
     selected_filter = assigns[:selected_filter] || false
+    photographer_favorites_filter = assigns[:photographer_favorites_filter] || false
 
     if exclude_all do
       []
     else
       album = Map.get(assigns, :album, nil)
 
-      if album do
-        [album_id: album.id]
-      else
-        [exclude_album: true]
+      case album do
+        %{id: "client_liked"} -> []
+        %{} -> [album_id: album.id]
+        _ -> [exclude_album: true]
       end ++
         [
+          photographer_favorites_filter: photographer_favorites_filter,
           favorites_filter: filter,
           selected_filter: selected_filter,
           limit: per_page + 1,
@@ -219,7 +256,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def make_popup(socket, opts) do
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: opts[:close_label] || "No, go back",
       confirm_event: opts[:event],
       class: "dialog-photographer",
       confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
@@ -227,6 +264,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
       icon: Keyword.get(opts, :icon, "warning-orange"),
       title: opts[:title],
       subtitle: opts[:subtitle],
+      dropdown?: opts[:dropdown?],
+      dropdown_label: opts[:dropdown_label],
+      dropdown_items: opts[:dropdown_items],
       payload: Keyword.get(opts, :payload, %{})
     })
     |> noreply()
@@ -820,4 +860,96 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defdelegate product_name(order), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate price_display(product), to: Cart
+
+  def client_liked_album(gallery_id) do
+    photos = Galleries.get_gallery_photos(gallery_id, favorites_filter: true)
+
+    if Enum.any?(photos) do
+      %Album{
+        id: "client_liked",
+        photos: photos,
+        name: "Client Favorites",
+        is_client_liked: true
+      }
+    end
+  end
+
+  def original_album_link(socket, %{id: id, gallery_id: gallery_id, album_id: album_id}) do
+    case album_id do
+      nil ->
+        Routes.gallery_photos_index_path(
+          socket,
+          :index,
+          gallery_id,
+          go_to_original: true,
+          photo_id: id
+        )
+
+      album_id ->
+        Routes.gallery_photos_index_path(
+          socket,
+          :index,
+          gallery_id,
+          album_id,
+          go_to_original: true,
+          photo_id: id
+        )
+    end
+  end
+
+  def create_album(
+        album,
+        %{
+          params: params,
+          gallery_id: gallery_id,
+          is_finals: is_finals,
+          is_mobile: is_mobile,
+          is_redirect: is_redirect
+        },
+        socket
+      ) do
+    if album do
+      {album, message} =
+        album
+        |> Albums.update_album(params)
+        |> upsert_album("Album settings successfully updated")
+
+      send(self(), {:album_settings, %{message: message, album: album}})
+      socket |> noreply()
+    else
+      params = if is_finals, do: Map.put(params, "is_finals", true), else: params
+      is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
+
+      {album, message} =
+        socket.assigns
+        |> insert_album(params)
+        |> upsert_album("Album successfully created")
+
+      redirect_path =
+        if is_redirect,
+          do: Routes.gallery_photos_index_path(socket, :index, gallery_id, album.id, is_mobile),
+          else: "/galleries/#{gallery_id}/albums/client_liked"
+
+      socket
+      |> push_redirect(to: redirect_path)
+      |> put_flash(:success, message)
+      |> noreply()
+    end
+  end
+
+  defp upsert_album(result, message) do
+    case result do
+      {:ok, album} -> {album, message}
+      _ -> {nil, "something went wrong"}
+    end
+  end
+
+  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
+
+  defp insert_album(%{selected_photos: selected_photos}, album_params) do
+    case Albums.insert_album_with_selected_photos(album_params, selected_photos) do
+      {:ok, album} -> {:ok, album.album}
+      _ -> {nil, "something went wrong"}
+    end
+  end
 end
