@@ -199,12 +199,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{
           assigns: %{
             gallery: gallery,
-            album: album
+            album: album,
+            orders: orders
           }
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, album: album, target: self()})
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      album: album,
+      target: self(),
+      has_order?: !Enum.empty?(orders)
+    })
     |> noreply()
   end
 
