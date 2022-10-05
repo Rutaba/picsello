@@ -7,11 +7,12 @@ defmodule PicselloWeb.GalleryDownloadsController do
     parse_and_download(conn, gallery, photo_ids)
   end
 
-  def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids} = _params) do
+  def download_all(conn, %{"hash" => hash, "photo_ids" => photo_ids}) do
     gallery = Galleries.get_gallery_by_hash!(hash)
     photographer = Galleries.gallery_photographer(gallery)
+    current_user = Map.get(conn.assigns, :current_user)
 
-    if photographer.id == conn.assigns.current_user.id do
+    if current_user && photographer.id == current_user.id do
       parse_and_download(conn, gallery, photo_ids)
     else
       conn |> put_view(ErrorView) |> render("403.html")
