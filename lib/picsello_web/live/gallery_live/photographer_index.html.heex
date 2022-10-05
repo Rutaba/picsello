@@ -41,28 +41,28 @@
                         </div>
                         <div class="flex justify-between w-full h-full mt-4">
                            <form id="cover-photo-dragDrop-form" phx-submit="save" phx-change="start" class="h-full" >
-                              <div class="dragDrop__content">
-                                 <label class="font-sans font-bold text-white">Choose a new photo
-                                 <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                              <div class={"dragDrop__content"}>
+                                 <label class={"font-sans font-bold #{@gallery.disabled && 'text-base-250 cursor-default'}"} >Choose a new photo
+                                 <%= live_file_input @uploads.cover_photo, class: "dragDropInput", disabled: @gallery.disabled %>
                                  </label>
                               </div>
                            </form>
-                           <button phx-click="delete_cover_photo_popup">
-                              <.icon name="remove-icon" class="w-5 h-5 cursor-pointer text-base-250" />
+                           <button disabled={@gallery.disabled} phx-click="delete_cover_photo_popup">
+                              <.icon name="remove-icon" class={"w-5 h-5 cursor-pointer text-base-250 #{@gallery.disabled && 'pointer-events-none'}"} />
                            </button>
                         </div>
                      </div>
                   <% else %>
                      <div class="w-full h-full mt-6 uploadingBlock" style="box-shadow:none;">
                         <h3>Cover photo</h3>
-                        <div class="dragDrop__wrapper">
+                        <div class={"dragDrop__wrapper"}>
                            <form id="dragDrop-form" phx-submit="save" phx-change="start" class="h-full">
                               <label>
                                  <div class="flex flex-col items-center justify-center h-full gap-4 cursor-pointer dragDrop" id="dropzone-cover" phx-hook="DragDrop" phx-drop-target={@uploads.cover_photo.ref}>
-                                    <.icon name="add-photos" class="w-20 h-20 cursor-pointer text-blue-planning-300" />
+                                    <.icon name="add-photos" class={"w-20 h-20 cursor-pointer text-blue-planning-300"} />
                                     <div class="dragDrop__content">
-                                       <p class="font-bold"><span>Drop image or </span><span class="primary">Browse</span></p>
-                                       <%= live_file_input @uploads.cover_photo, class: "dragDropInput" %>
+                                       <p class={"font-bold #{@gallery.disabled && 'gray'}"}><span>Drop image or </span><span class={"primary #{@gallery.disabled && 'gray'}"}>Browse</span></p>
+                                       <%= live_file_input @uploads.cover_photo, class: "dragDropInput", disabled: @gallery.disabled %>
                                        <p class="gray">Supports JPEG or PNG</p>
                                     </div>
                                  </div>
@@ -85,36 +85,51 @@
                </div>
                <%= unless Galleries.do_not_charge_for_download?(@gallery) do %>
                   <div id="galleryWatermark" class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-                     <h3 class="font-sans">Watermark</h3>
+                     <h3 class={("font-sans #{@gallery.disabled && 'text-gray-400'}")}>Watermark</h3>
                      <%= if @gallery.watermark do %>
                         <%= if @gallery.watermark.type == "image" do %>
                            <div class="flex justify-between py-3 font-sans">
-                              <p><%= @gallery.watermark.name %></p>
+                              <p class={("#{@gallery.disabled && 'text-gray-400'}")}><%= @gallery.watermark.name %></p>
                               <div class="flex">
                                  <p><%= filesize(@gallery.watermark.size) %></p>
-                                 <.remove_watermark_button />
+                                 <.remove_watermark_button disabled={@gallery.disabled} />
                               </div>
                            </div>
                         <% else %>
                            <div class="flex justify-between font-sans">
-                              <p><%= @gallery.watermark.text %></p>
+                              <p class={("#{@gallery.disabled && 'text-gray-400'}")}><%= @gallery.watermark.text %></p>
                               <div class="flex items-center">
-                                 <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
-                                 <.remove_watermark_button />
+                                 <.icon name="typography-symbol" class={"w-3 h-3.5 ml-1 fill-current"}/>
+                                 <.remove_watermark_button disabled={@gallery.disabled} />
                               </div>
                            </div>
                         <% end %>
-                        <button {testid("watermark_popup")} phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Edit watermark</button>         
+                        <button {testid("watermark_popup")} disabled={@gallery.disabled} phx-click="watermark_popup" class={("justify-center py-3 font-sans border rounded-lg mt-7 #{(@gallery.disabled && 'border-gray text-gray-400')|| 'border-black'}")} id="watermark_popup">Edit watermark</button>         
                      <% else %>
-                        <p class="font-sans">Upload your logo and we’ll do the rest.</p>
-                        <button {testid("watermark_popup")} phx-click="watermark_popup" class="justify-center py-3 font-sans border border-black rounded-lg mt-7" id="watermark_popup">Set watermark</button>
+                        <p class={("font-sans #{@gallery.disabled && 'text-gray-400'}")}>Upload your logo and we’ll do the rest.</p>
+                        <button {testid("watermark_popup")} disabled={@gallery.disabled} phx-click="watermark_popup" class={("justify-center py-3 font-sans border rounded-lg mt-7 #{(@gallery.disabled && 'border-gray text-gray-400')|| 'border-black'}")} id="watermark_popup">Set watermark</button>
                      <% end %>
                   </div>
                <% end %>
                <div id="deleteGallery" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-                  <h3 class="font-sans">Delete gallery</h3>
-                  <p class="font-sans">If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is the place for you.</p>
-                  <button {testid("deleteGalleryPopupButton")} phx-click="delete_gallery_popup" class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">Delete gallery</button>
+                  <h3 class="font-sans"><%= if @has_order?, do: (if @gallery.disabled, do: "Enable gallery", else: "Disable gallery"), else: "Delete gallery" %></h3>
+                  <p class="font-sans">
+                  <%= if @has_order? do %>
+                     <%= if @gallery.disabled do %>
+                        Gallery orders are disabled, your client has made purchases from this gallery, so you can't delete it, or they'll lose their order
+                        history. This action will enable additional gallery orders moving forward.
+                     <% else %>
+                        Your client has made orders or selections from this gallery, so you can't delete it, or they'll lose their order
+                        history. If you'd like, you can still disable the gallery.
+                     <% end %>
+                  <% else %>
+                     If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is 
+                     the place for you.
+                  <% end %>
+                  </p>
+                  <button {testid("deleteGalleryPopupButton")} phx-click={if @has_order?, do: (if @gallery.disabled, do: "enable_gallery_popup", else: "disable_gallery_popup"), else: "delete_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+                     <%= if @has_order?, do: (if @gallery.disabled, do: "Enable gallery", else: "Disable gallery"), else: "Delete gallery" %>
+                  </button>
                </div>
             </div>
          </div>

@@ -12,6 +12,22 @@ defmodule Picsello.GalleryOverviewTest do
     [job: gallery.job]
   end
 
+  def insert_order(gallery) do
+    order =
+      insert(:order,
+        gallery: gallery,
+        placed_at: DateTime.utc_now(),
+        delivery_info: %Picsello.Cart.DeliveryInfo{}
+      )
+
+    insert(:digital,
+      order: order,
+      photo: insert(:photo, gallery: gallery, original_url: image_url())
+    )
+
+    order
+  end
+
   feature "Validate preview gallery button", %{
     session: session,
     gallery: gallery
@@ -137,6 +153,51 @@ defmodule Picsello.GalleryOverviewTest do
         text: "Upload your logo and we’ll do the rest."
       )
     )
+  end
+
+  @tag :dev
+  feature "Disable Gallery", %{session: session, gallery: gallery} do
+    _order = insert_order(gallery)
+
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
+    |> click(css("#deleteGalleryPopupButton"))
+    |> within_modal(&click(&1, button("Yes, disable")))
+    |> assert_url_contains("/jobs")
+
+  end
+
+  feature "Unable to update gallery settings when disabled", %{session: session, gallery: gallery} do
+    _order = insert_order(gallery)
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> assert_disabled(css(".galleryName"))
+    |> assert_disabled(css("#galleryPasswordInput"))
+    |> assert_disabled(css(".month"))
+    |> assert_disabled(css(".day"))
+    |> assert_disabled(css(".year"))
+    |> assert_disabled(css(".month"))
+
+  end
+
+  @tag :dev
+  feature "Enable Gallery", %{session: session, gallery: gallery} do
+    _order = insert_order(gallery)
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
+    |> click(css("#deleteGalleryPopupButton"))
+    |> within_modal(&click(&1, button("Yes, enable")))
+    |> assert_url_contains("/jobs")
+
   end
 
   feature "Delete Gallery", %{session: session, job: job, gallery: gallery} do

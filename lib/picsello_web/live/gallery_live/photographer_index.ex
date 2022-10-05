@@ -53,6 +53,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     socket
     |> is_mobile(params)
+    |> assign(:has_order?, Picsello.Orders.placed_orders_count(gallery) > 0)
     |> assign(:gallery, gallery)
     |> noreply()
   end
@@ -144,6 +145,33 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @impl true
   def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
     socket |> assign(:is_mobile, !is_mobile) |> noreply
+  end
+
+  @impl true
+  def handle_event("disable_gallery_popup", _, socket) do
+    opts = [
+      event: "disable_gallery",
+      title: "Disable Gallery?",
+      confirm_label: "Yes, disable",
+      subtitle:
+        "If you disable the gallery, it will remain intact, but you won't be able to update it anymore.
+      Your client will still be able to view the gallery."
+    ]
+
+    make_popup(socket, opts)
+  end
+
+  @impl true
+  def handle_event("enable_gallery_popup", _, socket) do
+    opts = [
+      event: "enable_gallery",
+      title: "Enable Gallery?",
+      confirm_label: "Yes, enable",
+      subtitle:
+        "If you enable the gallery, your clients will be able to make additional gallery purchases moving forward."
+    ]
+
+    make_popup(socket, opts)
   end
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
@@ -289,19 +317,9 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         {:confirm_event, "delete_gallery"},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    case Galleries.delete_gallery(gallery) do
-      {:ok, _gallery} ->
-        socket
-        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
-        |> put_flash(:success, "The gallery has been deleted")
-        |> noreply()
-
-      _any ->
-        socket
-        |> put_flash(:error, "Could not delete gallery")
-        |> close_modal()
-        |> noreply()
-    end
+    gallery
+    |> Galleries.delete_gallery()
+    |> process_gallery(socket, :delete)
   end
 
   @impl true
@@ -333,6 +351,47 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
+  def handle_info(
+        {:confirm_event, "disable_gallery", _},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    gallery
+    |> Galleries.update_gallery(%{disabled: true})
+    |> process_gallery(socket, :disabled)
+  end
+
+  def handle_info(
+        {:confirm_event, "enable_gallery", _},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    gallery
+    |> Galleries.update_gallery(%{disabled: false})
+    |> process_gallery(socket, :enabled)
+  end
+
+  defp process_gallery(result, socket, type) do
+    {succuss, failure} =
+      case type do
+        :delete -> {"deleted", "delete"}
+        :enabled -> {"enabled", "enable"}
+        _ -> {"disabled", "disable"}
+      end
+
+    case result do
+      {:ok, gallery} ->
+        socket
+        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
+        |> put_flash(:success, "The gallery has been #{succuss}")
+        |> noreply()
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not #{failure} gallery")
+        |> close_modal()
+        |> noreply()
+    end
+  end
 
   def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = CoverPhoto.original_path(gallery.id, entry.uuid)
@@ -367,8 +426,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   defp remove_watermark_button(assigns) do
     ~H"""
-    <button type="button" title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
-      <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+    <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
+      <.icon name="remove-icon" class={"w-3.5 h-3.5 ml-1 text-base-250 #{assigns.disabled && 'pointer-events-none'}"}/>
     </button>
     """
   end

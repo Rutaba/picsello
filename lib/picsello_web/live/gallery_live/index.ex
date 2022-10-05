@@ -245,6 +245,30 @@ defmodule PicselloWeb.GalleryLive.Index do
             </div>
           </div>
         <% end %>
+      </div>
+      <div class="py-0 md:py-2">
+        <div class="font-bold">
+          <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
+        </div>
+        <div class={"font-bold w-full"}>
+          <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
+            <span class="w-full text-blue-planning-300 underline">
+              <%= if String.length(@gallery.name) < 30 do
+                @gallery.name
+              else
+                "#{@gallery.name |> String.slice(0..29)} ..."
+              end %>
+            </span>
+          <% end %>
+        </div>
+        <div class="text-base-250 font-normal ">
+          <%= @gallery.albums |> Enum.count() %> albums
+        </div>
+        <%= if Enum.any?(@gallery.albums) do %>
+          <div class="text-base-250 font-normal">
+            <.preview_icons albums={@gallery.albums} />
+          </div>
+        <% end %>
         <div class="py-0 md:py-2">
           <div class="font-bold">
             <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
@@ -333,5 +357,17 @@ defmodule PicselloWeb.GalleryLive.Index do
           last_index: pagination.first_index + Enum.count(jobs) - 1
       }
     )
+  end
+
+  defp dropdown_item(%{item_num: item_num, link: link, icon: icon, title: title} = assigns) do
+    assigns = Map.put_new(assigns, :class, "")
+    icon_text_class = if icon == "trash", do: "text-red-sales-300", else: "text-blue-planning-300"
+
+    ~H"""
+    <a {link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={"menu-item-#{item_num}"}>
+      <.icon name={icon} class={"w-4 h-4 fill-current #{icon_text_class} inline mr-1"} />
+      <%= title %>
+    </a>
+    """
   end
 end

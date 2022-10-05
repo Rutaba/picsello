@@ -6,7 +6,7 @@ defmodule Picsello.Galleries.Gallery do
   alias Picsello.{Job, Cart.Order}
 
   @status_options [
-    values: ~w(draft active expired),
+    values: ~w(draft active expired disabled),
     default: "draft"
   ]
 
@@ -24,6 +24,7 @@ defmodule Picsello.Galleries.Gallery do
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
     field :active, :boolean, default: true
+    field :disabled, :boolean
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
@@ -61,7 +62,8 @@ defmodule Picsello.Galleries.Gallery do
     :password,
     :client_link_hash,
     :total_count,
-    :active
+    :active,
+    :disabled
   ]
   @required_attrs [:name, :job_id, :status, :password]
 
