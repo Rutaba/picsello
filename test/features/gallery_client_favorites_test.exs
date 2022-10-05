@@ -133,6 +133,25 @@ defmodule Picsello.GalleryClientFavoritesTest do
       |> find(css("#album_name", text: "Unsorted photos"))
     end
 
+    feature "Remove from album and Delete dropdown-option doesn't appears in Client favorites as well as Unsorted album",
+          %{
+            session: session,
+            gallery: %{id: gallery_id}
+          } do
+    session
+    |> visit("/galleries/#{gallery_id}/albums/client_liked")
+    |> click(css("#select"))
+    |> click(button("All"))
+    |> click(css("#actions"))
+    |> refute_has(css("#actions li button", text: "Remove from album"))
+    |> refute_has(css("#actions li button", text: "Delete"))
+    |> click(link("Unsorted photos"))
+    |> click(css("#select"))
+    |> click(button("All"))
+    |> click(css("#actions"))
+    |> refute_has(css("#actions li button", text: "Delete"))
+  end
+
     feature "Create Client Favourite Album", %{
       session: session,
       gallery: gallery,
