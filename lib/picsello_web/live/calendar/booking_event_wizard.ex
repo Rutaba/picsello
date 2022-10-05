@@ -165,7 +165,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     ~H"""
     <div class="grid grid-cols-1 my-4 sm:grid-cols-2 lg:grid-cols-3 gap-7">
       <%= for package <- @package_templates do %>
-        <% checked = input_value(@f, :package_template_id) |> to_integer() == package.id %>
+        <% checked = is_checked(input_value(@f, :package_template_id), package) %>
 
         <label {testid("template-card")}>
           <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: package.id} />
@@ -443,11 +443,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     )
   end
 
+  def current(%{source: changeset}), do: current(changeset)
+  def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
+
   defp calculate_slots_count(event_form, date) do
     event = current(event_form)
     event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
   end
-
-  def current(%{source: changeset}), do: current(changeset)
-  def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
+  
+  defp is_checked("" <> id, package) do
+    if String.length(id) > 0 do
+      id |> to_integer() == package.id
+    else
+      false
+    end
+  end
+  
+  defp is_checked(_, _), do: false
 end
