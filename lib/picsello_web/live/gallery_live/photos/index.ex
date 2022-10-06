@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.GalleryLive.Photos.ProofingGrid, only: [proofing_grid: 1]
 
   alias Phoenix.PubSub
-  alias Picsello.{Repo, Galleries, Albums, Orders, Galleries.Watermark}
+  alias Picsello.{Repo, Galleries, Albums, Orders, Galleries.Watermark, Notifiers.UserNotifier}
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
@@ -208,6 +208,30 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
+  def handle_event(
+        "downlaod_photos",
+        _,
+        %{
+          assigns: %{
+            gallery: gallery,
+            selected_photos: selected_photos,
+            current_user: current_user
+          }
+        } = socket
+      ) do
+    UserNotifier.deliver_download_start_notification(current_user, gallery)
+    Galleries.pack(gallery, selected_photos, user_email: current_user.email)
+
+    socket
+    |> push_event("select_mode", %{"mode" => "selected_none"})
+    |> assign(:select_mode, "selected_none")
+    |> assign(:selected_photos, [])
+    |> push_event("reload_grid", %{})
+    |> put_flash(:success, "Download request sent at #{current_user.email}! The ZIP file with your images is on the way to your inbox")
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("upload-failed", _, %{assigns: %{gallery: gallery, entries: entries}} = socket) do
     if length(entries) > 0, do: inprogress_upload_broadcast(gallery.id, entries)
 

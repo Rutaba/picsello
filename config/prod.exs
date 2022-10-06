@@ -106,6 +106,8 @@ config :picsello, Picsello.Mailer,
   client_download_ready_template: System.get_env("SENDGRID_CLIENT_DOWNLOAD_READY_TEMPLATE"),
   email_template: System.get_env("SENDGRID_EMAIL_TEMPLATE"),
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN"),
+  download_being_prepared_photog: System.get_env("SENDGRID_DOWNLOAD_BEING_PREPARED_PHOTOG"),
+  download_ready_photog: System.get_env("SENDGRID_DOWNLOAD_READY_PHOTOG"),
   hackney_opts: [
     recv_timeout: :timer.minutes(1)
   ]
