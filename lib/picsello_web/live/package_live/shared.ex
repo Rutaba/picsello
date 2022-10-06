@@ -225,8 +225,6 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp check?(d, field), do: d |> current() |> Map.get(field)
 
-  # --------------------------
-
   def current(%{source: changeset}), do: current(changeset)
   def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 

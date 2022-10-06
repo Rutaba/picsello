@@ -265,17 +265,14 @@ li.custom-tooltip span {
 
 li.custom-tooltip:hover span {
   padding: 5px;
-  padding-bottom: 5px;
   display: block;
   z-index: 100;
   background: #FFFFFF;
   box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
-  left: 0px;
-  margin: 15px;
-  width: 165px;
-  height: 35px;
+  left: 10px;
   position: absolute;
-  top: 15px;
+  top: 30px;
   text-decoration: none;
+  white-space: nowrap;
 }

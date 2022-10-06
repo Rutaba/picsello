@@ -28,6 +28,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   def update(%{current_user: %{organization: %{profile: profile}}} = assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign(:job_id, nil)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign(templates: [], step: :details, steps: @steps)
@@ -100,9 +101,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         assign(socket, :package_changeset, changeset)
 
       {:ok, %{job: %{id: job_id}}} ->
-        push_redirect(socket,
-          to: Routes.gallery_path(socket, :galleries, is_gallery_created: true, job_id: job_id)
-        )
+        send(self(), {:gallery_created, %{job_id: job_id}})
+        socket |> assign(:job_id, job_id)
     end
     |> noreply()
   end
@@ -154,7 +154,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       <% end %>
 
       <%= hidden_input @f, :is_gallery_only, value: true %>
-      <%= labeled_select @f, :type, @job_types, type: :telephone_input, label: "Client Phone", prompt: "Select below", placeholder: "(555) 555-5555", phx_debounce: "500"  %>
+      <%= labeled_select @f, :type, @job_types, type: :telephone_input, label: "Type of Photography", prompt: "Select below", phx_debounce: "500"%>
       </div>
     """
   end
@@ -197,7 +197,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         </div>
 
         <.digital_download_fields for={:create_gallery} package_form={package} download={@download} package_pricing={@package_pricing} />
-      </div>
+        <%= if @job_id do %>
+          <div id="set-job-cookie" data-job-id={@job_id} phx-hook="SetJobCookie">
+          </div>
+        <% end %>
+    </div>
     """
   end
 
@@ -286,7 +290,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}
       %Money{} = value -> %{is_enabled: Money.positive?(value)}
-      %{} -> %{}
+      _ -> %{}
     end
   end
 end

@@ -2,7 +2,6 @@ defmodule PicselloWeb.GalleryLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.Galleries.Gallery
   require Ecto.Query
   alias Ecto.Query
   alias Picsello.{Galleries, Repo, Messages}
@@ -30,87 +29,13 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_params(%{"is_gallery_created" => "true", "job_id" => job_id}, _uri, socket) do
-    socket
-    |> PicselloWeb.SuccessComponent.open(%{
-      title: "Gallery Created!",
-      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
-      success_label: "View new job",
-      success_event: "view-job",
-      close_label: "Great! Close window.",
-      payload: %{job_id: job_id}
-    })
-    |> noreply()
-  end
-
-  def handle_params(_params, _uri, socket) do
-    socket |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:message_composed, changeset},
-        %{
-          assigns: %{
-            current_user: %{organization: %{name: organization_name}},
-            job: %{id: job_id}
-          }
-        } = socket
-      ) do
-    flash =
-      changeset
-      |> Ecto.Changeset.change(job_id: job_id, outbound: false, read_at: nil)
-      |> Ecto.Changeset.apply_changes()
-      |> Repo.insert()
-      |> case do
-        {:ok, message} ->
-          Messages.notify_inbound_message(message, PicselloWeb.Helpers)
-
-          &PicselloWeb.ConfirmationComponent.open(&1, %{
-            title: "Contact #{organization_name}",
-            subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
-            icon: nil,
-            confirm_label: "Send another",
-            confirm_class: "btn-primary",
-            confirm_event: "send_another"
-          })
-
-        {:error, _} ->
-          &(&1 |> close_modal() |> put_flash(:error, "Message not sent."))
-      end
-
-    socket |> flash.() |> noreply()
-  end
-
-  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
-    socket
-    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:confirm_event, "delete_gallery"},
-        %{assigns: %{gallery_id: gallery_id}} = socket
-      ) do
-    gallery_id = String.to_integer(gallery_id)
-    {:ok, _} = Galleries.delete_gallery_by_id(gallery_id)
-
-    socket
-    |> close_modal()
-    |> put_assigns()
-    |> put_flash(:success, "Gallery deleted successfully")
-    |> noreply()
-  end
-
-  @impl true
   def handle_event(
         "show_dropdown",
-        %{"show" => show},
+        %{"show_index" => show_index},
         %{assigns: %{index: index}} = socket
       ) do
-    show = String.to_integer(show)
-    show? = if show == index, do: false, else: show
+    show_index = String.to_integer(show_index)
+    show? = if show_index == index, do: false, else: show_index
 
     socket
     |> assign(index: show?)
@@ -191,20 +116,90 @@ defmodule PicselloWeb.GalleryLive.Index do
       )
       |> noreply()
 
+  @impl true
+  def handle_info(
+        {:message_composed, changeset},
+        %{
+          assigns: %{
+            current_user: %{organization: %{name: organization_name}},
+            job: %{id: job_id}
+          }
+        } = socket
+      ) do
+    flash =
+      changeset
+      |> Ecto.Changeset.change(job_id: job_id, outbound: false, read_at: nil)
+      |> Ecto.Changeset.apply_changes()
+      |> Repo.insert()
+      |> case do
+        {:ok, message} ->
+          Messages.notify_inbound_message(message, PicselloWeb.Helpers)
+
+          &PicselloWeb.ConfirmationComponent.open(&1, %{
+            title: "Contact #{organization_name}",
+            subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
+            icon: nil,
+            confirm_label: "Send another",
+            confirm_class: "btn-primary",
+            confirm_event: "send_another"
+          })
+
+        {:error, _} ->
+          &(&1 |> close_modal() |> put_flash(:error, "Message not sent."))
+      end
+
+    socket |> flash.() |> noreply()
+  end
+
+  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
+    socket
+    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "delete_gallery"},
+        %{assigns: %{gallery_id: gallery_id}} = socket
+      ) do
+    {:ok, _} = String.to_integer(gallery_id) |> Galleries.delete_gallery_by_id()
+
+    socket
+    |> put_assigns()
+    |> close_modal()
+    |> put_flash(:success, "Gallery deleted successfully")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:gallery_created, %{job_id: job_id}}, socket) do
+    socket
+    |> PicselloWeb.SuccessComponent.open(%{
+      title: "Gallery Created!",
+      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
+      success_label: "View new job",
+      success_event: "view-job",
+      close_label: "Great! Close window.",
+      payload: %{job_id: job_id}
+    })
+    |> put_assigns()
+    |> noreply()
+  end
+
   def preview_icons(assigns) do
     standard_albums_count =
       assigns.albums
-      |> Enum.filter(fn album -> album.is_proofing == false and album.is_finals == false end)
+      |> Enum.filter(&(&1.is_proofing == false and &1.is_finals == false))
       |> Enum.count()
 
     proofing_albums_count =
       assigns.albums
-      |> Enum.filter(fn album -> album.is_proofing == true end)
+      |> Enum.filter(&(&1.is_proofing == true and &1.is_finals == false))
       |> Enum.count()
 
     final_albums_count =
       assigns.albums
-      |> Enum.filter(fn album -> album.is_finals == true end)
+      |> Enum.filter(&(&1.is_finals == true))
       |> Enum.count()
 
     ~H"""
@@ -253,10 +248,10 @@ defmodule PicselloWeb.GalleryLive.Index do
         <div class="font-bold w-full">
           <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
               <span class="w-full text-blue-planning-300 underline">
-                <%= if String.length(@gallery |> Gallery.name()) < 30 do
-                  @gallery |> Gallery.name()
+                <%= if String.length(@gallery.name) < 30 do
+                  @gallery.name
                 else
-                  "#{@gallery |> Gallery.name() |> String.slice(0..29)} ..."
+                  "#{@gallery.name |> String.slice(0..29)} ..."
                 end %>
               </span>
           <% end %>
@@ -299,10 +294,8 @@ defmodule PicselloWeb.GalleryLive.Index do
        ) do
     organization_id = Map.get(current_user, :organization).id
 
-    galleries_query = Galleries.list_all_galleries_by_organization_query(organization_id)
-
     %{entries: galleries, metadata: metadata} =
-      galleries_query
+      Galleries.list_all_galleries_by_organization_query(organization_id)
       |> Query.order_by(desc: :updated_at)
       |> Repo.paginate(
         pagination

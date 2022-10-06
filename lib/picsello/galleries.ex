@@ -513,9 +513,7 @@ defmodule Picsello.Galleries do
     update_gallery(gallery, %{active: false})
   end
 
-  def delete_gallery_by_id(id) do
-    update_gallery(get_gallery!(id), %{active: false})
-  end
+  def delete_gallery_by_id(id), do: get_gallery!(id) |> delete_gallery()
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking gallery changes.

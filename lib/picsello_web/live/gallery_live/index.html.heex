@@ -1,21 +1,21 @@
 <header>
-    <div class="center-container p-6 pt-10">
-      <div class="flex content-center justify-between md:flex-row">
-        <div class="flex-col">
-          <h1 class="text-4xl font-bold center-container">
-            Your <%= action_name(@live_action, :plural) %>
-          </h1>
-        </div>
-        <%= unless Enum.empty?(@galleries)do %>
-            <div class="fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
-              <a title="create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
-                Create a gallery
-              </a>
-            </div>
-        <% end %>
+  <div class="center-container p-6 pt-10">
+    <div class="flex content-center justify-between md:flex-row">
+      <div class="flex-col">
+        <h1 class="text-4xl font-bold center-container">
+          Your <%= action_name(@live_action, :plural) %>
+        </h1>
       </div>
+      <%= if Enum.any?(@galleries)do %>
+          <div class="fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
+            <a title="create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
+              Create a gallery
+            </a>
+          </div>
+      <% end %>
     </div>
-  </header>
+  </div>
+</header>
   <%= if Enum.empty? @galleries do %>
     <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
       <div class="flex flex-col">
@@ -37,13 +37,13 @@
     </div>
   
     <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden"/>
-    <%= for {gallery, gallery_ind} <- @galleries |> Enum.with_index() do %>
+    <%= for {gallery, gallery_index} <- @galleries |> Enum.with_index() do %>
       <div {testid("galleries-#{gallery.id}")} class="md:py-0 md:mt-0 md:mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">      
         <div class="relative md:grid md:grid-cols-5 lg:grid-cols-4 flex flex-wrap my-4 md:mx-0 mx-4">
           <div class="flex flex-row w-full col-span-3 align-top">
-            <.image_item socket={@socket} gallery={gallery} index={@index} gallery_ind={gallery_ind}/>
-            <button type="button" class={classes("h-fit md:hidden flex ml-auto justify-center py-2 px-1 md:ml-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pr-2" => @index == gallery_ind})} id="menu-button" aria-expanded="true"  aria-hidden="true" aria-haspopup="true" phx-click="show_dropdown" phx-value-show={gallery_ind}>
-              <%= if @index != gallery_ind do %>
+            <.image_item socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index}/>
+            <button type="button" class={classes("h-fit md:hidden flex ml-auto justify-center py-2 px-1 md:ml-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pr-2" => @index == gallery_index})} id="menu-button" aria-expanded="true"  aria-hidden="true" aria-haspopup="true" phx-click="show_dropdown" phx-value-show_index={gallery_index}>
+              <%= if @index != gallery_index do %>
                 <.icon name="meatballs" class="w-4 h-4 fill-current text-blue-planning-300 inline mx-1.5" />
               <% else %>
                 <.icon name="close-x" class="pl-1 w-4 h-4 mx-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
@@ -62,14 +62,14 @@
                 Copied!
               </div>
             </button>
-            <button type="button" class={classes("h-fit md:flex hidden justify-center py-2 px-1 ml-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pr-2" => @index == gallery_ind})} id="menu-button" aria-expanded="true"  aria-hidden="true" aria-haspopup="true" phx-click="show_dropdown" phx-value-show={gallery_ind}>
-              <%= if @index != gallery_ind do %>
+            <button type="button" class={classes("h-fit md:flex hidden justify-center py-2 px-1 ml-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pr-2" => @index == gallery_index})} id="menu-button" aria-expanded="true"  aria-hidden="true" aria-haspopup="true" phx-click="show_dropdown" phx-value-show_index={gallery_index}>
+              <%= if @index != gallery_index do %>
                 <.icon name="meatballs" class="w-4 h-4 fill-current text-blue-planning-300 inline mx-1" />
               <% else %>
                 <.icon name="close-x" class="pl-1 w-4 h-4 mx-0.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
               <% end %>
             </button>
-            <div id="dropdown-items" class={classes("absolute right-9 md:top-20 top-8 z-10 w-36 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != gallery_ind})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+            <div id="dropdown-items" class={classes("absolute right-9 md:top-20 top-8 z-10 w-36 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != gallery_index})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
               <div class="py-1" role="none">
                 <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100" role="menuitem" tabindex="-1" id="menu-item-0">
                   <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />

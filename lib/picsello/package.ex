@@ -53,8 +53,8 @@ defmodule Picsello.Package do
   def changeset_for_create_gallery(package \\ %__MODULE__{}, attrs) do
     package
     |> cast(attrs, @fields)
-    |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
     |> put_change(:base_price, Money.new(0))
+    |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price)
     |> validate_money(:print_credits,
