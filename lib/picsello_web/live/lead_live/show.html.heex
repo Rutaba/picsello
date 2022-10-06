@@ -19,7 +19,6 @@
 
       <div class="flex flex-col justify-between md:flex-row">
         <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
-
         <%= unless @proposal do %>
           <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
         <% end %>

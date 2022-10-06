@@ -69,6 +69,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     )
     |> assign_cart_count(gallery)
     |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
@@ -166,7 +167,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket
     |> assigns()
     |> elem(1)
-    |> assign(:update_mode, "replace")
+    |> assign(:update_mode, "append")
     |> push_event("reload_grid", %{})
     |> noreply()
   end

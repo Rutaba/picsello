@@ -6,6 +6,7 @@ defmodule Picsello.Galleries do
   import Ecto.Query, warn: false
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
+  alias Ecto.Multi
   alias Picsello.{
     Galleries,
     Repo,
@@ -139,6 +140,7 @@ defmodule Picsello.Galleries do
     * :album_id
     * :offset
     * :limit
+    * :photographer_favorites_filter
   """
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
@@ -181,6 +183,7 @@ defmodule Picsello.Galleries do
 
   defp conditions(id, opts) do
     favorites_filter = Keyword.get(opts, :favorites_filter, false)
+    photographer_favorites_filter = Keyword.get(opts, :photographer_favorites_filter, false)
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
 
@@ -189,6 +192,13 @@ defmodule Picsello.Galleries do
     conditions =
       if favorites_filter do
         dynamic([p], p.client_liked == true and ^conditions)
+      else
+        conditions
+      end
+
+    conditions =
+      if photographer_favorites_filter do
+        dynamic([p], p.is_photographer_liked == true and ^conditions)
       else
         conditions
       end
@@ -225,13 +235,13 @@ defmodule Picsello.Galleries do
   end
 
   defp move_photos_from_album_transaction(photo_ids) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
+    Multi.new()
+    |> Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :photos,
       fn _ ->
         from(p in Photo,
@@ -260,7 +270,7 @@ defmodule Picsello.Galleries do
     photo_ids = Enum.map(album.photos, & &1.id)
 
     move_photos_from_album_transaction(photo_ids)
-    |> Ecto.Multi.delete(:album, album)
+    |> Multi.delete(:album, album)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->
@@ -283,23 +293,23 @@ defmodule Picsello.Galleries do
     photos = get_photos_by_ids(photo_ids)
     [photo | _] = photos
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
+    Multi.new()
+    |> Multi.update_all(
       :preview,
       fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update(
+    |> Multi.update(
       :cover_photo,
       fn _ -> delete_gallery_cover_photo(photo.gallery_id, photos) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :photos,
       fn _ -> from(p in Photo, where: p.id in ^photo_ids, update: [set: [active: false]]) end,
       []
@@ -317,6 +327,16 @@ defmodule Picsello.Galleries do
     end)
   end
 
+  @doc """
+  delete the photos if they are duplicated
+  """
+  def delete_photos_by(photo_ids) do
+    from(p in Photo,
+      where: p.id in ^photo_ids
+    )
+    |> Repo.update_all(set: [active: false])
+  end
+
   @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)
   def get_photos_by_ids(photo_ids) do
     from(p in Photos.active_photos(), where: p.id in ^photo_ids)
@@ -326,6 +346,17 @@ defmodule Picsello.Galleries do
   def get_photos_by_ids(gallery, photo_ids) do
     from(p in Photos.active_photos(), where: p.id in ^photo_ids and p.gallery_id == ^gallery.id)
     |> Repo.all()
+  end
+
+  def pack(gallery, photo_ids, opts \\ []) when is_list(photo_ids) do
+    %{
+      photo_ids: photo_ids,
+      gallery_name: gallery.name,
+      gallery_url: PicselloWeb.Helpers.gallery_url(gallery),
+      email: opts[:user_email]
+    }
+    |> Picsello.Workers.PackPhotos.new()
+    |> Oban.insert()
   end
 
   @spec get_albums_photo_count(gallery_id :: integer) :: integer
@@ -366,9 +397,9 @@ defmodule Picsello.Galleries do
       {:error, %Ecto.Changeset{}}
   """
   def create_gallery(attrs \\ %{}) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Ecto.Multi.insert_all(
+    Multi.new()
+    |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Multi.insert_all(
       :gallery_products,
       GalleryProduct,
       fn %{
@@ -434,9 +465,9 @@ defmodule Picsello.Galleries do
   def regenerate_gallery_password(%Gallery{} = gallery) do
     changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:gallery, changeset)
-    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
+    Multi.new()
+    |> Multi.update(:gallery, changeset)
+    |> Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
     |> Repo.transaction()
     |> then(fn
       {:ok, %{gallery: gallery}} -> gallery
@@ -539,6 +570,30 @@ defmodule Picsello.Galleries do
   end
 
   def update_photo(_, %{} = _attrs), do: {:error, :no_photo}
+
+  @doc """
+  get name of the selected photos
+  """
+  def get_selected_photos_name(selected_photo_ids) do
+    from(p in Photo,
+      where: p.id in ^selected_photo_ids,
+      select: fragment("REPLACE(?,?,?)", p.name, "_final", "")
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  filter the photos that are duplicated and returns id of filtered photos
+  """
+  def filter_duplication(selected_photo_ids, album_id) do
+    from(p in Photo,
+      join: a in assoc(p, :album),
+      where: fragment("REPLACE(?,?,?)", p.name, "_final", "") in ^selected_photo_ids,
+      where: a.id == ^album_id,
+      select: p.id
+    )
+    |> Repo.all()
+  end
 
   @doc """
   updates album_id for multiple photos.
@@ -698,27 +753,42 @@ defmodule Picsello.Galleries do
   """
   def clear_watermarks(gallery_id) do
     %{job: %{client: %{organization: %{name: name}}}} =
-      gallery =
-      gallery_id
-      |> get_gallery!()
-      |> populate_organization()
+      gallery = get_gallery!(gallery_id) |> populate_organization()
 
     gallery
     |> Repo.preload(photos: [:album])
     |> Map.get(:photos)
-    |> Enum.each(fn
-      %{album: %{is_proofing: true}} = photo ->
+    |> Enum.reduce({[], []}, fn
+      %{album: %{is_proofing: true}} = photo, acc ->
         ProcessingManager.start(photo, Watermark.build(name))
+        acc
 
-      photo ->
-        [photo.watermarked_preview_url, photo.watermarked_url]
-        |> Enum.each(fn path ->
-          %{path: path}
-          |> CleanStore.new()
-          |> Oban.insert()
-        end)
+      photo, {photo_ids, oban_jobs} ->
+        {
+          [photo.id | photo_ids],
+          [photo.watermarked_preview_url, photo.watermarked_url]
+          |> Enum.map(fn path -> CleanStore.new(%{path: path}) end)
+          |> Enum.concat(oban_jobs)
+        }
+    end)
+    |> then(fn
+      {[], []} ->
+        :ok
 
-        update_photo(photo, %{watermarked_url: nil, watermarked_preview_url: nil})
+      {photo_ids, oban_jobs} ->
+        Multi.new()
+        |> Multi.update_all(
+          :photos,
+          fn _ ->
+            from(p in Photo,
+              where: p.id in ^photo_ids,
+              update: [set: [watermarked_url: nil, watermarked_preview_url: nil]]
+            )
+          end,
+          []
+        )
+        |> Oban.insert_all(:clean_store, oban_jobs)
+        |> Repo.transaction()
     end)
   end
 

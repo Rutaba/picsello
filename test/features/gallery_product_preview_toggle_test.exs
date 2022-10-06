@@ -1,6 +1,5 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.TestSupport.ClientGallery
   alias Picsello.{Repo, Accounts.User}
 
   setup :onboarded
@@ -24,6 +23,8 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+
     for category <- Picsello.Repo.all(Picsello.Category) do
       preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
 
@@ -34,8 +35,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       )
     end
 
-    insert_photo(%{gallery: gallery, total_photos: 20})
-    [gallery: gallery]
+    [gallery: gallery, photo_ids: photo_ids]
   end
 
   test "Toggle disable product and view in client preview", %{
@@ -83,7 +83,8 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
 
   test "Toggle disable product preview and product available for purchase", %{
     session: session,
-    gallery: %{id: gallery_id} = gallery
+    gallery: %{id: gallery_id} = gallery,
+    photo_ids: photo_ids
   } do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
@@ -107,7 +108,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> assert_text("Test Client Wedding Gallery")
     |> assert_has(css("*[data-testid='products'] li", count: 3))
     |> scroll_to_bottom()
-    |> click_photo(1)
+    |> click(css("#item-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: 5), fn options ->
       assert [

@@ -166,13 +166,13 @@ defmodule Picsello.BookingEventsTest do
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
     end
 
-    test "defaults to 15 min slots when duration is not present" do
+    test "defaults to 5 min slots when duration is not present" do
       event = %Picsello.BookingEvent{
         dates: [
           %{
             date: ~D[2050-12-10],
             time_blocks: [
-              %{start_time: ~T[09:00:00], end_time: ~T[10:00:00]}
+              %{start_time: ~T[09:00:00], end_time: ~T[09:30:00]}
             ]
           }
         ]
@@ -180,9 +180,11 @@ defmodule Picsello.BookingEventsTest do
 
       assert [
                ~T[09:00:00.000000],
+               ~T[09:05:00.000000],
+               ~T[09:10:00.000000],
                ~T[09:15:00.000000],
-               ~T[09:30:00.000000],
-               ~T[09:45:00.000000]
+               ~T[09:20:00.000000],
+               ~T[09:25:00.000000]
              ] =
                BookingEvents.available_times(event, ~D[2050-12-10], skip_overlapping_shoots: true)
     end

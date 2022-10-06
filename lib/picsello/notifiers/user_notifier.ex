@@ -4,12 +4,41 @@ defmodule Picsello.Notifiers.UserNotifier do
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
   use Picsello.Notifiers
   import Money.Sigils
+  require Logger
 
   @doc """
   Deliver instructions to confirm account.
   """
   def deliver_confirmation_instructions(user, url) do
     sendgrid_template(:confirmation_instructions_template, name: user.name, url: url)
+    |> to(user.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
+  @doc """
+  Deliver notification for download start.
+  """
+  def deliver_download_start_notification(user, gallery) do
+    sendgrid_template(:download_being_prepared_photog,
+      gallery_name: gallery.name,
+      gallery_url: PicselloWeb.Helpers.gallery_url(gallery)
+    )
+    |> to(user.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
+  @doc """
+  Deliver notification for download start.
+  """
+  def deliver_download_ready_notification(user, gallery_name, gallery_url, download_url) do
+    Logger.info("[Download_url] #{download_url}")
+    sendgrid_template(:download_ready_photog,
+      gallery_name: gallery_name,
+      gallery_url: gallery_url,
+      download_url: download_url
+    )
     |> to(user.email)
     |> from("noreply@picsello.com")
     |> deliver_later()

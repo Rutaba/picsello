@@ -1,6 +1,5 @@
 defmodule Picsello.ClientCancelsOrderTest do
   use Picsello.FeatureCase, async: true
-  import Picsello.TestSupport.ClientGallery, only: [click_photo: 2]
   import Money.Sigils
 
   setup do
@@ -9,7 +8,8 @@ defmodule Picsello.ClientCancelsOrderTest do
         job: insert(:lead, package: insert(:package, download_each_price: ~M[2500]USD))
       )
 
-    insert_list(2, :photo, gallery: gallery)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 2})
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     test_pid = self()
 
@@ -29,23 +29,23 @@ defmodule Picsello.ClientCancelsOrderTest do
       {:ok, build(:stripe_payment_intent, status: "canceled")}
     end)
 
-    [gallery: gallery]
+    [gallery: gallery, photo_ids: photo_ids]
   end
 
   setup :authenticated_gallery_client
 
-  def add_digital(session, index) do
-    session
-    |> click_photo(index)
-    |> assert_text("Select an option")
-    |> within_modal(&click(&1, button("Add to cart")))
-  end
-
-  test "cancel from stripe, change order, go back to stripe", %{session: session} do
+  test "cancel from stripe, change order, go back to stripe", %{
+    session: session,
+    photo_ids: photo_ids
+  } do
     session
     |> click(link("View Gallery"))
-    |> add_digital(1)
-    |> add_digital(2)
+    |> click(css("#img-#{List.first(photo_ids)}"))
+    |> assert_text("Select an option")
+    |> within_modal(&click(&1, button("Add to cart")))
+    |> click(css("#img-#{List.last(photo_ids)}"))
+    |> assert_text("Select an option")
+    |> within_modal(&click(&1, button("Add to cart")))
     |> click(css("p", text: "Added!"))
     |> click(link("cart"))
     |> click(link("Continue"))

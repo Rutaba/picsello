@@ -21,9 +21,15 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   def handle_params(%{"id" => gallery_id} = params, _uri, socket) do
     gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
 
+    albums =
+      case client_liked_album(gallery.id) do
+        nil -> Albums.get_albums_by_gallery_id(gallery.id)
+        album -> Albums.get_albums_by_gallery_id(gallery.id) ++ [album]
+      end
+
     socket
     |> assign(:gallery_id, gallery_id)
-    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id))
+    |> assign(:albums, albums)
     |> assign(:gallery, gallery)
     |> is_mobile(params)
     |> noreply()
@@ -304,4 +310,10 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
   defp thumbnail_url(%{thumbnail_photo: nil}), do: @blank_image
   defp thumbnail_url(%{thumbnail_photo: photo}), do: preview_url(photo)
+
+  defp album_params(albums) do
+    if List.last(albums).is_client_liked && length(albums) == 1,
+      do: %{name: "All Photos", thumbnail_photo: nil, id: "unsorted-photos"},
+      else: %{name: "Unsorted Photos", thumbnail_photo: nil, id: "unsorted-photos"}
+  end
 end

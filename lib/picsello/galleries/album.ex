@@ -19,6 +19,8 @@ defmodule Picsello.Galleries.Album do
     field :client_link_hash, :string
     field :is_proofing, :boolean, default: false
     field :is_finals, :boolean, default: false
+    field :show, :boolean, virtual: true, default: true
+    field :is_client_liked, :boolean, virtual: true, default: false
     belongs_to(:gallery, Gallery)
     belongs_to(:thumbnail_photo, Photo, on_replace: :nilify)
     has_many(:photos, Photo)

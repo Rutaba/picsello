@@ -15,26 +15,14 @@ defmodule Picsello.GalleryPhotosDownloadTest do
 
   test "downloads selected photos", %{
     session: session,
-    gallery: %{id: gallery_id, client_link_hash: client_link_hash},
-    photo_ids: photo_ids
+    gallery: %{id: gallery_id}
   } do
-    link =
-      Routes.gallery_downloads_path(
-        PicselloWeb.Endpoint,
-        :download_all,
-        client_link_hash,
-        photo_ids: Enum.join(photo_ids, ",")
-      )
-
     session
     |> visit("/galleries/#{gallery_id}/photos")
     |> click(css("#select"))
     |> click(button("All"))
     |> click(css("#actions"))
-    |> find(
-      link("Download photos"),
-      &assert(Element.attr(&1, "href") =~ link)
-    )
+    |> click(button("Download photos"))
   end
 
   test "downloads single photo", %{

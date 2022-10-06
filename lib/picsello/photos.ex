@@ -49,6 +49,11 @@ defmodule Picsello.Photos do
 
   def original_url(%{original_url: path}), do: path_to_url(path)
 
+  def get_album_name(photo) do
+    photo = Repo.preload(photo, :album)
+    if photo.album, do: photo.album.name, else: nil
+  end
+
   def watermarked_query do
     watermark =
       from(watermark in Watermark,
@@ -136,6 +141,22 @@ defmodule Picsello.Photos do
     {:ok, photo}
   end
 
+  def toggle_photographer_liked(id) when is_number(id) do
+    case toggle_photographer_liked_query(id) do
+      {_, photos} -> {:ok, List.first(photos)}
+      _ -> {:error, "something went wrong"}
+    end
+  end
+
+  defp toggle_photographer_liked_query(id) do
+    from(photo in Photo,
+      where: photo.id == ^id,
+      update: [set: [is_photographer_liked: not photo.is_photographer_liked]],
+      select: photo
+    )
+    |> Repo.update_all([])
+  end
+
   @spec get_related(Photo.t(), favorites_only: boolean()) :: [Photo.t()]
   def get_related(%{gallery_id: gallery_id, id: photo_id} = photo, opts \\ []) do
     order_by =
@@ -166,8 +187,6 @@ defmodule Picsello.Photos do
 
   def active_photos, do: from(p in Photo, where: p.active == true)
 
-  defdelegate path_to_url(path), to: PhotoStorage
-
   def update_photos_in_bulk(photos, new_values) when is_list(photos) and is_list(new_values) do
     new_values = Map.new(new_values, &{&1.id, &1})
 
@@ -193,4 +212,6 @@ defmodule Picsello.Photos do
     |> Enum.to_list()
     |> to_string()
   end
+
+  defdelegate path_to_url(path), to: PhotoStorage
 end
