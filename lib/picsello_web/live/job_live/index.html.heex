@@ -108,9 +108,9 @@
 
 <div class="flex items-center px-6 pb-6 center-container">
   <form phx-change="page">
-    <.select name="per-page" value={@pagination.limit} options={[12, 24, 48, 96]} />
+    <%= select(Integer, :page_dropdown, ["12", "24", "36", "48"], wrapper_class: "mt-4", class: "focus:ring-0 focus:outline-none focus:border-blue-planning-300 border border-gray-200 rounded-lg p-3 ", name: "per-page") %>
   </form>
-
+  
   <div class="flex ml-2 text-xs font-bold text-gray-500">
       Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
   </div>
