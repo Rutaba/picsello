@@ -68,6 +68,7 @@ defmodule Picsello.GalleryCreateClientFavoritesTest do
     |> assert_has(css("#albums", count: 1, text: "Client Favorites"))
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_text(gallery.name)
+    |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-liked"))
     |> visit("/galleries/#{gallery.id}/albums")
     |> assert_has(css("#albums", text: "Client Favorites", count: 0))
   end
