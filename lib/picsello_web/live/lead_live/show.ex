@@ -159,10 +159,9 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
-  def handle_event("open_lead_name_change", %{}, socket) do
-    #TODO
+  def handle_event("open_lead_name_change", assigns, socket) do
     socket
-    |> open_modal(__MODULE__, %{})
+    |> open_modal(PicselloWeb.Live.Profile.EditLeadNameComponent, Map.put(assigns, :parent_pid, self()))
     |> noreply()
   end
 
@@ -191,18 +190,6 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
-
-
-
-
-  @impl true
-  def handle_event("open_lead_name_change", %{}, socket) do
-    #TODO
-    socket
-    |> open_modal(__MODULE__, %{})
-    |> noreply()
-  end
-
   @impl true
   def handle_event(
         "toggle-questionnaire",
@@ -224,10 +211,6 @@ defmodule PicselloWeb.LeadLive.Show do
     |> PicselloWeb.BookingProposalLive.QuestionnaireComponent.open_modal_from_lead(job, package)
     |> noreply()
   end
-
-  @impl true
-  def handle_event("intro_js" = event, params, socket),
-    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   def handle_event("edit-contract", %{}, socket) do
