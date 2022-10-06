@@ -239,26 +239,37 @@ defmodule PicselloWeb.JobLive.Shared do
         </.live_link>
         <%= Job.name @job %>
       </div>
-
-      <div  phx-hook="Select" class="ml-auto items-center flex">
-            <button class="sticky">
-              <.icon name="meatballs" class="w-4 h-4 text-base-225 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
-              <.icon name="close-x" class="hidden w-3 h-3 text-base-225 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
-            </button>
-            <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
-              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-                <a class="hover-drop-down" phx-click="open_email_compose">Send an email</a>
-              </li>
-              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-                <a class="hover-drop-down" phx-click="open_lead_name_change"> Edit lead name</a>
-              </li>
-              <%=  if !@job.archived_at do %>
-              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-                <a class="hover-drop-down" phx-click="confirm_archive_lead">Archive lead</a>
-              </li>
-              <% end %>
-            </ul>
-          </div>
+      <div class="px-5">
+        <div phx-hook="Select" class="mt-2 ml-auto items-center flex">
+          <button class="sticky">
+            <.icon name="meatballs" class="w-4 h-4 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
+            <.icon name="close-x" class="hidden w-3 h-4 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
+          </button>
+          <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
+          <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+          <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+            <a class="hover-drop-down" phx-click="open_email_compose">Send an email</a>
+          </li>
+          <%= if @job.job_status.is_lead  do %>
+            <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+            <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+              <a class="hover-drop-down" phx-click="open_lead_name_change"> Edit lead name</a>
+            </li>
+          <% else %>
+            <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+            <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+              <a class="hover-drop-down" phx-click="open_lead_name_change"> Edit job name</a>
+            </li>
+          <% end %>
+          <%= if !@job.archived_at do %>
+            <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+              <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
+              <a class="hover-drop-down" phx-click="confirm_archive_lead">Archive lead</a>
+            </li>
+          <% end %>
+          </ul>
+        </div>
+      </div>
     </h1>
     """
   end

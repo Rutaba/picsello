@@ -106,6 +106,37 @@ defmodule PicselloWeb.JobLive.Show do
       })
       |> noreply()
 
+      def handle_event("open_lead_name_change", %{}, %{assigns: %{job: job}} = socket) do
+        assigns = %{
+          job: job
+        }
+        socket
+        |> open_modal(PicselloWeb.Live.Profile.EditLeadNameComponent, Map.put(assigns, :parent_pid, self()))
+        |> noreply()
+      end
+
+      def handle_event("confirm_archive_lead", %{}, socket) do
+        socket
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          close_label: "No! Get me out of here",
+          confirm_event: "archive",
+          confirm_label: "Yes, archive the lead",
+          icon: "warning-orange",
+          title: "Are you sure you want to archive this lead?"
+        })
+        |> noreply()
+      end
+
+      def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
+        socket
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          current_user: current_user,
+          enable_size: true,
+          enable_image: true
+        })
+        |> noreply()
+      end
+
   @impl true
   def handle_event("open-stripe", _, %{assigns: %{job: job, current_user: current_user}} = socket) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
