@@ -100,10 +100,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("intro_js" = event, params, socket),
-    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
-
-  def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
+ def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
 
   def handle_info(
         {:message_composed, message_changeset},
@@ -242,6 +239,26 @@ defmodule PicselloWeb.JobLive.Shared do
         </.live_link>
         <%= Job.name @job %>
       </div>
+
+      <div data-offset-y="0" data-offset-x="0" phx-hook="Select" class="ml-auto items-center flex">
+            <button class="sticky">
+              <.icon name="meatballs" class="w-4 h-4 text-base-225 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
+              <.icon name="close-x" class="hidden w-3 h-3 text-base-225 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
+            </button>
+            <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
+              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+                <a class="hover-drop-down" phx-click="open_email_compose">Send an email</a>
+              </li>
+              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+                <a class="hover-drop-down" phx-click="open_lead_name_change"> Change job name</a>
+              </li>
+              <%=  if !@job.archived_at do %>
+              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+                <a class="hover-drop-down" phx-click="confirm_archive_lead">Archive lead</a>
+              </li>
+              <% end %>
+            </ul>
+          </div>
 
       <button title="Manage" type="button" phx-click="manage" class="relative flex items-center justify-center pb-4 h-5 ml-4 mt-2 text-2xl font-bold leading-3 border rounded w-9 border-blue-planning-300 text-blue-planning-300">
         &hellip;
