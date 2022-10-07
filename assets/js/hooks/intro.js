@@ -27,7 +27,7 @@ function startIntroJsTour(component, introSteps, introId) {
   // Hide introJs if element is clicked underneath it
   document
     .querySelector('.introjs-showElement')
-    .addEventListener('click', () => {
+    ?.addEventListener('click', () => {
       introJs().exit();
       component.pushEvent('intro_js', {
         action: 'dismissed',
@@ -135,11 +135,13 @@ export default {
   },
   updated() {
     // remove existing intro elements of previous page
-    document.querySelectorAll('.introjs-hint').forEach((el) => {el.remove()});
+    document.querySelectorAll('.introjs-hint').forEach((el) => {
+      el.remove();
+    });
 
     // add new intro elements to current page
     introJs().addHints();
-    
+
     addEventListeners();
   },
   destroyed() {

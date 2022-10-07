@@ -31,6 +31,9 @@ defmodule Picsello.Questionnaire do
   schema "questionnaires" do
     embeds_many(:questions, Question, on_replace: :delete)
     field(:job_type, :string)
+    field(:name, :string)
+    field(:is_organization_default, :boolean)
+    belongs_to :organization, Picsello.Organization
 
     timestamps()
   end
@@ -38,9 +41,9 @@ defmodule Picsello.Questionnaire do
   @doc false
   def changeset(questionnaire, attrs) do
     questionnaire
-    |> cast(attrs, [:job_type])
+    |> cast(attrs, [:job_type, :name, :organization_id, :is_organization_default])
     |> cast_embed(:questions, required: true)
-    |> validate_required([:questions, :job_type])
+    |> validate_required([:questions, :job_type, :name])
     |> foreign_key_constraint(:job_type)
   end
 

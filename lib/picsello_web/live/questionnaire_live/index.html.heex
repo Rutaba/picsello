@@ -1,0 +1,49 @@
+<div class="pt-6 px-6 py-2 center-container">
+  <div class="flex text-4xl items-center">
+    <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
+    <.crumbs class="text-base text-base-250">
+      <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
+      <:crumb>Booking events</:crumb>
+    </.crumbs>
+  </div>
+
+  <hr class="mt-2 border-white" />
+
+  <div class="flex items-center justify-between lg:mt-2 md:justify-start">
+    <div class="flex text-4xl font-bold items-center">
+      <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+      Custom Questionnaires
+    </div>
+    <%= unless Enum.empty?(@questionnaires) do %>
+      <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
+        <a title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-questionnaire">
+        Create Questionnaire
+      </a>
+      </div>
+    <% end %>
+  </div>
+
+  <hr class="mt-4 sm:mt-10" />
+</div>
+
+<%= if Enum.empty?(@questionnaires) do %>
+  <div class="flex flex-col justify-between flex-auto mt-4 p-6 center-container lg:flex-none">
+    <div class="flex flex-col">
+      <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
+      <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any custom questionnaires at the moment. We do have defaults you can start from!</p>
+    </div>
+    <div class="lg:inline-flex">
+      <a title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center mt-5" phx-click="create-questionnaire">
+        Create Questionnaire
+      </a>
+    </div>
+  </div>
+<% else %>
+  <div class="p-6 center-container">
+    <div class="hidden sm:grid sm:grid-cols-4 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+      <div class="sm:col-span-2">Event Details</div>
+      <div>Bookings so far</div>
+      <div>Actions</div>
+    </div>
+  </div>
+<% end %>
