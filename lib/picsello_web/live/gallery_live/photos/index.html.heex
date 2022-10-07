@@ -19,148 +19,152 @@
               <% end %>
             </.mobile_banner>
           </div>
-          <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
+          <div class="center-container">
+            <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
 
-          <div class="lg:flex hidden items-center font-sans lg:justify-start">
-            <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
-              <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
-                <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
-                <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
-              </.crumbs>
-            <% end %>
-          </div>
-          <div class="flex items-center lg:ml-0 ml-10 shrink-0">
-            <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
-            <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
-            <% else %>
-            <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "All photos") %></span>
-            <% end %>
-            <%= if @album && !@client_liked_album  do %>
-              <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
-                  <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
-              </button>
-              <%= if Enum.any?(@photos) && !@album.is_proofing do %>
-                <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:mt-0 mt-2" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
-                  Edit thumbnail
+            <div class="lg:flex hidden items-center font-sans lg:justify-start">
+              <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
+                <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
+                  <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery)}>Photos</:crumb>
+                  <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
+                </.crumbs>
+              <% end %>
+            </div>
+            <div class="flex items-center lg:ml-0 ml-10 shrink-0">
+              <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
+              <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
+              <% else %>
+              <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "All photos") %></span>
+              <% end %>
+              <%= if @album && !@client_liked_album  do %>
+                <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
+                    <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
+                </button>
+                <%= if Enum.any?(@photos) && !@album.is_proofing do %>
+                  <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:mt-0 mt-2" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                    Edit thumbnail
+                  </.icon_button>
+                <% end %>
+                <div {testid("selection-complete")} class={"flex bg-green-finances-100 text-green-finances-300 px-2 font-bold items-center rounded rounded-lg ml-auto h-7 lg:mr-0 mr-10 #{Enum.empty?(@orders) && 'hidden'}"}>Client selection complete</div>
+              <% end %>
+            </div>
+            <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>                        
+              <div class="lg:flex hidden">
+                <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
+              </div>
+              <%= if @album && (@album.is_proofing || @album.is_finals) do %>
+                <.icon_button {testid("send-proofs-popup")} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
+                  Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
+                </.icon_button>
+                <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
+                  Add finals album
                 </.icon_button>
               <% end %>
-              <div {testid("selection-complete")} class={"flex bg-green-finances-100 text-green-finances-300 px-2 font-bold items-center rounded rounded-lg ml-auto h-7 lg:mr-0 mr-10 #{Enum.empty?(@orders) && 'hidden'}"}>Client selection complete</div>
-            <% end %>
-          </div>
-          <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>                        
-            <div class="lg:flex hidden">
-              <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
+              <%= unless @album do %>
+                <.add_album_button class="lg:ml-2.5 lg:py-2 py-1.5"/>
+              <% end %>
             </div>
-            <%= if @album && (@album.is_proofing || @album.is_finals) do %>
-              <.icon_button {testid("send-proofs-popup")} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
-                Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
-              </.icon_button>
-              <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
-                Add finals album
-              </.icon_button>
-            <% end %>
-            <%= unless @album do %>
-              <.add_album_button class="lg:ml-2.5 lg:py-2 py-1.5"/>
-            <% end %>
           </div>
         </div>
 
-        <div class={classes("flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400", %{"hidden" => @photos_error_count == 0 || (@total_progress > 0 && @total_progress < 100)})}>
-          <div class="flex justify-center pl-5">
-            <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+        <div class="center-container">
+          <div class={classes("flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400", %{"hidden" => @photos_error_count == 0 || (@total_progress > 0 && @total_progress < 100)})}>
+            <div class="flex justify-center pl-5">
+              <.icon name="warning-orange" class="w-4 h-4 stroke-2" />
+            </div>
+            <div class="flex-grow p-4 lg:text-base text-sm font-sans">
+              <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed to upload.
+              <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
+              to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
+            </div>
           </div>
-          <div class="flex-grow p-4 lg:text-base text-sm font-sans">
-            <%= @photos_error_count %> <%= ngettext("photo", "photos", @photos_error_count) %> failed to upload.
-            <button phx-click="upload-failed" class="font-bold cursor-pointer primary text-blue-planning-300">Click here</button>
-            to resolve errors<%= if Enum.any?(@pending_photos), do: " before uploading more photos"%>.
-          </div>
-        </div>
-        <%= if Enum.any?(@photos) || Enum.any?(@orders) || @photographer_favorites_filter do %>
-          <div class="pt-4 grid lg:grid-cols-2">
-            <div class="flex flex-col text-sm justify-start md:flex-row">
-              <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">
-                <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
-                  <div class="flex lg:p-0 p-3 items-center dropdown">
-                    <div class="lg:mx-3">
-                      <span>Select</span>
+          <%= if Enum.any?(@photos) || Enum.any?(@orders) || @photographer_favorites_filter do %>
+            <div class="pt-4 grid lg:grid-cols-2">
+              <div class="flex flex-col text-sm justify-start md:flex-row">
+                <div class="h-10 lg:mx-0 mx-10 md:w-32 items-center mb-4 font-sans bg-white cursor-pointer rounded-md">
+                  <div id="select" class="relative" phx-update="ignore" data-offset-y="10" phx-hook="Select">
+                    <div class="flex lg:p-0 p-3 items-center dropdown">
+                      <div class="lg:mx-3">
+                        <span>Select</span>
+                      </div>
+                      <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+                      <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
                     </div>
-                    <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
-                    <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+                    <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
+                      <%= for option <- options(@album) do %>
+                        <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
+                        class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
+                          <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
+                          <.icon name="tick" class="hidden w-6 h-5 mr-3 toggle-it text-green" />
+                        </li>
+                      <% end %>
+                    </ul>
                   </div>
-                  <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
-                    <%= for option <- options(@album) do %>
-                      <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-                      class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-                        <button id={option.id} class="album-select" phx-click={option.id}><%= option.title %></button>
-                        <.icon name="tick" class="hidden w-6 h-5 mr-3 toggle-it text-green" />
+                </div>
+
+                <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
+                  <.actions id="actions" update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} selection_filter={@selection_filter} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
+                    <%= if(is_nil(@album)) do %>
+                      <.album_actions albums={@gallery.albums} />
+                    <% else %>
+                      <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
+                      <%= if !@client_liked_album do %>
+                      <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
+                          <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
+                      </li>
+                      <% end %>
+                    <% end %>
+                    <%= if Enum.count(@selected_photos) == 1 do %>
+                      <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
+                        <a class="album-actions" download href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash, photo_ids: Enum.join(@selected_photos, ","))}>
+                          Download photo
+                        </a>
                       </li>
                     <% end %>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
-                <.actions id="actions" update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} selection_filter={@selection_filter} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
-                  <%= if(is_nil(@album)) do %>
-                    <.album_actions albums={@gallery.albums} />
-                  <% else %>
-                    <.album_actions albums={@gallery.albums} exclude_album_id={@album.id} />
-                    <%= if !@client_liked_album do %>
-                    <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
-                        <button class="album-actions" phx-click="remove_from_album_popup" phx-value-photo_id={@album.id}>Remove from album</button>
-                    </li>
+                    <%= if @select_mode == "selected_all" do %>
+                      <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
+                        <button class="album-actions" phx-click="downlaod_photos">Download photos</button>
+                      </li>
                     <% end %>
-                  <% end %>
-                  <%= if Enum.count(@selected_photos) == 1 do %>
-                    <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
-                      <a class="album-actions" download href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash, photo_ids: Enum.join(@selected_photos, ","))}>
-                        Download photo
-                      </a>
+                    <%= if @client_liked_album && Enum.count(@selected_photos) == 1 do %>
+                      <li class="relative py-1.5 hover:bg-blue-planning-100">
+                        <%= live_redirect(
+                          "Go to original",
+                          to: original_album_link(@socket, Enum.find(@photos, & &1.id == List.first(@selected_photos))),
+                          class: "album-actions"
+                          )
+                        %>
+                      </li>
+                    <% end %>
+                    <%= if @album && @album.is_proofing && @selection_filter || !@album || @client_liked_album do %>
+                      <li class="relative py-1.5 hover:bg-blue-planning-100">
+                        <button class="album-actions" phx-click="add_album_popup">Create album with selected</button>
+                      </li>
+                    <% end %>
+                    <li class={classes("relative py-1.5 hover:bg-blue-planning-100", %{"hidden" => (!@client_liked_album || !Enum.any?(@gallery.albums))})}>
+                        <button class="album-actions" phx-click="assign_to_album_popup">Assign to album</button>
                     </li>
+                </.actions>
+                </div>
+              </div>
+
+              <div class="flex items-start justify-between min-w-0 flex-row">
+                <%= if Enum.any?(@selected_photos) do %>
+                  <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mr-0 mr-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
+                    <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected
+                  </div>
+                <% end %>
+                <%= unless @client_liked_album do %>
+                  <%= if @album && @album.is_proofing do %>
+                    <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
+                  <% else %>  
+                    <.toggle id="toggle_favorites" filter={@photographer_favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
                   <% end %>
-                  <%= if @select_mode == "selected_all" do %>
-                    <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
-                      <button class="album-actions" phx-click="downlaod_photos">Download photos</button>
-                    </li>
-                  <% end %>
-                  <%= if @client_liked_album && Enum.count(@selected_photos) == 1 do %>
-                    <li class="relative py-1.5 hover:bg-blue-planning-100">
-                      <%= live_redirect(
-                        "Go to original",
-                        to: original_album_link(@socket, Enum.find(@photos, & &1.id == List.first(@selected_photos))),
-                        class: "album-actions"
-                        )
-                      %>
-                    </li>
-                  <% end %>
-                  <%= if @album && @album.is_proofing && @selection_filter || !@album || @client_liked_album do %>
-                    <li class="relative py-1.5 hover:bg-blue-planning-100">
-                      <button class="album-actions" phx-click="add_album_popup">Create album with selected</button>
-                    </li>
-                  <% end %>
-                  <li class={classes("relative py-1.5 hover:bg-blue-planning-100", %{"hidden" => (!@client_liked_album || !Enum.any?(@gallery.albums))})}>
-                      <button class="album-actions" phx-click="assign_to_album_popup">Assign to album</button>
-                  </li>
-              </.actions>
+                <% end %>
               </div>
             </div>
-
-            <div class="flex items-start justify-between min-w-0 flex-row">
-              <%= if Enum.any?(@selected_photos) do %>
-                <div id="selected-photos-count" class="flex lg:order-1 order-2 lg:mr-0 mr-10 items-end lg:pt-[0.40rem] lg:pb-0 pb-4 font-sans text-xs text-base-250 lg:justify-start">
-                  <%= ngettext("1 photo", "%{count} photos", length(@selected_photos)) %> selected
-                </div>
-              <% end %>
-              <%= unless @client_liked_album do %>
-                <%= if @album && @album.is_proofing do %>
-                  <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
-                <% else %>  
-                  <.toggle id="toggle_favorites" filter={@photographer_favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
       </div>
       <div class= "lg:pt-16 pt-60 pb-10 pl-10 pr-8">
         <div class={classes(%{"hidden" => @photos != [] || @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
@@ -175,14 +179,14 @@
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
           <% true when @photographer_favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-                Oops, there's no liked photo!
+                Oops, there's no liked photos!
             </div>
           <% false when @selection_filter -> %>
-            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
+            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>
-            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
+            <div class={classes("lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
                 <hr class={classes("sticky my-6 border-base-225", %{"hidden" => @orders == []})}>
