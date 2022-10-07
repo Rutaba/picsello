@@ -1,11 +1,11 @@
 <div>
-  <div class="px-6 mx-auto max-w-screen-xl lg:px-14">
+  <div class="px-6 mx-auto center-container lg:px-14">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery, album: assigns[:album], is_proofing: @is_proofing %>
   </div>
 
   <hr>
 
-  <div class="px-6 pt-5 mx-auto lg:pt-14 lg:px-14 max-w-screen-xl">
+  <div class="px-6 pt-5 mx-auto lg:pt-14 lg:px-14 center-container">
     <%= if @from_checkout do %>
       <%= live_redirect class: "flex items-center font-extrabold text-base-250", to: @checkout_routes.home_page do %>
         <.icon name="back" class="h-3 w-2 mr-2 stroke-[3px]" />

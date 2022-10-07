@@ -1,11 +1,11 @@
-  <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+  <div class="my-0 py-0 mx-auto center-container h-full px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery, album: @album, is_proofing: @is_proofing || @album.is_finals %>
   </div>
 
-  <hr>
+  <hr />
 
   <%= unless @is_proofing do %>
-    <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 max-w-screen-xl">
+    <div class="px-6 pt-5 pb-10 mx-auto lg:pt-9 lg:px-14 center-container">
 
       <%= unless @album.is_finals do %>
         <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash), class: "flex font-extrabold text-base-250 items-center mb-7" do %>
@@ -19,7 +19,7 @@
   
 
     <%= unless Enum.empty?(@products) do %>
-      <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
+      <div class="my-0 py-0 mx-auto center-container h-full px-7 sm:px-16">
         <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
           <%= for product <- @products do %>
             <%= if product.product_preview_enabled do %>
@@ -29,9 +29,11 @@
         </ul>
       </div>
     <% end %>
-    <hr class="lg:mx-16 mt-8 mx-8">
+    <div class="center-container">
+      <hr class="lg:mx-16 mt-8 mx-8 border-base-300" />
+    </div>
   <% end %>
-  <div class={"my-0 py-0 mx-auto h-full px-7 sm:px-16 #{@is_proofing && 'mb-56'}"}>
+  <div class={"my-0 py-0 mx-auto center-container h-full px-7 sm:px-16 #{@is_proofing && 'mb-56'}"}>
     <div class="pt-5 lg:pt-16" id="gallery">
       <.top_section {assigns} />
       
@@ -75,5 +77,5 @@
     </div>
   </div>
   <%= if @is_proofing do %>
-    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits}/>
+    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits} is_fixed={true} />
   <% end %>
