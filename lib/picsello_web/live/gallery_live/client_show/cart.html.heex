@@ -221,6 +221,6 @@
     <% end %>
   </div>
   <%= if @is_proofing do %>
-    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits}/>
+    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits} is_fixed={true} />
   <% end %>
 </div>
