@@ -42,9 +42,11 @@
 
 .introjs-skipbutton {
     @apply font-thin text-5xl pr-0;
+    padding-top: 15px;
     line-height: 0px;
 }
 
+.introjs-tooltiptext,
 .introjs-tooltiptext p {
     @apply text-sm;
 }
