@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def render(assigns) do
     ~H"""
     <div class="relative">
-      <div class="fixed pl-16 w-full px-6 mx-auto max-w-screen-xl z-40 bg-white">
+      <div class="fixed pl-16 w-full px-6 mx-auto z-40 bg-white">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
       </div>
 
