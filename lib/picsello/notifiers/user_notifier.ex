@@ -34,6 +34,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   """
   def deliver_download_ready_notification(user, gallery_name, gallery_url, download_url) do
     Logger.info("[Download_url] #{download_url}")
+
     sendgrid_template(:download_ready_photog,
       gallery_name: gallery_name,
       gallery_url: gallery_url,

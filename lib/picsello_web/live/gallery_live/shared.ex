@@ -15,6 +15,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Albums,
     Notifiers.ClientNotifier
   }
+
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
