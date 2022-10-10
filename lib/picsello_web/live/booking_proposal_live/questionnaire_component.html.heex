@@ -82,7 +82,7 @@
     </fieldset>
 
     <.footer>
-      <%= unless @read_only do %>
+      <%= if !@read_only && @proposal.sent_to_client do %>
         <button type="submit" class="btn-primary" disabled={@disable_submit}>
           Save
         </button>

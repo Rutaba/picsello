@@ -52,7 +52,7 @@
     </p>
 
     <.footer>
-      <%= unless @read_only do %>
+      <%= if !@read_only && @proposal.sent_to_client do %>
         <%= submit "Accept Contract", class: "btn-primary accept-contract", disabled: !@changeset.valid?, phx_disable_with: "Accept Contract" %>
       <% end %>
       <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">

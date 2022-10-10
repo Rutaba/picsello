@@ -265,7 +265,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   defp maybe_confetti(socket, %{}), do: socket
 
   defp invoice_disabled?(
-         %BookingProposal{accepted_at: accepted_at, signed_at: signed_at, job: job},
+         %BookingProposal{sent_to_client: true, accepted_at: accepted_at, signed_at: signed_at, job: job},
          :charges_enabled
        ) do
     !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))

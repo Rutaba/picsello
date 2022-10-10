@@ -19,7 +19,7 @@
   <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client} />
 
   <.footer>
-    <%= unless @read_only do %>
+    <%= if !@read_only && @proposal.sent_to_client do %>
       <button class="btn-primary" phx-click="accept-proposal" phx-target={@myself}>
         Accept Quote
       </button>

@@ -58,7 +58,7 @@
 
     <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
 
-    <.booking_details_section is_schedule_valid={@is_schedule_valid} proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} include_questionnaire={@include_questionnaire} collapsed_sections={@collapsed_sections}>
+    <.booking_details_section disabled_copy_link={@disabled_copy_link} is_schedule_valid={@is_schedule_valid} proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} include_questionnaire={@include_questionnaire} collapsed_sections={@collapsed_sections}>
       <:send_proposal_button>
         <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} show_message={false} />
       </:send_proposal_button>

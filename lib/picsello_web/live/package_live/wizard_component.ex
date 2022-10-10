@@ -1102,14 +1102,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     presets =
       default_presets
       |> Enum.with_index(
-        &%{
+        &Map.merge(%{
           "interval" => true,
           "shoot_date" => get_first_shoot(job),
           "last_shoot_date" => get_last_shoot(job),
           "percentage" => "",
-          "due_interval" => &1,
-          "price" => get_price(price, length(default_presets), &2)
-        }
+          "due_interval" => &1
+        }, get_price_or_percentage(price, fixed, length(default_presets), &2)
+        )
       )
 
     params = %{
@@ -1129,11 +1129,31 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp get_price(total_price, presets_count, index) do
     remainder = rem(total_price.amount, presets_count) * 100
     amount = if remainder == 0, do: total_price, else: Money.subtract(total_price, remainder)
-
+    
     if index + 1 == presets_count do
       Money.divide(amount, presets_count) |> List.first() |> Money.add(remainder)
     else
       Money.divide(amount, presets_count) |> List.first()
+    end
+  end
+
+  defp get_percentage(presets_count, index) do
+    remainder = rem(100, presets_count)
+    percentage = if remainder == 0, do: 100, else: 100 - remainder
+    
+    if index + 1 == presets_count do
+      (percentage / presets_count) + remainder
+    else
+      percentage / presets_count
+    end
+    |> Kernel.trunc()
+  end
+
+  defp get_price_or_percentage(total_price, fixed, presets_count, index) do
+    if fixed do 
+      %{"price" => get_price(total_price, presets_count, index)}
+    else 
+      %{"percentage" => get_percentage(presets_count, index)}
     end
   end
 
@@ -1142,41 +1162,46 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       params
       |> Map.get("payment_schedules")
       |> Map.values()
-      |> Enum.reduce({%{}, 0}, fn schedule, {schedules, collection} ->
-        schedule = Picsello.PackagePaymentSchedule.prepare_percentage(schedule)
-
-        changeset =
-          %Picsello.PackagePaymentSchedule{}
-          |> Changeset.cast(schedule, [:fields_count, :payment_field_index, :price, :percentage])
-
-        index = Changeset.get_field(changeset, :payment_field_index)
-        presets_count = Changeset.get_field(changeset, :fields_count)
-        price = Changeset.get_field(changeset, :price)
-        percentage = Changeset.get_field(changeset, :percentage)
-
-        if fixed do
-          updated_price =
-            if(price, do: price.amount / 100, else: percentage_to_price(total_price, percentage))
-            |> normalize_price(collection, presets_count, index, total_price)
-
-          {Map.merge(schedules, %{
-             "#{index}" => %{schedule | "percentage" => nil, "price" => updated_price}
-           }), collection + updated_price}
-        else
-          updated_percentage =
-            if(percentage, do: percentage, else: price_to_percentage(total_price, price))
-            |> normalize_percentage(collection, presets_count, index)
-
-          {Map.merge(schedules, %{
-             "#{index}" => %{schedule | "percentage" => updated_percentage, "price" => nil}
-           }), collection + updated_percentage}
-        end
-      end)
+      |> update_amount(fixed, total_price)
 
     socket
     |> maybe_assign_custom(Map.put(params, "payment_schedules", presets))
   end
 
+  defp update_amount(schedules, fixed, total_price) do
+    schedules
+    |> Enum.reduce({%{}, 0}, fn schedule, {schedules, collection} ->
+      schedule = Picsello.PackagePaymentSchedule.prepare_percentage(schedule)
+
+      changeset =
+        %Picsello.PackagePaymentSchedule{}
+        |> Changeset.cast(schedule, [:fields_count, :payment_field_index, :price, :percentage])
+
+      index = Changeset.get_field(changeset, :payment_field_index)
+      presets_count = Changeset.get_field(changeset, :fields_count)
+      price = Changeset.get_field(changeset, :price)
+      percentage = Changeset.get_field(changeset, :percentage)
+
+      if fixed do
+        updated_price =
+          if(price, do: price.amount / 100, else: percentage_to_price(total_price, percentage))
+          |> normalize_price(collection, presets_count, index, total_price)
+
+        {Map.merge(schedules, %{
+           "#{index}" => %{schedule | "percentage" => nil, "price" => updated_price}
+         }), collection + updated_price}
+      else
+        updated_percentage =
+          if(percentage, do: percentage, else: price_to_percentage(total_price, price))
+          |> normalize_percentage(collection, presets_count, index)
+
+        {Map.merge(schedules, %{
+           "#{index}" => %{schedule | "percentage" => updated_percentage, "price" => nil}
+         }), collection + updated_percentage}
+      end
+    end)
+
+  end
   defp normalize_price(price, collection, presets_count, index, total_price) do
     if index + 1 == presets_count do
       (total_price.amount - collection) |> Kernel.trunc()
