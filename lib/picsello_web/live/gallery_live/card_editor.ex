@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def render(assigns) do
     ~H"""
     <div class="relative">
-      <div class="fixed pl-16 w-full px-6 mx-auto z-40 max-w-screen-xl bg-white">
+      <div class="fixed md:pl-16 w-full md:px-6 px-2 mx-auto z-40 bg-white">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
       </div>
 
@@ -78,7 +78,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   defp step(%{occasion: nil} = assigns) do
     ~H"""
     <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
-      <div class="fixed z-10 mt-16 lg:mt-8 bg-white w-full">
+      <div class="fixed z-10 mt-14 lg:mt-8 bg-white w-full">
       <nav class="pb-7 mt-8 lg:mt-16 text-base-250">
         <ol class="flex items-center list-reset">
           <li>
@@ -147,8 +147,8 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   defp step(assigns) do
     ~H"""
-    <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
-      <div class="fixed sm:mt-16 lg:mt-8 pt-[32px] lg:pt-16 sm:w-[772px] lg:w-[1232px] z-10 bg-white">
+    <div class="px-6 pt-5 mx-auto lg:pt-10 w-screen">
+      <div class="fixed pr-8 sm:mt-16 lg:mt-8 pt-8 lg:pt-16 w-full z-10 bg-white">
         <nav class="mb-9 text-base-250">
           <ol class="flex items-center list-reset">
             <li>
